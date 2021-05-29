@@ -68,7 +68,7 @@ CReadWriteLock::~CReadWriteLock()
 /*--------------------------------------------------------------------------*/
 
 bool
-CReadWriteLock::WriterStart( void ) const
+CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
 {
     return rwl_writer_start( _rwlock ) != 0;
 }
@@ -93,7 +93,7 @@ CReadWriteLock::WriterCount( void ) const
 /*--------------------------------------------------------------------------*/
 
 bool
-CReadWriteLock::ReaderStart( void ) const
+CReadWriteLock::ReaderStart( UInt32 lockWaitTimeoutInMs ) const
 {
     return rwl_reader_start( _rwlock ) != 0;
 }
@@ -134,7 +134,7 @@ CReadWriteLock::AsLockable( void ) const
 /*--------------------------------------------------------------------------*/
 
 bool 
-CReadWriteLock::Lock( void ) const
+CReadWriteLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 {
     return WriterStart();
 }
@@ -150,7 +150,7 @@ CReadWriteLock::Unlock( void ) const
 /*--------------------------------------------------------------------------*/
 
 bool 
-CReadWriteLock::ReadOnlyLock( void ) const
+CReadWriteLock::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {
     return ReaderStart();
 }

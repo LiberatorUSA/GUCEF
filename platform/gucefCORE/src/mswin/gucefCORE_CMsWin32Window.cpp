@@ -805,7 +805,7 @@ CMsWin32Window::OnNotify( CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
                          
 bool
-CMsWin32Window::Lock( void ) const
+CMsWin32Window::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
     return false;

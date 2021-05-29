@@ -449,10 +449,10 @@ CWin32NetworkInterface::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CWin32NetworkInterface::Lock( void ) const
+CWin32NetworkInterface::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_dataLock.Lock();
+    return m_dataLock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

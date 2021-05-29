@@ -173,10 +173,10 @@ CTCPServerConnection::GetRemoteTCPPort( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPServerConnection::Lock( void ) const
+CTCPServerConnection::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return _datalock.Lock();
+    return _datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

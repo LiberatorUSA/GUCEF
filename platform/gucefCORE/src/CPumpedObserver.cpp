@@ -346,10 +346,10 @@ CPumpedObserver::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CPumpedObserver::Lock( void ) const
+CPumpedObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mutex.Lock();
+    return m_mutex.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

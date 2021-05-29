@@ -905,10 +905,10 @@ CTCPServerSocket::SendToConnection( UInt32 connectionIndex                ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTCPServerSocket::Lock( void ) const
+CTCPServerSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return _datalock.Lock();
+    return _datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

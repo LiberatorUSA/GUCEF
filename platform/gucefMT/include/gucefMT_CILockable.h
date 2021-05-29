@@ -76,7 +76,7 @@ class GUCEF_MT_PUBLIC_CPP CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
      */
-    virtual bool Lock( void ) const = 0;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const = 0;
 
     /**
      *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
@@ -89,7 +89,7 @@ class GUCEF_MT_PUBLIC_CPP CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyLock( void ) const { return Lock(); }
+    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const { return Lock( lockWaitTimeoutInMs ); }
 
     /**
      *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 

@@ -190,6 +190,8 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
     public:
 
+    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
+
     CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client );
 
     virtual ~CRedisClusterPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
@@ -212,7 +214,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
-    bool RedisSendSyncImpl( const sw::redis::StringView& msgId );
+    bool RedisSendSyncImpl( const sw::redis::StringView& msgId, const TRedisArgs& kvPairs );
 
     bool RedisRead( void );
 
@@ -239,7 +241,6 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClientTopic > TEventCallback;
     
     // Types to read from redis-plus-plus
-    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
     typedef std::pair< std::string, std::string > TRedisMsgAttribute;
     typedef std::vector< TRedisMsgAttribute > TRedisMsgAttributes;
     typedef std::pair< std::string, TRedisMsgAttributes > TRedisMsg;

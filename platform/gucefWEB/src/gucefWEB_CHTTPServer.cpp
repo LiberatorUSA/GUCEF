@@ -556,10 +556,10 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
 /*-------------------------------------------------------------------------*/
                          
 bool
-CHTTPServer::Lock( void ) const
+CHTTPServer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
-    return m_lock.Lock();
+    return m_lock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

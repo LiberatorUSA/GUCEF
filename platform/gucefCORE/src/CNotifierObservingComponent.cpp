@@ -74,11 +74,11 @@ CNotifierObservingComponent::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CNotifierObservingComponent::Lock( void ) const
+CNotifierObservingComponent::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_owner )
-        return m_owner->Lock();
+        return m_owner->Lock( lockWaitTimeoutInMs );
     return false;
 }
 

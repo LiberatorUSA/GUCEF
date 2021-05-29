@@ -66,7 +66,7 @@ class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
      *      process will have to wait for the mutex to allow a lock.
      *      The return value indicates whether the lock failed or succeeded.
      */
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Unlocks the mutex after a call to Lock(). Other processes

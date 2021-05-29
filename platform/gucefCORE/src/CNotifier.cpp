@@ -345,7 +345,7 @@ CNotifier::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifier::Lock( void ) const
+CNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */

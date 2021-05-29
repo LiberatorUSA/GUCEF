@@ -74,10 +74,10 @@ CDStoreCodecRegistry::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CDStoreCodecRegistry::Lock( void ) const
+CDStoreCodecRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return _datalock.Lock();
+    return _datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -140,7 +140,7 @@ CMutex::~CMutex()
 /*--------------------------------------------------------------------------*/
 
 bool
-CMutex::Lock( void ) const
+CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 {
     if ( GUCEF_NULL == _mutexdata )
         return false;
@@ -148,7 +148,9 @@ CMutex::Lock( void ) const
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
-                              INFINITE                      ) == WAIT_FAILED ) return false;
+                              lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs ) == WAIT_FAILED ) 
+        return false;
+
     ((TMutexData*)_mutexdata)->locked = (UInt32) ::GetCurrentThreadId();
     return true;
 

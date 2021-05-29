@@ -79,6 +79,13 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
      */
     bool IsLocked( void ) const;
 
+    /**
+     *  Allows you to unlock before the scope lock triggers destruction of the CObjectScopeLock object
+     *  Useful for more complex code flows where in most code paths you want to retain the lock except for
+     *  a small subset of code path(s)
+     */
+    bool EarlyUnlock( void );
+
     private:
     const CMutex* m_mutex;
     bool m_isLocked;

@@ -54,6 +54,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERSWAP_H
+#include "gucefCORE_CDynamicBufferSwap.h"
+#define GUCEF_CORE_CDYNAMICBUFFERSWAP_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERSWAP_H ? */
+
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -68,6 +73,11 @@
 #include "gucefCOMCORE_CPubSubClientFactory.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
@@ -115,6 +125,10 @@ class ChannelSettings : public CORE::CIConfigurable
 
     COMCORE::CPubSubClientConfig pubsubClientConfig;
     TTopicConfigVector pubsubClientTopicConfigs;
+    COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
+    CORE::UInt32 desiredMinimalSerializedBlockSize;
+    CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
+    CORE::CString vfsStoragePath;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool performPubSubInDedicatedThread;
@@ -162,6 +176,8 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     bool DisconnectPubSubClient( bool destroyClient = false );
 
+    CORE::CDynamicBufferSwap& GetSerializedMsgBuffers( void );
+
     private:
 
     void RegisterEventHandlers( void );
@@ -197,6 +213,9 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     TBufferMailbox::TMailList m_bulkMail;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;
+    CORE::CDynamicBufferSwap m_buffers;
+    CORE::CDynamicBuffer* m_msgReceiveBuffer;
+    CORE::CDateTime m_lastWriteBlockCompletion;    
 };
 
 /*-------------------------------------------------------------------------*/
@@ -267,6 +286,7 @@ class CStorageChannel : public CORE::CTaskConsumer
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CPubSubClientChannelPtr m_pubsubClient;
+    CORE::CDynamicBuffer* m_msgReceiveBuffer;
 };
 
 /*-------------------------------------------------------------------------*/

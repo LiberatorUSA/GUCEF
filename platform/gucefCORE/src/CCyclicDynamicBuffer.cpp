@@ -825,7 +825,7 @@ CCyclicDynamicBuffer::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
     
 bool
-CCyclicDynamicBuffer::Lock( void ) const
+CCyclicDynamicBuffer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired

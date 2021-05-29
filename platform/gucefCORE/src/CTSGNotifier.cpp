@@ -228,10 +228,10 @@ CTSGNotifier::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CTSGNotifier::Lock( void ) const
-{GUCEF_TRACE;
+CTSGNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE; 
 
-    return m_dataLock.Lock();
+    return m_dataLock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

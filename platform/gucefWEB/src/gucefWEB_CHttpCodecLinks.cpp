@@ -322,10 +322,10 @@ CHttpCodecLinks::InitEncodingCodecLinks( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CHttpCodecLinks::Lock( void ) const
+CHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_dataLock.Lock();
+    return m_dataLock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

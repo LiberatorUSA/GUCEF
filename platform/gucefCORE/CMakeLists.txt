@@ -150,6 +150,7 @@ set( HEADER_FILES
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcher.h
+  include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIConsoleLogger.h
@@ -344,6 +345,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDirectoryWatcher.cpp
+  src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIDate.cpp

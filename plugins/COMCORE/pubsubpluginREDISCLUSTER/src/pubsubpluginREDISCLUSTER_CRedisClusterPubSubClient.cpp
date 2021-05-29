@@ -233,7 +233,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_redisShardNodeId()
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_config()
-    , m_readOffset( "$" )
+    , m_readOffset( "0" )
     , m_readerThread()
 {GUCEF_TRACE;
 
@@ -324,6 +324,8 @@ CRedisClusterPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
     const COMCORE::CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
     bool hasNoPrimaryPayload = primaryPayload.IsNULLOrEmpty();
 
+    // We use a data member for argument reference storage so we dont have to keep
+    // allocating a new array (vector) on every call to Publish()
     m_redisMsgArgs.clear();
     m_redisMsgArgs.reserve( (size_t) kvPairs.size() + ( hasNoPrimaryPayload ? 0 : 1 ) );
     
@@ -354,7 +356,7 @@ CRedisClusterPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         ++i;
     }
     
-    return RedisSendSyncImpl( idSV );
+    return RedisSendSyncImpl( idSV, m_redisMsgArgs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -385,7 +387,7 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& msgId )
+CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& msgId, const TRedisArgs& kvPairs )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
@@ -396,9 +398,9 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
         sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
 
         if ( m_config.redisXAddMaxLen >= 0 )
-            m_redisPipeline->xadd( cnSV, msgId, m_redisMsgArgs.begin(), m_redisMsgArgs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
+            m_redisPipeline->xadd( cnSV, msgId, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
         else
-            m_redisPipeline->xadd( cnSV, msgId, m_redisMsgArgs.begin(), m_redisMsgArgs.end() );
+            m_redisPipeline->xadd( cnSV, msgId, kvPairs.begin(), kvPairs.end() );
 
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
 
@@ -413,11 +415,11 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
                 case REDIS_OK:
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent message with " +
-                        CORE::ToString( m_redisMsgArgs.size() ) + " fields. MsgID=" + CORE::ToString( reply.str ) );
+                        CORE::ToString( kvPairs.size() ) + " fields. MsgID=" + CORE::ToString( reply.str ) );
 
                     ++m_redisMsgsTransmitted;
-                    m_redisFieldsInMsgsTransmitted += (CORE::UInt32) m_redisMsgArgs.size();
-                    m_redisFieldsInMsgsRatio = (CORE::UInt32) m_redisMsgArgs.size();
+                    m_redisFieldsInMsgsTransmitted += (CORE::UInt32) kvPairs.size();
+                    m_redisFieldsInMsgsRatio = (CORE::UInt32) kvPairs.size();
                     break;
                 }
                 default:
@@ -427,7 +429,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
                     ++m_redisErrorReplies;
 
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending message with " +
-                        CORE::ToString( m_redisMsgArgs.size() ) + " fields. Error=" + CORE::ToString( reply.str ) );
+                        CORE::ToString( kvPairs.size() ) + " fields. Error=" + CORE::ToString( reply.str ) );
                     break;
                 }
             }

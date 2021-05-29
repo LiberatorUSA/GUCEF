@@ -598,10 +598,10 @@ CLogManager::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogManager::Lock( void ) const
-{GUCEF_TRACE;
+CLogManager::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;       
 
-    return m_dataLock.Lock();
+    return m_dataLock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -55,6 +55,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CDateTime CDateTime::Empty;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -100,7 +108,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         {
             ::TIME_ZONE_INFORMATION tz;
             memset( &tz, 0, sizeof( tz ) );
-            tz.Bias = datetime.GeTimeZoneUTCOffsetInMins();
+            tz.Bias = datetime.GetTimeZoneUTCOffsetInMins();
 
             ::SYSTEMTIME utcTime;
             ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
@@ -137,7 +145,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
 
         ::TIME_ZONE_INFORMATION tz;
         memset( &tz, 0, sizeof( tz ) );
-        tz.Bias = datetime.GeTimeZoneUTCOffsetInMins();
+        tz.Bias = datetime.GetTimeZoneUTCOffsetInMins();
 
         ::SYSTEMTIME utcTime;
         ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
@@ -627,7 +635,7 @@ CDateTime::operator!=( const CDateTime& other ) const
 /*-------------------------------------------------------------------------*/
 
 Int16
-CDateTime::GeTimeZoneUTCOffsetInMins( void ) const
+CDateTime::GetTimeZoneUTCOffsetInMins( void ) const
 {GUCEF_TRACE;
 
     return m_timezoneOffsetInMins;
@@ -660,6 +668,15 @@ CDateTime::GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) cons
 {GUCEF_TRACE;
 
     return COSDateTimeUtils::GetTimeDifferenceInMillisecondsFromAtowardsB( *this, other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int64
+CDateTime::GetTimeDifferenceInMillisecondsToNow( void ) const
+{GUCEF_TRACE;
+
+    return COSDateTimeUtils::GetTimeDifferenceInMillisecondsFromAtowardsB( *this, CDateTime::NowUTCDateTime() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -869,6 +886,12 @@ Int32
 CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
+    if ( target.GetAutoEnlarge() && target.GetRemainingBufferSize( targetBufferOffset ) < 25 )
+    {
+        if ( !target.SetBufferSize( target.GetBufferSize() + 25 ) )
+            return -1;
+    }
+    
     return ToIso8601DateTimeString( target.GetBufferPtr( targetBufferOffset )           , 
                                     target.GetRemainingBufferSize( targetBufferOffset ) ,
                                     includeDelimeters                                   ,

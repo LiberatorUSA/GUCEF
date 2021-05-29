@@ -314,10 +314,10 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
 /*-------------------------------------------------------------------------*/
 
 bool
-CLoggingTask::Lock( void ) const
+CLoggingTask::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mailbox.DoLock();
+    return m_mailbox.DoLock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

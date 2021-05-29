@@ -136,7 +136,7 @@ CFileURLHandler::IsActive( const CURL& url ) const
 /*-------------------------------------------------------------------------*/
                          
 bool
-CFileURLHandler::Lock( void ) const
+CFileURLHandler::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
     return false;

@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CVARIANTBINARYSERIALIZER_H
 #endif /* GUCEF_CORE_CVARIANTBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
 
 /*-------------------------------------------------------------------------//
@@ -52,6 +57,49 @@ CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
     , msgKeyValuePairsIncluded( true )
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubMsgBinarySerializerOptions::~CPubSubMsgBinarySerializerOptions()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgBinarySerializerOptions::SaveConfig( CORE::CDataNode& config ) const
+{GUCEF_TRACE;
+
+    config.SetAttribute( "msgIdIncluded", msgIdIncluded );
+    config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded );
+    config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded );
+    config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgBinarySerializerOptions::LoadConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded );
+    msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded );
+    msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded );
+    msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubMsgBinarySerializerOptions::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::CORE::CPubSubMsgBinarySerializerOptions";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

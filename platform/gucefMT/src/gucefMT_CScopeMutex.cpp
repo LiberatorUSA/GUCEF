@@ -59,7 +59,8 @@ CScopeMutex::CScopeMutex( const CMutex& mutex )
 
 CScopeMutex::~CScopeMutex()
 {
-    m_isLocked = !m_mutex->Unlock();
+    if ( m_isLocked )
+        m_isLocked = !m_mutex->Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -68,6 +69,19 @@ bool
 CScopeMutex::IsLocked( void ) const
 {
     return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CScopeMutex::EarlyUnlock( void )
+{
+    if ( m_isLocked )
+    {
+        m_isLocked = !m_mutex->Unlock();
+        return !m_isLocked;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

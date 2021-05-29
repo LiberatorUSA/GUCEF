@@ -54,7 +54,7 @@ CNoLock::~CNoLock()
 /*--------------------------------------------------------------------------*/
 
 bool
-CNoLock::Lock( void ) const
+CNoLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 {
     return false;
 }

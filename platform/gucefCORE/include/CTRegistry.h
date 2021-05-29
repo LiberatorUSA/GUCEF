@@ -130,7 +130,7 @@ class CTRegistry : public MT::CILockable
 
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -380,7 +380,7 @@ CTRegistry< T, LockType >::GetList( TStringList& destList ) const
 
 template< class T, class LockType >
 bool
-CTRegistry< T, LockType >::Lock( void ) const
+CTRegistry< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
     return false;

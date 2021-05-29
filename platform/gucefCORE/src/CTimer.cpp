@@ -406,7 +406,7 @@ CTimer::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
                          
 bool
-CTimer::Lock( void ) const
+CTimer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
     return false;

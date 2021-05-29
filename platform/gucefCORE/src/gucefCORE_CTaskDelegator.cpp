@@ -402,10 +402,10 @@ CTaskDelegator::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskDelegator::Lock( void ) const
+CTaskDelegator::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CActiveObject::Lock();
+    return MT::CActiveObject::Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

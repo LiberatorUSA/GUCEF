@@ -244,12 +244,12 @@ CTaskConsumer::OnTaskEnding( CICloneable* taskdata ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskConsumer::Lock( void ) const
+CTaskConsumer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_delegator )
     {
-        return m_delegator->Lock();    
+        return m_delegator->Lock( lockWaitTimeoutInMs );    
     }
     return false;
 }

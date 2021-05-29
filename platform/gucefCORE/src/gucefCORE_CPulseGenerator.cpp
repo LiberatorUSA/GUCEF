@@ -481,10 +481,10 @@ CPulseGenerator::RequestPeriodicPulses( void )
 /*--------------------------------------------------------------------------*/
 
 bool
-CPulseGenerator::Lock( void ) const
+CPulseGenerator::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mutex.Lock();
+    return m_mutex.Lock( lockWaitTimeoutInMs );
 }
 
 /*--------------------------------------------------------------------------*/

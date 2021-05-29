@@ -311,7 +311,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
      */
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
@@ -915,14 +915,14 @@ CTBasicSharedPtr< T, LockType >::AsLockable( void ) const
 
 template< typename T, class LockType >
 bool
-CTBasicSharedPtr< T, LockType >::Lock( void ) const
+CTBasicSharedPtr< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
-
+                                                 
     if ( GUCEF_NULL == m_shared )
     {
         m_shared = new TBasicSharedPtrSharedData< LockType >();
     }
-    return m_shared->m_lock.Lock();
+    return m_shared->m_lock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -141,7 +141,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

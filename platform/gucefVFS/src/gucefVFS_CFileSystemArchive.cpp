@@ -241,6 +241,8 @@ CFileSystemArchive::StoreAsFile( const CORE::CString& filePath    ,
 {GUCEF_TRACE;
 
     CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString dir = CORE::StripFilename( path );
+    CORE::CreateDirs( dir );
     return data.WriteContentToFile( path, offset, overwrite );    
 }
 

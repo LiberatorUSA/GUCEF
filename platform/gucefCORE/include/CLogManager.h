@@ -182,7 +182,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 
     protected:
     
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

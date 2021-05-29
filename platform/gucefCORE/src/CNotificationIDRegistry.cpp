@@ -256,7 +256,7 @@ CNotificationIDRegistry::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotificationIDRegistry::Lock( void ) const
+CNotificationIDRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     return m_dataLock.Lock();

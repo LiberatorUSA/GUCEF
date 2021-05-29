@@ -99,7 +99,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *      In case of failure it returns imediatly and the return value
      *      will be false. In such a case the lock should no longer be used.
      */
-    bool WriterStart( void ) const;
+    bool WriterStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     /**
      *      Use when a writer task finished using data/code that is
@@ -121,7 +121,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *      In case of failure it returns imediatly and the return value
      *      will be false. In such a case the lock should no longer be used.
      */
-    bool ReaderStart( void ) const;
+    bool ReaderStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     /**
      *      Use when a reader task finished using data/code that is
@@ -152,7 +152,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
      */
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
@@ -165,7 +165,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyLock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 

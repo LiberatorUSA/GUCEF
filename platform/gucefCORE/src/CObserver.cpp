@@ -246,7 +246,7 @@ CObserver::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CObserver::Lock( void ) const
+CObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes

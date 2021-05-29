@@ -256,7 +256,7 @@ CObservingNotifier::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CObservingNotifier::Lock( void ) const
+CObservingNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
     // Dummy to avoid mandatory implementation by decending class

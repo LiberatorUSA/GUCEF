@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
 #include "gucefCOMCORE_CIPubSubMsg.h"
 #define GUCEF_COMCORE_CIPUBSUBMSG_H
@@ -58,11 +63,19 @@ namespace COMCORE {
 /**
  *  Options for the basic serializer for generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions
+class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::CIConfigurable
 {
     public:
 
     CPubSubMsgBinarySerializerOptions( void );
+
+    virtual ~CPubSubMsgBinarySerializerOptions();
+
+    virtual bool SaveConfig( CORE::CDataNode& config ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& config ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool msgIdIncluded;
     bool msgDateTimeIncluded;

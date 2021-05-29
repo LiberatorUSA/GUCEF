@@ -97,6 +97,11 @@
 
 /*-------------------------------------------------------------------------*/
 
+#define GUCEF_MT_INFINITE_LOCK_TIMEOUT          GUCEF_MT_UINT32MAX
+#define GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS     GUCEF_MT_INFINITE_LOCK_TIMEOUT
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_MT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//

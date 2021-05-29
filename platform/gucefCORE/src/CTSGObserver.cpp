@@ -124,12 +124,12 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTSGObserver::Lock( void ) const
+CTSGObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_parentNotifier )
     {
-        return m_parentNotifier->Lock();
+        return m_parentNotifier->Lock( lockWaitTimeoutInMs );
     }
     return false;
 }

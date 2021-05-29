@@ -126,7 +126,7 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
     
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -316,10 +316,10 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterA
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 bool
-CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Lock( void ) const
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_lock.Lock();
+    return m_lock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

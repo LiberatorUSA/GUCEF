@@ -153,7 +153,7 @@ class CTMailBox : public virtual MT::CILockable
 
     UInt32 AmountOfMail( void ) const;
 
-    bool DoLock( void ) const;
+    bool DoLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     bool DoUnlock( void ) const;
 
@@ -171,7 +171,7 @@ class CTMailBox : public virtual MT::CILockable
 
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -428,9 +428,9 @@ CTMailBox< T >::AsLockable( void ) const
 
 template< typename T >
 bool
-CTMailBox< T >::Lock( void ) const
+CTMailBox< T >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {
-    return m_datalock.Lock();
+    return m_datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -446,9 +446,9 @@ CTMailBox< T >::Unlock( void ) const
 
 template< typename T >
 bool
-CTMailBox< T >::DoLock( void ) const
+CTMailBox< T >::DoLock( UInt32 lockWaitTimeoutInMs ) const
 {
-    return Lock();
+    return Lock( lockWaitTimeoutInMs );
 }
 
 /*--------------------------------------------------------------------------*/

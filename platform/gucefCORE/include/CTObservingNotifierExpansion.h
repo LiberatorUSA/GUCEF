@@ -154,7 +154,7 @@ class CTObservingNotifierExpansion : public BaseClass  ,
                               
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -329,7 +329,7 @@ CTObservingNotifierExpansion< BaseClass >::AsLockable( void ) const
 
 template< class BaseClass >
 bool
-CTObservingNotifierExpansion< BaseClass >::Lock( void ) const
+CTObservingNotifierExpansion< BaseClass >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     /* implemented to avoid mandatory implementation by descending classes */

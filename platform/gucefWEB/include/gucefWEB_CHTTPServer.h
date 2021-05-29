@@ -155,7 +155,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
                             const CORE::CDynamicBuffer& response ,
                             const COMCORE::CIPAddress& remoteIP  );
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     

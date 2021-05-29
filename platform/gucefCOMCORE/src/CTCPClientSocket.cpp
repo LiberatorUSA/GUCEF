@@ -985,10 +985,10 @@ CTCPClientSocket::Send( const void* data ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::Lock( void ) const
+CTCPClientSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return datalock.Lock();
+    return datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

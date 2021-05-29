@@ -406,9 +406,9 @@ CActiveObject::SetCpuAffinityByCpuId( UInt32 cpuId )
 /*-------------------------------------------------------------------------*/
 
 bool
-CActiveObject::Lock( void ) const
+CActiveObject::Lock( UInt32 lockWaitTimeoutInMs ) const
 {
-    return m_datalock.Lock();
+    return m_datalock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/

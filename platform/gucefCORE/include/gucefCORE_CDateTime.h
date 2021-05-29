@@ -70,6 +70,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 {
     public:
 
+    static const CDateTime Empty;
+
     static CDateTime NowLocalDateTime( void );
 
     static CDateTime NowUTCDateTime( void );
@@ -78,7 +80,7 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     static CDateTime WindowsNTEpochDateTime( void );
 
-    Int16 GeTimeZoneUTCOffsetInMins( void ) const;
+    Int16 GetTimeZoneUTCOffsetInMins( void ) const;
 
     bool IsUTC( void ) const;
 
@@ -89,6 +91,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     CTime GetTime( void ) const;
 
     Int64 GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) const;
+
+    Int64 GetTimeDifferenceInMillisecondsToNow( void ) const;
 
     CDateTime& operator=( const CDateTime& src );
 
