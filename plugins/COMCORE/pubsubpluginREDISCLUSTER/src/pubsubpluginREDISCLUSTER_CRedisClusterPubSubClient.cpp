@@ -592,6 +592,10 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
             // Communicate all the messages received via an event notification
             if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return false;
+
+            m_redisReadMsgs.clear();
+            m_pubsubMsgsRefs.GetData().clear();
+            m_pubsubMsgAttribs.clear();
         }
         return true;
     }
