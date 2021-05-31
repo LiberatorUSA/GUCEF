@@ -36,10 +36,15 @@
 #define GUCEF_CORE_CTFACTORY_H
 #endif /* GUCEF_CORE_CTFACTORY_H ? */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#include "gucefVFS_CIArchive.h"
-#define GUCEF_VFS_CIARCHIVE_H
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#ifndef GUCEF_VFS_CARCHIVE_H
+#include "gucefVFS_CArchive.h"
+#define GUCEF_VFS_CARCHIVE_H
+#endif /* GUCEF_VFS_CARCHIVE_H ? */
+
+#ifndef GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
+#include "gucefCORE_CFileSystemDirectoryWatcher.h"
+#define GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
+#endif /* GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +61,7 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
+class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
 {
     public:
     
@@ -112,8 +117,30 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     virtual void DestroyObject( CVFSHandle* sharedPointer ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsDirectoryWatchingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool AddDirToWatch( const CString& dirToWatch       ,
+                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
     
     const CString& GetRootDir( void ) const;
+
+    protected:
+
+    /**
+     *  Event callback member function.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventId               ,
+                           CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
     private:
 
@@ -140,11 +167,12 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     CString m_rootDir;
     CString m_archiveName;
     bool m_writable;
+    CORE::CFileSystemDirectoryWatcher m_fsWatcher;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CIArchive, CFileSystemArchive > TFileSystemArchiveFactory;
+typedef CORE::CTFactory< VFS::CArchive, CFileSystemArchive > TFileSystemArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

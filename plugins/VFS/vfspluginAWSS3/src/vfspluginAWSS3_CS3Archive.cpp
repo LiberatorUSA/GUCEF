@@ -91,8 +91,7 @@ namespace AWSS3 {
 //-------------------------------------------------------------------------*/
 
 CS3Archive::CS3Archive( void )
-    : CORE::CObservingNotifier()
-    , CIArchive()
+    : CArchive()
     , m_bucketList()
     , m_archiveName()
     , m_autoMountBuckets( false )
@@ -124,7 +123,7 @@ CS3Archive::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CIArchive::CVFSHandlePtr
+VFS::CArchive::CVFSHandlePtr
 CS3Archive::GetFile( const VFS::CString& file      ,
                      const char* mode              ,
                      const VFS::UInt32 memLoadSize ,

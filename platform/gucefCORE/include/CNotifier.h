@@ -51,6 +51,11 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
+#ifndef GUCEF_CORE_CINOTIFIER_H
+#include "gucefCORE_CINotifier.h"
+#define GUCEF_CORE_CINOTIFIER_H
+#endif /* GUCEF_CORE_CINOTIFIER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -78,12 +83,12 @@ class CNotifierImplementor;
  *  are unique simply because your namespace::class::event combination is unique in
  *  C++ as well.
  *
- *  Note that this class automatically registers four notification events
+ *  Note that the base class automatically registers four notification events
  *  if they are not already registered. These are:
- *      - "GUCEF::CORE::CNotifier::SubscribeEvent"
- *      - "GUCEF::CORE::CNotifier::UnsubscribeEvent"
- *      - "GUCEF::CORE::CNotifier::ModifyEvent"
- *      - "GUCEF::CORE::CNotifier::DestructionEvent"
+ *      - "GUCEF::CORE::CINotifier::SubscribeEvent"
+ *      - "GUCEF::CORE::CINotifier::UnsubscribeEvent"
+ *      - "GUCEF::CORE::CINotifier::ModifyEvent"
+ *      - "GUCEF::CORE::CINotifier::DestructionEvent"
  *
  *  Note that every observer will be automatically subscribed to
  *  the four standard notification events.
@@ -100,18 +105,8 @@ class CNotifierImplementor;
  *  in invalid memory access. If the notifier has been destroyed you should exit the code
  *  that called the member function without accessing any data members.
  */
-class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual MT::CILockable ,
-                                        public virtual CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual CINotifier
 {
-    public:
-
-    static const CEvent SubscribeEvent;
-    static const CEvent UnsubscribeEvent;
-    static const CEvent ModifyEvent;
-    static const CEvent DestructionEvent;
-
-    static void RegisterEvents( void );
-
     public:
 
     CNotifier( bool registerStdEvents = true );
@@ -127,16 +122,16 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual MT::CILockable ,
      *  notifier events. Every event dispatched by
      *  the notifier will be sent to the observer.
      */
-    void Subscribe( CObserver* observer );
+    virtual void Subscribe( CObserver* observer ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Subscribes the given observer to the four standard
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    void Subscribe( CObserver* observer                        ,
-                    const CEvent& eventid                      ,
-                    CIEventHandlerFunctorBase* callback = NULL );
+    virtual void Subscribe( CObserver* observer                        ,
+                            const CEvent& eventid                      ,
+                            CIEventHandlerFunctorBase* callback = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Detaches the given observer from the notifier.
@@ -144,7 +139,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual MT::CILockable ,
      *  This includes both standard notifier events as well
      *  as custom events.
      */
-    void Unsubscribe( CObserver* observer );
+    virtual void Unsubscribe( CObserver* observer ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Cancels the observer's subscription to the given event.
@@ -152,13 +147,13 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual MT::CILockable ,
      *  Note that subscriptions to the standard notifier events
      *  cannot be cancelled, attempts to do so will be ignored.
      */
-    void Unsubscribe( CObserver* observer   ,
-                      const CEvent& eventid );
+    virtual void Unsubscribe( CObserver* observer   ,
+                              const CEvent& eventid ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Cancels the subscription of all observers subscribed to this notifier
      */
-    void UnsubscribeAllFromNotifier( void );
+    virtual void UnsubscribeAllFromNotifier( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  descending classes should override this with the class name
@@ -183,7 +178,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual MT::CILockable ,
      */
     void ScheduleForDestruction( void );
 
-    UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
+    virtual UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

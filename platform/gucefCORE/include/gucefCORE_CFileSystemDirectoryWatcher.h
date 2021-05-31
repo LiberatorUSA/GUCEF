@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CDIRECTORYWATCHER_H
-#define GUCEF_CORE_CDIRECTORYWATCHER_H
+#ifndef GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
+#define GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,10 +36,10 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#ifndef GUCEF_CORE_CIDIRECTORYWATCHER_H
+#include "gucefCORE_CIDirectoryWatcher.h"
+#define GUCEF_CORE_CIDIRECTORYWATCHER_H
+#endif /* GUCEF_CORE_CIDIRECTORYWATCHER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,83 +60,29 @@ class OSSpecificDirectoryWatcher;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CFileSystemDirectoryWatcher : public CObservingNotifier ,
+                                                          public CIDirectoryWatcher
 {
     public:
 
-    static const CEvent StartedWatchingDirectoryEvent;
-    static const CEvent StoppedWatchingDirectoryEvent;
+    virtual bool AddDirToWatch( const CString& dirToWatch       ,
+                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
 
-    typedef TCloneableString TStartedWatchingDirectoryEventData;
-    typedef TCloneableString TStoppedWatchingDirectoryEventData;
+    virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 
-    static const CEvent FileCreatedEvent;
-    static const CEvent FileModifiedEvent;
-    static const CEvent FileRenamedEvent;
-    static const CEvent FileDeletedEvent;
+    virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    typedef TCloneableString TFileCreatedEventData;
-    typedef TCloneableString TFileModifiedEventData;
-    typedef TCloneableString TFileDeletedEventData;
-    struct SFileRenamedEventInfo
-    {
-        CString oldFilename;
-        CString newFilename;
-    };
-    typedef CTCloneableObj< struct SFileRenamedEventInfo > TFileRenamedEventData;
+    CFileSystemDirectoryWatcher( void );
 
-    static const CEvent DirCreatedEvent;
-    static const CEvent DirModifiedEvent;
-    static const CEvent DirRenamedEvent;
-    static const CEvent DirDeletedEvent;
+    CFileSystemDirectoryWatcher( CPulseGenerator& pulseGenerator );
 
-    typedef TCloneableString TDirCreatedEventData;
-    typedef TCloneableString TDirModifiedEventData;
-    typedef TCloneableString TDirDeletedEventData;
-    struct SDirRenamedEventInfo
-    {
-        CString oldDirName;
-        CString newDirName;
-    };
-    typedef CTCloneableObj< struct SDirRenamedEventInfo > TDirRenamedEventData;
+    CFileSystemDirectoryWatcher( const CFileSystemDirectoryWatcher& src );
 
-    static void RegisterEvents( void );
+    virtual ~CFileSystemDirectoryWatcher();
 
-    class GUCEF_CORE_PUBLIC_CPP CDirWatchOptions
-    {
-        public:
+    CFileSystemDirectoryWatcher& operator=( const CFileSystemDirectoryWatcher& src );
 
-        bool watchSubTree;
-        bool watchForFileCreation;
-        bool watchForFileDeletion;
-        bool watchForFileRenames;
-        bool watchForFileModifications;
-        bool watchForDirCreation;
-        bool watchForDirDeletion;
-        bool watchForDirRenames;
-        bool watchForDirModifications;
-
-        CDirWatchOptions( void );
-        CDirWatchOptions( const CDirWatchOptions& src );
-        CDirWatchOptions& operator=( const CDirWatchOptions& src );
-    };
-
-    bool AddDirToWatch( const CString& dirToWatch       ,
-                        const CDirWatchOptions& options );
-
-    bool RemoveDirToWatch( const CString& dirToWatch );
-
-    bool RemoveAllWatches( void );
-
-    CDirectoryWatcher( void );
-
-    CDirectoryWatcher( CPulseGenerator& pulseGenerator );
-
-    CDirectoryWatcher( const CDirectoryWatcher& src );
-
-    virtual ~CDirectoryWatcher();
-
-    CDirectoryWatcher& operator=( const CDirectoryWatcher& src );
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class OSSpecificDirectoryWatcher;
@@ -155,4 +101,4 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CDIRECTORYWATCHER_H ? */
+#endif /* GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H ? */

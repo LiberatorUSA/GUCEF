@@ -85,7 +85,7 @@ const VFS::CString CResArchive::ResArchiveTypeName = "res";
 //-------------------------------------------------------------------------*/
 
 CResArchive::CResArchive( void )
-    : CIArchive()       ,
+    : CArchive()        ,
       m_archiveName()   ,
       m_archivePath()   ,
       m_resPath()       ,
@@ -105,7 +105,7 @@ CResArchive::~CResArchive()
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CIArchive::CVFSHandlePtr
+VFS::CArchive::CVFSHandlePtr
 CResArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,

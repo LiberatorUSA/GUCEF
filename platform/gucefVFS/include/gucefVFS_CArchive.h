@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#define GUCEF_VFS_CIARCHIVE_H
+#ifndef GUCEF_VFS_CARCHIVE_H
+#define GUCEF_VFS_CARCHIVE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,6 +43,16 @@
 #include "gucefCORE_CDateTime.h"
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
+
+#ifndef GUCEF_CORE_CIDIRECTORYWATCHER_H
+#include "gucefCORE_CIDirectoryWatcher.h"
+#define GUCEF_CORE_CIDIRECTORYWATCHER_H
+#endif /* GUCEF_CORE_CIDIRECTORYWATCHER_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_VFS_CVFSHANDLE_H
 #include "gucefVFS_CVFSHandle.h"     /* handle for VFS ref counted recources */
@@ -69,7 +79,18 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVFSHandle >
+/**
+ *  Base class abstraction for all types of archives that can be mounted into the VFS
+ *  An archive is simply a type of file system container which may or may not support
+ *  all the features of the local O/S filesystem and it may or may not be abstracting away
+ *  complexity that would normally prevent the "archive" from otherwise being thought of 
+ *  and used as a local filesystem.
+ *  One possible example is a remote archive like cloud storage.
+ *  Another example is a zip archive, another is a ISO disc image.
+ */
+class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier                    ,
+                                      public CORE::CIDirectoryWatcher                    ,
+                                      public CORE::CTDynamicDestructorBase< CVFSHandle >
 {
     public:
 
@@ -77,13 +98,13 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     typedef std::vector< CString >                              TStringList;
     typedef std::set< CString >                                 TStringSet;
     
-    CIArchive( void );
+    CArchive( void );
     
-    CIArchive( const CIArchive& src );
+    CArchive( const CArchive& src );
     
-    virtual ~CIArchive();
+    virtual ~CArchive();
     
-    CIArchive& operator=( const CIArchive& src );
+    CArchive& operator=( const CArchive& src );
     
     virtual CVFSHandlePtr GetFile( const CString& file          ,
                                    const char* mode = "rb"      ,
@@ -127,6 +148,20 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     virtual bool UnloadArchive( void ) = 0;
     
     virtual const CString& GetType( void ) const = 0;
+
+    virtual bool IsDirectoryWatchingSupported( void ) const;
+
+    /**
+     *  Configures the archive to emit DirectoryWatcher events if the given condition occurs
+     *  Not that this is not a mandatory feature for archives to support and the default implementation
+     *  will always return false to the request.
+     */
+    virtual bool AddDirToWatch( const CString& dirToWatch       ,
+                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -140,7 +175,7 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#endif /* GUCEF_VFS_CARCHIVE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -64,7 +64,7 @@ namespace ZIP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CZIPArchive : public VFS::CIArchive
+class CZIPArchive : public VFS::CArchive
 {
     public:
     

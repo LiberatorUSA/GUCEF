@@ -33,7 +33,7 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#include "gucefCORE_CDirectoryWatcher.h"
+#include "gucefCORE_CFileSystemDirectoryWatcher.h"
 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
@@ -64,23 +64,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CDirectoryWatcher::StartedWatchingDirectoryEvent       = "GUCEF::CORE::CDirectoryWatcher::StartedWatchingDirectoryEvent";
-const CEvent CDirectoryWatcher::StoppedWatchingDirectoryEvent       = "GUCEF::CORE::CDirectoryWatcher::StoppedWatchingDirectoryEvent";
-const CEvent CDirectoryWatcher::FileCreatedEvent                    = "GUCEF::CORE::CDirectoryWatcher::FileCreatedEvent";
-const CEvent CDirectoryWatcher::FileModifiedEvent                   = "GUCEF::CORE::CDirectoryWatcher::FileModifiedEvent";
-const CEvent CDirectoryWatcher::FileRenamedEvent                    = "GUCEF::CORE::CDirectoryWatcher::FileRenamedEvent";
-const CEvent CDirectoryWatcher::FileDeletedEvent                    = "GUCEF::CORE::CDirectoryWatcher::FileDeletedEvent";
-const CEvent CDirectoryWatcher::DirCreatedEvent                     = "GUCEF::CORE::CDirectoryWatcher::DirCreatedEvent";
-const CEvent CDirectoryWatcher::DirModifiedEvent                    = "GUCEF::CORE::CDirectoryWatcher::DirModifiedEvent";
-const CEvent CDirectoryWatcher::DirRenamedEvent                     = "GUCEF::CORE::CDirectoryWatcher::DirRenamedEvent";
-const CEvent CDirectoryWatcher::DirDeletedEvent                     = "GUCEF::CORE::CDirectoryWatcher::DirDeletedEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -94,7 +77,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     public:
 
     typedef CTEventHandlerFunctor< OSSpecificDirectoryWatcher > TEventCallback;
-    typedef CDirectoryWatcher::CDirWatchOptions CDirWatchOptions;
+    typedef CIDirectoryWatcher::CDirWatchOptions CDirWatchOptions;
 
 
     class GUCEF_HIDDEN OverlappedIOCallbackObj
@@ -140,7 +123,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     typedef std::map< std::wstring, OverlappedIOCallbackObj > OverlappedIOCallbackObjMap;
 
     CTimer m_osPollingTimer;
-    CDirectoryWatcher* m_wrapper;
+    CFileSystemDirectoryWatcher* m_wrapper;
     OverlappedIOCallbackObjMap m_dirsToWatch;
 
     DWORD OptionsToNotifyFilter( const CDirWatchOptions& options ) const
@@ -309,8 +292,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_ADDED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileCreation )
                         {
-                            CDirectoryWatcher::TFileCreatedEventData eData( utf8Filename );
-                            if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileCreatedEvent, &eData ) ) return;
+                            CIDirectoryWatcher::TFileCreatedEventData eData( utf8Filename );
+                            if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileCreatedEvent, &eData ) ) return;
                         }
                         break;
                     }
@@ -319,8 +302,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_REMOVED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileDeletion )
                         {
-                            CDirectoryWatcher::TFileDeletedEventData eData( utf8Filename );
-                            if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileDeletedEvent, &eData ) ) return;
+                            CIDirectoryWatcher::TFileDeletedEventData eData( utf8Filename );
+                            if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileDeletedEvent, &eData ) ) return;
                         }
                         break;
                     }
@@ -329,8 +312,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_MODIFIED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileModifications )
                         {
-                            CDirectoryWatcher::TFileModifiedEventData eData( utf8Filename );
-                            if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileModifiedEvent, &eData ) ) return;
+                            CIDirectoryWatcher::TFileModifiedEventData eData( utf8Filename );
+                            if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileModifiedEvent, &eData ) ) return;
                         }
                         break;
                     }
@@ -348,9 +331,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_RENAMED_NEW_NAME for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileRenames )
                         {
-                            struct CDirectoryWatcher::SFileRenamedEventInfo info = { utf8OldFilenameBeforeRename, utf8Filename };
-                            CDirectoryWatcher::TFileRenamedEventData eData( info );
-                            if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileRenamedEvent, &eData ) ) return;
+                            struct CIDirectoryWatcher::SFileRenamedEventInfo info = { utf8OldFilenameBeforeRename, utf8Filename };
+                            CIDirectoryWatcher::TFileRenamedEventData eData( info );
+                            if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileRenamedEvent, &eData ) ) return;
                             utf8OldFilenameBeforeRename.clear();
                         }
                         break;
@@ -411,7 +394,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         }
     }
 
-    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper )
+    OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper )
         : m_osPollingTimer()
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -420,8 +403,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         RegisterEventHandlers();
     }
 
-    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper      ,
-                                CPulseGenerator& pulseGenerator )
+    OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper ,
+                                CPulseGenerator& pulseGenerator      )
         : m_osPollingTimer( pulseGenerator )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -431,7 +414,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     }
 
     OSSpecificDirectoryWatcher( const OSSpecificDirectoryWatcher& src ,
-                                CDirectoryWatcher* wrapper            )
+                                CFileSystemDirectoryWatcher* wrapper  )
         : m_osPollingTimer( src.m_osPollingTimer )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -468,7 +451,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     public:
 
     typedef CTEventHandlerFunctor< OSSpecificDirectoryWatcher > TEventCallback;
-    typedef CDirectoryWatcher::CDirWatchOptions CDirWatchOptions;
+    typedef CIDirectoryWatcher::CDirWatchOptions CDirWatchOptions;
 
     class GUCEF_HIDDEN WatchEntry
     {
@@ -507,7 +490,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     typedef std::map< UInt32, WatchCookieEntry > TWatchCookieEntryMap;
 
     CTimer m_osPollingTimer;
-    CDirectoryWatcher* m_wrapper;
+    CFileSystemDirectoryWatcher* m_wrapper;
     TWatchEntryMap m_dirsToWatch;
     TWatchDescriptorMap m_wdLookupMap;
     TWatchCookieEntryMap m_watchCookieMap;
@@ -705,8 +688,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForDirCreation )
                             {
-                                CDirectoryWatcher::TDirCreatedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::DirCreatedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TDirCreatedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::DirCreatedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -716,8 +699,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForDirDeletion )
                             {
-                                CDirectoryWatcher::TDirDeletedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::DirDeletedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TDirDeletedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::DirDeletedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -727,8 +710,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForDirModifications )
                             {
-                                CDirectoryWatcher::TDirModifiedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::DirModifiedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TDirModifiedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::DirModifiedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -753,12 +736,12 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                 TWatchCookieEntryMap::iterator k = m_watchCookieMap.find( event->cookie );
                                 if ( k != m_watchCookieMap.end() )
                                 {
-                                    CDirectoryWatcher::TDirRenamedEventData eData;
+                                    CIDirectoryWatcher::TDirRenamedEventData eData;
                                     eData.GetData().oldDirName = ToString( (*k).second.m_eventItemName );
                                     eData.GetData().newDirName = ToString( utf8Name );
 
                                     m_watchCookieMap.erase( k );
-                                    if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::DirRenamedEvent, &eData ) ) return;
+                                    if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::DirRenamedEvent, &eData ) ) return;
                                 }
                             }
                         }
@@ -771,8 +754,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForFileCreation )
                             {
-                                CDirectoryWatcher::TFileCreatedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileCreatedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TFileCreatedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileCreatedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -782,8 +765,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForFileDeletion )
                             {
-                                CDirectoryWatcher::TFileDeletedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileDeletedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TFileDeletedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileDeletedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -793,8 +776,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
                             if ( watchObj.m_options.watchForFileModifications )
                             {
-                                CDirectoryWatcher::TFileModifiedEventData eData( utf8Name );
-                                if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileModifiedEvent, &eData ) ) return;
+                                CIDirectoryWatcher::TFileModifiedEventData eData( utf8Name );
+                                if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileModifiedEvent, &eData ) ) return;
                             }
                         }
                         else
@@ -819,12 +802,12 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                 TWatchCookieEntryMap::iterator k = m_watchCookieMap.find( event->cookie );
                                 if ( k != m_watchCookieMap.end() )
                                 {
-                                    CDirectoryWatcher::TFileRenamedEventData eData;
+                                    CIDirectoryWatcher::TFileRenamedEventData eData;
                                     eData.GetData().oldFilename = ToString( (*k).second.m_eventItemName );
                                     eData.GetData().newFilename = ToString( utf8Name );
 
                                     m_watchCookieMap.erase( k );
-                                    if ( !m_wrapper->NotifyObservers( CDirectoryWatcher::FileRenamedEvent, &eData ) ) return;
+                                    if ( !m_wrapper->NotifyObservers( CIDirectoryWatcher::FileRenamedEvent, &eData ) ) return;
                                 }
                             }
                         }
@@ -863,7 +846,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         return true;
     }
 
-    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper )
+    OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper )
         : m_osPollingTimer()
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -875,8 +858,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         Init();
     }
 
-    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper      ,
-                                CPulseGenerator& pulseGenerator )
+    OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper ,
+                                CPulseGenerator& pulseGenerator      )
         : m_osPollingTimer( pulseGenerator )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -889,7 +872,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     }
 
     OSSpecificDirectoryWatcher( const OSSpecificDirectoryWatcher& src ,
-                                CDirectoryWatcher* wrapper            )
+                                CFileSystemDirectoryWatcher* wrapper  )
         : m_osPollingTimer( src.m_osPollingTimer )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -981,80 +964,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( void )
-    : watchSubTree( false )
-    , watchForFileCreation( true )
-    , watchForFileDeletion( true )
-    , watchForFileRenames( true )
-    , watchForFileModifications( true )
-    , watchForDirCreation( true )
-    , watchForDirDeletion( true )
-    , watchForDirRenames( true )
-    , watchForDirModifications( true )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( const CDirectoryWatcher::CDirWatchOptions& src )
-    : watchSubTree( src.watchSubTree )
-    , watchForFileCreation( src.watchForFileCreation )
-    , watchForFileDeletion( src.watchForFileDeletion )
-    , watchForFileRenames( src.watchForFileRenames )
-    , watchForFileModifications( src.watchForFileModifications )
-    , watchForDirCreation( src.watchForDirCreation )
-    , watchForDirDeletion( src.watchForDirDeletion )
-    , watchForDirRenames( src.watchForDirRenames )
-    , watchForDirModifications( src.watchForDirModifications )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDirectoryWatcher::CDirWatchOptions&
-CDirectoryWatcher::CDirWatchOptions::operator=( const CDirectoryWatcher::CDirWatchOptions& src )
-{GUCEF_TRACE;
-
-    if ( this != &src )
-    {
-        watchSubTree = src.watchSubTree;
-        watchForFileCreation = src.watchForFileCreation;
-        watchForFileDeletion = src.watchForFileDeletion;
-        watchForFileRenames = src.watchForFileRenames;
-        watchForFileModifications = src.watchForFileModifications;
-        watchForDirCreation = src.watchForDirCreation;
-        watchForDirDeletion = src.watchForDirDeletion;
-        watchForDirRenames = src.watchForDirRenames;
-        watchForDirModifications = src.watchForDirModifications;
-    }
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDirectoryWatcher::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    StartedWatchingDirectoryEvent.Initialize();
-    StoppedWatchingDirectoryEvent.Initialize();
-    FileCreatedEvent.Initialize();
-    FileModifiedEvent.Initialize();
-    FileRenamedEvent.Initialize();
-    FileDeletedEvent.Initialize();
-    DirCreatedEvent.Initialize();
-    DirModifiedEvent.Initialize();
-    DirRenamedEvent.Initialize();
-    DirDeletedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
-CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
-                                  const CDirWatchOptions& options )
+CFileSystemDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
+                                            const CDirWatchOptions& options )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
@@ -1062,7 +974,7 @@ CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
         if ( m_osSpecificImpl->AddDirToWatch( dirToWatch, options ) )
         {
             TStartedWatchingDirectoryEventData eData( dirToWatch );
-            NotifyObservers( CDirectoryWatcher::StartedWatchingDirectoryEvent, &eData );
+            NotifyObservers( StartedWatchingDirectoryEvent, &eData );
             return true;
         }
         return false;
@@ -1074,7 +986,7 @@ CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
+CFileSystemDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
@@ -1082,7 +994,7 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
         if ( m_osSpecificImpl->RemoveDirToWatch( dirToWatch ) )
         {
             TStoppedWatchingDirectoryEventData eData( dirToWatch );
-            NotifyObservers( CDirectoryWatcher::StoppedWatchingDirectoryEvent, &eData );
+            NotifyObservers( StoppedWatchingDirectoryEvent, &eData );
             return true;
         }
         return false;
@@ -1094,7 +1006,7 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 /*-------------------------------------------------------------------------*/
 
 bool
-CDirectoryWatcher::RemoveAllWatches( void )
+CFileSystemDirectoryWatcher::RemoveAllWatches( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
@@ -1105,37 +1017,37 @@ CDirectoryWatcher::RemoveAllWatches( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::CDirectoryWatcher( void )
+CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( void )
     : CObservingNotifier()
+    , CIDirectoryWatcher()
     , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this ) )
 {GUCEF_TRACE;
 
-    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::CDirectoryWatcher( const CDirectoryWatcher& src )
+CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( const CFileSystemDirectoryWatcher& src )
     : CObservingNotifier()
+    , CIDirectoryWatcher( src )
     , m_osSpecificImpl( new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this ) )
 {GUCEF_TRACE;
 
-    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::CDirectoryWatcher( CPulseGenerator& pulseGenerator )
+CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( CPulseGenerator& pulseGenerator )
     : CObservingNotifier()
+    , CIDirectoryWatcher()
     , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this, pulseGenerator ) )
 {GUCEF_TRACE;
 
-    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::~CDirectoryWatcher()
+CFileSystemDirectoryWatcher::~CFileSystemDirectoryWatcher()
 {GUCEF_TRACE;
 
     delete m_osSpecificImpl;
@@ -1144,18 +1056,30 @@ CDirectoryWatcher::~CDirectoryWatcher()
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher&
-CDirectoryWatcher::operator=( const CDirectoryWatcher& src )
+CFileSystemDirectoryWatcher&
+CFileSystemDirectoryWatcher::operator=( const CFileSystemDirectoryWatcher& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
+        CIDirectoryWatcher::operator=( src );
+        
         delete m_osSpecificImpl;
         m_osSpecificImpl = GUCEF_NULL;
 
         m_osSpecificImpl = new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this );
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CFileSystemDirectoryWatcher::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::CORE::CFileSystemDirectoryWatcher";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

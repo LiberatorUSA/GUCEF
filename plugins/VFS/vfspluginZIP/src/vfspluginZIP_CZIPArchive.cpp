@@ -127,7 +127,7 @@ getZzipErrorDescription( zzip_error_t zzipError )
 /*-------------------------------------------------------------------------*/
 
 CZIPArchive::CZIPArchive( void )
-    : CIArchive()       ,
+    : CArchive()        ,
       m_archiveName()   ,
       m_archivePath()   ,
       m_zipRoot( NULL ) ,
@@ -146,7 +146,7 @@ CZIPArchive::~CZIPArchive()
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CIArchive::CVFSHandlePtr
+VFS::CArchive::CVFSHandlePtr
 CZIPArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,

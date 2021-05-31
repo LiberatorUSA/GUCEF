@@ -61,7 +61,7 @@ namespace ITV {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CIArchive, CResArchive > TResArchiveFactory;
+typedef CORE::CTFactory< VFS::CArchive, CResArchive > TResArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

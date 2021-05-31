@@ -87,8 +87,10 @@ CFileSystemArchive::CFileSystemArchive( void )
     , m_rootDir()         
     , m_archiveName() 
     , m_writable( false )
+    , m_fsWatcher()
 {GUCEF_TRACE;
 
+    SubscribeTo( &m_fsWatcher );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -96,12 +98,14 @@ CFileSystemArchive::CFileSystemArchive( void )
 CFileSystemArchive::CFileSystemArchive( const CString& archiveName ,
                                         const CString& rootDir     ,
                                         bool writeable             )
-    : m_diskCacheList()            ,
-      m_rootDir( rootDir )         ,
-      m_archiveName( archiveName ) ,
-      m_writable( writeable )
+    : m_diskCacheList()            
+    , m_rootDir( rootDir )         
+    , m_archiveName( archiveName ) 
+    , m_writable( writeable )
+    , m_fsWatcher()
 {GUCEF_TRACE;
 
+    SubscribeTo( &m_fsWatcher );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -188,7 +192,7 @@ CFileSystemArchive::UnloadArchive( void )
 
 /*-------------------------------------------------------------------------*/
 
-CIArchive::CVFSHandlePtr
+CArchive::CVFSHandlePtr
 CFileSystemArchive::GetFile( const CString& file      ,
                              const char* mode         ,
                              const UInt32 memLoadSize ,
@@ -590,6 +594,62 @@ CFileSystemArchive::GetRootDir( void ) const
 {GUCEF_TRACE;
 
     return m_rootDir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::AddDirToWatch( const CString& dirToWatch       ,
+                                   const CDirWatchOptions& options )
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, dirToWatch.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return m_fsWatcher.AddDirToWatch( path, options );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemArchive::RemoveDirToWatch( const CString& dirToWatch )
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, dirToWatch.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return m_fsWatcher.RemoveDirToWatch( path );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemArchive::RemoveAllWatches( void )
+{GUCEF_TRACE;
+
+    return m_fsWatcher.RemoveAllWatches();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::IsDirectoryWatchingSupported( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CFileSystemArchive::OnNotify( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    // For anything from the file system directory watcher we are merely
+    // activing as a proxy to hide we are just reusing it
+    if ( notifier == &m_fsWatcher )
+    {
+        // Archives are also DirectoryWatcher's so we pretend the event msg came from us
+        NotifyObservers( eventId, eventdata );
+    }
 }
 
 /*-------------------------------------------------------------------------//

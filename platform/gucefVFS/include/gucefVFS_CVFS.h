@@ -56,10 +56,15 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#include "gucefVFS_CIArchive.h"
-#define GUCEF_VFS_CIARCHIVE_H
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#ifndef GUCEF_CORE_CIDIRECTORYWATCHER_H
+#include "gucefCORE_CIDirectoryWatcher.h"
+#define GUCEF_CORE_CIDIRECTORYWATCHER_H
+#endif /* GUCEF_CORE_CIDIRECTORYWATCHER_H ? */
+
+#ifndef GUCEF_VFS_CARCHIVE_H
+#include "gucefVFS_CArchive.h"
+#define GUCEF_VFS_CARCHIVE_H
+#endif /* GUCEF_VFS_CARCHIVE_H ? */
 
 #ifndef GUCEF_VFS_CARCHIVESETTINGS_H
 #include "gucefVFS_CArchiveSettings.h"
@@ -103,17 +108,18 @@ namespace VFS {
  *  The VFS can also be used to make your application use cloud storage without all its specific complexity as if it is a local filesystem
  *  As such using the VFS would be recommended for any application that uses a fair amount of "files"
  */
-class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
+class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier       ,
+                                  public CORE::CIDirectoryWatcher ,
                                   public CORE::CIConfigurable
 {
     public:
     
-    typedef CORE::CTAbstractFactory< CString, CIArchive, MT::CMutex >   TAbstractArchiveFactory;
+    typedef CORE::CTAbstractFactory< CString, CArchive, MT::CMutex >    TAbstractArchiveFactory;
     typedef TAbstractArchiveFactory::TProductPtr                        TArchivePtr;
     typedef TAbstractArchiveFactory::TConcreteFactory                   TArchiveFactory;
-    typedef CIArchive::CVFSHandlePtr                                    CVFSHandlePtr;
-    typedef CIArchive::TStringList                                      TStringList;
-    typedef CIArchive::TStringSet                                       TStringSet;
+    typedef CArchive::CVFSHandlePtr                                     CVFSHandlePtr;
+    typedef CArchive::TStringList                                       TStringList;
+    typedef CArchive::TStringSet                                        TStringSet;
     
     static const CORE::CString FileSystemArchiveTypeName;
     static const CORE::CEvent AsyncVfsOperationCompletedEvent;
@@ -452,6 +458,13 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     void SetMemloadSize( UInt32 bytesize );
     
     UInt32 GetMemloadSize( void ) const;
+
+    virtual bool AddDirToWatch( const CString& dirToWatch       ,
+                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *      Attempts to store the given tree in the file

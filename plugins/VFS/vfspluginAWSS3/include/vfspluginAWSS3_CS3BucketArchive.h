@@ -67,8 +67,7 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_HIDDEN CS3BucketArchive : public CORE::CObservingNotifier ,
-                                      public VFS::CIArchive
+class GUCEF_HIDDEN CS3BucketArchive : public VFS::CArchive
 {
     public:
 

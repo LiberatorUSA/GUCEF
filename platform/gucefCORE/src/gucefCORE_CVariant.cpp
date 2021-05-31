@@ -460,7 +460,7 @@ CVariant::GetTypeId( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CVariant::AsBool( bool defaultIfNeeded ) const
+CVariant::AsBool( bool defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -473,7 +473,10 @@ CVariant::AsBool( bool defaultIfNeeded ) const
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
         {
-            return StringToBool( AsString(), defaultIfNeeded );
+            if ( resolveVarsIfApplicable )
+                return StringToBool( AsString( CString::Empty, resolveVarsIfApplicable ), defaultIfNeeded );
+            else
+                return StringToBool( AsString(), defaultIfNeeded );
         }
 
         default:
@@ -491,7 +494,7 @@ CVariant::AsBool( bool defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Int8
-CVariant::AsInt8( Int8 defaultIfNeeded ) const
+CVariant::AsInt8( Int8 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -507,10 +510,10 @@ CVariant::AsInt8( Int8 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (Int8) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (Int8) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Int8) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToInt8( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToInt8( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Int8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Int8) ( resolveVarsIfApplicable ? StringToInt8( AsString(), defaultIfNeeded ) : StringToInt8( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Int8) ( resolveVarsIfApplicable ? StringToInt8( AsString(), defaultIfNeeded ) : StringToInt8( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -518,7 +521,7 @@ CVariant::AsInt8( Int8 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 UInt8
-CVariant::AsUInt8( UInt8 defaultIfNeeded ) const
+CVariant::AsUInt8( UInt8 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -534,10 +537,10 @@ CVariant::AsUInt8( UInt8 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (UInt8) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (UInt8) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (UInt8) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToUInt8( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToUInt8( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (UInt8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (UInt8) ( resolveVarsIfApplicable ? StringToUInt8( AsString(), defaultIfNeeded ) : StringToUInt8( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (UInt8) ( resolveVarsIfApplicable ? StringToUInt8( AsString(), defaultIfNeeded ) : StringToUInt8( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -545,7 +548,7 @@ CVariant::AsUInt8( UInt8 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Int16
-CVariant::AsInt16( Int16 defaultIfNeeded ) const
+CVariant::AsInt16( Int16 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -561,10 +564,10 @@ CVariant::AsInt16( Int16 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (Int16) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (Int16) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Int16) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToInt16( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToInt16( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Int16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Int16) ( resolveVarsIfApplicable ? StringToInt16( AsString(), defaultIfNeeded ) : StringToInt16( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Int16) ( resolveVarsIfApplicable ? StringToInt16( AsString(), defaultIfNeeded ) : StringToInt16( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -572,7 +575,7 @@ CVariant::AsInt16( Int16 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 UInt16
-CVariant::AsUInt16( UInt16 defaultIfNeeded ) const
+CVariant::AsUInt16( UInt16 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -588,10 +591,10 @@ CVariant::AsUInt16( UInt16 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (UInt16) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (UInt16) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (UInt16) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToUInt16( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToUInt16( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (UInt16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (UInt16) ( resolveVarsIfApplicable ? StringToUInt16( AsString(), defaultIfNeeded ) : StringToUInt16( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (UInt16) ( resolveVarsIfApplicable ? StringToUInt16( AsString(), defaultIfNeeded ) : StringToUInt16( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -599,7 +602,7 @@ CVariant::AsUInt16( UInt16 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Int32
-CVariant::AsInt32( Int32 defaultIfNeeded ) const
+CVariant::AsInt32( Int32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -615,10 +618,10 @@ CVariant::AsInt32( Int32 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (Int32) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (Int32) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Int32) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToInt32( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToInt32( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Int32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Int32) ( resolveVarsIfApplicable ? StringToInt32( AsString(), defaultIfNeeded ) : StringToInt32( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Int32) ( resolveVarsIfApplicable ? StringToInt32( AsString(), defaultIfNeeded ) : StringToInt32( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -626,7 +629,7 @@ CVariant::AsInt32( Int32 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CVariant::AsUInt32( UInt32 defaultIfNeeded ) const
+CVariant::AsUInt32( UInt32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -642,10 +645,10 @@ CVariant::AsUInt32( UInt32 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (UInt32) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (UInt32) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (UInt32) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToUInt32( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToUInt32( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (UInt32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (UInt32) ( resolveVarsIfApplicable ? StringToUInt32( AsString(), defaultIfNeeded ) : StringToUInt32( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (UInt32) ( resolveVarsIfApplicable ? StringToUInt32( AsString(), defaultIfNeeded ) : StringToUInt32( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -653,7 +656,7 @@ CVariant::AsUInt32( UInt32 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Int64
-CVariant::AsInt64( Int64 defaultIfNeeded ) const
+CVariant::AsInt64( Int64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -669,10 +672,10 @@ CVariant::AsInt64( Int64 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (Int64) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (Int64) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Int64) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToInt64( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToInt64( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Int64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Int64) ( resolveVarsIfApplicable ? StringToInt64( AsString(), defaultIfNeeded ) : StringToInt64( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Int64) ( resolveVarsIfApplicable ? StringToInt64( AsString(), defaultIfNeeded ) : StringToInt64( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -680,7 +683,7 @@ CVariant::AsInt64( Int64 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 UInt64
-CVariant::AsUInt64( UInt64 defaultIfNeeded ) const
+CVariant::AsUInt64( UInt64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -696,10 +699,10 @@ CVariant::AsUInt64( UInt64 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (UInt64) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (UInt64) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (UInt64) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1 : 0;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToUInt64( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToUInt64( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (UInt64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
+        case GUCEF_DATATYPE_ASCII_STRING: return (UInt64) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (UInt64) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -707,7 +710,7 @@ CVariant::AsUInt64( UInt64 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Float32
-CVariant::AsFloat32( Float32 defaultIfNeeded ) const
+CVariant::AsFloat32( Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -723,10 +726,10 @@ CVariant::AsFloat32( Float32 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return (Float32) m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Float32) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1.0f : 0.0f;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1.0f : 0.0f;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToFloat( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToFloat( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0f : 0.0f ) : AsBool() ? 1.0f : 0.0f );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0f : 0.0f ) : AsBool() ? 1.0f : 0.0f );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToFloat( AsString(), defaultIfNeeded ) : StringToFloat( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToFloat( AsString(), defaultIfNeeded ) : StringToFloat( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -734,7 +737,7 @@ CVariant::AsFloat32( Float32 defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 Float64
-CVariant::AsFloat64( Float64 defaultIfNeeded ) const
+CVariant::AsFloat64( Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -750,10 +753,10 @@ CVariant::AsFloat64( Float64 defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return (Float64) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Float64) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return AsBool() ? 1.0l : 0.0l;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return AsBool() ? 1.0l : 0.0l;
-        case GUCEF_DATATYPE_ASCII_STRING: return StringToDouble( AsAsciiString(), defaultIfNeeded ); 
-        case GUCEF_DATATYPE_UTF8_STRING: return StringToDouble( AsUtf8String(), defaultIfNeeded );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) ); 
+        case GUCEF_DATATYPE_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
         default: return defaultIfNeeded;
     }
 }
@@ -1546,7 +1549,7 @@ CVariant::Clear( void )
 /*-------------------------------------------------------------------------*/
 
 CAsciiString
-CVariant::AsAsciiString( const CAsciiString& defaultIfNeeded ) const
+CVariant::AsAsciiString( const CAsciiString& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_DATATYPE_ASCII_STRING == m_variantData.containedType        ||
@@ -1564,7 +1567,7 @@ CVariant::AsAsciiString( const CAsciiString& defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 CUtf8String
-CVariant::AsUtf8String( const CUtf8String& defaultIfNeeded ) const
+CVariant::AsUtf8String( const CUtf8String& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_DATATYPE_UTF8_STRING == m_variantData.containedType        ||
@@ -1582,29 +1585,56 @@ CVariant::AsUtf8String( const CUtf8String& defaultIfNeeded ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CVariant::AsString( const CString& defaultIfNeeded ) const
+CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    if ( resolveVarsIfApplicable )
     {
-        case GUCEF_DATATYPE_UINT8:                 { return ToString( AsUInt8( StringToUInt8( defaultIfNeeded, 0 ) ) ); } 
-        case GUCEF_DATATYPE_UINT16:                { return ToString( AsUInt16( StringToUInt16( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_UINT32:                { return ToString( AsUInt32( StringToUInt32( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_UINT64:                { return ToString( AsUInt64( StringToUInt64( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_INT8:                  { return ToString( AsInt8( StringToInt8( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_INT16:                 { return ToString( AsInt16( StringToInt16( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_INT32:                 { return ToString( AsInt32( StringToInt32( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_INT64:                 { return ToString( AsInt64( StringToInt64( defaultIfNeeded, 0 ) ) ); }
-        case GUCEF_DATATYPE_FLOAT32:               { return ToString( AsFloat32( StringToFloat( defaultIfNeeded, 0.0f ) ) ); }
-        case GUCEF_DATATYPE_FLOAT64:               { return ToString( AsFloat64( StringToDouble( defaultIfNeeded, 0.0 ) ) ); }
-        case GUCEF_DATATYPE_BOOLEAN_INT32:         { return ToString( AsBool( StringToBool( defaultIfNeeded, false ) ) ); }
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
-        case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
-        case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
-        case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
-        case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }
-        default:                                   { return defaultIfNeeded; }
+        switch ( m_variantData.containedType )
+        {
+            case GUCEF_DATATYPE_UINT8:                 { return ToString( AsUInt8( StringToUInt8( ResolveVars( defaultIfNeeded ), 0 ) ) ); } 
+            case GUCEF_DATATYPE_UINT16:                { return ToString( AsUInt16( StringToUInt16( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_UINT32:                { return ToString( AsUInt32( StringToUInt32( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_UINT64:                { return ToString( AsUInt64( StringToUInt64( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_INT8:                  { return ToString( AsInt8( StringToInt8( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_INT16:                 { return ToString( AsInt16( StringToInt16( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_INT32:                 { return ToString( AsInt32( StringToInt32( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_INT64:                 { return ToString( AsInt64( StringToInt64( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+            case GUCEF_DATATYPE_FLOAT32:               { return ToString( AsFloat32( StringToFloat( ResolveVars( defaultIfNeeded ), 0.0f ) ) ); }
+            case GUCEF_DATATYPE_FLOAT64:               { return ToString( AsFloat64( StringToDouble( ResolveVars( defaultIfNeeded ), 0.0 ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_INT32:         { return ToString( AsBool( StringToBool( ResolveVars( defaultIfNeeded ), false ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_ASCII_STRING:          { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_UTF8_STRING:           { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
+            case GUCEF_DATATYPE_UNKNOWN:               { return ResolveVars( defaultIfNeeded ); }
+            default:                                   { return ResolveVars( defaultIfNeeded ); }
+        }
+    }
+    else
+    {
+        switch ( m_variantData.containedType )
+        {
+            case GUCEF_DATATYPE_UINT8:                 { return ToString( AsUInt8( StringToUInt8( defaultIfNeeded, 0 ) ) ); } 
+            case GUCEF_DATATYPE_UINT16:                { return ToString( AsUInt16( StringToUInt16( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_UINT32:                { return ToString( AsUInt32( StringToUInt32( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_UINT64:                { return ToString( AsUInt64( StringToUInt64( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_INT8:                  { return ToString( AsInt8( StringToInt8( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_INT16:                 { return ToString( AsInt16( StringToInt16( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_INT32:                 { return ToString( AsInt32( StringToInt32( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_INT64:                 { return ToString( AsInt64( StringToInt64( defaultIfNeeded, 0 ) ) ); }
+            case GUCEF_DATATYPE_FLOAT32:               { return ToString( AsFloat32( StringToFloat( defaultIfNeeded, 0.0f ) ) ); }
+            case GUCEF_DATATYPE_FLOAT64:               { return ToString( AsFloat64( StringToDouble( defaultIfNeeded, 0.0 ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_INT32:         { return ToString( AsBool( StringToBool( defaultIfNeeded, false ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
+            case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
+            case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
+            case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
+            case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
+            case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }
+            default:                                   { return defaultIfNeeded; }
+        }
     }
 }
 

@@ -88,8 +88,8 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 {
     public:
 
-    typedef CORE::CTFactory< VFS::CIArchive, CS3Archive >       TAwsS3ArchiveFactory;
-    typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3BucketArchiveFactory;
+    typedef CORE::CTFactory< VFS::CArchive, CS3Archive >       TAwsS3ArchiveFactory;
+    typedef CORE::CTFactory< VFS::CArchive, CS3BucketArchive > TAwsS3BucketArchiveFactory;
 
     static const CORE::CString AwsS3ArchiveType;
     static const CORE::CString AwsS3BucketArchiveType;

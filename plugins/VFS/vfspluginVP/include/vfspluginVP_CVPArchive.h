@@ -51,7 +51,7 @@ namespace VP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CVPArchive : public VFS::CIArchive
+class CVPArchive : public VFS::CArchive
 {
     public:
     

@@ -54,7 +54,7 @@ namespace ITV {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CResArchive : public VFS::CIArchive
+class CResArchive : public VFS::CArchive
 {
     public:
 

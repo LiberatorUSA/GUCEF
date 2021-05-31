@@ -149,15 +149,18 @@ set( HEADER_FILES
   include/gucefCORE_CCoreGlobal.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
-  include/gucefCORE_CDirectoryWatcher.h
+  include/gucefCORE_CDirectoryWatcherEvents.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEventBasedTaskConsumer.h
+  include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIDate.h
+  include/gucefCORE_CIDirectoryWatcher.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
+  include/gucefCORE_CINotifier.h
   include/gucefCORE_CIOAccessToIOStream.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
@@ -344,14 +347,17 @@ set( SOURCE_FILES
   src/gucefCORE_CCoreGlobal.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
-  src/gucefCORE_CDirectoryWatcher.cpp
+  src/gucefCORE_CDirectoryWatcherEvents.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
+  src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIDate.cpp
+  src/gucefCORE_CIDirectoryWatcher.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
+  src/gucefCORE_CINotifier.cpp
   src/gucefCORE_CIOAccessToIOStream.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp

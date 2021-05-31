@@ -48,42 +48,31 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CNotifier::SubscribeEvent = "GUCEF::CORE::CNotifier::SubscribeEvent";
-const CEvent CNotifier::UnsubscribeEvent = "GUCEF::CORE::CNotifier::UnsubscribeEvent";
-const CEvent CNotifier::ModifyEvent = "GUCEF::CORE::CNotifier::ModifyEvent";
-const CEvent CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CNotifier::CNotifier( bool registerStdEvents )
-    : CITypeNamed() ,
-      m_imp( NULL )
+    : CINotifier( registerStdEvents )
+    , m_imp( NULL )
 {GUCEF_TRACE;
 
     if ( registerStdEvents )
         RegisterEvents();
 
     m_imp = CNotifierImplementor::Create( this );
-    assert( m_imp != NULL );
+    assert( m_imp != GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CNotifier::CNotifier( const CNotifier& src )
-    : CITypeNamed() ,
-      m_imp( NULL )
+    : CINotifier()      
+    , m_imp( GUCEF_NULL )
 {GUCEF_TRACE;
 
     m_imp = CNotifierImplementor::Create( this, src );
-    assert( m_imp != NULL );
+    assert( m_imp != GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,13 +83,15 @@ CNotifier::operator=( const CNotifier& src )
 
     if ( this != &src )
     {
-        if ( NULL != src.m_imp )
+        CINotifier::operator=( src );
+
+        if ( GUCEF_NULL != src.m_imp )
         {
             (*m_imp) = (*src.m_imp);
         }
         else
         {
-            m_imp = NULL;
+            m_imp = GUCEF_NULL;
         }
     }
     return *this;
@@ -111,23 +102,11 @@ CNotifier::operator=( const CNotifier& src )
 CNotifier::~CNotifier()
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->OnDeathOfOwnerNotifier();
     }
-    m_imp = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CNotifier::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    ModifyEvent.Initialize();
-    DestructionEvent.Initialize();
-    SubscribeEvent.Initialize();
-    UnsubscribeEvent.Initialize();
+    m_imp = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,7 +115,7 @@ void
 CNotifier::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->Subscribe( observer );
     }
@@ -145,12 +124,12 @@ CNotifier::Subscribe( CObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 void
-CNotifier::Subscribe( CObserver* observer                              ,
-                      const CEvent& eventid                            ,
-                      CIEventHandlerFunctorBase* callback /* = NULL */ )
+CNotifier::Subscribe( CObserver* observer                                    ,
+                      const CEvent& eventid                                  ,
+                      CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->Subscribe( observer ,
                           eventid  ,
@@ -164,7 +143,7 @@ void
 CNotifier::Unsubscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->Unsubscribe( observer );
     }
@@ -177,7 +156,7 @@ CNotifier::Unsubscribe( CObserver* observer   ,
                         const CEvent& eventid )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->Unsubscribe( observer ,
                             eventid  );
@@ -190,7 +169,7 @@ void
 CNotifier::UnsubscribeAllFromNotifier( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->UnsubscribeAllFromNotifier();
     }
@@ -202,7 +181,7 @@ bool
 CNotifier::NotifyObservers( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->NotifyObservers();
     }
@@ -216,7 +195,7 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
                             CICloneable* eventData ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->NotifyObservers( eventid   ,
                                        eventData );
@@ -232,7 +211,7 @@ CNotifier::NotifyObservers( CNotifier& sender                   ,
                             CICloneable* eventData /* = NULL */ ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->NotifyObservers( sender    ,
                                        eventid   ,
@@ -250,7 +229,7 @@ CNotifier::NotifySpecificObserver( CNotifier& sender           ,
                                    CICloneable* eventData      ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->NotifySpecificObserver( sender           ,
                                               specificObserver ,
@@ -268,7 +247,7 @@ CNotifier::NotifySpecificObserver( CObserver& specificObserver ,
                                    CICloneable* eventData      ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->NotifySpecificObserver( specificObserver ,
                                               eventid          ,
@@ -283,7 +262,7 @@ void
 CNotifier::OnObserverDestroy( CObserver* observer )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->OnObserverDestroy( observer );
     }
@@ -305,7 +284,7 @@ void
 CNotifier::ScheduleForDestruction( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         m_imp->ScheduleForDestruction();
     }
@@ -317,7 +296,7 @@ UInt32
 CNotifier::GetSubscriptionCountForObserver( CObserver* observer ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_imp )
+    if ( GUCEF_NULL != m_imp )
     {
         return m_imp->GetSubscriptionCountForObserver( observer );
     }

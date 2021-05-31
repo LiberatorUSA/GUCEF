@@ -473,6 +473,7 @@ CDataNode::SetAttribute( const char* name  ,
 
     return _atts[ name ].SetFromString( (UInt8) typeOfValue, value );                     
 }
+
 /*-------------------------------------------------------------------------*/
 
 bool 

@@ -58,7 +58,7 @@ namespace DVP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CIArchive, CDVPArchive > TDVPArchiveFactory;
+typedef CORE::CTFactory< VFS::CArchive, CDVPArchive > TDVPArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

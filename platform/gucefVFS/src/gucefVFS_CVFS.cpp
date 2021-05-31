@@ -147,6 +147,7 @@ CVFS::RegisterEvents( void )
 
 CVFS::CVFS( void )
     : CORE::CTSGNotifier()
+    , CORE::CIDirectoryWatcher()
     , CORE::CIConfigurable( true )
     , m_mountList()
     , _maxmemloadsize( 1024 )
@@ -1684,6 +1685,34 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     }
 
     return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::AddDirToWatch( const CString& dirToWatch       ,
+                     const CDirWatchOptions& options )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::RemoveDirToWatch( const CString& dirToWatch )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::RemoveAllWatches( void )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,8 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+#ifndef GUCEF_CORE_CIDIRECTORYWATCHER_H
+#define GUCEF_CORE_CIDIRECTORYWATCHER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -23,7 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefVFS_CIArchive.h"
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CDIRECTORYWATCHEREVENTS_H
+#include "gucefCORE_CDirectoryWatcherEvents.h"
+#define GUCEF_CORE_CDIRECTORYWATCHEREVENTS_H
+#endif /* GUCEF_CORE_CDIRECTORYWATCHEREVENTS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,49 +43,62 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFS {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIArchive::CIArchive( void )
-{GUCEF_TRACE;
+class GUCEF_CORE_PUBLIC_CPP CIDirectoryWatcher : public CDirectoryWatcherEvents
+{
+    public:
 
-}
+    class GUCEF_CORE_PUBLIC_CPP CDirWatchOptions
+    {
+        public:
 
-/*-------------------------------------------------------------------------*/
-    
-CIArchive::CIArchive( const CIArchive& src )
-{GUCEF_TRACE;
+        bool watchSubTree;
+        bool watchForFileCreation;
+        bool watchForFileDeletion;
+        bool watchForFileRenames;
+        bool watchForFileModifications;
+        bool watchForDirCreation;
+        bool watchForDirDeletion;
+        bool watchForDirRenames;
+        bool watchForDirModifications;
 
-}
+        CDirWatchOptions( void );
+        CDirWatchOptions( const CDirWatchOptions& src );
+        CDirWatchOptions& operator=( const CDirWatchOptions& src );
+    };
 
-/*-------------------------------------------------------------------------*/
-    
-CIArchive::~CIArchive()
-{GUCEF_TRACE;
+    virtual bool AddDirToWatch( const CString& dirToWatch       ,
+                                const CDirWatchOptions& options ) = 0;
 
-}
-    
-/*-------------------------------------------------------------------------*/
-    
-CIArchive&
-CIArchive::operator=( const CIArchive& src )
-{GUCEF_TRACE;
+    virtual bool RemoveDirToWatch( const CString& dirToWatch ) = 0;
 
-    return *this;
-}
-    
+    virtual bool RemoveAllWatches( void ) = 0;
+
+    CIDirectoryWatcher( void );
+
+    CIDirectoryWatcher( const CIDirectoryWatcher& src );
+
+    virtual ~CIDirectoryWatcher();
+
+    CIDirectoryWatcher& operator=( const CIDirectoryWatcher& src );
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VFS */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CIDIRECTORYWATCHER_H ? */

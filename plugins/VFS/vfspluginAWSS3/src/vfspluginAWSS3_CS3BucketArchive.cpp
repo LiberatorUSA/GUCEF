@@ -86,8 +86,7 @@ namespace AWSS3 {
 //-------------------------------------------------------------------------*/
 
 CS3BucketArchive::CS3BucketArchive( void )
-    : CORE::CObservingNotifier()
-    , VFS::CIArchive() 
+    : VFS::CArchive() 
     , m_objects()
     , m_archiveName()
     , m_autoMountBuckets( false )
@@ -119,7 +118,7 @@ CS3BucketArchive::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CIArchive::CVFSHandlePtr
+VFS::CArchive::CVFSHandlePtr
 CS3BucketArchive::GetFile( const VFS::CString& file      ,
                            const char* mode              ,
                            const VFS::UInt32 memLoadSize ,
@@ -130,7 +129,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CIArchive::CVFSHandlePtr();
+            return VFS::CArchive::CVFSHandlePtr();
 
         Aws::S3::Model::GetObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );
@@ -141,7 +140,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
         {
             //getObjectOutcome.GetResult().GetBody()
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Obtained Object \"" + file + "\" from Bucket \"" + m_archiveName + "\"" );
-            return VFS::CIArchive::CVFSHandlePtr();
+            return VFS::CArchive::CVFSHandlePtr();
         }
         else
         {
@@ -157,7 +156,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 get bucket object" );
     }
-    return VFS::CIArchive::CVFSHandlePtr();
+    return VFS::CArchive::CVFSHandlePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -176,7 +175,7 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CIArchive::CVFSHandlePtr();
+            return VFS::CArchive::CVFSHandlePtr();
 
         Aws::S3::Model::PutObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );
@@ -258,7 +257,7 @@ CS3BucketArchive::DeleteFile( const VFS::CString& filePath )
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CIArchive::CVFSHandlePtr();
+            return VFS::CArchive::CVFSHandlePtr();
 
         Aws::S3::Model::DeleteObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );

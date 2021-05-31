@@ -125,6 +125,21 @@
 
 /*-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_DEFAULT_UTF_STRING_FORMAT
+    #define GUCEF_DEFAULT_UTF_STRING_FORMAT     GUCEF_DATATYPE_UTF8_STRING
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#if ( GUCEF_DEFAULT_UTF_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
+
+#define GUCEF_DATATYPE_UTF_STRING               GUCEF_DATATYPE_UTF8_STRING
+#define GUCEF_DATATYPE_BOOLEAN_UTF_STRING       GUCEF_DATATYPE_BOOLEAN_UTF8_STRING
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef GUCEF_CORE_DEBUG_MODE
   #ifndef TSPRINTING_H
     #include "tsprinting.h"

@@ -585,6 +585,37 @@ CDateTime::~CDateTime()
 /*-------------------------------------------------------------------------*/
 
 CDateTime
+CDateTime::CompileDateTime( const char* __date__Macro , 
+                            const char* __time__Macro )
+{GUCEF_TRACE;
+
+    // __DATE__ is a preprocessor macro that expands to current date (at compile time) in the form mmm dd yyyy (e.g. "Jan 14 2012"), as a string. The __DATE__ macro can be used to provide information about the particular moment a binary was built.    
+    // __TIME__ is a preprocessor macro that expands to current time (at compile time) in the form hh:mm:ss in 24 hour time (e.g. "22:29:12"), as a string. The __TIME__ macro can be used to provide information about the particular moment a binary was built.
+
+    CORE::CDateTime dt;
+    
+    CORE::Int32 month=0, day=0, year=0;
+    char month3Letter[ 5 ] = { '\0', '\0', '\0', '\0', '\0' };
+    static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    CORE::Int32 hour=0, minutes=0, seconds=0;
+
+    sscanf( __date__Macro, "%s %d %d", month3Letter, &day, &year );
+    month = ( (CORE::Int32)( strstr( month_names, month3Letter ) - month_names ) ) / 3;
+    sscanf( __time__Macro, "%d%*c%d%*c%d", &hour, &minutes, &seconds );
+
+    dt.Set( (CORE::Int16) year    ,
+            (CORE::UInt8) month   ,
+            (CORE::UInt8) day     ,
+            (CORE::UInt8) hour    ,
+            (CORE::UInt8) minutes ,
+            (CORE::UInt8) seconds );
+
+    return dt;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDateTime
 CDateTime::NowUTCDateTime( void )
 {GUCEF_TRACE;
 

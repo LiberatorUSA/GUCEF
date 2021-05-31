@@ -61,6 +61,12 @@ typedef CUtf8String                         CString;
 
 #endif
 
+/*
+ *  When more UTF variants are supported "UtfString" will represent the default 
+ *  UTF implementation used on the targeted platform
+ */
+typedef CUtf8String                         CUtfString;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

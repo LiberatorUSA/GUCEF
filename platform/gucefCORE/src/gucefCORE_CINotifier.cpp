@@ -1,6 +1,6 @@
 /*
- *  vfspluginVP: Generic GUCEF VFS plugin for "Violation Pack" archives
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,27 +23,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTFACTORY_H
-#include "CTFactory.h"
-#define GUCEF_CORE_CTFACTORY_H
-#endif /* GUCEF_CORE_CTFACTORY_H ? */
+#include <assert.h>
 
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#ifndef GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#include "vfspluginVP_CVPArchive.h"
-#define GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#endif /* GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H ? */
-
-#include "vfspluginVP.h"
+#include "gucefCORE_CINotifier.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,16 +39,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFSPLUGIN {
-namespace VP {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-typedef CORE::CTFactory< VFS::CArchive, CVPArchive > TVPArchiveFactory;
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -69,7 +47,10 @@ typedef CORE::CTFactory< VFS::CArchive, CVPArchive > TVPArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-TVPArchiveFactory vpArchiveFactory;
+const CEvent CINotifier::SubscribeEvent = "GUCEF::CORE::CINotifier::SubscribeEvent";
+const CEvent CINotifier::UnsubscribeEvent = "GUCEF::CORE::CINotifier::UnsubscribeEvent";
+const CEvent CINotifier::ModifyEvent = "GUCEF::CORE::CINotifier::ModifyEvent";
+const CEvent CINotifier::DestructionEvent = "GUCEF::CORE::CINotifier::DestructionEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,51 +58,55 @@ TVPArchiveFactory vpArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CINotifier::CINotifier( bool registerStdEvents )
+    : MT::CILockable()
+    , CITypeNamed() 
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CVPArchive::VPArchiveTypeName, vpArchiveFactory );
-    return 1;
+    if ( registerStdEvents )
+        RegisterEvents();
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CINotifier::CINotifier( const CINotifier& src )
+    : MT::CILockable( src )
+    , CITypeNamed( src ) 
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( CVPArchive::VPArchiveTypeName );
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CINotifier&
+CINotifier::operator=( const CINotifier& src )
 {GUCEF_TRACE;
 
-    versionInfo->major = 1; 
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
+    if ( this != &src )
+    {
+        MT::CILockable::operator=( src );
+        CITypeNamed::operator=( src );
+    }
+    return *this;
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CINotifier::~CINotifier()
 {GUCEF_TRACE;
-    
-    return "Copyright (C) 2002 - 2008.  Dinand Vanvelzen";
+
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void
+CINotifier::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for VFS \"Violation Pack\" archives";
+    ModifyEvent.Initialize();
+    DestructionEvent.Initialize();
+    SubscribeEvent.Initialize();
+    UnsubscribeEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------//
@@ -130,8 +115,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VP */
-}; /* namespace VFSPLUGIN */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

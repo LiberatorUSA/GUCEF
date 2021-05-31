@@ -85,7 +85,7 @@ const VFS::CString CDVPArchive::DVPArchiveTypeName = "dvp";
 //-------------------------------------------------------------------------*/
 
 CDVPArchive::CDVPArchive( void )
-    : CIArchive()       ,
+    : CArchive()        ,
       m_header()        ,
       m_entries( NULL ) ,
       m_archiveName()   ,
@@ -105,7 +105,7 @@ CDVPArchive::~CDVPArchive()
 
 /*-------------------------------------------------------------------------*/
     
-VFS::CIArchive::CVFSHandlePtr
+VFS::CArchive::CVFSHandlePtr
 CDVPArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,

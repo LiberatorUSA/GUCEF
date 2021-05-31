@@ -61,7 +61,7 @@ namespace ZIP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CIArchive, CZIPArchive > TZIPArchiveFactory;
+typedef CORE::CTFactory< VFS::CArchive, CZIPArchive > TZIPArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

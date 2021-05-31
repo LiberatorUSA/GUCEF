@@ -74,6 +74,7 @@ CArchiveSettings::CArchiveSettings( void )
     , m_autoMountSubArchivesIsRecursive( false )
     , m_writeableRequested( false )
     , m_readableRequested( true )
+    , m_directoryWatchingAbilityRequested( false )
     , m_archiveSpecificSettings()
 {GUCEF_TRACE;
 
@@ -95,6 +96,7 @@ CArchiveSettings::CArchiveSettings( const CArchiveSettings& src )
     , m_autoMountSubArchivesIsRecursive( src.m_autoMountSubArchivesIsRecursive )
     , m_writeableRequested( src.m_writeableRequested )
     , m_readableRequested( src.m_readableRequested )
+    , m_directoryWatchingAbilityRequested( src.m_directoryWatchingAbilityRequested )
     , m_archiveSpecificSettings( src.m_archiveSpecificSettings )
 {GUCEF_TRACE;
 
@@ -127,6 +129,7 @@ CArchiveSettings::operator=( const CArchiveSettings& src )
         m_autoMountSubArchivesIsRecursive = src.m_autoMountSubArchivesIsRecursive;
         m_writeableRequested = src.m_writeableRequested;
         m_readableRequested = src.m_readableRequested;
+        m_directoryWatchingAbilityRequested = src.m_directoryWatchingAbilityRequested;
         m_archiveSpecificSettings = src.m_archiveSpecificSettings;
     }
     return *this;
@@ -144,10 +147,11 @@ CArchiveSettings::SaveConfig( CORE::CDataNode& tree ) const
     settingsNode.SetAttribute( "ArchiveName", m_archiveName );
     settingsNode.SetAttribute( "ArchiveType", m_archiveType );
     settingsNode.SetAttribute( "MountPath", m_mountPath );
-    settingsNode.SetAttribute( "MountArchives", CORE::BoolToString( m_autoMountSubArchives ), GUCEF_DATATYPE_BOOLEAN_STRING );
-    settingsNode.SetAttribute( "MountArchivesIsRecursive", CORE::BoolToString( m_autoMountSubArchivesIsRecursive ), GUCEF_DATATYPE_BOOLEAN_STRING );
-    settingsNode.SetAttribute( "Writeable", CORE::BoolToString( m_writeableRequested ), GUCEF_DATATYPE_BOOLEAN_STRING );
-    settingsNode.SetAttribute( "Readable", CORE::BoolToString( m_readableRequested ), GUCEF_DATATYPE_BOOLEAN_STRING );
+    settingsNode.SetAttribute( "MountArchives", m_autoMountSubArchives );
+    settingsNode.SetAttribute( "MountArchivesIsRecursive", m_autoMountSubArchivesIsRecursive );
+    settingsNode.SetAttribute( "Writeable", m_writeableRequested );
+    settingsNode.SetAttribute( "Readable", m_readableRequested );
+    settingsNode.SetAttribute( "DirectoryWatchingAbility", m_directoryWatchingAbilityRequested );    
     m_archiveSpecificSettings.SaveConfig( settingsNode );
     tree.AddChild( settingsNode );
     return true;
@@ -167,21 +171,24 @@ CArchiveSettings::LoadConfig( const CORE::CDataNode& treeroot )
     
     if ( GUCEF_NULL != settingsNode )
     {
-        m_actualArchivePath = CORE::RelativePath( settingsNode->GetAttributeValueOrChildValueByName( "ActualArchivePath" ).AsString() );
-        m_archivePath = settingsNode->GetAttributeValueOrChildValueByName( "Path" ).AsString();
+        m_actualArchivePath = CORE::RelativePath( settingsNode->GetAttributeValueOrChildValueByName( "ActualArchivePath" ).AsString( m_actualArchivePath, true ) );
+        m_archivePath = settingsNode->GetAttributeValueOrChildValueByName( "Path" ).AsString( m_archivePath, true );
         if ( m_archivePath.IsNULLOrEmpty() )
             m_archivePath = m_actualArchivePath;
         if ( m_actualArchivePath.IsNULLOrEmpty() )
             m_actualArchivePath = m_archivePath;
-        m_archiveName = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveName" ).AsString();
+        
+        m_archiveName = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveName" ).AsString( m_archiveName, true );
         if ( m_archiveName.IsNULLOrEmpty() )
             m_archiveName = m_archivePath;
-        m_archiveType = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveType" ).AsString();
-        m_mountPath = settingsNode->GetAttributeValueOrChildValueByName( "MountPath" ).AsString();
-        m_autoMountSubArchives = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "MountArchives" ), false );
-        m_autoMountSubArchivesIsRecursive = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "MountArchivesIsRecursive" ), false );
-        m_writeableRequested = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "Writeable" ), false );
-        m_readableRequested = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "Readable" ), true );
+        
+        m_archiveType = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveType" ).AsString( m_archiveType, true );
+        m_mountPath = settingsNode->GetAttributeValueOrChildValueByName( "MountPath" ).AsString( m_mountPath, true );
+        m_autoMountSubArchives = settingsNode->GetAttributeValueOrChildValueByName( "MountArchives" ).AsBool( m_autoMountSubArchives, true );
+        m_autoMountSubArchivesIsRecursive = settingsNode->GetAttributeValueOrChildValueByName( "MountArchivesIsRecursive" ).AsBool( m_autoMountSubArchivesIsRecursive, true );
+        m_writeableRequested = settingsNode->GetAttributeValueOrChildValueByName( "Writeable" ).AsBool( m_writeableRequested, true );
+        m_readableRequested = settingsNode->GetAttributeValueOrChildValueByName( "Readable" ).AsBool( m_readableRequested, true );
+        m_directoryWatchingAbilityRequested = settingsNode->GetAttributeValueOrChildValueByName( "DirectoryWatchingAbility" ).AsBool( m_directoryWatchingAbilityRequested, true );
 
         m_archiveSpecificSettings.LoadConfig( *settingsNode );
 

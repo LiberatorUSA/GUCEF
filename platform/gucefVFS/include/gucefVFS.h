@@ -70,10 +70,10 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#include "gucefVFS_CIArchive.h"
-#define GUCEF_VFS_CIARCHIVE_H
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#ifndef GUCEF_VFS_CARCHIVE_H
+#include "gucefVFS_CArchive.h"
+#define GUCEF_VFS_CARCHIVE_H
+#endif /* GUCEF_VFS_IARCHIVE_H ? */
 
 #ifndef GUCEF_VFS_CVFSHANDLE_H
 #include "gucefVFS_CVFSHandle.h"

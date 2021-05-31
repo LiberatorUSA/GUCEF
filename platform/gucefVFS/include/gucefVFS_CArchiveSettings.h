@@ -134,6 +134,10 @@ class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
     void SetReadableRequested( bool readable );
     
     bool GetReadableRequested( void ) const;
+
+    void SetDirectoryWatchingAbilityRequested( bool canWatch );
+    
+    bool GetDirectoryWatchingAbilityRequested( void ) const;
     
     const CORE::CValueList& GetArchiveSpecificSettings( void ) const;
 
@@ -148,6 +152,7 @@ class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
     bool m_autoMountSubArchivesIsRecursive;
     bool m_writeableRequested;
     bool m_readableRequested;
+    bool m_directoryWatchingAbilityRequested;
     CORE::CValueList m_archiveSpecificSettings;
 };
 

@@ -144,20 +144,20 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     
     UInt8 GetTypeId( void ) const;  
 
-    bool            AsBool( bool defaultIfNeeded = false ) const;
-    Int8            AsInt8( Int8 defaultIfNeeded = 0 ) const;
-    UInt8           AsUInt8( UInt8 defaultIfNeeded = 0 ) const;
-    Int16           AsInt16( Int16 defaultIfNeeded = 0 ) const;
-    UInt16          AsUInt16( UInt16 defaultIfNeeded = 0 ) const;
-    Int32           AsInt32( Int32 defaultIfNeeded = 0 ) const;
-    UInt32          AsUInt32( UInt32 defaultIfNeeded = 0 ) const;
-    Int64           AsInt64( Int64 defaultIfNeeded = 0 ) const;
-    UInt64          AsUInt64( UInt64 defaultIfNeeded = 0 ) const;
-    Float32         AsFloat32( Float32 defaultIfNeeded = 0.0f ) const;
-    Float64         AsFloat64( Float64 defaultIfNeeded = 0.0 ) const;
-    CString         AsString( const CString& defaultIfNeeded = CString::Empty ) const;
-    CAsciiString    AsAsciiString( const CAsciiString& defaultIfNeeded = CAsciiString::Empty ) const;
-    CUtf8String     AsUtf8String( const CUtf8String& defaultIfNeeded = CUtf8String::Empty ) const;
+    bool            AsBool( bool defaultIfNeeded = false, bool resolveVarsIfApplicable = false ) const;
+    Int8            AsInt8( Int8 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    UInt8           AsUInt8( UInt8 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    Int16           AsInt16( Int16 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    UInt16          AsUInt16( UInt16 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    Int32           AsInt32( Int32 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    UInt32          AsUInt32( UInt32 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    Int64           AsInt64( Int64 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    UInt64          AsUInt64( UInt64 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    Float32         AsFloat32( Float32 defaultIfNeeded = 0.0f, bool resolveVarsIfApplicable = false ) const;
+    Float64         AsFloat64( Float64 defaultIfNeeded = 0.0, bool resolveVarsIfApplicable = false ) const;
+    CString         AsString( const CString& defaultIfNeeded = CString::Empty, bool resolveVarsIfApplicable = false ) const;
+    CAsciiString    AsAsciiString( const CAsciiString& defaultIfNeeded = CAsciiString::Empty, bool resolveVarsIfApplicable = false ) const;
+    CUtf8String     AsUtf8String( const CUtf8String& defaultIfNeeded = CUtf8String::Empty, bool resolveVarsIfApplicable = false ) const;
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
     const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;
     CDynamicBuffer  AsBuffer( void ) const;

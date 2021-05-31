@@ -59,7 +59,7 @@ namespace DVP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
+class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CArchive
 {
     public:
 
