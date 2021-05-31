@@ -76,7 +76,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
 {
     public:
 
-    CDynamicBufferSwap( UInt32 nrOfBuffers = 2 );
+    CDynamicBufferSwap( UInt32 nrOfBuffers = 3 );
 
     virtual ~CDynamicBufferSwap();
 

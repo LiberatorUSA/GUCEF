@@ -62,7 +62,7 @@ namespace CORE {
  *  tree
  */
 class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
-                                                 public CIObserver
+                                                 public virtual CIObserver
 {
     public:
 

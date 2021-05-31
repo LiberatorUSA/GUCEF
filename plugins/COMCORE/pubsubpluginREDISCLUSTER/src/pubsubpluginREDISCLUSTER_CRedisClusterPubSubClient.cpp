@@ -24,6 +24,11 @@
 
 #include <string.h>
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -235,6 +240,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_config()
     , m_readOffset( "0" )
     , m_readerThread()
+    , m_lock()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != client->GetConfig().pulseGenerator )
@@ -250,11 +256,6 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
         {
             m_redisReconnectTimer = new CORE::CTimer( client->GetConfig().reconnectDelayInMs );
         }
-    }
-
-    if ( client->GetConfig().desiredFeatures.supportsSubscribing )
-    {
-        m_readerThread = RedisClusterPubSubClientTopicReaderPtr( new CRedisClusterPubSubClientTopicReader( this ) );
     }
         
     RegisterEventHandlers();
@@ -308,6 +309,7 @@ const CORE::CString&
 CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     return m_config.topicName;
 }
 
@@ -317,6 +319,8 @@ bool
 CRedisClusterPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     const CORE::CVariant& msgId = msg.GetMsgId();
     sw::redis::StringView idSV( msgId.AsCharPtr(), msgId.ByteSize( false ) );
     
@@ -365,6 +369,8 @@ bool
 CRedisClusterPubSubClientTopic::SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     config = m_config;
     return true;
 }
@@ -375,6 +381,8 @@ bool
 CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     m_config = config;
     m_redisHashSlot = CalculateRedisHashSlot( config.topicName );
 
@@ -505,6 +513,8 @@ bool
 CRedisClusterPubSubClientTopic::RedisRead( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     if ( GUCEF_NULL == m_redisContext || m_config.topicName.IsNULLOrEmpty() )
         return false;
 
@@ -653,7 +663,7 @@ CRedisClusterPubSubClientTopic::CalculateRedisHashSlot( const CORE::CString& key
     CORE::UInt32 keylen = keyStr.Length();
     const char* key = keyStr.C_String();
 
-    int s, e; /* start-end indexes of { and } */
+    CORE::UInt32 s, e; /* start-end indexes of { and } */
 
     /* Search the first occurrence of '{'. */
     for (s = 0; s < keylen; s++)
@@ -661,7 +671,7 @@ CRedisClusterPubSubClientTopic::CalculateRedisHashSlot( const CORE::CString& key
 
     /* No '{' ? Hash the whole key. This is the base case. */
     if ( s == keylen)
-        return sw::redis::crc16(key,keylen) & 16383;
+        return sw::redis::crc16( key,(int) keylen) & 16383;
 
     /* '{' found? Check if we have the corresponding '}'. */
     for (e = s+1; e < keylen; e++)
@@ -681,6 +691,8 @@ CRedisClusterPubSubClientTopic::CalculateRedisHashSlot( const CORE::CString& key
 bool
 CRedisClusterPubSubClientTopic::Disconnect( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     try
     {
@@ -718,20 +730,99 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
+{
+    MT::CScopeMutex lock( m_lock );
+    
+    try
+    {
+        // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
+        // Redis does not support pushing of data directly
+
+        if ( m_readerThread.IsNULL() )
+        {
+            m_readerThread = RedisClusterPubSubClientTopicReaderPtr( new CRedisClusterPubSubClientTopicReader( this ) );
+        }
+        if ( !m_readerThread.IsNULL() )
+        {
+            if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Failed to start blocking reader thread for async subscription" );
+                return false;
+            }
+        }
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Redis++ exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::Subscribe( void )
+{GUCEF_TRACE;
+
+    // Since Redis does not store the offset itself we will use whatever was last in-process which if this
+    // is the first use means its the default starting offset
+    MT::CScopeMutex lock( m_lock );
+    return SubscribeImpl( m_readOffset );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
+{GUCEF_TRACE;
+
+    return SubscribeImpl( msgIdBookmark.AsString() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
+{GUCEF_TRACE;
+
+    // With Redis the default ID format is a Unix Epoch based datetime 
+    return SubscribeImpl( CORE::ToString( msgDtBookmark.ToUnixEpochBasedTicksInMillisecs() ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CRedisClusterPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     return GUCEF_NULL != m_redisContext && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::Connect( void )
+CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
     Disconnect();
     
+    MT::CScopeMutex lock( m_lock );
     try
     {
         m_redisContext = m_client->GetRedisContext();
@@ -766,15 +857,6 @@ CRedisClusterPubSubClientTopic::Connect( void )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
         }
 
-        if ( m_config.needSubscribeSupport && !m_readerThread.IsNULL() )
-        {
-            // We use long polling reads which means we will need a dedicated thread to block until there is data
-            if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Failed to start blocking reader thread for async subscription" );
-                return false;
-            }
-        }
         return true;
     }
     catch ( const sw::redis::OomError& e )
@@ -817,10 +899,37 @@ CRedisClusterPubSubClientTopic::OnRedisReconnectTimerCycle( CORE::CNotifier* not
                                                             CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( Connect() )
+    if ( InitializeConnectivity() )
     {
         m_redisReconnectTimer->SetEnabled( false );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CRedisClusterPubSubClientTopic::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+ bool
+ CRedisClusterPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -907,15 +1016,20 @@ bool
 CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;
-    features.supportsDuplicateKeysPerMsg = true;
-    features.supportsKeyValuePerMsg = true;
-    features.supportsMsgKeysPerTopic = true;
-    features.supportsMultiHostSharding = true;
-    features.supportsPublishing = true;
-    features.supportsSubscribing = true;
+    features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
+    features.supportsPerMsgIds = true;
+    features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
+    features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
+    features.supportsDuplicateKeysPerMsg = true;        // Redis does not care about duplicate keys, they are just "fields"
+    features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
+    features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
+    features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
     features.supportsMetrics = true;
-    features.supportsAutoReconnect = true;
+    features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
+    features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
+    features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
+    features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
+    features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
     return true;
 }
 
@@ -1079,7 +1193,7 @@ CRedisClusterPubSubClient::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
                                 node.startSlot = (CORE::UInt32) startSlot;
                                 node.endSlot = (CORE::UInt32) endSlot;
                                 node.nodeId = nodeId;
-                                node.host.SetHostnameAndPort( ip, port );
+                                node.host.SetHostnameAndPort( ip, (CORE::UInt16) port );
                             }
                         }
                     }
@@ -1200,7 +1314,7 @@ CRedisClusterPubSubClient::Connect( void )
         TTopicMap::iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
-            (*i).second->Connect();
+            (*i).second->InitializeConnectivity();
             ++i;
         }
 

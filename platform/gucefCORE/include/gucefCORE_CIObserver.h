@@ -71,8 +71,8 @@ class CEvent;
  *  Interface for observers.
  *  Observer based classes should implement OnNotify()
  */
-class GUCEF_CORE_PUBLIC_CPP CIObserver : public MT::CILockable ,
-                                         public CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
+                                         public virtual CITypeNamed
 {
     public:
 

@@ -65,9 +65,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
     
     bool supportsBinaryPayloads;            /** if not supported and a binary payload is given it will be converted to base64 */
     bool supportsMultiHostSharding;         /** if the pub-sub system supports sharding across multiple hosts */
-    bool supportsMsgKeysPerTopic;           /** whether per message keys are supported inside a topic, if not the msgKey param is irrelevant and not used */
-    bool supportsKeyValuePerMsg;
-    bool supportsDuplicateKeysPerMsg;
+    bool supportsPerMsgIds;                 /** whether per message IDs are supported inside a topic, if not the msgId param is irrelevant and not used */
+    bool supportsPrimaryPayloadPerMsg;      /** whether the concept of a per message primary payload is supported. If the backend only supports key-value ideally this feature is not used by the app */
+    bool supportsKeyValueSetPerMsg;         /** whether the concept of a per message set of key-value attributes is supported. If the backend only supports a primary payload ideally this feature is not used by the app */
+    bool supportsDuplicateKeysPerMsg;       /** whether the concept of a per message set of key-value attributes has the constraint of keys being unique */
+    bool supportsBookmarkingConcept;        /** whether the concept of bookmarking where you last were in the pub-sub subscription is supported at all. The other bookmarking related flags are meaningless if this is false */
+    bool supportsAutoBookmarking;           /** whether the implementation takes care of remembering where you are wrt pub-sub subscriber consumption without needing help */
+    bool supportsMsgIdBasedBookmark;        /** whether the implementation can accept a MsgId to setup pub-sub subscriber consumption */
+    bool supportsMsgDateTimeBasedBookmark;  /** whether the implementation can accept a message DateTime to setup pub-sub subscriber consumption */
     
     bool supportsMetrics;
 

@@ -566,6 +566,33 @@ CUtf8String::GetCharacterCount( const Int32 searchChar ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CUtf8String::GetCharactersCount( Int32* searchChars     ,
+                                 UInt32 nrOfSearchChars ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    void* cpPos = m_string;
+    Int32 cp = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        cpPos = utf8codepoint( cpPos, &cp );
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( cp == searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CUtf8String::GetCharacterRepeatCount( const Int32 searchChar ) const
 {GUCEF_TRACE;
 
@@ -859,6 +886,24 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
     {
         return *this;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String
+CUtf8String::ReplaceChars( Int32* oldchars     ,
+                           UInt32 nrOfOldChars ,
+                           Int32 newchar       ) const
+{GUCEF_TRACE;
+
+    // @TODO: Optimize
+
+    CUtf8String result( *this );
+    for ( UInt32 i=0; i<nrOfOldChars; ++i )
+    {
+        result = result.ReplaceChar( oldchars[ i ], newchar );
+    }
+    return result;
 }
 
 /*-------------------------------------------------------------------------*/

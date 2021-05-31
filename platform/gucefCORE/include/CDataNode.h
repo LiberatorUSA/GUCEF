@@ -185,9 +185,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     TKeyValuePair* GetAttribute( const CString& name );
 
-    CVariant GetAttributeValue( const CString& name ) const;
+    const CVariant& GetAttributeValue( const CString& name ) const;
     
-    CVariant GetAttributeValue( const CString& name, const CVariant& defaultValue ) const;
+    const CVariant& GetAttributeValue( const CString& name, const CVariant& defaultValue ) const;
 
     bool SetAttribute( const CString& name                     ,
                        const CString& value                    ,
@@ -221,7 +221,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param name the name of the attribute or child node
      *  @return the value located using the given name
      */
-    CVariant GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue = CVariant::Empty ) const;
+    const CVariant& GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue = CVariant::Empty ) const;
 
     TVariantVector GetAttributeValueOrChildValuesByName( const CString& name ) const;
 
@@ -235,7 +235,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param name the name of the child node
      *  @return the value of the first child located with the given name
      */
-    CVariant GetChildValueByName( const CString& name ) const;
+    const CVariant& GetChildValueByName( const CString& name ) const;
 
     /**
      *  Attempts to locate a child node with the given name

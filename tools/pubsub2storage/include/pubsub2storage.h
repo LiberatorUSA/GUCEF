@@ -145,11 +145,25 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 cpuAffinityForMainChannelThread;
     bool collectMetrics;
 
+    COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
+
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class CIPubSubMsgPersistance
+{
+    public:
+
+    virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
+                                                const CORE::CString& topicName , 
+                                                CORE::CVariant& msgId          , 
+                                                CORE::CDateTime& msgDt         ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -160,7 +174,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
 
-    CPubSubClientChannel();
+    CPubSubClientChannel( CIPubSubMsgPersistance* persistance );
     virtual ~CPubSubClientChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
@@ -224,6 +238,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     CORE::CDynamicBuffer* m_msgReceiveBuffer;
     CORE::CDateTime m_lastWriteBlockCompletion;    
     COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
+    CIPubSubMsgPersistance* m_persistance;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -232,7 +247,8 @@ typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChann
 
 /*-------------------------------------------------------------------------*/
 
-class CStorageChannel : public CORE::CTaskConsumer
+class CStorageChannel : public CORE::CTaskConsumer ,
+                        public CIPubSubMsgPersistance
 {
     public:
 
@@ -255,6 +271,11 @@ class CStorageChannel : public CORE::CTaskConsumer
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool WaitForTaskToFinish( CORE::Int32 timeoutInMs ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
+                                                const CORE::CString& topicName , 
+                                                CORE::CVariant& msgId          , 
+                                                CORE::CDateTime& msgDt         ) GUCEF_VIRTUAL_OVERRIDE;
 
     bool LoadConfig( const ChannelSettings& channelSettings );
 
@@ -288,8 +309,6 @@ class CStorageChannel : public CORE::CTaskConsumer
 
     CORE::CString GetPathToLastWrittenPubSubStorageFile( void ) const;
 
-    CORE::CVariant GetLastWrittenPubSubMsgId( void ) const;
-
     private:
 
     ChannelSettings m_channelSettings;
@@ -297,6 +316,9 @@ class CStorageChannel : public CORE::CTaskConsumer
     ChannelMetrics m_metrics;
     CPubSubClientChannelPtr m_pubsubClient;
     CORE::CDynamicBuffer* m_msgReceiveBuffer;
+    CORE::CString m_vfsFilePostfix;
+    CORE::CVariant m_lastPersistedMsgId;
+    CORE::CDateTime m_lastPersistedMsgDt;
 };
 
 /*-------------------------------------------------------------------------*/

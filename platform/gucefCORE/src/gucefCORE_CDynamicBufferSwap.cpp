@@ -86,8 +86,8 @@ CDynamicBufferSwap::CDynamicBufferSwap( UInt32 nrOfBuffers )
     , m_lock()
 {GUCEF_TRACE;
 
-    if ( nrOfBuffers < 2 )
-        nrOfBuffers = 2;
+    if ( nrOfBuffers < 3 )
+        nrOfBuffers = 3;
     m_buffers.resize( nrOfBuffers );
 }
 

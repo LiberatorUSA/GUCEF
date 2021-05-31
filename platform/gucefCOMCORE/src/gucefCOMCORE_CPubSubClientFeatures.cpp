@@ -50,10 +50,15 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsAutoReconnect( false )
     , supportsBinaryPayloads( false )
     , supportsMultiHostSharding( false )
-    , supportsMsgKeysPerTopic( false )
-    , supportsKeyValuePerMsg( false )
+    , supportsPerMsgIds( false )
+    , supportsPrimaryPayloadPerMsg( false )
+    , supportsKeyValueSetPerMsg( false )
     , supportsDuplicateKeysPerMsg( false )
     , supportsMetrics( false )
+    , supportsBookmarkingConcept( false )
+    , supportsAutoBookmarking( false )
+    , supportsMsgIdBasedBookmark( false )
+    , supportsMsgDateTimeBasedBookmark( false )
 {GUCEF_TRACE;
 
 }
@@ -76,9 +81,14 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect );
     tree.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
     tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
-    tree.SetAttribute( "supportsMsgKeysPerTopic", supportsMsgKeysPerTopic );
-    tree.SetAttribute( "supportsKeyValuePerMsg", supportsKeyValuePerMsg );
+    tree.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
+    tree.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg );
+    tree.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
     tree.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
+    tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
+    tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
+    tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
+    tree.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark );
     tree.SetAttribute( "supportsMetrics", supportsMetrics );
 
     return true;
@@ -95,9 +105,14 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsAutoReconnect = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ) ), supportsAutoReconnect );
     supportsBinaryPayloads = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ) ), supportsBinaryPayloads );
     supportsMultiHostSharding = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ) ), supportsMultiHostSharding );
-    supportsMsgKeysPerTopic = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMsgKeysPerTopic" ) ), supportsMsgKeysPerTopic );
-    supportsKeyValuePerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValuePerMsg" ) ), supportsKeyValuePerMsg );
+    supportsPerMsgIds = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ) ), supportsPerMsgIds );
+    supportsPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ) ), supportsPrimaryPayloadPerMsg );    
+    supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
     supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
+    supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept );
+    supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking );
+    supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark );
+    supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark );
     supportsMetrics = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ) ), supportsMetrics );
 
     return true;

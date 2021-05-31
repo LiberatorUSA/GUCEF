@@ -78,7 +78,7 @@
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
-#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1025*1024*50)// 50MB
+#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1024*1024*50)// 50MB
 #define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
 
 /*-------------------------------------------------------------------------//
@@ -290,7 +290,22 @@ ChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientChannel::CPubSubClientChannel()
+COMCORE::CPubSubClientTopicConfig* 
+ChannelSettings::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    TTopicConfigVector::iterator i = pubsubClientTopicConfigs.begin();
+    while ( i != pubsubClientTopicConfigs.end() )
+    {
+        if ( topicName == (*i).topicName )
+            return &(*i);
+    }    
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientChannel::CPubSubClientChannel( CIPubSubMsgPersistance* persistance )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
     , m_topics()
@@ -303,6 +318,7 @@ CPubSubClientChannel::CPubSubClientChannel()
     , m_msgReceiveBuffer( GUCEF_NULL )
     , m_lastWriteBlockCompletion()
     , m_msgOffsetIndex()
+    , m_persistance( persistance )
 {GUCEF_TRACE;
 
 }
@@ -547,15 +563,15 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                 "):OnTaskStart: Failed to create a pub-sub client of type \"" + m_channelSettings.pubsubClientConfig.pubsubClientType + "\". Cannot proceed" );        
             return false;
         }
+    }
 
-        COMCORE::CPubSubClientFeatures clientFeatures;
-        m_pubsubClient->GetSupportedFeatures( clientFeatures );
+    COMCORE::CPubSubClientFeatures clientFeatures;
+    m_pubsubClient->GetSupportedFeatures( clientFeatures );
         
-        if ( !clientFeatures.supportsAutoReconnect )
-        {
-            if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
-                m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.pubsubClientConfig.reconnectDelayInMs );
-        }
+    if ( !clientFeatures.supportsAutoReconnect )
+    {
+        if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
+            m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.pubsubClientConfig.reconnectDelayInMs );
     }
 
     SubscribeTo( m_pubsubClient.GetPointerAlways() );
@@ -578,13 +594,13 @@ CPubSubClientChannel::ConnectPubSubClient( void )
             if ( !(*i).isOptional )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
                 return false;            
             }
             else
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
             }
         }
 
@@ -596,7 +612,87 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     TopicVector::iterator t = m_topics.begin();
     while ( t != m_topics.end() )
     {
-        (*t)->Connect();
+        if ( (*t)->InitializeConnectivity() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + (*t)->GetTopicName() + "\". Proceeding" );
+
+            // We use the 'desired' feature to also drive whether we actually subscribe at this point
+            // saves us an extra setting
+            COMCORE::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( (*t)->GetTopicName() );
+            if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
+            {            
+                // The method of subscription depends on the supported feature set
+                bool subscribeSuccess = false;
+                if ( clientFeatures.supportsAutoBookmarking && clientFeatures.supportsBookmarkingConcept ) // first preference is backend managed bookmarking
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
+
+                    subscribeSuccess = (*t)->Subscribe();
+                }
+                else
+                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // seconds preference is msgId based bookmarking because of its exact addressability
+                {
+                    CORE::CVariant msgId;
+                    CORE::CDateTime msgDt;
+                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id but we failed at obtaining the last used message id" );
+                        return false;
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id. ID=" + msgId );
+                    }
+
+                    subscribeSuccess = (*t)->SubscribeStartingAtMsgId( msgId );
+                }
+                else
+                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // third preference is DateTime based bookmarking. Not as exact but better than nothing
+                {
+                    CORE::CVariant msgId;
+                    CORE::CDateTime msgDt;
+                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime but we failed at obtaining it" );
+                        return false;
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime which is " + msgDt.ToIso8601DateTimeString( true, true ) );
+                    }
+
+                    subscribeSuccess = (*t)->SubscribeStartingAtMsgDateTime( msgDt );
+                }
+                else
+                if ( !clientFeatures.supportsBookmarkingConcept )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend. We will subscribe and get whatever we get" );
+
+                    subscribeSuccess = (*t)->Subscribe();
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Unsupported/Unknown bookmark handling by the backend. We will subscribe and get whatever we get best effort" );
+
+                    subscribeSuccess = (*t)->Subscribe();
+                }
+
+                if ( !subscribeSuccess )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Failed to subscribe to topic: " + (*t)->GetTopicName() );
+                    return false;
+                }
+            }
+        }
         ++t;
     }
 
@@ -715,8 +811,11 @@ CStorageChannel::CStorageChannel()
     , m_channelSettings()
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
-    , m_pubsubClient( new CPubSubClientChannel() )
+    , m_pubsubClient( new CPubSubClientChannel( this ) )
     , m_msgReceiveBuffer( GUCEF_NULL )
+    , m_vfsFilePostfix( ".vUNKNOWN.bin" )
+    , m_lastPersistedMsgId()
+    , m_lastPersistedMsgDt()
 {GUCEF_TRACE;
 
 }
@@ -728,7 +827,8 @@ CStorageChannel::CStorageChannel( const CStorageChannel& src )
     , m_channelSettings( src.m_channelSettings )
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
-    , m_pubsubClient( new CPubSubClientChannel() )
+    , m_pubsubClient( new CPubSubClientChannel( this ) )
+    , m_vfsFilePostfix( src.m_vfsFilePostfix )
 {GUCEF_TRACE;
 
 }
@@ -776,6 +876,7 @@ CStorageChannel::LoadConfig( const ChannelSettings& channelSettings )
                 m_channelSettings.vfsFileExtention = "bin.compressed";
         }
     }
+    m_vfsFilePostfix = ".v" + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_channelSettings.vfsFileExtention;
         
     return m_pubsubClient->LoadConfig( channelSettings );
 }
@@ -908,7 +1009,7 @@ CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
     VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, false, CORE::CString::Empty, true, false );
+    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, CORE::CString::Empty, true, false );
 
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
@@ -923,34 +1024,50 @@ CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CVariant
-CStorageChannel::GetLastWrittenPubSubMsgId( void ) const
+bool 
+CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
+                                                const CORE::CString& topicName , 
+                                                CORE::CVariant& msgId          , 
+                                                CORE::CDateTime& msgDt         )
 {GUCEF_TRACE;
 
-    CORE::CString lastWrittenFile = GetPathToLastWrittenPubSubStorageFile();
-    if ( lastWrittenFile.IsNULLOrEmpty() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file" );
-        return CORE::CString::Empty;
-    }
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-        
-    CORE::CDynamicBuffer lastStorageFile;
-    if ( !vfs.LoadFile( lastStorageFile, lastWrittenFile, "rb" ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot load last written file" );
-        return CORE::CString::Empty;
-    }
-
-    COMCORE::CBasicPubSubMsg msg;
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFile, 0, false ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot deserialize last msg in container" );
-        return CORE::CString::Empty;
-    }
+    // @TODO: topic name segregation
     
-    return msg.GetMsgId();
+    if ( channelId != m_channelSettings.channelId )
+        return false; // this should never happen
+    
+    if ( m_lastPersistedMsgId.IsNULLOrEmpty() && m_lastPersistedMsgDt == CORE::CDateTime::Empty )
+    {
+        CORE::CString lastWrittenFile = GetPathToLastWrittenPubSubStorageFile();
+        if ( lastWrittenFile.IsNULLOrEmpty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file" );
+            return false;
+        }
+
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+        CORE::CDynamicBuffer lastStorageFile;
+        if ( !vfs.LoadFile( lastStorageFile, lastWrittenFile, "rb" ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot load last written file" );
+            return false;
+        }
+
+        COMCORE::CBasicPubSubMsg msg;
+        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFile, 0, false ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot deserialize last msg in container" );
+            return false;
+        }
+
+        m_lastPersistedMsgId = msg.GetMsgId();
+        m_lastPersistedMsgDt = msg.GetMsgDateTime();
+    }
+
+    msgId = m_lastPersistedMsgId;
+    msgDt = m_lastPersistedMsgDt;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -970,7 +1087,7 @@ CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
     m_msgReceiveBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
     if ( GUCEF_NULL != m_msgReceiveBuffer )
     {
-        CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + ".v1." + m_channelSettings.vfsFileExtention;
+        CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
         CORE::CString vfsStoragePath = CORE::CombinePath( m_channelSettings.vfsStorageRootPath, vfsFilename );
             
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();

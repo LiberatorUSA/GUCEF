@@ -56,10 +56,11 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
 {
     public:
-
+    
     typedef std::vector< UInt32 >   TMsgOffsetIndex;
 
-    static const CORE::CString MagicText;
+    static const CORE::CString  MagicText;
+    static const CORE::UInt8    CurrentFormatVersion;
 
     static bool SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
                                  UInt32 currentTargetOffset                       , 

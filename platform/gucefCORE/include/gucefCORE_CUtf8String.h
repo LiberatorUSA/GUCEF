@@ -276,6 +276,10 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     CUtf8String ReplaceChar( Int32 oldchar ,
                              Int32 newchar ) const;
 
+    CUtf8String ReplaceChars( Int32* oldchars     ,
+                              UInt32 nrOfOldChars ,
+                              Int32 newchar       ) const;
+
     CUtf8String ReplaceSubstr( const CUtf8String& substr      ,
                                const CUtf8String& replacement ) const;
 
@@ -339,6 +343,13 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  occurs within the UTF8 encoded string
      */
     UInt32 GetCharacterCount( const Int32 searchChar ) const;
+
+    /**
+     *  Counts how many times any of the given UTF32 denoted search characters
+     *  occurs within the UTF8 encoded string
+     */
+    UInt32 GetCharactersCount( Int32* searchChars     ,
+                               UInt32 nrOfSearchChars ) const;
 
     /**
      *  Counts how many times the given UTF32 denoted search character

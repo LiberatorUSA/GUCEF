@@ -76,7 +76,7 @@ namespace COMCORE {
  *  Base class for all pub-sub client implementations
  */
 class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
-                                               public CORE::CIConfigurable
+                                               public virtual CORE::CIConfigurable
 {
     public:
 

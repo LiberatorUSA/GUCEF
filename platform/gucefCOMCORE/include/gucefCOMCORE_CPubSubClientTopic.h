@@ -95,7 +95,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual ~CPubSubClientTopic();
 
-    virtual bool Connect( void ) = 0;
+    virtual bool InitializeConnectivity( void ) = 0;
+
+    virtual bool Subscribe( void ) = 0;
+    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) = 0;
+    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) = 0;
 
     virtual bool Disconnect( void ) = 0;
 

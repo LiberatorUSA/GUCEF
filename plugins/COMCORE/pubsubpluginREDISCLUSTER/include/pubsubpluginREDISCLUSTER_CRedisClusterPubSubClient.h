@@ -196,7 +196,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     virtual ~CRedisClusterPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Connect( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool InitializeConnectivity( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -205,6 +205,12 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -230,11 +236,21 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
     
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+
+    virtual bool Lock( CORE::UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     void RegisterEventHandlers( void );
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+
+    bool SubscribeImpl( const std::string& readOffset );
 
     private:
 
@@ -275,6 +291,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     CRedisClusterPubSubClientTopicConfig m_config;
     std::string m_readOffset;    
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------*/

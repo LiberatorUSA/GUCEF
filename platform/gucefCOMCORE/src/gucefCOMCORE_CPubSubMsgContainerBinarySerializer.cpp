@@ -51,6 +51,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 const CORE::CString CPubSubMsgContainerBinarySerializer::MagicText = "PUBSUBMSGS";
+const CORE::UInt8   CPubSubMsgContainerBinarySerializer::CurrentFormatVersion = 1;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,7 +74,7 @@ CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySeri
         return false;
 
     // Reserved for the future version field
-    UInt8 formatVersion = 1;
+    UInt8 formatVersion = CurrentFormatVersion;
     newBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(formatVersion), &formatVersion );
     bytesWritten += newBytesWritten;
     currentTargetOffset += newBytesWritten;
@@ -119,7 +120,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
         UInt8 formatVersion = source.AsConstType< UInt8 >( currentSourceOffset );
         bytesRead += sizeof(formatVersion);
         currentSourceOffset += sizeof(formatVersion);
-        if ( 1 != formatVersion )
+        if ( CurrentFormatVersion != formatVersion )
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Incompatible format version" );
             return false;
@@ -158,6 +159,10 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
                                                       UInt32& bytesWritten         )
 {GUCEF_TRACE;
 
+    UInt32 footerSize = ((UInt32)index.size()*4)+4+(MagicText.ByteSize()-1);
+    if ( target.GetUnusedBufferSize() < footerSize )
+        target.SetBufferSize( target.GetBufferSize() + footerSize, false );
+    
     // Write the msg offset index
     // The purpose of the index is quick access to messages by index even though the
     // messages have variable length
@@ -329,6 +334,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
     TMsgOffsetIndex index;
     if ( !DeserializeFooter( index, source, bytesRead ) )
     {
+        // @TODO: Rebuild index as a fallback
+        
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer" );
         return false;
     }

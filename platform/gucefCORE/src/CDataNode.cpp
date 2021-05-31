@@ -385,7 +385,7 @@ CDataNode::GetAttribute( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-CVariant 
+const CVariant &
 CDataNode::GetAttributeValue( const CString& name ) const
 {GUCEF_TRACE;
 
@@ -394,7 +394,7 @@ CDataNode::GetAttributeValue( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-CVariant 
+const CVariant&
 CDataNode::GetAttributeValue( const CString& name          , 
                               const CVariant& defaultValue ) const
 {GUCEF_TRACE;
@@ -1426,7 +1426,7 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant
+const CVariant&
 CDataNode::GetChildValueByName( const CString& name ) const
 {GUCEF_TRACE;
 
@@ -1435,25 +1435,26 @@ CDataNode::GetChildValueByName( const CString& name ) const
     {
         return childNode->GetValue();
     }
-    return CVariant();
+    return CVariant::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CVariant
+const CVariant&
 CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue ) const
 {GUCEF_TRACE;
 
-    CVariant value = GetAttributeValue( name );
-    if ( value.IsNULLOrEmpty() )
+    const CVariant& attValue = GetAttributeValue( name );
+    if ( attValue.IsNULLOrEmpty() )
     {
-        value = GetChildValueByName( name );
-        if ( value.IsNULLOrEmpty() )
+        const CVariant& childValue = GetChildValueByName( name );
+        if ( childValue.IsNULLOrEmpty() )
         {
             return defaultValue;
         }
+        return childValue;
     }
-    return value;
+    return attValue;
 }
 
 /*-------------------------------------------------------------------------*/
