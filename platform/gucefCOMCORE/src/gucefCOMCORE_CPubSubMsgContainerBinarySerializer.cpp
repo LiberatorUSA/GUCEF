@@ -106,7 +106,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
     {
         // magic text bytes to help identify the blob as being a container of pub sub messages
         CORE::CString testStr;    
-        UInt32 newBytesRead = source.CopyTo( currentSourceOffset, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize() ) );
+        UInt32 newBytesRead = source.CopyTo( currentSourceOffset, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         bytesRead += newBytesRead;
         currentSourceOffset += newBytesRead;
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
@@ -214,7 +214,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
         // Note that footer reading occurs backwards from the end of the container towards the front
 
         CORE::CString testStr;    
-        UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()-1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize() ) );
+        UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer magic text" );
@@ -331,6 +331,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
         return false;
     }
 
+    // Note that the footer is read in reversed order vs how it was written 
+    // thus so will be the entries in the index
     TMsgOffsetIndex index;
     if ( !DeserializeFooter( index, source, bytesRead ) )
     {
@@ -339,7 +341,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer" );
         return false;
     }
-    if ( !index.empty() )
+    if ( index.empty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Footer claims the container is empty" );
         return false;
@@ -351,7 +353,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
         return false;
     }
 
-    UInt32 actualIndex = (UInt32) ( fromStart ? msgIndex : (index.size()-1) - msgIndex );
+    UInt32 actualIndex = (UInt32) ( fromStart ? (index.size()-1) - msgIndex : msgIndex );
     CORE::UInt32 offsetOfLastMsg = index[ actualIndex ];
     if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, msg, offsetOfLastMsg, source, bytesRead ) )
     {

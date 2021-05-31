@@ -53,10 +53,11 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CDynamicBufferAccess::CDynamicBufferAccess( void )
-    : CIOAccess()      ,
-      m_buffer( NULL ) ,
-      m_carat( 0 )     ,
-      m_deleteBufferUponDestruction( false )
+    : CIOAccess()      
+    , m_buffer( GUCEF_NULL ) 
+    , m_carat( 0 )     
+    , m_deleteBufferUponDestruction( false )
+    , m_bufferWasConst( false )
 {GUCEF_TRACE;
 
 }
@@ -69,6 +70,7 @@ CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer              
     , m_buffer( buffer )                                          
     , m_carat( 0 )                                                 
     , m_deleteBufferUponDestruction( deleteBufferUponDestruction )
+    , m_bufferWasConst( false )
 {GUCEF_TRACE;
         
     assert( m_buffer != NULL );                    
@@ -76,14 +78,28 @@ CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer              
 
 /*-------------------------------------------------------------------------*/
 
-CDynamicBufferAccess::CDynamicBufferAccess( const CDynamicBuffer& buffer )
+CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer& buffer )
     : CIOAccess()                                                  
-    , m_buffer( GUCEF_NULL )                                          
+    , m_buffer( &buffer )
     , m_carat( 0 )                                                 
     , m_deleteBufferUponDestruction( false )
+    , m_bufferWasConst( false )
 {GUCEF_TRACE;
 
-    LinkTo( buffer.GetConstBufferPtr(), buffer.GetDataSize() );
+    assert( m_buffer != NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBufferAccess::CDynamicBufferAccess( const CDynamicBuffer& buffer )
+    : CIOAccess()                                                  
+    , m_buffer( const_cast< CDynamicBuffer* >( &buffer ) )
+    , m_carat( 0 )                                                 
+    , m_deleteBufferUponDestruction( false )
+    , m_bufferWasConst( true )
+{GUCEF_TRACE;
+
+    assert( m_buffer != NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,6 +133,7 @@ CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
     }
     
     m_buffer = new CDynamicBuffer();
+    m_bufferWasConst = false;
     if ( m_buffer->LoadContentFromFile( filePath, offsetInFile, bytesToRead ) )
     {
         m_deleteBufferUponDestruction = true;
@@ -137,6 +154,7 @@ CDynamicBufferAccess::LinkTo( CDynamicBuffer* externalBuffer   ,
 
     m_deleteBufferUponDestruction = deleteBufferUponDestruction;
     m_buffer = externalBuffer;
+    m_bufferWasConst = false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,6 +174,7 @@ CDynamicBufferAccess::LinkTo( const void* externalBuffer ,
     
     m_buffer = new CDynamicBuffer();
     m_deleteBufferUponDestruction = true;
+    m_bufferWasConst = true;
     m_buffer->LinkTo( externalBuffer, bufferSize );    
 }
 
@@ -357,7 +376,7 @@ bool
 CDynamicBufferAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
 
-    return ( m_buffer != GUCEF_NULL ) && ( !m_buffer->IsLinked() );
+    return !m_bufferWasConst && ( m_buffer != GUCEF_NULL ) && ( !m_buffer->IsLinked() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -368,11 +387,15 @@ CDynamicBufferAccess::Write( const void* srcdata ,
                              UInt32 elements     )
 {GUCEF_TRACE;
 
-    UInt32 bytesWritten = m_buffer->CopyFrom( m_carat        , 
-                                              esize*elements ,
-                                              srcdata        );
-    m_carat += bytesWritten;
-    return bytesWritten;
+    if ( IsWriteable() )
+    {
+        UInt32 bytesWritten = m_buffer->CopyFrom( m_carat        , 
+                                                  esize*elements ,
+                                                  srcdata        );
+        m_carat += bytesWritten;
+        return bytesWritten;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

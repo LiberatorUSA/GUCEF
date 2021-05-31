@@ -738,8 +738,10 @@ CUtf8String::Reserve( const UInt32 byteSize, Int32 newLength )
         if ( byteSize < m_byteSize )
             m_length = 0;
         if ( newLength >= 0 && (UInt32) newLength < byteSize )
+        {
             m_length = (UInt32) newLength;            
-
+            newBuffer[ m_length ] = '\0';
+        }
         m_byteSize = byteSize;
     }
     else

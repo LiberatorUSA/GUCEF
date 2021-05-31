@@ -137,6 +137,8 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::CString vfsFileExtention;
     CORE::CString encodeCodecFamily;
     CORE::CString encodeCodecName;
+    CORE::CString decodeCodecFamily;
+    CORE::CString decodeCodecName;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool performPubSubInDedicatedThread;
@@ -319,6 +321,7 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     CORE::CString m_vfsFilePostfix;
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
+    CORE::Float32 m_encodeSizeRatio;
 };
 
 /*-------------------------------------------------------------------------*/

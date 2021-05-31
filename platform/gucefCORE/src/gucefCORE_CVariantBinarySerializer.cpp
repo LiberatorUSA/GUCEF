@@ -68,7 +68,7 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
         currentTargetOffset += lastBytesWritten;
         bytesWritten += lastBytesWritten;
 
-        // early exit for unknown type
+        // early exit for unknown type, think of this as a placeholder for a nil value
         if ( GUCEF_DATATYPE_UNKNOWN == typeId )
             return true;
 
@@ -108,15 +108,15 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
         currentSourceOffset += sizeof( typeId );
         bytesRead += sizeof( typeId );
 
-        // early exit for unknown type
+        // early exit for unknown type, think of this as a placeholder for a nil value
         if ( GUCEF_DATATYPE_UNKNOWN == typeId )
             return true;
 
         if ( CVariant::UsesDynamicMemory( typeId ) )
         {
             UInt32 payloadSize = source.AsConstType< UInt32 >( currentSourceOffset );
-            currentSourceOffset += sizeof( typeId );
-            bytesRead += sizeof( typeId );
+            currentSourceOffset += sizeof( payloadSize );
+            bytesRead += sizeof( payloadSize );
 
             bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, false );
             bytesRead += var.ByteSize();

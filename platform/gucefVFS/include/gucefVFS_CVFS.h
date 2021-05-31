@@ -387,6 +387,23 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
                           const CORE::CString& decodeCodec                           ,
                           const CORE::CString& asyncRequestId = CORE::CString::Empty );
 
+    /**
+     *  Encodes a file from the buffer given if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @param outputData         Buffer to be filled with the data to be decoded from the file
+     *  @param bufferOffset       Offset into the outputData buffer from where to start writing
+     *  @param encodedFilePath    Path for the encoded file we wish to decode
+     *  @param overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @param codecFamily        which codec family to reference when looking for the named codec
+     *  @param encodeCodec        which named codec to use when encoding the file
+     */
+    bool DecodeAsFile( CORE::CDynamicBuffer& outputData     ,
+                       const CORE::UInt64 bufferOffset      ,
+                       const CORE::CString& encodedFilePath ,
+                       const CORE::CString& codecFamily     ,
+                       const CORE::CString& decodeCodec     );
+
     bool DeleteFile( const CString& filePath ,
                      bool okIfItDoesNotExist );
     

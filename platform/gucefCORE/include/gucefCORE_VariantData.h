@@ -50,7 +50,11 @@ namespace CORE {
 
 struct SHeapData
 {
-    void* heap_data;                /**< pointer to the block of heap memory */
+    union HeapDataPtrUnionType
+    {
+        void* void_heap_data;                /**< pointer to the block of heap memory */
+        char* char_heap_data;                /**< pointer to the block of heap memory */
+    } union_data;
     UInt32 heap_data_size;          /**< size of the referenced memory block in bytes */
     UInt8 heap_data_is_linked;      /**< 1 or 0 flag to denote whether the heap data is owned by the variant and thus would need to be deleted or whether its merely linked as a reference */
 };

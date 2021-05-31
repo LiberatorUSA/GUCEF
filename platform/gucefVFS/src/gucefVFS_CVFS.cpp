@@ -467,6 +467,47 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::DecodeAsFile( CORE::CDynamicBuffer& decodedOutput  ,
+                    const CORE::UInt64 bufferOffset      ,
+                    const CORE::CString& encodedFilePath ,
+                    const CORE::CString& codecFamily     ,
+                    const CORE::CString& decodeCodec     )
+{GUCEF_TRACE;
+
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, decodeCodec );
+    if ( !codec )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Cannot decode file due to inability to obtain codec " +
+            decodeCodec + " for codec family " + codecFamily );
+        return false;
+    }
+
+    CVFSHandlePtr sourceFile = GetFile( encodedFilePath, "rb", false );
+    if ( !sourceFile || GUCEF_NULL == sourceFile->GetAccess() || !sourceFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Cannot obtain access to output file: " + encodedFilePath );
+        return false;
+    }
+
+    CORE::CDynamicBufferAccess bufferAccess( decodedOutput );
+    bufferAccess.Setpos( (UInt32) bufferOffset );
+
+    if ( !codec->Decode( *sourceFile->GetAccess(), bufferAccess  ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Failed to decode buffer using codec \"" +
+            decodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+        return false;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Successfully decoded buffer using codec \"" +
+        decodeCodec + "\" from codec family \"" + codecFamily + "\" loaded from \"" + encodedFilePath + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
                     const CORE::UInt64 bufferOffset      ,
                     const CORE::CString& encodedFilepath ,
@@ -1488,13 +1529,14 @@ CVFS::GetList( TStringSet& outputList                   ,
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
-        mountLink.mountEntry->archive->GetList( outputList            ,
-                                                mountLink.remainder   ,
-                                                recursive             ,
-                                                includePathInFilename ,
-                                                filter                ,
-                                                addFiles              ,
-                                                addDirs               );
+        mountLink.mountEntry->archive->GetList( outputList                      ,
+                                                mountLink.mountEntry->mountPath ,
+                                                mountLink.remainder             ,
+                                                recursive                       ,
+                                                includePathInFilename           ,
+                                                filter                          ,
+                                                addFiles                        ,
+                                                addDirs                         );
         ++i;
     }
 }

@@ -58,7 +58,7 @@
 /*---------------------------------------------------------------------------*/
 
 static char* supportedCompressionTypes[] = {
-    "zlib", "deflate", "gzip"
+    "zlib", "deflate", "inflate", "gzip"
 };
 static const Int32 compressionCodecCount = (Int32) ( sizeof( supportedCompressionTypes ) / sizeof(char*) ); 
 
@@ -128,7 +128,7 @@ ZLibCompress( TIOAccess* input  ,
         do
         {
             int res = deflate( &strm, Z_NO_FLUSH );
-            if ( Z_OK != res )
+            if ( Z_OK != res && Z_STREAM_END != res )
             {
                 free( tempInputBuffer );
                 free( tempOutputBuffer );
@@ -137,11 +137,14 @@ ZLibCompress( TIOAccess* input  ,
 
             if ( 0 == strm.avail_out )
             {
-                output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-                
+                UInt32 bytesLeft = 0;
+                outputBytesWritten = output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
+                /* if everything went Ok outputBytesWritten should match TEMP_INPROCESS_BUFFER_SIZE */
+                bytesLeft = (TEMP_INPROCESS_BUFFER_SIZE - outputBytesWritten);
+
                 /* make the full output buffer available again as we have written everything to the output */
-                strm.next_out = tempOutputBuffer;
-                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
+                strm.next_out = tempOutputBuffer + bytesLeft;
+                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE - bytesLeft;
             }
         }
         while ( 0 != strm.avail_in );
@@ -152,7 +155,7 @@ ZLibCompress( TIOAccess* input  ,
         strm.next_in = tempInputBuffer;
         strm.avail_in = inputBytesRead;
     }
-    output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+    outputBytesWritten = output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
                 
     /* make the full output buffer available again as we have written everything to the output */
     strm.next_out = tempOutputBuffer;
@@ -214,13 +217,11 @@ ZLibDecompress( TIOAccess* input  ,
         return 0;
     }
     
-    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-    
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
     strm.next_in = tempInputBuffer;
-    strm.avail_in = inputBytesRead;
+    strm.avail_in = TEMP_READ_BUFFER_SIZE;
     strm.next_out = tempOutputBuffer;
     strm.avail_out = tempOutputBufferSize;
 
@@ -240,7 +241,7 @@ ZLibDecompress( TIOAccess* input  ,
         do
         {
             int res = inflate( &strm, Z_NO_FLUSH );
-            if ( Z_OK != res )
+            if ( Z_OK != res && Z_STREAM_END != res )
             {
                 free( tempInputBuffer );
                 free( tempOutputBuffer );
@@ -249,11 +250,14 @@ ZLibDecompress( TIOAccess* input  ,
 
             if ( 0 == strm.avail_out )
             {
-                output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-                
+                UInt32 bytesLeft = 0;
+                outputBytesWritten = output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
+                /* if everything went Ok outputBytesWritten should match TEMP_INPROCESS_BUFFER_SIZE */
+                bytesLeft = (TEMP_INPROCESS_BUFFER_SIZE - outputBytesWritten);
+
                 /* make the full output buffer available again as we have written everything to the output */
-                strm.next_out = tempOutputBuffer;
-                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
+                strm.next_out = tempOutputBuffer + bytesLeft;
+                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE - bytesLeft;
             }
         }
         while ( 0 != strm.avail_in );
@@ -264,7 +268,7 @@ ZLibDecompress( TIOAccess* input  ,
         strm.next_in = tempInputBuffer;
         strm.avail_in = inputBytesRead;
     }
-    output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+    outputBytesWritten = output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
                 
     /* make the full output buffer available again as we have written everything to the output */
     strm.next_out = tempOutputBuffer;
@@ -446,7 +450,9 @@ CODECPLUGIN_Decode( void* pluginData       ,
     {
         if ( 0 == strcmp( "zlib", codecType ) || 0 == strcmp( "gzip", codecType ) )        
             return ZLibDecompress( input, output, WINDOW_BITS_GZIP_OR_ZLIB_AUTO );
-        if ( 0 == strcmp( "deflate", codecType ) )        
+        
+        /* the algo name is "deflate" but what we are doing here is "inflate", as such we will accept both terms for the same for now */
+        if ( 0 == strcmp( "deflate", codecType ) || 0 == strcmp( "inflate", codecType ) )        
             return ZLibDecompress( input, output, WINDOW_BITS_RAW_DEFLATE );
     }
     return 0;

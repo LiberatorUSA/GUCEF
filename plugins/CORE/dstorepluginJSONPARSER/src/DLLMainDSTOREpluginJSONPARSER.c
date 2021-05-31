@@ -235,8 +235,8 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                 TVariantData var;
                 memset( &var, 0, sizeof var );
                 var.containedType = GUCEF_DATATYPE_UTF8_STRING;
-                var.union_data.heap_data.heap_data = (void*) nodename;
-                var.union_data.heap_data.heap_data_size = strlen( nodename );
+                var.union_data.heap_data.union_data.char_heap_data = nodename;
+                var.union_data.heap_data.heap_data_size = (UInt32) strlen( nodename );
                 
                 DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, &var, haschildren );
                 if ( nodeType != GUCEF_DATATYPE_ARRAY && nodeType != GUCEF_DATATYPE_OBJECT )
@@ -296,8 +296,8 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         {
-            int isNotTrue = stricmp( (const char*) attvalue->union_data.heap_data.heap_data, "true" );
-            int isNotFalse = stricmp( (const char*) attvalue->union_data.heap_data.heap_data, "false" );
+            int isNotTrue = stricmp( (const char*) attvalue->union_data.heap_data.union_data.char_heap_data, "true" );
+            int isNotFalse = stricmp( (const char*) attvalue->union_data.heap_data.union_data.char_heap_data, "false" );
 
             json_value* att = GUCEF_NULL;
             if ( isNotTrue == 0 )
@@ -392,7 +392,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         case GUCEF_DATATYPE_ASCII_STRING:
         default:
         {
-            const char* attValue = (const char*) attvalue->union_data.heap_data.heap_data;
+            const char* attValue = attvalue->union_data.heap_data.union_data.char_heap_data;
             if ( GUCEF_NULL == attValue )
                 attValue = "";
             json_value* att = json_string_new( attValue );

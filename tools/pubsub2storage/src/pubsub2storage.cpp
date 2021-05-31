@@ -80,6 +80,7 @@
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
 #define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1024*1024*50)// 50MB
 #define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
+#define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,6 +99,8 @@ ChannelSettings::ChannelSettings( void )
     , vfsFileExtention()
     , encodeCodecFamily()
     , encodeCodecName()
+    , decodeCodecFamily()
+    , decodeCodecName()
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , performPubSubInDedicatedThread( true )
@@ -121,6 +124,8 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , vfsFileExtention( src.vfsFileExtention )
     , encodeCodecFamily( src.encodeCodecFamily )
     , encodeCodecName( src.encodeCodecName )
+    , decodeCodecFamily( src.decodeCodecFamily )
+    , decodeCodecName( src.decodeCodecName )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
@@ -149,6 +154,8 @@ ChannelSettings::operator=( const ChannelSettings& src )
         vfsFileExtention = src.vfsFileExtention;
         encodeCodecFamily = src.encodeCodecFamily;
         encodeCodecName = src.encodeCodecName;
+        decodeCodecFamily = src.decodeCodecFamily;
+        decodeCodecName = src.decodeCodecName;
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
@@ -172,6 +179,8 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "vfsFileExtention", vfsFileExtention );
     tree.SetAttribute( "encodeCodecFamily", encodeCodecFamily );
     tree.SetAttribute( "encodeCodecName", encodeCodecName );
+    tree.SetAttribute( "decodeCodecFamily", decodeCodecFamily );
+    tree.SetAttribute( "decodeCodecName", decodeCodecName );
     tree.SetAttribute( "channelId", channelId );
     tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
     tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
@@ -268,6 +277,8 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     vfsFileExtention = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "vfsFileExtention" ).AsString( vfsFileExtention ) );
     encodeCodecFamily = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecFamily" ).AsString( encodeCodecFamily ) );
     encodeCodecName = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecName" ).AsString( encodeCodecName ) );
+    decodeCodecFamily = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "decodeCodecFamily" ).AsString( decodeCodecFamily ) );
+    decodeCodecName = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "decodeCodecName" ).AsString( decodeCodecName ) );
     channelId = CORE::StringToInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "channelId" ) ), channelId );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ) ), ticketRefillOnBusyCycle );
     performPubSubInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ) ), performPubSubInDedicatedThread );
@@ -740,8 +751,8 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( !ConnectPubSubClient() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-            "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedPubSubThread ) );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
     }
 
     RegisterEventHandlers();
@@ -816,6 +827,7 @@ CStorageChannel::CStorageChannel()
     , m_vfsFilePostfix( ".vUNKNOWN.bin" )
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
+    , m_encodeSizeRatio( -1 )
 {GUCEF_TRACE;
 
 }
@@ -829,6 +841,9 @@ CStorageChannel::CStorageChannel( const CStorageChannel& src )
     , m_metrics()
     , m_pubsubClient( new CPubSubClientChannel( this ) )
     , m_vfsFilePostfix( src.m_vfsFilePostfix )
+    , m_lastPersistedMsgId()
+    , m_lastPersistedMsgDt()
+    , m_encodeSizeRatio( src.m_encodeSizeRatio )
 {GUCEF_TRACE;
 
 }
@@ -873,8 +888,18 @@ CStorageChannel::LoadConfig( const ChannelSettings& channelSettings )
             if ( "deflate" == m_channelSettings.encodeCodecName )
                 m_channelSettings.vfsFileExtention = "bin.gz";    
             else
-                m_channelSettings.vfsFileExtention = "bin.compressed";
+                m_channelSettings.vfsFileExtention = "bin.encoded";
         }
+    }
+    // the encoder and decoder almost always belong to the same codec family so we can make that the default
+    if ( m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() )
+    {
+        m_channelSettings.decodeCodecFamily = m_channelSettings.encodeCodecFamily;
+    }
+    if ( m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
+    {
+        if ( "deflate" == m_channelSettings.encodeCodecName )
+            m_channelSettings.decodeCodecName = "inflate";
     }
     m_vfsFilePostfix = ".v" + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_channelSettings.vfsFileExtention;
         
@@ -1008,8 +1033,9 @@ CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
+    CORE::CString fileFilter = "*." + m_channelSettings.vfsFileExtention;
     VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, CORE::CString::Empty, true, false );
+    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter, true, false );
 
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
@@ -1038,8 +1064,8 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
     
     if ( m_lastPersistedMsgId.IsNULLOrEmpty() && m_lastPersistedMsgDt == CORE::CDateTime::Empty )
     {
-        CORE::CString lastWrittenFile = GetPathToLastWrittenPubSubStorageFile();
-        if ( lastWrittenFile.IsNULLOrEmpty() )
+        CORE::CString lastWrittenFilePath = GetPathToLastWrittenPubSubStorageFile();
+        if ( lastWrittenFilePath.IsNULLOrEmpty() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file" );
             return false;
@@ -1047,15 +1073,32 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
 
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
         
-        CORE::CDynamicBuffer lastStorageFile;
-        if ( !vfs.LoadFile( lastStorageFile, lastWrittenFile, "rb" ) )
+        CORE::CDynamicBuffer lastStorageFileContent;
+        if ( !m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() && !m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot load last written file" );
-            return false;
+            CORE::Float32 encodeRatio = m_encodeSizeRatio < 0 ? GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION : m_encodeSizeRatio;
+            CORE::UInt32 estimatedApproxDecodedSize = (CORE::UInt32) ( vfs.GetFileSize( lastWrittenFilePath ) * encodeRatio );
+            lastStorageFileContent.SetBufferSize( estimatedApproxDecodedSize, false );
+
+            if ( !vfs.DecodeAsFile( lastStorageFileContent, 0, lastWrittenFilePath, m_channelSettings.decodeCodecFamily, m_channelSettings.decodeCodecName ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot decode and load last persisted file. CodeFamily:" + m_channelSettings.decodeCodecFamily +
+                    " CodecName: " + m_channelSettings.decodeCodecName + ". VFS File: " + lastWrittenFilePath );
+                return false;
+            }
+        }
+        else
+        {
+            // Not using any encoding, load the file as-is
+            if ( !vfs.LoadFile( lastStorageFileContent, lastWrittenFilePath, "rb" ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot decode and load last persisted file. VFS File: " + lastWrittenFilePath );
+                return false;
+            }
         }
 
         COMCORE::CBasicPubSubMsg msg;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFile, 0, false ) )
+        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot deserialize last msg in container" );
             return false;
@@ -1107,7 +1150,8 @@ CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
         {
             if ( vfs.EncodeAsFile( *m_msgReceiveBuffer, 0, vfsStoragePath, true, m_channelSettings.encodeCodecFamily, m_channelSettings.encodeCodecName ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully encoded and stored pub-sub mesage block at: " + vfsStoragePath );
+                m_encodeSizeRatio = (CORE::Float32) ( m_msgReceiveBuffer->GetDataSize() / vfs.GetFileSize( vfsStoragePath ) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully encoded and stored pub-sub mesage block at: \"" + vfsStoragePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
             }
             else
             {

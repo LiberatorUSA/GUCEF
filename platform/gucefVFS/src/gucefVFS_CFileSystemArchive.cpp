@@ -132,7 +132,7 @@ CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
 
         // Get a list of all files from the root onward
         TStringSet files;
-        GetList( files, CString::Empty, true, true, CString::Empty, true, false );
+        GetList( files, settings.GetMountPath(), CString::Empty, true, true, CString::Empty, true, false );
 
         // Find mountable types
         TStringSet::iterator i = files.begin();
@@ -249,17 +249,21 @@ CFileSystemArchive::StoreAsFile( const CORE::CString& filePath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
-                                     bool recursive             ,
-                                     bool includePathInFilename ,
-                                     const CString& filter      ,
-                                     TStringSet& outputList     ,
-                                     bool addFiles              ,
-                                     bool addDirs               ) const
+CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
+                                     const CString& vfsMountLocation   , 
+                                     const CString& vfsArchiveLocation ,
+                                     bool recursive                    ,
+                                     bool includePathInFilename        ,
+                                     const CString& filter             ,
+                                     TStringSet& outputList            ,
+                                     bool addFiles                     ,
+                                     bool addDirs                      ) const
 {GUCEF_TRACE;
 
+    CORE::CString vfsPath = CORE::CombinePath( vfsMountLocation, vfsArchiveLocation );
+
     CORE::CString filename;
-    struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( root.C_String() );
+    struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( actualFsDir.C_String() );
     if ( did != NULL )
     {
         /*
@@ -284,9 +288,9 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                             }
                             else
                             {
-                                CORE::CString filePath( root );
-                                CORE::AppendToPath( filePath, filename );
-                                outputList.insert( filePath );
+                                CORE::CString vfsFilePath = CORE::CombinePath( vfsPath, filename );
+                                vfsFilePath = vfsFilePath.ReplaceChar( '\\', '/' );
+                                outputList.insert( vfsFilePath );
                             }
                         }
                     }
@@ -299,21 +303,19 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                 {
                     if ( addDirs )
                     {
-                        outputList.insert( dirName );
+                        outputList.insert( dirName + '/' );
                     }
 
                     if ( recursive )
                     {
-                        /*
-                         *      Build the path including the sub-dir
-                         */
-                        CORE::CString subdir( root );
-                        CORE::AppendToPath( subdir, dirName );
 
-                        /*
-                         *      Recursively process the sub-dir
-                         */
-                        GetListFromRoot( subdir                ,
+                        CORE::CString fsSubdir = CORE::CombinePath( actualFsDir, dirName );
+                        CORE::CString vfsSubdir = CORE::CombinePath( vfsArchiveLocation, filename );
+
+                        // Recursively process the sub-dir
+                        GetListFromRoot( fsSubdir              ,
+                                         vfsMountLocation      ,
+                                         vfsSubdir             ,
                                          recursive             ,
                                          includePathInFilename ,
                                          filter                ,
@@ -333,29 +335,25 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::GetList( TStringSet& outputList     ,
-                             const CString& location    ,
-                             bool recursive             ,
-                             bool includePathInFilename ,
-                             const CString& filter      ,
-                             bool addFiles              ,
-                             bool addDirs               ) const
+CFileSystemArchive::GetList( TStringSet& outputList                 ,
+                             const VFS::CString& vfsMountLocation   , 
+                             const VFS::CString& vfsArchiveLocation ,
+                             bool recursive                         ,
+                             bool includePathInFilename             ,
+                             const CString& filter                  ,
+                             bool addFiles                          ,
+                             bool addDirs                           ) const
 {GUCEF_TRACE;
 
-    /*
-     *      Switch dir separator chars if needed
-     */
-    CString loc( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
-
-    /*
-     *      Make the combo path string
-     */
-    CString rootdir = CombinePath( m_rootDir, location );
+    // Translate to a local filesystem path
+    CString actualFsRootdir = CombinePath( m_rootDir, vfsArchiveLocation.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     /*
      *      Process the root
      */
-    GetListFromRoot( rootdir               ,
+    GetListFromRoot( actualFsRootdir       ,
+                     vfsMountLocation      ,
+                     vfsArchiveLocation    ,
                      recursive             ,
                      includePathInFilename ,
                      filter                ,

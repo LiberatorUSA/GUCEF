@@ -213,13 +213,14 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3BucketArchive::GetList( TStringSet& outputList       ,
-                           const VFS::CString& location ,
-                           bool recursive               ,
-                           bool includePathInFilename   ,
-                           const VFS::CString& filter   ,
-                           bool addFiles                ,
-                           bool addDirs                 ) const
+CS3BucketArchive::GetList( TStringSet& outputList              ,
+                           const VFS::CString& mountLocation   , 
+                           const VFS::CString& archiveLocation ,
+                           bool recursive                      ,
+                           bool includePathInFilename          ,
+                           const VFS::CString& filter          ,
+                           bool addFiles                       ,
+                           bool addDirs                        ) const
 {GUCEF_TRACE;
 
 

@@ -154,17 +154,19 @@ CResArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CResArchive::GetList( TStringSet& outputList       ,
-                      const VFS::CString& location ,
-                      bool recursive               ,
-                      bool includePathInFilename   ,
-                      const VFS::CString& filter   ,
-                      bool addFiles                ,
-                      bool addDirs                 ) const
+CResArchive::GetList( TStringSet& outputList              ,
+                      const VFS::CString& mountLocation   , 
+                      const VFS::CString& archiveLocation ,
+                      bool recursive                      ,
+                      bool includePathInFilename          ,
+                      const VFS::CString& filter          ,
+                      bool addFiles                       ,
+                      bool addDirs                        ) const
 {GUCEF_TRACE;
 
-    // This format only supports files
-    if ( !addFiles ) return;
+    // This format only supports files, no (sub)dirs
+    if ( !addFiles || !archiveLocation.IsNULLOrEmpty() ) 
+        return;
 
     // Generate list of all resource Id's
     CORE::CString resourceType = CORE::Int16ToString( m_index.recordType );

@@ -126,11 +126,11 @@ void
 CPubSubMsgBinarySerializerOptions::FromOptionsBitMask( UInt32 bitMask )
 {GUCEF_TRACE;
 
-    msgDateTimeIncluded = ( 0 == GUCEF_GETBITX( bitMask, 1 ) );
-    msgDateTimeAsMsSinceUnixEpochInUtc = ( 0 == GUCEF_GETBITX( bitMask, 2 ) );
-    msgIdIncluded = ( 0 == GUCEF_GETBITX( bitMask, 3 ) );
-    msgPrimaryPayloadIncluded = ( 0 == GUCEF_GETBITX( bitMask, 4 ) );
-    msgKeyValuePairsIncluded = ( 0 == GUCEF_GETBITX( bitMask, 5 ) );
+    msgDateTimeIncluded = ( 0 != GUCEF_GETBITX( bitMask, 1 ) );
+    msgDateTimeAsMsSinceUnixEpochInUtc = ( 0 != GUCEF_GETBITX( bitMask, 2 ) );
+    msgIdIncluded = ( 0 != GUCEF_GETBITX( bitMask, 3 ) );
+    msgPrimaryPayloadIncluded = ( 0 != GUCEF_GETBITX( bitMask, 4 ) );
+    msgKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 5 ) );
 }
 
 /*-------------------------------------------------------------------------*/

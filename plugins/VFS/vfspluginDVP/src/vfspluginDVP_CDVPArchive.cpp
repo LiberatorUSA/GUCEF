@@ -167,13 +167,14 @@ CDVPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDVPArchive::GetList( TStringSet& outputList       ,
-                      const VFS::CString& location , 
-                      bool recursive               ,
-                      bool includePathInFilename   ,
-                      const VFS::CString& filter   ,
-                      bool addFiles                ,
-                      bool addDirs                 ) const
+CDVPArchive::GetList( TStringSet& outputList              ,
+                      const VFS::CString& mountLocation   , 
+                      const VFS::CString& archiveLocation ,
+                      bool recursive                      ,
+                      bool includePathInFilename          ,
+                      const VFS::CString& filter          ,
+                      bool addFiles                       ,
+                      bool addDirs                        ) const
 {GUCEF_TRACE;
 
 }

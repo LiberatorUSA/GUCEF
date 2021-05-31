@@ -79,7 +79,8 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
                               const bool overwrite             ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void GetList( TStringSet& outputList             ,
-                          const CString& location            , 
+                          const CString& mountLocation       , 
+                          const CString& archiveLocation     ,
                           bool recursive = false             ,
                           bool includePathInFilename = false ,
                           const CString& filter = ""         ,
@@ -116,13 +117,15 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     
     private:
 
-    void GetListFromRoot( const CORE::CString& root   , 
-                          bool recursive              , 
-                          bool includePathInFilename  , 
-                          const CORE::CString& filter , 
-                          TStringSet& outputList      , 
-                          bool addFiles               ,
-                          bool addDirs                ) const;
+    void GetListFromRoot( const CORE::CString& actualFsDir  , 
+                          const CString& vfsMountLocation   , 
+                          const CString& vfsArchiveLocation ,
+                          bool recursive                    , 
+                          bool includePathInFilename        , 
+                          const CORE::CString& filter       , 
+                          TStringSet& outputList            , 
+                          bool addFiles                     ,
+                          bool addDirs                      ) const;
     
     CVFSHandle* LoadFromDisk( const CString& file          ,
                               const char* mode = "rb"      ,

@@ -61,6 +61,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     CDynamicBufferAccess( CDynamicBuffer* buffer                         ,
                           const bool deleteBufferUponDestruction = false );
 
+    CDynamicBufferAccess( CDynamicBuffer& buffer );
+    
     CDynamicBufferAccess( const CDynamicBuffer& buffer );
 
     virtual ~CDynamicBufferAccess();
@@ -173,6 +175,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     UInt32 m_carat;
     CDynamicBuffer* m_buffer;
     bool m_deleteBufferUponDestruction;
+    bool m_bufferWasConst;
 };
 
 /*-------------------------------------------------------------------------//

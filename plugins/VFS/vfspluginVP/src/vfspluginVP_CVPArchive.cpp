@@ -182,13 +182,14 @@ CVPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVPArchive::GetList( TStringSet& outputList       ,
-                     const VFS::CString& location ,
-                     bool recursive               ,
-                     bool includePathInFilename   ,
-                     const VFS::CString& filter   ,
-                     bool addFiles                ,
-                     bool addDirs                 ) const
+CVPArchive::GetList( TStringSet& outputList              ,
+                     const VFS::CString& mountLocation   , 
+                     const VFS::CString& archiveLocation ,
+                     bool recursive                      ,
+                     bool includePathInFilename          ,
+                     const VFS::CString& filter          ,
+                     bool addFiles                       ,
+                     bool addDirs                        ) const
 {GUCEF_TRACE;
 
     TFileIndexMap::const_iterator i = m_index.begin();
@@ -197,14 +198,14 @@ CVPArchive::GetList( TStringSet& outputList       ,
         // Check if the starting path matches
         const VFS::CString& filePath = (*i).first;
 
-        if ( filePath == location )
+        if ( filePath == archiveLocation )
         {
             // Don't add the location itself to the list
             ++i;
             continue;
         }
 
-        if ( 0 == filePath.HasSubstr( location, true ) )
+        if ( 0 == filePath.HasSubstr( archiveLocation, true ) )
         {
             const TVPIndexEntry& indexEntry = (*i).second;
 
@@ -233,7 +234,7 @@ CVPArchive::GetList( TStringSet& outputList       ,
                 // Check if we have multiple subdirs beyond the "location" to get to
                 // the archive. If so then we cannot add this archive because recursive
                 // searching is not allowed.
-                if ( !CORE::IsFileInDir( location, filePath ) )
+                if ( !CORE::IsFileInDir( archiveLocation, filePath ) )
                 {
                     // The directory seperator was not the last character so we have multiple
                     // sub-dirs which is not allowed, we cannot add this item

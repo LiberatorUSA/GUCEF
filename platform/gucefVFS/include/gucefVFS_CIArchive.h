@@ -96,7 +96,8 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
                               const bool overwrite             ) = 0;
 
     virtual void GetList( TStringSet& outputList             ,
-                          const CString& location            , 
+                          const CString& mountLocation       , 
+                          const CString& archiveLocation     , 
                           bool recursive = false             ,
                           bool includePathInFilename = false ,
                           const CString& filter = ""         ,

@@ -247,15 +247,15 @@ CVariant::CVariant( const CVariant& data )
     // into a private copy
     if ( data.UsesDynamicMemory() )
     {
-        if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.heap_data )
+        if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
         {
-            m_variantData.union_data.heap_data.heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-            assert( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data );
-            memcpy( m_variantData.union_data.heap_data.heap_data, data.m_variantData.union_data.heap_data.heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+            m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+            assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
+            memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
         }
         else
         {
-            m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
+            m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
             m_variantData.union_data.heap_data.heap_data_size = 0;
         }
         m_variantData.union_data.heap_data.heap_data_is_linked = 0;
@@ -440,7 +440,7 @@ CVariant::IsNULLOrEmpty( void ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: 
         { 
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
-                   ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.heap_data ) );  
+                   ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );  
         }
 
         case GUCEF_DATATYPE_UNKNOWN: return true;
@@ -777,11 +777,11 @@ CVariant::AsCharPtr( const char* defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return reinterpret_cast< const char* >( &m_variantData.union_data.float32_data );
         case GUCEF_DATATYPE_FLOAT64: return reinterpret_cast< const char* >( &m_variantData.union_data.float64_data );
         case GUCEF_DATATYPE_BOOLEAN_INT32: return reinterpret_cast< const char* >( &m_variantData.union_data.int32_data );
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
-        case GUCEF_DATATYPE_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
-        case GUCEF_DATATYPE_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
-        case GUCEF_DATATYPE_BINARY: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
+        case GUCEF_DATATYPE_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
+        case GUCEF_DATATYPE_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
+        case GUCEF_DATATYPE_BINARY: return static_cast< const char* >( m_variantData.union_data.heap_data.union_data.void_heap_data );
         default: return defaultIfNeeded;
     }
 }
@@ -824,7 +824,7 @@ CVariant::ByteSize( bool includeNullTerm ) const
             if ( !includeNullTerm || 0 == m_variantData.union_data.heap_data.heap_data_size )
                 return m_variantData.union_data.heap_data.heap_data_size;
             
-            const char* heapPtr = static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+            const char* heapPtr = static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
             if ( '\0' == heapPtr[ m_variantData.union_data.heap_data.heap_data_size-1 ] )
                 return m_variantData.union_data.heap_data.heap_data_size-1;
             return m_variantData.union_data.heap_data.heap_data_size;
@@ -1006,16 +1006,16 @@ CVariant::operator=( const CVariant& src )
         // into a private copy
         if ( src.UsesDynamicMemory() )
         {
-            if ( 0 < src.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != src.m_variantData.union_data.heap_data.heap_data )
+            if ( 0 < src.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != src.m_variantData.union_data.heap_data.union_data.void_heap_data )
             {
-                m_variantData.union_data.heap_data.heap_data = malloc( (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
-                assert( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data );
-                memcpy( m_variantData.union_data.heap_data.heap_data, src.m_variantData.union_data.heap_data.heap_data, (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
+                m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
+                assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
+                memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, src.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
                 m_variantData.union_data.heap_data.heap_data_size = src.m_variantData.union_data.heap_data.heap_data_size;
             }
             else
             {
-                m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
+                m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
                 m_variantData.union_data.heap_data.heap_data_size = 0;
             }
             m_variantData.containedType = src.m_variantData.containedType;
@@ -1147,7 +1147,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             if ( linkOnlyForDynMem )
             {
                 m_variantData.union_data.heap_data.heap_data_is_linked = 1;
-                m_variantData.union_data.heap_data.heap_data = const_cast< void* >( data );
+                m_variantData.union_data.heap_data.union_data.void_heap_data = const_cast< void* >( data );
                 m_variantData.union_data.heap_data.heap_data_size = dataSize;
                 m_variantData.containedType = varType;
                 return true;
@@ -1156,7 +1156,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             {
                 if ( GUCEF_NULL != HeapReserve( dataSize ) )
                 {
-                    memcpy( m_variantData.union_data.heap_data.heap_data, data, dataSize );
+                    memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data, dataSize );
                     m_variantData.containedType = varType;
                     return true; 
                 }
@@ -1255,19 +1255,19 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
 
     if ( allowReduction || m_variantData.union_data.heap_data.heap_data_size < byteSize )
     {
-        if ( 0 == byteSize && GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
+        if ( 0 == byteSize && GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data )
         {
-            free( m_variantData.union_data.heap_data.heap_data );
-            m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
+            free( m_variantData.union_data.heap_data.union_data.void_heap_data );
+            m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
             m_variantData.union_data.heap_data.heap_data_size = 0;
             m_variantData.union_data.heap_data.heap_data_is_linked = 0;
             return GUCEF_NULL;
         }
         
-        void* newBuffer = realloc( m_variantData.union_data.heap_data.heap_data, byteSize );
+        void* newBuffer = realloc( m_variantData.union_data.heap_data.union_data.void_heap_data, byteSize );
         if ( GUCEF_NULL != newBuffer )
         {
-            m_variantData.union_data.heap_data.heap_data = newBuffer;
+            m_variantData.union_data.heap_data.union_data.void_heap_data = newBuffer;
             m_variantData.union_data.heap_data.heap_data_size = byteSize;
             return newBuffer;
         }
@@ -1277,7 +1277,7 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
         }
     }
 
-    return m_variantData.union_data.heap_data.heap_data;    
+    return m_variantData.union_data.heap_data.union_data.void_heap_data;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1535,8 +1535,8 @@ CVariant::Clear( void )
 
     if ( OwnsDynamicMemory() )
     {
-        if ( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
-            free( m_variantData.union_data.heap_data.heap_data );
+        if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data )
+            free( m_variantData.union_data.heap_data.union_data.void_heap_data );
     }
     // else: No dynamic memory management needed
 
@@ -1553,10 +1553,10 @@ CVariant::AsAsciiString( const CAsciiString& defaultIfNeeded ) const
          GUCEF_DATATYPE_BOOLEAN_ASCII_STRING == m_variantData.containedType )
     {
         if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
-             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.heap_data ) ) )
+             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
             return defaultIfNeeded;
 
-        return CAsciiString( (const char*) m_variantData.union_data.heap_data.heap_data, m_variantData.union_data.heap_data.heap_data_size );    
+        return CAsciiString( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );    
     }
     return ToAsciiString( AsString( defaultIfNeeded ) );
 }
@@ -1571,10 +1571,10 @@ CVariant::AsUtf8String( const CUtf8String& defaultIfNeeded ) const
          GUCEF_DATATYPE_BOOLEAN_UTF8_STRING == m_variantData.containedType )
     {
         if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
-             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.heap_data ) ) )
+             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
             return defaultIfNeeded;
             
-        return CUtf8String( (const char*) m_variantData.union_data.heap_data.heap_data, m_variantData.union_data.heap_data.heap_data_size );    
+        return CUtf8String( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );    
     }
     return ToUtf8String( AsString( defaultIfNeeded ) );
 }
@@ -1602,7 +1602,7 @@ CVariant::AsString( const CString& defaultIfNeeded ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
         case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
         case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
-        case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
+        case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
         case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }
         default:                                   { return defaultIfNeeded; }
     }

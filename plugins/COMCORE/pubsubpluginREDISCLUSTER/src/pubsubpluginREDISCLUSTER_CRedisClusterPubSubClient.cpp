@@ -338,7 +338,7 @@ CRedisClusterPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         // This is really not appropriote use of the redis backend
         // its strongly prefered for the application to specify a proper key name to ensure its non-conflicting
         
-        static const const CORE::CString& fieldName = "PRIMARYPAYLOAD";
+        static const CORE::CString& fieldName = "PRIMARYPAYLOAD";
         sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize()-1 );
 
         sw::redis::StringView fvSV( primaryPayload.AsCharPtr(), primaryPayload.ByteSize( false ) );
@@ -751,6 +751,7 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
                 return false;
             }
         }
+        return true;
     }
     catch ( const sw::redis::OomError& e )
     {

@@ -85,13 +85,14 @@ class GUCEF_HIDDEN CS3Archive : public CORE::CObservingNotifier ,
                               const CORE::UInt64 offset        ,
                               const bool overwrite             ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void GetList( TStringSet& outputList             ,
-                          const VFS::CString& location       ,
-                          bool recursive = false             ,
-                          bool includePathInFilename = false ,
-                          const VFS::CString& filter = ""    ,
-                          bool addFiles = true               ,
-                          bool addDirs  = false              ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void GetList( TStringSet& outputList              ,
+                          const VFS::CString& mountLocation   , 
+                          const VFS::CString& archiveLocation ,
+                          bool recursive = false              ,
+                          bool includePathInFilename = false  ,
+                          const VFS::CString& filter = ""     ,
+                          bool addFiles = true                ,
+                          bool addDirs  = false               ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool DeleteFile( const VFS::CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
     
