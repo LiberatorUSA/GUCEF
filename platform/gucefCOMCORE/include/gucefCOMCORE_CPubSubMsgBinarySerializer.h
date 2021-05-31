@@ -109,6 +109,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
                            UInt32& bytesWritten                             );
 
     static bool Deserialize( const CPubSubMsgBinarySerializerOptions& options ,
+                             bool linkWherePossible                           ,
                              CIPubSubMsg& msg                                 , 
                              UInt32 currentSourceOffset                       , 
                              const CORE::CDynamicBuffer& source               ,

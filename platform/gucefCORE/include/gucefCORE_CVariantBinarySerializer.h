@@ -55,7 +55,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariantBinarySerializer
     
     static bool Serialize( const CVariant& var, UInt32 currentTargetOffset, CDynamicBuffer& target, UInt32& bytesWritten );
 
-    static bool Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, UInt32& bytesRead ); 
+    static bool Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, bool linkWherePossible, UInt32& bytesRead ); 
 };
 
 /*-------------------------------------------------------------------------//

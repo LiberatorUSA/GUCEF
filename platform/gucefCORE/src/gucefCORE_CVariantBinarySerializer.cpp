@@ -97,7 +97,7 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
 /*-------------------------------------------------------------------------*/
 
 bool 
-CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, UInt32& bytesRead )
+CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, bool linkWherePossible, UInt32& bytesRead )
 {GUCEF_TRACE;
 
     try
@@ -118,13 +118,13 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
             currentSourceOffset += sizeof( payloadSize );
             bytesRead += sizeof( payloadSize );
 
-            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, false );
+            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, linkWherePossible );
             bytesRead += var.ByteSize();
             return result;
         }
         else
         {
-            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), source.GetDataSize() - currentSourceOffset, typeId, false );
+            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), source.GetDataSize() - currentSourceOffset, typeId, linkWherePossible );
             bytesRead += var.ByteSize();
             return result;            
         }

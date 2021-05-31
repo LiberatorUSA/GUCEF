@@ -237,6 +237,7 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
 
 bool 
 CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions& options ,
+                                         bool linkWherePossible                           ,
                                          CIPubSubMsg& msg                                 , 
                                          UInt32 currentSourceOffset                       , 
                                          const CORE::CDynamicBuffer& source               , 
@@ -274,7 +275,7 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
         {
             // Write the ID using the variable length variant serializer
             UInt32 varByteSize = 0;
-            if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetMsgId(), currentSourceOffset, source, varByteSize ) )
+            if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetMsgId(), currentSourceOffset, source, linkWherePossible, varByteSize ) )
                 return false;
             currentSourceOffset += varByteSize;
             bytesRead += varByteSize;
@@ -284,7 +285,7 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
         {
             // Now read the primary payload if any exists
             UInt32 varByteSize = 0;
-            if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetPrimaryPayload(), currentSourceOffset, source, varByteSize ) )
+            if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetPrimaryPayload(), currentSourceOffset, source, linkWherePossible, varByteSize ) )
                 return false;
             currentSourceOffset += varByteSize;
             bytesRead += varByteSize;
@@ -311,13 +312,13 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
                     CORE::CVariant& value = (*i).second;
                 
                     UInt32 varByteSize = 0;
-                    if ( !CORE::CVariantBinarySerializer::Deserialize( key, currentSourceOffset, source, varByteSize ) )
+                    if ( !CORE::CVariantBinarySerializer::Deserialize( key, currentSourceOffset, source, linkWherePossible, varByteSize ) )
                         return false;
                     currentSourceOffset += varByteSize;
                     bytesRead += varByteSize;
 
                     varByteSize = 0;
-                    if ( !CORE::CVariantBinarySerializer::Deserialize( value, currentSourceOffset, source, varByteSize ) )
+                    if ( !CORE::CVariantBinarySerializer::Deserialize( value, currentSourceOffset, source, linkWherePossible, varByteSize ) )
                         return false;
                     currentSourceOffset += varByteSize;
                     bytesRead += varByteSize;

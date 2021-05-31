@@ -279,6 +279,13 @@ class CStorageChannel : public CORE::CTaskConsumer ,
                                                 CORE::CVariant& msgId          , 
                                                 CORE::CDateTime& msgDt         ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
+                                                          const CORE::CString& topicName , 
+                                                          CORE::CVariant& msgId          , 
+                                                          CORE::CDateTime& msgDt         ,
+                                                          CORE::UInt32 lastFileOffset    ,
+                                                          bool& fileExistedButHasIssue   );
+
     bool LoadConfig( const ChannelSettings& channelSettings );
 
     const ChannelSettings& GetChannelSettings( void ) const;
@@ -309,7 +316,7 @@ class CStorageChannel : public CORE::CTaskConsumer ,
 
     void RegisterEventHandlers( void );
 
-    CORE::CString GetPathToLastWrittenPubSubStorageFile( void ) const;
+    CORE::CString GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const;
 
     private:
 

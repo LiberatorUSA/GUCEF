@@ -89,6 +89,16 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
     static bool DeserializeFooter( TMsgOffsetIndex& index             ,
                                    const CORE::CDynamicBuffer& source , 
                                    UInt32& bytesRead                  );
+    
+    /**
+     *  If you have a partially written container with a header but no valid 
+     *  footer this function can be used to rebuild an index which you could optionally
+     *  use to append a new footer at the end of the file with the discovered messages
+     *  by passing the forwardOrderedIndex to SerializeFooter()
+     */
+    static bool IndexRebuildScan( TMsgOffsetIndex& forwardOrderedIndex ,
+                                  const CORE::CDynamicBuffer& source   , 
+                                  UInt32& bytesRead                    );
 
     static bool Serialize( const CPubSubMsgBinarySerializerOptions& options     ,
                            const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
@@ -96,11 +106,21 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                            CORE::CDynamicBuffer& target                         , 
                            UInt32& bytesWritten                                 );
 
+
+    /**
+     *  If you only need to read a specific message such as the last message this is a
+     *  useful helper function to do so. Please do not use this function to iterate all
+     *  messages as it would be rather inefficient, code your own iteration for that
+     *
+     *  Note that if isCorrupted is true you may wish to think about using IndexRebuildScan()
+     *  to effect repairs
+     */
     static bool DeserializeMsgAtIndex( CIPubSubMsg& msg                   ,
                                        bool linkWherePossible             ,
                                        const CORE::CDynamicBuffer& source ,
                                        UInt32 msgIndex                    ,
-                                       bool fromStart                     );
+                                       bool fromStart                     ,
+                                       bool& isCorrupted                  );
 };
 
 /*-------------------------------------------------------------------------//

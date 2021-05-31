@@ -1028,7 +1028,7 @@ CStorageChannel::OnTaskStart( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
+CStorageChannel::GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const
 {GUCEF_TRACE;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
@@ -1040,10 +1040,19 @@ CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
     if ( !index.empty() )
-    {
-        CORE::CString lastFilename = (*index.rbegin());
-        // @TODO: filename format validation
-        return lastFilename;
+    {        
+        VFS::CVFS::TStringSet::reverse_iterator f = index.rbegin();
+        CORE::UInt32 n=0;
+        while ( n<lastOffset && f != index.rend() )   
+        {
+            ++f; ++n;
+        }
+
+        if ( f != index.rend() )
+        {
+            const CORE::CString& lastFilename = (*f);            
+            return lastFilename;
+        }
     }
     return CORE::CString::Empty;
 }
@@ -1057,17 +1066,49 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
                                                 CORE::CDateTime& msgDt         )
 {GUCEF_TRACE;
 
+    bool success = true;
+    CORE::UInt32 lastFileOffset = 0;
+    bool fileExistedButHasIssue = false;
+    do
+    {
+        success = GetLastPersistedMsgAttributesWithOffset( channelId              ,
+                                                           topicName              ,
+                                                           msgId                  ,
+                                                           msgDt                  ,
+                                                           lastFileOffset         ,
+                                                           fileExistedButHasIssue );
+        ++lastFileOffset;
+    }
+    while ( !success && fileExistedButHasIssue );
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
+                                                          const CORE::CString& topicName , 
+                                                          CORE::CVariant& msgId          , 
+                                                          CORE::CDateTime& msgDt         ,
+                                                          CORE::UInt32 lastFileOffset    ,
+                                                          bool& fileExistedButHasIssue   )
+{GUCEF_TRACE;
+
     // @TODO: topic name segregation
     
     if ( channelId != m_channelSettings.channelId )
+    {
+        fileExistedButHasIssue = false;
         return false; // this should never happen
-    
+    }
+
     if ( m_lastPersistedMsgId.IsNULLOrEmpty() && m_lastPersistedMsgDt == CORE::CDateTime::Empty )
     {
-        CORE::CString lastWrittenFilePath = GetPathToLastWrittenPubSubStorageFile();
+        CORE::CString lastWrittenFilePath = GetPathToLastWrittenPubSubStorageFile( lastFileOffset );
         if ( lastWrittenFilePath.IsNULLOrEmpty() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file" );
+            fileExistedButHasIssue = false;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file with offset " + CORE::ToString( lastFileOffset ) );
             return false;
         }
 
@@ -1082,6 +1123,7 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
 
             if ( !vfs.DecodeAsFile( lastStorageFileContent, 0, lastWrittenFilePath, m_channelSettings.decodeCodecFamily, m_channelSettings.decodeCodecName ) )
             {
+                fileExistedButHasIssue = true;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot decode and load last persisted file. CodeFamily:" + m_channelSettings.decodeCodecFamily +
                     " CodecName: " + m_channelSettings.decodeCodecName + ". VFS File: " + lastWrittenFilePath );
                 return false;
@@ -1092,16 +1134,79 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
             // Not using any encoding, load the file as-is
             if ( !vfs.LoadFile( lastStorageFileContent, lastWrittenFilePath, "rb" ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot decode and load last persisted file. VFS File: " + lastWrittenFilePath );
+                fileExistedButHasIssue = true;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot load last persisted file. VFS File: " + lastWrittenFilePath );
                 return false;
             }
         }
 
-        COMCORE::CBasicPubSubMsg msg;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false ) )
+        if ( 0 == lastStorageFileContent.GetDataSize() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot deserialize last msg in container" );
+            fileExistedButHasIssue = true;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: last persisted file is empty. VFS File: " + lastWrittenFilePath );
             return false;
+        }
+
+        bool isCorrupted = false;
+        COMCORE::CBasicPubSubMsg msg;
+        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
+        {
+            if ( isCorrupted )
+            {
+                // Attempt to recover what we can with an index rebuild
+                // This could effectively move the "last" message received to the actually non-corrupt persisted message as the new "last"
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Failed to deserialize the last message, will attempt an index rebuild of the corrupt container" );
+               
+                CORE::UInt32 bytesRead = 0;
+                COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newRecoveredIndex;
+                if ( COMCORE::CPubSubMsgContainerBinarySerializer::IndexRebuildScan( newRecoveredIndex, lastStorageFileContent, bytesRead ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully performed an index rebuild of the corrupt container, discovered " + CORE::ToString( newRecoveredIndex.size() ) + " messages. Will attempt to add a new footer" );
+                    
+                    CORE::UInt32 bytesWritten = 0;
+                    if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newRecoveredIndex, lastStorageFileContent.GetDataSize()-1, lastStorageFileContent, bytesWritten ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully serialized a new footer to the previously corrupt container. Will attempt to persist the amended container" );
+
+                        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
+                        {
+                            if ( vfs.StoreAsFile( lastWrittenFilePath, lastStorageFileContent, 0, true ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully stored rebuild pub-sub message container at: " + lastWrittenFilePath );
+                            }
+                            else
+                            {
+                                fileExistedButHasIssue = true;
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: StoreAsFile() Failed for rebuild message container" );
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            if ( vfs.EncodeAsFile( lastStorageFileContent, 0, lastWrittenFilePath, true, m_channelSettings.encodeCodecFamily, m_channelSettings.encodeCodecName ) )
+                            {
+                                m_encodeSizeRatio = (CORE::Float32) ( lastStorageFileContent.GetDataSize() / vfs.GetFileSize( lastWrittenFilePath ) );
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully encoded and stored rebuild pub-sub message container resource at: \"" + lastWrittenFilePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
+                            }
+                            else
+                            {
+                                fileExistedButHasIssue = true;
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: EncodeAsFile() Failed for rebuild message container" );
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                // Lets try again, hopefully its fixed now best effort...
+                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
+                {
+                    // This should not happen, something is seriously wrong here.
+                    fileExistedButHasIssue = true;
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: Failed to load last message even after a successfull rebuild. isCorrupted=" + CORE::ToString( isCorrupted ) );
+                    return false;
+                }
+            }
         }
 
         m_lastPersistedMsgId = msg.GetMsgId();

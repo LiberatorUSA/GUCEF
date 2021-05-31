@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 #include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
 
 /*-------------------------------------------------------------------------//
@@ -316,18 +321,56 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& forwardOrderedIndex ,
+                                                       const CORE::CDynamicBuffer& source   , 
+                                                       UInt32& bytesRead                    )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    if ( !DeserializeHeader( options, source, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to read container header" );
+        return false;
+    }
+
+    while ( bytesRead < source.GetDataSize() )
+    {
+        UInt32 msgBytesRead = 0;
+        CBasicPubSubMsg msg;
+        if ( COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, bytesRead, source, msgBytesRead ) )
+        {
+            forwardOrderedIndex.push_back( bytesRead );
+            bytesRead += msgBytesRead;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to deserialize msg with " + CORE::ToString( IndexRebuildScan ) + " bytes read" );
+            break;
+        }
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Index rebuild discovered " + CORE::ToString( forwardOrderedIndex.size() ) + " messages" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg                   ,
                                                             bool linkWherePossible             ,
                                                             const CORE::CDynamicBuffer& source ,
                                                             UInt32 msgIndex                    ,
-                                                            bool fromStart                     )
+                                                            bool fromStart                     ,
+                                                            bool& isCorrupted                  )
 {GUCEF_TRACE;
 
+    isCorrupted = false;
     CORE::UInt32 bytesRead = 0;
     COMCORE::CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container header" );
+        isCorrupted = true;
         return false;
     }
 
@@ -336,28 +379,31 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
     TMsgOffsetIndex index;
     if ( !DeserializeFooter( index, source, bytesRead ) )
     {
-        // @TODO: Rebuild index as a fallback
-        
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer, this file is corrupted" );
+        isCorrupted = true;
         return false;
     }
+
     if ( index.empty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Footer claims the container is empty" );
+        // This does not count as corruption since the caller may very well just have the wrong index, attempting to load a msg from a placeholder/token resource
         return false;
     }
 
     if ( msgIndex >= index.size() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Per footer the index is out of range. Actual Nr of items: " + CORE::ToString( index.size() ) );
+        isCorrupted = true;
         return false;
     }
 
     UInt32 actualIndex = (UInt32) ( fromStart ? (index.size()-1) - msgIndex : msgIndex );
     CORE::UInt32 offsetOfLastMsg = index[ actualIndex ];
-    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, msg, offsetOfLastMsg, source, bytesRead ) )
+    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfLastMsg, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( actualIndex ) + " and offset " + CORE::ToString( offsetOfLastMsg ) );
+        isCorrupted = true;
         return false;
     }
 
