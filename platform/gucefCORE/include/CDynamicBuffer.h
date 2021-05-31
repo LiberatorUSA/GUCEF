@@ -248,6 +248,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     UInt32 CopyFrom( UInt32 size     ,
                         const void* src );
 
+    UInt32 CopyFrom( const CString& source, UInt32 offset, bool includeNullTerminator );
     UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 offset );
     UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 offset, UInt32 nrOfBytes );
 
@@ -280,7 +281,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *  Note that if the buffer is linked this operation will result in the creation of a private copy
      */
     void Append( const CDynamicBuffer& data            ,
-                    const bool appendToLogicalData = true );
+                 const bool appendToLogicalData = true );
 
     /**
      *  Appends the given data to the back of the data bytes in the buffer

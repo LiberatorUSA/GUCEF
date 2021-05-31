@@ -39,6 +39,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
 #define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
@@ -72,9 +77,8 @@
 //-------------------------------------------------------------------------*/
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
-#define GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ     100
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
-#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    512000        // 50MB
+#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1025*1024*50)// 50MB
 #define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
 
 /*-------------------------------------------------------------------------//
@@ -90,13 +94,13 @@ ChannelSettings::ChannelSettings( void )
     , pubsubBinarySerializerOptions()
     , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
-    , vfsStoragePath()
+    , vfsStorageRootPath()
+    , vfsFileExtention()
     , encodeCodecFamily()
     , encodeCodecName()
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , performPubSubInDedicatedThread( true )
-    , maxSizeOfDedicatedPubSubBulkMailRead( GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ )
     , applyThreadCpuAffinity( false )
     , cpuAffinityForDedicatedPubSubThread( 0 )
     , cpuAffinityForMainChannelThread( 0 )
@@ -113,13 +117,13 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , pubsubBinarySerializerOptions( src.pubsubBinarySerializerOptions )
     , desiredMinimalSerializedBlockSize( src.desiredMinimalSerializedBlockSize )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
-    , vfsStoragePath( src.vfsStoragePath )
+    , vfsStorageRootPath( src.vfsStorageRootPath )
+    , vfsFileExtention( src.vfsFileExtention )
     , encodeCodecFamily( src.encodeCodecFamily )
     , encodeCodecName( src.encodeCodecName )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
-    , maxSizeOfDedicatedPubSubBulkMailRead( src.maxSizeOfDedicatedPubSubBulkMailRead )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForDedicatedPubSubThread( src.cpuAffinityForDedicatedPubSubThread )
     , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
@@ -141,13 +145,13 @@ ChannelSettings::operator=( const ChannelSettings& src )
         pubsubBinarySerializerOptions = src.pubsubBinarySerializerOptions;
         desiredMinimalSerializedBlockSize = src.desiredMinimalSerializedBlockSize;
         desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;
-        vfsStoragePath = src.vfsStoragePath;
+        vfsStorageRootPath = src.vfsStorageRootPath;
+        vfsFileExtention = src.vfsFileExtention;
         encodeCodecFamily = src.encodeCodecFamily;
         encodeCodecName = src.encodeCodecName;
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
-        maxSizeOfDedicatedPubSubBulkMailRead = src.maxSizeOfDedicatedPubSubBulkMailRead;
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForDedicatedPubSubThread = src.cpuAffinityForDedicatedPubSubThread;
         cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
@@ -164,13 +168,13 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     
     tree.SetAttribute( "desiredMinimalSerializedBlockSize", desiredMinimalSerializedBlockSize );
     tree.SetAttribute( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs", desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
-    tree.SetAttribute( "vfsStoragePath", vfsStoragePath );
+    tree.SetAttribute( "vfsStorageRootPath", vfsStorageRootPath );
+    tree.SetAttribute( "vfsFileExtention", vfsFileExtention );
     tree.SetAttribute( "encodeCodecFamily", encodeCodecFamily );
     tree.SetAttribute( "encodeCodecName", encodeCodecName );
     tree.SetAttribute( "channelId", channelId );
     tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
     tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
-    tree.SetAttribute( "maxSizeOfDedicatedPubSubBulkMailRead", maxSizeOfDedicatedPubSubBulkMailRead );
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForDedicatedPubSubThread", cpuAffinityForDedicatedPubSubThread );
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
@@ -260,13 +264,13 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     
     desiredMinimalSerializedBlockSize = tree.GetAttributeValueOrChildValueByName( "desiredMinimalSerializedBlockSize" ).AsUInt32( desiredMinimalSerializedBlockSize );
     desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = tree.GetAttributeValueOrChildValueByName( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs" ).AsUInt32( desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
-    vfsStoragePath = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "vfsStoragePath" ).AsString( vfsStoragePath ) );
+    vfsStorageRootPath = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "vfsStorageRootPath" ).AsString( vfsStorageRootPath ) );
+    vfsFileExtention = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "vfsFileExtention" ).AsString( vfsFileExtention ) );
     encodeCodecFamily = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecFamily" ).AsString( encodeCodecFamily ) );
     encodeCodecName = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecName" ).AsString( encodeCodecName ) );
     channelId = CORE::StringToInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "channelId" ) ), channelId );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ) ), ticketRefillOnBusyCycle );
     performPubSubInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ) ), performPubSubInDedicatedThread );
-    maxSizeOfDedicatedPubSubBulkMailRead = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "maxSizeOfDedicatedPubSubBulkMailRead" ) ), maxSizeOfDedicatedPubSubBulkMailRead );
     applyThreadCpuAffinity = CORE::StringToBool( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ) ), applyThreadCpuAffinity );
     cpuAffinityForDedicatedPubSubThread = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedPubSubThread" ) ), cpuAffinityForDedicatedPubSubThread );
     cpuAffinityForMainChannelThread = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread" ) ), cpuAffinityForMainChannelThread );
@@ -295,9 +299,10 @@ CPubSubClientChannel::CPubSubClientChannel()
     , m_bulkMail()
     , m_metricsTimer( GUCEF_NULL )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
-    , m_buffers( 10 )
+    , m_buffers( 2 )
     , m_msgReceiveBuffer( GUCEF_NULL )
     , m_lastWriteBlockCompletion()
+    , m_msgOffsetIndex()
 {GUCEF_TRACE;
 
 }
@@ -422,19 +427,31 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             if ( GUCEF_NULL == m_msgReceiveBuffer )
             {
                 m_msgReceiveBuffer = m_buffers.GetNextWriterBuffer( firstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+                
+                CORE::UInt32 newBytesWritten = 0;
+                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_channelSettings.pubsubBinarySerializerOptions, 0, *m_msgReceiveBuffer, newBytesWritten ) )
+                {
+                    // We carry on best effort but this is really bad
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):OnPubSubTopicMsgsReceived: Failed to write container header at start of new pub-sub msg container" );
+                }
+                m_msgOffsetIndex.clear();
             }
             CORE::UInt32 bufferOffset = m_msgReceiveBuffer->GetDataSize();
 
             while ( i != msgs.end() )    
             {
+                CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
                 CORE::UInt32 msgBytesWritten = 0;
                 if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( m_channelSettings.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_msgReceiveBuffer, msgBytesWritten ) )
                 {
+                    m_msgOffsetIndex.push_back( bufferOffset );
+                    ticks = CORE::GUCEFGetTickCount() - ticks;
                     bufferOffset += msgBytesWritten;
                     m_msgReceiveBuffer->SetDataSize( bufferOffset );
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) );
+                        "):OnPubSubTopicMsgsReceived: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) + ". This took " + CORE::ToString( ticks ) + "ms" );
                 }
                 else
                 {
@@ -444,9 +461,21 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 ++i;
             }
 
+            // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
             if ( m_msgReceiveBuffer->GetDataSize() >= m_channelSettings.desiredMinimalSerializedBlockSize ||
                ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_channelSettings.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) )
             {
+                // The current container is now considered to have enough content.
+                // Let's wrap things up...
+                
+                CORE::UInt32 newBytesWritten = 0;
+                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( m_msgOffsetIndex, bufferOffset, *m_msgReceiveBuffer, newBytesWritten ) )
+                {
+                    // We carry on best effort but this is really bad
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):OnPubSubTopicMsgsReceived: Failed to write container footer at end of current pub-sub msg container" );
+                }
+
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                     "):OnPubSubTopicMsgsReceived: Completed a serialized msg data block of size " + CORE::ToString( bufferOffset ) );                
                 
@@ -460,6 +489,15 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
     }
 }
+
+///*-------------------------------------------------------------------------*/
+//
+//bool
+//CPubSubClientChannel::DeserializeMsgs( const CORE::CDynamicBuffer& buffer,  )
+//{GUCEF_TRACE;
+//
+//    return false;
+//}
 
 /*-------------------------------------------------------------------------*/
 
@@ -575,6 +613,8 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer->SetEnabled( m_channelSettings.pubsubClientConfig.desiredFeatures.supportsMetrics );
 
     m_buffers.SetMinimalBufferSize( m_channelSettings.desiredMinimalSerializedBlockSize );
+    m_msgOffsetIndex.clear();
+    m_msgOffsetIndex.reserve( 1000 );
     
     if ( m_channelSettings.performPubSubInDedicatedThread )
     {
@@ -721,7 +761,22 @@ CStorageChannel::LoadConfig( const ChannelSettings& channelSettings )
 {GUCEF_TRACE;
 
     m_channelSettings = channelSettings;
-    m_channelSettings.vfsStoragePath = m_channelSettings.vfsStoragePath.ReplaceSubstr( "{channelId}", CORE::ToString( m_channelSettings.channelId ) );
+
+    m_channelSettings.vfsStorageRootPath = CORE::ResolveVars( m_channelSettings.vfsStorageRootPath ).ReplaceSubstr( "{channelId}", CORE::ToString( m_channelSettings.channelId ) );
+    
+    if ( m_channelSettings.vfsFileExtention.IsNULLOrEmpty() )
+    {
+        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
+            m_channelSettings.vfsFileExtention = "bin";
+        else
+        {
+            if ( "deflate" == m_channelSettings.encodeCodecName )
+                m_channelSettings.vfsFileExtention = "bin.gz";    
+            else
+                m_channelSettings.vfsFileExtention = "bin.compressed";
+        }
+    }
+        
     return m_pubsubClient->LoadConfig( channelSettings );
 }
 
@@ -841,50 +896,61 @@ CStorageChannel::OnTaskStart( CORE::CICloneable* taskData )
         }
     }
 
-	//m_udpSocket = new COMCORE::CUDPSocket( *GetPulseGenerator(), false );
- //   m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
- //   m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
-
- //   // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
- //   // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
- //   // In such a case the thread will run at max speed for a least the below set nr of cycles.
- //   GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
- //   
- //   // Default smallest pulse delta at 10ms
- //   GetPulseGenerator()->RequestPeriodicPulses( this, 10 ); 
-
- //   if ( m_channelSettings.applyThreadCpuAffinity )
- //   {
- //       if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForMainChannelThread ) )
- //       {
- //           GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel(" + CORE::PointerToString( this ) +
- //               "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) );
- //       }
- //       else
- //       {
- //           GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel(" + CORE::PointerToString( this ) +
- //               "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) +
- //               ". Proceeding without affinity");
- //       }
- //   }
-
-    //RegisterEventHandlers();
-
-  //  // Configure and open the UDP port.
-  //  // Note that if there is an error here we will just keep on trying automatically
-  //  m_udpSocket->SetMaxUpdatesPerCycle( m_channelSettings.udpSocketUpdateCyclesPerPulse );
-  //  m_udpSocket->SetOsLevelSocketReceiveBufferSize( m_channelSettings.udpSocketOsReceiveBufferSize );
-  //  m_udpSocket->SetNrOfReceiveBuffers( m_channelSettings.nrOfUdpReceiveBuffersPerSocket );
-  //  m_udpSocket->SetAutoReOpenOnError( true );
-  //  if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
-  //  {
-		//GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
-  //  }
-  //  else
-  //  {
-  //      GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StorageChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
-  //  }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CStorageChannel::GetPathToLastWrittenPubSubStorageFile( void ) const
+{GUCEF_TRACE;
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    
+    VFS::CVFS::TStringSet index;
+    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, false, CORE::CString::Empty, true, false );
+
+    // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
+    // to get the last produced file
+    if ( !index.empty() )
+    {
+        CORE::CString lastFilename = (*index.rbegin());
+        // @TODO: filename format validation
+        return lastFilename;
+    }
+    return CORE::CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CVariant
+CStorageChannel::GetLastWrittenPubSubMsgId( void ) const
+{GUCEF_TRACE;
+
+    CORE::CString lastWrittenFile = GetPathToLastWrittenPubSubStorageFile();
+    if ( lastWrittenFile.IsNULLOrEmpty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file" );
+        return CORE::CString::Empty;
+    }
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+    CORE::CDynamicBuffer lastStorageFile;
+    if ( !vfs.LoadFile( lastStorageFile, lastWrittenFile, "rb" ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot load last written file" );
+        return CORE::CString::Empty;
+    }
+
+    COMCORE::CBasicPubSubMsg msg;
+    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFile, 0, false ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot deserialize last msg in container" );
+        return CORE::CString::Empty;
+    }
+    
+    return msg.GetMsgId();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -904,7 +970,8 @@ CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
     m_msgReceiveBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
     if ( GUCEF_NULL != m_msgReceiveBuffer )
     {
-        CORE::CString vfsStoragePath = m_channelSettings.vfsStoragePath.ReplaceSubstr( "{associatedDt}", msgBatchDt.ToIso8601DateTimeString( false, true ) );
+        CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + ".v1." + m_channelSettings.vfsFileExtention;
+        CORE::CString vfsStoragePath = CORE::CombinePath( m_channelSettings.vfsStorageRootPath, vfsFilename );
             
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 

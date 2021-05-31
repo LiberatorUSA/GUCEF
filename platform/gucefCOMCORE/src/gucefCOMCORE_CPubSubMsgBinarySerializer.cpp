@@ -53,6 +53,7 @@ namespace COMCORE {
 CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
     : msgIdIncluded( true )
     , msgDateTimeIncluded( true )
+    , msgDateTimeAsMsSinceUnixEpochInUtc( true )
     , msgPrimaryPayloadIncluded( true )
     , msgKeyValuePairsIncluded( true )
 {GUCEF_TRACE;
@@ -72,8 +73,9 @@ bool
 CPubSubMsgBinarySerializerOptions::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
-    config.SetAttribute( "msgIdIncluded", msgIdIncluded );
     config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded );
+    config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc );
+    config.SetAttribute( "msgIdIncluded", msgIdIncluded );
     config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded );
     config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded );
     return true;
@@ -85,8 +87,9 @@ bool
 CPubSubMsgBinarySerializerOptions::LoadConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
 
-    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded );
     msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded );
+    msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc );
+    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded );
     msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded );
     msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded );
     return true;
@@ -104,6 +107,34 @@ CPubSubMsgBinarySerializerOptions::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CPubSubMsgBinarySerializerOptions::ToOptionsBitMask( void ) const
+{GUCEF_TRACE;
+
+    UInt32 bitMask = 0;
+    msgDateTimeIncluded ? GUCEF_SETBITXON( bitMask, 1 ) : GUCEF_SETBITXOFF( bitMask, 1 );
+    msgDateTimeAsMsSinceUnixEpochInUtc ? GUCEF_SETBITXON( bitMask, 2 ) : GUCEF_SETBITXOFF( bitMask, 2 );
+    msgIdIncluded ? GUCEF_SETBITXON( bitMask, 3 ) : GUCEF_SETBITXOFF( bitMask, 3 );
+    msgPrimaryPayloadIncluded ? GUCEF_SETBITXON( bitMask, 4 ) : GUCEF_SETBITXOFF( bitMask, 4 );
+    msgKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 5 ) : GUCEF_SETBITXOFF( bitMask, 5 );
+    return bitMask;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubMsgBinarySerializerOptions::FromOptionsBitMask( UInt32 bitMask )
+{GUCEF_TRACE;
+
+    msgDateTimeIncluded = ( 0 == GUCEF_GETBITX( bitMask, 1 ) );
+    msgDateTimeAsMsSinceUnixEpochInUtc = ( 0 == GUCEF_GETBITX( bitMask, 2 ) );
+    msgIdIncluded = ( 0 == GUCEF_GETBITX( bitMask, 3 ) );
+    msgPrimaryPayloadIncluded = ( 0 == GUCEF_GETBITX( bitMask, 4 ) );
+    msgKeyValuePairsIncluded = ( 0 == GUCEF_GETBITX( bitMask, 5 ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options ,
                                        const CIPubSubMsg& msg                           , 
@@ -114,6 +145,33 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
     
     try
     {
+        if ( options.msgDateTimeIncluded )
+        {
+            if ( options.msgDateTimeAsMsSinceUnixEpochInUtc )
+            {
+                // Write the DateTime of the msg as milliseconds since Unix Epoch in UTC
+                // In most applications Unix Epoch is not UTC and leap seconds are not taken into account
+                // However since the source if of higher fidelity we can retain accuracy as long as the same method is
+                // used to deserialize as well. There is a problem with any DateTime which predates Unix epoch
+                // If you have to deal with those use string formatting instead
+                UInt64 msSinceUnixEpochInUtc = msg.GetMsgDateTime().ToUnixEpochBasedTicksInMillisecs();
+                UInt32 lastBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(msSinceUnixEpochInUtc), &msSinceUnixEpochInUtc );
+                currentTargetOffset += lastBytesWritten;
+                bytesWritten += lastBytesWritten;
+            }
+            else
+            {
+                // Write the DateTime of the msg which as a ISO 8601 spec string
+                // Writing it in string form actually takes up less space vs writing all the binary components at full fidelity
+                // Using Unix epoch uses less space but we are limited in the time range since historical dates would be a problem 
+                Int32 dtStrSize = msg.GetMsgDateTime().ToIso8601DateTimeString( target, currentTargetOffset, false, true );
+                if ( 0 >= dtStrSize )
+                    return false;
+                currentTargetOffset += (UInt32) dtStrSize;
+                bytesWritten += (UInt32) dtStrSize;
+            }
+        }
+
         if ( options.msgIdIncluded )
         {
             // Write the ID using the variable length variant serializer
@@ -122,18 +180,6 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
                 return false;
             currentTargetOffset += varBinSize;
             bytesWritten += varBinSize;
-        }
-
-        if ( options.msgDateTimeIncluded )
-        {
-            // Write the DateTime of the msg which as a ISO 8601 spec string
-            // Writing it in string form actually takes up less space vs writing all the binary components
-            // We could convert to something like Unix epoch but the few bytes that would save is not worth potentially losing fidelity
-            Int32 dtStrSize = msg.GetMsgDateTime().ToIso8601DateTimeString( target, currentTargetOffset, false, true );
-            if ( 0 >= dtStrSize )
-                return false;
-            currentTargetOffset += (UInt32) dtStrSize;
-            bytesWritten += (UInt32) dtStrSize;
         }
 
         if ( options.msgPrimaryPayloadIncluded )
@@ -199,6 +245,31 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
 
     try
     {
+        if ( options.msgDateTimeIncluded )
+        {
+            if ( options.msgDateTimeAsMsSinceUnixEpochInUtc )
+            {
+                // Read the DateTime of the msg which is milliseconds since Unix epoch in UTC IF
+                // this class's Serialize() was used. Commonly used Unix epoch variables do NOT have a  
+                // timezone associated nor does the Unix epoch offset in a lot of implementations take
+                // leap seconds into account. Hence choose carefully to ensure consistency in interpretation
+                UInt64 msSinceUnixEpochInUtc = source.AsConstType< UInt64 >( currentSourceOffset );
+                currentSourceOffset += sizeof(msSinceUnixEpochInUtc);
+                bytesRead += sizeof(msSinceUnixEpochInUtc);
+
+                msg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( msSinceUnixEpochInUtc );
+            }
+            else
+            {
+                // Read the DateTime of the msg which is a ISO 8601 format string
+                Int32 dtStrSize = msg.GetMsgDateTime().FromIso8601DateTimeString( source, currentSourceOffset );
+                if ( 0 >= dtStrSize )
+                    return false;
+                currentSourceOffset += (UInt32) dtStrSize;
+                bytesRead += (UInt32) dtStrSize;
+            }
+        }
+
         if ( options.msgIdIncluded )
         {
             // Write the ID using the variable length variant serializer
@@ -207,16 +278,6 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
                 return false;
             currentSourceOffset += varByteSize;
             bytesRead += varByteSize;
-        }
-
-        if ( options.msgDateTimeIncluded )
-        {
-            // Read the DateTime of the msg which is ISO 8601 specified fixed length
-            Int32 dtStrSize = msg.GetMsgDateTime().FromIso8601DateTimeString( source, currentSourceOffset );
-            if ( 0 >= dtStrSize )
-                return false;
-            currentSourceOffset += (UInt32) dtStrSize;
-            bytesRead += (UInt32) dtStrSize;
         }
 
         if ( options.msgPrimaryPayloadIncluded )

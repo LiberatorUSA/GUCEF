@@ -77,8 +77,13 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    UInt32 ToOptionsBitMask( void ) const;
+
+    void FromOptionsBitMask( UInt32 bitMask );
+
     bool msgIdIncluded;
     bool msgDateTimeIncluded;
+    bool msgDateTimeAsMsSinceUnixEpochInUtc;
     bool msgPrimaryPayloadIncluded;
     bool msgKeyValuePairsIncluded;
 };
@@ -89,7 +94,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::
  *  Basic serializer for generalized Pub Sub messages
  *
  *  Please note that the options passed should match between Serialize() and Deserialize()
- *  of the binary format will not be compatible 
+ *  or the binary format will not be compatible 
  */
 class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
 {

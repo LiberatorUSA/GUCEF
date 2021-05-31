@@ -555,6 +555,22 @@ CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
+CDynamicBuffer::CopyFrom( const CString& source, UInt32 offset, bool includeNullTerminator )
+{GUCEF_TRACE;
+
+    if ( !source.IsNULLOrEmpty() )
+    {
+        if ( includeNullTerminator )
+            return CopyFrom( offset, source.ByteSize(), source.C_String() );
+        else
+            return CopyFrom( offset, source.ByteSize()-1, source.C_String() );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
 CDynamicBuffer::CopyFrom( UInt32 size     ,
                           const void* src )
 {GUCEF_TRACE;

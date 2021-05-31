@@ -79,6 +79,11 @@
 #define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
 #endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
 #define GUCEF_WEB_CHTTPSERVER_H
@@ -128,13 +133,13 @@ class ChannelSettings : public CORE::CIConfigurable
     COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
-    CORE::CString vfsStoragePath;
+    CORE::CString vfsStorageRootPath;
+    CORE::CString vfsFileExtention;
     CORE::CString encodeCodecFamily;
     CORE::CString encodeCodecName;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool performPubSubInDedicatedThread;
-    CORE::Int32 maxSizeOfDedicatedPubSubBulkMailRead;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;
@@ -218,6 +223,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDynamicBuffer* m_msgReceiveBuffer;
     CORE::CDateTime m_lastWriteBlockCompletion;    
+    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -278,9 +284,11 @@ class CStorageChannel : public CORE::CTaskConsumer
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
-    private:
-
     void RegisterEventHandlers( void );
+
+    CORE::CString GetPathToLastWrittenPubSubStorageFile( void ) const;
+
+    CORE::CVariant GetLastWrittenPubSubMsgId( void ) const;
 
     private:
 
