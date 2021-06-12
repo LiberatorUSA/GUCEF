@@ -55,6 +55,11 @@
 #define GUCEF_COMCORE_CIPUBSUBMSG_H
 #endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -113,8 +118,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     /**
      *  Utility/convenience member functions that allow common calling patterns
-     *  Note that these all call Publish( const CIPubSubMsg& msg ) 
+     *  Note that these all call Publish( const CIPubSubMsg& msg )
+     *  Specific backend implementations may optionally override these if there is a gain from doing so
      */
+    virtual bool Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& payload );    
@@ -122,7 +129,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
     virtual bool Publish( const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs );    
 
     virtual bool Publish( const CIPubSubMsg& msg ) = 0;
 

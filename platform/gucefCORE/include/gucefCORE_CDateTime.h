@@ -71,8 +71,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     public:
 
     static const CDateTime Empty;
-    static const CDateTime Minimum;
-    static const CDateTime Maximum;
+    static const CDateTime PastMax;
+    static const CDateTime FutureMax;
 
     static CDateTime NowLocalDateTime( void );
 

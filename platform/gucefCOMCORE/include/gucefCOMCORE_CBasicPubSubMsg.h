@@ -25,6 +25,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <vector>
+
 #ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
 #include "gucefCOMCORE_CIPubSubMsg.h"
 #define GUCEF_COMCORE_CIPUBSUBMSG_H
@@ -54,6 +56,8 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 {
     public:
+
+    typedef std::vector< CBasicPubSubMsg >  TBasicPubSubMsgVector;
 
     CBasicPubSubMsg( void );
 

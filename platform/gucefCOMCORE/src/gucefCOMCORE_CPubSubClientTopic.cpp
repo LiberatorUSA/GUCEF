@@ -27,11 +27,6 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#include "gucefCOMCORE_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
-
 #include "gucefCOMCORE_CPubSubClientTopic.h"
 
 /*-------------------------------------------------------------------------//
@@ -180,6 +175,22 @@ CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CValueList&
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePairs( kvPairs );
     return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientTopic::Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CBasicPubSubMsg::TBasicPubSubMsgVector::const_iterator i = msgs.begin();
+    while ( i != msgs.end() )    
+    {
+        totalSuccess = totalSuccess && Publish( (*i) );
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------//

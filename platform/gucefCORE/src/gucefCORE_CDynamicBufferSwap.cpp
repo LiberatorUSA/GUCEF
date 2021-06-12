@@ -186,20 +186,20 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
         if ( nextReaderBufferIndex == m_buffers.size() )
             nextReaderBufferIndex = 0;
 
-        // Cheap early out check
-        // The reader and the writer should never be on the same index
-        if ( nextReaderBufferIndex == m_currentWriterBufferIndex )
-        {
-            if ( alwaysBlockForBufferAvailability )
-            {
-                // Wait on the writer to finish a buffer
-                lock.EarlyUnlock();
-                MT::PrecisionDelay( 100 );
-                continue;
-            }
-            else
-                return GUCEF_NULL;
-        }
+        //// Cheap early out check
+        //// The reader and the writer should never be on the same index
+        //if ( nextReaderBufferIndex == m_currentWriterBufferIndex )
+        //{
+        //    if ( alwaysBlockForBufferAvailability )
+        //    {
+        //        // Wait on the writer to finish a buffer
+        //        lock.EarlyUnlock();
+        //        MT::PrecisionDelay( 100 );
+        //        continue;
+        //    }
+        //    else
+        //        return GUCEF_NULL;
+        //}
 
         CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextReaderBufferIndex ];
@@ -310,20 +310,20 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
         if ( nextWriterBufferIndex == m_buffers.size() )
             nextWriterBufferIndex = 0;
 
-        // Cheap early out check
-        // The reader and the writer should never be on the same index
-        if ( nextWriterBufferIndex == m_currentReaderBufferIndex )
-        {
-            if ( alwaysBlockForBufferAvailability )
-            {
-                // Wait on the writer to finish a buffer
-                lock.EarlyUnlock();
-                MT::PrecisionDelay( 100 );
-                continue;
-            }
-            else
-                return GUCEF_NULL;
-        }
+        //// Cheap early out check
+        //// The reader and the writer should never be on the same index
+        //if ( nextWriterBufferIndex == m_currentReaderBufferIndex )
+        //{
+        //    if ( alwaysBlockForBufferAvailability )
+        //    {
+        //        // Wait on the writer to finish a buffer
+        //        lock.EarlyUnlock();
+        //        MT::PrecisionDelay( 100 );
+        //        continue;
+        //    }
+        //    else
+        //        return GUCEF_NULL;
+        //}
 
         CBufferEntry& currentBuffer = m_buffers[ m_currentWriterBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextWriterBufferIndex ];

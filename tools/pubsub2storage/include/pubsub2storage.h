@@ -127,8 +127,8 @@ class ChannelSettings : public CORE::CIConfigurable
     {
         CHANNELMODE_UNKNOWN = 0 ,
 
-        CHANNELMODE_PUBSUB_TO_STORAGE ,
-        CHANNELMODE_STORAGE_TO_PUBSUB
+        CHANNELMODE_PUBSUB_TO_STORAGE = 1,
+        CHANNELMODE_STORAGE_TO_PUBSUB = 2
     };
     typedef enum EChannelMode TChannelMode;
 
@@ -236,6 +236,10 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
                                const CORE::CEvent& eventId  ,
                                CORE::CICloneable* eventData );
 
+    bool TransmitNextPubSubMsgBuffer( void );
+
+    void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
+    
     private:
 
     CPubSubClientChannel( const CPubSubClientChannel& src ); // not implemented
@@ -271,6 +275,24 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     typedef CORE::CTEventHandlerFunctor< CStorageChannel > TEventCallback;
     typedef enum ChannelSettings::EChannelMode TChannelMode;
 
+    class StorageToPubSubRequest : public CORE::CIConfigurable
+    {
+        public:
+
+        CORE::CDateTime startDt;
+        CORE::CDateTime endDt;
+        CORE::CString::StringSet vfsPubSubMsgContainersToPush;
+
+        StorageToPubSubRequest( void );
+        StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt );
+        StorageToPubSubRequest( const StorageToPubSubRequest& src );
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+        virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+        virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+    };
+    typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
+
     CStorageChannel();
     CStorageChannel( const CStorageChannel& src );
     virtual ~CStorageChannel();
@@ -305,6 +327,10 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
                                   const CORE::CDateTime& endDt    ,
                                   CORE::CString::StringSet& files ) const;
+
+    bool AddStorageToPubSubRequest( const StorageToPubSubRequest& request );
+
+    void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
     
     bool LoadConfig( const ChannelSettings& channelSettings );
 
@@ -338,8 +364,19 @@ class CStorageChannel : public CORE::CTaskConsumer ,
 
     CORE::CString GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const;
 
-    private:
+    bool StoreNextReceivedPubSubBuffer( void );
 
+    bool ProcessNextStorageToPubSubRequest( void );
+
+    bool LoadStorageFile( const CORE::CString& vfsPath       ,
+                          CORE::CDynamicBuffer& targetBuffer );
+
+    bool GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
+                                              CORE::CDateTime& startDt      ,
+                                              CORE::CDateTime& endDt        ) const;
+
+    private:
+    
     ChannelSettings m_channelSettings;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
@@ -349,12 +386,7 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
-    
-    
-    
-    
-    
-    CORE::CString::StringSet m_vfsPubSubMsgContainersToPush;
+    StorageToPubSubRequestDeque m_storageToPubSubRequests;
 };
 
 /*-------------------------------------------------------------------------*/

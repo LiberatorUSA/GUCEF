@@ -35,6 +35,11 @@
 #define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
 #endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -57,7 +62,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
 {
     public:
     
-    typedef std::vector< UInt32 >   TMsgOffsetIndex;
+    typedef std::vector< UInt32 >                   TMsgOffsetIndex;
+    typedef CBasicPubSubMsg::TBasicPubSubMsgVector  TBasicPubSubMsgVector;
 
     static const CORE::CString  MagicText;
     static const CORE::UInt8    CurrentFormatVersion;
@@ -105,6 +111,25 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                            UInt32 currentTargetOffset                           , 
                            CORE::CDynamicBuffer& target                         , 
                            UInt32& bytesWritten                                 );
+
+
+    /**
+     *  Deserializes all the messages from the source buffer using the already 
+     *  deserialized index. It is assumed that you already have a pre-allocated 
+     *  set of IPubSubMsg based message objects passed in msgs based on the 
+     *  previously deserialized footer of which you also need to pass the index
+     */
+    static bool Deserialize( CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                             bool linkWherePossible                         ,
+                             const TMsgOffsetIndex& index                   ,
+                             const CORE::CDynamicBuffer& source             ,
+                             bool& isCorrupted                              );
+
+    static bool Deserialize( TBasicPubSubMsgVector& msgs        ,
+                             bool linkWherePossible             ,
+                             const TMsgOffsetIndex& index       ,
+                             const CORE::CDynamicBuffer& source ,
+                             bool& isCorrupted                  );
 
 
     /**

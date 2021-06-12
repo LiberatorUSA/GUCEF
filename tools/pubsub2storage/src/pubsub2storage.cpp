@@ -110,8 +110,8 @@ ChannelSettings::ChannelSettings( void )
     , mode( CHANNELMODE_PUBSUB_TO_STORAGE )
     , subscribeUsingDefaultBookmarkIfThereIsNoLast( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
-    , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::Minimum )
-    , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::Maximum )  
+    , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
+    , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
 {GUCEF_TRACE;
 
 }
@@ -768,13 +768,100 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPubSubClientChannel::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt )
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
+{GUCEF_TRACE;    
+
+    CORE::CDateTime firstMsgDt;
+    m_msgReceiveBuffer = m_buffers.GetNextReaderBuffer( firstMsgDt, true, 25 );
+    if ( GUCEF_NULL == m_msgReceiveBuffer )
+        return true; // nothing to do
+        
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        "):TransmitNextPubSubMsgBuffer: New buffer is available of " + CORE::ToString( m_msgReceiveBuffer->GetDataSize() ) + " bytes" );         
+
+    CORE::UInt32 bytesRead = 0;
+    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
+    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):TransmitNextPubSubMsgBuffer: Failed to read container footer" );
+        OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
+        return false;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        "):TransmitNextPubSubMsgBuffer: Per footer the buffer contains " + CORE::ToString( originalOffsetIndex.size() ) + " messages to publish" );
+
+    // We now link logical message objects to the data in the buffer
+    CORE::UInt32 startIndexOffset = 0;
+    CORE::UInt32 endIndexOffset = 0;
+    bool isCorrupted = false;                        
+    COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
+    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):TransmitNextPubSubMsgBuffer: Failed to deserialize messages from container. According to the footer the container had " + 
+            CORE::ToString( originalOffsetIndex.size() ) + " entries. isCorrupted=" + CORE::BoolToString( isCorrupted ) );
+        OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
+        return false;
+    }
+
+    // We now have the messages in a format that allows interpretation by the pub-sub backend
+    // We can now proceed with publishing all the messages to the relevant topics
+    CORE::UInt32 topicsToPublishOn = 0;
+    CORE::UInt32 topicsPublishedOn = 0;
+    bool publishSuccess = true;
+    TopicVector::iterator i = m_topics.begin();
+    while ( i != m_topics.end() )
+    {
+        COMCORE::CPubSubClientTopic* topic = (*i);
+        if ( GUCEF_NULL != topic )
+        {
+            if ( topic->IsPublishingSupported() )
+            {
+                ++topicsToPublishOn;
+                if ( topic->Publish( msgs ) )
+                {
+                    ++topicsPublishedOn;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):TransmitNextPubSubMsgBuffer: Failed to publish messages to topic" );
+                    OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
+                    publishSuccess = false;
+                }
+            }
+        }
+        ++i;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        "):TransmitNextPubSubMsgBuffer: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
+        CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
+
+    return publishSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;    
 
     if ( m_channelSettings.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB )
     {
-        
+        TransmitNextPubSubMsgBuffer();
     }
 
     // We are never 'done' so return false
@@ -878,6 +965,72 @@ CStorageChannel::RegisterEventHandlers( void )
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback6                      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( void )
+    : startDt()
+    , endDt()
+    , vfsPubSubMsgContainersToPush()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt )
+    : startDt( startDt )
+    , endDt( endDt )
+    , vfsPubSubMsgContainersToPush()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( const StorageToPubSubRequest& src )
+    : startDt( src.startDt )
+    , endDt( src.endDt )
+    , vfsPubSubMsgContainersToPush( src.vfsPubSubMsgContainersToPush )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CStorageChannel::StorageToPubSubRequest::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "StorageToPubSubRequest";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool                                                
+CStorageChannel::StorageToPubSubRequest::SaveConfig( CORE::CDataNode & tree ) const
+{
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStorageChannel::StorageToPubSubRequest::LoadConfig( const CORE::CDataNode & treeroot )
+{
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStorageChannel::AddStorageToPubSubRequest( const StorageToPubSubRequest& request )
+{GUCEF_TRACE;
+
+    m_storageToPubSubRequests.push_back( request );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1035,8 +1188,7 @@ CStorageChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( ( m_channelSettings.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_channelSettings.autoPushAfterStartupIfStorageToPubSub ) )
     {
-        CORE::CString::StringSet vfsPubSubMsgContainersToPush;
-        GetPathsToPubSubStorageFiles( m_channelSettings.oldestStoragePubSubMsgFileToLoad, m_channelSettings.youngestStoragePubSubMsgFileToLoad, vfsPubSubMsgContainersToPush );
+        AddStorageToPubSubRequest( StorageToPubSubRequest( m_channelSettings.oldestStoragePubSubMsgFileToLoad, m_channelSettings.youngestStoragePubSubMsgFileToLoad ) );
     }
 
     return true;
@@ -1102,6 +1254,45 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CStorageChannel::LoadStorageFile( const CORE::CString& vfsPath       ,
+                                  CORE::CDynamicBuffer& targetBuffer )
+{GUCEF_TRACE;
+
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+    if ( !m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() && !m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
+    {
+        CORE::Float32 encodeRatio = m_encodeSizeRatio < 0 ? GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION : m_encodeSizeRatio;
+        CORE::UInt32 estimatedApproxDecodedSize = (CORE::UInt32) ( vfs.GetFileSize( vfsPath ) * encodeRatio );
+        targetBuffer.SetBufferSize( estimatedApproxDecodedSize, false );
+
+        if ( !vfs.DecodeAsFile( targetBuffer, 0, vfsPath, m_channelSettings.decodeCodecFamily, m_channelSettings.decodeCodecName ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:LoadStorageFile: Cannot decode and load persisted file. CodeFamily:" + m_channelSettings.decodeCodecFamily +
+                " CodecName: " + m_channelSettings.decodeCodecName + ". VFS File: " + vfsPath );
+            return false;
+        }
+
+        if ( targetBuffer.GetDataSize() > 0 )
+            m_encodeSizeRatio = (CORE::Float32) ( targetBuffer.GetDataSize() / vfs.GetFileSize( vfsPath ) );
+    }
+    else
+    {
+        // Not using any encoding, load the file as-is
+        if ( !vfs.LoadFile( targetBuffer, vfsPath, "rb" ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:LoadStorageFile: Cannot load last persisted file. VFS File: " + vfsPath );
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
                                                           const CORE::CString& topicName , 
@@ -1129,32 +1320,12 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
             return false;
         }
 
-        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-        
         CORE::CDynamicBuffer lastStorageFileContent;
-        if ( !m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() && !m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
+        if ( !LoadStorageFile( lastWrittenFilePath, lastStorageFileContent ) )
         {
-            CORE::Float32 encodeRatio = m_encodeSizeRatio < 0 ? GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION : m_encodeSizeRatio;
-            CORE::UInt32 estimatedApproxDecodedSize = (CORE::UInt32) ( vfs.GetFileSize( lastWrittenFilePath ) * encodeRatio );
-            lastStorageFileContent.SetBufferSize( estimatedApproxDecodedSize, false );
-
-            if ( !vfs.DecodeAsFile( lastStorageFileContent, 0, lastWrittenFilePath, m_channelSettings.decodeCodecFamily, m_channelSettings.decodeCodecName ) )
-            {
-                fileExistedButHasIssue = true;
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot decode and load last persisted file. CodeFamily:" + m_channelSettings.decodeCodecFamily +
-                    " CodecName: " + m_channelSettings.decodeCodecName + ". VFS File: " + lastWrittenFilePath );
-                return false;
-            }
-        }
-        else
-        {
-            // Not using any encoding, load the file as-is
-            if ( !vfs.LoadFile( lastStorageFileContent, lastWrittenFilePath, "rb" ) )
-            {
-                fileExistedButHasIssue = true;
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Cannot load last persisted file. VFS File: " + lastWrittenFilePath );
-                return false;
-            }
+            fileExistedButHasIssue = false;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Unable to load file from storage. Loading using last offset " + CORE::ToString( lastFileOffset ) );
+            return false;
         }
 
         if ( 0 == lastStorageFileContent.GetDataSize() )
@@ -1185,6 +1356,8 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully serialized a new footer to the previously corrupt container. Will attempt to persist the amended container" );
 
+                        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                        
                         if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
                         {
                             if ( vfs.StoreAsFile( lastWrittenFilePath, lastStorageFileContent, 0, true ) )
@@ -1238,6 +1411,26 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
 /*-------------------------------------------------------------------------*/
 
 bool
+CStorageChannel::GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
+                                                      CORE::CDateTime& startDt      ,
+                                                      CORE::CDateTime& endDt        ) const
+{GUCEF_TRACE;
+
+    // first strip the extra stuff from the full path to get the string form timestamps
+    CORE::CString segment = CORE::ExtractFilename( fullPath );
+    segment = segment.CutChars( m_vfsFilePostfix.Length(), false, 0 );
+    CORE::CString startDtSegment = segment.SubstrToChar( '_', true );
+    CORE::CString endDtSegment = segment.SubstrToChar( '_', false );
+
+    // Try to parse what is left as a valid ISO 8601 DateTime
+    if ( startDt.FromIso8601DateTimeString( startDtSegment ) && endDt.FromIso8601DateTimeString( endDtSegment ) )
+        return true;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CStorageChannel::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
                                                const CORE::CDateTime& endDt    ,
                                                CORE::CString::StringSet& files ) const
@@ -1252,24 +1445,16 @@ CStorageChannel::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
 
     VFS::CVFS::TStringSet::iterator i = index.begin();
     while ( i != index.end() )
-    {
-        // first strip the extra stuff from the full path to get the string form timestamps
-        const CORE::CString& fullPath = (*i);
-        CORE::CString segment = CORE::ExtractFilename( fullPath );
-        segment = segment.CutChars( m_vfsFilePostfix.Length(), false, 0 );
-        CORE::CString startDtSegment = segment.SubstrToChar( '_', true );
-        CORE::CString endDtSegment = segment.SubstrToChar( '_', false );
-        
-        // Try to parse what is left as a valid ISO 8601 DateTime
+    {        
         CORE::CDateTime containerFileFirstMsgDt;
         CORE::CDateTime containerFileLastMsgDt;
-        if ( containerFileFirstMsgDt.FromIso8601DateTimeString( startDtSegment ) && containerFileLastMsgDt.FromIso8601DateTimeString( endDtSegment ) )
+        if ( GetStartAndEndFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt ) )
         {
             // Check the container first messgage dt against the our time range
             // It is assumed here that the containers have messages chronologically ordered
             if ( containerFileFirstMsgDt.IsWithinRange( startDt, endDt ) || containerFileLastMsgDt.IsWithinRange( startDt, endDt ) )
             {
-                files.insert( fullPath );
+                files.insert( (*i) );
             }
         }
         ++i;
@@ -1281,13 +1466,8 @@ CStorageChannel::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
+CStorageChannel::StoreNextReceivedPubSubBuffer( void )
 {GUCEF_TRACE;
-
-    if ( !m_channelSettings.performPubSubInDedicatedThread )
-    {
-        m_pubsubClient->OnTaskCycle( taskData );
-    }
 
     CORE::CDynamicBufferSwap& buffers = m_pubsubClient->GetSerializedMsgBuffers();
         
@@ -1328,6 +1508,209 @@ CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: EncodeAsFile() Failed" );
             }
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStorageChannel::OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest )
+{GUCEF_TRACE;
+
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStorageChannel::ProcessNextStorageToPubSubRequest( void )
+{GUCEF_TRACE;
+
+    StorageToPubSubRequestDeque::iterator i = m_storageToPubSubRequests.begin();
+    if ( i != m_storageToPubSubRequests.end() )
+    {
+        StorageToPubSubRequest& queuedRequest = (*i);
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Request for messages in range " + 
+            CORE::ToString( queuedRequest.startDt ) + " to " + CORE::ToString( queuedRequest.endDt ) );
+
+        if ( queuedRequest.vfsPubSubMsgContainersToPush.empty() )
+        {
+            if ( !GetPathsToPubSubStorageFiles( queuedRequest.startDt                      ,
+                                                queuedRequest.endDt                        ,
+                                                queuedRequest.vfsPubSubMsgContainersToPush ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Did not obtain any storage paths for time range " +
+                    queuedRequest.startDt.ToIso8601DateTimeString( true, true ) + " to " + queuedRequest.endDt.ToIso8601DateTimeString( true, true ) );
+                
+                OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
+                m_storageToPubSubRequests.pop_back();
+                return false;    
+            }
+        }
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Available data in the request range spans " + 
+            CORE::ToString( queuedRequest.vfsPubSubMsgContainersToPush.size() ) + " containers" );
+    
+        size_t containersProcessed = 0;
+        CORE::CString::StringSet::iterator n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
+        while ( n != queuedRequest.vfsPubSubMsgContainersToPush.end() )
+        {
+            bool needContainerSubsetOnly = false;
+            bool containerStartIsInRange = true;
+            bool containerEndIsInRange = true;
+
+            CORE::CDateTime containerFileFirstMsgDt;
+            CORE::CDateTime containerFileLastMsgDt;
+            if ( GetStartAndEndFromContainerFilename( (*n), containerFileFirstMsgDt, containerFileLastMsgDt ) )
+            {
+                containerStartIsInRange = containerFileFirstMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );
+                containerEndIsInRange = containerFileLastMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );                 
+                needContainerSubsetOnly = !( containerStartIsInRange && containerEndIsInRange );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Parsed file path container start and end DateTimes. Start=" +
+                    CORE::ToString( containerFileFirstMsgDt ) + ", End=" + CORE::ToString( containerFileLastMsgDt ) + ". containerStartIsInRange=" + CORE::ToString( containerStartIsInRange ) +
+                    ", containerEndIsInRange=" + CORE::ToString( containerEndIsInRange ) + ", needContainerSubsetOnly=" + CORE::ToString( needContainerSubsetOnly ) );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Failed to parse start and/or end DateTime from file path: " + (*n) );
+            }
+            
+            if ( needContainerSubsetOnly )
+            {
+                if ( GUCEF_NULL == m_msgReceiveBuffer )
+                    m_msgReceiveBuffer = m_pubsubClient->GetSerializedMsgBuffers().GetNextWriterBuffer( containerStartIsInRange ? containerFileFirstMsgDt : queuedRequest.startDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+
+                if ( GUCEF_NULL != m_msgReceiveBuffer )
+                {
+                    if ( LoadStorageFile( (*n), *m_msgReceiveBuffer ) )
+                    {
+                        CORE::UInt32 bytesRead = 0;
+                        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
+                        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead );
+
+                        // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
+                        // The way we can do that is by editing the footer in the buffer to logically eliminate entries we do not need
+                        // This will make it appear as if only the needed entries are in the container to the reader when reading the footer
+                        CORE::UInt32 startIndexOffset = 0;
+                        CORE::UInt32 endIndexOffset = 0;
+                        bool isCorrupted = false;                        
+                        COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
+                        if ( COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
+                        {
+                            // Check to see how many we need to trim from the start
+
+                            if ( !containerStartIsInRange )
+                            {
+                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator m = msgs.begin();
+                                while ( m != msgs.end() )    
+                                {
+                                    if ( (*m).GetMsgDateTime() >= queuedRequest.startDt )
+                                        break;                         
+                                    ++m; ++startIndexOffset;
+                                }
+                            }
+                            if ( !containerEndIsInRange )
+                            {
+                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::reverse_iterator m = msgs.rbegin();
+                                while ( m != msgs.rend() )    
+                                {
+                                    if ( (*m).GetMsgDateTime() <= queuedRequest.endDt )
+                                        break;                         
+                                    ++m; ++endIndexOffset;
+                                }
+                            }
+
+                            CORE::UInt32 o2=0;
+                            std::size_t newIndexSize = originalOffsetIndex.size() - ( startIndexOffset + endIndexOffset );
+                            endIndexOffset = (CORE::UInt32) originalOffsetIndex.size() - endIndexOffset;
+                            COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newOffsetIndex( newIndexSize );                            
+                            for ( CORE::UInt32 o=startIndexOffset; o<endIndexOffset; ++o )
+                            {
+                                newOffsetIndex[ o2 ] = originalOffsetIndex[ o ];
+                                ++o2;
+                            }
+
+                            // Now we overwrite the footer in the in-memory container to only have the subset of messages we care about referenced
+                            CORE::UInt32 bytesWritten = 0;
+                            if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newOffsetIndex, m_msgReceiveBuffer->GetDataSize()-1, *m_msgReceiveBuffer, bytesWritten ) )
+                            {
+                                // We are done with this container
+                                ++containersProcessed;
+                                m_msgReceiveBuffer = GUCEF_NULL;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // No write buffer available, we need to wait before processing more requests
+                    return false;
+                }
+            }
+            else
+            {
+                if ( GUCEF_NULL == m_msgReceiveBuffer )
+                    m_msgReceiveBuffer = m_pubsubClient->GetSerializedMsgBuffers().GetNextWriterBuffer( containerFileFirstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+                
+                if ( GUCEF_NULL != m_msgReceiveBuffer )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Loading the entire container as-is to serve (part of) the request" );
+
+                    if ( LoadStorageFile( (*n), *m_msgReceiveBuffer ) )
+                    {
+                        // Since we loaded the entire container and we dont need a subset we are done
+                        ++containersProcessed;
+                        m_msgReceiveBuffer = GUCEF_NULL;
+                    }
+                }
+                else
+                {
+                    // No write buffer available, we need to wait before processing more requests
+                    return false;
+                }
+            }
+            ++n;
+        }
+
+        if ( containersProcessed != queuedRequest.vfsPubSubMsgContainersToPush.size() )
+        {
+            OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
+        }
+        
+        m_storageToPubSubRequests.pop_front();
+        m_pubsubClient->GetSerializedMsgBuffers().SignalEndOfWriting();
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    if ( !m_channelSettings.performPubSubInDedicatedThread )
+    {
+        m_pubsubClient->OnTaskCycle( taskData );
+    }
+
+    switch ( m_channelSettings.mode )
+    {
+        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
+        {
+            StoreNextReceivedPubSubBuffer();
+            break;
+        }
+        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
+        {
+            ProcessNextStorageToPubSubRequest();
+            break;
         }
     }
 
@@ -1409,6 +1792,7 @@ RestApiPubSub2StorageInfoResource::Serialize( const CORE::CString& resourcePath 
     output.SetName( "info" );
     output.SetAttribute( "application", "pubsub2storage" );
     output.SetAttribute( "appBuildDateTime", PubSub2Storage::GetAppCompileDateTime().ToIso8601DateTimeString( true, true ) );
+    output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
     #else
@@ -1965,3 +2349,4 @@ PubSub2Storage::GetGlobalConfig( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
+

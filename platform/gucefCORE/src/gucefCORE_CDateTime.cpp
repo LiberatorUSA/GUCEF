@@ -60,8 +60,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 const CDateTime CDateTime::Empty;
-const CDateTime CDateTime::Minimum = CDateTime( GUCEF_MT_INT16MIN, UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt16( 0 ) );
-const CDateTime CDateTime::Maximum = CDateTime( GUCEF_MT_INT16MAX, UInt8( 12 ), UInt8( 31 ), UInt8( 23 ), UInt8( 59 ), UInt8( 59 ), UInt16( 999 ) );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -97,14 +95,14 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         systemTime.wMilliseconds = (WORD) datetime.GetMilliseconds();
     }
 
-    static void DateTimeToWin32FileTime( const CDateTime& datetime, FILETIME& fileTime )
+    static bool DateTimeToWin32FileTime( const CDateTime& datetime, FILETIME& fileTime )
     {
         ::SYSTEMTIME systemTime;
         DateTimeToWin32SystemTime( datetime, systemTime );
 
         if ( datetime.IsUTC() )
         {
-            ::SystemTimeToFileTime( &systemTime, &fileTime );
+            return ::SystemTimeToFileTime( &systemTime, &fileTime ) == TRUE;
         }
         else
         {
@@ -113,8 +111,10 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
             tz.Bias = datetime.GetTimeZoneUTCOffsetInMins();
 
             ::SYSTEMTIME utcTime;
-            ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
-            ::SystemTimeToFileTime( &utcTime, &fileTime );
+            if ( ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime ) == TRUE )
+                return ::SystemTimeToFileTime( &utcTime, &fileTime ) == TRUE;
+            else
+                return false;
         }
     }
 
@@ -138,6 +138,32 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         Win32SystemTimeToDateTime( systemTime, 0, datetime );
 
         DateTimeToWin32SystemTime( datetime, systemTime );
+    }
+
+    static CDateTime GetFutureMaxAsDateTime( void )
+    {
+        ::ULARGE_INTEGER fileTimeUInt64;
+        fileTimeUInt64.QuadPart = 0x7fff35f4f06c58f0;
+        ::FILETIME filetime;
+        filetime.dwHighDateTime = fileTimeUInt64.HighPart;      
+        filetime.dwLowDateTime = fileTimeUInt64.LowPart;
+        
+        CDateTime dtFormat;
+        Win32FileTimeToDateTime( filetime, dtFormat );
+        return dtFormat;
+    }
+
+    static CDateTime GetPastMaxAsDateTime( void )
+    {
+        ::ULARGE_INTEGER fileTimeUInt64;
+        fileTimeUInt64.QuadPart = 0;
+        ::FILETIME filetime;
+        filetime.dwHighDateTime = fileTimeUInt64.HighPart;      
+        filetime.dwLowDateTime = fileTimeUInt64.LowPart;
+        
+        CDateTime dtFormat;
+        Win32FileTimeToDateTime( filetime, dtFormat );
+        return dtFormat;
     }
 
     static CDateTime DateTimeToUtc( const CDateTime& datetime )
@@ -402,6 +428,29 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         UInt64 unixDtInMsTicks = ( time.tv_sec * 1000 ) + (UInt64)( time.tv_nsec / 1000000 );
         return unixDtInMsTicks;
     }
+
+    static CDateTime GetFutureMaxAsDateTime( void )
+    {
+        struct timespec time;
+        time.tv_sec = (time_t) 0;
+        time.tv_sec -= 1; // intentionally wrap around the unsigned 
+        time.tv_nsec = LONG_MAX;
+
+        CDateTime dtFormat;
+        TimespecToDateTime( time, dtFormat );
+        return dtFormat;
+    }
+
+    static CDateTime GetPastMaxAsDateTime( void )
+    {
+        struct timespec time;
+        time.tv_sec = (time_t) 0;
+        time.tv_nsec = 0;
+
+        CDateTime dtFormat;
+        TimespecToDateTime( time, dtFormat );
+        return dtFormat;
+    }
 };
 
 #else
@@ -444,11 +493,34 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     {
         return 0;
     }
+
+    static CDateTime GetFutureMaxAsDateTime( void )
+    {
+        return CDateTime( GUCEF_MT_INT16MAX, UInt8( 12 ), UInt8( 31 ), UInt8( 23 ), UInt8( 59 ), UInt8( 59 ), UInt16( 999 ) );
+    }
+
+    static CDateTime GetPastMaxAsDateTime( void )
+    {
+        return CDateTime( GUCEF_MT_INT16MIN, UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt16( 0 ) );
+    }
 };
 
 #endif
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CDateTime CDateTime::PastMax = COSDateTimeUtils::GetPastMaxAsDateTime();
+const CDateTime CDateTime::FutureMax = COSDateTimeUtils::GetFutureMaxAsDateTime();
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
 CDateTime::CDateTime( const time_t src, bool isUtc )
     : CDate( src, isUtc )
@@ -958,6 +1030,8 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
 
     char* dtBuffer = static_cast< char* >( targetBuffer );
     
+    // The ISO DateTime range is likelyt different from the host O/S range
+    // As such we should always clamp
     Int16 isoClampedYear = m_year;
     if ( isoClampedYear > 9999 )
         isoClampedYear = 9999;
@@ -982,8 +1056,8 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     {
         if ( includeMilliseconds )
         {
-            // Length = date(4+2+2)+time(2+2+2+3) = 17 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
+            // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {

@@ -93,6 +93,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
     , redisXReadDefaultOffset( "0" )
+    , redisXAddIgnoreMsgId( true )
 {GUCEF_TRACE;
 
 }
@@ -104,6 +105,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( cons
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
     , redisXReadDefaultOffset( "0" )
+    , redisXAddIgnoreMsgId( true )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -125,6 +127,7 @@ CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& c
     redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
     redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );
     redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true ); 
+    redisXAddIgnoreMsgId = config.GetAttributeValueOrChildValueByName( "redisXAddIgnoreMsgId" ).AsBool( redisXAddIgnoreMsgId, true ); 
     return true;
 }
 
@@ -405,14 +408,17 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
     if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
         return false;
 
+    static const sw::redis::StringView autoGenMsgId = sw::redis::StringView( "*", 1 );
+    const sw::redis::StringView& msgIdToUse = m_config.redisXAddIgnoreMsgId ? autoGenMsgId : msgId;
+
     try
     {
         sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
 
         if ( m_config.redisXAddMaxLen >= 0 )
-            m_redisPipeline->xadd( cnSV, msgId, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
+            m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
         else
-            m_redisPipeline->xadd( cnSV, msgId, kvPairs.begin(), kvPairs.end() );
+            m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
 
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
 
@@ -448,6 +454,12 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
         }
 
         return totalSuccess;
+    }
+    catch ( const sw::redis::ReplyError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ Reply error exception: " + e.what() );
+        return false;
     }
     catch ( const sw::redis::OomError& e )
     {

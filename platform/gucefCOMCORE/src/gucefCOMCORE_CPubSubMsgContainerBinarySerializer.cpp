@@ -356,6 +356,95 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& forwardO
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                                                  bool linkWherePossible                         ,
+                                                  const TMsgOffsetIndex& index                   ,
+                                                  const CORE::CDynamicBuffer& source             ,
+                                                  bool& isCorrupted                              )
+{GUCEF_TRACE;
+
+    isCorrupted = false;
+    CORE::UInt32 bytesRead = 0;
+    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    if ( !DeserializeHeader( options, source, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: Failed to read container header" );
+        isCorrupted = true;
+        return false;
+    }
+
+    if ( msgs.size() <= index.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: The given message storage was not properly pre-allocated ( " + 
+                CORE::ToString( msgs.size() ) + " vs " + CORE::ToString( index.size() ) + ")" );
+        isCorrupted = false;
+        return false;
+    }
+
+    CORE::UInt32 msgIndex = 0;
+    CPubSubClientTopic::TPubSubMsgsRefVector::iterator m = msgs.begin();
+    TMsgOffsetIndex::const_iterator i = index.begin();
+    while ( i != index.end() )
+    {
+        CORE::UInt32 offsetOfMsg = (*i);
+        CIPubSubMsg& msg = (*m).GetData();
+
+        if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
+            isCorrupted = true;
+            return false;
+        }        
+        ++i; ++m; ++msgIndex;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs        ,
+                                                  bool linkWherePossible             ,
+                                                  const TMsgOffsetIndex& index       ,
+                                                  const CORE::CDynamicBuffer& source ,
+                                                  bool& isCorrupted                  )
+{GUCEF_TRACE;
+
+    isCorrupted = false;
+    CORE::UInt32 bytesRead = 0;
+    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    if ( !DeserializeHeader( options, source, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: Failed to read container header" );
+        isCorrupted = true;
+        return false;
+    }
+
+    CORE::UInt32 msgIndex = 0;
+    TMsgOffsetIndex::const_iterator i = index.begin();
+    while ( i != index.end() )
+    {
+        CORE::UInt32 offsetOfMsg = (*i);
+
+        msgs.push_back( CBasicPubSubMsg() );
+        CBasicPubSubMsg& msg = msgs.back();
+
+        if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
+            isCorrupted = true;
+            return false;
+        }        
+        ++i; ++msgIndex;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg                   ,
                                                             bool linkWherePossible             ,
                                                             const CORE::CDynamicBuffer& source ,
