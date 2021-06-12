@@ -137,6 +137,7 @@ class CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicC
 
     CORE::Int32 redisXAddMaxLen;
     bool redisXAddMaxLenIsApproximate;
+    CORE::CString redisXReadDefaultOffset;
     
     CRedisClusterPubSubClientTopicConfig( void );
     

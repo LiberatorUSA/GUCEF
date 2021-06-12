@@ -120,8 +120,37 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
     if ( GUCEF_NULL != newDesiredFeatures )
     {
         if ( !desiredFeatures.LoadConfig( *newDesiredFeatures ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load DesiredFeatures section" );
             return false;
+        }
     }
+
+    const CORE::CDataNode* topicCollectionNode = cfg.FindChild( "Topics" );
+    if ( GUCEF_NULL != topicCollectionNode )
+    {
+        topics.clear();
+
+        CORE::CDataNode::TConstDataNodeSet psClientTopicConfigs = topicCollectionNode->FindChildrenOfType( "PubSubClientTopicConfig", true );
+        if ( !psClientTopicConfigs.empty() )
+        {
+            CORE::UInt32 n=0;
+            topics.resize( psClientTopicConfigs.size() );
+        
+            CORE::CDataNode::TConstDataNodeSet::iterator i = psClientTopicConfigs.begin();
+            while ( i != psClientTopicConfigs.end() )
+            {
+                COMCORE::CPubSubClientTopicConfig& topicConfig = topics[ n ];            
+                if ( !topicConfig.LoadConfig( *(*i) ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load PubSubClientTopicConfig section" );
+                    return false;
+                }
+                ++i; ++n;            
+            }
+        }
+    }
+
     return true;
 }
 

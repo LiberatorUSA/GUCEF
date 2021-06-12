@@ -50,6 +50,11 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -72,12 +77,15 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
 {
     public:
 
+    typedef std::vector< CPubSubClientTopicConfig > TPubSubClientTopicConfigVector;
+
     CORE::CString pubsubClientType;          /**< the string form type name of the pub-sub client */
     CPubSubClientFeatures desiredFeatures;   /**< desired feature set of the client */ 
     CORE::CDataNode customConfig;            /**< client type specific configuration, if any */
     CORE::CPulseGenerator* pulseGenerator;   /**< dedicated pulse generator to use for anything that uses a pulse generator directly, if any */
     CORE::UInt32 reconnectDelayInMs;         /**< minimal time to wait before attempting a reconnect if the client supports auto reconnects */
     COMCORE::CHostAddress remoteAddress;     /**< primary address of the remote host if applicable */
+    TPubSubClientTopicConfigVector topics;   /**< config related to specific topics you want the client to deal with */
 
     CPubSubClientConfig( void );
 

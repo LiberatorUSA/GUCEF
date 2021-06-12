@@ -92,6 +92,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
     : COMCORE::CPubSubClientTopicConfig()
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
+    , redisXReadDefaultOffset( "0" )
 {GUCEF_TRACE;
 
 }
@@ -102,6 +103,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( cons
     : COMCORE::CPubSubClientTopicConfig( genericConfig )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
+    , redisXReadDefaultOffset( "0" )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -120,8 +122,9 @@ bool
 CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen ); 
-    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate );
+    redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
+    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );
+    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true ); 
     return true;
 }
 
@@ -385,6 +388,7 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
     
     m_config = config;
     m_redisHashSlot = CalculateRedisHashSlot( config.topicName );
+    //m_readOffset = config.redisXReadDefaultOffset;
 
     m_redisXreadCount = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadCount" ).AsUInt32( m_redisXreadCount );
     m_redisXreadBlockTimeoutInMs = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadBlockTimeoutInMs" ).AsUInt32( m_redisXreadBlockTimeoutInMs );

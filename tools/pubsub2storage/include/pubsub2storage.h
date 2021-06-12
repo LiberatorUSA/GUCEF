@@ -123,13 +123,20 @@ class ChannelSettings : public CORE::CIConfigurable
     public:
 
     typedef std::vector< COMCORE::CPubSubClientTopicConfig > TTopicConfigVector;
+    enum EChannelMode : CORE::Int32
+    {
+        CHANNELMODE_UNKNOWN = 0 ,
+
+        CHANNELMODE_PUBSUB_TO_STORAGE ,
+        CHANNELMODE_STORAGE_TO_PUBSUB
+    };
+    typedef enum EChannelMode TChannelMode;
 
     ChannelSettings( void );
     ChannelSettings( const ChannelSettings& src );
     ChannelSettings& operator=( const ChannelSettings& src );
 
     COMCORE::CPubSubClientConfig pubsubClientConfig;
-    TTopicConfigVector pubsubClientTopicConfigs;
     COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
@@ -146,6 +153,12 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;
     bool collectMetrics;
+    TChannelMode mode;
+    bool subscribeUsingDefaultBookmarkIfThereIsNoLast;
+    bool autoPushAfterStartupIfStorageToPubSub;
+    CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
+    CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
+
 
     COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
@@ -175,6 +188,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     public:
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
+    typedef enum ChannelSettings::EChannelMode TChannelMode;
 
     CPubSubClientChannel( CIPubSubMsgPersistance* persistance );
     virtual ~CPubSubClientChannel();
@@ -255,6 +269,7 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     public:
 
     typedef CORE::CTEventHandlerFunctor< CStorageChannel > TEventCallback;
+    typedef enum ChannelSettings::EChannelMode TChannelMode;
 
     CStorageChannel();
     CStorageChannel( const CStorageChannel& src );
@@ -286,6 +301,11 @@ class CStorageChannel : public CORE::CTaskConsumer ,
                                                           CORE::UInt32 lastFileOffset    ,
                                                           bool& fileExistedButHasIssue   );
 
+    bool
+    GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
+                                  const CORE::CDateTime& endDt    ,
+                                  CORE::CString::StringSet& files ) const;
+    
     bool LoadConfig( const ChannelSettings& channelSettings );
 
     const ChannelSettings& GetChannelSettings( void ) const;
@@ -329,6 +349,12 @@ class CStorageChannel : public CORE::CTaskConsumer ,
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
+    
+    
+    
+    
+    
+    CORE::CString::StringSet m_vfsPubSubMsgContainersToPush;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -410,6 +436,8 @@ class PubSub2Storage : public CORE::CObserver ,
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static const CORE::CDateTime& GetAppCompileDateTime( void );
 
     private:
 

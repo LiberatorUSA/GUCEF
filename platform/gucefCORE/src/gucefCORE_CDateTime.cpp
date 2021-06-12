@@ -60,6 +60,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 const CDateTime CDateTime::Empty;
+const CDateTime CDateTime::Minimum = CDateTime( GUCEF_MT_INT16MIN, UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt8( 0 ), UInt16( 0 ) );
+const CDateTime CDateTime::Maximum = CDateTime( GUCEF_MT_INT16MAX, UInt8( 12 ), UInt8( 31 ), UInt8( 23 ), UInt8( 59 ), UInt8( 59 ), UInt16( 999 ) );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -702,6 +704,24 @@ CDateTime::operator!=( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CDateTime::operator>=( const CDateTime& other ) const
+{GUCEF_TRACE;
+
+    return (*this) > other || (*this) == other;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDateTime::operator<=( const CDateTime& other ) const
+{GUCEF_TRACE;
+
+    return (*this) < other || (*this) == other;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int16
 CDateTime::GetTimeZoneUTCOffsetInMins( void ) const
 {GUCEF_TRACE;
@@ -938,17 +958,24 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
 
     char* dtBuffer = static_cast< char* >( targetBuffer );
     
+    Int16 isoClampedYear = m_year;
+    if ( isoClampedYear > 9999 )
+        isoClampedYear = 9999;
+    else
+    if ( isoClampedYear < 0000 )    
+        isoClampedYear = 0000;
+
     if ( includeDelimeters )
     {
         if ( includeMilliseconds )
         {            
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 24 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 20 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
     }
     else
@@ -956,12 +983,12 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
         if ( includeMilliseconds )
         {
             // Length = date(4+2+2)+time(2+2+2+3) = 17 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
             // Length = date(4+2+2)+time(2+2+2) = 14 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
     }    
 }
@@ -994,6 +1021,36 @@ CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMillisec
     if ( 0 < ToIso8601DateTimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters, includeMilliseconds ) )
         return dtBuffer;
     return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDateTime::IsWithinRange( const CDateTime& a, const CDateTime& b, bool includingBoundaryItself ) const
+{GUCEF_TRACE;
+
+    const CDateTime* minDt = GUCEF_NULL;
+    const CDateTime* maxDt = GUCEF_NULL;
+    
+    if ( a < b )
+    {
+        minDt = &a;
+        maxDt = &b;
+    }
+    else
+    {
+        minDt = &b;
+        maxDt = &a;
+    }
+
+    if ( includingBoundaryItself )
+    {
+        return (*this) >= (*minDt) && (*this) <= (*maxDt);
+    }
+    else
+    {
+        return (*this) > (*minDt) && (*this) < (*maxDt);
+    }
 }
 
 /*-------------------------------------------------------------------------//

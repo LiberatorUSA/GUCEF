@@ -71,6 +71,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     public:
 
     static const CDateTime Empty;
+    static const CDateTime Minimum;
+    static const CDateTime Maximum;
 
     static CDateTime NowLocalDateTime( void );
 
@@ -109,6 +111,12 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     bool operator>( const CDateTime& other ) const;
 
     bool operator<( const CDateTime& other ) const;
+
+    bool operator>=( const CDateTime& other ) const;
+
+    bool operator<=( const CDateTime& other ) const;
+
+    bool IsWithinRange( const CDateTime& a, const CDateTime& b, bool includingBoundaryItself = true ) const;
 
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;
     Int32 ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const;
