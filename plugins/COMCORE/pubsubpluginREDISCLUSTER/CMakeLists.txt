@@ -15,6 +15,10 @@ set( HEADER_FILES
   include/crc16.h
   include/pubsubpluginREDISCLUSTER.h
   include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.h
+  include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.h
+  include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.h
+  include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.h
+  include/pubsubpluginREDISCLUSTER_RedisNode.h
   include/pubsubpluginREDISCLUSTER_config.h
   include/pubsubpluginREDISCLUSTER_macros.h
 )
@@ -23,6 +27,10 @@ set( SOURCE_FILES
   src/crc16.cpp
   src/pubsubpluginREDISCLUSTER.cpp
   src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.cpp
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.cpp
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.cpp
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.cpp
+  src/pubsubpluginREDISCLUSTER_RedisNode.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

@@ -16,24 +16,28 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_H
-#define PUBSUBPLUGIN_REDISCLUSTER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
-#include "pubsubpluginREDISCLUSTER_macros.h"
-#define PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_MACROS_H ? */
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H ? */
+
+#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,57 +45,76 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace REDISCLUSTER {
-#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-using namespace ::GUCEF;
-using namespace ::GUCEF::CORE;
-extern "C" {
-#endif
+CRedisClusterPubSubClientTopicReader::CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic )
+    : CORE::CTaskConsumer()
+    , m_ownerTopic( ownerTopic )
+{GUCEF_TRACE;
 
-/*---------------------------------------------------------------------------*/
+}
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+/*-------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*/
+CRedisClusterPubSubClientTopicReader::~CRedisClusterPubSubClientTopicReader()
+{GUCEF_TRACE;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+}
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+bool 
+CRedisClusterPubSubClientTopicReader::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
 
-/*--------------------------------------------------------------------------*/
+    return true;
+}
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+/*-------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*/
+bool
+CRedisClusterPubSubClientTopicReader::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    m_ownerTopic->RedisRead();
+    return false;
+}
 
-/*---------------------------------------------------------------------------*/                 
+/*-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+void
+CRedisClusterPubSubClientTopicReader::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                                    bool willBeForced           )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopicReader::OnTaskEnded( CORE::CICloneable* taskdata ,
+                                                   bool wasForced              )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CRedisClusterPubSubClientTopicReader::GetType( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString taskTypeName = "RedisClusterPubSubClientTopicReader";
+    return taskTypeName;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,12 +122,8 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace REDISCLUSTER */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
-#endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
-
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_H ? */

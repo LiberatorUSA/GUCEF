@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_H
-#define PUBSUBPLUGIN_REDISCLUSTER_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 #include "pubsubpluginREDISCLUSTER_macros.h"
@@ -41,57 +41,43 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace REDISCLUSTER {
-#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
+class CRedisClusterPubSubClient;
+
+/**
+ *  Standard pub-sub client config with some custom specifcs added for this
+ *  specific pub-sub backend
  */
-#ifdef __cplusplus
-using namespace ::GUCEF;
-using namespace ::GUCEF::CORE;
-extern "C" {
-#endif
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
+{
+    public:
 
-/*---------------------------------------------------------------------------*/
+    CORE::Int32 redisXAddMaxLen;
+    bool redisXAddMaxLenIsApproximate;
+    CORE::CString redisXReadDefaultOffset;
+    bool redisXAddIgnoreMsgId;
+    
+    CRedisClusterPubSubClientTopicConfig( void );
+    
+    CRedisClusterPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual ~CRedisClusterPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
 
-/*--------------------------------------------------------------------------*/
+    CRedisClusterPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    CRedisClusterPubSubClientTopicConfig& operator=( const CRedisClusterPubSubClientTopicConfig& src );
 
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    bool LoadCustomConfig( const CORE::CDataNode& config );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,12 +85,10 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace REDISCLUSTER */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
-#endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H ? */

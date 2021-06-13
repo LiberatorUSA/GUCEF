@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_H
-#define PUBSUBPLUGIN_REDISCLUSTER_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICREADER_H
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICREADER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_CITASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CITASKCONSUMER_H
+#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 #include "pubsubpluginREDISCLUSTER_macros.h"
@@ -41,57 +41,50 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace REDISCLUSTER {
-#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
+class CRedisClusterPubSubClientTopic;
+
+/**
+ *  Provides a blocking thread to act as a dedicated reader from a Redis stream
+ *  This allows simulation of push mechanics
  */
-#ifdef __cplusplus
-using namespace ::GUCEF;
-using namespace ::GUCEF::CORE;
-extern "C" {
-#endif
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicReader : public CORE::CTaskConsumer
+{
+    public:
 
-/*---------------------------------------------------------------------------*/
+    CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic );
+    virtual ~CRedisClusterPubSubClientTopicReader() GUCEF_VIRTUAL_OVERRIDE;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-/*--------------------------------------------------------------------------*/
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
 
-/*--------------------------------------------------------------------------*/
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-/*--------------------------------------------------------------------------*/
+    private:
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    CRedisClusterPubSubClientTopicReader( void );                                            // not implemented
+    CRedisClusterPubSubClientTopicReader( const CRedisClusterPubSubClientTopicReader& src ); // not implemented
 
-/*--------------------------------------------------------------------------*/
+    CRedisClusterPubSubClientTopic* m_ownerTopic;
+};
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+typedef CORE::CTSharedPtr< CRedisClusterPubSubClientTopicReader, MT::CMutex >   RedisClusterPubSubClientTopicReaderPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,12 +92,10 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace REDISCLUSTER */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
-#endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICREADER_H ? */

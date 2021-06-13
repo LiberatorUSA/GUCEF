@@ -25,8 +25,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP_CODE
-#define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C_CODE
+#define PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_CPP_CODE
+#define PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 

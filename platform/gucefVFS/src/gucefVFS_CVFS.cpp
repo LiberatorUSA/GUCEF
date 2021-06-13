@@ -549,8 +549,11 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
         return false;
     }
 
+    targetFile->GetAccess()->Flush();
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded buffer using codec \"" +
         encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+    
     return true;
 }
 

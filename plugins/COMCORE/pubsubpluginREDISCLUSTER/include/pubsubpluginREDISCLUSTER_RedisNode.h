@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_H
-#define PUBSUBPLUGIN_REDISCLUSTER_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
+#define PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#include <map>
+
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 #include "pubsubpluginREDISCLUSTER_macros.h"
@@ -41,57 +43,29 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace REDISCLUSTER {
-#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-using namespace ::GUCEF;
-using namespace ::GUCEF::CORE;
-extern "C" {
-#endif
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP RedisNode
+{
+    public:
 
-/*---------------------------------------------------------------------------*/
+    COMCORE::CHostAddress host;
+    CORE::CString nodeId;
+    CORE::UInt32 startSlot;
+    CORE::UInt32 endSlot;
 
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    RedisNode( void );
+};
 
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,12 +73,10 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace REDISCLUSTER */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
-#endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H ? */

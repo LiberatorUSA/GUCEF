@@ -25,43 +25,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <deque>
-
-#ifndef GUCEF_MT_CTMAILBOX_H
-#include "gucefMT_CTMailBox.h"
-#define GUCEF_MT_CTMAILBOX_H
-#endif /* GUCEF_MT_CTMAILBOX_H ? */
-
-#ifndef GUCEF_CORE_CITASKCONSUMER_H
-#include "gucefCORE_CITaskConsumer.h"
-#define GUCEF_CORE_CITASKCONSUMER_H
-#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#include "CHostAddress.h"
-#define GUCEF_COMCORE_CHOSTADDRESS_H
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_CORE_CDATANODE_H
-#include "CDataNode.h"
-#define GUCEF_CORE_CDATANODE_H
-#endif /* GUCEF_CORE_CDATANODE_H ? */
-
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -71,16 +34,6 @@
 #include "gucefCORE_CThreadPool.h"
 #define GUCEF_CORE_CTHREADPOOL_H
 #endif /* GUCEF_CORE_CTHREADPOOL_H ? */
-
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
-#include "gucefCOMCORE_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
-
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#include "gucefCOMCORE_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
 
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
 #include "gucefCOMCORE_CPubSubClient.h"
@@ -94,8 +47,17 @@
 
 #include "hiredis.h"
 #include "async.h"
-
 #include "redis++.h"
+
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
+#include "pubsubpluginREDISCLUSTER_RedisNode.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H ? */
+
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -113,192 +75,7 @@ namespace REDISCLUSTER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class RedisNode
-{
-    public:
-
-    COMCORE::CHostAddress host;
-    CORE::CString nodeId;
-    CORE::UInt32 startSlot;
-    CORE::UInt32 endSlot;
-
-    RedisNode( void );
-};
-
-typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
-
-/*-------------------------------------------------------------------------*/
-
-class CRedisClusterPubSubClient;
-
-class CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
-{
-    public:
-
-    CORE::Int32 redisXAddMaxLen;
-    bool redisXAddMaxLenIsApproximate;
-    CORE::CString redisXReadDefaultOffset;
-    bool redisXAddIgnoreMsgId;
-    
-    CRedisClusterPubSubClientTopicConfig( void );
-    
-    CRedisClusterPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
-
-    virtual ~CRedisClusterPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
-
-    CRedisClusterPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
-
-    CRedisClusterPubSubClientTopicConfig& operator=( const CRedisClusterPubSubClientTopicConfig& src );
-
-    bool LoadCustomConfig( const CORE::CDataNode& config );
-};
-
-/*-------------------------------------------------------------------------*/
-
-class CRedisClusterPubSubClientTopic;
-
-class CRedisClusterPubSubClientTopicReader : public CORE::CTaskConsumer
-{
-    public:
-
-    CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic );
-    virtual ~CRedisClusterPubSubClientTopicReader() GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
-                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
-                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-
-    CRedisClusterPubSubClientTopicReader( void );                                            // not implemented
-    CRedisClusterPubSubClientTopicReader( const CRedisClusterPubSubClientTopicReader& src ); // not implemented
-
-    CRedisClusterPubSubClientTopic* m_ownerTopic;
-};
-
-typedef CORE::CTSharedPtr< CRedisClusterPubSubClientTopicReader, MT::CMutex >   RedisClusterPubSubClientTopicReaderPtr;
-
-/*-------------------------------------------------------------------------*/
-
-class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
-{
-    public:
-
-    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
-
-    CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client );
-
-    virtual ~CRedisClusterPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool InitializeConnectivity( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
-
-    virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
-
-    bool RedisSendSyncImpl( const sw::redis::StringView& msgId, const TRedisArgs& kvPairs );
-
-    bool RedisRead( void );
-
-    CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
-
-    void
-    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                         const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );
-
-    void
-    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
-    
-    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    protected:
-
-    virtual bool Lock( CORE::UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-
-    void RegisterEventHandlers( void );
-
-    void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
-
-    bool SubscribeImpl( const std::string& readOffset );
-
-    private:
-
-    typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClientTopic > TEventCallback;
-    
-    // Types to read from redis-plus-plus
-    typedef std::pair< std::string, std::string > TRedisMsgAttribute;
-    typedef std::vector< TRedisMsgAttribute > TRedisMsgAttributes;
-    typedef std::pair< std::string, TRedisMsgAttributes > TRedisMsg;
-    typedef std::vector< TRedisMsg > TRedisMsgVector;
-    typedef std::unordered_map< std::string, TRedisMsgVector > TRedisMsgByStream;
-    typedef std::insert_iterator< TRedisMsgByStream > TRedisMsgByStreamInserter;
-
-    // Types to implement/hook-up topic interface
-    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
-    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
-    typedef std::vector< TBufferPair > TBufferVector;
-
-    CRedisClusterPubSubClient* m_client;
-    sw::redis::Pipeline* m_redisPipeline;
-    sw::redis::RedisCluster* m_redisContext;
-    CORE::UInt32 m_redisErrorReplies;
-    CORE::UInt32 m_redisTransmitQueueSize;
-    CORE::UInt32 m_redisMsgsTransmitted;
-    CORE::UInt32 m_redisFieldsInMsgsTransmitted;
-    CORE::UInt32 m_redisFieldsInMsgsRatio;
-    CORE::UInt32 m_redisHashSlot;
-    CORE::UInt32 m_redisXreadCount;
-    CORE::UInt32 m_redisXreadBlockTimeoutInMs;
-    TRedisMsgByStream m_redisReadMsgs;
-    TPubSubMsgsVector m_pubsubMsgs;
-    TMsgsRecievedEventData m_pubsubMsgsRefs;
-    TBufferVector m_pubsubMsgAttribs;
-    TRedisArgs m_redisMsgArgs;
-    COMCORE::CHostAddress m_redisShardHost;
-    CORE::CString m_redisShardNodeId;
-    CORE::CTimer* m_redisReconnectTimer;
-    CRedisClusterPubSubClientTopicConfig m_config;
-    std::string m_readOffset;    
-    RedisClusterPubSubClientTopicReaderPtr m_readerThread;
-    MT::CMutex m_lock;
-};
-
-/*-------------------------------------------------------------------------*/
-
-class CRedisClusterPubSubClient : public COMCORE::CPubSubClient
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : public COMCORE::CPubSubClient
 {
     public:
 
