@@ -52,18 +52,9 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      When compiling the library you should define PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE
+ *      When compiling the library you should define PUBSUBPLUGIN_REDISCLUSTER_BUILD_PLUGIN_DLL
  *      before including this macro file.
  */
-#undef PUBSUBPLUGIN_REDISCLUSTER_EXPORTSPEC
-#ifdef PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE
-  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORTSPEC GUCEF_EXPORT
-#else
-  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORTSPEC GUCEF_IMPORT
-#endif
-
-/*-------------------------------------------------------------------------*/
-
 #undef PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_EXPORTSPEC
 #ifdef PUBSUBPLUGIN_REDISCLUSTER_BUILD_PLUGIN_DLL
   #define PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_EXPORTSPEC GUCEF_EXPORT
