@@ -42,6 +42,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+struct tm;
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     struct _FILETIME;
@@ -129,6 +131,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     UInt64 ToUnixEpochBasedTicksInMillisecs( void ) const;
     void FromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks );
 
+    void FromTmStruct( const struct tm* tmStruct, bool isUtc );
+
     void Set( Int16 year                 = 0 ,
               UInt8 month                = 0 ,
               UInt8 day                  = 0 ,
@@ -137,6 +141,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
               UInt8 seconds              = 0 ,
               UInt16 milliseconds        = 0 ,
               Int16 timezoneOffsetInMins = 0 );
+    
+    explicit CDateTime( const struct tm* src, bool isUtc );
     
     explicit CDateTime( const time_t src, bool isUtc );
 

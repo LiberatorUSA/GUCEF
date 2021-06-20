@@ -92,6 +92,10 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  to a privately owned copy to avoid hard to trace invalid pointer issues
      */
     CVariant( const CVariant& src );
+
+    #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    CVariant( CVariant&& src ) GUCEF_NOEXCEPT;
+    #endif
     
     ~CVariant(); 
     
@@ -187,6 +191,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( Float64 data );
     CVariant& operator=( const CAsciiString& data );
     CVariant& operator=( const CUtf8String& data );
+    CVariant& operator=( const std::string& data );
+    CVariant& operator=( const std::wstring& data );
     CVariant& operator=( const CVariant& src );
 
     operator CAsciiString() const;
@@ -216,7 +222,10 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& LinkTo( const CAsciiString& src );
     CVariant& LinkTo( const CUtf8String& src );
     CVariant& LinkTo( const std::string& src );
-    
+    CVariant& LinkTo( const std::wstring& src );
+        
+    CVariant& TransferOwnershipTo( CVariant& newOwner );
+
     protected:
 
     void* HeapReserve( UInt32 byteSize, bool allowReduction = false );

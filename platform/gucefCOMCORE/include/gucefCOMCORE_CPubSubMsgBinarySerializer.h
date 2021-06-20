@@ -86,6 +86,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::
     bool msgDateTimeAsMsSinceUnixEpochInUtc;
     bool msgPrimaryPayloadIncluded;
     bool msgKeyValuePairsIncluded;
+    bool msgMetaDataKeyValuePairsIncluded;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -101,12 +102,23 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
     public:
 
     public:
+
+    static bool SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                  UInt32 currentTargetOffset                 ,
+                                  CORE::CDynamicBuffer& target               , 
+                                  UInt32& bytesWritten                       );
     
     static bool Serialize( const CPubSubMsgBinarySerializerOptions& options ,
                            const CIPubSubMsg& msg                           , 
                            UInt32 currentTargetOffset                       , 
                            CORE::CDynamicBuffer& target                     , 
                            UInt32& bytesWritten                             );
+
+    static bool DeserializeKvPairs( bool linkWherePossible               ,
+                                    CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                    UInt32 currentSourceOffset           , 
+                                    const CORE::CDynamicBuffer& source   , 
+                                    UInt32& bytesRead                    );
 
     static bool Deserialize( const CPubSubMsgBinarySerializerOptions& options ,
                              bool linkWherePossible                           ,

@@ -102,11 +102,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
-
-    void
-    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -121,26 +116,59 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     void RegisterEventHandlers( void );
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+    void PrepMsmqMsgStorage( void );
 
-    bool SubscribeImpl( const std::string& readOffset );
+    void PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant );
 
+    static VARTYPE GetMsmqVariantTypeForMsmqProperty( PROPID propertyId );
+
+    bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
+
+    void
+    OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
+
+    void OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible );
+
+    CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
+
+    static bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
+    
     private:
 
     typedef CORE::CTEventHandlerFunctor< CMsmqPubSubClientTopic > TEventCallback;
-   
 
     // Types to implement/hook-up topic interface
     typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
     typedef std::vector< TBufferPair > TBufferVector;
+    
+    // Types used as caches to prevent ongoing memory allocations
+    typedef std::vector< MQPROPVARIANT >    MQPROPVARIANTVector;
+    typedef std::vector< MSGPROPID >        MSGPROPIDVector;
+    typedef std::vector< PROPVARIANT >      PROPVARIANTVector;
+
+    struct SMsmqMsg
+    {
+        MQMSGPROPS msgprops;
+        MSGPROPIDVector aMsgPropId;
+        PROPVARIANTVector aMsgPropVar;
+    };
+    typedef struct SMsmqMsg TMsmqMsg;
+    typedef std::vector< TMsmqMsg >         MsmqMsgVector;
 
     CMsmqPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     TBufferVector m_pubsubMsgAttribs;
-    COMCORE::CHostAddress m_redisShardHost;
+    MsmqMsgVector m_msmqReceiveMsgs;
+    MQPROPVARIANTVector m_msgSendProps;
     CMsmqPubSubClientTopicConfig m_config;
+    CORE::CTimer m_syncReadTimer;
+    CORE::Int64 m_msmqMsgsQueued;
     MT::CMutex m_lock;
+    QUEUEHANDLE m_receiveQueueHandle;
 };
 
 /*-------------------------------------------------------------------------//

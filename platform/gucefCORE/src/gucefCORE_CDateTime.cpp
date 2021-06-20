@@ -534,6 +534,17 @@ CDateTime::CDateTime( const time_t src, bool isUtc )
 
 /*-------------------------------------------------------------------------*/
 
+CDateTime::CDateTime( const struct tm* tmStruct, bool isUtc )
+    : CDate()
+    , CTime()
+    , m_timezoneOffsetInMins( 0 )
+{GUCEF_TRACE;
+
+    FromTmStruct( tmStruct, isUtc );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDateTime::CDateTime( const CTime& src, bool isUtc )
     : CDate()
     , CTime( src )
@@ -1095,6 +1106,28 @@ CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMillisec
     if ( 0 < ToIso8601DateTimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters, includeMilliseconds ) )
         return dtBuffer;
     return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDateTime::FromTmStruct( const struct tm* tmStruct, bool isUtc )
+{GUCEF_TRACE;
+    
+    Set();
+    if ( GUCEF_NULL == tmStruct )
+        return;
+
+    m_year = (Int16) tmStruct->tm_year + 1900; // years since 1900 for tm struct
+    m_month = (UInt8) tmStruct->tm_mon + 1;    // zero based for tm struct
+    m_day = (UInt8) tmStruct->tm_wday + 1;     // zero based for tm struct
+    m_hours = (UInt8) tmStruct->tm_hour;
+    m_minutes = (UInt8) tmStruct->tm_min;
+    m_seconds = (UInt8) tmStruct->tm_sec;
+
+    // We dont currently take DST into account
+    if ( !isUtc )
+        m_timezoneOffsetInMins = GetTimeZoneUTCOffsetInMins();
 }
 
 /*-------------------------------------------------------------------------*/

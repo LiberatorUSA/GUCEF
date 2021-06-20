@@ -45,6 +45,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
     , m_msgDateTime()
     , m_primaryPayload()
     , m_keyValuePairs()
+    , m_metaDataKeyValuePairs()
 {GUCEF_TRACE;
 
 }
@@ -57,6 +58,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
     , m_msgDateTime( src.m_msgDateTime )
     , m_primaryPayload( src.m_primaryPayload )
     , m_keyValuePairs( src.m_keyValuePairs )
+    , m_metaDataKeyValuePairs( src.m_metaDataKeyValuePairs )
 {GUCEF_TRACE;
 
 }
@@ -142,6 +144,24 @@ CBasicPubSubMsg::GetKeyValuePairs( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CBasicPubSubMsg::TKeyValuePairs& 
+CBasicPubSubMsg::GetMetaDataKeyValuePairs( void ) const
+{GUCEF_TRACE;
+
+    return m_metaDataKeyValuePairs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CBasicPubSubMsg::TKeyValuePairs& 
+CBasicPubSubMsg::GetMetaDataKeyValuePairs( void )
+{GUCEF_TRACE;
+
+    return m_metaDataKeyValuePairs;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CICloneable* 
 CBasicPubSubMsg::Clone( void ) const
 {GUCEF_TRACE;
@@ -152,22 +172,22 @@ CBasicPubSubMsg::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CBasicPubSubMsg::AddLinkedKeyValuePair( const TKeyValuePair& kvPair )
+CBasicPubSubMsg::AddLinkedKeyValuePair( const TKeyValuePair& kvPair, TKeyValuePairs& kvPairsStorage )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.push_back( TKeyValuePair() );
-    m_keyValuePairs.back().first.LinkTo( kvPair.first );
-    m_keyValuePairs.back().second.LinkTo( kvPair.second );
+    kvPairsStorage.push_back( TKeyValuePair() );
+    kvPairsStorage.back().first.LinkTo( kvPair.first );
+    kvPairsStorage.back().second.LinkTo( kvPair.second );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs )
+CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs, TKeyValuePairs& kvPairsStorage )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.reserve( m_keyValuePairs.size() + (size_t) kvPairs.GetCount() );
+    kvPairsStorage.reserve( m_keyValuePairs.size() + (size_t) kvPairs.GetCount() );
 
     CORE::CValueList::TValueMap::const_iterator i = kvPairs.GetDataBeginIterator();
     while ( i != kvPairs.GetDataEndIterator() )
@@ -177,9 +197,9 @@ CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs )
         CORE::CValueList::TStringVector::const_iterator n = fieldValues.begin();
         while ( n != fieldValues.end() )
         {
-            m_keyValuePairs.push_back( TKeyValuePair() );
-            m_keyValuePairs.back().first.LinkTo( fieldName );
-            m_keyValuePairs.back().second.LinkTo( (*n) );
+            kvPairsStorage.push_back( TKeyValuePair() );
+            kvPairsStorage.back().first.LinkTo( fieldName );
+            kvPairsStorage.back().second.LinkTo( (*n) );
             ++n;
         }
         ++i;
@@ -191,13 +211,86 @@ CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs )
 /*-------------------------------------------------------------------------*/
 
 bool
+CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, TKeyValuePairs& kvPairsStorage )
+{GUCEF_TRACE;
+
+    kvPairsStorage.push_back( TKeyValuePair() );
+    kvPairsStorage.back().first.LinkTo( key );
+    kvPairsStorage.back().second.LinkTo( value );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CDynamicBuffer& value, TKeyValuePairs& kvPairsStorage )
+{GUCEF_TRACE;
+
+    kvPairsStorage.push_back( TKeyValuePair() );
+    kvPairsStorage.back().first.LinkTo( key );
+    kvPairsStorage.back().second.LinkTo( value );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CString& value, TKeyValuePairs& kvPairsStorage )
+{GUCEF_TRACE;
+
+    kvPairsStorage.push_back( TKeyValuePair() );
+    kvPairsStorage.back().first.LinkTo( key );
+    kvPairsStorage.back().second.LinkTo( value );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage )
+{GUCEF_TRACE;
+
+    kvPairsStorage.push_back( TKeyValuePair() );
+    kvPairsStorage.back().first.LinkTo( key );
+    kvPairsStorage.back().second.LinkTo( value );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage )
+{GUCEF_TRACE;
+
+    kvPairsStorage.push_back( TKeyValuePair( key, value ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedKeyValuePair( const TKeyValuePair& kvPair )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( kvPair, m_keyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePairs( kvPairs, m_keyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.push_back( TKeyValuePair() );
-    m_keyValuePairs.back().first.LinkTo( key );
-    m_keyValuePairs.back().second.LinkTo( value );
-    return true;
+    return AddLinkedKeyValuePair( key, value, m_keyValuePairs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -206,10 +299,7 @@ bool
 CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CDynamicBuffer& value )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.push_back( TKeyValuePair() );
-    m_keyValuePairs.back().first.LinkTo( key );
-    m_keyValuePairs.back().second.LinkTo( value );
-    return true;
+    return AddLinkedKeyValuePair( key, value, m_keyValuePairs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,10 +308,7 @@ bool
 CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CString& value )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.push_back( TKeyValuePair() );
-    m_keyValuePairs.back().first.LinkTo( key );
-    m_keyValuePairs.back().second.LinkTo( value );
-    return true;
+    return AddLinkedKeyValuePair( key, value, m_keyValuePairs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -230,10 +317,79 @@ bool
 CBasicPubSubMsg::AddLinkedKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value )
 {GUCEF_TRACE;
 
-    m_keyValuePairs.push_back( TKeyValuePair() );
-    m_keyValuePairs.back().first.LinkTo( key );
-    m_keyValuePairs.back().second.LinkTo( value );
-    return true;
+    return AddLinkedKeyValuePair( key, value, m_keyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value )
+{GUCEF_TRACE;
+
+    return AddKeyValuePair( key, value, m_keyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePair( const TKeyValuePair& kvPair )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( kvPair, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePairs( const CORE::CValueList& kvPairs )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePairs( kvPairs, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePair( const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( key, value, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePair( const CORE::CString& key, const CORE::CDynamicBuffer& value )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( key, value, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePair( const CORE::CString& key, const CORE::CString& value )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( key, value, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddLinkedMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value )
+{GUCEF_TRACE;
+
+    return AddLinkedKeyValuePair( key, value, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value )
+{GUCEF_TRACE;
+
+    return AddKeyValuePair( key, value, m_metaDataKeyValuePairs );
 }
 
 /*-------------------------------------------------------------------------//

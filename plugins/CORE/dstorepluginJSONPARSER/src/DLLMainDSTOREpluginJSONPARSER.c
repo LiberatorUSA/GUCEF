@@ -235,7 +235,7 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                 TVariantData var;
                 memset( &var, 0, sizeof var );
                 var.containedType = GUCEF_DATATYPE_UTF8_STRING;
-                var.union_data.heap_data.union_data.char_heap_data = nodename;
+                var.union_data.heap_data.union_data.char_heap_data = (char*) nodename;
                 var.union_data.heap_data.heap_data_size = (UInt32) strlen( nodename );
                 
                 DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, &var, haschildren );

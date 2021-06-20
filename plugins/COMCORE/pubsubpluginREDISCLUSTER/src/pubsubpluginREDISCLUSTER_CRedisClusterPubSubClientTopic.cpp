@@ -300,18 +300,6 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
 
         return totalSuccess;
     }
-    catch ( const sw::redis::ReplyError& e )
-    {
-		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ Reply error exception: " + e.what() );
-        return false;
-    }
-    catch ( const sw::redis::OomError& e )
-    {
-		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
-        return false;
-    }
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
@@ -331,6 +319,18 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
 
         Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const sw::redis::ReplyError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ Reply error exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )

@@ -168,11 +168,13 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_NUMERIC              21
 #define GUCEF_DATATYPE_ASCII_STRING         22
 #define GUCEF_DATATYPE_UTF8_STRING          23
-#define GUCEF_DATATYPE_ARRAY                24
-#define GUCEF_DATATYPE_OBJECT               25
-#define GUCEF_DATATYPE_BOOLEAN_INT32        26
-#define GUCEF_DATATYPE_BOOLEAN_ASCII_STRING 27
-#define GUCEF_DATATYPE_BOOLEAN_UTF8_STRING  28
+#define GUCEF_DATATYPE_UTF16_STRING         24
+#define GUCEF_DATATYPE_UTF32_STRING         25
+#define GUCEF_DATATYPE_ARRAY                26
+#define GUCEF_DATATYPE_OBJECT               27
+#define GUCEF_DATATYPE_BOOLEAN_INT32        28
+#define GUCEF_DATATYPE_BOOLEAN_ASCII_STRING 29
+#define GUCEF_DATATYPE_BOOLEAN_UTF8_STRING  30
 
 #ifdef __cplusplus
 

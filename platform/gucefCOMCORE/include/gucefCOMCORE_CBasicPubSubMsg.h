@@ -77,6 +77,12 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     virtual TKeyValuePairs& GetKeyValuePairs( void ) GUCEF_VIRTUAL_OVERRIDE;
     virtual const TKeyValuePairs& GetKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual TKeyValuePairs& GetMetaDataKeyValuePairs( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual const TKeyValuePairs& GetMetaDataKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
+    bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
+
     /**
      *  Utility member functions
      *  Adds a key-value pair entry to the message but instead of copying the content provided links to it
@@ -91,14 +97,40 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     bool AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CString& value );
     bool AddLinkedKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
 
+    /**
+     *  Utility member functions
+     *  Adds a meta-data key-value pair entry associated with the message but instead of copying the content provided links to it
+     *  This is far more efficient since no (potentially large) data blocks need to be copied.
+     *  It does however REQUIRE that the passed memory remains valid for the lifecycle of the message
+     *  as such this is best used in a transient manner
+     */
+    bool AddLinkedMetaDataKeyValuePair( const TKeyValuePair& kvPair );
+    bool AddLinkedMetaDataKeyValuePairs( const CORE::CValueList& kvPairs );
+    bool AddLinkedMetaDataKeyValuePair( const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
+    bool AddLinkedMetaDataKeyValuePair( const CORE::CString& key, const CORE::CDynamicBuffer& value );
+    bool AddLinkedMetaDataKeyValuePair( const CORE::CString& key, const CORE::CString& value );
+    bool AddLinkedMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
+
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
+    private:
+
+    bool AddLinkedKeyValuePair( const TKeyValuePair& kvPair, TKeyValuePairs& kvPairsStorage );
+    bool AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs, TKeyValuePairs& kvPairsStorage );
+    bool AddLinkedKeyValuePair( const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, TKeyValuePairs& kvPairsStorage );
+    bool AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CDynamicBuffer& value, TKeyValuePairs& kvPairsStorage );
+    bool AddLinkedKeyValuePair( const CORE::CString& key, const CORE::CString& value, TKeyValuePairs& kvPairsStorage );
+    bool AddLinkedKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage );
+
+    bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage );
+
     protected:
 
     CORE::CVariant m_msgId;
     CORE::CDateTime m_msgDateTime;
     CORE::CVariant m_primaryPayload;
     TKeyValuePairs m_keyValuePairs;    
+    TKeyValuePairs m_metaDataKeyValuePairs;    
 };
 
 /*-------------------------------------------------------------------------//

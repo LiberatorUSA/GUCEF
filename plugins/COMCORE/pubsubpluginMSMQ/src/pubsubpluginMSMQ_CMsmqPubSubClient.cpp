@@ -22,6 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <Objbase.h>
 #include <string.h>
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
@@ -78,6 +79,16 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
     , m_threadPool()
 {GUCEF_TRACE;
 
+    HRESULT comInitResult = ::CoInitializeEx( NULL, COINIT_MULTITHREADED );
+    if ( S_OK != comInitResult )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient: Failed to init COM for the current thread. MSMQ functionality will NOT work" );
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClient: Successfully inititialized COM for the current thread" );
+    }
+
     if ( GUCEF_NULL != config.pulseGenerator )
     {
         if ( config.desiredFeatures.supportsMetrics )
@@ -111,6 +122,8 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    ::CoUninitialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -137,16 +150,16 @@ bool
 CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
-    features.supportsPerMsgIds = true;
-    features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
-    features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
-    features.supportsDuplicateKeysPerMsg = true;        // Redis does not care about duplicate keys, they are just "fields"
-    features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
-    features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
-    features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
+    features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
+    features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
+    features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
+    features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
+    features.supportsDuplicateKeysPerMsg = true;        // Since arbitrary key-value app data is not natively and we simulate this we will do so in a manner that supports duplicate keys
+    features.supportsMultiHostSharding = false;         // MSMQ is tied to the Windows O/S and queues are not auto shared across such O/S instances
+    features.supportsPublishing = true;                 // We support being a MSQM queue publisher in this plugin
+    features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
     features.supportsMetrics = true;
-    features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
+    features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
     features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
     features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered

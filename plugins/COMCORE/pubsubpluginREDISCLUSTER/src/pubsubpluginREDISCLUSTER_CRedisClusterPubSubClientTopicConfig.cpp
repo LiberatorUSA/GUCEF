@@ -83,7 +83,7 @@ CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& c
     
     redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
     redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );
-    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true ); 
+    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true );
     redisXAddIgnoreMsgId = config.GetAttributeValueOrChildValueByName( "redisXAddIgnoreMsgId" ).AsBool( redisXAddIgnoreMsgId, true ); 
     return true;
 }

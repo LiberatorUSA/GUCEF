@@ -54,6 +54,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsPrimaryPayloadPerMsg( false )
     , supportsKeyValueSetPerMsg( false )
     , supportsDuplicateKeysPerMsg( false )
+    , supportsMetaDataKeyValueSetPerMsg( false )
     , supportsMetrics( false )
     , supportsBookmarkingConcept( false )
     , supportsAutoBookmarking( false )
@@ -85,6 +86,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg );
     tree.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
     tree.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
+    tree.SetAttribute( "supportsMetaDataKeyValueSetPerMsg", supportsMetaDataKeyValueSetPerMsg );
     tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
     tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
     tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
@@ -109,6 +111,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ) ), supportsPrimaryPayloadPerMsg );    
     supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
     supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
+    supportsMetaDataKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetaDataKeyValueSetPerMsg" ) ), supportsMetaDataKeyValueSetPerMsg );
     supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept );
     supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking );
     supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark );

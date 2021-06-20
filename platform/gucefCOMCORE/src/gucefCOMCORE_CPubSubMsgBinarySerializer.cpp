@@ -56,6 +56,7 @@ CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
     , msgDateTimeAsMsSinceUnixEpochInUtc( true )
     , msgPrimaryPayloadIncluded( true )
     , msgKeyValuePairsIncluded( true )
+    , msgMetaDataKeyValuePairsIncluded( true )
 {GUCEF_TRACE;
 
 }
@@ -78,6 +79,8 @@ CPubSubMsgBinarySerializerOptions::SaveConfig( CORE::CDataNode& config ) const
     config.SetAttribute( "msgIdIncluded", msgIdIncluded );
     config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded );
     config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded );
+    config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded );
+    
     return true;
 }
 
@@ -87,11 +90,12 @@ bool
 CPubSubMsgBinarySerializerOptions::LoadConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
 
-    msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded );
-    msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc );
-    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded );
-    msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded );
-    msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded );
+    msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded, true );
+    msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc, true );
+    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded, true );
+    msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded, true );
+    msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded, true );
+    msgMetaDataKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgMetaDataKeyValuePairsIncluded" ).AsBool( msgMetaDataKeyValuePairsIncluded, true );
     return true;
 }
 
@@ -117,6 +121,7 @@ CPubSubMsgBinarySerializerOptions::ToOptionsBitMask( void ) const
     msgIdIncluded ? GUCEF_SETBITXON( bitMask, 3 ) : GUCEF_SETBITXOFF( bitMask, 3 );
     msgPrimaryPayloadIncluded ? GUCEF_SETBITXON( bitMask, 4 ) : GUCEF_SETBITXOFF( bitMask, 4 );
     msgKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 5 ) : GUCEF_SETBITXOFF( bitMask, 5 );
+    msgMetaDataKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 6 ) : GUCEF_SETBITXOFF( bitMask, 6 );
     return bitMask;
 }
 
@@ -131,6 +136,44 @@ CPubSubMsgBinarySerializerOptions::FromOptionsBitMask( UInt32 bitMask )
     msgIdIncluded = ( 0 != GUCEF_GETBITX( bitMask, 3 ) );
     msgPrimaryPayloadIncluded = ( 0 != GUCEF_GETBITX( bitMask, 4 ) );
     msgKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 5 ) );
+    msgMetaDataKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 6 ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgBinarySerializer::SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                              UInt32 currentTargetOffset                 ,
+                                              CORE::CDynamicBuffer& target               , 
+                                              UInt32& bytesWritten                       )
+{GUCEF_TRACE;
+
+    UInt32 nrOfKvPairs = (UInt32) kvPairs.size();
+    UInt32 lastBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(nrOfKvPairs), &nrOfKvPairs );
+    currentTargetOffset += lastBytesWritten;
+    bytesWritten += lastBytesWritten;
+
+    CIPubSubMsg::TKeyValuePairs::const_iterator i = kvPairs.begin();
+    while ( i != kvPairs.end() )
+    {                
+        const CORE::CVariant& key = (*i).first;               
+        const CORE::CVariant& value = (*i).second;
+
+        UInt32 varBinSize = 0;
+        if ( !CORE::CVariantBinarySerializer::Serialize( key, currentTargetOffset, target, varBinSize ) )
+            return false;
+        currentTargetOffset += varBinSize;
+        bytesWritten += varBinSize;
+                
+        varBinSize = 0;
+        if ( !CORE::CVariantBinarySerializer::Serialize( value, currentTargetOffset, target, varBinSize ) )
+            return false;
+        currentTargetOffset += varBinSize;
+        bytesWritten += varBinSize;
+
+        ++i;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -195,35 +238,23 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
 
         if ( options.msgKeyValuePairsIncluded )
         {
-            const CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
-            
-            UInt32 nrOfKvPairs = (UInt32) kvPairs.size();
-            UInt32 lastBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(nrOfKvPairs), &nrOfKvPairs );
-            currentTargetOffset += lastBytesWritten;
-            bytesWritten += lastBytesWritten;
-
-            CIPubSubMsg::TKeyValuePairs::const_iterator i = kvPairs.begin();
-            while ( i != kvPairs.end() )
-            {                
-                const CORE::CVariant& key = (*i).first;               
-                const CORE::CVariant& value = (*i).second;
-
-                UInt32 varBinSize = 0;
-                if ( !CORE::CVariantBinarySerializer::Serialize( key, currentTargetOffset, target, varBinSize ) )
-                    return false;
-                currentTargetOffset += varBinSize;
-                bytesWritten += varBinSize;
-                
-                varBinSize = 0;
-                if ( !CORE::CVariantBinarySerializer::Serialize( value, currentTargetOffset, target, varBinSize ) )
-                    return false;
-                currentTargetOffset += varBinSize;
-                bytesWritten += varBinSize;
-
-                ++i;
-            }
+            UInt32 kvPairsSize = 0;
+            const CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();            
+            if ( !SerializeKvPairs( kvPairs, currentTargetOffset, target, kvPairsSize ) )
+                return false;
+            currentTargetOffset += kvPairsSize;
+            bytesWritten += kvPairsSize;
         }
 
+        if ( options.msgMetaDataKeyValuePairsIncluded )
+        {
+            UInt32 kvPairsSize = 0;
+            const CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetMetaDataKeyValuePairs();            
+            if ( !SerializeKvPairs( kvPairs, currentTargetOffset, target, kvPairsSize ) )
+                return false;
+            currentTargetOffset += kvPairsSize;
+            bytesWritten += kvPairsSize;
+        }
         return true;
     }   
     catch ( const std::exception& e )    
@@ -231,6 +262,52 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, CString( "PubSubMsgBinarySerializer:Serialize: caught exception: " ) + e.what()  );
         return false;
     } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgBinarySerializer::DeserializeKvPairs( bool linkWherePossible               ,
+                                                CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                                UInt32 currentSourceOffset           , 
+                                                const CORE::CDynamicBuffer& source   , 
+                                                UInt32& bytesRead                    )
+{GUCEF_TRACE;
+
+    // Now read the key-value pairs if any exists
+            
+    UInt32 nrOfKvPairs = source.AsConstType< UInt32 >( currentSourceOffset );
+    currentSourceOffset += sizeof(nrOfKvPairs);
+    bytesRead += sizeof(nrOfKvPairs);
+
+    if ( nrOfKvPairs > 0 )
+    {
+        kvPairs.clear();
+        kvPairs.resize( nrOfKvPairs );
+
+        CIPubSubMsg::TKeyValuePairs::iterator i = kvPairs.begin();
+        while ( i != kvPairs.end() )
+        {                
+            CORE::CVariant& key = (*i).first;               
+            CORE::CVariant& value = (*i).second;
+                
+            UInt32 varByteSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Deserialize( key, currentSourceOffset, source, linkWherePossible, varByteSize ) )
+                return false;
+            currentSourceOffset += varByteSize;
+            bytesRead += varByteSize;
+
+            varByteSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Deserialize( value, currentSourceOffset, source, linkWherePossible, varByteSize ) )
+                return false;
+            currentSourceOffset += varByteSize;
+            bytesRead += varByteSize;
+
+            ++i;
+        }
+    }
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -293,39 +370,22 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
 
         if ( options.msgKeyValuePairsIncluded )
         {
-            // Now read the key-value pairs if any exists
-            
-            UInt32 nrOfKvPairs = source.AsConstType< UInt32 >( currentSourceOffset );
-            currentSourceOffset += sizeof(nrOfKvPairs);
-            bytesRead += sizeof(nrOfKvPairs);
+            UInt32 kvPairsByteSize = 0;
+            CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
+            if ( !DeserializeKvPairs( linkWherePossible, kvPairs, currentSourceOffset, source, kvPairsByteSize ) )
+                return false;
+            currentSourceOffset += kvPairsByteSize;
+            bytesRead += kvPairsByteSize;          
+        }
 
-            if ( nrOfKvPairs > 0 )
-            {
-                CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
-                kvPairs.clear();
-                kvPairs.resize( nrOfKvPairs );
-
-                CIPubSubMsg::TKeyValuePairs::iterator i = kvPairs.begin();
-                while ( i != kvPairs.end() )
-                {                
-                    CORE::CVariant& key = (*i).first;               
-                    CORE::CVariant& value = (*i).second;
-                
-                    UInt32 varByteSize = 0;
-                    if ( !CORE::CVariantBinarySerializer::Deserialize( key, currentSourceOffset, source, linkWherePossible, varByteSize ) )
-                        return false;
-                    currentSourceOffset += varByteSize;
-                    bytesRead += varByteSize;
-
-                    varByteSize = 0;
-                    if ( !CORE::CVariantBinarySerializer::Deserialize( value, currentSourceOffset, source, linkWherePossible, varByteSize ) )
-                        return false;
-                    currentSourceOffset += varByteSize;
-                    bytesRead += varByteSize;
-
-                    ++i;
-                }
-            }            
+        if ( options.msgMetaDataKeyValuePairsIncluded )
+        {
+            UInt32 kvPairsByteSize = 0;
+            CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetMetaDataKeyValuePairs();
+            if ( !DeserializeKvPairs( linkWherePossible, kvPairs, currentSourceOffset, source, kvPairsByteSize ) )
+                return false;
+            currentSourceOffset += kvPairsByteSize;
+            bytesRead += kvPairsByteSize;          
         }
 
         return true;

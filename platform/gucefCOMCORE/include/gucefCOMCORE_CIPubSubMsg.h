@@ -123,6 +123,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
     virtual TKeyValuePairs& GetKeyValuePairs( void ) = 0;
     virtual const TKeyValuePairs& GetKeyValuePairs( void ) const = 0;
 
+    virtual TKeyValuePairs& GetMetaDataKeyValuePairs( void ) = 0;
+    virtual const TKeyValuePairs& GetMetaDataKeyValuePairs( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//
