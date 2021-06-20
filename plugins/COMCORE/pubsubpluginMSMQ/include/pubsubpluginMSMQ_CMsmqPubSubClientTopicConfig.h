@@ -87,11 +87,13 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     void PopulateDefaultPairedPropIds( void );
     CORE::CString PropIdsToCsvString( const MSGPROPIDVector& propIds );
     bool CsvStringToPropIds( const CORE::CString& csvStr, MSGPROPIDVector& propIds );
+    void ErasePropId( PROPID propId, MSGPROPIDVector& propIds );
 
     MSGPROPIDVector msmqPropIdsToReceive;
     MSGPROPIDVector msmqPropIdsToSend;
     MSGPROPIDMapVector msmqPairedPropIds;
     CORE::UInt32 maxMsmqMsgsToReadPerSyncCycle;
+    bool topicNameIsMsmqFormatName;
 };
 
 /*--------------------------------------------------------------------------*/

@@ -1120,7 +1120,7 @@ CDateTime::FromTmStruct( const struct tm* tmStruct, bool isUtc )
 
     m_year = (Int16) tmStruct->tm_year + 1900; // years since 1900 for tm struct
     m_month = (UInt8) tmStruct->tm_mon + 1;    // zero based for tm struct
-    m_day = (UInt8) tmStruct->tm_wday + 1;     // zero based for tm struct
+    m_day = (UInt8) tmStruct->tm_mday;
     m_hours = (UInt8) tmStruct->tm_hour;
     m_minutes = (UInt8) tmStruct->tm_min;
     m_seconds = (UInt8) tmStruct->tm_sec;
@@ -1158,6 +1158,15 @@ CDateTime::IsWithinRange( const CDateTime& a, const CDateTime& b, bool including
     {
         return (*this) > (*minDt) && (*this) < (*maxDt);
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDateTime::Clear( void )
+{GUCEF_TRACE;
+
+    *this = Empty;
 }
 
 /*-------------------------------------------------------------------------//

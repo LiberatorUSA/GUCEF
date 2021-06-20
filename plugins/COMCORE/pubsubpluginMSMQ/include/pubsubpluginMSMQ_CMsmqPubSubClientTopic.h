@@ -113,16 +113,52 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     private:
 
+    typedef CORE::CTEventHandlerFunctor< CMsmqPubSubClientTopic > TEventCallback;
+
+    // Types to implement/hook-up topic interface
+    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
+    
+    // Types used as caches to prevent ongoing memory allocations
+    typedef std::vector< MQPROPVARIANT >    MQPROPVARIANTVector;
+    typedef std::vector< MSGPROPID >        MSGPROPIDVector;
+    typedef std::vector< PROPVARIANT >      PROPVARIANTVector;
+    typedef std::vector< HRESULT >          HRESULTVector;    
+    typedef std::map< MSGPROPID, CORE::CDynamicBuffer > MSGPROPIDToBufferMap;
+
+    typedef CMsmqPubSubClientTopicConfig::MSGPROPIDMapVector    MSGPROPIDMapVector;
+
+    struct SMsmqMsg
+    {
+        MQMSGPROPS msgprops;
+        MSGPROPIDVector aMsgPropId;
+        PROPVARIANTVector aMsgPropVar;
+        HRESULTVector aStatus;
+        MSGPROPIDToBufferMap propBuffers;
+    };
+    typedef struct SMsmqMsg TMsmqMsg;
+    typedef std::vector< TMsmqMsg >         MsmqMsgVector;
+
+    private:
+
     void RegisterEventHandlers( void );
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
-    void PrepMsmqMsgStorage( void );
+    void PrepMsmqMsgsStorage( void );
+    void PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse );
 
-    void PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant );
+    void PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData );
+    bool SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UInt32 valueToSet, TMsmqMsg& msgData );
 
     static VARTYPE GetMsmqVariantTypeForMsmqProperty( PROPID propertyId );
+    static PROPID GetPayloadPropertyForPayloadSizeProperty( PROPID payloadSizePropId );
+    static PROPID GetPayloadSizePropertyForPayloadProperty( PROPID payloadPropId );
 
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
+
+    static bool MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
+                                                   std::wstring& queueFormatName  );
+
+    const std::wstring& GetMsmqQueueFormatName( void ) const;
 
     void
     OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
@@ -131,44 +167,26 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     void OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible );
 
+    bool OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData );
+
     CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
 
     static bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
     
     private:
 
-    typedef CORE::CTEventHandlerFunctor< CMsmqPubSubClientTopic > TEventCallback;
-
-    // Types to implement/hook-up topic interface
-    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
-    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
-    typedef std::vector< TBufferPair > TBufferVector;
-    
-    // Types used as caches to prevent ongoing memory allocations
-    typedef std::vector< MQPROPVARIANT >    MQPROPVARIANTVector;
-    typedef std::vector< MSGPROPID >        MSGPROPIDVector;
-    typedef std::vector< PROPVARIANT >      PROPVARIANTVector;
-
-    struct SMsmqMsg
-    {
-        MQMSGPROPS msgprops;
-        MSGPROPIDVector aMsgPropId;
-        PROPVARIANTVector aMsgPropVar;
-    };
-    typedef struct SMsmqMsg TMsmqMsg;
-    typedef std::vector< TMsmqMsg >         MsmqMsgVector;
-
     CMsmqPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
-    TBufferVector m_pubsubMsgAttribs;
     MsmqMsgVector m_msmqReceiveMsgs;
-    MQPROPVARIANTVector m_msgSendProps;
+    TMsmqMsg m_msgSendMsg;
     CMsmqPubSubClientTopicConfig m_config;
-    CORE::CTimer m_syncReadTimer;
+    mutable std::wstring m_msmqQueueFormatName;
+    CORE::CTimer* m_syncReadTimer;
     CORE::Int64 m_msmqMsgsQueued;
     MT::CMutex m_lock;
     QUEUEHANDLE m_receiveQueueHandle;
+    QUEUEHANDLE m_sendQueueHandle;
 };
 
 /*-------------------------------------------------------------------------//

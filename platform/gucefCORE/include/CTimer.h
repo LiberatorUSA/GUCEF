@@ -98,6 +98,9 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
     public:
 
+    CTimer( CPulseGenerator* pulseGenerator          ,
+            const UInt32 updateDeltaInMilliSecs = 25 );
+
     CTimer( CPulseGenerator& pulseGenerator          ,
             const UInt32 updateDeltaInMilliSecs = 25 );
 

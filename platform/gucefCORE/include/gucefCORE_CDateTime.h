@@ -142,6 +142,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
               UInt16 milliseconds        = 0 ,
               Int16 timezoneOffsetInMins = 0 );
     
+    void Clear( void );
+    
     explicit CDateTime( const struct tm* src, bool isUtc );
     
     explicit CDateTime( const time_t src, bool isUtc );

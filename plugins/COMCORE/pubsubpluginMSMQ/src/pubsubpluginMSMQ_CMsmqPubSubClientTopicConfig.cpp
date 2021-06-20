@@ -51,24 +51,29 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , msmqPropIdsToSend()
     , msmqPairedPropIds()
     , maxMsmqMsgsToReadPerSyncCycle( 100 )
+    , topicNameIsMsmqFormatName( false )
 
 {GUCEF_TRACE;
-
-    PopulateDefaultPairedPropIds();
+    
     PopulateDefaultReceivePropIds();
     PopulateDefaultSendPropIds();
+    PopulateDefaultPairedPropIds();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
     : COMCORE::CPubSubClientTopicConfig( genericConfig )
-
+    , msmqPropIdsToReceive()
+    , msmqPropIdsToSend()
+    , msmqPairedPropIds()
+    , maxMsmqMsgsToReadPerSyncCycle( 100 )
+    , topicNameIsMsmqFormatName( false )
 {GUCEF_TRACE;
-
-    PopulateDefaultPairedPropIds();
+    
     PopulateDefaultReceivePropIds();
     PopulateDefaultSendPropIds();
+    PopulateDefaultPairedPropIds();
     LoadCustomConfig( genericConfig.customConfig );  
 }
 
@@ -88,8 +93,13 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     bool totalSuccess = true;
 
     maxMsmqMsgsToReadPerSyncCycle = config.GetAttributeValueOrChildValueByName( "maxMsmqMsgsToReadPerSyncCycle" ).AsUInt32( maxMsmqMsgsToReadPerSyncCycle, true );
+    if ( 0 == maxMsmqMsgsToReadPerSyncCycle )
+        maxMsmqMsgsToReadPerSyncCycle = 1;
+
+    topicNameIsMsmqFormatName = config.GetAttributeValueOrChildValueByName( "topicNameIsMsmqFormatName" ).AsBool( topicNameIsMsmqFormatName, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
+    msmqPropIdsToReceive.clear();
     if ( !CsvStringToPropIds( csvPropIds, msmqPropIdsToReceive ) )
     {
         totalSuccess = false;
@@ -97,6 +107,7 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     }
 
     csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToSend" ).AsString( PropIdsToCsvString( msmqPropIdsToSend ), true );
+    msmqPropIdsToSend.clear();
     if ( !CsvStringToPropIds( csvPropIds, msmqPropIdsToSend ) )
     {
         totalSuccess = false;
@@ -117,8 +128,12 @@ CMsmqPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfig
     if ( &src != this )
     {
         COMCORE::CPubSubClientTopicConfig::operator=( src );
+
+        msmqPropIdsToReceive.clear();
+        msmqPropIdsToSend.clear();
         PopulateDefaultReceivePropIds();
         PopulateDefaultSendPropIds();
+
         LoadCustomConfig( src.customConfig );
     }
     return *this;
@@ -195,18 +210,15 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultReceivePropIds( void )
 
     // Maps to our Primary payload variant
     msmqPropIdsToReceive.push_back( PROPID_M_BODY );
-    msmqPropIdsToReceive.push_back( PROPID_M_BODY_SIZE );
-    msmqPropIdsToReceive.push_back( PROPID_M_BODY_TYPE );
     
-    // Maps to the topic name which is a MSMQ queue address
-    msmqPropIdsToReceive.push_back( PROPID_M_DEST_QUEUE );
-    msmqPropIdsToReceive.push_back( PROPID_M_DEST_QUEUE_LEN );
-
     // Maps to our PubSubMsg MsgId, 20 unicode chars 
     msmqPropIdsToReceive.push_back( PROPID_M_MSGID );
 
     // Maps to our PubSubMsg DateTime, uses Unix Epoch based UInt32 in seconds
     msmqPropIdsToReceive.push_back( PROPID_M_SENTTIME );
+
+    // Maps to the topic name which is a MSMQ queue address
+    msmqPropIdsToReceive.push_back( PROPID_M_DEST_QUEUE );
 
     return true;
 }
@@ -218,13 +230,7 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultSendPropIds( void )
 {GUCEF_TRACE;
 
     // Maps to our Primary payload variant
-    msmqPropIdsToSend.push_back( PROPID_M_BODY );
-    msmqPropIdsToSend.push_back( PROPID_M_BODY_SIZE );
-    msmqPropIdsToSend.push_back( PROPID_M_BODY_TYPE );    
-
-    // Maps to the topic name which is a MSMQ queue address
-    msmqPropIdsToSend.push_back( PROPID_M_DEST_QUEUE );
-    msmqPropIdsToSend.push_back( PROPID_M_DEST_QUEUE_LEN );
+    msmqPropIdsToSend.push_back( PROPID_M_BODY ); 
 
     // Maps to our PubSubMsg MsgId, 20 unicode chars 
     // Note only available after send completes and is assigned by MSMQ itself
@@ -232,6 +238,9 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultSendPropIds( void )
 
     // Maps to our PubSubMsg DateTime, uses Unix Epoch based UInt32 in seconds
     msmqPropIdsToSend.push_back( PROPID_M_SENTTIME );
+
+    // Maps to the topic name which is a MSMQ queue address
+    msmqPropIdsToSend.push_back( PROPID_M_DEST_QUEUE );
 
     return true;
 
@@ -266,6 +275,24 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultPairedPropIds( void )
 
 /*--------------------------------------------------------------------------*/
 
+void
+CMsmqPubSubClientTopicConfig::ErasePropId( PROPID propId, MSGPROPIDVector& propIds )
+{GUCEF_TRACE;
+
+    MSGPROPIDVector::iterator i = propIds.begin();
+    while ( i != propIds.end() )
+    {
+        if ( (*i) == propId )
+        {
+            propIds.erase( i );
+            i = propIds.begin();
+        }
+        ++i;
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool 
 CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector& propIds )
 {GUCEF_TRACE;
@@ -290,14 +317,13 @@ CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector
             MSGPROPIDVector::iterator m = pairedProps.begin();
             while ( m != pairedProps.end() ) 
             {
+                ErasePropId( (*m), newPropIds );
                 newPropIds.push_back( (*m) );
                 ++m;
             }
         }
-        else
-        {
-            newPropIds.push_back( (*i) );    
-        }
+        
+        newPropIds.push_back( (*i) );
         ++i;
     }
 

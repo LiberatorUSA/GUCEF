@@ -171,6 +171,19 @@ CBasicPubSubMsg::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CBasicPubSubMsg::Clear( void )
+{GUCEF_TRACE;
+
+    m_msgId.Clear();
+    m_msgDateTime.Clear();
+    m_primaryPayload.Clear();
+    m_keyValuePairs.clear();    
+    m_metaDataKeyValuePairs.clear(); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CBasicPubSubMsg::AddLinkedKeyValuePair( const TKeyValuePair& kvPair, TKeyValuePairs& kvPairsStorage )
 {GUCEF_TRACE;

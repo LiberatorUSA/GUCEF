@@ -112,6 +112,8 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     bool AddLinkedMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    void Clear( void );
     
     private:
 

@@ -63,7 +63,7 @@ namespace MSMQ {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CMsmqPubSubClient::TypeName = "Msmq";
+const CORE::CString CMsmqPubSubClient::TypeName = "MSMQ";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -154,16 +154,17 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
     features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
     features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
-    features.supportsDuplicateKeysPerMsg = true;        // Since arbitrary key-value app data is not natively and we simulate this we will do so in a manner that supports duplicate keys
+    features.supportsDuplicateKeysPerMsg = false;       // TODO: Since arbitrary key-value app data is not native and we simulate this we will do so in a manner that supports duplicate keys
+    features.supportsMetaDataKeyValueSetPerMsg = true;  // This is native to MSMQ
     features.supportsMultiHostSharding = false;         // MSMQ is tied to the Windows O/S and queues are not auto shared across such O/S instances
     features.supportsPublishing = true;                 // We support being a MSQM queue publisher in this plugin
     features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
-    features.supportsMetrics = true;
+    features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
     features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"
-    features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
-    features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
-    features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
-    features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
+    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
+    features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
+    features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     return true;
 }
 
@@ -251,9 +252,7 @@ bool
 CMsmqPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
-    Disconnect();
-
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -262,7 +261,7 @@ bool
 CMsmqPubSubClient::IsConnected( void )
 {GUCEF_TRACE;
 
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

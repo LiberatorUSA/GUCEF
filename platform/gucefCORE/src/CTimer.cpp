@@ -119,6 +119,39 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_pulseGenerator )
+        m_pulseGenerator = &CCoreGlobal::Instance()->GetPulseGenerator();
+    
+    RegisterEvents();
+
+    if ( 0 == m_updateDeltaInMilliSecs )
+    {
+        m_updateDeltaInMilliSecs = 1;
+    }
+
+    TEventCallback callback( this, &CTimer::OnPulse );
+    SubscribeTo( m_pulseGenerator            ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
+                const UInt32 updateDeltaInMilliSecs /* = 25 */ )
+    : m_lastTimerCycle( 0 )                                    ,
+      m_enabled( false )                                       ,
+      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
+      m_activationTickCount( 0 )                               ,
+      m_tickCount( 0 )                                         ,
+      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
+      m_pulseGenerator( pulseGenerator )
+{GUCEF_TRACE;
+
     RegisterEvents();
 
     if ( 0 == m_updateDeltaInMilliSecs )
