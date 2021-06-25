@@ -94,6 +94,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     MSGPROPIDMapVector msmqPairedPropIds;
     CORE::UInt32 maxMsmqMsgsToReadPerSyncCycle;
     bool topicNameIsMsmqFormatName;
+    bool convertMsmqMsgIdToString;
+    bool ignoreUnmappableMetaDataFieldOnPublish;
 };
 
 /*--------------------------------------------------------------------------*/

@@ -79,16 +79,6 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
     , m_threadPool()
 {GUCEF_TRACE;
 
-    HRESULT comInitResult = ::CoInitializeEx( NULL, COINIT_MULTITHREADED );
-    if ( S_OK != comInitResult )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient: Failed to init COM for the current thread. MSMQ functionality will NOT work" );
-    }
-    else
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClient: Successfully inititialized COM for the current thread" );
-    }
-
     if ( GUCEF_NULL != config.pulseGenerator )
     {
         if ( config.desiredFeatures.supportsMetrics )
@@ -122,8 +112,6 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
-
-    ::CoUninitialize();
 }
 
 /*-------------------------------------------------------------------------*/

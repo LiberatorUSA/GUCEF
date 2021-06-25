@@ -52,7 +52,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , msmqPairedPropIds()
     , maxMsmqMsgsToReadPerSyncCycle( 100 )
     , topicNameIsMsmqFormatName( false )
-
+    , convertMsmqMsgIdToString( false )
+    , ignoreUnmappableMetaDataFieldOnPublish( false )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -69,6 +70,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubS
     , msmqPairedPropIds()
     , maxMsmqMsgsToReadPerSyncCycle( 100 )
     , topicNameIsMsmqFormatName( false )
+    , convertMsmqMsgIdToString( false )
+    , ignoreUnmappableMetaDataFieldOnPublish( false )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -97,6 +100,8 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
         maxMsmqMsgsToReadPerSyncCycle = 1;
 
     topicNameIsMsmqFormatName = config.GetAttributeValueOrChildValueByName( "topicNameIsMsmqFormatName" ).AsBool( topicNameIsMsmqFormatName, true );
+    convertMsmqMsgIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqMsgIdToString" ).AsBool( convertMsmqMsgIdToString, true );
+    ignoreUnmappableMetaDataFieldOnPublish = config.GetAttributeValueOrChildValueByName( "ignoreUnmappableMetaDataFieldOnPublish" ).AsBool( ignoreUnmappableMetaDataFieldOnPublish, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
     msmqPropIdsToReceive.clear();

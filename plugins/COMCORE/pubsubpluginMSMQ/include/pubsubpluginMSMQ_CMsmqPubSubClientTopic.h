@@ -137,6 +137,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     };
     typedef struct SMsmqMsg TMsmqMsg;
     typedef std::vector< TMsmqMsg >         MsmqMsgVector;
+    typedef std::map< MSGPROPID, CORE::UInt32 > MSGPROPIDToUInt32Map;
 
     private:
 
@@ -147,6 +148,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     void PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse );
 
     void PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData );
+    void PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& propIndexMapToBuild, const MSGPROPIDVector& msmqPropIdsToUse );
     bool SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UInt32 valueToSet, TMsmqMsg& msgData );
 
     static VARTYPE GetMsmqVariantTypeForMsmqProperty( PROPID propertyId );
@@ -172,6 +174,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
 
     static bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
+    static bool VariantToMsmqProperty( MSGPROPID propId, const CORE::CVariant& sourceVariant, MQPROPVARIANT& msmqTargetVariant );
+    static CORE::Int32 SizeOfVarType( VARTYPE vt );
     
     private:
 
@@ -180,6 +184,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     MsmqMsgVector m_msmqReceiveMsgs;
     TMsmqMsg m_msgSendMsg;
+    MSGPROPIDToUInt32Map m_msgSendPropMap;
     CMsmqPubSubClientTopicConfig m_config;
     mutable std::wstring m_msmqQueueFormatName;
     CORE::CTimer* m_syncReadTimer;
