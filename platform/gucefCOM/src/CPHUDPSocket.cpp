@@ -219,8 +219,8 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPHUDPSocket::OnPacketRecieved( const CIPAddress& sourceAddress                ,
-                                const CORE::TLinkedCloneableBuffer& dataBuffer )
+CPHUDPSocket::OnPacketRecieved( const CIPAddress& sourceAddress                     ,
+                                const CORE::TConstLinkedCloneableBuffer& dataBuffer )
 {GUCEF_TRACE;
         /*
          *  Begin various checks before parsing packet info

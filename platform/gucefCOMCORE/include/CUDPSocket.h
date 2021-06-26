@@ -85,8 +85,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     struct SPacketEntry
     {
-        CIPAddress sourceAddress;                 /**< the source address of the data */
-        CORE::TLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
+        CIPAddress sourceAddress;                      /**< the source address of the data */
+        CORE::TConstLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
     };
     typedef struct SPacketEntry TPacketEntry;
     typedef std::vector< TPacketEntry > TPacketEntryVector;

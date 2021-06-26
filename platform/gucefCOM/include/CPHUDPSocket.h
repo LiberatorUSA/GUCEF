@@ -221,8 +221,8 @@ class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
                     
     private:
 
-    void OnPacketRecieved( const CIPAddress& sourceAddress                ,
-                           const CORE::TLinkedCloneableBuffer& dataBuffer );
+    void OnPacketRecieved( const CIPAddress& sourceAddress                     ,
+                           const CORE::TConstLinkedCloneableBuffer& dataBuffer );
 
     void BufferPacketSendInfo( const void* data         ,
                                const UInt16 datasize    ,

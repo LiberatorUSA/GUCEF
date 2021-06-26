@@ -353,6 +353,18 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sync processing received data: " + CORE::CString( e.what() ) );
+        
+        if ( !m_keepAliveConnections )
+        {
+            try 
+            {
+                connection->Close();
+            }
+            catch ( const std::exception& e )
+            {
+                GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception closing connection: " + CORE::CString( e.what() ) );
+            }
+        }
     }
 }
 
