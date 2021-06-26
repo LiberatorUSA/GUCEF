@@ -354,16 +354,31 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sync processing received data: " + CORE::CString( e.what() ) );
         
-        if ( !m_keepAliveConnections )
+        try
         {
-            try 
+            // Inform the client we ran into an internal server error so they are not just sitting there waiting for a response
+            CHttpResponseData returnData;
+            returnData.statusCode = 500;   
+            CORE::CDynamicBuffer outputBuffer;
+            returnData.Serialize( outputBuffer );
+
+            connection->Send( outputBuffer );
+
+            if ( !m_keepAliveConnections )
             {
-                connection->Close();
+                try 
+                {
+                    connection->Close();
+                }
+                catch ( const std::exception& e )
+                {
+                    GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception closing connection: " + CORE::CString( e.what() ) );
+                }
             }
-            catch ( const std::exception& e )
-            {
-                GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception closing connection: " + CORE::CString( e.what() ) );
-            }
+        }
+        catch ( const std::exception& e )
+        {
+            GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sending internal server error response: " + CORE::CString( e.what() ) );
         }
     }
 }
