@@ -42,6 +42,13 @@
 
     #include <Windows.h>
 
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    #include <climits>
+
+    #define sscanf_s    sscanf
+    #define sprintf_s( s, ss, f, ... )   sprintf( s, f, __VA_ARGS__ )
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -145,9 +152,9 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ::ULARGE_INTEGER fileTimeUInt64;
         fileTimeUInt64.QuadPart = 0x7fff35f4f06c58f0;
         ::FILETIME filetime;
-        filetime.dwHighDateTime = fileTimeUInt64.HighPart;      
+        filetime.dwHighDateTime = fileTimeUInt64.HighPart;
         filetime.dwLowDateTime = fileTimeUInt64.LowPart;
-        
+
         CDateTime dtFormat;
         Win32FileTimeToDateTime( filetime, dtFormat );
         return dtFormat;
@@ -158,9 +165,9 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ::ULARGE_INTEGER fileTimeUInt64;
         fileTimeUInt64.QuadPart = 0;
         ::FILETIME filetime;
-        filetime.dwHighDateTime = fileTimeUInt64.HighPart;      
+        filetime.dwHighDateTime = fileTimeUInt64.HighPart;
         filetime.dwLowDateTime = fileTimeUInt64.LowPart;
-        
+
         CDateTime dtFormat;
         Win32FileTimeToDateTime( filetime, dtFormat );
         return dtFormat;
@@ -262,10 +269,10 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
 
         ULARGE_INTEGER memoryAllignedUInt64;
         memoryAllignedUInt64.LowPart = fileTime.dwLowDateTime;
-        memoryAllignedUInt64.HighPart = fileTime.dwHighDateTime; 
+        memoryAllignedUInt64.HighPart = fileTime.dwHighDateTime;
 
         // Convert from FILETIME compatible resolution (nanos to ms) and compensate for different epoch offset
-        UInt64 unixDtInMsTicks = ( memoryAllignedUInt64.QuadPart - 116444736000000000 ) / 10000;       
+        UInt64 unixDtInMsTicks = ( memoryAllignedUInt64.QuadPart - 116444736000000000 ) / 10000;
         return unixDtInMsTicks;
     }
 };
@@ -295,7 +302,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         time.tm_hour = datetime.GetHours();
         time.tm_min = datetime.GetMinutes();
         time.tm_sec = datetime.GetSeconds();
-        time.tm_gmtoff = datetime.GeTimeZoneUTCOffsetInMins() * 60;
+        time.tm_gmtoff = datetime.GetTimeZoneUTCOffsetInMins() * 60;
     }
 
     static void DateTimeToTimespec( const CDateTime& datetime, struct ::timespec& tspec )
@@ -433,7 +440,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     {
         struct timespec time;
         time.tv_sec = (time_t) 0;
-        time.tv_sec -= 1; // intentionally wrap around the unsigned 
+        time.tv_sec -= 1; // intentionally wrap around the unsigned
         time.tv_nsec = LONG_MAX;
 
         CDateTime dtFormat;
@@ -670,15 +677,15 @@ CDateTime::~CDateTime()
 /*-------------------------------------------------------------------------*/
 
 CDateTime
-CDateTime::CompileDateTime( const char* __date__Macro , 
+CDateTime::CompileDateTime( const char* __date__Macro ,
                             const char* __time__Macro )
 {GUCEF_TRACE;
 
-    // __DATE__ is a preprocessor macro that expands to current date (at compile time) in the form mmm dd yyyy (e.g. "Jan 14 2012"), as a string. The __DATE__ macro can be used to provide information about the particular moment a binary was built.    
+    // __DATE__ is a preprocessor macro that expands to current date (at compile time) in the form mmm dd yyyy (e.g. "Jan 14 2012"), as a string. The __DATE__ macro can be used to provide information about the particular moment a binary was built.
     // __TIME__ is a preprocessor macro that expands to current time (at compile time) in the form hh:mm:ss in 24 hour time (e.g. "22:29:12"), as a string. The __TIME__ macro can be used to provide information about the particular moment a binary was built.
 
     CORE::CDateTime dt;
-    
+
     CORE::Int32 month=0, day=0, year=0;
     char month3Letter[ 5 ] = { '\0', '\0', '\0', '\0', '\0' };
     static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
@@ -891,7 +898,7 @@ CDateTime::GetTime( void ) const
 Int32
 TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, UInt32 sourceBufferSize, Int16& tzOffset )
 {GUCEF_TRACE;
-    
+
     // We are looking for Z or +hh:mm or -hh:mm
     if ( sourceBufferSize > 0 )
     {
@@ -910,13 +917,13 @@ TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, 
                 minutes += hours * 60;
                 if ( *sourceBuffer == '-' )
                     minutes = -1 * minutes;
-                
+
                 tzOffset = (Int16) minutes;
                 return 6;
             }
         }
     }
-    return -1;    
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -924,10 +931,10 @@ TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, 
 Int32
 CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBufferSize )
 {GUCEF_TRACE;
-            
+
     // Reset content
     Set();
-    
+
     // initial input sanity check
     if ( sourceBufferSize < 14 || GUCEF_NULL == sourceBuffer )
         return -1;
@@ -936,7 +943,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
     const char* dtBuffer = static_cast< const char* >( sourceBuffer );
     const char* dashPtr = (const char*) memchr( dtBuffer, '-', sourceBufferSize );
     bool includesDelimeters = GUCEF_NULL != dashPtr && dashPtr < dtBuffer+5;
-    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+13, '.', sourceBufferSize-13 ) || GUCEF_NULL != memchr( dtBuffer+13, ',', sourceBufferSize-13 );    
+    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+13, '.', sourceBufferSize-13 ) || GUCEF_NULL != memchr( dtBuffer+13, ',', sourceBufferSize-13 );
 
     Int32 year=0;
     UInt32 month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;
@@ -945,7 +952,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
     if ( includesDelimeters )
     {
         if ( includesMilliseconds )
-        {            
+        {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 23 chars, 13 total parts of which 7 to parse
             if ( sourceBufferSize >= 23 )
             {
@@ -1007,7 +1014,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
             }
             return -1;
         }
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1040,20 +1047,20 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     }
 
     char* dtBuffer = static_cast< char* >( targetBuffer );
-    
-    // The ISO DateTime range is likelyt different from the host O/S range
-    // As such we should always clamp
+
+    // The ISO DateTime range is likely different from the host O/S range
+    // As such we should always clamp to the ISO supported range
     Int16 isoClampedYear = m_year;
     if ( isoClampedYear > 9999 )
         isoClampedYear = 9999;
     else
-    if ( isoClampedYear < 0000 )    
+    if ( isoClampedYear < 0000 )
         isoClampedYear = 0000;
 
     if ( includeDelimeters )
     {
         if ( includeMilliseconds )
-        {            
+        {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 24 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
@@ -1075,7 +1082,7 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
             // Length = date(4+2+2)+time(2+2+2) = 14 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1089,8 +1096,8 @@ CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferO
         if ( !target.SetBufferSize( target.GetBufferSize() + 25 ) )
             return -1;
     }
-    
-    return ToIso8601DateTimeString( target.GetBufferPtr( targetBufferOffset )           , 
+
+    return ToIso8601DateTimeString( target.GetBufferPtr( targetBufferOffset )           ,
                                     target.GetRemainingBufferSize( targetBufferOffset ) ,
                                     includeDelimeters                                   ,
                                     includeMilliseconds                                 );
@@ -1110,10 +1117,10 @@ CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMillisec
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDateTime::FromTmStruct( const struct tm* tmStruct, bool isUtc )
 {GUCEF_TRACE;
-    
+
     Set();
     if ( GUCEF_NULL == tmStruct )
         return;
@@ -1132,13 +1139,13 @@ CDateTime::FromTmStruct( const struct tm* tmStruct, bool isUtc )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::IsWithinRange( const CDateTime& a, const CDateTime& b, bool includingBoundaryItself ) const
 {GUCEF_TRACE;
 
     const CDateTime* minDt = GUCEF_NULL;
     const CDateTime* maxDt = GUCEF_NULL;
-    
+
     if ( a < b )
     {
         minDt = &a;
@@ -1162,7 +1169,7 @@ CDateTime::IsWithinRange( const CDateTime& a, const CDateTime& b, bool including
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDateTime::Clear( void )
 {GUCEF_TRACE;
 

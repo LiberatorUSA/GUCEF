@@ -11,6 +11,7 @@ build
 common/bin/*
 !common/bin/TestData
 projects/CMake/targets/*/build/*
+projects/CMake/targets/*/*_log.*
 ProjectGenerator_Log.txt
 dependencies/android-ndk-r21d/
 projects/Android/obj/
