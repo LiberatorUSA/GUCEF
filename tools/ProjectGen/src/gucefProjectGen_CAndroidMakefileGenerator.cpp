@@ -932,6 +932,8 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                    addGeneratorCompileTimeToOutput ,
                                    splitTargets                    ,
                                    ndkModulesUsed                  );
+    
+        return true;
     }
     return false;
 }

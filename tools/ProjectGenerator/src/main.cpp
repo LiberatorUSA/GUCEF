@@ -90,6 +90,11 @@
 #define GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H
 #endif /* GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H ? */
 
+#ifndef GUCEF_PROJECTGEN_CCHIHELPERGENERATOR_H
+#include "gucefProjectGen_CCIHelperGenerator.h"
+#define GUCEF_PROJECTGEN_CCHIHELPERGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CCHIHELPERGENERATOR_H ? */
+
 #ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
 #include "gucefProjectGen_CProjectGenGlobal.h"
 #define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
@@ -368,6 +373,15 @@ GUCEF_OSMAIN_BEGIN
                                                outputDir                  ,
                                                addToolCompileTimeToOutput ,
                                                keyValueList               );
+        }
+        else
+        if ( (*i).Lowercase() == "cihelper" )
+        {
+            CCIHelperGenerator ciHelper;
+            ciHelper.GenerateProject( projectInfo                ,
+                                      outputDir                  ,
+                                      addToolCompileTimeToOutput ,
+                                      keyValueList               );
         }
         ++i;
     }

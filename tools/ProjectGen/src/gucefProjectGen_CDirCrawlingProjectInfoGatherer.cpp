@@ -1011,7 +1011,7 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                 while ( q != platformsNodes.end() )
                 {
                     const CORE::CDataNode* platformNode = (*q);
-                    TStringVector platformNames = platformNode->GetAttributeValueOrChildValueByName( "NAME" ).Lowercase().ParseElements( ';', false );
+                    TStringVector platformNames = platformNode->GetAttributeValueOrChildValueByName( "NAME" ).AsString().Lowercase().ParseElements( ';', false );
                     TStringVector::iterator j = platformNames.begin();
                     while ( j != platformNames.end() )
                     {
@@ -1019,8 +1019,8 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                         if ( !platformName.IsNULLOrEmpty() )
                         {
                             TPlatformDefinition& platformDefinition = instructionStorage.platforms[ platformName ];
-                            platformDefinition.aliases = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "ALIASES" ).Lowercase().ParseElements( ';', false ) );
-                            platformDefinition.platformDirs = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "PLATFORMDIRS" ).ParseElements( ';', false ) );
+                            platformDefinition.aliases = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "ALIASES" ).AsString().Lowercase().ParseElements( ';', false ) );
+                            platformDefinition.platformDirs = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "PLATFORMDIRS" ).AsString().ParseElements( ';', false ) );
                         }
                     }
                     ++q;
@@ -1035,7 +1035,7 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                 if ( curNode->GetName() == excludesNodeName )
                 {
                     // Store whether the instructions apply to a particular platform
-                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
+                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).AsString().Lowercase();
 
                     // apply 1 to n platform mappings if applicable
                     TStringSet platforms;
@@ -1124,7 +1124,7 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                 if ( curNode->GetName() == includesNodeName )
                 {
                     // Store whether the instructions apply to a particular platform
-                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
+                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).AsString().Lowercase();
 
                     // apply 1 to n platform mappings if applicable
                     TStringSet platforms;

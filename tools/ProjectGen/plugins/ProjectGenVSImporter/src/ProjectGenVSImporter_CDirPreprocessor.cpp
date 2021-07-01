@@ -374,7 +374,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                 CORE::CDataNode* clCompileNode = (*n)->FindChild( "ClCompile" );
                 if ( NULL != clCompileNode )
                 {                
-                    PROJECTGEN::TStringSet newDefines = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "PreprocessorDefinitions" ).ParseElements( ';', false ) );
+                    PROJECTGEN::TStringSet newDefines = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "PreprocessorDefinitions" ).AsString().ParseElements( ';', false ) );
                     PROJECTGEN::TStringSet::iterator m = newDefines.begin();
                     while ( m != newDefines.end() ) 
                     {
@@ -382,7 +382,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                         ++m;
                     }
 
-                    PROJECTGEN::TStringSet additionalIncludeDirs = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "AdditionalIncludeDirectories" ).ParseElements( ';', false ) );
+                    PROJECTGEN::TStringSet additionalIncludeDirs = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "AdditionalIncludeDirectories" ).AsString().ParseElements( ';', false ) );
                     m = additionalIncludeDirs.begin();
                     while ( m != additionalIncludeDirs.end() ) 
                     {
@@ -413,7 +413,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                         moduleInfo.linkerSettings.targetName = outputFilename;
                     }
 
-                    PROJECTGEN::TStringVector additionalDependencies = linkNode->GetChildValueByName( "AdditionalDependencies" ).ParseElements( ';', false );
+                    PROJECTGEN::TStringVector additionalDependencies = linkNode->GetChildValueByName( "AdditionalDependencies" ).AsString().ParseElements( ';', false );
                     if ( !additionalDependencies.empty() )
                     {
                         PROJECTGEN::TStringVector::iterator m = additionalDependencies.begin();

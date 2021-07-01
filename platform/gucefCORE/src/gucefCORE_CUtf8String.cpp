@@ -1786,7 +1786,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
 
         UInt32 bytesFromStart = 0;
         char* cpPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
-        for ( Int32 i=bytesFromStart; i>=0; --i )
+        for ( Int32 i=bytesFromStart-(substr.m_byteSize-1); i>=0; --i )
         {
             if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize-1 ) )
             {
@@ -1885,6 +1885,12 @@ CUtf8String::Equals( const CUtf8String& otherStr           ,
                      const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == otherStr.m_string ) 
+        return true;
+    else
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == otherStr.m_string ) 
+        return false;
+    
     if ( caseSensitive )
     {
         return 0 == utf8cmp( m_string, otherStr.m_string );
@@ -1901,6 +1907,12 @@ bool
 CUtf8String::NotEquals( const CUtf8String& otherStr           ,
                         const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == otherStr.m_string ) 
+        return false;
+    else
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == otherStr.m_string ) 
+        return true;
 
     if ( caseSensitive )
     {

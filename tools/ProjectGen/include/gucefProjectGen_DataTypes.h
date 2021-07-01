@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
@@ -268,13 +268,13 @@ typedef struct SProjectInfo TProjectInfo;
 
 struct SProjectTargetInfo
 {
-    CORE::CString projectName;                               // Name of the overall project
+    CORE::CString projectName;                               // Name of the overall project (bundling target)
     const TModuleInfoEntry* mainModule;                      // Reference to the main module for the project if applicable
     TModuleInfoEntryConstPtrSet modules;                     // All generated module information
 };
 typedef struct SProjectTargetInfo TProjectTargetInfo;
-typedef std::map< CORE::CString, TProjectTargetInfo > TProjectTargetInfoMap;
-typedef std::map< CORE::CString, TProjectTargetInfoMap > TProjectTargetInfoMapMap;
+typedef std::map< CORE::CString, TProjectTargetInfo > TProjectTargetInfoMap;        // maps a given target platform name, for example 'win32' to everything linked/needed for a given auto-generated target
+typedef std::map< CORE::CString, TProjectTargetInfoMap > TProjectTargetInfoMapMap;  // maps a auto-generated target project name to another map which maps on a per target platform basis
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -587,6 +587,14 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
                     const CORE::CString& platform         ,
                     const TModuleInfo** moduleInfo = NULL );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform           ,
+                           CORE::CString::StringSet& allPaths      );
+                 
 /*-------------------------------------------------------------------------*/
 
 // Determines which platforms are actually used in the project and returns the 
