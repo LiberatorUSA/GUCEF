@@ -43,7 +43,8 @@ if [[ -f $(git rev-parse --git-dir)/shallow ]]; then
 fi
 
 # Collect all modified projects
-PROJECTS_TO_BUILD=$($DIR/list-projects-to-build.sh $COMMIT_RANGE)
+PROJECTS_TO_BUILD=""
+$DIR/list-projects-to-build.sh $COMMIT_RANGE
 
 # If nothing to build inform and exit
 if [[ -z "$PROJECTS_TO_BUILD" ]]; then

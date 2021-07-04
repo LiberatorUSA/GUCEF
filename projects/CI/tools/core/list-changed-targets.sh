@@ -23,7 +23,7 @@ for PLATFORM_NAME in $(${DIR}/list-dirs.sh ${DIR}/../../targets); do
 	for TARGET_NAME in $(${DIR}/list-dirs.sh ${DIR}/../../targets/$PLATFORM_NAME); do		
 		
 		TARGET_JOB_NAME=$TARGET_NAME-$PLATFORM_NAME
-		echo Checking $TARGET_JOB_NAME paths for changes
+		echo -e "Checking $TARGET_JOB_NAME paths for changes"
 		FILE_WITH_PATHS=${DIR}/../../targets/$PLATFORM_NAME/$TARGET_NAME/globpaths.txt
 		
 		declare -a PATHARRAY		
@@ -37,14 +37,14 @@ for PLATFORM_NAME in $(${DIR}/list-dirs.sh ${DIR}/../../targets); do
 			if [[ $(echo -e "$CHANGED_PATHS" | grep "$TARGET_PATH") ]]; then                
 			    CHANGED_TARGETS="$CHANGED_TARGETS\n$TARGET_JOB_NAME"
 				targetWasChanged=1
-				echo Determined that target $TARGET_JOB_NAME changed due to detection of change using path $TARGET_PATH
+				echo -e "Determined that target $TARGET_JOB_NAME changed due to detection of change using path $TARGET_PATH"
 				break
 			fi 
 		done
 		
 		if [ 0 -eq "$targetWasChanged" ]
 		then
-			echo Determined that target $TARGET_JOB_NAME did not change
+			echo -e "Determined that target $TARGET_JOB_NAME did not change"
 		fi
 		
 	done
