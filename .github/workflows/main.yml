@@ -13,5 +13,5 @@ jobs:
       - name: Run build trigger to determine what to build
         env:
           CI_TOOL: github
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./projects/CI/tools/core/build.sh
