@@ -1,0 +1,8 @@
+common/include/*
+platform/gucefCOMCORE/include/*
+platform/gucefCOMCORE/src/*
+platform/gucefCORE/include/*
+platform/gucefCORE/src/*
+platform/gucefMT/include/*
+platform/gucefMT/src/*
+tools/SocketSink/src/*

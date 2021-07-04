@@ -115,9 +115,10 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
 /*-------------------------------------------------------------------------*/
 
 void
-GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo            ,
-                                          const TProjectTargetInfoMapMap& targets    ,
-                                          const CORE::CString& cmakeTargetsOutputDir )
+GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo                ,
+                                          const TProjectTargetInfoMapMap& targets        ,
+                                          const CORE::CString::StringSet& platformFilter ,
+                                          const CORE::CString& cmakeTargetsOutputDir     )
 {GUCEF_TRACE;
 
     CORE::CString githubActionsWorkflowProjectsContent =
@@ -141,30 +142,32 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
         while ( n != targetsPerPlatform.end() )
         {
             const CORE::CString& platformName = (*n).first;
-            const TProjectTargetInfo& targetInfo = (*n).second;
+            if ( platformFilter.find( platformName ) != platformFilter.end() )
+            {
+                const TProjectTargetInfo& targetInfo = (*n).second;
 
-            CORE::CString productName;
-            if ( GUCEF_NULL == targetInfo.mainModule )
-            {
-                productName = targetInfo.projectName;
-            }
-            else
-            {
-                productName = GetConsensusModuleName( *targetInfo.mainModule );
-            }
+                CORE::CString productName;
+                if ( GUCEF_NULL == targetInfo.mainModule )
+                {
+                    productName = targetInfo.projectName;
+                }
+                else
+                {
+                    productName = GetConsensusModuleName( *targetInfo.mainModule );
+                }
             
-            CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToCMakeTargetsOutputDir ); 
-            if ( !section.IsNULLOrEmpty() )
-            {
-                githubActionsWorkflowProjectsContent += section;
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Generated Github Actions Workflow job to build target \"" + targetName + "\" with project name \"" + targetInfo.projectName + "\" and platform \"" + platformName + "\"" );
+                CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToCMakeTargetsOutputDir ); 
+                if ( !section.IsNULLOrEmpty() )
+                {
+                    githubActionsWorkflowProjectsContent += section;
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Generated Github Actions Workflow job to build target \"" + targetName + "\" with project name \"" + targetInfo.projectName + "\" and platform \"" + platformName + "\"" );
+                }
+                else
+                {
+                    // not supported atm
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Could not generate Github Actions Workflow job to build target \"" + targetName + "\" with project name \"" + targetInfo.projectName + "\" and platform \"" + platformName + "\"" );
+                }
             }
-            else
-            {
-                // not supported atm
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Could not generate Github Actions Workflow job to build target \"" + targetName + "\" with project name \"" + targetInfo.projectName + "\" and platform \"" + platformName + "\"" );
-            }
-
             ++n;
         }
         ++i;
@@ -200,9 +203,10 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
 /*-------------------------------------------------------------------------*/
 
 void
-GenerateFilePathListPerTarget( const TProjectInfo& projectInfo         ,
-                               const TProjectTargetInfoMapMap& targets ,
-                               const CORE::CString& targetsOutputDir   )
+GenerateFilePathListPerTarget( const TProjectInfo& projectInfo                ,
+                               const TProjectTargetInfoMapMap& targets        ,
+                               const CORE::CString::StringSet& platformFilter ,
+                               const CORE::CString& targetsOutputDir          )
 {GUCEF_TRACE;
 
     TProjectTargetInfoMapMap::const_iterator i = targets.begin();
@@ -215,52 +219,49 @@ GenerateFilePathListPerTarget( const TProjectInfo& projectInfo         ,
         while ( n != targetsPerPlatform.end() )
         {
             const CORE::CString& platformName = (*n).first;
-            //if ( AllPlatforms == platformName )
-            //{
-            //    ++n;
-            //    continue;
-            //}
-
-            const TProjectTargetInfo& targetInfo = (*n).second;
-
-            CORE::CString::StringSet allPaths;
-            TModuleInfoEntryConstPtrSet::const_iterator m = targetInfo.modules.begin();
-            while ( m != targetInfo.modules.end() )
+            if ( platformFilter.find( platformName ) != platformFilter.end() )
             {
-                const TModuleInfoMap& moduleInfoPerPlatform = (*m)->modulesPerPlatform;
+                const TProjectTargetInfo& targetInfo = (*n).second;
 
-                // Grab all file paths for this platform's module definition
-                GetAllModuleInfoFilePaths( projectInfo, *(*m), platformName, allPaths, true, true );
-                ++m;
-            }
+                CORE::CString::StringSet allPaths;
+                TModuleInfoEntryConstPtrSet::const_iterator m = targetInfo.modules.begin();
+                while ( m != targetInfo.modules.end() )
+                {
+                    const TModuleInfoMap& moduleInfoPerPlatform = (*m)->modulesPerPlatform;
+
+                    // Grab all file paths for this platform's module definition
+                    GetAllModuleInfoFilePaths( projectInfo, *(*m), platformName, allPaths, true, true );
+                    ++m;
+                }
             
-            CORE::CString pathListFileContent;
-            CORE::CString::StringSet::iterator p = allPaths.begin();
-            while ( p != allPaths.end() )
-            {
-                pathListFileContent += (*p) + '\n';
-                ++p;
-            }
+                CORE::CString pathListFileContent;
+                CORE::CString::StringSet::iterator p = allPaths.begin();
+                while ( p != allPaths.end() )
+                {
+                    pathListFileContent += (*p) + '\n';
+                    ++p;
+                }
 
-            CORE::CString pathListOutputPath = CORE::CombinePath( targetsOutputDir, platformName );
-            pathListOutputPath = CORE::CombinePath( pathListOutputPath, targetName );
+                CORE::CString pathListOutputPath = CORE::CombinePath( targetsOutputDir, platformName );
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, targetName );
 
-            if ( !CORE::CreateDirs( pathListOutputPath ) )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Failed to create directories while generating list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\". Dir path: " + pathListOutputPath );
-                ++n;
-                continue;
-            }
+                if ( !CORE::CreateDirs( pathListOutputPath ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Failed to create directories while generating list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\". Dir path: " + pathListOutputPath );
+                    ++n;
+                    continue;
+                }
 
-            pathListOutputPath = CORE::CombinePath( pathListOutputPath, "filepaths.txt" );
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, "filepaths.txt" );
 
-            if ( CORE::WriteStringAsTextFile( pathListOutputPath, pathListFileContent ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Successfully wrote list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Failed to write list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                if ( CORE::WriteStringAsTextFile( pathListOutputPath, pathListFileContent ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Successfully wrote list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateFilePathListPerTarget: Failed to write list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
             }
             ++n;
         }
@@ -272,9 +273,10 @@ GenerateFilePathListPerTarget( const TProjectInfo& projectInfo         ,
 /*-------------------------------------------------------------------------*/
 
 void
-GeneratePathListPerTarget( const TProjectInfo& projectInfo         ,
-                           const TProjectTargetInfoMapMap& targets ,
-                           const CORE::CString targetsOutputDir    )
+GeneratePathListPerTarget( const TProjectInfo& projectInfo                ,
+                           const TProjectTargetInfoMapMap& targets        ,
+                           const CORE::CString::StringSet& platformFilter ,
+                           const CORE::CString targetsOutputDir           )
 {GUCEF_TRACE;
 
     TProjectTargetInfoMapMap::const_iterator i = targets.begin();
@@ -287,52 +289,120 @@ GeneratePathListPerTarget( const TProjectInfo& projectInfo         ,
         while ( n != targetsPerPlatform.end() )
         {
             const CORE::CString& platformName = (*n).first;
-            //if ( AllPlatforms == platformName )
-            //{
-            //    ++n;
-            //    continue;
-            //}
-
-            const TProjectTargetInfo& targetInfo = (*n).second;
-
-            CORE::CString::StringSet allPaths;
-            TModuleInfoEntryConstPtrSet::const_iterator m = targetInfo.modules.begin();
-            while ( m != targetInfo.modules.end() )
+            if ( platformFilter.find( platformName ) != platformFilter.end() )
             {
-                const TModuleInfoMap& moduleInfoPerPlatform = (*m)->modulesPerPlatform;
+                const TProjectTargetInfo& targetInfo = (*n).second;
 
-                // Grab all paths for this platform's module definition
-                GetAllModuleInfoPaths( projectInfo, *(*m), platformName, allPaths, true, true, true );
-                ++m;
-            }
+                CORE::CString::StringSet allPaths;
+                TModuleInfoEntryConstPtrSet::const_iterator m = targetInfo.modules.begin();
+                while ( m != targetInfo.modules.end() )
+                {
+                    const TModuleInfoMap& moduleInfoPerPlatform = (*m)->modulesPerPlatform;
+
+                    // Grab all paths for this platform's module definition
+                    GetAllModuleInfoPaths( projectInfo, *(*m), platformName, allPaths, true, true, true );
+                    ++m;
+                }
             
-            CORE::CString pathListFileContent;
-            CORE::CString::StringSet::iterator p = allPaths.begin();
-            while ( p != allPaths.end() )
-            {
-                pathListFileContent += (*p) + '\n';
-                ++p;
+                CORE::CString pathListFileContent;
+                CORE::CString::StringSet::iterator p = allPaths.begin();
+                while ( p != allPaths.end() )
+                {
+                    pathListFileContent += (*p) + '\n';
+                    ++p;
+                }
+
+                CORE::CString pathListOutputPath = CORE::CombinePath( targetsOutputDir, platformName );
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, targetName );
+
+                if ( !CORE::CreateDirs( pathListOutputPath ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Failed to create directories while generating list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\". Dir path: " + pathListOutputPath );
+                    ++n;
+                    continue;
+                }
+
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, "paths.txt" );
+
+                if ( CORE::WriteStringAsTextFile( pathListOutputPath, pathListFileContent ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Successfully wrote list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Failed to write list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
             }
+            ++n;
+        }
+        
+        ++i;
+    }
+}
 
-            CORE::CString pathListOutputPath = CORE::CombinePath( targetsOutputDir, platformName );
-            pathListOutputPath = CORE::CombinePath( pathListOutputPath, targetName );
+/*-------------------------------------------------------------------------*/
 
-            if ( !CORE::CreateDirs( pathListOutputPath ) )
+void
+GenerateGlobPatternPathListPerTarget( const TProjectInfo& projectInfo                ,
+                                      const TProjectTargetInfoMapMap& targets        ,
+                                      const CORE::CString::StringSet& platformFilter ,
+                                      const CORE::CString targetsOutputDir           )
+{GUCEF_TRACE;
+
+    TProjectTargetInfoMapMap::const_iterator i = targets.begin();
+    while ( i != targets.end() )
+    {
+        const CORE::CString& targetName = (*i).first;
+        const TProjectTargetInfoMap& targetsPerPlatform = (*i).second;
+
+        TProjectTargetInfoMap::const_iterator n = targetsPerPlatform.begin();
+        while ( n != targetsPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*n).first;
+            if ( platformFilter.find( platformName ) != platformFilter.end() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Failed to create directories while generating list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\". Dir path: " + pathListOutputPath );
-                ++n;
-                continue;
-            }
+                const TProjectTargetInfo& targetInfo = (*n).second;
 
-            pathListOutputPath = CORE::CombinePath( pathListOutputPath, "paths.txt" );
+                CORE::CString::StringSet allPaths;
+                TModuleInfoEntryConstPtrSet::const_iterator m = targetInfo.modules.begin();
+                while ( m != targetInfo.modules.end() )
+                {
+                    const TModuleInfoMap& moduleInfoPerPlatform = (*m)->modulesPerPlatform;
 
-            if ( CORE::WriteStringAsTextFile( pathListOutputPath, pathListFileContent ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Successfully wrote list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GeneratePathListPerTarget: Failed to write list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                    // Grab all paths for this platform's module definition
+                    GetAllModuleInfoPaths( projectInfo, *(*m), platformName, allPaths, true, true, true );
+                    ++m;
+                }
+            
+                CORE::CString pathListFileContent;
+                CORE::CString::StringSet::iterator p = allPaths.begin();
+                while ( p != allPaths.end() )
+                {
+                    CORE::CString path = (*p).ReplaceChar( '\\', '/' ) + "/*\n";
+                    pathListFileContent += path;
+                    ++p;
+                }
+
+                CORE::CString pathListOutputPath = CORE::CombinePath( targetsOutputDir, platformName );
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, targetName );
+
+                if ( !CORE::CreateDirs( pathListOutputPath ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGlobPatternPathListPerTarget: Failed to create directories while generating list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\". Dir path: " + pathListOutputPath );
+                    ++n;
+                    continue;
+                }
+
+                pathListOutputPath = CORE::CombinePath( pathListOutputPath, "globpaths.txt" );
+
+                if ( CORE::WriteStringAsTextFile( pathListOutputPath, pathListFileContent ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGlobPatternPathListPerTarget: Successfully wrote list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGlobPatternPathListPerTarget: Failed to write list of relevant file paths for target \"" + targetName + "\" and platform \"" + platformName + "\" to: " + pathListOutputPath );
+                }
             }
             ++n;
         }
@@ -366,6 +436,10 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
 
     bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );  
     CORE::CString targetsOutputDir = params.GetValueAlways( "cihelpergen:TargetsDir" );
+    
+    CORE::CString::StringSet platformFilter = params.GetValueAlways( "cihelpergen:platformFilter" ).ParseUniqueElements( ',', false );
+    if ( platformFilter.empty() )
+        GetAllPlatformsUsed( projectInfo, platformFilter );
 
     if ( targetsOutputDir.IsNULLOrEmpty() )
         targetsOutputDir = outputDir;    
@@ -377,7 +451,8 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true ); 
 
     bool generateFilePathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateFilePathListPerTarget" ), false );
-    bool generatePathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GeneratePathListPerTarget" ), true );
+    bool generatePathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GeneratePathListPerTarget" ), false );
+    bool generateGlobPatternPathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateGlobPatternPathListPerTarget" ), true );
     bool generateGithubActionsWorkflowProjectsYml = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateGithubActionsWorkflowProjectsYml" ), true );
     
     CORE::CString cmakeTargetsOutputDir = params.GetValueAlways( "cmakegen:TargetsDir" );
@@ -386,11 +461,14 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     cmakeTargetsOutputDir = CORE::RelativePath( cmakeTargetsOutputDir, true );
 
     if ( generateFilePathListPerTarget )
-        GenerateFilePathListPerTarget( projectInfo, targets, targetsOutputDir );
+        GenerateFilePathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
     if ( generatePathListPerTarget )
-        GeneratePathListPerTarget( projectInfo, targets, targetsOutputDir );
+        GeneratePathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
+    if ( generateGlobPatternPathListPerTarget )
+        GenerateGlobPatternPathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
+        
     if ( generateGithubActionsWorkflowProjectsYml )
-        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, cmakeTargetsOutputDir );
+        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, cmakeTargetsOutputDir );
     
     return true;
 }

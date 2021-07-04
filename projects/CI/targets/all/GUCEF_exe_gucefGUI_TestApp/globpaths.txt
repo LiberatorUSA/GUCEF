@@ -1,0 +1,7 @@
+common/include/*
+platform/gucefCORE/include/*
+platform/gucefGUI/include/*
+platform/gucefIMAGE/include/*
+platform/gucefINPUT/include/*
+platform/gucefMT/include/*
+platform/gucefVFS/include/*

@@ -295,7 +295,7 @@ ModuleTypeToString( const TModuleType moduleType )
 /*-------------------------------------------------------------------------*/
 
 TModuleType
-StringToModuleType( const CORE::CString moduleTypeStr )
+StringToModuleType( const CORE::CString& moduleTypeStr )
 {
     CORE::CString moduleTypeString = moduleTypeStr.Lowercase();
     if ( moduleTypeString == "" ) return MODULETYPE_UNDEFINED;

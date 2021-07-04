@@ -1,0 +1,8 @@
+common/include/*
+dependencies/DVPACKSYS/include/*
+dependencies/DVPACKSYS/src/*
+platform/gucefCORE/include/*
+platform/gucefCORE/src/*
+platform/gucefMT/include/*
+platform/gucefMT/src/*
+tools/DVPPackTool/src/*

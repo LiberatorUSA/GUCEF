@@ -1,0 +1,10 @@
+common/include/*
+platform/gucefCORE/include/*
+platform/gucefCORE/src/*
+platform/gucefIMAGE/include/*
+platform/gucefIMAGE/src/*
+platform/gucefMT/include/*
+platform/gucefMT/src/*
+platform/gucefVFS/include/*
+platform/gucefVFS/src/*
+tools/itvExporter/src/*

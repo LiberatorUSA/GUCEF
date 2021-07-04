@@ -1,0 +1,3 @@
+common/include/*
+platform/gucefCORE/include/*
+platform/gucefMT/include/*

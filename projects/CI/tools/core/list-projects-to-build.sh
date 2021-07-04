@@ -23,7 +23,7 @@ COMMIT_RANGE=$1
 COMMIT_RANGE_FOR_LOG="$(echo $COMMIT_RANGE | sed -e 's/\.\./.../g')"
 
 if [[ -z $COMMIT_RANGE ]]; then
-    echo "ERROR: You need to provide revision range in fomrat HASH1..HASH2 as input parameter"
+    echo "ERROR: You need to provide revision range in format HASH1..HASH2 as input parameter"
     echo "$USAGE_TEXT"
     exit 1
 fi    
@@ -33,48 +33,17 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Look for changes in given revision range
 CHANGED_PATHS=$(git diff $COMMIT_RANGE --name-status)
-#echo -e "Changed paths:\n$CHANGED_PATHS" 
-
-# Look for dependencies between projects
-PROJECT_DEPENDENCIES=$(${DIR}/list-dependencies.sh)
+echo -e "Changed paths:\n$CHANGED_PATHS" 
 
 # Setup variables for output collecting 
 CHANGED_PROJECTS=""
 CHANGED_DEPENDENCIES=""
 
-##
-# Recusively look for projects which depends on given project.
-# Outputs lines of tuples in format PROJECT1 PROJECT2 (separated by space), 
-# where PROJECT1 depends on PROJECT2.
-# 
-# Input:
-#   PROJECT - id of project
-##
-function process_dependants {
-    local PROJECT=$1
-    local DEPENDENCIES=$(echo "$PROJECT_DEPENDENCIES" | grep ".* $PROJECT")
-    echo "$NEW_DEPENDENCEIS" | while read DEPENDENCY; do
-        DEPENDENCY=$(echo "$DEPENDENCY" | cut -d " " -f1)
-        if [[ ! $(echo "$CHANGED_PROJECTS" | grep "$DEPENDENCY") ]]; then
-            NEW_DEPENDENCEIS="$DEPENDENCIES\n$(process_dependants $DEPENDENCY)"
-        fi
-    done    
-    echo -e "$DEPENDENCIES"
-}
-
 # If [rebuild-all] command passed it's enought to take all projects and all dependencies as changed
 if [[ $(git log "$COMMIT_RANGE_FOR_LOG" | grep "\[rebuild-all\]") ]]; then
-    CHANGED_PROJECTS="$(${DIR}/list-projects.sh)"
-    CHANGED_DEPENDENCIES="$PROJECT_DEPENDENCIES"
+    CHANGED_PROJECTS="$(${DIR}/list-all-targets-as-changed.sh)"
 else    
-    # For all known projects check if there was a change and look for all dependant projects
-    for PROJECT in $(${DIR}/list-projects.sh); do
-        PROJECT_NAME=$(basename $PROJECT)
-        if [[ $(echo -e "$CHANGED_PATHS" | grep "$PROJECT") ]]; then                
-            CHANGED_PROJECTS="$CHANGED_PROJECTS\n$PROJECT"
-            CHANGED_DEPENDENCIES="$CHANGED_DEPENDENCIES\n$(process_dependants $PROJECT)"                 
-        fi               
-    done
+    CHANGED_PROJECTS="$(${DIR}/list-changed-targets.sh)"
 fi
 
 # Build output 

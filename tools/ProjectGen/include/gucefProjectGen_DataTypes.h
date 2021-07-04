@@ -460,7 +460,7 @@ ModuleTypeToString( const TModuleType moduleType );
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 TModuleType
-StringToModuleType( const CORE::CString moduleTypeStr );
+StringToModuleType( const CORE::CString& moduleTypeStr );
 
 /*-------------------------------------------------------------------------*/
 

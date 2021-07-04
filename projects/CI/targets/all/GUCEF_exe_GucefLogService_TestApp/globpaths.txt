@@ -1,0 +1,13 @@
+common/include/*
+platform/gucefCOM/include/*
+platform/gucefCOM/src/*
+platform/gucefCOMCORE/include/*
+platform/gucefCOMCORE/src/*
+platform/gucefCORE/include/*
+platform/gucefCORE/src/*
+platform/gucefMT/include/*
+platform/gucefMT/src/*
+tools/GucefLogServiceLib/include/*
+tools/GucefLogServiceLib/src/*
+tools/GucefLogService_TestApp/include/*
+tools/GucefLogService_TestApp/src/*

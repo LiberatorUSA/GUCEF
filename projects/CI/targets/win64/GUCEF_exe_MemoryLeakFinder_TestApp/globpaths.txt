@@ -1,0 +1,12 @@
+common/include/*
+platform/gucefCORE/include/*
+platform/gucefCORE/include/mswin/*
+platform/gucefCORE/src/*
+platform/gucefCORE/src/mswin/*
+platform/gucefMT/include/*
+platform/gucefMT/include//*
+platform/gucefMT/src/*
+platform/gucefMT/src//*
+tests/MemoryLeakFinder_TestApp/src/*
+tools/MemoryLeakFinder/include/*
+tools/MemoryLeakFinder/src/*

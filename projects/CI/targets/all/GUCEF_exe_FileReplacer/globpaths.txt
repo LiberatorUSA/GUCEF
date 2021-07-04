@@ -1,0 +1,6 @@
+common/include/*
+platform/gucefCORE/include/*
+platform/gucefCORE/src/*
+platform/gucefMT/include/*
+platform/gucefMT/src/*
+tools/FileReplacer/src/*
