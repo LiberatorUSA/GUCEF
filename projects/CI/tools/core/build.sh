@@ -48,12 +48,16 @@ $DIR/list-projects-to-build.sh $COMMIT_RANGE
 
 # If nothing to build inform and exit
 if [[ -z "$PROJECTS_TO_BUILD" ]]; then
-    echo "No projects to build"
+    echo -e "\n---------------------------------------\n"
+	echo "No projects to build"
+	echo -e "\n---------------------------------------\n"
     exit 0
 fi
 
+echo -e "\n---------------------------------------\n"
 echo "Following projects need to be built"
 echo -e "$PROJECTS_TO_BUILD"
+echo -e "\n---------------------------------------\n"
 
 # Build all modified projects
 echo -e "$PROJECTS_TO_BUILD" | while read PROJECTS; do

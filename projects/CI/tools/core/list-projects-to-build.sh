@@ -35,22 +35,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 CHANGED_PATHS=$(git diff $COMMIT_RANGE --name-status)
 echo -e "\n---------------------------------------\n"
 echo -e "Changed paths:\n$CHANGED_PATHS" 
-echo -e "\n---------------------------------------\n"
 
 # Setup variables for output collecting 
 CHANGED_PROJECTS=""
 CHANGED_DEPENDENCIES=""
 
 echo -e "\n---------------------------------------\n"
-echo -e "Determining all changed projects...\n"
+echo -e "Determining all changed projects..."
 # If [rebuild-all] command passed it's enought to take all projects and all dependencies as changed
 if [[ $(git log "$COMMIT_RANGE_FOR_LOG" | grep "\[rebuild-all\]") ]]; then
-    echo -e "Determined that we need to consider all targets as changed projects\n"
+    echo -e "Determined that we need to consider all targets as changed projects"
 	CHANGED_PROJECTS="$(${DIR}/list-all-targets-as-changed.sh)"
 else    
-    CHANGED_PROJECTS="$(${DIR}/list-changed-targets.sh)"
+    echo -e "Determined that we need to perform glob pattern matching against known targets..."
+	CHANGED_PROJECTS="$(${DIR}/list-changed-targets.sh)"
 fi
-echo -e "\n---------------------------------------\n"
 
 # Build output 
 #PROJECTS_TO_BUILD=$(echo -e "$CHANGED_DEPENDENCIES" | tsort | tac)
