@@ -1,0 +1,17 @@
+name: main
+
+on: [push]
+
+jobs:
+  
+  trigger-build:
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@master
+      - name: Run build trigger to determine what to build
+        env:
+          CI_TOOL: github
+          GITHUB_TOKEN: ${{ secrets.token }}
+        run: ./projects/CI/tools/core/build.sh
