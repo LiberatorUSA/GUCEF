@@ -2448,10 +2448,121 @@ GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
 
 /*---------------------------------------------------------------------------*/
 
+CORE::CString
+LocalizeDirSepCharForPlatform( const CORE::CString& path     ,
+                               const CORE::CString& platform )
+{GUCEF_TRACE;
+
+    if ( "win32" == platform || "win64" == platform )
+    {
+        return path.ReplaceChar( '/', '\\' );
+    }
+    if ( "linux32" == platform || "linux64" == platform || "android32" == platform || "android64" == platform  )
+    {
+        return path.ReplaceChar( '\\', '/' );
+    }
+
+    // Not a platform for which we perform a hardcoded conversion
+    // Let's just pick '/' as the default standard
+    return path.ReplaceChar( '\\', '/' );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetAllModuleInfoPaths( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           ,
+                       CORE::CString::StringSet& allPaths      ,
+                       bool includeModuleRootPath              ,
+                       bool includeDepencencyIncludePaths      )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const TStringSetMap& includeDirs = (*i).second.includeDirs; 
+        TStringSetMap::const_iterator n = includeDirs.begin();
+        while ( n != includeDirs.end() )
+        {
+            const CORE::CString& includeDir = (*n).first;
+            if ( includeModuleRootPath )
+            {
+                CORE::CString path = CORE::CombinePath( moduleInfoEntry.rootDir, includeDir );
+                path = CORE::RelativePath( path, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
+            }
+            else
+            {
+                CORE::CString path = CORE::RelativePath( includeDir, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
+            }
+            ++n;
+        }        
+
+        const TStringSetMap& sourceDirs = (*i).second.sourceDirs; 
+        n = sourceDirs.begin();
+        while ( n != sourceDirs.end() )
+        {
+            const CORE::CString& sourceDir = (*n).first;
+
+            if ( includeModuleRootPath )
+            {
+                CORE::CString path = CORE::CombinePath( moduleInfoEntry.rootDir, sourceDir );
+                path = CORE::RelativePath( path, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
+            }
+            else
+            {
+                CORE::CString path = CORE::RelativePath( sourceDir, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
+            }
+            ++n;
+        } 
+
+        if ( includeDepencencyIncludePaths )
+        {
+            const TStringSet& dependencyIncludeDirs = (*i).second.dependencyIncludeDirs;
+            TStringSet::const_iterator m = dependencyIncludeDirs.begin();
+            while ( m != dependencyIncludeDirs.end() )
+            {
+                if ( includeModuleRootPath )
+                {
+                    CORE::CString path = CORE::CombinePath( moduleInfoEntry.rootDir, (*m) );
+                    path = CORE::RelativePath( path, true );
+                    path = LocalizeDirSepCharForPlatform( path, platform );
+                    allPaths.insert( path );
+                }
+                else
+                {
+                    CORE::CString path = CORE::RelativePath( (*m), true );
+                    path = LocalizeDirSepCharForPlatform( path, platform );
+                    allPaths.insert( path );
+                }
+                ++m;
+            }
+        }
+
+        ++i;
+    }
+
+    // We handled all the platform specific stuff, now also cover everything that applies to any platform
+    if ( platform != AllPlatforms )
+    {
+        GetAllModuleInfoPaths( moduleInfoEntry, AllPlatforms, allPaths, includeModuleRootPath, includeDepencencyIncludePaths );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           ,
-                           CORE::CString::StringSet& allPaths      )
+                           CORE::CString::StringSet& allPaths      ,
+                           bool includeModuleRootPath              )
 {GUCEF_TRACE;
 
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
@@ -2467,8 +2578,15 @@ GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
             TStringSet::const_iterator m = includeDirContent.begin();
             while ( m != includeDirContent.end() )
             {
-                CORE::CString includeFilePath = CORE::CombinePath( includeDir, (*m) );
-                allPaths.insert( includeFilePath );
+                CORE::CString path = CORE::CombinePath( includeDir, (*m) );
+                if ( includeModuleRootPath )
+                {
+                    path = CORE::CombinePath( moduleInfoEntry.rootDir, path );
+                }
+
+                path = CORE::RelativePath( path, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
                 ++m;
             }
             ++n;
@@ -2484,8 +2602,15 @@ GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
             TStringSet::const_iterator m = sourceDirContent.begin();
             while ( m != sourceDirContent.end() )
             {
-                CORE::CString sourceFilePath = CORE::CombinePath( sourceDir, (*m) );
-                allPaths.insert( sourceFilePath );
+                CORE::CString path = CORE::CombinePath( sourceDir, (*m) );
+                if ( includeModuleRootPath )
+                {
+                    path = CORE::CombinePath( moduleInfoEntry.rootDir, path );
+                }
+
+                path = CORE::RelativePath( path, true );
+                path = LocalizeDirSepCharForPlatform( path, platform );
+                allPaths.insert( path );
                 ++m;
             }
             ++n;
@@ -2497,7 +2622,114 @@ GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
     // We handled all the platform specific stuff, now also cover everything that applies to any platform
     if ( platform != AllPlatforms )
     {
-        GetAllModuleInfoFilePaths( moduleInfoEntry, AllPlatforms, allPaths );
+        GetAllModuleInfoFilePaths( moduleInfoEntry, AllPlatforms, allPaths, includeModuleRootPath );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetShortestRelativePathFromAbsPathToProjectRoot( const TProjectInfo& projectInfo ,
+                                                 const CORE::CString& absPath    )
+{GUCEF_TRACE;
+
+    typedef std::map< CORE::UInt32, CORE::CString > TUInt32ToStringMap;
+
+    TUInt32ToStringMap lengthMap;
+
+    TStringVector::const_iterator i = projectInfo.rootDirs.begin();
+    while ( i != projectInfo.rootDirs.end() )
+    {
+        CORE::CString relPath = CORE::GetRelativePathToOtherPathRoot( (*i), absPath ); 
+        lengthMap[ relPath.Length() ] = relPath;
+        ++i;
+    }
+
+    if ( !lengthMap.empty() )
+    {
+        return (*lengthMap.begin()).second;
+    }
+    return CORE::CString::Empty;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetShortestRelativePathFromModuleToProjectRoot( const TProjectInfo& projectInfo         ,
+                                                const TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    return GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, moduleInfoEntry.rootDir );
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetAllModuleInfoFilePaths( const TProjectInfo& projectInfo         ,
+                           const TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform           ,
+                           CORE::CString::StringSet& allPaths      ,
+                           bool includeModuleRootPath              ,
+                           bool relativeToProjectRoot              )
+{GUCEF_TRACE;
+
+    if ( includeModuleRootPath && relativeToProjectRoot )
+    {
+        CORE::CString::StringSet modulePaths;
+        GetAllModuleInfoFilePaths( moduleInfoEntry, platform, modulePaths, false );
+        
+        CORE::CString projectRootPath = GetShortestRelativePathFromModuleToProjectRoot( projectInfo, moduleInfoEntry );
+        projectRootPath = LocalizeDirSepCharForPlatform( projectRootPath, platform );
+
+        CORE::CString::StringSet::iterator i = modulePaths.begin();
+        while ( i != modulePaths.end() )
+        {
+            CORE::CString path = CORE::CombinePath( projectRootPath, (*i) );
+            path = CORE::RelativePath( path, true );
+            path = LocalizeDirSepCharForPlatform( path, platform );
+            allPaths.insert( path );
+            ++i;
+        }
+    }
+    else
+    {
+        GetAllModuleInfoFilePaths( moduleInfoEntry, platform, allPaths, includeModuleRootPath );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetAllModuleInfoPaths( const TProjectInfo& projectInfo         ,
+                       const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           ,
+                       CORE::CString::StringSet& allPaths      ,
+                       bool includeModuleRootPath              ,
+                       bool relativeToProjectRoot              ,
+                       bool includeDepencencyIncludePaths      )
+{GUCEF_TRACE;
+
+    if ( includeModuleRootPath && relativeToProjectRoot )
+    {
+        CORE::CString::StringSet modulePaths;
+        GetAllModuleInfoPaths( moduleInfoEntry, platform, modulePaths, false, includeDepencencyIncludePaths );
+        
+        CORE::CString projectRootPath = GetShortestRelativePathFromModuleToProjectRoot( projectInfo, moduleInfoEntry );
+        projectRootPath = LocalizeDirSepCharForPlatform( projectRootPath, platform );
+        
+        CORE::CString::StringSet::iterator i = modulePaths.begin();
+        while ( i != modulePaths.end() )
+        {
+            CORE::CString path = CORE::CombinePath( projectRootPath, (*i) );
+            path = CORE::RelativePath( path, true );
+            path = LocalizeDirSepCharForPlatform( path, platform );
+            allPaths.insert( path );
+            ++i;
+        }
+    }
+    else
+    {
+        GetAllModuleInfoPaths( moduleInfoEntry, platform, allPaths, includeModuleRootPath, includeDepencencyIncludePaths );
     }
 }
 

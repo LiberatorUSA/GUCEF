@@ -257,6 +257,7 @@ typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInst
 struct SProjectInfo
 {
     CORE::CString projectName;                               // Name of the overall project
+    TStringVector rootDirs;                                  // Root dirs used to gather all project info
     TModuleInfoEntryVector modules;                          // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
@@ -590,11 +591,69 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+LocalizeDirSepCharForPlatform( const CORE::CString& path     ,
+                               const CORE::CString& platform );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           ,
-                           CORE::CString::StringSet& allPaths      );
+                           CORE::CString::StringSet& allPaths      ,
+                           bool includeModuleRootPath              );
                  
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetAllModuleInfoFilePaths( const TProjectInfo& projectInfo         ,
+                           const TModuleInfoEntry& moduleInfoEntry ,
+                           const CORE::CString& platform           ,
+                           CORE::CString::StringSet& allPaths      ,
+                           bool includeModuleRootPath              ,
+                           bool relativeToProjectRoot              );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetAllModuleInfoPaths( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           ,
+                       CORE::CString::StringSet& allPaths      ,
+                       bool includeModuleRootPath              ,
+                       bool includeDepencencyIncludePaths      );
+                 
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetAllModuleInfoPaths( const TProjectInfo& projectInfo         ,
+                       const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           ,
+                       CORE::CString::StringSet& allPaths      ,
+                       bool includeModuleRootPath              ,
+                       bool relativeToProjectRoot              ,
+                       bool includeDepencencyIncludePaths      );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetShortestRelativePathFromModuleToProjectRoot( const TProjectInfo& projectInfo         ,
+                                                const TModuleInfoEntry& moduleInfoEntry );
+
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetShortestRelativePathFromAbsPathToProjectRoot( const TProjectInfo& projectInfo ,
+                                                 const CORE::CString& absPath    );
+
 /*-------------------------------------------------------------------------*/
 
 // Determines which platforms are actually used in the project and returns the 

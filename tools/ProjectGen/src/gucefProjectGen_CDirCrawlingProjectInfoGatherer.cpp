@@ -3603,6 +3603,7 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs  ,
     while ( i != rootDirs.end() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Identifying all modules for root directory \"" + (*i) + "\"" );
+        projectInfo.rootDirs.push_back( CORE::RelativePath( (*i), true ) );
         LocateAndProcessProjectDirsRecusively( projectInfo, CORE::RelativePath( (*i) ) );
         ++i;
     }
