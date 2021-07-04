@@ -4,6 +4,22 @@ on: repository_dispatch
 
 jobs:
 
+  GUCEF-all:
+    if: github.event.client_payload.job == 'GUCEF-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF for platform all
+        working-directory: ./projects/CMake/targets/GUCEF
+        run: ./cmake --build
+  GUCEF_exe_ArchiveDiff-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_ArchiveDiff
+        run: ./cmake --build
   GUCEF_exe_ArchiveDiff-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux32'
     runs-on: ubuntu-latest
@@ -35,6 +51,14 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_ArchiveDiff
+        run: ./cmake --build
+  GUCEF_exe_CMakeListGenerator-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build CMakeListGenerator for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_CMakeListGenerator
         run: ./cmake --build
   GUCEF_exe_CMakeListGenerator-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-linux32'
@@ -68,6 +92,94 @@ jobs:
       - name: Build CMakeListGenerator for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_CMakeListGenerator
         run: ./cmake --build
+  GUCEF_exe_DCSBruteInstaller-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_DCSBruteInstaller-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build DCSBruteInstaller for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_DCSBruteInstaller
+        run: ./cmake --build
+  GUCEF_exe_DVPPackTool-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_DVPPackTool-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build DVPPackTool for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_DVPPackTool
+        run: ./cmake --build
+  GUCEF_exe_DuplicateFileFinder-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_DuplicateFileFinder-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build DuplicateFileFinder for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_DuplicateFileFinder
+        run: ./cmake --build
+  GUCEF_exe_FileDiff-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_FileDiff-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build FileDiff for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_FileDiff
+        run: ./cmake --build
+  GUCEF_exe_FilePusher-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_FilePusher-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build FilePusher for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_FilePusher
+        run: ./cmake --build
+  GUCEF_exe_FileReplacer-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_FileReplacer-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build FileReplacer for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_FileReplacer
+        run: ./cmake --build
+  GUCEF_exe_GucefArchiver-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_GucefArchiver-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GucefArchiver for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_GucefArchiver
+        run: ./cmake --build
+  GUCEF_exe_GucefLogServiceApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_GucefLogServiceApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GucefLogServiceApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_GucefLogServiceApp
+        run: ./cmake --build
+  GUCEF_exe_GucefLogService_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_GucefLogService_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GucefLogService_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_GucefLogService_TestApp
+        run: ./cmake --build
+  GUCEF_exe_HDFiller-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_HDFiller-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build HDFiller for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_HDFiller
+        run: ./cmake --build
+  GUCEF_exe_MemoryLeakFinder_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build MemoryLeakFinder_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_MemoryLeakFinder_TestApp
+        run: ./cmake --build
   GUCEF_exe_MemoryLeakFinder_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win32'
     runs-on: windows-latest
@@ -83,6 +195,14 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
+        run: ./cmake --build
+  GUCEF_exe_MyGUI.FontViewer-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build MyGUI.FontViewer for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
   GUCEF_exe_MyGUI.FontViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux32'
@@ -116,6 +236,14 @@ jobs:
       - name: Build MyGUI.FontViewer for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
+  GUCEF_exe_MyGUI.ImageSetViewer-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build MyGUI.ImageSetViewer for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
+        run: ./cmake --build
   GUCEF_exe_MyGUI.ImageSetViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux32'
     runs-on: ubuntu-latest
@@ -147,6 +275,14 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.ImageSetViewer
+        run: ./cmake --build
+  GUCEF_exe_MyGUI.LayoutEditor-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build MyGUI.LayoutEditor for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
   GUCEF_exe_MyGUI.LayoutEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux32'
@@ -180,6 +316,14 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
+  GUCEF_exe_MyGUI.SkinEditor-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build MyGUI.SkinEditor for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
+        run: ./cmake --build
   GUCEF_exe_MyGUI.SkinEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux32'
     runs-on: ubuntu-latest
@@ -212,6 +356,22 @@ jobs:
       - name: Build MyGUI.SkinEditor for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
         run: ./cmake --build
+  GUCEF_exe_PackageUpgrader-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_PackageUpgrader-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build PackageUpgrader for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_PackageUpgrader
+        run: ./cmake --build
+  GUCEF_exe_PatchSetGenerator-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build PatchSetGenerator for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_PatchSetGenerator
+        run: ./cmake --build
   GUCEF_exe_PatchSetGenerator-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-win32'
     runs-on: windows-latest
@@ -227,6 +387,94 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_PatchSetGenerator
+        run: ./cmake --build
+  GUCEF_exe_ProcessMetrics-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ProcessMetrics-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ProcessMetrics for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_ProcessMetrics
+        run: ./cmake --build
+  GUCEF_exe_ProjectGenerator-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ProjectGenerator-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ProjectGenerator for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_ProjectGenerator
+        run: ./cmake --build
+  GUCEF_exe_ReferenceUpdater-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ReferenceUpdater-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ReferenceUpdater for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_ReferenceUpdater
+        run: ./cmake --build
+  GUCEF_exe_SVNMagicMerge-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_SVNMagicMerge-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build SVNMagicMerge for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_SVNMagicMerge
+        run: ./cmake --build
+  GUCEF_exe_ServerPortExtender-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ServerPortExtender-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ServerPortExtender for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_ServerPortExtender
+        run: ./cmake --build
+  GUCEF_exe_SocketSink-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_SocketSink-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build SocketSink for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_SocketSink
+        run: ./cmake --build
+  GUCEF_exe_UdpViaTcp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_UdpViaTcp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build UdpViaTcp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_UdpViaTcp
+        run: ./cmake --build
+  GUCEF_exe_awslambdahost-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_awslambdahost-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build awslambdahost for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_awslambdahost
+        run: ./cmake --build
+  GUCEF_exe_gucefCOMCORE_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefCOMCORE_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefCOMCORE_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefCOMCORE_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefCOM_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefCOM_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefCOM_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefCOM_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefCORE_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefCORE_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefCORE_TestApp
         run: ./cmake --build
   GUCEF_exe_gucefCORE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-linux32'
@@ -260,6 +508,22 @@ jobs:
       - name: Build gucefCORE_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_gucefCORE_TestApp
         run: ./cmake --build
+  GUCEF_exe_gucefDRN_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefDRN_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefDRN_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefDRN_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefGUI_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefGUI_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefGUI_TestApp
+        run: ./cmake --build
   GUCEF_exe_gucefGUI_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -291,6 +555,14 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_gucefGUI_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefIMAGE_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefIMAGE_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefIMAGE_TestApp
         run: ./cmake --build
   GUCEF_exe_gucefIMAGE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-linux32'
@@ -324,6 +596,14 @@ jobs:
       - name: Build gucefIMAGE_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_gucefIMAGE_TestApp
         run: ./cmake --build
+  GUCEF_exe_gucefINPUT_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefINPUT_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefINPUT_TestApp
+        run: ./cmake --build
   GUCEF_exe_gucefINPUT_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -355,6 +635,46 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_gucefINPUT_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefLOADER_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefLOADER_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefLOADER_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefLOADER_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefMT_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefMT_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefMT_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefMT_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefPATCHERAPP_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefPATCHERAPP_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefPATCHERAPP_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefPATCHERAPP_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefPRODMAN_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefPRODMAN_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefPRODMAN_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefPRODMAN_TestApp
+        run: ./cmake --build
+  GUCEF_exe_gucefVFS_TestApp-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build gucefVFS_TestApp for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_gucefVFS_TestApp
         run: ./cmake --build
   GUCEF_exe_gucefVFS_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-linux32'
@@ -388,6 +708,22 @@ jobs:
       - name: Build gucefVFS_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_gucefVFS_TestApp
         run: ./cmake --build
+  GUCEF_exe_itvExporter-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_itvExporter-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build itvExporter for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_itvExporter
+        run: ./cmake --build
+  GUCEF_exe_pubsub2storage-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build pubsub2storage for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_pubsub2storage
+        run: ./cmake --build
   GUCEF_exe_pubsub2storage-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-win32'
     runs-on: windows-latest
@@ -403,6 +739,38 @@ jobs:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_pubsub2storage
+        run: ./cmake --build
+  GUCEF_exe_redisinfo-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_redisinfo-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build redisinfo for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_redisinfo
+        run: ./cmake --build
+  GUCEF_exe_udp2kafka-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_udp2kafka-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build udp2kafka for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_udp2kafka
+        run: ./cmake --build
+  GUCEF_exe_udp2redis-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_udp2redis-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build udp2redis for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_udp2redis
+        run: ./cmake --build
+  GUCEF_exe_udp2rediscluster-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_udp2rediscluster-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build udp2rediscluster for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_exe_udp2rediscluster
         run: ./cmake --build
   GUCEF_tag_obsolete-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-linux32'
@@ -436,6 +804,22 @@ jobs:
       - name: Build GUCEF_tag_obsolete for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_tag_obsolete
         run: ./cmake --build
+  GUCEF_tag_platform-all:
+    if: github.event.client_payload.job == 'GUCEF_tag_platform-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_platform for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_tag_platform
+        run: ./cmake --build
+  GUCEF_tag_plugin-all:
+    if: github.event.client_payload.job == 'GUCEF_tag_plugin-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_plugin for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_tag_plugin
+        run: ./cmake --build
   GUCEF_tag_plugin-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux32'
     runs-on: ubuntu-latest
@@ -467,6 +851,14 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_tag_plugin
+        run: ./cmake --build
+  GUCEF_tag_test-all:
+    if: github.event.client_payload.job == 'GUCEF_tag_test-all'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_test for platform all
+        working-directory: ./projects/CMake/targets/GUCEF_tag_test
         run: ./cmake --build
   GUCEF_tag_test-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_test-linux32'

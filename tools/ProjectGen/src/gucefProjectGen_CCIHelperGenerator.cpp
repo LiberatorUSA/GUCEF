@@ -68,7 +68,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
     CORE::CString section;
     CORE::CString workingDir;
     
-    if ( "linux32" == targetPlatform || "linux64" == targetPlatform )
+    if ( "linux32" == targetPlatform || "linux64" == targetPlatform || AllPlatforms == targetPlatform )
     {
         // Change cmake relative path dir sep to match linux
         workingDir = pathToCMakeTargetsOutputDir.ReplaceChar( '\\', '/' );
