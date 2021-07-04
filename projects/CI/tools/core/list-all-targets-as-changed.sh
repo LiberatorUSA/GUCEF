@@ -19,8 +19,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 . $DIR/../plugins/helperfuncs.sh
 
 # For all known projects check if there was a change and look for all dependant projects
-for PLATFORM_NAME in $(${DIR}/list-dirs.sh ./../../targets); do        
-	for TARGET_NAME in $(${DIR}/list-dirs.sh ./../../targets/$PLATFORM_NAME); do		
+for PLATFORM_NAME in $(${DIR}/list-dirs.sh ${DIR}/../../targets); do        
+	for TARGET_NAME in $(${DIR}/list-dirs.sh ${DIR}/../../targets/$PLATFORM_NAME); do		
 		
 		TARGET_JOB_NAME=$TARGET_NAME-$PLATFORM_NAME		
 		CHANGED_TARGETS="$CHANGED_TARGETS\n$TARGET_JOB_NAME"	
