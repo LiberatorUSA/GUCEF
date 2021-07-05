@@ -30,7 +30,7 @@ function list_all_targets {
 	done
 	
 	# set result variable
-	read -i "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
+	read "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -89,9 +89,9 @@ function list_all_changed_targets_for_paths {
 			
 		done
 	done
-	
+
 	# set result variable
-	read -i "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
+	read "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
 }
 
 #-----------------------------------------------------------------------------------------------
