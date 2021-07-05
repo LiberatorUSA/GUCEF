@@ -1907,18 +1907,22 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
 
     m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-
-    m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort", "20000" ) ) );
-        
-    m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) ) );
+       
+    m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID" ) ), 1 );
     CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", CORE::ToString( channelIDStrs.empty() ? 1 : channelIDStrs.size() ) ) ) );    
+    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : channelIDStrs.size() );    
     if ( channelIDStrs.size() > m_channelCount )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDStrs.size() ) + " channel IDs are specified which exceeds the total nr of channels. Will increase channel count to match" );
         m_channelCount = (CORE::UInt16) channelIDStrs.size();
     }
 
+    m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort" ) ), 20000 );
+    CORE::Int32 udpPortChannelIdOffset = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpPortChannelIdOffset" ) ), 20000 );
+    bool useUdpPortChannelIdOffset = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "UseUdpPortChannelIdOffset" ) ), false );
+    if ( useUdpPortChannelIdOffset )
+        m_udpStartPort = (CORE::UInt16) ( m_redisStreamStartChannelID + udpPortChannelIdOffset );
+         
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
@@ -1978,6 +1982,9 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     {
         CORE::Int32 channelId = (*idListIttr);
         ChannelSettings& channelSettings = m_channelSettings[ channelId ];
+
+        if ( useUdpPortChannelIdOffset )
+            udpPort = (CORE::UInt16) ( channelId + udpPortChannelIdOffset );
 
         channelSettings.channelId = channelId;
         channelSettings.collectMetrics = m_transmitMetrics;
@@ -2060,6 +2067,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         else
         {
             // Use the auto numbering scheme instead
+            // This is either a offset of the channel ID or its an auto-incremented nr from a base port nr
             channelSettings.udpInterface.SetPortInHostByteOrder( udpPort );
         }
 
