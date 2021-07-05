@@ -459,6 +459,7 @@ class Udp2RedisCluster : public CORE::CObserver
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
     typedef std::map< CORE::Int32, Udp2RedisClusterChannelPtr > Udp2RedisClusterChannelMap;
+    typedef std::set< CORE::Int32 > Int32Set;
 
     bool m_isInStandby;
     bool m_globalStandbyEnabled;

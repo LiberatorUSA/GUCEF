@@ -1205,6 +1205,7 @@ Udp2RedisClusterChannel::WaitForTaskToFinish( CORE::Int32 timeoutInMs )
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Failed waiting for dedicated redis writer task to stop for channel " + CORE::Int32ToString( m_channelSettings.channelId ) );
+                return false;
             }
         }
         return true;
@@ -1836,7 +1837,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster:SetStandbyMode( false ): Found channel which no longer has corresponding channel settings, deleting channel with ID " + CORE::Int32ToString( channelId ) );
                 m_channels.erase( i );
                 i = m_channels.begin();
-                break;
+                continue;
             }
             ++i;
         }
@@ -1908,8 +1909,16 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
 
     m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort", "20000" ) ) );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
+        
     m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) ) );
+    CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
+    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", CORE::ToString( channelIDStrs.empty() ? 1 : channelIDStrs.size() ) ) ) );    
+    if ( channelIDStrs.size() > m_channelCount )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDStrs.size() ) + " channel IDs are specified which exceeds the total nr of channels. Will increase channel count to match" );
+        m_channelCount = (CORE::UInt16) channelIDStrs.size();
+    }
+
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
@@ -1926,11 +1935,48 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
-    CORE::UInt32 currentCpu = 0;
-    CORE::UInt16 udpPort = m_udpStartPort;
-    CORE::Int32 maxChannelId = m_redisStreamStartChannelID + m_channelCount;
-    for ( CORE::Int32 channelId = m_redisStreamStartChannelID; channelId < maxChannelId; ++channelId )
+    // We will assume we are always given a full not a partial config so we clear the existing channel settings
+    m_channelSettings.clear();
+
+    // Validate the channel IDs.
+    // Depending on the use case these could be vital identifiers not just an index so some validation is in order
+    Int32Set channelIDs;
+    CORE::CString::StringSet::iterator n = channelIDStrs.begin();
+    while ( n != channelIDStrs.end() )
     {
+        CORE::Int32 id = CORE::StringToInt32( (*n), GUCEF_MT_INT32MIN );
+        if ( id != GUCEF_MT_INT32MIN )
+            channelIDs.insert( id );
+        ++n;
+    }
+    if ( channelIDs.size() != channelIDStrs.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
+        return false;
+    }
+    
+    // Make sure we have enough channel IDs specified to cover the channel count
+    if ( channelIDs.size() < m_channelCount )
+    {
+        // auto-generate additional channel IDs
+        // This allows a configuration style where you don't have to specify all channel IDs
+        CORE::Int32 lastAutoGenChannelId = m_redisStreamStartChannelID;
+        CORE::Int32 missingChannels = m_channelCount - (CORE::Int32) channelIDs.size();
+        for ( CORE::Int32 i=0; i<missingChannels; ++i )
+        {
+            while ( channelIDs.find( lastAutoGenChannelId ) != channelIDs.end() )
+                ++lastAutoGenChannelId;
+            channelIDs.insert( lastAutoGenChannelId );
+            ++lastAutoGenChannelId;
+        }
+    }
+    
+    CORE::UInt32 currentCpu = 0;
+    CORE::UInt16 udpPort = m_udpStartPort;  
+    Int32Set::iterator idListIttr = channelIDs.begin();
+    for ( CORE::Int32 i=0; i<m_channelCount; ++i )
+    {
+        CORE::Int32 channelId = (*idListIttr);
         ChannelSettings& channelSettings = m_channelSettings[ channelId ];
 
         channelSettings.channelId = channelId;
@@ -2032,6 +2078,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         ++udpPort;
+        ++idListIttr;
     }
 
     m_appConfig = appConfig;
