@@ -598,14 +598,14 @@ StringToInt64( const CString& str, Int64 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        Int64 value;
+        Int64 value = defaultIfNeeded;
         #ifdef GUCEF_MSWIN_BUILD
-        sscanf( str.C_String(), "%I64d", &value );
+        if ( 1 == sscanf( str.C_String(), "%I64d", &value ) )
         #else
-        sscanf( str.C_String(), "%lld", &value );
+        if ( 1 == sscanf( str.C_String(), "%lld", &value ) )
         #endif
 
-        return value;
+            return value;
     }
     return defaultIfNeeded;
 }
@@ -634,14 +634,14 @@ StringToUInt64( const CString& str, UInt64 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        UInt64 value;
+        UInt64 value = defaultIfNeeded;
         #ifdef GUCEF_MSWIN_BUILD
-        sscanf( str.C_String(), "%I64u", &value );
+        if ( 1 == sscanf( str.C_String(), "%I64u", &value ) )
         #else
-        sscanf( str.C_String(), "%llu", &value );
+        if ( 1 == sscanf( str.C_String(), "%llu", &value ) )
         #endif
 
-        return value;
+            return value;
     }
     return defaultIfNeeded;
 }
@@ -670,9 +670,9 @@ StringToInt32( const CString& str, Int32 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        Int32 value;
-        sscanf( str.C_String(), "%d", &value );
-        return value;
+        Int32 value = defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%d", &value ) )
+            return value;
     }
     return defaultIfNeeded;
 }
@@ -696,9 +696,9 @@ StringToUInt32( const CString& str, UInt32 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        UInt32 value;
-        sscanf( str.C_String(), "%u", &value );
-        return value;
+        UInt32 value = defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%u", &value ) )
+            return value;
     }
     return defaultIfNeeded;
 }
@@ -722,9 +722,9 @@ StringToUInt16( const CString& str, UInt16 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        UInt32 value;
-        sscanf( str.C_String(), "%u", &value );
-        return (UInt16) value;
+        UInt32 value = (UInt32) defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%u", &value ) )
+            return (UInt16) value;
     }
     return defaultIfNeeded;
 }
@@ -748,9 +748,9 @@ StringToInt16( const CString& str, Int16 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        Int32 value;
-        sscanf( str.C_String(), "%d", &value );
-        return (Int16) value;
+        Int32 value = (Int16) defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%d", &value ) )
+            return (Int16) value;
     }
     return defaultIfNeeded;
 }
@@ -774,9 +774,9 @@ StringToInt8( const CString& str, Int8 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        Int32 value;
-        sscanf( str.C_String(), "%d", &value );
-        return (Int8) value;
+        Int32 value = (Int8) defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%d", &value ) )
+            return (Int8) value;
     }
     return defaultIfNeeded;
 }
@@ -800,9 +800,9 @@ StringToUInt8( const CString& str, UInt8 defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        UInt32 value;
-        sscanf( str.C_String(), "%u", &value );
-        return (UInt8) value;
+        UInt32 value = (UInt8) defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%u", &value ) )
+            return (UInt8) value;
     }
     return defaultIfNeeded;
 }
@@ -837,9 +837,9 @@ StringToPointer( const CString& str, void* defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        void* ptr = GUCEF_NULL;
-        sscanf( str.C_String(), "%p", &ptr );
-        return ptr;
+        void* ptr = defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%p", &ptr ) )
+            return ptr;
     }
     return defaultIfNeeded;
 }
@@ -899,9 +899,9 @@ StringToFloat( const CString& str, float defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        float value;
-        sscanf( str.C_String(), "%f", &value );
-        return value;
+        float value = defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%f", &value ) )
+            return value;
     }
     return defaultIfNeeded;
 }
@@ -926,9 +926,9 @@ StringToDouble( const CString& str, double defaultIfNeeded )
 
     if ( !str.IsNULLOrEmpty() )
     {
-        double value;
-        sscanf( str.C_String(), "%lf", &value );
-        return value;
+        double value = defaultIfNeeded;
+        if ( 1 == sscanf( str.C_String(), "%lf", &value ) )
+            return value;
     }
     return defaultIfNeeded;
 }
