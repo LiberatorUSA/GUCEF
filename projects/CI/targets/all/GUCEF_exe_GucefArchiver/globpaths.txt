@@ -1,8 +1,5 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefCORE/src/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-platform/gucefVFS/include/*
-platform/gucefVFS/src/*
-tools/GucefArchiver/src/*
+platform/gucefCORE/*
+platform/gucefMT/*
+platform/gucefVFS/*
+tools/GucefArchiver/*

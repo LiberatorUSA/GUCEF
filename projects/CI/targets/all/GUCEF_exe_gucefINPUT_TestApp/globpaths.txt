@@ -2,3 +2,4 @@ common/include/*
 platform/gucefCORE/include/*
 platform/gucefINPUT/include/*
 platform/gucefMT/include/*
+tests/gucefINPUT_TestApp/*

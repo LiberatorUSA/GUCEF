@@ -1,8 +1,4 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefCORE/include/mswin/*
-platform/gucefCORE/src/*
-platform/gucefCORE/src/mswin/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tools/CMakeListGenerator/src/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tools/CMakeListGenerator/*

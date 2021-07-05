@@ -2,3 +2,4 @@ common/include/*
 platform/gucefCORE/include/*
 platform/gucefIMAGE/include/*
 platform/gucefMT/include/*
+tests/gucefIMAGE_TestApp/*

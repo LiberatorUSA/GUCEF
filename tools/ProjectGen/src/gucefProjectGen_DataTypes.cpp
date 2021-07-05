@@ -2480,6 +2480,11 @@ GetAllModuleInfoPaths( const TModuleInfoEntry& moduleInfoEntry ,
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
+        if ( includeModuleRootPath )
+        {
+            allPaths.insert( moduleInfoEntry.rootDir );
+        }
+        
         const TStringSetMap& includeDirs = (*i).second.includeDirs; 
         TStringSetMap::const_iterator n = includeDirs.begin();
         while ( n != includeDirs.end() )
@@ -2717,6 +2722,7 @@ GetAllModuleInfoPaths( const TProjectInfo& projectInfo         ,
         CORE::CString projectRootPath = GetShortestRelativePathFromModuleToProjectRoot( projectInfo, moduleInfoEntry );
         projectRootPath = LocalizeDirSepCharForPlatform( projectRootPath, platform );
         
+        allPaths.insert( projectRootPath );
         CORE::CString::StringSet::iterator i = modulePaths.begin();
         while ( i != modulePaths.end() )
         {

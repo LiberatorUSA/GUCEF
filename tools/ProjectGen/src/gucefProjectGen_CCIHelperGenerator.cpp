@@ -373,10 +373,43 @@ GenerateGlobPatternPathListPerTarget( const TProjectInfo& projectInfo           
                     GetAllModuleInfoPaths( projectInfo, *(*m), platformName, allPaths, true, true, true );
                     ++m;
                 }
-            
-                CORE::CString pathListFileContent;
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGlobPatternPathListPerTarget: Found " + CORE::ToString( allPaths.size() ) + " paths. For glob matching we will now eliminate glob patterns that are more specific version of a more generic one" );
+
+                CORE::CString::StringSet allGlobPaths;
                 CORE::CString::StringSet::iterator p = allPaths.begin();
                 while ( p != allPaths.end() )
+                {
+                    const CORE::CString& testPath = (*p);
+
+                    bool shorterVersionFound = false;                    
+                    CORE::CString::StringSet::iterator p2 = p;
+                    while ( p2 != allPaths.begin() )
+                    {
+                        // Since this is a sorted list shorter entries, thus more global, will come before the item itself
+                        --p2;
+                        const CORE::CString& otherPath = (*p2);
+                        
+                        if ( testPath.HasSubstr( otherPath, true ) >= 0 )
+                        {
+                            shorterVersionFound = true;
+                            break;
+                        }
+                    }
+
+                    if ( !shorterVersionFound )
+                    {
+                        allGlobPaths.insert( testPath );
+                    }
+
+                    ++p;
+                }
+                
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGlobPatternPathListPerTarget: Found " + CORE::ToString( allGlobPaths.size() ) + " non-overlapping paths. Eliminated " + CORE::ToString( allPaths.size() - allGlobPaths.size() ) + " as redundant for glob pattern generation" );
+                
+                CORE::CString pathListFileContent;
+                p = allGlobPaths.begin();
+                while ( p != allGlobPaths.end() )
                 {
                     CORE::CString path = (*p).ReplaceChar( '\\', '/' ) + "/*\n";
                     pathListFileContent += path;

@@ -1,4 +1,3 @@
 common/include/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tests/gucefMT_TestApp/src/*
+platform/gucefMT/*
+tests/gucefMT_TestApp/*

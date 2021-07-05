@@ -1,8 +1,4 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefCORE/include/linux/*
-platform/gucefCORE/src/*
-platform/gucefCORE/src/linux/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tools/CMakeListGenerator/src/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tools/CMakeListGenerator/*

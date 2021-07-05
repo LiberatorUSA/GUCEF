@@ -5,3 +5,4 @@ platform/gucefIMAGE/include/*
 platform/gucefINPUT/include/*
 platform/gucefMT/include/*
 platform/gucefVFS/include/*
+tests/gucefGUI_TestApp/*

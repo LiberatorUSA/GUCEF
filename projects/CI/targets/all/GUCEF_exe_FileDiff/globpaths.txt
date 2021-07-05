@@ -1,6 +1,4 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefCORE/src/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tools/FileDiff/src/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tools/FileDiff/*

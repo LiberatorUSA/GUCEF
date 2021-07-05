@@ -1,13 +1,6 @@
 dependencies/MyGui/Common/*
-dependencies/MyGui/Common/FileSystemInfo/*
-dependencies/MyGui/Common/Input/*
 dependencies/MyGui/MyGUIEngine/include/*
 dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/*
-dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL/*
+dependencies/MyGui/Tools/FontViewer/*
 dependencies/freetype/include/*
-dependencies/freetype/include/freetype/*
-dependencies/freetype/include/freetype/config/*
-dependencies/freetype/include/freetype/internal/*
-dependencies/freetype/include/freetype/internal/services/*
 dependencies/freetype/src/*
-dependencies/freetype/src/winfonts/*

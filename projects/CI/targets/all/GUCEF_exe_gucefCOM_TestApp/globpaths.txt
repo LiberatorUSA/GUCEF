@@ -1,11 +1,5 @@
 common/include/*
-platform/gucefCOM/include/*
-platform/gucefCOM/src/*
-platform/gucefCOMCORE/include/*
-platform/gucefCOMCORE/src/*
-platform/gucefCORE/include/*
-platform/gucefCORE/src/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tests/gucefCOM_TestApp/include/*
-tests/gucefCOM_TestApp/src/*
+platform/gucefCOM/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tests/gucefCOM_TestApp/*

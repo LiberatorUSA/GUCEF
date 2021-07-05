@@ -1,6 +1,4 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefCORE/src/*
-platform/gucefMT/include/*
-platform/gucefMT/src/*
-tools/ReferenceUpdater/src/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tools/ReferenceUpdater/*
