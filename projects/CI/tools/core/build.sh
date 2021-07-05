@@ -62,11 +62,12 @@ if [[ -z "$PROJECTS_TO_BUILD" ]]; then
 fi
 
 echo -e "\n---------------------------------------\n"
-echo "Following projects need to be built:"
-echo "$PROJECTS_TO_BUILD"
+echo    "The following projects need to be built:"
+echo -e "$PROJECTS_TO_BUILD"
 echo -e "\n---------------------------------------\n"
 
 # Build all modified projects
 echo -e "$PROJECTS_TO_BUILD" | while read PROJECT; do
-    CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECT}
+    echo $PROJECT
+	CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECT}
 done;

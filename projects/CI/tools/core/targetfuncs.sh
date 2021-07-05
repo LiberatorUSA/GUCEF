@@ -30,7 +30,7 @@ function list_all_targets {
 	done
 	
 	# set result variable
-	read "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
+	read -r "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ function list_all_changed_targets_foo {
 					TARGETS_LIST="$TARGETS_LIST\n$TARGET_JOB_NAME"	
 	
 	# set result variable
-	read "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
+	read -r "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ function list_all_changed_targets_for_paths {
 			for TARGET_PATH in "${PATHARRAY[@]}"
 			do			
 				if [[ $(echo -e "$CHANGED_PATHS" | grep "$TARGET_PATH") ]]; then                
-					TARGETS_LIST="$TARGETS_LIST\n$TARGET_JOB_NAME"
+					TARGETS_LIST="$TARGETS_LIST$TARGET_JOB_NAME\n"
 					targetWasChanged=1
 					echo -e "Determined that target $TARGET_JOB_NAME changed due to detection of change using path $TARGET_PATH"
 					break
@@ -89,9 +89,9 @@ function list_all_changed_targets_for_paths {
 			
 		done
 	done
-
+	
 	# set result variable
-	read "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
+	read -r "${RESULT_VAR}" < <( echo "${TARGETS_LIST}" )
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -132,10 +132,10 @@ function list_all_changed_targets_for_commit_range {
 	# Print output
 	echo -e "\n---------------------------------------\n"
 	echo -e "Targets impacted:"
-	echo "$CHANGED_TARGETS"
+	echo -e "$CHANGED_TARGETS"
 	
 	# set result variable
-	read "${RESULT_VAR}" < <( echo "${CHANGED_TARGETS}" )
+	read -r "${RESULT_VAR}" < <( echo "${CHANGED_TARGETS}" )
 }
 
 #-----------------------------------------------------------------------------------------------
