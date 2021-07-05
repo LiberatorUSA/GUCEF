@@ -13,6 +13,13 @@ set -e
 # Find script directory (no support for symlinks)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Source extra helper functions
+. $DIR/targetfuncs.sh
+
+# Find script directory (no support for symlinks)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+
 # Configuration with default values
 : "${CI_TOOL:=circleci}"
 : "${CI_PLUGIN:=$DIR/../plugins/${CI_TOOL}.sh}"
@@ -44,7 +51,8 @@ fi
 
 # Collect all modified projects
 PROJECTS_TO_BUILD=""
-$DIR/list-projects-to-build.sh $COMMIT_RANGE
+list_all_changed_targets_for_commit_range "PROJECTS_TO_BUILD" "$COMMIT_RANGE"
+#$DIR/list-projects-to-build.sh $COMMIT_RANGE
 
 # If nothing to build inform and exit
 if [[ -z "$PROJECTS_TO_BUILD" ]]; then

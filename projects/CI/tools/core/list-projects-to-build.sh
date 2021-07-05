@@ -31,6 +31,13 @@ fi
 # Find script directory (no support for symlinks)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Source helper functions
+. $DIR/targetfuncs.sh
+
+# Find script directory (no support for symlinks)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+
 # Look for changes in given revision range
 CHANGED_PATHS=$(git diff $COMMIT_RANGE --name-status)
 echo -e "\n---------------------------------------\n"
@@ -45,10 +52,10 @@ echo -e "Determining all changed projects..."
 # If [rebuild-all] command passed it's enought to take all projects and all dependencies as changed
 if [[ $(git log "$COMMIT_RANGE_FOR_LOG" | grep "\[rebuild-all\]") ]]; then
     echo -e "Determined that we need to consider all targets as changed projects"
-	CHANGED_PROJECTS="$(${DIR}/list-all-targets-as-changed.sh)"
+	list_all_targets "CHANGED_PROJECTS"
 else    
     echo -e "Determined that we need to perform glob pattern matching against known targets..."
-	CHANGED_PROJECTS="$(${DIR}/list-changed-targets.sh)"
+	list_all_changed_targets_foo "CHANGED_PROJECTS" "$CHANGED_PATHS"
 fi
 
 # Build output 
@@ -61,4 +68,4 @@ fi
 PROJECTS_TO_BUILD=${CHANGED_PROJECTS}
 
 # Print output
-echo -e "$CHANGED_PROJECTS"
+echo -e "Projects to build:\n$CHANGED_PROJECTS"

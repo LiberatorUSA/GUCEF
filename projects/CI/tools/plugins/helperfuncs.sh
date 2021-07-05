@@ -45,13 +45,13 @@ fi
 # Loads lines from a text file and stores them in an array
 #
 # Input:
+#	 RESULT_VAR     - output variable to hold the array data
 #    PATHTOTEXTFILE - path to the file you wish to read as an array of lines
-#	 __resultvar    - output variable to hold the array data
 #
 function load_text_file_lines_as_array {
-    local PATHTOTEXTFILE=$1
-	local target="$2"
+    local PATHTOTEXTFILE=$2
+	local RESULT_VAR="$1"
 	local -a array
 	readarray -t array < $PATHTOTEXTFILE # Exclude newline with -t 
-	read -a "${target}" < <( echo "${array[@]}" )
+	read -a "${RESULT_VAR}" < <( echo "${array[@]}" )
 }
