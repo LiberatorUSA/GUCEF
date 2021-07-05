@@ -131,7 +131,8 @@ function list_all_changed_targets_for_commit_range {
 
 	# Print output
 	echo -e "\n---------------------------------------\n"
-	echo -e "Targets impacted:\n$CHANGED_TARGETS"
+	echo -e "Targets impacted:"
+	echo "$CHANGED_TARGETS"
 	
 	# set result variable
 	read "${RESULT_VAR}" < <( echo "${CHANGED_TARGETS}" )

@@ -52,7 +52,6 @@ fi
 # Collect all modified projects
 PROJECTS_TO_BUILD=""
 list_all_changed_targets_for_commit_range "PROJECTS_TO_BUILD" "$COMMIT_RANGE"
-#$DIR/list-projects-to-build.sh $COMMIT_RANGE
 
 # If nothing to build inform and exit
 if [[ -z "$PROJECTS_TO_BUILD" ]]; then
@@ -63,11 +62,11 @@ if [[ -z "$PROJECTS_TO_BUILD" ]]; then
 fi
 
 echo -e "\n---------------------------------------\n"
-echo "Following projects need to be built"
-echo -e "$PROJECTS_TO_BUILD"
+echo "Following projects need to be built:"
+echo "$PROJECTS_TO_BUILD"
 echo -e "\n---------------------------------------\n"
 
 # Build all modified projects
-echo -e "$PROJECTS_TO_BUILD" | while read PROJECTS; do
-    CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECTS}
+echo -e "$PROJECTS_TO_BUILD" | while read PROJECT; do
+    CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECT}
 done;
