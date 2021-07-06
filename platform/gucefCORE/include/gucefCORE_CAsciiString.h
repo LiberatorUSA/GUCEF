@@ -208,6 +208,10 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     CAsciiString ReplaceChar( char oldchar ,
                               char newchar ) const;
 
+    CAsciiString ReplaceChars( char* oldchars      ,
+                               UInt32 nrOfOldChars ,
+                               char newchar        ) const;
+
     CAsciiString ReplaceSubstr( const CAsciiString& substr      ,
                                 const CAsciiString& replacement ) const;
 

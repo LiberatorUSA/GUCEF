@@ -59,6 +59,41 @@ static const CORE::CString AllPlatforms = "all";
 //-------------------------------------------------------------------------*/
 
 CORE::CString
+GenerateValidGithubActionsWorkflowId( const CORE::CString& targetName     ,
+                                      const CORE::CString& targetPlatform )
+{GUCEF_TRACE;
+
+    // Github workflow IDs "may only contain alphanumeric characters, '_', and '-'. IDs must start with a letter or '_' and and must be less than 100 characters"
+    CORE::CString suggestedworkflowId = targetName + '-' + targetPlatform;
+
+    // Let's avoid non-ASCII stumbling blocks and force the down to ASCII for the IDs
+    CORE::CAsciiString asciiWorkflowPermittedId = suggestedworkflowId.ForceToAscii( '_' );
+    
+    // Replace special chars
+    char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
+    asciiWorkflowPermittedId = asciiWorkflowPermittedId.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
+
+    // Check the first char restriction and prefix an underscore if need be
+    char firstIdChar = asciiWorkflowPermittedId[ 0 ];
+    if ( !( ( firstIdChar >= 65 && firstIdChar <= 90 ) || ( firstIdChar >= 97 && firstIdChar <= 122 ) || ( firstIdChar == '_' ) ) )
+        asciiWorkflowPermittedId = '_' + asciiWorkflowPermittedId;
+
+    // Back to the platform wide string convention format
+    CORE::CString workflowPermittedId = CORE::ToString( asciiWorkflowPermittedId );
+    
+    // The string also can't be too long
+    if ( workflowPermittedId.Length() > 100 )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Workflow ID \"" + workflowPermittedId + "\" is too long. We will truncate it to the permitted max of 100 chars" );
+        workflowPermittedId = workflowPermittedId.CutChars( workflowPermittedId.Length()-100, false, 0 );
+    }
+    
+    return workflowPermittedId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
 GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName                  ,
                                              const CORE::CString& targetPlatform              ,
                                              const CORE::CString& productName                 ,
@@ -74,7 +109,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
         workingDir = pathToCMakeTargetsOutputDir.ReplaceChar( '\\', '/' );
         workingDir += '/' + targetName;
         
-        section = "  $targetName$-$targetPlatform$:\n"
+        section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
                   "    runs-on: ubuntu-latest\n"
                   "    steps:\n"
@@ -90,7 +125,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
         workingDir = pathToCMakeTargetsOutputDir.ReplaceChar( '/', '\\' );
         workingDir += '\\' + targetName;
         
-        section = "  $targetName$-$targetPlatform$:\n"
+        section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
                   "    runs-on: windows-latest\n"
                   "    steps:\n"
@@ -102,6 +137,9 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
     
     if ( !section.IsNULLOrEmpty() )
     {
+        CORE::CString workflowPermittedId = GenerateValidGithubActionsWorkflowId( targetName, targetPlatform );
+
+        section = section.ReplaceSubstr( "$workflowId$", workflowPermittedId );
         section = section.ReplaceSubstr( "$targetName$", targetName ); 
         section = section.ReplaceSubstr( "$targetPlatform$", targetPlatform ); 
         section = section.ReplaceSubstr( "$productName$", productName ); 

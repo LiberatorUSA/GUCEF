@@ -742,6 +742,32 @@ CAsciiString::ReplaceChar( char oldchar ,
 /*-------------------------------------------------------------------------*/
 
 CAsciiString
+CAsciiString::ReplaceChars( char* oldchars      ,
+                            UInt32 nrOfOldChars ,
+                            char newchar        ) const
+{GUCEF_TRACE;
+
+    CAsciiString result( *this );
+
+    if ( GUCEF_NULL == oldchars )
+        return result;
+
+    for ( UInt32 i=0; i<result.m_length; ++i )
+    {
+        for ( UInt32 n=0; n<nrOfOldChars; ++n )
+        {
+            if ( result.m_string[ i ] == oldchars[ n ] )
+                result.m_string[ i ] = newchar;    
+        }
+        
+    }
+
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString
 CAsciiString::ReplaceSubstr( const CAsciiString& substr      ,
                              const CAsciiString& replacement ) const
 {GUCEF_TRACE;

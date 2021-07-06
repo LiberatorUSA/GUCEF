@@ -196,7 +196,7 @@ jobs:
       - name: Build MemoryLeakFinder_TestApp for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
         run: ./cmake --build
-  GUCEF_exe_MyGUI.FontViewer-all:
+  GUCEF_exe_MyGUI_FontViewer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-all'
     runs-on: ubuntu-latest
     steps:
@@ -204,7 +204,7 @@ jobs:
       - name: Build MyGUI.FontViewer for platform all
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.FontViewer-linux32:
+  GUCEF_exe_MyGUI_FontViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux32'
     runs-on: ubuntu-latest
     steps:
@@ -212,7 +212,7 @@ jobs:
       - name: Build MyGUI.FontViewer for platform linux32
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.FontViewer-linux64:
+  GUCEF_exe_MyGUI_FontViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux64'
     runs-on: ubuntu-latest
     steps:
@@ -220,7 +220,7 @@ jobs:
       - name: Build MyGUI.FontViewer for platform linux64
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.FontViewer-win32:
+  GUCEF_exe_MyGUI_FontViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-win32'
     runs-on: windows-latest
     steps:
@@ -228,7 +228,7 @@ jobs:
       - name: Build MyGUI.FontViewer for platform win32
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.FontViewer-win64:
+  GUCEF_exe_MyGUI_FontViewer-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-win64'
     runs-on: windows-latest
     steps:
@@ -236,7 +236,7 @@ jobs:
       - name: Build MyGUI.FontViewer for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.FontViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.ImageSetViewer-all:
+  GUCEF_exe_MyGUI_ImageSetViewer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-all'
     runs-on: ubuntu-latest
     steps:
@@ -244,7 +244,7 @@ jobs:
       - name: Build MyGUI.ImageSetViewer for platform all
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.ImageSetViewer-linux32:
+  GUCEF_exe_MyGUI_ImageSetViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux32'
     runs-on: ubuntu-latest
     steps:
@@ -252,7 +252,7 @@ jobs:
       - name: Build MyGUI.ImageSetViewer for platform linux32
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.ImageSetViewer-linux64:
+  GUCEF_exe_MyGUI_ImageSetViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux64'
     runs-on: ubuntu-latest
     steps:
@@ -260,7 +260,7 @@ jobs:
       - name: Build MyGUI.ImageSetViewer for platform linux64
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.ImageSetViewer-win32:
+  GUCEF_exe_MyGUI_ImageSetViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-win32'
     runs-on: windows-latest
     steps:
@@ -268,7 +268,7 @@ jobs:
       - name: Build MyGUI.ImageSetViewer for platform win32
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.ImageSetViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.ImageSetViewer-win64:
+  GUCEF_exe_MyGUI_ImageSetViewer-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-win64'
     runs-on: windows-latest
     steps:
@@ -276,7 +276,7 @@ jobs:
       - name: Build MyGUI.ImageSetViewer for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.ImageSetViewer
         run: ./cmake --build
-  GUCEF_exe_MyGUI.LayoutEditor-all:
+  GUCEF_exe_MyGUI_LayoutEditor-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-all'
     runs-on: ubuntu-latest
     steps:
@@ -284,7 +284,7 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform all
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.LayoutEditor-linux32:
+  GUCEF_exe_MyGUI_LayoutEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux32'
     runs-on: ubuntu-latest
     steps:
@@ -292,7 +292,7 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform linux32
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.LayoutEditor-linux64:
+  GUCEF_exe_MyGUI_LayoutEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux64'
     runs-on: ubuntu-latest
     steps:
@@ -300,7 +300,7 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform linux64
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.LayoutEditor-win32:
+  GUCEF_exe_MyGUI_LayoutEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-win32'
     runs-on: windows-latest
     steps:
@@ -308,7 +308,7 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform win32
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.LayoutEditor-win64:
+  GUCEF_exe_MyGUI_LayoutEditor-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-win64'
     runs-on: windows-latest
     steps:
@@ -316,7 +316,7 @@ jobs:
       - name: Build MyGUI.LayoutEditor for platform win64
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.LayoutEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.SkinEditor-all:
+  GUCEF_exe_MyGUI_SkinEditor-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-all'
     runs-on: ubuntu-latest
     steps:
@@ -324,7 +324,7 @@ jobs:
       - name: Build MyGUI.SkinEditor for platform all
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.SkinEditor-linux32:
+  GUCEF_exe_MyGUI_SkinEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux32'
     runs-on: ubuntu-latest
     steps:
@@ -332,7 +332,7 @@ jobs:
       - name: Build MyGUI.SkinEditor for platform linux32
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.SkinEditor-linux64:
+  GUCEF_exe_MyGUI_SkinEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux64'
     runs-on: ubuntu-latest
     steps:
@@ -340,7 +340,7 @@ jobs:
       - name: Build MyGUI.SkinEditor for platform linux64
         working-directory: ./projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.SkinEditor-win32:
+  GUCEF_exe_MyGUI_SkinEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win32'
     runs-on: windows-latest
     steps:
@@ -348,7 +348,7 @@ jobs:
       - name: Build MyGUI.SkinEditor for platform win32
         working-directory: .\projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
         run: ./cmake --build
-  GUCEF_exe_MyGUI.SkinEditor-win64:
+  GUCEF_exe_MyGUI_SkinEditor-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win64'
     runs-on: windows-latest
     steps:

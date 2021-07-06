@@ -68,6 +68,5 @@ echo -e "\n---------------------------------------\n"
 
 # Build all modified projects
 echo -e "$PROJECTS_TO_BUILD" | while read PROJECT; do
-    echo $PROJECT
 	CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECT}
 done;
