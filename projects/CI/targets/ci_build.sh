@@ -25,10 +25,10 @@ fi
 
 
 if [[ ${BUILD_TOOL} == "CMAKE" ]]; then
-    cmake -H"$REPO_ROOT/$TARGET_PROJECT" -B"$REPO_ROOT/common/bin"
-    cmake --build "$REPO_ROOT/common/bin"
-    cmake --install "$REPO_ROOT/common/bin" --prefix instdir --strip
-    cpack "$REPO_ROOT/common/bin"
+    cmake -H"$REPO_ROOT/$TARGET_PROJECT" -B"$REPO_ROOT/common/bin/$TARGET_PROJECT"
+    cmake --build "$REPO_ROOT/common/bin/$TARGET_PROJECT"
+    cmake --install "$REPO_ROOT/common/bin/$TARGET_PROJECT" --prefix instdir --strip
+    cpack --config "$REPO_ROOT/common/bin/$TARGET_PROJECT/CPackConfig.cmake"
 else
     echo "Unknown Build tool"
 fi
