@@ -251,7 +251,7 @@ void
 GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo                ,
                                           const TProjectTargetInfoMapMap& targets        ,
                                           const CORE::CString::StringSet& platformFilter ,
-                                          const CORE::CString& cmakeTargetsOutputDir     )
+                                          const CORE::CString& targetsOutputDir          )
 {GUCEF_TRACE;
 
     CORE::CString githubActionsWorkflowProjectsContent =
@@ -263,7 +263,7 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
         "\n";
 
     // We need the relative path not absolute for the yml
-    CORE::CString pathToCMakeTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, cmakeTargetsOutputDir );
+    CORE::CString pathToTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, targetsOutputDir );
     
     TProjectTargetInfoMapMap::const_iterator i = targets.begin();
     while ( i != targets.end() )
@@ -289,7 +289,7 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
                     productName = GetConsensusModuleName( *targetInfo.mainModule );
                 }
             
-                CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToCMakeTargetsOutputDir ); 
+                CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToTargetsOutputDir ); 
                 if ( !section.IsNULLOrEmpty() )
                 {
                     githubActionsWorkflowProjectsContent += section;
@@ -634,7 +634,7 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
         GenerateGlobPatternPathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
         
     if ( generateGithubActionsWorkflowProjectsYml )
-        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, cmakeTargetsOutputDir );
+        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, targetsOutputDir );
     
     GenerateCIBuildBashScript( targetsOutputDir );
 
