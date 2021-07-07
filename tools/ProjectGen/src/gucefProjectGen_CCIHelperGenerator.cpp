@@ -117,6 +117,7 @@ GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
     "if [[ ${BUILD_TOOL} == \"CMAKE\" ]]; then\n"
     "    cmake -H\"$REPO_ROOT/$TARGET_PROJECT\" -B\"$REPO_ROOT/common/bin\"\n" 
     "    cmake --build \"$REPO_ROOT/common/bin\"\n" 
+    "    cmake --install \"$REPO_ROOT/common/bin\" --prefix instdir --strip\n"
     "else\n"
     "    echo \"Unknown Build tool\"\n"
     "fi\n\n";

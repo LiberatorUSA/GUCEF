@@ -27,6 +27,7 @@ fi
 if [[ ${BUILD_TOOL} == "CMAKE" ]]; then
     cmake -H"$REPO_ROOT/$TARGET_PROJECT" -B"$REPO_ROOT/common/bin"
     cmake --build "$REPO_ROOT/common/bin"
+    cmake --install "$REPO_ROOT/common/bin" --prefix instdir --strip
 else
     echo "Unknown Build tool"
 fi
