@@ -205,7 +205,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    steps:\n"
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"                  
-                  "        run: . $pathToTargetsOutputDir$/ci_build.sh\n";
+                  "        run: ./$pathToTargetsOutputDir$/ci_build.sh\n";
     }
     else
     if ( "win32" == targetPlatform || "win64" == targetPlatform )
@@ -226,7 +226,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    steps:\n"
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"
-                  "        run: . $pathToTargetsOutputDir$\\ci_build.ps1\n";
+                  "        run: .\\$pathToTargetsOutputDir$\\ci_build.ps1\n";
     }
     
     if ( !section.IsNULLOrEmpty() )
