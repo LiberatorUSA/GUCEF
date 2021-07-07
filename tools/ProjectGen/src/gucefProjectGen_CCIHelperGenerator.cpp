@@ -79,7 +79,7 @@ GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
               "TARGET_PROJECT: $TARGET_PROJECT\\n"
               "PRODUCT_NAME: $PRODUCT_NAME\\n"
               "CI_TOOL: $CI_TOOL\\n"
-              "BUILD_TOOL: $BUILD_TOOL\\n\"\n"
+              "BUILD_TOOL: $BUILD_TOOL\\n\"\n\n"
     "# Provide the CI tooling specific environment variables for troubleshooting\n"
     "if [[ ${CI_TOOL} == \"GITHUB-ACTIONS\" ]]; then\n"
     "    echo -e \"CI: $CI\\n"
@@ -115,8 +115,8 @@ GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
     "fi\n"
     "\n\n"
     "if [[ ${BUILD_TOOL} == \"CMAKE\" ]]; then\n"
-    "    cmake -H\"$REPO_ROOT/$TARGET_PROJECT\" -B\"$REPO_ROOT/common/bin\" --debug-output\n" 
-    "    cmake --build \"$REPO_ROOT/common/bin\" --debug-output\n" 
+    "    cmake -H\"$REPO_ROOT/$TARGET_PROJECT\" -B\"$REPO_ROOT/common/bin\" --verbose\n" 
+    "    cmake --build \"$REPO_ROOT/common/bin\" --verbose\n" 
     "else\n"
     "    echo \"Unknown Build tool\"\n"
     "fi\n\n";
@@ -178,21 +178,22 @@ GenerateValidGithubActionsWorkflowId( const CORE::CString& targetName     ,
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName             ,
-                                             const CORE::CString& targetPlatform         ,
-                                             const CORE::CString& productName            ,
-                                             const CORE::CString& pathToTargetsOutputDir )
+GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName                  ,
+                                             const CORE::CString& targetPlatform              ,
+                                             const CORE::CString& productName                 ,
+                                             const CORE::CString& pathToTargetsOutputDir      ,
+                                             const CORE::CString& pathToCMakeTargetsOutputDir )
 {GUCEF_TRACE;
 
     CORE::CString section;
-    CORE::CString workingDir;
     CORE::CString osPathToTargetsOutputDir;
+    CORE::CString osPathToCMakeTargetsProjectDir;
 
     if ( "linux32" == targetPlatform || "linux64" == targetPlatform || AllPlatforms == targetPlatform )
     {
         // Change cmake relative path dir sep to match linux
         osPathToTargetsOutputDir = pathToTargetsOutputDir.ReplaceChar( '\\', '/' );
-        workingDir = osPathToTargetsOutputDir + '/' + targetName;
+        osPathToCMakeTargetsProjectDir = pathToCMakeTargetsOutputDir.ReplaceChar( '\\', '/' ) + '/' + targetName;
         
         section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
@@ -200,9 +201,10 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    env:\n"
                   "      TARGET_NAME: $targetName$\n"
                   "      TARGET_PLATFORM: $targetPlatform$\n"
-                  "      TARGET_PROJECT: $workingDir$\n"
+                  "      TARGET_PROJECT: $targetProject$\n"
                   "      PRODUCT_NAME: $productName$\n"
                   "      CI_TOOL: GITHUB-ACTIONS\n"
+                  "      BUILD_TOOL: CMAKE\n"
                   "    steps:\n"
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"                  
@@ -213,7 +215,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
     {
         // Change cmake relative path dir sep to match windows
         osPathToTargetsOutputDir = pathToTargetsOutputDir.ReplaceChar( '/', '\\' );
-        workingDir = osPathToTargetsOutputDir + '\\' + targetName;
+        osPathToCMakeTargetsProjectDir = pathToCMakeTargetsOutputDir.ReplaceChar( '/', '\\' ) + '\\' + targetName;
         
         section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
@@ -221,7 +223,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    env:\n"
                   "      TARGET_NAME: $targetName$\n"
                   "      TARGET_PLATFORM: $targetPlatform$\n"
-                  "      TARGET_PROJECT: $workingDir$\n"
+                  "      TARGET_PROJECT: $targetProject$\n"
                   "      PRODUCT_NAME: $productName$\n"
                   "      CI_TOOL: GITHUB-ACTIONS\n"
                   "    steps:\n"
@@ -238,7 +240,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
         section = section.ReplaceSubstr( "$targetName$", targetName ); 
         section = section.ReplaceSubstr( "$targetPlatform$", targetPlatform ); 
         section = section.ReplaceSubstr( "$productName$", productName ); 
-        section = section.ReplaceSubstr( "$workingDir$", workingDir ); 
+        section = section.ReplaceSubstr( "$targetProject$", osPathToCMakeTargetsProjectDir ); 
         section = section.ReplaceSubstr( "$pathToTargetsOutputDir$", osPathToTargetsOutputDir );
         
         return section;
@@ -252,7 +254,8 @@ void
 GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo                ,
                                           const TProjectTargetInfoMapMap& targets        ,
                                           const CORE::CString::StringSet& platformFilter ,
-                                          const CORE::CString& targetsOutputDir          )
+                                          const CORE::CString& targetsOutputDir          ,
+                                          const CORE::CString& cmakeTargetsOutputDir     )
 {GUCEF_TRACE;
 
     CORE::CString githubActionsWorkflowProjectsContent =
@@ -265,6 +268,7 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
 
     // We need the relative path not absolute for the yml
     CORE::CString pathToTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, targetsOutputDir );
+    CORE::CString pathToCMakeTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, cmakeTargetsOutputDir );
     
     TProjectTargetInfoMapMap::const_iterator i = targets.begin();
     while ( i != targets.end() )
@@ -290,7 +294,7 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
                     productName = GetConsensusModuleName( *targetInfo.mainModule );
                 }
             
-                CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToTargetsOutputDir ); 
+                CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToTargetsOutputDir, pathToCMakeTargetsOutputDir ); 
                 if ( !section.IsNULLOrEmpty() )
                 {
                     githubActionsWorkflowProjectsContent += section;
@@ -635,7 +639,7 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
         GenerateGlobPatternPathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
         
     if ( generateGithubActionsWorkflowProjectsYml )
-        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, targetsOutputDir );
+        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, targetsOutputDir, cmakeTargetsOutputDir );
     
     GenerateCIBuildBashScript( targetsOutputDir );
 

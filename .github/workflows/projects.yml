@@ -10,9 +10,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF
+      TARGET_PROJECT: projects/CMake/targets/GUCEF
       PRODUCT_NAME: GUCEF
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF for platform all
@@ -23,9 +24,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ArchiveDiff
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform all
@@ -36,9 +38,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ArchiveDiff
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux32
@@ -49,9 +52,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ArchiveDiff
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux64
@@ -62,7 +66,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_ArchiveDiff
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -75,7 +79,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_ArchiveDiff
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -88,9 +92,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_CMakeListGenerator
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_CMakeListGenerator
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_CMakeListGenerator
       PRODUCT_NAME: CMakeListGenerator
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform all
@@ -101,9 +106,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_CMakeListGenerator
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_CMakeListGenerator
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_CMakeListGenerator
       PRODUCT_NAME: CMakeListGenerator
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux32
@@ -114,9 +120,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_CMakeListGenerator
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_CMakeListGenerator
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_CMakeListGenerator
       PRODUCT_NAME: CMakeListGenerator
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux64
@@ -127,7 +134,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_CMakeListGenerator
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_CMakeListGenerator
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_CMakeListGenerator
       PRODUCT_NAME: CMakeListGenerator
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -140,7 +147,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_CMakeListGenerator
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_CMakeListGenerator
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_CMakeListGenerator
       PRODUCT_NAME: CMakeListGenerator
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -153,9 +160,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_DCSBruteInstaller
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_DCSBruteInstaller
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_DCSBruteInstaller
       PRODUCT_NAME: DCSBruteInstaller
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build DCSBruteInstaller for platform all
@@ -166,9 +174,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_DVPPackTool
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_DVPPackTool
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_DVPPackTool
       PRODUCT_NAME: DVPPackTool
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build DVPPackTool for platform all
@@ -179,9 +188,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_DuplicateFileFinder
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_DuplicateFileFinder
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_DuplicateFileFinder
       PRODUCT_NAME: DuplicateFileFinder
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build DuplicateFileFinder for platform all
@@ -192,9 +202,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_FileDiff
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_FileDiff
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_FileDiff
       PRODUCT_NAME: FileDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build FileDiff for platform all
@@ -205,9 +216,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_FilePusher
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_FilePusher
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_FilePusher
       PRODUCT_NAME: FilePusher
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build FilePusher for platform all
@@ -218,9 +230,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_FileReplacer
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_FileReplacer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_FileReplacer
       PRODUCT_NAME: FileReplacer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build FileReplacer for platform all
@@ -231,9 +244,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_GucefArchiver
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_GucefArchiver
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_GucefArchiver
       PRODUCT_NAME: GucefArchiver
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GucefArchiver for platform all
@@ -244,9 +258,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_GucefLogServiceApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_GucefLogServiceApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_GucefLogServiceApp
       PRODUCT_NAME: GucefLogServiceApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GucefLogServiceApp for platform all
@@ -257,9 +272,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_GucefLogService_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_GucefLogService_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_GucefLogService_TestApp
       PRODUCT_NAME: GucefLogService_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GucefLogService_TestApp for platform all
@@ -270,9 +286,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_HDFiller
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_HDFiller
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_HDFiller
       PRODUCT_NAME: HDFiller
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build HDFiller for platform all
@@ -283,9 +300,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MemoryLeakFinder_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MemoryLeakFinder_TestApp
       PRODUCT_NAME: MemoryLeakFinder_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform all
@@ -296,7 +314,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MemoryLeakFinder_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
       PRODUCT_NAME: MemoryLeakFinder_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -309,7 +327,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MemoryLeakFinder_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
       PRODUCT_NAME: MemoryLeakFinder_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -322,9 +340,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.FontViewer
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.FontViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
       PRODUCT_NAME: MyGUI.FontViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform all
@@ -335,9 +354,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.FontViewer
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.FontViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
       PRODUCT_NAME: MyGUI.FontViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux32
@@ -348,9 +368,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.FontViewer
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.FontViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.FontViewer
       PRODUCT_NAME: MyGUI.FontViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux64
@@ -361,7 +382,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.FontViewer
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.FontViewer
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.FontViewer
       PRODUCT_NAME: MyGUI.FontViewer
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -374,7 +395,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.FontViewer
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.FontViewer
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.FontViewer
       PRODUCT_NAME: MyGUI.FontViewer
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -387,9 +408,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.ImageSetViewer
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.ImageSetViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
       PRODUCT_NAME: MyGUI.ImageSetViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform all
@@ -400,9 +422,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.ImageSetViewer
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.ImageSetViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
       PRODUCT_NAME: MyGUI.ImageSetViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux32
@@ -413,9 +436,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.ImageSetViewer
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.ImageSetViewer
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.ImageSetViewer
       PRODUCT_NAME: MyGUI.ImageSetViewer
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux64
@@ -426,7 +450,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.ImageSetViewer
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.ImageSetViewer
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.ImageSetViewer
       PRODUCT_NAME: MyGUI.ImageSetViewer
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -439,7 +463,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.ImageSetViewer
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.ImageSetViewer
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.ImageSetViewer
       PRODUCT_NAME: MyGUI.ImageSetViewer
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -452,9 +476,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.LayoutEditor
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.LayoutEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
       PRODUCT_NAME: MyGUI.LayoutEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform all
@@ -465,9 +490,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.LayoutEditor
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.LayoutEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
       PRODUCT_NAME: MyGUI.LayoutEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux32
@@ -478,9 +504,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.LayoutEditor
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.LayoutEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.LayoutEditor
       PRODUCT_NAME: MyGUI.LayoutEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux64
@@ -491,7 +518,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.LayoutEditor
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.LayoutEditor
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.LayoutEditor
       PRODUCT_NAME: MyGUI.LayoutEditor
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -504,7 +531,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.LayoutEditor
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.LayoutEditor
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.LayoutEditor
       PRODUCT_NAME: MyGUI.LayoutEditor
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -517,9 +544,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.SkinEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform all
@@ -530,9 +558,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.SkinEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux32
@@ -543,9 +572,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_MyGUI.SkinEditor
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux64
@@ -556,7 +586,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.SkinEditor
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -569,7 +599,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_MyGUI.SkinEditor
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -582,9 +612,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_PackageUpgrader
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_PackageUpgrader
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_PackageUpgrader
       PRODUCT_NAME: PackageUpgrader
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build PackageUpgrader for platform all
@@ -595,9 +626,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_PatchSetGenerator
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_PatchSetGenerator
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_PatchSetGenerator
       PRODUCT_NAME: PatchSetGenerator
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform all
@@ -608,7 +640,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_PatchSetGenerator
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_PatchSetGenerator
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_PatchSetGenerator
       PRODUCT_NAME: PatchSetGenerator
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -621,7 +653,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_PatchSetGenerator
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_PatchSetGenerator
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_PatchSetGenerator
       PRODUCT_NAME: PatchSetGenerator
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -634,9 +666,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ProcessMetrics
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ProcessMetrics
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ProcessMetrics
       PRODUCT_NAME: ProcessMetrics
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ProcessMetrics for platform all
@@ -647,9 +680,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ProjectGenerator
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ProjectGenerator
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ProjectGenerator
       PRODUCT_NAME: ProjectGenerator
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ProjectGenerator for platform all
@@ -660,9 +694,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ReferenceUpdater
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ReferenceUpdater
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ReferenceUpdater
       PRODUCT_NAME: ReferenceUpdater
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ReferenceUpdater for platform all
@@ -673,9 +708,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_SVNMagicMerge
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_SVNMagicMerge
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_SVNMagicMerge
       PRODUCT_NAME: SVNMagicMerge
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build SVNMagicMerge for platform all
@@ -686,9 +722,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_ServerPortExtender
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_ServerPortExtender
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ServerPortExtender
       PRODUCT_NAME: ServerPortExtender
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ServerPortExtender for platform all
@@ -699,9 +736,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_SocketSink
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_SocketSink
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_SocketSink
       PRODUCT_NAME: SocketSink
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build SocketSink for platform all
@@ -712,9 +750,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_UdpViaTcp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_UdpViaTcp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_UdpViaTcp
       PRODUCT_NAME: UdpViaTcp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build UdpViaTcp for platform all
@@ -725,9 +764,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_awslambdahost
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_awslambdahost
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_awslambdahost
       PRODUCT_NAME: awslambdahost
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build awslambdahost for platform all
@@ -738,9 +778,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCOMCORE_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefCOMCORE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefCOMCORE_TestApp
       PRODUCT_NAME: gucefCOMCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefCOMCORE_TestApp for platform all
@@ -751,9 +792,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCOM_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefCOM_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefCOM_TestApp
       PRODUCT_NAME: gucefCOM_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefCOM_TestApp for platform all
@@ -764,9 +806,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCORE_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefCORE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefCORE_TestApp
       PRODUCT_NAME: gucefCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform all
@@ -777,9 +820,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCORE_TestApp
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefCORE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefCORE_TestApp
       PRODUCT_NAME: gucefCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux32
@@ -790,9 +834,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCORE_TestApp
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefCORE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefCORE_TestApp
       PRODUCT_NAME: gucefCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux64
@@ -803,7 +848,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCORE_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefCORE_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefCORE_TestApp
       PRODUCT_NAME: gucefCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -816,7 +861,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefCORE_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefCORE_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefCORE_TestApp
       PRODUCT_NAME: gucefCORE_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -829,9 +874,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefDRN_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefDRN_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefDRN_TestApp
       PRODUCT_NAME: gucefDRN_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefDRN_TestApp for platform all
@@ -842,9 +888,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefGUI_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefGUI_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefGUI_TestApp
       PRODUCT_NAME: gucefGUI_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform all
@@ -855,9 +902,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefGUI_TestApp
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefGUI_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefGUI_TestApp
       PRODUCT_NAME: gucefGUI_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux32
@@ -868,9 +916,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefGUI_TestApp
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefGUI_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefGUI_TestApp
       PRODUCT_NAME: gucefGUI_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux64
@@ -881,7 +930,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefGUI_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefGUI_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefGUI_TestApp
       PRODUCT_NAME: gucefGUI_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -894,7 +943,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefGUI_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefGUI_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefGUI_TestApp
       PRODUCT_NAME: gucefGUI_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -907,9 +956,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefIMAGE_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefIMAGE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefIMAGE_TestApp
       PRODUCT_NAME: gucefIMAGE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform all
@@ -920,9 +970,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefIMAGE_TestApp
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefIMAGE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefIMAGE_TestApp
       PRODUCT_NAME: gucefIMAGE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux32
@@ -933,9 +984,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefIMAGE_TestApp
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefIMAGE_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefIMAGE_TestApp
       PRODUCT_NAME: gucefIMAGE_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux64
@@ -946,7 +998,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefIMAGE_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefIMAGE_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefIMAGE_TestApp
       PRODUCT_NAME: gucefIMAGE_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -959,7 +1011,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefIMAGE_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefIMAGE_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefIMAGE_TestApp
       PRODUCT_NAME: gucefIMAGE_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -972,9 +1024,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefINPUT_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform all
@@ -985,9 +1038,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefINPUT_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux32
@@ -998,9 +1052,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefINPUT_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux64
@@ -1011,7 +1066,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefINPUT_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1024,7 +1079,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefINPUT_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1037,9 +1092,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefLOADER_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefLOADER_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefLOADER_TestApp
       PRODUCT_NAME: gucefLOADER_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefLOADER_TestApp for platform all
@@ -1050,9 +1106,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefMT_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefMT_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefMT_TestApp
       PRODUCT_NAME: gucefMT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefMT_TestApp for platform all
@@ -1063,9 +1120,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefPATCHERAPP_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefPATCHERAPP_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefPATCHERAPP_TestApp
       PRODUCT_NAME: gucefPATCHERAPP_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefPATCHERAPP_TestApp for platform all
@@ -1076,9 +1134,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefPRODMAN_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefPRODMAN_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefPRODMAN_TestApp
       PRODUCT_NAME: gucefPRODMAN_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefPRODMAN_TestApp for platform all
@@ -1089,9 +1148,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefVFS_TestApp
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefVFS_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefVFS_TestApp
       PRODUCT_NAME: gucefVFS_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform all
@@ -1102,9 +1162,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefVFS_TestApp
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefVFS_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefVFS_TestApp
       PRODUCT_NAME: gucefVFS_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux32
@@ -1115,9 +1176,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefVFS_TestApp
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_gucefVFS_TestApp
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_gucefVFS_TestApp
       PRODUCT_NAME: gucefVFS_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux64
@@ -1128,7 +1190,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefVFS_TestApp
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefVFS_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefVFS_TestApp
       PRODUCT_NAME: gucefVFS_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1141,7 +1203,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_gucefVFS_TestApp
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_gucefVFS_TestApp
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefVFS_TestApp
       PRODUCT_NAME: gucefVFS_TestApp
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1154,9 +1216,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_itvExporter
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_itvExporter
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_itvExporter
       PRODUCT_NAME: itvExporter
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build itvExporter for platform all
@@ -1167,9 +1230,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_pubsub2storage
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_pubsub2storage
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_pubsub2storage
       PRODUCT_NAME: pubsub2storage
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform all
@@ -1180,7 +1244,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_pubsub2storage
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_pubsub2storage
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_pubsub2storage
       PRODUCT_NAME: pubsub2storage
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1193,7 +1257,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_pubsub2storage
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_exe_pubsub2storage
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_pubsub2storage
       PRODUCT_NAME: pubsub2storage
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1206,9 +1270,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_redisinfo
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_redisinfo
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_redisinfo
       PRODUCT_NAME: redisinfo
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build redisinfo for platform all
@@ -1219,9 +1284,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_udp2kafka
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_udp2kafka
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_udp2kafka
       PRODUCT_NAME: udp2kafka
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build udp2kafka for platform all
@@ -1232,9 +1298,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_udp2redis
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_udp2redis
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_udp2redis
       PRODUCT_NAME: udp2redis
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build udp2redis for platform all
@@ -1245,9 +1312,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_exe_udp2rediscluster
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_exe_udp2rediscluster
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_udp2rediscluster
       PRODUCT_NAME: udp2rediscluster
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build udp2rediscluster for platform all
@@ -1258,9 +1326,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_obsolete
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_obsolete
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_obsolete
       PRODUCT_NAME: GUCEF_tag_obsolete
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux32
@@ -1271,9 +1340,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_obsolete
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_obsolete
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_obsolete
       PRODUCT_NAME: GUCEF_tag_obsolete
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux64
@@ -1284,7 +1354,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_obsolete
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_obsolete
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_obsolete
       PRODUCT_NAME: GUCEF_tag_obsolete
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1297,7 +1367,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_obsolete
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_obsolete
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_obsolete
       PRODUCT_NAME: GUCEF_tag_obsolete
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1310,9 +1380,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_platform
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_platform
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_platform
       PRODUCT_NAME: GUCEF_tag_platform
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_platform for platform all
@@ -1323,9 +1394,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_plugin
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_plugin
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform all
@@ -1336,9 +1408,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_plugin
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_plugin
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux32
@@ -1349,9 +1422,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_plugin
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_plugin
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux64
@@ -1362,7 +1436,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_plugin
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_plugin
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1375,7 +1449,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_plugin
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_plugin
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1388,9 +1462,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_test
       TARGET_PLATFORM: all
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_test
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_test
       PRODUCT_NAME: GUCEF_tag_test
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform all
@@ -1401,9 +1476,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_test
       TARGET_PLATFORM: linux32
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_test
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_test
       PRODUCT_NAME: GUCEF_tag_test
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux32
@@ -1414,9 +1490,10 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_test
       TARGET_PLATFORM: linux64
-      TARGET_PROJECT: projects/CI/targets/GUCEF_tag_test
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_test
       PRODUCT_NAME: GUCEF_tag_test
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux64
@@ -1427,7 +1504,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_test
       TARGET_PLATFORM: win32
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_test
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_test
       PRODUCT_NAME: GUCEF_tag_test
       CI_TOOL: GITHUB-ACTIONS
     steps:
@@ -1440,7 +1517,7 @@ jobs:
     env:
       TARGET_NAME: GUCEF_tag_test
       TARGET_PLATFORM: win64
-      TARGET_PROJECT: projects\CI\targets\GUCEF_tag_test
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_test
       PRODUCT_NAME: GUCEF_tag_test
       CI_TOOL: GITHUB-ACTIONS
     steps:
