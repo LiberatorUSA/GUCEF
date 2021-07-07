@@ -185,12 +185,13 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
 
     CORE::CString section;
     CORE::CString workingDir;
-    
+    CORE::CString osPathToTargetsOutputDir;
+
     if ( "linux32" == targetPlatform || "linux64" == targetPlatform || AllPlatforms == targetPlatform )
     {
         // Change cmake relative path dir sep to match linux
-        workingDir = pathToTargetsOutputDir.ReplaceChar( '\\', '/' );
-        workingDir += '/' + targetName;
+        osPathToTargetsOutputDir = pathToTargetsOutputDir.ReplaceChar( '\\', '/' );
+        workingDir = osPathToTargetsOutputDir + '/' + targetName;
         
         section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
@@ -209,9 +210,9 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
     else
     if ( "win32" == targetPlatform || "win64" == targetPlatform )
     {
-        // Change cmake relative path dir sep to match linux
-        workingDir = pathToTargetsOutputDir.ReplaceChar( '/', '\\' );
-        workingDir += '\\' + targetName;
+        // Change cmake relative path dir sep to match windows
+        osPathToTargetsOutputDir = pathToTargetsOutputDir.ReplaceChar( '/', '\\' );
+        workingDir = osPathToTargetsOutputDir + '\\' + targetName;
         
         section = "  $workflowId$:\n"
                   "    if: github.event.client_payload.job == '$targetName$-$targetPlatform$'\n"
@@ -237,7 +238,7 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
         section = section.ReplaceSubstr( "$targetPlatform$", targetPlatform ); 
         section = section.ReplaceSubstr( "$productName$", productName ); 
         section = section.ReplaceSubstr( "$workingDir$", workingDir ); 
-        section = section.ReplaceSubstr( "$pathToTargetsOutputDir$", pathToTargetsOutputDir );
+        section = section.ReplaceSubstr( "$pathToTargetsOutputDir$", osPathToTargetsOutputDir );
         
         return section;
     }
