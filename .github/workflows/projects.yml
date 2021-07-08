@@ -18,6 +18,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF-all/packages/*GUCEF*.*
   GUCEF_exe_ArchiveDiff-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-all'
     runs-on: ubuntu-latest
@@ -32,6 +38,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.*
   GUCEF_exe_ArchiveDiff-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux32'
     runs-on: ubuntu-latest
@@ -46,6 +58,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.*
   GUCEF_exe_ArchiveDiff-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux64'
     runs-on: ubuntu-latest
@@ -60,6 +78,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.*
   GUCEF_exe_ArchiveDiff-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win32'
     runs-on: windows-latest
@@ -100,6 +124,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.*
   GUCEF_exe_CMakeListGenerator-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-linux32'
     runs-on: ubuntu-latest
@@ -114,6 +144,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.*
   GUCEF_exe_CMakeListGenerator-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-linux64'
     runs-on: ubuntu-latest
@@ -128,6 +164,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.*
   GUCEF_exe_CMakeListGenerator-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-win32'
     runs-on: windows-latest
@@ -168,6 +210,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DCSBruteInstaller for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.*
   GUCEF_exe_DVPPackTool-all:
     if: github.event.client_payload.job == 'GUCEF_exe_DVPPackTool-all'
     runs-on: ubuntu-latest
@@ -182,6 +230,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DVPPackTool for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.*
   GUCEF_exe_DuplicateFileFinder-all:
     if: github.event.client_payload.job == 'GUCEF_exe_DuplicateFileFinder-all'
     runs-on: ubuntu-latest
@@ -196,6 +250,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DuplicateFileFinder for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.*
   GUCEF_exe_FileDiff-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FileDiff-all'
     runs-on: ubuntu-latest
@@ -210,6 +270,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FileDiff for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.*
   GUCEF_exe_FilePusher-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FilePusher-all'
     runs-on: ubuntu-latest
@@ -224,6 +290,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FilePusher for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.*
   GUCEF_exe_FileReplacer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FileReplacer-all'
     runs-on: ubuntu-latest
@@ -238,6 +310,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FileReplacer for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.*
   GUCEF_exe_GucefArchiver-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefArchiver-all'
     runs-on: ubuntu-latest
@@ -252,6 +330,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefArchiver for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.*
   GUCEF_exe_GucefLogServiceApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefLogServiceApp-all'
     runs-on: ubuntu-latest
@@ -266,6 +350,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefLogServiceApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.*
   GUCEF_exe_GucefLogService_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefLogService_TestApp-all'
     runs-on: ubuntu-latest
@@ -280,6 +370,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefLogService_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.*
   GUCEF_exe_HDFiller-all:
     if: github.event.client_payload.job == 'GUCEF_exe_HDFiller-all'
     runs-on: ubuntu-latest
@@ -294,6 +390,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build HDFiller for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.*
   GUCEF_exe_MemoryLeakFinder_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-all'
     runs-on: ubuntu-latest
@@ -308,6 +410,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.*
   GUCEF_exe_MemoryLeakFinder_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win32'
     runs-on: windows-latest
@@ -348,6 +456,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.*
   GUCEF_exe_MyGUI_FontViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux32'
     runs-on: ubuntu-latest
@@ -362,6 +476,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.*
   GUCEF_exe_MyGUI_FontViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux64'
     runs-on: ubuntu-latest
@@ -376,6 +496,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.*
   GUCEF_exe_MyGUI_FontViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-win32'
     runs-on: windows-latest
@@ -416,6 +542,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.*
   GUCEF_exe_MyGUI_ImageSetViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux32'
     runs-on: ubuntu-latest
@@ -430,6 +562,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.*
   GUCEF_exe_MyGUI_ImageSetViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux64'
     runs-on: ubuntu-latest
@@ -444,6 +582,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.*
   GUCEF_exe_MyGUI_ImageSetViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-win32'
     runs-on: windows-latest
@@ -484,6 +628,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.*
   GUCEF_exe_MyGUI_LayoutEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux32'
     runs-on: ubuntu-latest
@@ -498,6 +648,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.*
   GUCEF_exe_MyGUI_LayoutEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux64'
     runs-on: ubuntu-latest
@@ -512,6 +668,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.*
   GUCEF_exe_MyGUI_LayoutEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-win32'
     runs-on: windows-latest
@@ -552,6 +714,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.*
   GUCEF_exe_MyGUI_SkinEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux32'
     runs-on: ubuntu-latest
@@ -566,6 +734,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.*
   GUCEF_exe_MyGUI_SkinEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux64'
     runs-on: ubuntu-latest
@@ -580,6 +754,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.*
   GUCEF_exe_MyGUI_SkinEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win32'
     runs-on: windows-latest
@@ -620,6 +800,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PackageUpgrader for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.*
   GUCEF_exe_PatchSetGenerator-all:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-all'
     runs-on: ubuntu-latest
@@ -634,6 +820,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.*
   GUCEF_exe_PatchSetGenerator-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-win32'
     runs-on: windows-latest
@@ -674,6 +866,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ProcessMetrics for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.*
   GUCEF_exe_ProjectGenerator-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ProjectGenerator-all'
     runs-on: ubuntu-latest
@@ -688,6 +886,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ProjectGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.*
   GUCEF_exe_ReferenceUpdater-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ReferenceUpdater-all'
     runs-on: ubuntu-latest
@@ -702,6 +906,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ReferenceUpdater for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.*
   GUCEF_exe_SVNMagicMerge-all:
     if: github.event.client_payload.job == 'GUCEF_exe_SVNMagicMerge-all'
     runs-on: ubuntu-latest
@@ -716,6 +926,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build SVNMagicMerge for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.*
   GUCEF_exe_ServerPortExtender-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ServerPortExtender-all'
     runs-on: ubuntu-latest
@@ -730,6 +946,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ServerPortExtender for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.*
   GUCEF_exe_SocketSink-all:
     if: github.event.client_payload.job == 'GUCEF_exe_SocketSink-all'
     runs-on: ubuntu-latest
@@ -744,6 +966,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build SocketSink for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.*
   GUCEF_exe_UdpViaTcp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_UdpViaTcp-all'
     runs-on: ubuntu-latest
@@ -758,6 +986,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build UdpViaTcp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.*
   GUCEF_exe_awslambdahost-all:
     if: github.event.client_payload.job == 'GUCEF_exe_awslambdahost-all'
     runs-on: ubuntu-latest
@@ -772,6 +1006,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build awslambdahost for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.*
   GUCEF_exe_gucefCOMCORE_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCOMCORE_TestApp-all'
     runs-on: ubuntu-latest
@@ -786,6 +1026,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCOMCORE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.*
   GUCEF_exe_gucefCOM_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCOM_TestApp-all'
     runs-on: ubuntu-latest
@@ -800,6 +1046,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCOM_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.*
   GUCEF_exe_gucefCORE_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-all'
     runs-on: ubuntu-latest
@@ -814,6 +1066,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.*
   GUCEF_exe_gucefCORE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -828,6 +1086,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.*
   GUCEF_exe_gucefCORE_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -842,6 +1106,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.*
   GUCEF_exe_gucefCORE_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-win32'
     runs-on: windows-latest
@@ -882,6 +1152,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefDRN_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.*
   GUCEF_exe_gucefGUI_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-all'
     runs-on: ubuntu-latest
@@ -896,6 +1172,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.*
   GUCEF_exe_gucefGUI_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -910,6 +1192,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.*
   GUCEF_exe_gucefGUI_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -924,6 +1212,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.*
   GUCEF_exe_gucefGUI_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-win32'
     runs-on: windows-latest
@@ -964,6 +1258,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.*
   GUCEF_exe_gucefIMAGE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -978,6 +1278,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.*
   GUCEF_exe_gucefIMAGE_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -992,6 +1298,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.*
   GUCEF_exe_gucefIMAGE_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-win32'
     runs-on: windows-latest
@@ -1032,6 +1344,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.*
   GUCEF_exe_gucefINPUT_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1046,6 +1364,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.*
   GUCEF_exe_gucefINPUT_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1060,6 +1384,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.*
   GUCEF_exe_gucefINPUT_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-win32'
     runs-on: windows-latest
@@ -1100,6 +1430,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefLOADER_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.*
   GUCEF_exe_gucefMT_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefMT_TestApp-all'
     runs-on: ubuntu-latest
@@ -1114,6 +1450,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefMT_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.*
   GUCEF_exe_gucefPATCHERAPP_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefPATCHERAPP_TestApp-all'
     runs-on: ubuntu-latest
@@ -1128,6 +1470,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefPATCHERAPP_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.*
   GUCEF_exe_gucefPRODMAN_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefPRODMAN_TestApp-all'
     runs-on: ubuntu-latest
@@ -1142,6 +1490,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefPRODMAN_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.*
   GUCEF_exe_gucefVFS_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-all'
     runs-on: ubuntu-latest
@@ -1156,6 +1510,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.*
   GUCEF_exe_gucefVFS_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1170,6 +1530,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.*
   GUCEF_exe_gucefVFS_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1184,6 +1550,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.*
   GUCEF_exe_gucefVFS_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-win32'
     runs-on: windows-latest
@@ -1224,6 +1596,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build itvExporter for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.*
   GUCEF_exe_pubsub2storage-all:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-all'
     runs-on: ubuntu-latest
@@ -1238,6 +1616,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.*
   GUCEF_exe_pubsub2storage-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-win32'
     runs-on: windows-latest
@@ -1278,6 +1662,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build redisinfo for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.*
   GUCEF_exe_udp2kafka-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2kafka-all'
     runs-on: ubuntu-latest
@@ -1292,6 +1682,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2kafka for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.*
   GUCEF_exe_udp2redis-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2redis-all'
     runs-on: ubuntu-latest
@@ -1306,6 +1702,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2redis for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.*
   GUCEF_exe_udp2rediscluster-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2rediscluster-all'
     runs-on: ubuntu-latest
@@ -1320,6 +1722,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2rediscluster for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.*
   GUCEF_tag_obsolete-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-linux32'
     runs-on: ubuntu-latest
@@ -1334,6 +1742,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.*
   GUCEF_tag_obsolete-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-linux64'
     runs-on: ubuntu-latest
@@ -1348,6 +1762,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.*
   GUCEF_tag_obsolete-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-win32'
     runs-on: windows-latest
@@ -1388,6 +1808,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_platform for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.*
   GUCEF_tag_plugin-all:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-all'
     runs-on: ubuntu-latest
@@ -1402,6 +1828,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.*
   GUCEF_tag_plugin-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux32'
     runs-on: ubuntu-latest
@@ -1416,6 +1848,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.*
   GUCEF_tag_plugin-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux64'
     runs-on: ubuntu-latest
@@ -1430,6 +1868,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.*
   GUCEF_tag_plugin-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-win32'
     runs-on: windows-latest
@@ -1470,6 +1914,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform all
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.*
   GUCEF_tag_test-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_test-linux32'
     runs-on: ubuntu-latest
@@ -1484,6 +1934,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux32
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.*
   GUCEF_tag_test-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_test-linux64'
     runs-on: ubuntu-latest
@@ -1498,6 +1954,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux64
         run: ./projects/CI/targets/ci_build.sh
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.*
   GUCEF_tag_test-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_test-win32'
     runs-on: windows-latest

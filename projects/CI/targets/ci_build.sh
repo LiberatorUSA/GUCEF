@@ -7,7 +7,7 @@
 DIR="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 
 # Provide the environment variables for troubleshooting
-echo -e "TARGET_NAME: $TARGET_NAME\nTARGET_PLATFORM: $TARGET_PLATFORM\nTARGET_PROJECT: $TARGET_PROJECT\nPRODUCT_NAME: $PRODUCT_NAME\nCI_TOOL: $CI_TOOL\nBUILD_TOOL: $BUILD_TOOL\n"
+echo -e "TARGET_NAME: $TARGET_NAME\nTARGET_PLATFORM: $TARGET_PLATFORM\nTARGET_PROJECT: $TARGET_PROJECT\nPRODUCT_NAME: $PRODUCT_NAME\nCI_TOOL: $CI_TOOL\nBUILD_TOOL: $BUILD_TOOL\nBUILD_TYPE: $BUILD_TYPE\n"
 
 # Provide the CI tooling specific environment variables for troubleshooting
 if [[ ${CI_TOOL} == "GITHUB-ACTIONS" ]]; then
@@ -24,11 +24,17 @@ if [[ -z "$BUILD_TOOL" ]]; then
 fi
 
 
+if [[ -z "$BUILD_TYPE" ]]; then
+    echo "Build type was not specified. Will default to 'release'"
+    BUILD_TYPE="release"
+fi
+
+
 if [[ ${BUILD_TOOL} == "CMAKE" ]]; then
-    cmake -H"$REPO_ROOT/$TARGET_PROJECT" -B"$REPO_ROOT/common/bin/$TARGET_PROJECT"
-    cmake --build "$REPO_ROOT/common/bin/$TARGET_PROJECT"
-    cmake --install "$REPO_ROOT/common/bin/$TARGET_PROJECT" --prefix instdir --strip
-    cpack --config "$REPO_ROOT/common/bin/$TARGET_PROJECT/CPackConfig.cmake"
+    cmake -H"$REPO_ROOT/$TARGET_PROJECT" -B"$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    cmake --build "$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM"
+    cmake --install "$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM" --prefix instdir --strip
+    cpack --config "$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM/CPackConfig.cmake"
 else
     echo "Unknown Build tool"
 fi

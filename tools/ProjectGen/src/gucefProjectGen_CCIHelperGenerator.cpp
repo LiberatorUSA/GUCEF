@@ -60,7 +60,7 @@ static const CORE::CString AllPlatforms = "all";
 
 // Why generate the bash script here?
 //  because we tie together knowledge of the bash script and the CI tooling in the way we auto configured it
-//  we need both to be in sync for this to work
+//  we need both to be in sync for this to work due to environment variables being passed around
 bool
 GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
 {GUCEF_TRACE;
@@ -79,7 +79,8 @@ GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
               "TARGET_PROJECT: $TARGET_PROJECT\\n"
               "PRODUCT_NAME: $PRODUCT_NAME\\n"
               "CI_TOOL: $CI_TOOL\\n"
-              "BUILD_TOOL: $BUILD_TOOL\\n\"\n\n"
+              "BUILD_TOOL: $BUILD_TOOL\\n"
+              "BUILD_TYPE: $BUILD_TYPE\\n\"\n\n"
     "# Provide the CI tooling specific environment variables for troubleshooting\n"
     "if [[ ${CI_TOOL} == \"GITHUB-ACTIONS\" ]]; then\n"
     "    echo -e \"CI: $CI\\n"
@@ -114,10 +115,16 @@ GenerateCIBuildBashScript( const CORE::CString& targetsOutputDir )
     "    BUILD_TOOL=\"CMAKE\"\n"
     "fi\n"
     "\n\n"
+    "if [[ -z \"$BUILD_TYPE\" ]]; then\n"
+    "    echo \"Build type was not specified. Will default to 'release'\"\n"
+    "    BUILD_TYPE=\"release\"\n"
+    "fi\n"
+    "\n\n"
     "if [[ ${BUILD_TOOL} == \"CMAKE\" ]]; then\n"
-    "    cmake -H\"$REPO_ROOT/$TARGET_PROJECT\" -B\"$REPO_ROOT/common/bin\"\n" 
-    "    cmake --build \"$REPO_ROOT/common/bin\"\n" 
-    "    cmake --install \"$REPO_ROOT/common/bin\" --prefix instdir --strip\n"
+    "    cmake -H\"$REPO_ROOT/$TARGET_PROJECT\" -B\"$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM\" -DCMAKE_BUILD_TYPE=$BUILD_TYPE\n" 
+    "    cmake --build \"$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM\"\n" 
+    "    cmake --install \"$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM\" --prefix instdir --strip\n"
+    "    cpack --config \"$REPO_ROOT/common/bin/$TARGET_NAME-$TARGET_PLATFORM/CPackConfig.cmake\"\n"
     "else\n"
     "    echo \"Unknown Build tool\"\n"
     "fi\n\n";
@@ -209,7 +216,13 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    steps:\n"
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"                  
-                  "        run: ./$pathToTargetsOutputDir$/ci_build.sh\n";
+                  "        run: ./$pathToTargetsOutputDir$/ci_build.sh\n"
+                  "      - name: Archive build artifacts\n"
+                  "        uses: actions/upload-artifact@v2\n"
+                  "        with:\n"
+                  "          name: packages\n"
+                  "          path: |\n"
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.*\n";
     }
     else
     if ( "win32" == targetPlatform || "win64" == targetPlatform )
@@ -311,6 +324,8 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
         }
         ++i;
     }
+
+    // projectgen.autogen.$targetName$.$platformName$.yml
 
     TStringVector::const_iterator m = projectInfo.rootDirs.begin();
     while ( m != projectInfo.rootDirs.end() )
