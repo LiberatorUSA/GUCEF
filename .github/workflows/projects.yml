@@ -18,12 +18,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF-all/packages/*GUCEF*.*
+            ./common/bin/GUCEF-all/packages/*GUCEF*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF-all/packages/*GUCEF*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF-all/packages/*GUCEF*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF-all/packages/*GUCEF*.tar.xz
   GUCEF_exe_ArchiveDiff-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-all'
     runs-on: ubuntu-latest
@@ -38,12 +56,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.*
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux32'
     runs-on: ubuntu-latest
@@ -58,12 +94,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.*
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux64'
     runs-on: ubuntu-latest
@@ -78,12 +132,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.*
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win32'
     runs-on: windows-latest
@@ -97,6 +169,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-win32/packages/*ArchiveDiff*.zip
   GUCEF_exe_ArchiveDiff-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win64'
     runs-on: windows-latest
@@ -110,6 +188,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-win64/packages/*ArchiveDiff*.zip
   GUCEF_exe_CMakeListGenerator-all:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-all'
     runs-on: ubuntu-latest
@@ -124,12 +208,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.*
+            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-all/packages/*CMakeListGenerator*.tar.xz
   GUCEF_exe_CMakeListGenerator-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-linux32'
     runs-on: ubuntu-latest
@@ -144,12 +246,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.*
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux32/packages/*CMakeListGenerator*.tar.xz
   GUCEF_exe_CMakeListGenerator-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-linux64'
     runs-on: ubuntu-latest
@@ -164,12 +284,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.*
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-linux64/packages/*CMakeListGenerator*.tar.xz
   GUCEF_exe_CMakeListGenerator-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-win32'
     runs-on: windows-latest
@@ -183,6 +321,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-win32/packages/*CMakeListGenerator*.zip
   GUCEF_exe_CMakeListGenerator-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_CMakeListGenerator-win64'
     runs-on: windows-latest
@@ -196,6 +340,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build CMakeListGenerator for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_CMakeListGenerator-win64/packages/*CMakeListGenerator*.zip
   GUCEF_exe_DCSBruteInstaller-all:
     if: github.event.client_payload.job == 'GUCEF_exe_DCSBruteInstaller-all'
     runs-on: ubuntu-latest
@@ -210,12 +360,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DCSBruteInstaller for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.*
+            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_DCSBruteInstaller-all/packages/*DCSBruteInstaller*.tar.xz
   GUCEF_exe_DVPPackTool-all:
     if: github.event.client_payload.job == 'GUCEF_exe_DVPPackTool-all'
     runs-on: ubuntu-latest
@@ -230,12 +398,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DVPPackTool for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.*
+            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_DVPPackTool-all/packages/*DVPPackTool*.tar.xz
   GUCEF_exe_DuplicateFileFinder-all:
     if: github.event.client_payload.job == 'GUCEF_exe_DuplicateFileFinder-all'
     runs-on: ubuntu-latest
@@ -250,12 +436,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build DuplicateFileFinder for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.*
+            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_DuplicateFileFinder-all/packages/*DuplicateFileFinder*.tar.xz
   GUCEF_exe_FileDiff-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FileDiff-all'
     runs-on: ubuntu-latest
@@ -270,12 +474,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FileDiff for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.*
+            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_FileDiff-all/packages/*FileDiff*.tar.xz
   GUCEF_exe_FilePusher-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FilePusher-all'
     runs-on: ubuntu-latest
@@ -290,12 +512,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FilePusher for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.*
+            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_FilePusher-all/packages/*FilePusher*.tar.xz
   GUCEF_exe_FileReplacer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_FileReplacer-all'
     runs-on: ubuntu-latest
@@ -310,12 +550,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build FileReplacer for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.*
+            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_FileReplacer-all/packages/*FileReplacer*.tar.xz
   GUCEF_exe_GucefArchiver-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefArchiver-all'
     runs-on: ubuntu-latest
@@ -330,12 +588,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefArchiver for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.*
+            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefArchiver-all/packages/*GucefArchiver*.tar.xz
   GUCEF_exe_GucefLogServiceApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefLogServiceApp-all'
     runs-on: ubuntu-latest
@@ -350,12 +626,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefLogServiceApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.*
+            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogServiceApp-all/packages/*GucefLogServiceApp*.tar.xz
   GUCEF_exe_GucefLogService_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_GucefLogService_TestApp-all'
     runs-on: ubuntu-latest
@@ -370,12 +664,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GucefLogService_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.*
+            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_GucefLogService_TestApp-all/packages/*GucefLogService_TestApp*.tar.xz
   GUCEF_exe_HDFiller-all:
     if: github.event.client_payload.job == 'GUCEF_exe_HDFiller-all'
     runs-on: ubuntu-latest
@@ -390,12 +702,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build HDFiller for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.*
+            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_HDFiller-all/packages/*HDFiller*.tar.xz
   GUCEF_exe_MemoryLeakFinder_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-all'
     runs-on: ubuntu-latest
@@ -410,12 +740,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.*
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.tar.xz
   GUCEF_exe_MemoryLeakFinder_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win32'
     runs-on: windows-latest
@@ -429,6 +777,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-win32/packages/*MemoryLeakFinder_TestApp*.zip
   GUCEF_exe_MemoryLeakFinder_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win64'
     runs-on: windows-latest
@@ -442,6 +796,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-win64/packages/*MemoryLeakFinder_TestApp*.zip
   GUCEF_exe_MyGUI_FontViewer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-all'
     runs-on: ubuntu-latest
@@ -456,12 +816,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-all/packages/*MyGUI.FontViewer*.tar.xz
   GUCEF_exe_MyGUI_FontViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux32'
     runs-on: ubuntu-latest
@@ -476,12 +854,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux32/packages/*MyGUI.FontViewer*.tar.xz
   GUCEF_exe_MyGUI_FontViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-linux64'
     runs-on: ubuntu-latest
@@ -496,12 +892,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-linux64/packages/*MyGUI.FontViewer*.tar.xz
   GUCEF_exe_MyGUI_FontViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-win32'
     runs-on: windows-latest
@@ -515,6 +929,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-win32/packages/*MyGUI.FontViewer*.zip
   GUCEF_exe_MyGUI_FontViewer-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.FontViewer-win64'
     runs-on: windows-latest
@@ -528,6 +948,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.FontViewer for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.FontViewer-win64/packages/*MyGUI.FontViewer*.zip
   GUCEF_exe_MyGUI_ImageSetViewer-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-all'
     runs-on: ubuntu-latest
@@ -542,12 +968,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-all/packages/*MyGUI.ImageSetViewer*.tar.xz
   GUCEF_exe_MyGUI_ImageSetViewer-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux32'
     runs-on: ubuntu-latest
@@ -562,12 +1006,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux32/packages/*MyGUI.ImageSetViewer*.tar.xz
   GUCEF_exe_MyGUI_ImageSetViewer-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-linux64'
     runs-on: ubuntu-latest
@@ -582,12 +1044,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.*
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-linux64/packages/*MyGUI.ImageSetViewer*.tar.xz
   GUCEF_exe_MyGUI_ImageSetViewer-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-win32'
     runs-on: windows-latest
@@ -601,6 +1081,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-win32/packages/*MyGUI.ImageSetViewer*.zip
   GUCEF_exe_MyGUI_ImageSetViewer-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.ImageSetViewer-win64'
     runs-on: windows-latest
@@ -614,6 +1100,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.ImageSetViewer for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.ImageSetViewer-win64/packages/*MyGUI.ImageSetViewer*.zip
   GUCEF_exe_MyGUI_LayoutEditor-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-all'
     runs-on: ubuntu-latest
@@ -628,12 +1120,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-all/packages/*MyGUI.LayoutEditor*.tar.xz
   GUCEF_exe_MyGUI_LayoutEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux32'
     runs-on: ubuntu-latest
@@ -648,12 +1158,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux32/packages/*MyGUI.LayoutEditor*.tar.xz
   GUCEF_exe_MyGUI_LayoutEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-linux64'
     runs-on: ubuntu-latest
@@ -668,12 +1196,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-linux64/packages/*MyGUI.LayoutEditor*.tar.xz
   GUCEF_exe_MyGUI_LayoutEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-win32'
     runs-on: windows-latest
@@ -687,6 +1233,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-win32/packages/*MyGUI.LayoutEditor*.zip
   GUCEF_exe_MyGUI_LayoutEditor-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.LayoutEditor-win64'
     runs-on: windows-latest
@@ -700,6 +1252,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.LayoutEditor for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.LayoutEditor-win64/packages/*MyGUI.LayoutEditor*.zip
   GUCEF_exe_MyGUI_SkinEditor-all:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-all'
     runs-on: ubuntu-latest
@@ -714,12 +1272,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux32'
     runs-on: ubuntu-latest
@@ -734,12 +1310,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux64'
     runs-on: ubuntu-latest
@@ -754,12 +1348,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.*
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win32'
     runs-on: windows-latest
@@ -773,6 +1385,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-win32/packages/*MyGUI.SkinEditor*.zip
   GUCEF_exe_MyGUI_SkinEditor-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win64'
     runs-on: windows-latest
@@ -786,6 +1404,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_MyGUI.SkinEditor-win64/packages/*MyGUI.SkinEditor*.zip
   GUCEF_exe_PackageUpgrader-all:
     if: github.event.client_payload.job == 'GUCEF_exe_PackageUpgrader-all'
     runs-on: ubuntu-latest
@@ -800,12 +1424,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PackageUpgrader for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.*
+            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_PackageUpgrader-all/packages/*PackageUpgrader*.tar.xz
   GUCEF_exe_PatchSetGenerator-all:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-all'
     runs-on: ubuntu-latest
@@ -820,12 +1462,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.*
+            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-all/packages/*PatchSetGenerator*.tar.xz
   GUCEF_exe_PatchSetGenerator-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-win32'
     runs-on: windows-latest
@@ -839,6 +1499,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-win32/packages/*PatchSetGenerator*.zip
   GUCEF_exe_PatchSetGenerator-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_PatchSetGenerator-win64'
     runs-on: windows-latest
@@ -852,6 +1518,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build PatchSetGenerator for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_PatchSetGenerator-win64/packages/*PatchSetGenerator*.zip
   GUCEF_exe_ProcessMetrics-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ProcessMetrics-all'
     runs-on: ubuntu-latest
@@ -866,12 +1538,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ProcessMetrics for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.*
+            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ProcessMetrics-all/packages/*ProcessMetrics*.tar.xz
   GUCEF_exe_ProjectGenerator-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ProjectGenerator-all'
     runs-on: ubuntu-latest
@@ -886,12 +1576,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ProjectGenerator for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.*
+            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ProjectGenerator-all/packages/*ProjectGenerator*.tar.xz
   GUCEF_exe_ReferenceUpdater-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ReferenceUpdater-all'
     runs-on: ubuntu-latest
@@ -906,12 +1614,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ReferenceUpdater for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.*
+            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ReferenceUpdater-all/packages/*ReferenceUpdater*.tar.xz
   GUCEF_exe_SVNMagicMerge-all:
     if: github.event.client_payload.job == 'GUCEF_exe_SVNMagicMerge-all'
     runs-on: ubuntu-latest
@@ -926,12 +1652,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build SVNMagicMerge for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.*
+            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_SVNMagicMerge-all/packages/*SVNMagicMerge*.tar.xz
   GUCEF_exe_ServerPortExtender-all:
     if: github.event.client_payload.job == 'GUCEF_exe_ServerPortExtender-all'
     runs-on: ubuntu-latest
@@ -946,12 +1690,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build ServerPortExtender for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.*
+            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ServerPortExtender-all/packages/*ServerPortExtender*.tar.xz
   GUCEF_exe_SocketSink-all:
     if: github.event.client_payload.job == 'GUCEF_exe_SocketSink-all'
     runs-on: ubuntu-latest
@@ -966,12 +1728,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build SocketSink for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.*
+            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_SocketSink-all/packages/*SocketSink*.tar.xz
   GUCEF_exe_UdpViaTcp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_UdpViaTcp-all'
     runs-on: ubuntu-latest
@@ -986,12 +1766,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build UdpViaTcp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.*
+            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_UdpViaTcp-all/packages/*UdpViaTcp*.tar.xz
   GUCEF_exe_awslambdahost-all:
     if: github.event.client_payload.job == 'GUCEF_exe_awslambdahost-all'
     runs-on: ubuntu-latest
@@ -1006,12 +1804,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build awslambdahost for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.*
+            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_awslambdahost-all/packages/*awslambdahost*.tar.xz
   GUCEF_exe_gucefCOMCORE_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCOMCORE_TestApp-all'
     runs-on: ubuntu-latest
@@ -1026,12 +1842,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCOMCORE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOMCORE_TestApp-all/packages/*gucefCOMCORE_TestApp*.tar.xz
   GUCEF_exe_gucefCOM_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCOM_TestApp-all'
     runs-on: ubuntu-latest
@@ -1046,12 +1880,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCOM_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCOM_TestApp-all/packages/*gucefCOM_TestApp*.tar.xz
   GUCEF_exe_gucefCORE_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-all'
     runs-on: ubuntu-latest
@@ -1066,12 +1918,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-all/packages/*gucefCORE_TestApp*.tar.xz
   GUCEF_exe_gucefCORE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1086,12 +1956,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux32/packages/*gucefCORE_TestApp*.tar.xz
   GUCEF_exe_gucefCORE_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1106,12 +1994,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-linux64/packages/*gucefCORE_TestApp*.tar.xz
   GUCEF_exe_gucefCORE_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-win32'
     runs-on: windows-latest
@@ -1125,6 +2031,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-win32/packages/*gucefCORE_TestApp*.zip
   GUCEF_exe_gucefCORE_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefCORE_TestApp-win64'
     runs-on: windows-latest
@@ -1138,6 +2050,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefCORE_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefCORE_TestApp-win64/packages/*gucefCORE_TestApp*.zip
   GUCEF_exe_gucefDRN_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefDRN_TestApp-all'
     runs-on: ubuntu-latest
@@ -1152,12 +2070,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefDRN_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefDRN_TestApp-all/packages/*gucefDRN_TestApp*.tar.xz
   GUCEF_exe_gucefGUI_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-all'
     runs-on: ubuntu-latest
@@ -1172,12 +2108,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-all/packages/*gucefGUI_TestApp*.tar.xz
   GUCEF_exe_gucefGUI_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1192,12 +2146,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux32/packages/*gucefGUI_TestApp*.tar.xz
   GUCEF_exe_gucefGUI_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1212,12 +2184,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-linux64/packages/*gucefGUI_TestApp*.tar.xz
   GUCEF_exe_gucefGUI_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-win32'
     runs-on: windows-latest
@@ -1231,6 +2221,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-win32/packages/*gucefGUI_TestApp*.zip
   GUCEF_exe_gucefGUI_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefGUI_TestApp-win64'
     runs-on: windows-latest
@@ -1244,6 +2240,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefGUI_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefGUI_TestApp-win64/packages/*gucefGUI_TestApp*.zip
   GUCEF_exe_gucefIMAGE_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-all'
     runs-on: ubuntu-latest
@@ -1258,12 +2260,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-all/packages/*gucefIMAGE_TestApp*.tar.xz
   GUCEF_exe_gucefIMAGE_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1278,12 +2298,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux32/packages/*gucefIMAGE_TestApp*.tar.xz
   GUCEF_exe_gucefIMAGE_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1298,12 +2336,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-linux64/packages/*gucefIMAGE_TestApp*.tar.xz
   GUCEF_exe_gucefIMAGE_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-win32'
     runs-on: windows-latest
@@ -1317,6 +2373,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-win32/packages/*gucefIMAGE_TestApp*.zip
   GUCEF_exe_gucefIMAGE_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefIMAGE_TestApp-win64'
     runs-on: windows-latest
@@ -1330,6 +2392,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefIMAGE_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefIMAGE_TestApp-win64/packages/*gucefIMAGE_TestApp*.zip
   GUCEF_exe_gucefINPUT_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-all'
     runs-on: ubuntu-latest
@@ -1344,12 +2412,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1364,12 +2450,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1384,12 +2488,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-win32'
     runs-on: windows-latest
@@ -1403,6 +2525,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-win32/packages/*gucefINPUT_TestApp*.zip
   GUCEF_exe_gucefINPUT_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-win64'
     runs-on: windows-latest
@@ -1416,6 +2544,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefINPUT_TestApp-win64/packages/*gucefINPUT_TestApp*.zip
   GUCEF_exe_gucefLOADER_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefLOADER_TestApp-all'
     runs-on: ubuntu-latest
@@ -1430,12 +2564,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefLOADER_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefLOADER_TestApp-all/packages/*gucefLOADER_TestApp*.tar.xz
   GUCEF_exe_gucefMT_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefMT_TestApp-all'
     runs-on: ubuntu-latest
@@ -1450,12 +2602,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefMT_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefMT_TestApp-all/packages/*gucefMT_TestApp*.tar.xz
   GUCEF_exe_gucefPATCHERAPP_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefPATCHERAPP_TestApp-all'
     runs-on: ubuntu-latest
@@ -1470,12 +2640,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefPATCHERAPP_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPATCHERAPP_TestApp-all/packages/*gucefPATCHERAPP_TestApp*.tar.xz
   GUCEF_exe_gucefPRODMAN_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefPRODMAN_TestApp-all'
     runs-on: ubuntu-latest
@@ -1490,12 +2678,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefPRODMAN_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefPRODMAN_TestApp-all/packages/*gucefPRODMAN_TestApp*.tar.xz
   GUCEF_exe_gucefVFS_TestApp-all:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-all'
     runs-on: ubuntu-latest
@@ -1510,12 +2716,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-all/packages/*gucefVFS_TestApp*.tar.xz
   GUCEF_exe_gucefVFS_TestApp-linux32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-linux32'
     runs-on: ubuntu-latest
@@ -1530,12 +2754,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux32/packages/*gucefVFS_TestApp*.tar.xz
   GUCEF_exe_gucefVFS_TestApp-linux64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-linux64'
     runs-on: ubuntu-latest
@@ -1550,12 +2792,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.*
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-linux64/packages/*gucefVFS_TestApp*.tar.xz
   GUCEF_exe_gucefVFS_TestApp-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-win32'
     runs-on: windows-latest
@@ -1569,6 +2829,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-win32/packages/*gucefVFS_TestApp*.zip
   GUCEF_exe_gucefVFS_TestApp-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_gucefVFS_TestApp-win64'
     runs-on: windows-latest
@@ -1582,6 +2848,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build gucefVFS_TestApp for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_gucefVFS_TestApp-win64/packages/*gucefVFS_TestApp*.zip
   GUCEF_exe_itvExporter-all:
     if: github.event.client_payload.job == 'GUCEF_exe_itvExporter-all'
     runs-on: ubuntu-latest
@@ -1596,12 +2868,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build itvExporter for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.*
+            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_itvExporter-all/packages/*itvExporter*.tar.xz
   GUCEF_exe_pubsub2storage-all:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-all'
     runs-on: ubuntu-latest
@@ -1616,12 +2906,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.*
+            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-all/packages/*pubsub2storage*.tar.xz
   GUCEF_exe_pubsub2storage-win32:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-win32'
     runs-on: windows-latest
@@ -1635,6 +2943,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-win32/packages/*pubsub2storage*.zip
   GUCEF_exe_pubsub2storage-win64:
     if: github.event.client_payload.job == 'GUCEF_exe_pubsub2storage-win64'
     runs-on: windows-latest
@@ -1648,6 +2962,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build pubsub2storage for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_pubsub2storage-win64/packages/*pubsub2storage*.zip
   GUCEF_exe_redisinfo-all:
     if: github.event.client_payload.job == 'GUCEF_exe_redisinfo-all'
     runs-on: ubuntu-latest
@@ -1662,12 +2982,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build redisinfo for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.*
+            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_redisinfo-all/packages/*redisinfo*.tar.xz
   GUCEF_exe_udp2kafka-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2kafka-all'
     runs-on: ubuntu-latest
@@ -1682,12 +3020,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2kafka for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.*
+            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2kafka-all/packages/*udp2kafka*.tar.xz
   GUCEF_exe_udp2redis-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2redis-all'
     runs-on: ubuntu-latest
@@ -1702,12 +3058,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2redis for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.*
+            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2redis-all/packages/*udp2redis*.tar.xz
   GUCEF_exe_udp2rediscluster-all:
     if: github.event.client_payload.job == 'GUCEF_exe_udp2rediscluster-all'
     runs-on: ubuntu-latest
@@ -1722,12 +3096,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build udp2rediscluster for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.*
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.tar.xz
   GUCEF_tag_obsolete-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-linux32'
     runs-on: ubuntu-latest
@@ -1742,12 +3134,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.*
+            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux32/packages/*GUCEF_tag_obsolete*.tar.xz
   GUCEF_tag_obsolete-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-linux64'
     runs-on: ubuntu-latest
@@ -1762,12 +3172,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.*
+            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-linux64/packages/*GUCEF_tag_obsolete*.tar.xz
   GUCEF_tag_obsolete-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-win32'
     runs-on: windows-latest
@@ -1781,6 +3209,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-win32/packages/*GUCEF_tag_obsolete*.zip
   GUCEF_tag_obsolete-win64:
     if: github.event.client_payload.job == 'GUCEF_tag_obsolete-win64'
     runs-on: windows-latest
@@ -1794,6 +3228,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_obsolete for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_obsolete-win64/packages/*GUCEF_tag_obsolete*.zip
   GUCEF_tag_platform-all:
     if: github.event.client_payload.job == 'GUCEF_tag_platform-all'
     runs-on: ubuntu-latest
@@ -1808,12 +3248,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_platform for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.*
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.tar.xz
   GUCEF_tag_plugin-all:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-all'
     runs-on: ubuntu-latest
@@ -1828,12 +3286,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.*
+            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux32'
     runs-on: ubuntu-latest
@@ -1848,12 +3324,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.*
+            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux64'
     runs-on: ubuntu-latest
@@ -1868,12 +3362,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.*
+            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-win32'
     runs-on: windows-latest
@@ -1887,6 +3399,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-win32/packages/*GUCEF_tag_plugin*.zip
   GUCEF_tag_plugin-win64:
     if: github.event.client_payload.job == 'GUCEF_tag_plugin-win64'
     runs-on: windows-latest
@@ -1900,6 +3418,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_plugin-win64/packages/*GUCEF_tag_plugin*.zip
   GUCEF_tag_test-all:
     if: github.event.client_payload.job == 'GUCEF_tag_test-all'
     runs-on: ubuntu-latest
@@ -1914,12 +3438,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform all
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.*
+            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_test-all/packages/*GUCEF_tag_test*.tar.xz
   GUCEF_tag_test-linux32:
     if: github.event.client_payload.job == 'GUCEF_tag_test-linux32'
     runs-on: ubuntu-latest
@@ -1934,12 +3476,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux32
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.*
+            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux32/packages/*GUCEF_tag_test*.tar.xz
   GUCEF_tag_test-linux64:
     if: github.event.client_payload.job == 'GUCEF_tag_test-linux64'
     runs-on: ubuntu-latest
@@ -1954,12 +3514,30 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform linux64
         run: ./projects/CI/targets/ci_build.sh
-      - name: Archive build artifacts
+      - name: Archive Debian build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: packages
+          name: Debian packages
           path: |
-            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.*
+            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_test-linux64/packages/*GUCEF_tag_test*.tar.xz
   GUCEF_tag_test-win32:
     if: github.event.client_payload.job == 'GUCEF_tag_test-win32'
     runs-on: windows-latest
@@ -1973,6 +3551,12 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform win32
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_test-win32/packages/*GUCEF_tag_test*.zip
   GUCEF_tag_test-win64:
     if: github.event.client_payload.job == 'GUCEF_tag_test-win64'
     runs-on: windows-latest
@@ -1986,3 +3570,9 @@ jobs:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_test for platform win64
         run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_test-win64/packages/*GUCEF_tag_test*.zip

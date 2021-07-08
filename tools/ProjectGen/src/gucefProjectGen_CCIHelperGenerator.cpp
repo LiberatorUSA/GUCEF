@@ -217,12 +217,30 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"                  
                   "        run: ./$pathToTargetsOutputDir$/ci_build.sh\n"
-                  "      - name: Archive build artifacts\n"
+                  "      - name: Archive Debian build artifacts\n"
                   "        uses: actions/upload-artifact@v2\n"
                   "        with:\n"
-                  "          name: packages\n"
+                  "          name: Debian packages\n"
                   "          path: |\n"
-                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.*\n";
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.deb\n"
+                  "      - name: Archive RPM build artifacts\n"
+                  "        uses: actions/upload-artifact@v2\n"
+                  "        with:\n"
+                  "          name: RPM packages\n"
+                  "          path: |\n"
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.rpm\n"
+                  "      - name: Archive Tarball - bz2 compressed build artifacts\n"
+                  "        uses: actions/upload-artifact@v2\n"
+                  "        with:\n"
+                  "          name: tar.bz2 packages\n"
+                  "          path: |\n"
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.tar.bz2\n"
+                  "      - name: Archive Tarball - Xz compressed build artifacts\n"
+                  "        uses: actions/upload-artifact@v2\n"
+                  "        with:\n"
+                  "          name: tar.xz packages\n"
+                  "          path: |\n"
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.tar.xz\n";
     }
     else
     if ( "win32" == targetPlatform || "win64" == targetPlatform )
@@ -243,7 +261,13 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
                   "    steps:\n"
                   "      - uses: actions/checkout@master\n"
                   "      - name: Build $productName$ for platform $targetPlatform$\n"
-                  "        run: .\\$pathToTargetsOutputDir$\\ci_build.ps1\n";
+                  "        run: .\\$pathToTargetsOutputDir$\\ci_build.ps1\n"
+                  "      - name: Archive ZIP build artifacts\n"
+                  "        uses: actions/upload-artifact@v2\n"
+                  "        with:\n"
+                  "          name: ZIP packages\n"
+                  "          path: |\n"
+                  "            ./common/bin/$targetName$-$targetPlatform$/packages/*$productName$*.zip\n";
     }
     
     if ( !section.IsNULLOrEmpty() )
