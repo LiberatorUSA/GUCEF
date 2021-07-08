@@ -1911,11 +1911,6 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID" ) ), 1 );
     CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
     m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : channelIDStrs.size() );    
-    if ( channelIDStrs.size() > m_channelCount )
-    {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDStrs.size() ) + " channel IDs are specified which exceeds the total nr of channels. Will increase channel count to match" );
-        m_channelCount = (CORE::UInt16) channelIDStrs.size();
-    }
 
     m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort" ) ), 20000 );
     CORE::Int32 udpPortChannelIdOffset = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpPortChannelIdOffset" ) ), 20000 );
@@ -1948,12 +1943,45 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     CORE::CString::StringSet::iterator n = channelIDStrs.begin();
     while ( n != channelIDStrs.end() )
     {
-        CORE::Int32 id = CORE::StringToInt32( (*n), GUCEF_MT_INT32MIN );
-        if ( id != GUCEF_MT_INT32MIN )
-            channelIDs.insert( id );
+        const CORE::CString& str = (*n);
+        if ( str.HasChar( '-' ) >= 0 )
+        {
+            CORE::Int32 startId = GUCEF_MT_INT32MIN;
+            CORE::Int32 endId = GUCEF_MT_INT32MIN;
+            
+            CORE::CString::StringVector rangeStrs = str.ParseElements( '-', false );
+            if ( rangeStrs.size() > 0 )
+                startId = CORE::StringToInt32( rangeStrs[ 0 ], GUCEF_MT_INT32MIN );
+            if ( rangeStrs.size() > 1 )
+                endId = CORE::StringToInt32( rangeStrs[ 1 ], GUCEF_MT_INT32MIN );
+
+            if ( startId != GUCEF_MT_INT32MIN && endId != GUCEF_MT_INT32MIN )
+            {
+                if ( endId < startId )
+                {
+                    CORE::Int32 tmp = startId;
+                    startId = endId;
+                    endId = tmp;
+                }
+
+                for ( CORE::Int32 i=startId; i<=endId; i++ )
+                    channelIDs.insert( i );    
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Invalid channel ID range provided. Fix the config. Str: " + str );
+                return false;
+            }
+        }
+        else
+        {
+            CORE::Int32 id = CORE::StringToInt32( str, GUCEF_MT_INT32MIN );
+            if ( id != GUCEF_MT_INT32MIN )
+                channelIDs.insert( id );
+        }
         ++n;
     }
-    if ( channelIDs.size() != channelIDStrs.size() )
+    if ( channelIDs.size() < channelIDStrs.size() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
         return false;
@@ -1973,6 +2001,13 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
             channelIDs.insert( lastAutoGenChannelId );
             ++lastAutoGenChannelId;
         }
+    }
+    else
+    if ( m_channelCount < channelIDs.size() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were provided but a total channel count of " + 
+            CORE::ToString( m_channelCount ) + " was configured. Channel count will be increased to match the nr of IDs" );
+        m_channelCount = (CORE::UInt16) channelIDs.size();
     }
     
     CORE::UInt32 currentCpu = 0;
