@@ -204,8 +204,6 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
         osPathToTargetsOutputDir = pathToTargetsOutputDir.ReplaceChar( '\\', '/' );
         osPathToCMakeTargetsProjectDir = pathToCMakeTargetsOutputDir.ReplaceChar( '\\', '/' ) + '/' + targetName;
 
-        workflow_dispatch:
-        
         section = "  $workflowId$:\n"
                   "$workflowRunCondition$"
                   "    runs-on: ubuntu-latest\n"
@@ -340,7 +338,13 @@ GenerateGithubActionsWorkflowTargetsYml( const TProjectInfo& projectInfo        
             githubActionsWorkflowTargetContent =
                 "name: target_" + targetName + "\n"             
                 "\n"                           
-                "on: workflow_dispatch:\n"    
+                "on:\n"
+                "  workflow_dispatch:\n"    
+                "    inputs:\n"
+                "      archiveBuildArtifacts:\n"
+                "        description: 'Archive Build Artifacts?'\n"
+                "        required: false\n"
+                "        default: 'false'\n"
                 "\n"                           
                 "jobs:\n"                      
                 "\n";

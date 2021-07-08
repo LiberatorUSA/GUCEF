@@ -1,6 +1,12 @@
 name: target_GUCEF_exe_gucefMT_TestApp
 
-on: workflow_dispatch:
+on:
+  workflow_dispatch:
+    inputs:
+      archiveBuildArtifacts:
+        description: 'Archive Build Artifacts?'
+        required: false
+        default: 'false'
 
 jobs:
 
