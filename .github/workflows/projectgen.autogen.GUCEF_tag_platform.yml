@@ -1,0 +1,44 @@
+name: target_GUCEF_tag_platform
+
+on: repository_dispatch
+
+jobs:
+
+  GUCEF_tag_platform-all:
+    if: github.event.client_payload.job == 'GUCEF_tag_platform-all'
+    runs-on: ubuntu-latest
+    env:
+      TARGET_NAME: GUCEF_tag_platform
+      TARGET_PLATFORM: all
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_platform
+      PRODUCT_NAME: GUCEF_tag_platform
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_platform for platform all
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_platform-all/packages/*GUCEF_tag_platform*.tar.xz

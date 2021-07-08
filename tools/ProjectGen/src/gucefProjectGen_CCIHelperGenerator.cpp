@@ -176,7 +176,7 @@ GenerateValidGithubActionsWorkflowId( const CORE::CString& targetName     ,
     // The string also can't be too long
     if ( workflowPermittedId.Length() > 100 )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Workflow ID \"" + workflowPermittedId + "\" is too long. We will truncate it to the permitted max of 100 chars" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "GenerateValidGithubActionsWorkflowId: Workflow ID \"" + workflowPermittedId + "\" is too long. We will truncate it to the permitted max of 100 chars" );
         workflowPermittedId = workflowPermittedId.CutChars( workflowPermittedId.Length()-100, false, 0 );
     }
     
@@ -289,30 +289,46 @@ GenerateGithubActionsWorkflowProjectSection( const CORE::CString& targetName    
 /*-------------------------------------------------------------------------*/
 
 void
-GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo                ,
-                                          const TProjectTargetInfoMapMap& targets        ,
-                                          const CORE::CString::StringSet& platformFilter ,
-                                          const CORE::CString& targetsOutputDir          ,
-                                          const CORE::CString& cmakeTargetsOutputDir     )
+GenerateGithubActionsWorkflowTargetsYml( const TProjectInfo& projectInfo                ,
+                                         const TProjectTargetInfoMapMap& targets        ,
+                                         const CORE::CString::StringSet& platformFilter ,
+                                         const CORE::CString& targetsOutputDir          ,
+                                         const CORE::CString& cmakeTargetsOutputDir     )
 {GUCEF_TRACE;
-
-    CORE::CString githubActionsWorkflowProjectsContent =
-        "name: projects\n"             
-        "\n"                           
-        "on: repository_dispatch\n"    
-        "\n"                           
-        "jobs:\n"                      
-        "\n";
 
     // We need the relative path not absolute for the yml
     CORE::CString pathToTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, targetsOutputDir );
     CORE::CString pathToCMakeTargetsOutputDir = GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, cmakeTargetsOutputDir );
     
+    TStringVector::const_iterator m = projectInfo.rootDirs.begin();
+    while ( m != projectInfo.rootDirs.end() )
+    {
+        CORE::CString githubActionsWorkflowTargetYmlPath = CORE::CombinePath( (*m), ".github/workflows/" );
+        githubActionsWorkflowTargetYmlPath = githubActionsWorkflowTargetYmlPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
+
+        if ( !CORE::CreateDirs( githubActionsWorkflowTargetYmlPath ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Failed to create directories. Dir path: " + githubActionsWorkflowTargetYmlPath );
+            ++m;
+            continue;
+        }
+
+        ++m;
+    }
+
     TProjectTargetInfoMapMap::const_iterator i = targets.begin();
     while ( i != targets.end() )
     {
         const CORE::CString& targetName = (*i).first;
         const TProjectTargetInfoMap& targetsPerPlatform = (*i).second;
+
+        CORE::CString githubActionsWorkflowTargetContent =
+            "name: target_" + targetName + "\n"             
+            "\n"                           
+            "on: repository_dispatch\n"    
+            "\n"                           
+            "jobs:\n"                      
+            "\n";
 
         TProjectTargetInfoMap::const_iterator n = targetsPerPlatform.begin();
         while ( n != targetsPerPlatform.end() )
@@ -335,7 +351,7 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
                 CORE::CString section = GenerateGithubActionsWorkflowProjectSection( targetInfo.projectName, platformName, productName, pathToTargetsOutputDir, pathToCMakeTargetsOutputDir ); 
                 if ( !section.IsNULLOrEmpty() )
                 {
-                    githubActionsWorkflowProjectsContent += section;
+                    githubActionsWorkflowTargetContent += section;
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Generated Github Actions Workflow job to build target \"" + targetName + "\" with project name \"" + targetInfo.projectName + "\" and platform \"" + platformName + "\"" );
                 }
                 else
@@ -346,35 +362,29 @@ GenerateGithubActionsWorkflowProjectsYml( const TProjectInfo& projectInfo       
             }
             ++n;
         }
-        ++i;
-    }
 
-    // projectgen.autogen.$targetName$.$platformName$.yml
-
-    TStringVector::const_iterator m = projectInfo.rootDirs.begin();
-    while ( m != projectInfo.rootDirs.end() )
-    {
-        CORE::CString githubActionsWorkflowProjectsYmlPath = CORE::CombinePath( (*m), ".github/workflows/" );
-        githubActionsWorkflowProjectsYmlPath = githubActionsWorkflowProjectsYmlPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
-
-        if ( !CORE::CreateDirs( githubActionsWorkflowProjectsYmlPath ) )
+        TStringVector::const_iterator m = projectInfo.rootDirs.begin();
+        while ( m != projectInfo.rootDirs.end() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Failed to create directories. Dir path: " + githubActionsWorkflowProjectsYmlPath );
+            CORE::CString githubActionsWorkflowTargetYmlPath = CORE::CombinePath( (*m), ".github/workflows/" );
+            githubActionsWorkflowTargetYmlPath = githubActionsWorkflowTargetYmlPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
+            
+            CORE::CString workflowYml = "projectgen.autogen." + targetName + ".yml";
+            githubActionsWorkflowTargetYmlPath = CORE::CombinePath( githubActionsWorkflowTargetYmlPath, workflowYml );
+
+            if ( CORE::WriteStringAsTextFile( githubActionsWorkflowTargetYmlPath, githubActionsWorkflowTargetContent ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Successfully wrote Github Actions Workflow file with project jobs to: " + githubActionsWorkflowTargetYmlPath );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Failed to write Github Actions Workflow file with project jobs to: " + githubActionsWorkflowTargetYmlPath );
+            }
+
             ++m;
-            continue;
-        }
-        githubActionsWorkflowProjectsYmlPath = CORE::CombinePath( githubActionsWorkflowProjectsYmlPath, "projects.yml" );
-
-        if ( CORE::WriteStringAsTextFile( githubActionsWorkflowProjectsYmlPath, githubActionsWorkflowProjectsContent ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Successfully wrote Github Actions Workflow file with project jobs to: " + githubActionsWorkflowProjectsYmlPath );
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GenerateGithubActionsWorkflowProjectsYml: Failed to write Github Actions Workflow file with project jobs to: " + githubActionsWorkflowProjectsYmlPath );
         }
 
-        ++m;
+        ++i;
     }
 }
 
@@ -664,7 +674,7 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     bool generateFilePathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateFilePathListPerTarget" ), false );
     bool generatePathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GeneratePathListPerTarget" ), false );
     bool generateGlobPatternPathListPerTarget = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateGlobPatternPathListPerTarget" ), true );
-    bool generateGithubActionsWorkflowProjectsYml = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateGithubActionsWorkflowProjectsYml" ), true );
+    bool generateGithubActionsWorkflowTargetsYml = CORE::StringToBool( params.GetValueAlways( "cihelpergen:GenerateGithubActionsWorkflowTargetsYml" ), true );
     
     CORE::CString cmakeTargetsOutputDir = params.GetValueAlways( "cmakegen:TargetsDir" );
     if ( cmakeTargetsOutputDir.IsNULLOrEmpty() )
@@ -678,8 +688,8 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     if ( generateGlobPatternPathListPerTarget )
         GenerateGlobPatternPathListPerTarget( projectInfo, targets, platformFilter, targetsOutputDir );
         
-    if ( generateGithubActionsWorkflowProjectsYml )
-        GenerateGithubActionsWorkflowProjectsYml( projectInfo, targets, platformFilter, targetsOutputDir, cmakeTargetsOutputDir );
+    if ( generateGithubActionsWorkflowTargetsYml )
+        GenerateGithubActionsWorkflowTargetsYml( projectInfo, targets, platformFilter, targetsOutputDir, cmakeTargetsOutputDir );
     
     GenerateCIBuildBashScript( targetsOutputDir );
 

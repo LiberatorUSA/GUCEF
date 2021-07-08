@@ -1,0 +1,44 @@
+name: target_GUCEF_exe_udp2rediscluster
+
+on: repository_dispatch
+
+jobs:
+
+  GUCEF_exe_udp2rediscluster-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_udp2rediscluster-all'
+    runs-on: ubuntu-latest
+    env:
+      TARGET_NAME: GUCEF_exe_udp2rediscluster
+      TARGET_PLATFORM: all
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_udp2rediscluster
+      PRODUCT_NAME: udp2rediscluster
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build udp2rediscluster for platform all
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_udp2rediscluster-all/packages/*udp2rediscluster*.tar.xz

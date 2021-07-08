@@ -1,0 +1,158 @@
+name: target_GUCEF_exe_ArchiveDiff
+
+on: repository_dispatch
+
+jobs:
+
+  GUCEF_exe_ArchiveDiff-all:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-all'
+    runs-on: ubuntu-latest
+    env:
+      TARGET_NAME: GUCEF_exe_ArchiveDiff
+      TARGET_PLATFORM: all
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
+      PRODUCT_NAME: ArchiveDiff
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform all
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.tar.xz
+  GUCEF_exe_ArchiveDiff-linux32:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux32'
+    runs-on: ubuntu-latest
+    env:
+      TARGET_NAME: GUCEF_exe_ArchiveDiff
+      TARGET_PLATFORM: linux32
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
+      PRODUCT_NAME: ArchiveDiff
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform linux32
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.tar.xz
+  GUCEF_exe_ArchiveDiff-linux64:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux64'
+    runs-on: ubuntu-latest
+    env:
+      TARGET_NAME: GUCEF_exe_ArchiveDiff
+      TARGET_PLATFORM: linux64
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_exe_ArchiveDiff
+      PRODUCT_NAME: ArchiveDiff
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform linux64
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.tar.xz
+  GUCEF_exe_ArchiveDiff-win32:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win32'
+    runs-on: windows-latest
+    env:
+      TARGET_NAME: GUCEF_exe_ArchiveDiff
+      TARGET_PLATFORM: win32
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
+      PRODUCT_NAME: ArchiveDiff
+      CI_TOOL: GITHUB-ACTIONS
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform win32
+        run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-win32/packages/*ArchiveDiff*.zip
+  GUCEF_exe_ArchiveDiff-win64:
+    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win64'
+    runs-on: windows-latest
+    env:
+      TARGET_NAME: GUCEF_exe_ArchiveDiff
+      TARGET_PLATFORM: win64
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
+      PRODUCT_NAME: ArchiveDiff
+      CI_TOOL: GITHUB-ACTIONS
+    steps:
+      - uses: actions/checkout@master
+      - name: Build ArchiveDiff for platform win64
+        run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_exe_ArchiveDiff-win64/packages/*ArchiveDiff*.zip
