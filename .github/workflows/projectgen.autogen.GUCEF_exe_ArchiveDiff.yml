@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_ArchiveDiff
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_ArchiveDiff-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
@@ -43,7 +42,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_ArchiveDiff-all/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-linux32:
-    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux32'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
@@ -81,7 +79,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_ArchiveDiff-linux32/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-linux64:
-    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-linux64'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
@@ -119,7 +116,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_ArchiveDiff-linux64/packages/*ArchiveDiff*.tar.xz
   GUCEF_exe_ArchiveDiff-win32:
-    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win32'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
@@ -127,6 +123,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform win32
@@ -138,7 +135,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_ArchiveDiff-win32/packages/*ArchiveDiff*.zip
   GUCEF_exe_ArchiveDiff-win64:
-    if: github.event.client_payload.job == 'GUCEF_exe_ArchiveDiff-win64'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_ArchiveDiff
@@ -146,6 +142,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_ArchiveDiff
       PRODUCT_NAME: ArchiveDiff
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build ArchiveDiff for platform win64

@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_udp2redis
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_udp2redis-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_udp2redis-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_udp2redis

@@ -1,11 +1,10 @@
 name: target_GUCEF
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF-all:
-    if: github.event.client_payload.job == 'GUCEF-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF

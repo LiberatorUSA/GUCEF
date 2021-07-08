@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_MemoryLeakFinder_TestApp
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_MemoryLeakFinder_TestApp-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
@@ -43,7 +42,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-all/packages/*MemoryLeakFinder_TestApp*.tar.xz
   GUCEF_exe_MemoryLeakFinder_TestApp-win32:
-    if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win32'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
@@ -51,6 +49,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
       PRODUCT_NAME: MemoryLeakFinder_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform win32
@@ -62,7 +61,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MemoryLeakFinder_TestApp-win32/packages/*MemoryLeakFinder_TestApp*.zip
   GUCEF_exe_MemoryLeakFinder_TestApp-win64:
-    if: github.event.client_payload.job == 'GUCEF_exe_MemoryLeakFinder_TestApp-win64'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_MemoryLeakFinder_TestApp
@@ -70,6 +68,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MemoryLeakFinder_TestApp
       PRODUCT_NAME: MemoryLeakFinder_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MemoryLeakFinder_TestApp for platform win64

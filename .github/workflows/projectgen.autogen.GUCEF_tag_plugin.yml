@@ -1,11 +1,10 @@
 name: target_GUCEF_tag_plugin
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_tag_plugin-all:
-    if: github.event.client_payload.job == 'GUCEF_tag_plugin-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_tag_plugin
@@ -43,7 +42,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_tag_plugin-all/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-linux32:
-    if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux32'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_tag_plugin
@@ -81,7 +79,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_tag_plugin-linux32/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-linux64:
-    if: github.event.client_payload.job == 'GUCEF_tag_plugin-linux64'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_tag_plugin
@@ -119,7 +116,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_tag_plugin-linux64/packages/*GUCEF_tag_plugin*.tar.xz
   GUCEF_tag_plugin-win32:
-    if: github.event.client_payload.job == 'GUCEF_tag_plugin-win32'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_tag_plugin
@@ -127,6 +123,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform win32
@@ -138,7 +135,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_tag_plugin-win32/packages/*GUCEF_tag_plugin*.zip
   GUCEF_tag_plugin-win64:
-    if: github.event.client_payload.job == 'GUCEF_tag_plugin-win64'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_tag_plugin
@@ -146,6 +142,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_plugin
       PRODUCT_NAME: GUCEF_tag_plugin
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build GUCEF_tag_plugin for platform win64

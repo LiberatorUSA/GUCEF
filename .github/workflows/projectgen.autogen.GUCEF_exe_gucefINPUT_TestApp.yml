@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_gucefINPUT_TestApp
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_gucefINPUT_TestApp-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
@@ -43,7 +42,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_gucefINPUT_TestApp-all/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-linux32:
-    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux32'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
@@ -81,7 +79,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux32/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-linux64:
-    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-linux64'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
@@ -119,7 +116,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_gucefINPUT_TestApp-linux64/packages/*gucefINPUT_TestApp*.tar.xz
   GUCEF_exe_gucefINPUT_TestApp-win32:
-    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-win32'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
@@ -127,6 +123,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform win32
@@ -138,7 +135,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_gucefINPUT_TestApp-win32/packages/*gucefINPUT_TestApp*.zip
   GUCEF_exe_gucefINPUT_TestApp-win64:
-    if: github.event.client_payload.job == 'GUCEF_exe_gucefINPUT_TestApp-win64'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_gucefINPUT_TestApp
@@ -146,6 +142,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_gucefINPUT_TestApp
       PRODUCT_NAME: gucefINPUT_TestApp
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build gucefINPUT_TestApp for platform win64

@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_itvExporter
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_itvExporter-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_itvExporter-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_itvExporter

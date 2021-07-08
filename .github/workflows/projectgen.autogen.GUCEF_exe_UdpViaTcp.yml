@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_UdpViaTcp
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_UdpViaTcp-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_UdpViaTcp-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_UdpViaTcp

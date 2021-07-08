@@ -1,11 +1,10 @@
 name: target_GUCEF_exe_MyGUI.SkinEditor
 
-on: repository_dispatch
+on: workflow_dispatch:
 
 jobs:
 
   GUCEF_exe_MyGUI_SkinEditor-all:
-    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-all'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
@@ -43,7 +42,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MyGUI.SkinEditor-all/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-linux32:
-    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux32'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
@@ -81,7 +79,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux32/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-linux64:
-    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-linux64'
     runs-on: ubuntu-latest
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
@@ -119,7 +116,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MyGUI.SkinEditor-linux64/packages/*MyGUI.SkinEditor*.tar.xz
   GUCEF_exe_MyGUI_SkinEditor-win32:
-    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win32'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
@@ -127,6 +123,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform win32
@@ -138,7 +135,6 @@ jobs:
           path: |
             ./common/bin/GUCEF_exe_MyGUI.SkinEditor-win32/packages/*MyGUI.SkinEditor*.zip
   GUCEF_exe_MyGUI_SkinEditor-win64:
-    if: github.event.client_payload.job == 'GUCEF_exe_MyGUI.SkinEditor-win64'
     runs-on: windows-latest
     env:
       TARGET_NAME: GUCEF_exe_MyGUI.SkinEditor
@@ -146,6 +142,7 @@ jobs:
       TARGET_PROJECT: projects\CMake\targets\GUCEF_exe_MyGUI.SkinEditor
       PRODUCT_NAME: MyGUI.SkinEditor
       CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
     steps:
       - uses: actions/checkout@master
       - name: Build MyGUI.SkinEditor for platform win64
