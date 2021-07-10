@@ -33,6 +33,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-c-eve
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-checksums ${CMAKE_BINARY_DIR}/aws-checksums )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-core ${CMAKE_BINARY_DIR}/aws-cpp-sdk-core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-s3 ${CMAKE_BINARY_DIR}/aws-cpp-sdk-s3 )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-sqs ${CMAKE_BINARY_DIR}/aws-cpp-sdk-sqs )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-lambda-runtime ${CMAKE_BINARY_DIR}/aws-lambda-runtime )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/cegui/cegui ${CMAKE_BINARY_DIR}/CEGUI )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/cegui/cegui/src/CommonDialogs ${CMAKE_BINARY_DIR}/CEGUI.CommonDialogs )

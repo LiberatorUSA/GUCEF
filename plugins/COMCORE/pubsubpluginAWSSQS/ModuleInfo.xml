@@ -4,11 +4,13 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="aws-cpp-sdk-sqs" />
         </Dependencies>
 		<Linker>
 			<Dependency Name="gucefMT" />
 			<Dependency Name="gucefCORE" />	
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="aws-cpp-sdk-sqs" />
 		</Linker>
         <Preprocessor>
             <Define String="PUBSUBPLUGIN_AWSSQS_BUILD_PLUGIN_DLL" />
