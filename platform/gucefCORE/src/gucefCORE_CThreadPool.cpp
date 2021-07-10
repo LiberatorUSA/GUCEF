@@ -370,9 +370,12 @@ CThreadPool::OnPumpedNotify( CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadPool::RemoveConsumerFromQueue( const UInt32 taskID )
+CThreadPool::RemoveConsumer( const UInt32 taskID )
 {GUCEF_TRACE;
 
+    UInt32 queueItemsRemoved = 0;
+    bool taskConsumerUnlinked = false;
+    
     Lock();
     m_taskQueue.DoLock();
 
@@ -393,7 +396,18 @@ CThreadPool::RemoveConsumerFromQueue( const UInt32 taskID )
     }
 
     m_taskQueue.DoUnlock();
+
+    TTaskConsumerMap::iterator n = m_taskConsumerMap.find( taskID );
+    if ( n != m_taskConsumerMap.end() )
+    {
+        m_taskConsumerMap.erase( n );
+        taskConsumerUnlinked = true;        
+    }
+
     Unlock();
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "ThreadPool: Removing refrences to task ID " + ToString( taskID ) +
+        ". This task had " + ToString( queueItemsRemoved ) + " queued work items. Unlinked consumer: " + ToString( taskConsumerUnlinked ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -635,15 +649,36 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
         return false;
     }
         
-    // Just spawn a task delegator, it will auto register as an active task
+    // Leverage the special friendship to internally set up the relationship / ownership
+    // Keep in mind we support both task consumers who's life cycle is managed by the pool but also 
+    // externalized consumers which have an independent life cycle. As such we need to keep track of which is
+    // which so we don't assume life cycle ownership when in fact we have none
     taskConsumer->SetIsOwnedByThreadPool( false );
     taskConsumer->SetThreadPool( this );
+
+    // We proxy event messages
     SubscribeTo( taskConsumer.GetPointerAlways() );
-    CTaskDelegator* delegator = new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
 
+    // Since clearly the task consumer wishes to utlize this particular thread pool we will now
+    // make sure the task consumer is registered as a known consumer for this thread pool
+    m_taskConsumerMap[ taskConsumer->m_taskId ] = taskConsumer;
+
+    // Just spawn a task delegator, it will auto register as an active task
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-
-    return delegator->Activate();
+    CTaskDelegator* delegator = new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
+    if ( delegator->Activate() )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Successfully activated delegator for task type \"" + taskConsumer->GetType() + 
+            "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() ) + " and thread ID " + ToString( delegator->GetThreadID() )  );
+        return true;        
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to activate delegator for task type \"" + taskConsumer->GetType() + 
+            "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() )  + " and thread ID " + ToString( delegator->GetThreadID() )  );
+        delete delegator;
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -702,8 +737,9 @@ CThreadPool::TaskCleanup( CTaskConsumerPtr taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::PauseTask( const UInt32 taskID ,
-                         const bool force    )
+CThreadPool::PauseTask( const UInt32 taskID          ,
+                        const bool force             ,
+                        const bool okIfTaskIsUnknown )
 {GUCEF_TRACE;
 
     Lock();
@@ -731,14 +767,20 @@ CThreadPool::PauseTask( const UInt32 taskID ,
             }
         }
     }
+    else
+    {
+        Unlock();
+        return okIfTaskIsUnknown;
+    }
     Unlock();
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::ResumeTask( const UInt32 taskID )
+CThreadPool::ResumeTask( const UInt32 taskID          ,
+                         const bool okIfTaskIsUnknown )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -763,14 +805,20 @@ CThreadPool::ResumeTask( const UInt32 taskID )
             }
         }
     }
+    else
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot resume task with ID " + UInt32ToString( taskID ) + ". It is not known to this pool" );
+        return okIfTaskIsUnknown;
+    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::RequestTaskToStop( const UInt32 taskID   , 
-                                 bool callerShouldWait )
+CThreadPool::RequestTaskToStop( const UInt32 taskID    , 
+                                bool callerShouldWait  ,
+                                bool okIfTaskIsUnknown )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -787,23 +835,28 @@ CThreadPool::RequestTaskToStop( const UInt32 taskID   ,
                 delegator->Deactivate( false, callerShouldWait );
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );
-                return true;
             }
             else
             {
-                // If a consumer does not have a delegator then it hasnt started yet
-                return true;
+                // If a consumer does not have a delegator then it hasnt started yet or it already finished its work
+                // either way its already stopped
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: task with ID " + UInt32ToString( taskID ) + " is known but not active" );
             }
         }
     }
-    return false;
+    else
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: task with ID " + UInt32ToString( taskID ) + " is not known to this pool" );
+        return okIfTaskIsUnknown;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CThreadPool::RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
-                                 bool callerShouldWait         )
+                                bool callerShouldWait         )
 {GUCEF_TRACE;
 
     if ( !taskConsumer.IsNULL() )
@@ -843,7 +896,9 @@ CThreadPool::WaitForTaskToFinish( const UInt32 taskId ,
             }
         }
     }
-    return false;
+
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool:WaitForTaskToFinish: Task with ID " + UInt32ToString( taskId ) + " is not associated with any thread and as such no wait occured" );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -211,7 +211,7 @@ CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::RemoveConsumerFromQueues( UInt32 taskID )
+CTaskManager::RemoveConsumer( UInt32 taskID )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -219,7 +219,7 @@ CTaskManager::RemoveConsumerFromQueues( UInt32 taskID )
     ThreadPoolMap::iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
-        (*i).second->RemoveConsumerFromQueue( taskID );
+        (*i).second->RemoveConsumer( taskID );
         ++i;
     }
 }
@@ -266,8 +266,8 @@ CTaskManager::UnregisterTaskConsumerId( CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
+    RemoveConsumer( taskId );
     m_taskIdGenerator.ReleaseID( &taskId );
-    RemoveConsumerFromQueues( taskId );
 }
 
 /*-------------------------------------------------------------------------*/

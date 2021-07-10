@@ -312,11 +312,13 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
 
         taskConsumer->OnTaskEnding( taskData, false );
         taskConsumer->OnTaskEnded( taskData, false );
+        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         returnStatus = true;
     }
     else
     {
         taskConsumer->OnTaskStartupFailed( taskData );
+        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
     }
     m_consumerBusy = false;
     return returnStatus;
@@ -372,11 +374,13 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
 
     // if we get here and the m_consumerBusy flag is set then the task was killed
     // and we did not finish whatever the consumer was doing gracefully
-    // We should give the consume a chance to cleanup
+    // We should give the consumer a chance to cleanup
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
+        
+        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         taskConsumer->SetTaskDelegator( GUCEF_NULL );
     }
 }

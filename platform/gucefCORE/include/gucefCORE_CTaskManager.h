@@ -108,7 +108,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     private:
 
-    void RemoveConsumerFromQueues( UInt32 taskID );
+    void RemoveConsumer( UInt32 taskID );
 
     CTaskManager( const CTaskManager& src );            /**< not implemented */
     CTaskManager& operator=( const CTaskManager& src ); /**< not implemented */

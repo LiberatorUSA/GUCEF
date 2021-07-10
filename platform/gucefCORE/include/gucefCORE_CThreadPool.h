@@ -133,13 +133,16 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
     bool StartTask( CTaskConsumerPtr task              ,
                     CICloneable* taskData = GUCEF_NULL );
 
-    bool PauseTask( const UInt32 taskID ,
-                    const bool force    );
+    bool PauseTask( const UInt32 taskID                 ,
+                    const bool force                    ,
+                    const bool okIfTaskIsUnknown = true );
 
-    bool ResumeTask( const UInt32 taskID );
+    bool ResumeTask( const UInt32 taskID                  ,
+                     const bool okIfTaskIsUnknown = false );
 
-    bool RequestTaskToStop( const UInt32 taskId   , 
-                            bool callerShouldWait );
+    bool RequestTaskToStop( const UInt32 taskId           , 
+                            bool callerShouldWait         ,
+                            bool okIfTaskIsUnknown = true );
 
     bool RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
                             bool callerShouldWait         );
@@ -209,13 +212,6 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
                       CICloneable* taskData         );
 
     private:
-    friend class CTaskConsumer;
-
-    void RegisterTaskConsumerId( CTaskConsumer::TTaskId& taskId );
-
-    void UnregisterTaskConsumerId( CTaskConsumer::TTaskId& taskId );
-
-    private:
     friend class CTaskManager;
 
     CThreadPool( void );
@@ -251,7 +247,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
     void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                                     bool gracefullEnforcement );
 
-    void RemoveConsumerFromQueue( const UInt32 taskID );
+    void RemoveConsumer( const UInt32 taskID );
 
     CThreadPool( const CThreadPool& src );
 
