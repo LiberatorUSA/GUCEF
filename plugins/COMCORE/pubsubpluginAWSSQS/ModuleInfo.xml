@@ -14,6 +14,7 @@
 		</Linker>
         <Preprocessor>
             <Define String="PUBSUBPLUGIN_AWSSQS_BUILD_PLUGIN_DLL" />
+			<Define String="USE_IMPORT_EXPORT" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

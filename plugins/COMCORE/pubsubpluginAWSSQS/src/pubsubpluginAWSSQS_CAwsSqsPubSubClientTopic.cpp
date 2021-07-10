@@ -24,6 +24,19 @@
 
 #include <string.h>
 
+#include <aws/core/Aws.h>
+#include <aws/sqs/SQSClient.h>
+#include <aws/sqs/model/GetQueueUrlRequest.h>
+#include <aws/sqs/model/GetQueueUrlResult.h>
+#include <aws/sqs/model/SendMessageRequest.h>
+#include <aws/sqs/model/SendMessageResult.h>
+#include <aws/sqs/model/SendMessageBatchRequest.h>
+#include <aws/sqs/model/SendMessageBatchResult.h>
+#include <aws/sqs/model/ReceiveMessageRequest.h>
+#include <aws/sqs/model/ReceiveMessageResult.h>
+#include <aws/sqs/model/DeleteMessageRequest.h>
+#include <iostream>
+
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
 #include "gucefMT_CScopeMutex.h"
 #define GUCEF_MT_CSCOPEMUTEX_H
@@ -51,6 +64,9 @@
 
 #include "pubsubpluginAWSSQS_CAwsSqsPubSubClientTopic.h"
 
+// Windoze has a macro for SendMessage which messes up our API calls
+#undef SendMessage
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -60,6 +76,14 @@
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace AWSSQS {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define SQSCLIENT_MAX_PAYLOAD_SIZE                  ( 256 * 1024 ) // 256KB
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,6 +97,8 @@ CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client 
     , m_redisShardHost()
     , m_config()
     , m_lock()
+    , m_queueUrl()
+    , m_publishBulkMsgRemapStorage()
 {GUCEF_TRACE;
         
     RegisterEventHandlers();
@@ -125,12 +151,194 @@ CAwsSqsPubSubClientTopic::GetTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CAwsSqsPubSubClientTopic::GetSqsQueueUrlForQueueName( const CORE::CString& queueName )
+{GUCEF_TRACE;
+
+    try
+    {
+        Aws::SQS::Model::GetQueueUrlRequest gqu_req;
+        gqu_req.SetQueueName( queueName );
+
+        Aws::SQS::Model::GetQueueUrlOutcome gqu_out = m_client->GetSqsClient().GetQueueUrl( gqu_req );
+        if ( gqu_out.IsSuccess() ) 
+        {
+            const Aws::String& queueUrl = gqu_out.GetResult().GetQueueUrl();
+
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: Resolved queue name \"" + queueName = "\" to URL: " + queueUrl );
+            return queueUrl;
+        } 
+        else 
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: Error getting URL for queue name \"" + queueName = "\":" + gqu_out.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an exception: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
+    }
+
+    return CORE::CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+    m_publishBulkMsgRemapStorage.clear();
+    m_publishBulkMsgRemapStorage.push_back( &msg );
+    return Publish( m_publishBulkMsgRemapStorage );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSqsPubSubClientTopic::Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    m_publishBulkMsgRemapStorage.resize( msgs.size() );
+    COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector::const_iterator i = msgs.begin();
+    while ( i != msgs.end() )    
+    {
+        m_publishBulkMsgRemapStorage.push_back( &(*i) );
+        ++i;
+    }
+    return Publish( m_publishBulkMsgRemapStorage );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
     
+    try
+    {    
+        bool totalSuccess = true;
+        Aws::SQS::Model::SendMessageBatchRequest sm_req;
+        sm_req.SetQueueUrl( m_queueUrl );
+       
+        COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
+        while ( i != msgs.end() )
+        {        
+            const COMCORE::CIPubSubMsg* msg = (*i);
+            if ( GUCEF_NULL == msg )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: NULL Message passed, ignoring" );
+                totalSuccess = false;
+                ++i; continue;
+            }
+            
+            Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;
+                        
+            const CORE::CVariant& bodyPayload = msg->GetPrimaryPayload();
+            if ( bodyPayload.IsInitialized() )
+            {
+                // A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed:
+                // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
+                // The minimum size is one character. The maximum size is 256 KB.
+            
+                // We request the payload as a string. Note that this auto converts
+                // Binary is Base64 encoded
+                CORE::CString bodyPayloadStr = bodyPayload.AsString();
+            
+                if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= SQSCLIENT_MAX_PAYLOAD_SIZE )
+                {
+                    sqsMsg.SetMessageBody( bodyPayloadStr );
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Message body size as string has an invalid size. Must be between 1-256KB. Cannot publish" );
+                    totalSuccess = false;
+                    ++i; continue;
+                }
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Message does not have a body which SQS does not allow. Cannot publish" );
+                totalSuccess = false;
+                ++i; continue;
+            }
+
+            const COMCORE::CIPubSubMsg::TKeyValuePairs& kvPairs = msg->GetKeyValuePairs();
+            if ( !kvPairs.empty() )
+            {
+                typedef Aws::Map< Aws::String, Aws::SQS::Model::MessageAttributeValue > TSqsMsgAttributeMap;
+
+                TSqsMsgAttributeMap attribs;
+                COMCORE::CIPubSubMsg::TKeyValuePairs::const_iterator n = kvPairs.begin();
+                while ( n != kvPairs.end() )
+                {
+                    const COMCORE::CIPubSubMsg::TKeyValuePair& kvPair = (*n);
+                    const CORE::CVariant& kvKey = kvPair.first;
+                    const CORE::CVariant& kvValue = kvPair.second;
+
+                    if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
+                    {                    
+                        Aws::SQS::Model::MessageAttributeValue& sqsAttribValue = attribs[ kvKey.AsString() ];  // if there are dupicate keys last one wins
+
+                        if ( kvValue.IsBinary() )
+                        {
+                            sqsAttribValue.SetDataType( "Binary" );
+                            sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
+                        }
+                        else
+                        if ( kvValue.IsString() )
+                        {
+                            sqsAttribValue.SetDataType( "String" );
+                            sqsAttribValue.SetStringValue( kvValue.AsString() );
+                        }
+                        else
+                        {
+                            sqsAttribValue.SetDataType( "StringValue" );
+                            sqsAttribValue.SetStringValue( kvValue.AsString() );
+                        }
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Uninitialized key and/or value set on msg, ignoring" );
+                    }
+                    ++n;
+                }
+            }
+        
+            sm_req.AddEntries( sqsMsg );
+
+            ++i;
+        }
+
+        Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
+        if ( sm_out.IsSuccess() )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
+            return totalSuccess;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+        }   
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an exception: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
+    }
+
     return false;
 }
 
@@ -155,6 +363,8 @@ CAwsSqsPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& c
     MT::CScopeMutex lock( m_lock );
     
     m_config = config;
+
+    m_queueUrl = GetSqsQueueUrlForQueueName( m_config.topicName );
 
     return true;
 }
@@ -207,7 +417,7 @@ bool
 CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_lock );
+    // Not supported
     return false;
 }
 
@@ -217,7 +427,7 @@ bool
 CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_lock );
+    // Not supported
     return false;
 }
 

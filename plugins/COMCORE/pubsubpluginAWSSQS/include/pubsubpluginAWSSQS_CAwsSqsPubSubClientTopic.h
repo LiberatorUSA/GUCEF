@@ -92,6 +92,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
@@ -122,7 +124,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
-    bool SubscribeImpl( const std::string& readOffset );
+    CORE::CString GetSqsQueueUrlForQueueName( const CORE::CString& queueName );
 
     private:
 
@@ -141,6 +143,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
     COMCORE::CHostAddress m_redisShardHost;
     CAwsSqsPubSubClientTopicConfig m_config;
     MT::CMutex m_lock;
+    Aws::String m_queueUrl;
+    COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector m_publishBulkMsgRemapStorage;
 };
 
 /*-------------------------------------------------------------------------//

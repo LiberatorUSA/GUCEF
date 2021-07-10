@@ -95,7 +95,9 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
     public:
 
     typedef std::pair< CORE::CVariant, CORE::CVariant > TKeyValuePair;
-    typedef std::vector< TKeyValuePair > TKeyValuePairs;
+    typedef std::vector< TKeyValuePair >                TKeyValuePairs;
+    typedef std::vector< CIPubSubMsg* >                 TIPubSubMsgRawPtrVector;
+    typedef std::vector< const CIPubSubMsg* >           TIPubSubMsgConstRawPtrVector;
 
     CIPubSubMsg( void );
 

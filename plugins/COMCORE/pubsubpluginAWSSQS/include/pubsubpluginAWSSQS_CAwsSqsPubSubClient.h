@@ -25,6 +25,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <aws/core/Aws.h>
+#include <aws/sqs/SQSClient.h>
+
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -98,7 +101,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public COMCOR
 
     COMCORE::CPubSubClientConfig& GetConfig( void );
 
-    CORE::ThreadPoolPtr GetThreadPool( void );
+    Aws::SQS::SQSClient& GetSqsClient( void );
     
     private:
 
@@ -119,7 +122,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public COMCOR
     COMCORE::CPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
-    CORE::ThreadPoolPtr m_threadPool;
+    Aws::SQS::SQSClient m_sqsClient;    
 };
 
 /*-------------------------------------------------------------------------//

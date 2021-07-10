@@ -75,7 +75,7 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& co
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
-    , m_threadPool()
+    , m_sqsClient()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -94,9 +94,6 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& co
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
-    
-    if ( config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "AwsSqsPubSubClient(" + CORE::ToString( this ) + ")", true );
 
     RegisterEventHandlers();
 }
@@ -105,9 +102,6 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& co
 
 CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
 {GUCEF_TRACE;
-
-    if ( !m_threadPool.IsNULL() )
-        m_threadPool->RequestAllThreadsToStop( true, false );
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -124,33 +118,25 @@ CAwsSqsPubSubClient::GetConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-CORE::ThreadPoolPtr 
-CAwsSqsPubSubClient::GetThreadPool( void )
-{GUCEF_TRACE;
-
-    return m_threadPool;
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
-    features.supportsPerMsgIds = true;
-    features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
-    features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
-    features.supportsDuplicateKeysPerMsg = true;        // Redis does not care about duplicate keys, they are just "fields"
-    features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
-    features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
-    features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
-    features.supportsMetrics = true;
+    features.supportsBinaryPayloads = false;            // Per SendMessage doc: "A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed", so only text and a tiny subset of Unicode
+    features.supportsPerMsgIds = true;                  // Supported but system generated only
+    features.supportsPrimaryPayloadPerMsg = true;       // This is the primary way to send the payload in SQS, key-value attribute support is merely supplemental
+    features.supportsKeyValueSetPerMsg = true;          // Supported in SQS using message attributes. "Each message can have up to 10 attributes. Message attributes are optional and separate from the message body (however, they are sent alongside it)"
+    features.supportsMetaDataKeyValueSetPerMsg = true;  // "Whereas you can use message attributes to attach custom metadata to Amazon SQS messages for your applications, you can use message system attributes to store metadata for other AWS services, such as AWS X-Ray"
+    features.supportsDuplicateKeysPerMsg = false;       // Since attributes are a map of keys to a value it mandates that every key is unique
+    features.supportsMultiHostSharding = true;          // SQS is a managed service which under the coveres is shareded across hardware/nodes
+    features.supportsPublishing = true;                 // SQS supports sending messages to the queue
+    features.supportsSubscribing = true;                // SQS supports reading messages from the queue
+    features.supportsMetrics = true;                    // We add our own metrics support in this plugin for SQS specific stats
     features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
-    features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
-    features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
-    features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
-    features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
+    features.supportsBookmarkingConcept = true;         // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
+    features.supportsAutoBookmarking = true;            // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
+    features.supportsMsgIdBasedBookmark = false;        // Since SQS is a queue where you consume the messages: You cannot provide a msg ID to resume from a given point
+    features.supportsMsgDateTimeBasedBookmark = false;  // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
     return true;
 }
 
@@ -194,6 +180,15 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         delete (*i).second;
         m_topicMap.erase( i );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+Aws::SQS::SQSClient&
+CAwsSqsPubSubClient::GetSqsClient( void )
+{GUCEF_TRACE;
+
+    return m_sqsClient;
 }
 
 /*-------------------------------------------------------------------------*/

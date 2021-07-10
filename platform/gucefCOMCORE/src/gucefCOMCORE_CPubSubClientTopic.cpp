@@ -193,6 +193,26 @@ CPubSubClientTopic::Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs 
     return totalSuccess;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientTopic::Publish( const CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
+    while ( i != msgs.end() )    
+    {
+        const CIPubSubMsg* rawMsgPtr = (*i);
+        if ( GUCEF_NULL != rawMsgPtr )
+            totalSuccess = totalSuccess && Publish( *rawMsgPtr );
+        else
+            totalSuccess = false;    
+        ++i;
+    }
+    return totalSuccess;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
