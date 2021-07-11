@@ -184,6 +184,20 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CAwsSqsPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicNameList.insert( (*i).first );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 Aws::SQS::SQSClient&
 CAwsSqsPubSubClient::GetSqsClient( void )
 {GUCEF_TRACE;

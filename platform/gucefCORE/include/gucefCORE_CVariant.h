@@ -189,6 +189,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( UInt64  data );
     CVariant& operator=( Float32 data );
     CVariant& operator=( Float64 data );
+    CVariant& operator=( const CDynamicBuffer& data );
     CVariant& operator=( const CAsciiString& data );
     CVariant& operator=( const CUtf8String& data );
     CVariant& operator=( const std::string& data );

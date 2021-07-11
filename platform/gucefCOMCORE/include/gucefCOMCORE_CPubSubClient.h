@@ -94,6 +94,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual CPubSubClientTopic* GetTopicAccess( const CString& topicName ) = 0;
 
+    virtual void GetTopicNameList( CString::StringSet& topicNameList ) = 0;
+
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 
     virtual bool Connect( void ) = 0;

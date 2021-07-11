@@ -87,6 +87,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public COMCOR
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void GetTopicNameList( CORE::CString::StringSet& topicNameList ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool Connect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;

@@ -20,4 +20,12 @@
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 		</RuntimeDependencies>
 	</Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+			<RuntimeDependency Name="pubsubpluginKAFKA" />
+			<RuntimeDependency Name="pubsubpluginMSMQ" />
+			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
+		</RuntimeDependencies>
+	</Module>	
 </ModuleInfoEntry>

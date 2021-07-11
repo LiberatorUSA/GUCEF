@@ -32,6 +32,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+#include "pluginglueAWSSDK_CAwsSdkGlobal.h"
+#define GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H ? */
+
 #ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENT_H
 #include "pubsubpluginAWSSQS_CAwsSqsPubSubClient.h"
 #define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENT_H
@@ -76,6 +81,9 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on COMCORE pubsub plugin AWSSQS" );
+    
+    // Make sure the AWS glue library is initialized
+    PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
     
     COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CAwsSqsPubSubClient::TypeName, &g_awsSqsClusterPubSubClientFactory );
     

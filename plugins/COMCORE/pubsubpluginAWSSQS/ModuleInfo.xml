@@ -4,12 +4,14 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="pluginglueAWSSDK" />
 			<Dependency Name="aws-cpp-sdk-sqs" />
         </Dependencies>
 		<Linker>
 			<Dependency Name="gucefMT" />
 			<Dependency Name="gucefCORE" />	
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="pluginglueAWSSDK" />
 			<Dependency Name="aws-cpp-sdk-sqs" />
 		</Linker>
         <Preprocessor>

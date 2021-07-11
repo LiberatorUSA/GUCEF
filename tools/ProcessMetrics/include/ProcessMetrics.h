@@ -44,6 +44,16 @@
 #define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 #endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
+#include "gucefCOMCORE_CPubSubClient.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENT_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#include "gucefCOMCORE_CPubSubClientFactory.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -136,6 +146,32 @@ class RestApiProcessMetricsConfigResource : public WEB::CCodecBasedHTTPServerRes
 
 /*-------------------------------------------------------------------------*/
 
+class MetricThreshold : public CORE::CIConfigurable
+{
+    public:
+
+    CORE::CVariant minThreshold;
+    CORE::CVariant maxThreshold;
+    bool applyMinThreshold;
+    bool applyMaxThreshold;
+    CORE::CString thresholdDescription;    
+    CORE::CString metricName;
+    CORE::CString::StringSet procFilter;
+
+    MetricThreshold( void );
+
+    bool IsValid( void );
+    
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const;
+
+    virtual bool LoadConfig( const CORE::CDataNode& cfg );
+
+    virtual const CORE::CString& GetClassTypeName( void ) const;
+
+};
+
+/*-------------------------------------------------------------------------*/
+
 class ProcessMetrics : public CORE::CObservingNotifier
 {
     public:
@@ -167,6 +203,17 @@ class ProcessMetrics : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void ValidateMetricThresholds( const CORE::CVariant& metricValue ,
+                                   const CORE::CString& metricName   ,
+                                   const CORE::CString& procName     );
+    
+    void PublishMetricThresholdExceeded( const CORE::CVariant& metricValue ,
+                                         const CORE::CString& metricName   ,
+                                         const CORE::CString& procName     ,
+                                         const MetricThreshold& threshold  );
+    
+    bool SetupPubSubClient( const CORE::CDataNode& cfg );
+    
     private:
 
     struct SProcInfo
@@ -180,18 +227,27 @@ class ProcessMetrics : public CORE::CObservingNotifier
     typedef std::map< CORE::CString, TProcInfo > TProcessIdMap;
     typedef std::set< CORE::CString > TStringSet;
     typedef std::vector< CORE::CString > TStringVector;
+    typedef std::map< CORE::CString, MetricThreshold >  TMetricsThresholdMap;
+    typedef std::map< CORE::CString, TMetricsThresholdMap >  TMetricsThresholdMapMap;
 
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
+    COMCORE::CPubSubClientFactory::TProductPtr m_pubSubClient;
+    COMCORE::CPubSubClientTopic* m_thresholdNotificationPublishTopic;
+    COMCORE::CPubSubClientFeatures m_pubSubFeatures;
+    CORE::CString m_thresholdNotificationPrimaryPayloadCodecType;
     bool m_gatherMemStats;
     bool m_gatherCpuStats;
     bool m_enableRestApi;
+    bool m_enableEventMsgPublishing;
     TProcessIdMap m_exeProcIdMap;
     TStringSet m_exeProcsToWatch;
     CORE::UInt32 m_exeMatchPidMatchThreshold;
+    TMetricsThresholdMap m_metricsThresholds;
+    TMetricsThresholdMapMap m_procMetricsThresholds;
 
     bool m_gatherProcPageFaultCountInBytes;
     bool m_gatherProcPageFileUsageInBytes;

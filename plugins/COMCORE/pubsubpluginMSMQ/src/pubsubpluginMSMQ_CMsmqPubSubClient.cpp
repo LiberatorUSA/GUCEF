@@ -200,6 +200,20 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsmqPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicNameList.insert( (*i).first );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CString& 
 CMsmqPubSubClient::GetType( void ) const
 {GUCEF_TRACE;

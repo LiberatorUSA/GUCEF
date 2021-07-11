@@ -27,11 +27,6 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefWEB_CDummyHTTPServerResource.h"
-#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
-
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -41,6 +36,11 @@
 #include "DVCPPOSWRAP.h"
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
+
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
 #include "ProcessMetrics.h"
 
@@ -52,6 +52,16 @@
 #include "gucefCORE_MetricsMacros.h"
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -83,9 +93,11 @@ RestApiProcessMetricsInfoResource::Serialize( const CORE::CString& resourcePath 
                                               const CORE::CString& params         )
 {GUCEF_TRACE;
 
+    static const CORE::CDateTime compileDt = CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ );
+    
     output.SetName( "info" );
     output.SetAttribute( "application", "ProcessMetrics" );
-    output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
+    output.SetAttribute( "buildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
     #else
@@ -134,6 +146,91 @@ RestApiProcessMetricsConfigResource::Serialize( const CORE::CString& resourcePat
 
 /*-------------------------------------------------------------------------*/
 
+MetricThreshold::MetricThreshold( void )
+    : CORE::CIConfigurable()
+    , minThreshold()
+    , maxThreshold()
+    , applyMinThreshold( false )
+    , applyMaxThreshold( true )
+    , thresholdDescription()
+    , metricName()
+    , procFilter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MetricThreshold::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    cfg.SetAttribute( "minThreshold", minThreshold );
+    cfg.SetAttribute( "maxThreshold", maxThreshold );
+    cfg.SetAttribute( "applyMinThreshold", applyMinThreshold );
+    cfg.SetAttribute( "applyMaxThreshold", applyMaxThreshold );
+    cfg.SetAttribute( "thresholdDescription", thresholdDescription );
+    cfg.SetAttribute( "metricName", metricName );
+    
+    CORE::CString procFilterStr;
+    CORE::CString::StringSet::iterator i = procFilter.begin();
+    while ( i != procFilter.end() )
+    {
+        if ( procFilterStr.IsNULLOrEmpty() )
+        {
+            procFilterStr = (*i);
+        }
+        else
+        {
+            procFilterStr += ';' + (*i);
+        }
+        ++i;
+    }
+    cfg.SetAttribute( "procFilter", procFilterStr );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MetricThreshold::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    minThreshold = cfg.GetAttributeValueOrChildValueByName( "minThreshold", minThreshold );
+    maxThreshold = cfg.GetAttributeValueOrChildValueByName( "maxThreshold", maxThreshold );
+    applyMinThreshold = cfg.GetAttributeValueOrChildValueByName( "applyMinThreshold" ).AsBool( applyMinThreshold, true );
+    applyMaxThreshold = cfg.GetAttributeValueOrChildValueByName( "applyMaxThreshold" ).AsBool( applyMaxThreshold, true );
+    thresholdDescription = cfg.GetAttributeValueOrChildValueByName( "thresholdDescription" ).AsString( thresholdDescription, true );
+    metricName = cfg.GetAttributeValueOrChildValueByName( "metricName" ).AsString( metricName, true );
+
+    CORE::CString procFilterStr = cfg.GetAttributeValueOrChildValueByName( "procFilter" ).AsString( CORE::CString::Empty, true );
+    procFilter = procFilterStr.ParseUniqueElements( ';', false );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MetricThreshold::IsValid( void )
+{GUCEF_TRACE;
+
+    return ( applyMinThreshold || applyMaxThreshold ) && !metricName.IsNULLOrEmpty() && ( minThreshold.IsInitialized() || maxThreshold.IsInitialized() ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+MetricThreshold::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "MetricThreshold";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 ProcessMetrics::ProcessMetrics( void )
     : CORE::CObservingNotifier()
     , m_httpServer()
@@ -141,12 +238,19 @@ ProcessMetrics::ProcessMetrics( void )
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
+    , m_pubSubClient()
+    , m_thresholdNotificationPublishTopic( GUCEF_NULL )
+    , m_pubSubFeatures()
+    , m_thresholdNotificationPrimaryPayloadCodecType()
     , m_gatherMemStats( true )
     , m_gatherCpuStats( true )
     , m_enableRestApi( true )
+    , m_enableEventMsgPublishing( true )
     , m_exeProcIdMap()
     , m_exeProcsToWatch()
     , m_exeMatchPidMatchThreshold( 0 )
+    , m_metricsThresholds()
+    , m_procMetricsThresholds()
     , m_gatherProcPageFaultCountInBytes( true )
     , m_gatherProcPageFileUsageInBytes( true )
     , m_gatherProcPeakPageFileUsageInBytes( true )
@@ -248,6 +352,166 @@ ProcessMetrics::RefreshPIDs( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* pubSubClientCfgNode = cfg.Find( "PubSubClientConfig" );
+    if ( GUCEF_NULL != pubSubClientCfgNode )
+    {
+        COMCORE::CPubSubClientConfig pubSubClientCfg;
+        if ( pubSubClientCfg.LoadConfig( *pubSubClientCfgNode ) )
+        {
+            m_pubSubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubClientCfg.pubsubClientType, pubSubClientCfg );
+            if ( !m_pubSubClient.IsNULL() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully instantiated pub-sub client of type: " + pubSubClientCfg.pubsubClientType );                                
+                m_pubSubClient->GetSupportedFeatures( m_pubSubFeatures );
+                
+                // This app really only has topics for one purpose which is sending event messages
+                // As such we just grab the first config'd topic as the topic to do that on vs having yet another config setting
+                CORE::CString::StringSet topicNameList;
+                m_pubSubClient->GetTopicNameList( topicNameList );
+                if ( !topicNameList.empty() )
+                {
+                    m_thresholdNotificationPublishTopic = m_pubSubClient->GetTopicAccess( *topicNameList.begin() );
+                    if ( GUCEF_NULL != m_thresholdNotificationPublishTopic )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully obtained access to topic with name: " + *topicNameList.begin() );
+                        return true;
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has topic, but unable to obtain access. topicName=" + *topicNameList.begin() );
+                    }
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has no topics" );
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Failed to instantiate pub-sub client from config data. pubsubClientType=" + pubSubClientCfg.pubsubClientType );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Failed to load config data from config node \"PubSubClientConfig\"" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: No config node \"PubSubClientConfig\" could be located" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValue ,
+                                                const CORE::CString& metricName   ,
+                                                const CORE::CString& procName     ,
+                                                const MetricThreshold& threshold  )
+{GUCEF_TRACE;
+
+    if ( m_pubSubClient.IsNULL() || GUCEF_NULL == m_thresholdNotificationPublishTopic )
+        return;
+
+    COMCORE::CBasicPubSubMsg msg;
+
+    msg.AddKeyValuePair( "ProcessMetrics.EventMsgType", "MetricThresholdExceeded" );
+    msg.AddKeyValuePair( "ProcessMetrics.MetricName", metricName );
+    msg.AddKeyValuePair( "ProcessMetrics.MetricValue", metricValue );
+    if ( threshold.applyMinThreshold )
+        msg.AddKeyValuePair( "ProcessMetrics.MetricMinThreshold", threshold.minThreshold );
+    if ( threshold.applyMaxThreshold )
+        msg.AddKeyValuePair( "ProcessMetrics.MetricMaxThreshold", threshold.maxThreshold );
+    if ( !procName.IsNULLOrEmpty() )
+        msg.AddKeyValuePair( "ProcessMetrics.ProcName", procName );
+
+    // if we have support for key-value let's use that since it doesnt require a consumer to use special parsing
+    if ( !m_pubSubFeatures.supportsKeyValueSetPerMsg )
+    {
+        if ( !msg.MoveKeyValuePairsToEncodedPrimaryPayload( m_thresholdNotificationPrimaryPayloadCodecType ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Failed to encode primary payload on event message. Aborting" );
+            return;
+        }
+    }
+    
+    if ( m_thresholdNotificationPublishTopic->Publish( msg ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Published metric threshold exceeded event message" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Failed to publish event message" );
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ProcessMetrics::ValidateMetricThresholds( const CORE::CVariant& metricValue ,
+                                          const CORE::CString& metricName   ,
+                                          const CORE::CString& procName     )
+{GUCEF_TRACE;
+
+    if ( !m_enableEventMsgPublishing )
+        return;
+    
+    TMetricsThresholdMap::iterator i = m_metricsThresholds.find( metricName );
+    if ( i != m_metricsThresholds.end() )
+    {
+        MetricThreshold& thresholds = (*i).second;
+
+        if ( thresholds.applyMinThreshold )
+        {
+            if ( metricValue <= thresholds.minThreshold )
+            {
+                PublishMetricThresholdExceeded( metricValue, metricName, procName, thresholds );
+            }
+        }
+        if ( thresholds.applyMaxThreshold )
+        {
+            if ( metricValue >= thresholds.maxThreshold )
+            {
+                PublishMetricThresholdExceeded( metricValue, metricName, procName, thresholds );
+            }
+        }
+    }
+
+    TMetricsThresholdMapMap::iterator n = m_procMetricsThresholds.find( procName );
+    if ( n != m_procMetricsThresholds.end() )
+    {
+        TMetricsThresholdMap& thresholdMapForProc = (*n).second; 
+        TMetricsThresholdMap::const_iterator m = thresholdMapForProc.find( metricName );
+        if ( m != thresholdMapForProc.end() )
+        {
+            const MetricThreshold& thresholds = (*m).second;
+
+            if ( thresholds.applyMinThreshold )
+            {
+                if ( metricValue <= thresholds.minThreshold )
+                {
+                    PublishMetricThresholdExceeded( metricValue, metricName, procName, thresholds );
+                }
+            }
+            if ( thresholds.applyMaxThreshold )
+            {
+                if ( metricValue >= thresholds.maxThreshold )
+                {
+                    PublishMetricThresholdExceeded( metricValue, metricName, procName, thresholds );
+                }
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                      const CORE::CEvent& eventId  ,
@@ -265,18 +529,39 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CORE::TProcessMemoryUsageInfo memUseInfo;
             if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( (*m).second.pid, &memUseInfo ) )
             {
-                CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
+                const CORE::CString& procName = (*m).first;
+                CORE::CString metricPrefix = "ProcessMetrics." + procName + '.';
 
                 if ( m_gatherProcPageFaultCountInBytes )
-                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PageFaultCountInBytes", memUseInfo.pageFaultCountInBytes, 1.0f );
+                {
+                    static const CORE::CString metricName = "MemUse.PageFaultCountInBytes";
+                    GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.pageFaultCountInBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( memUseInfo.pageFaultCountInBytes ), metricName, procName );
+                }
                 if ( m_gatherProcPageFileUsageInBytes )
-                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PageFileUsageInBytes", memUseInfo.pageFileUsageInBytes, 1.0f );
+                {
+                    static const CORE::CString metricName = "MemUse.PageFileUsageInBytes";
+                    GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.pageFileUsageInBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( memUseInfo.pageFileUsageInBytes ), metricName, procName );
+                }
                 if ( m_gatherProcPeakPageFileUsageInBytes )
-                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PeakPageFileUsageInBytes", memUseInfo.peakPageFileUsageInBytes, 1.0f );
+                {
+                    static const CORE::CString metricName = "MemUse.PeakPageFileUsageInBytes";
+                    GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.peakPageFileUsageInBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( memUseInfo.peakPageFileUsageInBytes ), metricName, procName );
+                }
                 if ( m_gatherProcPeakWorkingSetSizeInBytes )
-                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PeakWorkingSetSizeInBytes", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
+                {
+                    static const CORE::CString metricName = "MemUse.PeakWorkingSetSizeInBytes";
+                    GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( memUseInfo.peakWorkingSetSizeInBytes ), metricName, procName );
+                }
                 if ( m_gatherProcWorkingSetSizeInBytes )
-                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.WorkingSetSizeInBytes", memUseInfo.workingSetSizeInBytes, 1.0f );
+                {
+                    static const CORE::CString metricName = "MemUse.WorkingSetSizeInBytes";
+                    GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.workingSetSizeInBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( memUseInfo.workingSetSizeInBytes ), metricName, procName );
+                }
             }
             else
             {
@@ -308,12 +593,21 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CORE::TProcessCpuUsageInfo cpuUseInfo;
             if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( (*m).second.pid, (*m).second.previousProcCpuDataDataPoint, &cpuUseInfo ) )
             {
-                CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
+                const CORE::CString& procName = (*m).first;
+                CORE::CString metricPrefix = "ProcessMetrics." + procName + '.';
 
                 if ( m_gatherProcCpuUptime )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".CpuUse.UptimeInMs", cpuUseInfo.uptimeInMs, 1.0f );
+                {
+                    static const CORE::CString metricName = "CpuUse.UptimeInMs";
+                    GUCEF_METRIC_GAUGE( metricPrefix + metricName, cpuUseInfo.uptimeInMs, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( cpuUseInfo.uptimeInMs ), metricName, procName );
+                }
                 if ( m_gatherProcCpuOverallPercentage )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".CpuUse.TotalCpuUsePercentage", cpuUseInfo.overallCpuConsumptionPercentage, 1.0f );
+                {
+                    static const CORE::CString metricName = "CpuUse.TotalCpuUsePercentage";
+                    GUCEF_METRIC_GAUGE( metricPrefix + metricName, cpuUseInfo.overallCpuConsumptionPercentage, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( cpuUseInfo.overallCpuConsumptionPercentage ), metricName, procName );
+                }
             }
             else
             {
@@ -342,21 +636,53 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         if ( OSWRAP_TRUE == CORE::GetGlobalMemoryUsage( &globMemInfo ) )
         {
             if ( m_gatherGlobalAvailablePageFileSizeInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailablePageFileSizeInBytes", globMemInfo.availablePageFileSizeInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.AvailablePageFileSizeInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.availablePageFileSizeInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.availablePageFileSizeInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalPageFileUsageInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailablePhysicalMemoryInBytes", globMemInfo.availablePhysicalMemoryInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.AvailablePhysicalMemoryInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.availablePhysicalMemoryInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.availablePhysicalMemoryInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalAvailableVirtualMemoryInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailableVirtualMemoryInBytes", globMemInfo.availableVirtualMemoryInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.AvailableVirtualMemoryInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.availableVirtualMemoryInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.availableVirtualMemoryInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalAvailExtendedVirtualMemoryInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailExtendedVirtualMemoryInBytes", globMemInfo.availExtendedVirtualMemoryInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.AvailExtendedVirtualMemoryInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.availExtendedVirtualMemoryInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.availExtendedVirtualMemoryInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalMemoryLoadPercentage )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.MemoryLoadPercentage", (CORE::UInt64) globMemInfo.memoryLoadPercentage, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.MemoryLoadPercentage";
+                GUCEF_METRIC_TIMING( metricName, (CORE::UInt64) globMemInfo.memoryLoadPercentage, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.memoryLoadPercentage ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalTotalPageFileSizeInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.TotalPageFileSizeInBytes", globMemInfo.totalPageFileSizeInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.TotalPageFileSizeInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.totalPageFileSizeInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.totalPageFileSizeInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalTotalPhysicalMemoryInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalPhysicalMemoryInBytes", globMemInfo.totalPhysicalMemoryInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.TotalPhysicalMemoryInBytes";
+                GUCEF_METRIC_GAUGE( metricName, globMemInfo.totalPhysicalMemoryInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.totalPhysicalMemoryInBytes ), metricName, CORE::CString::Empty );
+            }
             if ( m_gatherGlobalTotalVirtualMemoryInBytes )
-                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.TotalVirtualMemoryInBytes", globMemInfo.totalVirtualMemoryInBytes, 1.0f );
+            {
+                static const CORE::CString metricName = "ProcessMetrics.MemUse.TotalVirtualMemoryInBytes";
+                GUCEF_METRIC_TIMING( metricName, globMemInfo.totalVirtualMemoryInBytes, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globMemInfo.totalVirtualMemoryInBytes ), metricName, CORE::CString::Empty );
+            }
         }
         else
         {
@@ -436,30 +762,31 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), true );
-    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), true );
+    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), m_gatherCpuStats );
+    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), m_enableRestApi );
+    m_enableEventMsgPublishing = CORE::StringToBool( appConfig.GetValueAlways( "EnableEventMsgPublishing" ), m_enableEventMsgPublishing );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs" ), 1000 ) );
-    m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "ExeMatchPidMatchThreshold" ), 0 );
+    m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "ExeMatchPidMatchThreshold" ), m_exeMatchPidMatchThreshold );
 
-    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
-    m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes", "true" ) );
-    m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes", "true" ) );
-    m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakPageFileUsageInBytes", "true" ) );
-    m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakWorkingSetSizeInBytes", "true" ) );
-    m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcWorkingSetSizeInBytes", "true" ) );
+    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats" ), m_gatherMemStats );
+    m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes" ), m_gatherProcPageFaultCountInBytes );
+    m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes" ), m_gatherProcPageFileUsageInBytes );
+    m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakPageFileUsageInBytes" ), m_gatherProcPeakPageFileUsageInBytes );
+    m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakWorkingSetSizeInBytes" ), m_gatherProcPeakWorkingSetSizeInBytes );
+    m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcWorkingSetSizeInBytes" ), m_gatherProcWorkingSetSizeInBytes );
 
-    m_gatherGlobMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemStats", "true" ) );
-    m_gatherGlobalAvailablePageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailablePageFileSizeInBytes", "true" ) );
-    m_gatherGlobalPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalPageFileUsageInBytes", "true" ) );
-    m_gatherGlobalAvailableVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailableVirtualMemoryInBytes", "true" ) );
-    m_gatherGlobalAvailExtendedVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailExtendedVirtualMemoryInBytes", "true" ) );
-    m_gatherGlobalMemoryLoadPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemoryLoadPercentage", "true" ) );
-    m_gatherGlobalTotalPageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPageFileSizeInBytes", "true" ) );
-    m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes", "false" ) );
-    m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes", "true" ) );
+    m_gatherGlobMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemStats" ), m_gatherGlobMemStats );
+    m_gatherGlobalAvailablePageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailablePageFileSizeInBytes" ), m_gatherGlobalAvailablePageFileSizeInBytes );
+    m_gatherGlobalPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalPageFileUsageInBytes" ), m_gatherGlobalPageFileUsageInBytes );
+    m_gatherGlobalAvailableVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailableVirtualMemoryInBytes" ), m_gatherGlobalAvailableVirtualMemoryInBytes );
+    m_gatherGlobalAvailExtendedVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailExtendedVirtualMemoryInBytes" ), m_gatherGlobalAvailExtendedVirtualMemoryInBytes );
+    m_gatherGlobalMemoryLoadPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemoryLoadPercentage" ), m_gatherGlobalMemoryLoadPercentage );
+    m_gatherGlobalTotalPageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPageFileSizeInBytes" ), m_gatherGlobalTotalPageFileSizeInBytes );
+    m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes" ), m_gatherGlobalTotalPhysicalMemoryInBytes );
+    m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes" ), m_gatherGlobalTotalVirtualMemoryInBytes );
 
-    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime" ), true );
-    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCpuOverallPercentage" ), true );
+    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime" ), m_gatherProcCpuUptime );
+    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
 
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
@@ -469,9 +796,63 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         ++i;
     }
 
+    if ( m_enableEventMsgPublishing )
+    {        
+        m_metricsThresholds.clear();
+        m_procMetricsThresholds.clear();
+        
+        CORE::CDataNode::TConstDataNodeSet metricsThresholdsCfgs = globalConfig.FindChildrenOfType( "MetricThreshold", true );
+        CORE::CDataNode::TConstDataNodeSet::const_iterator c = metricsThresholdsCfgs.begin();
+        while ( c != metricsThresholdsCfgs.end() ) 
+        {
+            MetricThreshold threshold;
+            if ( threshold.LoadConfig( *(*c) ) )
+            {
+                if ( threshold.IsValid() )
+                {
+                    if ( threshold.procFilter.empty() )
+                    {
+                        m_metricsThresholds[ threshold.metricName ] = threshold;
+                    }
+                    else
+                    {
+                        CORE::CString::StringSet::iterator n = threshold.procFilter.begin();
+                        while ( n != threshold.procFilter.end() )
+                        {
+                            m_procMetricsThresholds[ (*n) ][ threshold.metricName ] = threshold;
+                            ++n;
+                        }
+                    }
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Metric threshold has invalid entry" );
+                    // continue best effort, at least we'd have metrics
+                }
+            }        
+            ++c;
+        }    
+
+        m_thresholdNotificationPrimaryPayloadCodecType =  appConfig.GetValueAlways( "ThresholdNotificationPrimaryPayloadCodecType", "json" );
+        if ( !m_thresholdNotificationPrimaryPayloadCodecType.IsNULLOrEmpty() )
+        {
+            if ( !CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().IsRegistered( m_thresholdNotificationPrimaryPayloadCodecType ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Codec for encoding the threshold exceeded notifications is not registered. CodeType=" + m_thresholdNotificationPrimaryPayloadCodecType );
+                // continue best effort, at least we'd have metrics
+            }
+        }
+
+        if ( !SetupPubSubClient( globalConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed set up Pub/Sub client. Event messaging will not be possible" );
+            // continue best effort, at least we'd have metrics
+        }
+    }
+
     if ( m_enableRestApi )
     {
-        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
+        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
 
         m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );

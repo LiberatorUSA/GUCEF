@@ -507,6 +507,17 @@ CDataNode::SetAttribute( const CString& name ,
     return true;                      
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::SetAttribute( const CString& name   ,
+                         const CVariant& value )
+{GUCEF_TRACE;
+
+    _atts[ name ] = value;
+    return true;                      
+}
+
 /*-------------------------------------------------------------------------*/                         
         
 UInt32 
@@ -1422,6 +1433,17 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 {GUCEF_TRACE;
 
     CDataNode newNode( nodeName, nodeType );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddChildWithValue( const CString& nodeName, const CVariant& nodeValue )
+{GUCEF_TRACE;
+
+    CDataNode newNode( nodeName, nodeValue.GetTypeId() );
+    newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
 

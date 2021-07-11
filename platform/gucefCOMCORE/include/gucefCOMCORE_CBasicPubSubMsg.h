@@ -82,6 +82,9 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 
     bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
+    
+    bool SetKeyValuePairsAsEncodedPrimaryPayload( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse );
+    bool MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse );
 
     /**
      *  Utility member functions
@@ -125,6 +128,9 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     bool AddLinkedKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage );
 
     bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value, TKeyValuePairs& kvPairsStorage );
+
+    static bool EncodeKeyValuePairsAsDataNodes( const TKeyValuePairs& kvPairs, CORE::CDataNode& kvNodes );
+    static bool EncodeKeyValuePairsAsBlob( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse, CORE::CDynamicBuffer& buffer );
 
     protected:
 

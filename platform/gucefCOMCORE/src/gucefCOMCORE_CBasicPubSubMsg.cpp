@@ -22,6 +22,26 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #include "gucefCOMCORE_CBasicPubSubMsg.h"
 
 /*-------------------------------------------------------------------------//
@@ -403,6 +423,80 @@ CBasicPubSubMsg::AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE:
 {GUCEF_TRACE;
 
     return AddKeyValuePair( key, value, m_metaDataKeyValuePairs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::SetKeyValuePairsAsEncodedPrimaryPayload( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse )
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer payload;
+    if ( EncodeKeyValuePairsAsBlob( kvPairs, dstoreCodecToUse, payload ) )
+    {
+        m_primaryPayload = payload;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse )
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer payload;
+    if ( EncodeKeyValuePairsAsBlob( m_keyValuePairs, dstoreCodecToUse, payload ) )
+    {
+        m_primaryPayload = payload;
+        m_keyValuePairs.clear();
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBasicPubSubMsg::EncodeKeyValuePairsAsDataNodes( const TKeyValuePairs& kvPairs, CORE::CDataNode& kvNodes )
+{GUCEF_TRACE;
+
+    kvNodes.Clear();
+    kvNodes.SetNodeType( GUCEF_DATATYPE_OBJECT );
+
+    bool totalSuccess = true;
+    TKeyValuePairs::const_iterator i = kvPairs.begin();
+    while ( i != kvPairs.end() )
+    {
+        const CORE::CVariant& kvKey = (*i).first;
+        const CORE::CVariant& kvValue = (*i).second;
+        
+        if ( GUCEF_NULL == kvNodes.AddChildWithValue( kvKey.AsString(), kvValue ) )
+            totalSuccess = false;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::EncodeKeyValuePairsAsBlob( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse, CORE::CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+
+    CORE::CDataNode kvNodes;
+    if ( EncodeKeyValuePairsAsDataNodes( kvPairs, kvNodes ) )
+    {
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
+        if ( CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( dstoreCodecToUse, codec, false ) && !codec.IsNULL() )
+        {
+            CORE::CDynamicBufferAccess bufferIoAccess( buffer );
+            if ( codec->StoreDataTree( &kvNodes, &bufferIoAccess ) )
+                return true;
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

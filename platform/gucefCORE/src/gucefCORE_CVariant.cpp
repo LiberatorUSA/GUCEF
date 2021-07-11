@@ -1023,6 +1023,16 @@ CVariant::operator=( Float64 data )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant& 
+CVariant::operator=( const CDynamicBuffer& data )
+{GUCEF_TRACE;
+
+    Set( data.GetConstBufferPtr(), data.GetDataSize(), GUCEF_DATATYPE_BINARY, false );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant&
 CVariant::operator=( const CAsciiString& data )
 {GUCEF_TRACE;
