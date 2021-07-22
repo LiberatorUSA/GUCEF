@@ -158,6 +158,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
     features.supportsPerMsgIds = true;
     features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
+    features.supportsAbsentPrimaryPayloadPerMsg = true; // A primary payload concept is not supported to begin with
     features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
     features.supportsDuplicateKeysPerMsg = true;        // Redis does not care about duplicate keys, they are just "fields"
     features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
@@ -182,6 +183,11 @@ CRedisClusterPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicC
     if ( rcTopic->LoadConfig( topicConfig ) )
     {
         m_topicMap[ topicConfig.topicName ] = rcTopic;
+    }
+    else
+    {
+        delete rcTopic;
+        rcTopic = GUCEF_NULL;
     }
     return rcTopic;
 }
@@ -216,8 +222,40 @@ CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+const COMCORE::CPubSubClientTopicConfig* 
+CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+        {
+            return &(*i);
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CRedisClusterPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+CRedisClusterPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        topicNameList.insert( (*i).topicName );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();

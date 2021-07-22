@@ -141,6 +141,7 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
     features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
     features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
+    features.supportsAbsentPrimaryPayloadPerMsg = true; // Its allowed to send tags without a BODY payload
     features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
     features.supportsDuplicateKeysPerMsg = false;       // TODO: Since arbitrary key-value app data is not native and we simulate this we will do so in a manner that supports duplicate keys
     features.supportsMetaDataKeyValueSetPerMsg = true;  // This is native to MSMQ
@@ -200,8 +201,40 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+const COMCORE::CPubSubClientTopicConfig* 
+CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+        {
+            return &(*i);
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CMsmqPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+CMsmqPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        topicNameList.insert( (*i).topicName );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();

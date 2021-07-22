@@ -92,9 +92,22 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual CPubSubClientTopic* CreateTopicAccess( const CPubSubClientTopicConfig& topicConfig ) = 0;
 
+    /**
+     *  Same as the version that takes an entire config except the expectation here is that the topic      
+     *  is already configured via a CPubSubClientConfig but not yet instantiated
+     *  This would be the typical case when using global app config defined topics and not programatic topic access
+     */ 
+    virtual CPubSubClientTopic* CreateTopicAccess( const CString& topicName );
+
     virtual CPubSubClientTopic* GetTopicAccess( const CString& topicName ) = 0;
 
-    virtual void GetTopicNameList( CString::StringSet& topicNameList ) = 0;
+    virtual CPubSubClientTopic* GetOrCreateTopicAccess( const CString& topicName );
+
+    virtual const CPubSubClientTopicConfig* GetTopicConfig( const CString& topicName ) = 0;
+
+    virtual void GetConfiguredTopicNameList( CString::StringSet& topicNameList ) = 0;
+
+    virtual void GetCreatedTopicAccessNameList( CString::StringSet& topicNameList ) = 0;
 
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 

@@ -224,9 +224,9 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
 
     MT::CScopeMutex lock( m_lock );
     
+    bool totalSuccess = true;
     try
-    {    
-        bool totalSuccess = true;
+    {            
         Aws::SQS::Model::SendMessageBatchRequest sm_req;
         sm_req.SetQueueUrl( m_queueUrl );
        
@@ -319,16 +319,19 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
             ++i;
         }
 
-        Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
-        if ( sm_out.IsSuccess() )
+        if ( !sm_req.GetEntries().empty() )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
-            return totalSuccess;
+            Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
+            if ( sm_out.IsSuccess() )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
+                return totalSuccess;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+            }   
         }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
-        }   
     }
     catch ( const std::exception& e )
     {
@@ -339,7 +342,7 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
     }
 
-    return false;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -364,7 +367,10 @@ CAwsSqsPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& c
     
     m_config = config;
 
-    m_queueUrl = GetSqsQueueUrlForQueueName( m_config.topicName );
+    if ( m_config.topicNameIsQueueName )
+        m_queueUrl = GetSqsQueueUrlForQueueName( m_config.topicName );
+    else
+        m_queueUrl = m_config.topicName;
 
     return true;
 }

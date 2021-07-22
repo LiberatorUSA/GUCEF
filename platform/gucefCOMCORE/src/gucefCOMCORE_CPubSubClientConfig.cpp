@@ -52,6 +52,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , pulseGenerator( GUCEF_NULL )
     , reconnectDelayInMs( 0 )
     , remoteAddress()
+    , topics()
 {GUCEF_TRACE;
 
 }
@@ -66,6 +67,7 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , pulseGenerator( src.pulseGenerator )
     , reconnectDelayInMs( src.reconnectDelayInMs )
     , remoteAddress( src.remoteAddress )
+    , topics( src.topics )
 {GUCEF_TRACE;
 
 }
@@ -92,9 +94,27 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& tree ) const
     CORE::CDataNode* desiredFeaturesCfg = tree.FindChild( "DesiredFeatures" );
     if ( GUCEF_NULL == desiredFeaturesCfg )
     {
-        desiredFeaturesCfg = tree.AddChild( "DesiredFeatures" );
+        desiredFeaturesCfg = tree.AddChild( "DesiredFeatures", GUCEF_DATATYPE_OBJECT );
     }
     desiredFeatures.SaveConfig( *desiredFeaturesCfg );
+
+    if ( !topics.empty() )
+    {
+        CORE::CDataNode* topicsCollection = tree.AddChild( "Topics", GUCEF_DATATYPE_ARRAY );
+        if ( GUCEF_NULL != topicsCollection )
+        {
+            TPubSubClientTopicConfigVector::const_iterator i = topics.begin();
+            while ( i != topics.end() )
+            {
+                CORE::CDataNode* topicCfgObj = topicsCollection->AddChild( "PubSubClientTopicConfig", GUCEF_DATATYPE_OBJECT );
+                if ( GUCEF_NULL != topicCfgObj )
+                {
+                    (*i).SaveConfig( *topicCfgObj );
+                }
+                ++i;
+            }            
+        }
+    }
 
     return true;
 }

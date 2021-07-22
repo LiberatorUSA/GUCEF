@@ -498,7 +498,7 @@ PrecisionTickCount( void )
     }
     else
     {
-        return GetTickCount();
+        return GetTickCount64();
     }
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

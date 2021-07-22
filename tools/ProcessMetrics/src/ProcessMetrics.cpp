@@ -371,10 +371,14 @@ ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
                 // This app really only has topics for one purpose which is sending event messages
                 // As such we just grab the first config'd topic as the topic to do that on vs having yet another config setting
                 CORE::CString::StringSet topicNameList;
-                m_pubSubClient->GetTopicNameList( topicNameList );
+                m_pubSubClient->GetConfiguredTopicNameList( topicNameList );
                 if ( !topicNameList.empty() )
                 {
                     m_thresholdNotificationPublishTopic = m_pubSubClient->GetTopicAccess( *topicNameList.begin() );
+                    if ( GUCEF_NULL == m_thresholdNotificationPublishTopic )
+                    {
+                        m_thresholdNotificationPublishTopic = m_pubSubClient->CreateTopicAccess( *topicNameList.begin() );
+                    }
                     if ( GUCEF_NULL != m_thresholdNotificationPublishTopic )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully obtained access to topic with name: " + *topicNameList.begin() );
@@ -382,12 +386,12 @@ ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
                     }
                     else
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has topic, but unable to obtain access. topicName=" + *topicNameList.begin() );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has topic configured, but unable to obtain access. topicName=" + *topicNameList.begin() );
                     }
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has no topics" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Instantiated pub-sub client has no topics configured" );
                 }
             }
             else
@@ -432,9 +436,17 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
         msg.AddKeyValuePair( "ProcessMetrics.ProcName", procName );
 
     // if we have support for key-value let's use that since it doesnt require a consumer to use special parsing
-    if ( !m_pubSubFeatures.supportsKeyValueSetPerMsg )
+    if ( !m_pubSubFeatures.supportsKeyValueSetPerMsg || !m_pubSubFeatures.supportsAbsentPrimaryPayloadPerMsg )
     {
-        if ( !msg.MoveKeyValuePairsToEncodedPrimaryPayload( m_thresholdNotificationPrimaryPayloadCodecType ) )
+        // @TODO: It would be better if we could source this from the codec itself
+        int payloadVarType = GUCEF_DATATYPE_BINARY;  
+        if ( "json" == m_thresholdNotificationPrimaryPayloadCodecType ||
+             "xml" == m_thresholdNotificationPrimaryPayloadCodecType   )
+        {
+            payloadVarType = GUCEF_DATATYPE_UTF8_STRING;
+        }
+
+        if ( !msg.MoveKeyValuePairsToEncodedPrimaryPayload( m_thresholdNotificationPrimaryPayloadCodecType, payloadVarType ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Failed to encode primary payload on event message. Aborting" );
             return;

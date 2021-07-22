@@ -73,6 +73,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
     CAwsSqsPubSubClientTopicConfig& operator=( const CAwsSqsPubSubClientTopicConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool topicNameIsQueueName;
 };
 
 /*-------------------------------------------------------------------------//

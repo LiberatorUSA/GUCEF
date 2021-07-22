@@ -52,6 +52,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsMultiHostSharding( false )
     , supportsPerMsgIds( false )
     , supportsPrimaryPayloadPerMsg( false )
+    , supportsAbsentPrimaryPayloadPerMsg( false )
     , supportsKeyValueSetPerMsg( false )
     , supportsDuplicateKeysPerMsg( false )
     , supportsMetaDataKeyValueSetPerMsg( false )
@@ -84,6 +85,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
     tree.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
     tree.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg );
+    tree.SetAttribute( "supportsAbsentPrimaryPayloadPerMsg", supportsAbsentPrimaryPayloadPerMsg );
     tree.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
     tree.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
     tree.SetAttribute( "supportsMetaDataKeyValueSetPerMsg", supportsMetaDataKeyValueSetPerMsg );
@@ -109,6 +111,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsMultiHostSharding = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ) ), supportsMultiHostSharding );
     supportsPerMsgIds = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ) ), supportsPerMsgIds );
     supportsPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ) ), supportsPrimaryPayloadPerMsg );    
+    supportsAbsentPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAbsentPrimaryPayloadPerMsg" ) ), supportsAbsentPrimaryPayloadPerMsg );    
     supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
     supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
     supportsMetaDataKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetaDataKeyValueSetPerMsg" ) ), supportsMetaDataKeyValueSetPerMsg );

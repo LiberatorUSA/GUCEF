@@ -47,7 +47,7 @@ namespace AWSSQS {
 
 CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
     : COMCORE::CPubSubClientTopicConfig()
-
+    , topicNameIsQueueName( false )
 {GUCEF_TRACE;
 
 }
@@ -56,7 +56,7 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
 
 CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
     : COMCORE::CPubSubClientTopicConfig( genericConfig )
-
+    , topicNameIsQueueName( false )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -74,6 +74,8 @@ CAwsSqsPubSubClientTopicConfig::~CAwsSqsPubSubClientTopicConfig()
 bool
 CAwsSqsPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
+        
+    topicNameIsQueueName = config.GetAttributeValueOrChildValueByName( "topicNameIsQueueName" ).AsBool( topicNameIsQueueName, true );
     
     return true;
 }
@@ -101,7 +103,7 @@ CAwsSqsPubSubClientTopicConfig::operator=( const CAwsSqsPubSubClientTopicConfig&
     if ( &src != this )
     {
         COMCORE::CPubSubClientTopicConfig::operator=( src );
-
+        topicNameIsQueueName = src.topicNameIsQueueName;
     }
     return *this;
 }

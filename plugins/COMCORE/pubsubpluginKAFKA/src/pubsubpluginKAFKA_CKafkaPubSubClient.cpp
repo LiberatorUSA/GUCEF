@@ -136,21 +136,22 @@ CKafkaPubSubClient::GetThreadPool( void )
 bool
 CKafkaPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
-
-    features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
+                                 // @TODO: implement for Kafka
+    features.supportsBinaryPayloads = true;               // Redis strings are binary safe so yes redis natively supports binary data
     features.supportsPerMsgIds = true;
-    features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
-    features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
-    features.supportsDuplicateKeysPerMsg = true;        // Redis does not care about duplicate keys, they are just "fields"
-    features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
-    features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
-    features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
+    features.supportsPrimaryPayloadPerMsg = true;         // This is the primary method for conveying data
+    features.supportsAbsentPrimaryPayloadPerMsg = false;  // With SQS the primary payload is not optional
+    features.supportsKeyValueSetPerMsg = true;            // This is the native Redis way of communicating message data
+    features.supportsDuplicateKeysPerMsg = true;          // Redis does not care about duplicate keys, they are just "fields"
+    features.supportsMultiHostSharding = true;            // Redis doesnt support this but clustered Redis does which is what this plugin supports
+    features.supportsPublishing = true;                   // We support being a Redis producer in this plugin
+    features.supportsSubscribing = true;                  // We support being a Redis consumer in this plugin
     features.supportsMetrics = true;
-    features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
-    features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
-    features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
-    features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
-    features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
+    features.supportsAutoReconnect = true;                // Our plugin adds auto reconnect out of the box
+    features.supportsBookmarkingConcept = true;           // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
+    features.supportsAutoBookmarking = false;             // Redis does not support this concept. The client needs to take care of remembering the offset
+    features.supportsMsgIdBasedBookmark = true;           // This is the native Redis "bookmark" method and thus preferered
+    features.supportsMsgDateTimeBasedBookmark = true;     // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
     return true;
 }
 
@@ -198,8 +199,40 @@ CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+const COMCORE::CPubSubClientTopicConfig* 
+CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+        {
+            return &(*i);
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CKafkaPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+CKafkaPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        topicNameList.insert( (*i).topicName );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();

@@ -84,7 +84,7 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     
     bool SetKeyValuePairsAsEncodedPrimaryPayload( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse );
-    bool MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse );
+    bool MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse, int payloadVarType = GUCEF_DATATYPE_BINARY );
 
     /**
      *  Utility member functions

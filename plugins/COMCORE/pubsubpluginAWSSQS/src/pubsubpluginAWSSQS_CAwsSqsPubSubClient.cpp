@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+#include "pluginglueAWSSDK_CAwsSdkGlobal.h"
+#define GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H ? */
+
 #include "pubsubpluginAWSSQS_CAwsSqsPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -75,7 +80,7 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& co
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
-    , m_sqsClient()
+    , m_sqsClient( PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()->GetDefaultAwsClientConfig() )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -122,21 +127,22 @@ bool
 CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = false;            // Per SendMessage doc: "A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed", so only text and a tiny subset of Unicode
-    features.supportsPerMsgIds = true;                  // Supported but system generated only
-    features.supportsPrimaryPayloadPerMsg = true;       // This is the primary way to send the payload in SQS, key-value attribute support is merely supplemental
-    features.supportsKeyValueSetPerMsg = true;          // Supported in SQS using message attributes. "Each message can have up to 10 attributes. Message attributes are optional and separate from the message body (however, they are sent alongside it)"
-    features.supportsMetaDataKeyValueSetPerMsg = true;  // "Whereas you can use message attributes to attach custom metadata to Amazon SQS messages for your applications, you can use message system attributes to store metadata for other AWS services, such as AWS X-Ray"
-    features.supportsDuplicateKeysPerMsg = false;       // Since attributes are a map of keys to a value it mandates that every key is unique
-    features.supportsMultiHostSharding = true;          // SQS is a managed service which under the coveres is shareded across hardware/nodes
-    features.supportsPublishing = true;                 // SQS supports sending messages to the queue
-    features.supportsSubscribing = true;                // SQS supports reading messages from the queue
-    features.supportsMetrics = true;                    // We add our own metrics support in this plugin for SQS specific stats
-    features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
-    features.supportsBookmarkingConcept = true;         // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
-    features.supportsAutoBookmarking = true;            // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
-    features.supportsMsgIdBasedBookmark = false;        // Since SQS is a queue where you consume the messages: You cannot provide a msg ID to resume from a given point
-    features.supportsMsgDateTimeBasedBookmark = false;  // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
+    features.supportsBinaryPayloads = false;             // Per SendMessage doc: "A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed", so only text and a tiny subset of Unicode
+    features.supportsPerMsgIds = true;                   // Supported but system generated only
+    features.supportsPrimaryPayloadPerMsg = true;        // This is the primary way to send the payload in SQS, key-value attribute support is merely supplemental
+    features.supportsAbsentPrimaryPayloadPerMsg = false; // With SQS the primary payload is not optional
+    features.supportsKeyValueSetPerMsg = true;           // Supported in SQS using message attributes. "Each message can have up to 10 attributes. Message attributes are optional and separate from the message body (however, they are sent alongside it)"
+    features.supportsMetaDataKeyValueSetPerMsg = true;   // "Whereas you can use message attributes to attach custom metadata to Amazon SQS messages for your applications, you can use message system attributes to store metadata for other AWS services, such as AWS X-Ray"
+    features.supportsDuplicateKeysPerMsg = false;        // Since attributes are a map of keys to a value it mandates that every key is unique
+    features.supportsMultiHostSharding = true;           // SQS is a managed service which under the coveres is shareded across hardware/nodes
+    features.supportsPublishing = true;                  // SQS supports sending messages to the queue
+    features.supportsSubscribing = true;                 // SQS supports reading messages from the queue
+    features.supportsMetrics = true;                     // We add our own metrics support in this plugin for SQS specific stats
+    features.supportsAutoReconnect = true;               // Our plugin adds auto reconnect out of the box
+    features.supportsBookmarkingConcept = true;          // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
+    features.supportsAutoBookmarking = true;             // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
+    features.supportsMsgIdBasedBookmark = false;         // Since SQS is a queue where you consume the messages: You cannot provide a msg ID to resume from a given point
+    features.supportsMsgDateTimeBasedBookmark = false;   // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
     return true;
 }
 
@@ -159,7 +165,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig&
 COMCORE::CPubSubClientTopic* 
 CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
-
+        
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -184,8 +190,40 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+const COMCORE::CPubSubClientTopicConfig* 
+CAwsSqsPubSubClient::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+        {
+            return &(*i);
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CAwsSqsPubSubClient::GetTopicNameList( CORE::CString::StringSet& topicNameList )
+CAwsSqsPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        topicNameList.insert( (*i).topicName );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsSqsPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();

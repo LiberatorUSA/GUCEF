@@ -443,13 +443,14 @@ CBasicPubSubMsg::SetKeyValuePairsAsEncodedPrimaryPayload( const TKeyValuePairs& 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CBasicPubSubMsg::MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse )
+CBasicPubSubMsg::MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse ,
+                                                           int payloadVarType                    )
 {GUCEF_TRACE;
 
     CORE::CDynamicBuffer payload;
     if ( EncodeKeyValuePairsAsBlob( m_keyValuePairs, dstoreCodecToUse, payload ) )
     {
-        m_primaryPayload = payload;
+        m_primaryPayload.Set( payload.GetBufferPtr(), payload.GetDataSize(), payloadVarType, false );
         m_keyValuePairs.clear();
         return true;
     }

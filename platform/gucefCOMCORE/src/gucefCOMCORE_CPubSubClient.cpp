@@ -91,6 +91,37 @@ CPubSubClient::GetClassTypeName( void ) const
     return classTypeName;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopic* 
+CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    CPubSubClientTopic* topicAccess = GetTopicAccess( topicName );
+    if ( GUCEF_NULL == topicAccess )
+    {
+        topicAccess = CreateTopicAccess( topicName );
+    }
+    return topicAccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopic* 
+CPubSubClient::CreateTopicAccess( const CString& topicName )
+{GUCEF_TRACE;
+
+    const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
+    if ( GUCEF_NULL != topicConfig )
+    {
+        CPubSubClientTopic* topicAccess = CreateTopicAccess( *topicConfig );
+        return topicAccess;
+    }
+    return GUCEF_NULL;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

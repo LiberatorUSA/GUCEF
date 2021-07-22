@@ -1442,7 +1442,7 @@ CDataNode*
 CDataNode::AddChildWithValue( const CString& nodeName, const CVariant& nodeValue )
 {GUCEF_TRACE;
 
-    CDataNode newNode( nodeName, nodeValue.GetTypeId() );
+    CDataNode newNode( nodeName, GUCEF_DATATYPE_OBJECT );
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
