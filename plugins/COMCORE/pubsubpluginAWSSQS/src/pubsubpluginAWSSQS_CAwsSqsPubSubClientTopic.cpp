@@ -24,6 +24,9 @@
 
 #include <string.h>
 
+// Windoze has a macro for SendMessage which messes up our API calls
+#undef SendMessage
+
 #include <aws/core/Aws.h>
 #include <aws/sqs/SQSClient.h>
 #include <aws/sqs/model/GetQueueUrlRequest.h>
@@ -151,7 +154,7 @@ CAwsSqsPubSubClientTopic::GetTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString
+Aws::String
 CAwsSqsPubSubClientTopic::GetSqsQueueUrlForQueueName( const CORE::CString& queueName )
 {GUCEF_TRACE;
 
@@ -182,7 +185,7 @@ CAwsSqsPubSubClientTopic::GetSqsQueueUrlForQueueName( const CORE::CString& queue
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
     }
 
-    return CORE::CString::Empty;
+    return Aws::String();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,10 +195,35 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-
-    m_publishBulkMsgRemapStorage.clear();
-    m_publishBulkMsgRemapStorage.push_back( &msg );
-    return Publish( m_publishBulkMsgRemapStorage );
+    try
+    {  
+        Aws::SQS::Model::SendMessageRequest sm_req;
+        sm_req.SetQueueUrl( m_queueUrl );
+               
+        CORE::UInt32 msgByteSize = 0;                     
+        if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageRequest >( sm_req, &msg, msgByteSize ) )
+        {
+            Aws::SQS::Model::SendMessageOutcome sm_out = m_client->GetSqsClient().SendMessage( sm_req );
+            if ( sm_out.IsSuccess() )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+            } 
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSqsPubSubClientTopic:Publish: experienced an exception: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:Publish: experienced an unknown exception, your application may be unstable" );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,6 +246,93 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubM
 
 /*-------------------------------------------------------------------------*/
 
+template< class T >
+bool
+CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubMsg* msg, CORE::UInt32& msgByteSize )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == msg )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: NULL Message passed" );
+        return false;
+    }
+
+    const CORE::CVariant& bodyPayload = msg->GetPrimaryPayload();
+    if ( bodyPayload.IsInitialized() )
+    {
+        // A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed:
+        // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
+        // The minimum size is one character. The maximum size is 256 KB.
+            
+        // We request the payload as a string. Note that this auto converts
+        // Binary is Base64 encoded. For SQS strings are Unicode with UTF-8 binary encoding
+        CORE::CUtf8String bodyPayloadStr = bodyPayload.AsUtf8String();
+            
+        if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= SQSCLIENT_MAX_PAYLOAD_SIZE )
+        {
+            sqsMsg.SetMessageBody( bodyPayloadStr );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: Message body size as string has an invalid size. Must be between 1-256KB. Cannot translate" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: Message does not have a body which SQS does not allow. Cannot publish" );
+        return false;
+    }
+
+    const COMCORE::CIPubSubMsg::TKeyValuePairs& kvPairs = msg->GetKeyValuePairs();
+    if ( !kvPairs.empty() )
+    {
+        typedef Aws::Map< Aws::String, Aws::SQS::Model::MessageAttributeValue > TSqsMsgAttributeMap;
+
+        TSqsMsgAttributeMap attribs;
+        COMCORE::CIPubSubMsg::TKeyValuePairs::const_iterator n = kvPairs.begin();
+        while ( n != kvPairs.end() )
+        {
+            const COMCORE::CIPubSubMsg::TKeyValuePair& kvPair = (*n);
+            const CORE::CVariant& kvKey = kvPair.first;
+            const CORE::CVariant& kvValue = kvPair.second;
+
+            if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
+            {                    
+                Aws::SQS::Model::MessageAttributeValue sqsAttribValue;
+
+                if ( kvValue.IsBinary() )
+                {
+                    sqsAttribValue.SetDataType( "Binary" );
+                    sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
+                }
+                else
+                if ( kvValue.IsString() )
+                {
+                    sqsAttribValue.SetDataType( "String" );
+                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                }
+                else
+                {
+                    sqsAttribValue.SetDataType( "StringValue" );
+                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                }
+                    
+                sqsMsg.AddMessageAttributes( kvKey.AsUtf8String(), sqsAttribValue ); // if there are dupicate keys last one wins                    
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Uninitialized key and/or value set on msg, ignoring" );
+            }
+
+            ++n;
+        }    
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
 {GUCEF_TRACE;
@@ -227,110 +342,54 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
     bool totalSuccess = true;
     try
     {            
-        Aws::SQS::Model::SendMessageBatchRequest sm_req;
-        sm_req.SetQueueUrl( m_queueUrl );
+        if ( m_config.tryToUseSendMessageBatch )
+        {
+            Aws::SQS::Model::SendMessageBatchRequest sm_req;
+            sm_req.SetQueueUrl( m_queueUrl );
        
-        COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
-        while ( i != msgs.end() )
-        {        
-            const COMCORE::CIPubSubMsg* msg = (*i);
-            if ( GUCEF_NULL == msg )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: NULL Message passed, ignoring" );
-                totalSuccess = false;
-                ++i; continue;
-            }
-            
-            Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;
-                        
-            const CORE::CVariant& bodyPayload = msg->GetPrimaryPayload();
-            if ( bodyPayload.IsInitialized() )
-            {
-                // A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed:
-                // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
-                // The minimum size is one character. The maximum size is 256 KB.
-            
-                // We request the payload as a string. Note that this auto converts
-                // Binary is Base64 encoded
-                CORE::CString bodyPayloadStr = bodyPayload.AsString();
-            
-                if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= SQSCLIENT_MAX_PAYLOAD_SIZE )
+            COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
+            while ( i != msgs.end() )
+            {        
+                const COMCORE::CIPubSubMsg* msg = (*i);            
+                CORE::UInt32 msgByteSize = 0;
+                Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;                        
+                if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageBatchRequestEntry >( sqsMsg, msg, msgByteSize ) )
                 {
-                    sqsMsg.SetMessageBody( bodyPayloadStr );
+                    sm_req.AddEntries( sqsMsg );
+                }
+                ++i;
+            }
+
+            if ( msgs.size() != sm_req.GetEntries().size() )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Unable accept " + CORE::ToString( msgs.size() - sm_req.GetEntries().size() ) + " messages out of " + CORE::ToString( msgs.size() ) );
+            }
+
+            if ( !sm_req.GetEntries().empty() )
+            {
+                Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
+                if ( sm_out.IsSuccess() )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
+                    return totalSuccess;
                 }
                 else
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Message body size as string has an invalid size. Must be between 1-256KB. Cannot publish" );
-                    totalSuccess = false;
-                    ++i; continue;
-                }
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+                }   
             }
-            else
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Message does not have a body which SQS does not allow. Cannot publish" );
-                totalSuccess = false;
-                ++i; continue;
-            }
-
-            const COMCORE::CIPubSubMsg::TKeyValuePairs& kvPairs = msg->GetKeyValuePairs();
-            if ( !kvPairs.empty() )
-            {
-                typedef Aws::Map< Aws::String, Aws::SQS::Model::MessageAttributeValue > TSqsMsgAttributeMap;
-
-                TSqsMsgAttributeMap attribs;
-                COMCORE::CIPubSubMsg::TKeyValuePairs::const_iterator n = kvPairs.begin();
-                while ( n != kvPairs.end() )
-                {
-                    const COMCORE::CIPubSubMsg::TKeyValuePair& kvPair = (*n);
-                    const CORE::CVariant& kvKey = kvPair.first;
-                    const CORE::CVariant& kvValue = kvPair.second;
-
-                    if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
-                    {                    
-                        Aws::SQS::Model::MessageAttributeValue& sqsAttribValue = attribs[ kvKey.AsString() ];  // if there are dupicate keys last one wins
-
-                        if ( kvValue.IsBinary() )
-                        {
-                            sqsAttribValue.SetDataType( "Binary" );
-                            sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
-                        }
-                        else
-                        if ( kvValue.IsString() )
-                        {
-                            sqsAttribValue.SetDataType( "String" );
-                            sqsAttribValue.SetStringValue( kvValue.AsString() );
-                        }
-                        else
-                        {
-                            sqsAttribValue.SetDataType( "StringValue" );
-                            sqsAttribValue.SetStringValue( kvValue.AsString() );
-                        }
-                    }
-                    else
-                    {
-                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Uninitialized key and/or value set on msg, ignoring" );
-                    }
-                    ++n;
-                }
-            }
-        
-            sm_req.AddEntries( sqsMsg );
-
-            ++i;
         }
-
-        if ( !sm_req.GetEntries().empty() )
+        else
         {
-            Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
-            if ( sm_out.IsSuccess() )
-            {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
-                return totalSuccess;
+            Aws::SQS::Model::SendMessageRequest sm_req;
+            sm_req.SetQueueUrl( m_queueUrl );
+       
+            COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
+            while ( i != msgs.end() )
+            {        
+                totalSuccess = Publish( *(*i) ) && totalSuccess;
+                ++i;
             }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
-            }   
         }
     }
     catch ( const std::exception& e )

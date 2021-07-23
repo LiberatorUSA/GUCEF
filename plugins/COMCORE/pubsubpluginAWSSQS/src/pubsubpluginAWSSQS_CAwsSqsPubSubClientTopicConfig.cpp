@@ -48,6 +48,7 @@ namespace AWSSQS {
 CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
     : COMCORE::CPubSubClientTopicConfig()
     , topicNameIsQueueName( false )
+    , tryToUseSendMessageBatch( false )
 {GUCEF_TRACE;
 
 }
@@ -57,6 +58,7 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
 CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
     : COMCORE::CPubSubClientTopicConfig( genericConfig )
     , topicNameIsQueueName( false )
+    , tryToUseSendMessageBatch( false )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -76,6 +78,7 @@ CAwsSqsPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config 
 {GUCEF_TRACE;
         
     topicNameIsQueueName = config.GetAttributeValueOrChildValueByName( "topicNameIsQueueName" ).AsBool( topicNameIsQueueName, true );
+    tryToUseSendMessageBatch = config.GetAttributeValueOrChildValueByName( "tryToUseSendMessageBatch" ).AsBool( tryToUseSendMessageBatch, true );
     
     return true;
 }
@@ -104,6 +107,7 @@ CAwsSqsPubSubClientTopicConfig::operator=( const CAwsSqsPubSubClientTopicConfig&
     {
         COMCORE::CPubSubClientTopicConfig::operator=( src );
         topicNameIsQueueName = src.topicNameIsQueueName;
+        tryToUseSendMessageBatch = src.tryToUseSendMessageBatch;
     }
     return *this;
 }

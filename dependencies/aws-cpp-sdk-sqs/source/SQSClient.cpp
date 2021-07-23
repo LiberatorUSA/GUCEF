@@ -64,6 +64,8 @@ static const char* SERVICE_NAME = "sqs";
 static const char* ALLOCATION_TAG = "SQSClient";
 
 
+#undef SendMessage
+
 SQSClient::SQSClient(const Client::ClientConfiguration& clientConfiguration) :
   BASECLASS(clientConfiguration,
     Aws::MakeShared<AWSAuthV4Signer>(ALLOCATION_TAG, Aws::MakeShared<DefaultAWSCredentialsProviderChain>(ALLOCATION_TAG),

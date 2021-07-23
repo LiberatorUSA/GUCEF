@@ -39,6 +39,8 @@
 #include <future>
 #include <functional>
 
+#undef SendMessage
+
 namespace Aws
 {
 

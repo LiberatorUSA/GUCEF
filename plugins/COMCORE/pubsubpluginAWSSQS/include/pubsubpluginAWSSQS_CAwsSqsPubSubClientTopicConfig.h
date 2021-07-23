@@ -75,6 +75,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool topicNameIsQueueName;
+    bool tryToUseSendMessageBatch;
 };
 
 /*-------------------------------------------------------------------------//

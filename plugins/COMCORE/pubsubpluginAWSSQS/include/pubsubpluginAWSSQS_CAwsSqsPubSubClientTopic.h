@@ -124,7 +124,11 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
-    CORE::CString GetSqsQueueUrlForQueueName( const CORE::CString& queueName );
+    Aws::String GetSqsQueueUrlForQueueName( const CORE::CString& queueName );
+
+    template< class T >
+    bool
+    TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubMsg* msg, CORE::UInt32& msgByteSize );
 
     private:
 
