@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+	<Module Name="pubsub2pubsub" Platform="All" Type="Executable" >
+		<Dependencies>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
+			<RuntimeDependency Name="pubsubpluginKAFKA" />
+		</RuntimeDependencies>
+	</Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="pubsubpluginMSMQ" />
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+		</RuntimeDependencies>
+	</Module>	
+</ModuleInfoEntry>

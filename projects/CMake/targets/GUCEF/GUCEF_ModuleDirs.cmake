@@ -173,6 +173,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SocketSink ${CMA
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/UdpViaTcp ${CMAKE_BINARY_DIR}/UdpViaTcp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/awslambdahost ${CMAKE_BINARY_DIR}/awslambdahost )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/itvExporter ${CMAKE_BINARY_DIR}/itvExporter )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/pubsub2pubsub ${CMAKE_BINARY_DIR}/pubsub2pubsub )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/pubsub2storage ${CMAKE_BINARY_DIR}/pubsub2storage )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/redisinfo ${CMAKE_BINARY_DIR}/redisinfo )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2kafka ${CMAKE_BINARY_DIR}/udp2kafka )

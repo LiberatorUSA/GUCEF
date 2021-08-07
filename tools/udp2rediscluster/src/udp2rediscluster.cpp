@@ -1542,9 +1542,11 @@ RestApiUdp2RedisInfoResource::Serialize( const CORE::CString& resourcePath   ,
                                          const CORE::CString& params         )
 {GUCEF_TRACE;
 
+    static const CORE::CDateTime compileDt = CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ );
+    
     output.SetName( "info" );
     output.SetAttribute( "application", "udp2rediscluster" );
-    output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
+    output.SetAttribute( "buildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
     #else
