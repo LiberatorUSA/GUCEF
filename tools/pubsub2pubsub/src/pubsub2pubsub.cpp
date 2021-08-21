@@ -59,7 +59,7 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
-#include "pubsub2storage.h"
+#include "pubsub2pubsub.h"
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     #include <winsock2.h>
@@ -78,9 +78,6 @@
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
-#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1024*1024*50)// 50MB
-#define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
-#define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -88,93 +85,45 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-ChannelSettings::ChannelSettings( void )
+PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     : CORE::CIConfigurable()
     , pubsubClientConfig()
-    , pubsubBinarySerializerOptions()
-    , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES )
-    , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
-    , vfsStorageRootPath()
-    , vfsFileExtention()
-    , encodeCodecFamily()
-    , encodeCodecName()
-    , decodeCodecFamily()
-    , decodeCodecName()
-    , channelId( -1 )
-    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
-    , performPubSubInDedicatedThread( true )
+    , performPubSubInDedicatedThread()
     , applyThreadCpuAffinity( false )
-    , cpuAffinityForDedicatedPubSubThread( 0 )
-    , cpuAffinityForMainChannelThread( 0 )
-    , collectMetrics( true )
-    , mode( CHANNELMODE_PUBSUB_TO_STORAGE )
+    , cpuAffinityForPubSubThread( -1 )
     , subscribeUsingDefaultBookmarkIfThereIsNoLast( true )
-    , autoPushAfterStartupIfStorageToPubSub( true )
-    , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
-    , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-ChannelSettings::ChannelSettings( const ChannelSettings& src )
-    : pubsubClientConfig( src.pubsubClientConfig )
-    , pubsubBinarySerializerOptions( src.pubsubBinarySerializerOptions )
-    , desiredMinimalSerializedBlockSize( src.desiredMinimalSerializedBlockSize )
-    , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
-    , vfsStorageRootPath( src.vfsStorageRootPath )
-    , vfsFileExtention( src.vfsFileExtention )
-    , encodeCodecFamily( src.encodeCodecFamily )
-    , encodeCodecName( src.encodeCodecName )
-    , decodeCodecFamily( src.decodeCodecFamily )
-    , decodeCodecName( src.decodeCodecName )
-    , channelId( src.channelId )
-    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
+PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSettings& src )
+    : CORE::CIConfigurable( src )
+    , pubsubClientConfig( src.pubsubClientConfig )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
-    , cpuAffinityForDedicatedPubSubThread( src.cpuAffinityForDedicatedPubSubThread )
-    , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
-    , collectMetrics( src.collectMetrics )
-    , mode( src.mode )
+    , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeUsingDefaultBookmarkIfThereIsNoLast( src.subscribeUsingDefaultBookmarkIfThereIsNoLast )
-    , autoPushAfterStartupIfStorageToPubSub( src.autoPushAfterStartupIfStorageToPubSub )
-    , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
-    , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-ChannelSettings&
-ChannelSettings::operator=( const ChannelSettings& src )
+PubSubSideChannelSettings&
+PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
+        CORE::CIConfigurable::operator=( src );
+        
         pubsubClientConfig = src.pubsubClientConfig;
-        pubsubBinarySerializerOptions = src.pubsubBinarySerializerOptions;
-        desiredMinimalSerializedBlockSize = src.desiredMinimalSerializedBlockSize;
-        desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;
-        vfsStorageRootPath = src.vfsStorageRootPath;
-        vfsFileExtention = src.vfsFileExtention;
-        encodeCodecFamily = src.encodeCodecFamily;
-        encodeCodecName = src.encodeCodecName;
-        decodeCodecFamily = src.decodeCodecFamily;
-        decodeCodecName = src.decodeCodecName;
-        channelId = src.channelId;
-        ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
-        cpuAffinityForDedicatedPubSubThread = src.cpuAffinityForDedicatedPubSubThread;
-        cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
-        collectMetrics = src.collectMetrics;
-        mode = src.mode;
+        cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeUsingDefaultBookmarkIfThereIsNoLast = src.subscribeUsingDefaultBookmarkIfThereIsNoLast;
-        autoPushAfterStartupIfStorageToPubSub = src.autoPushAfterStartupIfStorageToPubSub;
-        youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;
-        oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
     }
     return *this;
 }
@@ -182,36 +131,20 @@ ChannelSettings::operator=( const ChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
     
-    tree.SetAttribute( "desiredMinimalSerializedBlockSize", desiredMinimalSerializedBlockSize );
-    tree.SetAttribute( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs", desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
-    tree.SetAttribute( "vfsStorageRootPath", vfsStorageRootPath );
-    tree.SetAttribute( "vfsFileExtention", vfsFileExtention );
-    tree.SetAttribute( "encodeCodecFamily", encodeCodecFamily );
-    tree.SetAttribute( "encodeCodecName", encodeCodecName );
-    tree.SetAttribute( "decodeCodecFamily", decodeCodecFamily );
-    tree.SetAttribute( "decodeCodecName", decodeCodecName );
-    tree.SetAttribute( "channelId", channelId );
-    tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
-    tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
-    tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
-    tree.SetAttribute( "cpuAffinityForDedicatedPubSubThread", cpuAffinityForDedicatedPubSubThread );
-    tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
-    tree.SetAttribute( "collectMetrics", collectMetrics );
-    tree.SetAttribute( "mode", mode );
-    tree.SetAttribute( "subscribeUsingDefaultBookmarkIfThereIsNoLast", subscribeUsingDefaultBookmarkIfThereIsNoLast );
-    tree.SetAttribute( "autoPushAfterStartupIfStorageToPubSub", autoPushAfterStartupIfStorageToPubSub );
-    tree.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) );
-    tree.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) );
-
     CORE::CDataNode* psClientConfig = tree.Structure( "PubSubClientConfig", '/' );
     if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
         return false;        
     }
+
+    tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
+    tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
+    tree.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
+    tree.SetAttribute( "subscribeUsingDefaultBookmarkIfThereIsNoLast", subscribeUsingDefaultBookmarkIfThereIsNoLast );
 
     return true;
 }
@@ -219,15 +152,15 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
+PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
-    const CORE::CDataNode* psClientConfig = tree.Find( "PubSubClientConfig" );
+    const CORE::CDataNode* psClientConfig = tree.Search( "PubSubClientConfig", '/', true );
     if ( GUCEF_NULL != psClientConfig )
     {
         if ( !pubsubClientConfig.LoadConfig( *psClientConfig ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
             return false;
         }
 
@@ -252,27 +185,171 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, a PubSubClientConfig section is mandatory" );
         return false;
     }
-    
-    desiredMinimalSerializedBlockSize = tree.GetAttributeValueOrChildValueByName( "desiredMinimalSerializedBlockSize" ).AsUInt32( desiredMinimalSerializedBlockSize, true );
-    desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = tree.GetAttributeValueOrChildValueByName( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs" ).AsUInt32( desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs, true );
-    vfsStorageRootPath = tree.GetAttributeValueOrChildValueByName( "vfsStorageRootPath" ).AsString( vfsStorageRootPath, true );
-    vfsFileExtention = tree.GetAttributeValueOrChildValueByName( "vfsFileExtention" ).AsString( vfsFileExtention, true );
-    encodeCodecFamily = tree.GetAttributeValueOrChildValueByName( "encodeCodecFamily" ).AsString( encodeCodecFamily, true );
-    encodeCodecName = tree.GetAttributeValueOrChildValueByName( "encodeCodecName" ).AsString( encodeCodecName, true );
-    decodeCodecFamily = tree.GetAttributeValueOrChildValueByName( "decodeCodecFamily" ).AsString( decodeCodecFamily, true );
-    decodeCodecName = tree.GetAttributeValueOrChildValueByName( "decodeCodecName" ).AsString( decodeCodecName, true );
-    channelId = tree.GetAttributeValueOrChildValueByName( "channelId" ).AsInt32( channelId, true );
-    ticketRefillOnBusyCycle = tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
     performPubSubInDedicatedThread = tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
     applyThreadCpuAffinity = tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
-    cpuAffinityForDedicatedPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedPubSubThread" ).AsUInt32( cpuAffinityForDedicatedPubSubThread, true );
-    cpuAffinityForMainChannelThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread" ).AsUInt32( cpuAffinityForMainChannelThread, true );
-    collectMetrics = tree.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
-    mode = (TChannelMode) tree.GetAttributeValueOrChildValueByName( "mode" ).AsInt32( mode, true );
+    cpuAffinityForPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
     subscribeUsingDefaultBookmarkIfThereIsNoLast = tree.GetAttributeValueOrChildValueByName( "subscribeUsingDefaultBookmarkIfThereIsNoLast" ).AsBool( subscribeUsingDefaultBookmarkIfThereIsNoLast, true );
-    autoPushAfterStartupIfStorageToPubSub = tree.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIfStorageToPubSub" ).AsBool( autoPushAfterStartupIfStorageToPubSub, true ); 
-    youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( tree.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
-    oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( tree.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSubSideChannelSettings::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "pubsub2storage::PubSubSideChannelSettings";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+COMCORE::CPubSubClientTopicConfig* 
+PubSubSideChannelSettings::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
+    while ( i != pubsubClientConfig.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+            return &(*i);
+    }    
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+ChannelSettings::ChannelSettings( void )
+    : CORE::CIConfigurable()
+    , pubSubSideChannelSettingsMap()
+    , channelId( -1 )
+    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
+    , collectMetrics( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+ChannelSettings::ChannelSettings( const ChannelSettings& src )
+    : CORE::CIConfigurable( src )
+    , pubSubSideChannelSettingsMap( src.pubSubSideChannelSettingsMap )
+    , channelId( src.channelId )
+    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
+    , collectMetrics( src.collectMetrics )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+ChannelSettings&
+ChannelSettings::operator=( const ChannelSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        pubSubSideChannelSettingsMap = src.pubSubSideChannelSettingsMap;
+        channelId = src.channelId;
+        ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
+        collectMetrics = src.collectMetrics;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSubSideChannelSettings* 
+ChannelSettings::GetPubSubSideSettings( char side )
+{GUCEF_TRACE;
+
+    TCharToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.find( side );
+    if ( i != pubSubSideChannelSettingsMap.end() )
+    {   
+        return &(*i).second;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+    
+    CORE::CDataNode* pubSubSidesCollection = tree.Structure( "PubSubSides", '/' );
+    pubSubSidesCollection->SetNodeType( GUCEF_DATATYPE_ARRAY );
+
+    // We don't want to merge from a potential previous save so we wipe what could be 
+    // a pre-existing collection
+    pubSubSidesCollection->DelSubTree();
+
+    TCharToPubSubSideChannelSettingsMap::const_iterator i = pubSubSideChannelSettingsMap.begin();
+    while ( i != pubSubSideChannelSettingsMap.end() )
+    {
+        const PubSubSideChannelSettings& sideSettings = (*i).second;
+        CORE::CDataNode* sideSettingsNode = pubSubSidesCollection->AddChild( "PubSubSideChannelSettings" );
+        if ( !sideSettings.SaveConfig( *sideSettingsNode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubSideChannelSettings section" );
+            return false;        
+        }
+        ++i;
+    }
+
+    tree.SetAttribute( "channelId", channelId );
+    tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
+    tree.SetAttribute( "collectMetrics", collectMetrics );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* pubSubSidesCollection = tree.Find( "PubSubSides" );
+    if ( GUCEF_NULL != pubSubSidesCollection )
+    {
+        CORE::CDataNode::const_iterator n = pubSubSidesCollection->ConstBegin();
+        while ( n != pubSubSidesCollection->ConstEnd() )
+        {
+            PubSubSideChannelSettings sideSettings;
+            if ( !sideSettings.LoadConfig( *(*n) ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config entry failed to load from collection entry" );
+                return false;
+            }
+
+            // There is no sane default of pubsubClientType since it depends on the clients loaded into the application
+            // as such this is a mandatory setting to provide
+            if ( sideSettings.pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, \"pubsubClientType\" was not provided" );
+                return false;
+            }    
+
+            // We are fully config driven with no programatically defined topics
+            // As such the config must have yielded at least 1 topic
+            if ( sideSettings.pubsubClientConfig.topics.empty() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, having at least one topic configured for the client section is mandatory" );
+                return false;
+            }
+            ++n;
+        }       
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: PubSubSides collection section is mandatory" );
+        return false;
+    }
+
+    channelId = tree.GetAttributeValueOrChildValueByName( "channelId" ).AsInt32( channelId, true );
+    ticketRefillOnBusyCycle = tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
+    collectMetrics = tree.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     return true;
 }
 
@@ -288,42 +365,25 @@ ChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-COMCORE::CPubSubClientTopicConfig* 
-ChannelSettings::GetTopicConfig( const CORE::CString& topicName )
-{GUCEF_TRACE;
-
-    TTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
-    while ( i != pubsubClientConfig.topics.end() )
-    {
-        if ( topicName == (*i).topicName )
-            return &(*i);
-    }    
-    return GUCEF_NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubClientChannel::CPubSubClientChannel( CIPubSubMsgPersistance* persistance )
+CPubSubClientSide::CPubSubClientSide( char side )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
+    , m_otherSide( GUCEF_NULL )
     , m_topics()
     , m_channelSettings()
     , m_mailbox()
     , m_bulkMail()
     , m_metricsTimer( GUCEF_NULL )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
-    , m_buffers( 2 )
-    , m_msgReceiveBuffer( GUCEF_NULL )
-    , m_lastWriteBlockCompletion()
-    , m_msgOffsetIndex()
-    , m_persistance( persistance )
+    , m_persistance( GUCEF_NULL )
+    , m_side( side )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientChannel::~CPubSubClientChannel()
+CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
 
@@ -332,17 +392,17 @@ CPubSubClientChannel::~CPubSubClientChannel()
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::RegisterEventHandlers( void )
+CPubSubClientSide::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
-    TEventCallback callback( this, &CPubSubClientChannel::OnMetricsTimerCycle );
+    TEventCallback callback( this, &CPubSubClientSide::OnMetricsTimerCycle );
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
 
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
     {
-        TEventCallback callback( this, &CPubSubClientChannel::OnPubSubClientReconnectTimerCycle );
+        TEventCallback callback( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
         SubscribeTo( m_pubsubClientReconnectTimer   ,
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
@@ -352,33 +412,30 @@ CPubSubClientChannel::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic )
+CPubSubClientSide::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic )
 {GUCEF_TRACE;
 
-    if ( m_channelSettings.mode == TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE )
-    {
-        TEventCallback callback( this, &CPubSubClientChannel::OnPubSubTopicMsgsReceived );
-        SubscribeTo( &topic                                         ,
-                     COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
-                     callback                                       );
-    }
+    TEventCallback callback( this, &CPubSubClientSide::OnPubSubTopicMsgsReceived );
+    SubscribeTo( &topic                                         ,
+                 COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
+                 callback                                       );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CPubSubClientChannel::GetType( void ) const
+CPubSubClientSide::GetType( void ) const
 {GUCEF_TRACE;
 
-    return "PubSubClientChannel";
+    return "PubSubClientSide";
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                           const CORE::CEvent& eventId  ,
-                                           CORE::CICloneable* eventData )
+CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
 
@@ -387,9 +444,9 @@ CPubSubClientChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                                         const CORE::CEvent& eventId  ,
-                                                         CORE::CICloneable* eventData )
+CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     // stop the timer, reconnect time itself should not count towards the reconnect interval
@@ -410,19 +467,52 @@ CPubSubClientChannel::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifi
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CDynamicBufferSwap& 
-CPubSubClientChannel::GetSerializedMsgBuffers( void )
+bool
+CPubSubClientSide::TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
 
-    return m_buffers;
+    if ( GUCEF_NULL == m_otherSide )
+        return false;
+
+    CORE::UInt32 topicsToPublishOn = 0;
+    CORE::UInt32 topicsPublishedOn = 0;
+    bool publishSuccess = true;
+    TopicVector::iterator i = m_otherSide->m_topics.begin();
+    while ( i != m_otherSide->m_topics.end() )
+    {
+        COMCORE::CPubSubClientTopic* topic = (*i);
+        if ( GUCEF_NULL != topic )
+        {
+            if ( topic->IsPublishingSupported() )
+            {
+                ++topicsToPublishOn;
+                if ( topic->Publish( msgs ) )
+                {
+                    ++topicsPublishedOn;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):TransmitNextPubSubMsgBuffer: Failed to publish messages to topic" );
+                }
+            }
+        }
+        ++i;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        "):TransmitNextPubSubMsgBuffer: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
+        CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
+    
+    return publishSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
-                                                 const CORE::CEvent& eventId  ,
-                                                 CORE::CICloneable* eventData )
+CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == eventData )
@@ -433,84 +523,19 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
         if ( !msgs.empty() )
         {                            
-            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = msgs.begin();
-            const CORE::CDateTime& firstMsgDt = (*i)->GetMsgDateTime();
-
-            bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
-            if ( firstBlock )
-            {                
-                m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
-            }
-            if ( GUCEF_NULL == m_msgReceiveBuffer )
-            {
-                m_msgReceiveBuffer = m_buffers.GetNextWriterBuffer( firstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
-                
-                CORE::UInt32 newBytesWritten = 0;
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_channelSettings.pubsubBinarySerializerOptions, 0, *m_msgReceiveBuffer, newBytesWritten ) )
-                {
-                    // We carry on best effort but this is really bad
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Failed to write container header at start of new pub-sub msg container" );
-                }
-                m_msgOffsetIndex.clear();
-            }
-            CORE::UInt32 bufferOffset = m_msgReceiveBuffer->GetDataSize();
-
-            while ( i != msgs.end() )    
-            {
-                CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
-                CORE::UInt32 msgBytesWritten = 0;
-                if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( m_channelSettings.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_msgReceiveBuffer, msgBytesWritten ) )
-                {
-                    m_msgOffsetIndex.push_back( bufferOffset );
-                    ticks = CORE::GUCEFGetTickCount() - ticks;
-                    bufferOffset += msgBytesWritten;
-                    m_msgReceiveBuffer->SetDataSize( bufferOffset );
-
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) + ". This took " + CORE::ToString( ticks ) + "ms" );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Failed to serialize a message" );
-                }
-                ++i;
-            }
-
-            // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
-            if ( m_msgReceiveBuffer->GetDataSize() >= m_channelSettings.desiredMinimalSerializedBlockSize ||
-               ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_channelSettings.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) )
-            {
-                // The current container is now considered to have enough content.
-                // Let's wrap things up...
-                
-                CORE::UInt32 newBytesWritten = 0;
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( m_msgOffsetIndex, bufferOffset, *m_msgReceiveBuffer, newBytesWritten ) )
-                {
-                    // We carry on best effort but this is really bad
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Failed to write container footer at end of current pub-sub msg container" );
-                }
-
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnPubSubTopicMsgsReceived: Completed a serialized msg data block of size " + CORE::ToString( bufferOffset ) );                
-                
-                m_msgReceiveBuffer = GUCEF_NULL;
-                m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
-            }            
+            TransmitMsgsToOtherSide( msgs );        
         }
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::DisconnectPubSubClient( bool destroyClient )
+CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 {GUCEF_TRACE;
 
     if ( m_pubsubClient.IsNULL() )
@@ -518,7 +543,7 @@ CPubSubClientChannel::DisconnectPubSubClient( bool destroyClient )
 
     if ( !m_pubsubClient->Disconnect() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClient: Failed to disconnect the pub-sub client" );
         return false;                    
     }
@@ -537,22 +562,31 @@ CPubSubClientChannel::DisconnectPubSubClient( bool destroyClient )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::ConnectPubSubClient( void )
+CPubSubClientSide::ConnectPubSubClient( void )
 {GUCEF_TRACE;
 
     if ( !DisconnectPubSubClient() )
         return false;
 
+    PubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
+    if ( GUCEF_NULL == pubSubSideSettings )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+            "):ConnectPubSubClient: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );        
+        return false;
+    }    
+    COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
+    
     if ( m_pubsubClient.IsNULL() )
     {
-        // Create and configure the pub-sub client
-        m_channelSettings.pubsubClientConfig.pulseGenerator = GetPulseGenerator();
-        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( m_channelSettings.pubsubClientConfig.pubsubClientType, m_channelSettings.pubsubClientConfig );
+        // Create and configure the pub-sub client        
+        pubSubConfig.pulseGenerator = GetPulseGenerator();
+        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                "):OnTaskStart: Failed to create a pub-sub client of type \"" + m_channelSettings.pubsubClientConfig.pubsubClientType + "\". Cannot proceed" );        
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                "):ConnectPubSubClient: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );        
             return false;
         }
     }
@@ -563,35 +597,35 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     if ( !clientFeatures.supportsAutoReconnect )
     {
         if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
-            m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.pubsubClientConfig.reconnectDelayInMs );
+            m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
     }
 
     SubscribeTo( m_pubsubClient.GetPointerAlways() );
     if ( !m_pubsubClient->Connect() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClient: Failed to connect the pub-sub client" );
         return false;
     }
 
     // Create and configure the pub-sub client's topics
     m_topics.clear();
-    m_topics.reserve( m_channelSettings.pubsubClientConfig.topics.size() );
-    ChannelSettings::TTopicConfigVector::iterator i = m_channelSettings.pubsubClientConfig.topics.begin();
-    while ( i != m_channelSettings.pubsubClientConfig.topics.end() )
+    m_topics.reserve( pubSubConfig.topics.size() );
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
+    while ( i != pubSubConfig.topics.end() )
     {
         COMCORE::CPubSubClientTopic* topic = m_pubsubClient->CreateTopicAccess( (*i) );
         if ( GUCEF_NULL == topic )
         {
             if ( !(*i).isOptional )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                     "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
                 return false;            
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                     "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
             }
         }
@@ -606,19 +640,19 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     {
         if ( (*t)->InitializeConnectivity() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                 "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + (*t)->GetTopicName() + "\". Proceeding" );
 
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
-            COMCORE::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( (*t)->GetTopicName() );
+            const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( (*t)->GetTopicName() );
             if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
             {            
                 // The method of subscription depends on the supported feature set
                 bool subscribeSuccess = false;
                 if ( clientFeatures.supportsAutoBookmarking && clientFeatures.supportsBookmarkingConcept ) // first preference is backend managed bookmarking
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
 
                     subscribeSuccess = (*t)->Subscribe();
@@ -630,15 +664,15 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     CORE::CDateTime msgDt;
                     if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id but we failed at obtaining the last used message id" );
                         
-                        if ( m_channelSettings.subscribeUsingDefaultBookmarkIfThereIsNoLast )
+                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
                         {
                             subscribeSuccess = (*t)->Subscribe();
                             if ( !subscribeSuccess )
                             {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                                     "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
                                 return false;
                             }
@@ -648,7 +682,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     }
                     else
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id. ID=" + msgId );
 
                         subscribeSuccess = (*t)->SubscribeStartingAtMsgId( msgId );
@@ -661,15 +695,15 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     CORE::CDateTime msgDt;
                     if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime but we failed at obtaining it" );
 
-                        if ( m_channelSettings.subscribeUsingDefaultBookmarkIfThereIsNoLast )
+                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
                         {
                             subscribeSuccess = (*t)->Subscribe();
                             if ( !subscribeSuccess )
                             {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                                     "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
                                 return false;
                             }
@@ -680,7 +714,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     }
                     else
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime which is " + msgDt.ToIso8601DateTimeString( true, true ) );
                     
                         subscribeSuccess = (*t)->SubscribeStartingAtMsgDateTime( msgDt );
@@ -689,14 +723,14 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                 else
                 if ( !clientFeatures.supportsBookmarkingConcept )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is not supported by the backend. We will subscribe and get whatever we get" );
 
                     subscribeSuccess = (*t)->Subscribe();
                 }
                 else
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Unsupported/Unknown bookmark handling by the backend. We will subscribe and get whatever we get best effort" );
 
                     subscribeSuccess = (*t)->Subscribe();
@@ -704,7 +738,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
 
                 if ( !subscribeSuccess )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Failed to subscribe to topic: " + (*t)->GetTopicName() );
                     return false;
                 }
@@ -719,17 +753,22 @@ CPubSubClientChannel::ConnectPubSubClient( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
+CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
-    m_metricsTimer->SetEnabled( m_channelSettings.pubsubClientConfig.desiredFeatures.supportsMetrics );
+    PubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
+    if ( GUCEF_NULL == pubSubSideSettings )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+            "):OnTaskStart: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );        
+        return false;
+    }    
+    COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
 
-    m_buffers.SetMinimalBufferSize( m_channelSettings.desiredMinimalSerializedBlockSize );
-    m_msgOffsetIndex.clear();
-    m_msgOffsetIndex.reserve( 1000 );
+    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
     
-    if ( m_channelSettings.performPubSubInDedicatedThread )
+    if ( pubSubSideSettings->performPubSubInDedicatedThread )
     {
         // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
@@ -739,17 +778,17 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         // Default smallest pulse delta at 25ms
         GetPulseGenerator()->RequestPeriodicPulses( this, 25 ); 
 
-        if ( m_channelSettings.applyThreadCpuAffinity )
+        if ( pubSubSideSettings->applyThreadCpuAffinity )
         {
-            if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForDedicatedPubSubThread ) )
+            if ( SetCpuAffinityByCpuId( pubSubSideSettings->cpuAffinityForPubSubThread ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedPubSubThread ) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( pubSubSideSettings->cpuAffinityForPubSubThread ) );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedPubSubThread ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( pubSubSideSettings->cpuAffinityForPubSubThread ) +
                     ". Proceeding without affinity");
             }
         }
@@ -757,7 +796,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( !ConnectPubSubClient() )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
             "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
     }
 
@@ -769,7 +808,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt )
+CPubSubClientSide::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt )
 {GUCEF_TRACE;
 
     
@@ -778,91 +817,8 @@ CPubSubClientChannel::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTim
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
+CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;    
-
-    CORE::CDateTime firstMsgDt;
-    m_msgReceiveBuffer = m_buffers.GetNextReaderBuffer( firstMsgDt, true, 25 );
-    if ( GUCEF_NULL == m_msgReceiveBuffer )
-        return true; // nothing to do
-        
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-        "):TransmitNextPubSubMsgBuffer: New buffer is available of " + CORE::ToString( m_msgReceiveBuffer->GetDataSize() ) + " bytes" );         
-
-    CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-            "):TransmitNextPubSubMsgBuffer: Failed to read container footer" );
-        OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
-        return false;
-    }
-
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-        "):TransmitNextPubSubMsgBuffer: Per footer the buffer contains " + CORE::ToString( originalOffsetIndex.size() ) + " messages to publish" );
-
-    // We now link logical message objects to the data in the buffer
-    CORE::UInt32 startIndexOffset = 0;
-    CORE::UInt32 endIndexOffset = 0;
-    bool isCorrupted = false;                        
-    COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-            "):TransmitNextPubSubMsgBuffer: Failed to deserialize messages from container. According to the footer the container had " + 
-            CORE::ToString( originalOffsetIndex.size() ) + " entries. isCorrupted=" + CORE::BoolToString( isCorrupted ) );
-        OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
-        return false;
-    }
-
-    // We now have the messages in a format that allows interpretation by the pub-sub backend
-    // We can now proceed with publishing all the messages to the relevant topics
-    CORE::UInt32 topicsToPublishOn = 0;
-    CORE::UInt32 topicsPublishedOn = 0;
-    bool publishSuccess = true;
-    TopicVector::iterator i = m_topics.begin();
-    while ( i != m_topics.end() )
-    {
-        COMCORE::CPubSubClientTopic* topic = (*i);
-        if ( GUCEF_NULL != topic )
-        {
-            if ( topic->IsPublishingSupported() )
-            {
-                ++topicsToPublishOn;
-                if ( topic->Publish( msgs ) )
-                {
-                    ++topicsPublishedOn;
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):TransmitNextPubSubMsgBuffer: Failed to publish messages to topic" );
-                    OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
-                    publishSuccess = false;
-                }
-            }
-        }
-        ++i;
-    }
-
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-        "):TransmitNextPubSubMsgBuffer: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
-        CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
-
-    return publishSuccess;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
-{GUCEF_TRACE;    
-
-    if ( m_channelSettings.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB )
-    {
-        TransmitNextPubSubMsgBuffer();
-    }
 
     // We are never 'done' so return false
     return false;
@@ -871,18 +827,17 @@ CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
-                                    bool willBeForced           )
+CPubSubClientSide::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                 bool willBeForced           )
 {GUCEF_TRACE;
 
-    m_buffers.SignalEndOfWriting();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
-                                   bool wasForced              )
+CPubSubClientSide::OnTaskEnded( CORE::CICloneable* taskData ,
+                                bool wasForced              )
 {GUCEF_TRACE;
 
     delete m_metricsTimer;
@@ -897,875 +852,54 @@ CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::LoadConfig( const ChannelSettings& channelSettings )
+{GUCEF_TRACE;
+
+    m_channelSettings = channelSettings;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const ChannelSettings&
+CPubSubClientSide::GetChannelSettings( void ) const
+{GUCEF_TRACE;
+
+    return m_channelSettings;
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientChannel::CPubSubClientChannel( void ) 
+    : CPubSubClientSide( 'A' )
+    , m_sideBPubSub( GUCEF_NULL )
+{GUCEF_TRACE;
+
+    m_sideBPubSub = new CPubSubClientSide( 'B' );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientChannel::~CPubSubClientChannel()
+{GUCEF_TRACE;
+
+    delete m_sideBPubSub;
+    m_sideBPubSub = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientChannel::LoadConfig( const ChannelSettings& channelSettings )
 {GUCEF_TRACE;
 
-    m_channelSettings = channelSettings;
-    return true;
+    return CPubSubClientSide::LoadConfig( channelSettings ) && m_sideBPubSub->LoadConfig( channelSettings );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const ChannelSettings&
-CPubSubClientChannel::GetChannelSettings( void ) const
-{GUCEF_TRACE;
-
-    return m_channelSettings;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::CStorageChannel()
-    : CORE::CTaskConsumer()
-    , m_channelSettings()
-    , m_metricsTimer( GUCEF_NULL )
-    , m_metrics()
-    , m_pubsubClient( new CPubSubClientChannel( this ) )
-    , m_msgReceiveBuffer( GUCEF_NULL )
-    , m_vfsFilePostfix( ".vUNKNOWN.bin" )
-    , m_lastPersistedMsgId()
-    , m_lastPersistedMsgDt()
-    , m_encodeSizeRatio( -1 )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::CStorageChannel( const CStorageChannel& src )
-    : CORE::CTaskConsumer()
-    , m_channelSettings( src.m_channelSettings )
-    , m_metricsTimer( GUCEF_NULL )
-    , m_metrics()
-    , m_pubsubClient( new CPubSubClientChannel( this ) )
-    , m_vfsFilePostfix( src.m_vfsFilePostfix )
-    , m_lastPersistedMsgId()
-    , m_lastPersistedMsgDt()
-    , m_encodeSizeRatio( src.m_encodeSizeRatio )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::~CStorageChannel()
-{GUCEF_TRACE;
-
-    delete m_metricsTimer;
-    m_metricsTimer = GUCEF_NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStorageChannel::RegisterEventHandlers( void )
-{GUCEF_TRACE;
-
-    TEventCallback callback6( this, &CStorageChannel::OnMetricsTimerCycle );
-    SubscribeTo( m_metricsTimer                 ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback6                      );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( void )
-    : startDt()
-    , endDt()
-    , vfsPubSubMsgContainersToPush()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt )
-    : startDt( startDt )
-    , endDt( endDt )
-    , vfsPubSubMsgContainersToPush()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::StorageToPubSubRequest::StorageToPubSubRequest( const StorageToPubSubRequest& src )
-    : startDt( src.startDt )
-    , endDt( src.endDt )
-    , vfsPubSubMsgContainersToPush( src.vfsPubSubMsgContainersToPush )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString& 
-CStorageChannel::StorageToPubSubRequest::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static const CORE::CString classTypeName = "StorageToPubSubRequest";
-    return classTypeName;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool                                                
-CStorageChannel::StorageToPubSubRequest::SaveConfig( CORE::CDataNode & tree ) const
-{
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CStorageChannel::StorageToPubSubRequest::LoadConfig( const CORE::CDataNode & treeroot )
-{
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::AddStorageToPubSubRequest( const StorageToPubSubRequest& request )
-{GUCEF_TRACE;
-
-    m_storageToPubSubRequests.push_back( request );
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::LoadConfig( const ChannelSettings& channelSettings )
-{GUCEF_TRACE;
-
-    m_channelSettings = channelSettings;
-
-    m_channelSettings.vfsStorageRootPath = CORE::ResolveVars( m_channelSettings.vfsStorageRootPath ).ReplaceSubstr( "{channelId}", CORE::ToString( m_channelSettings.channelId ) );
-    
-    if ( m_channelSettings.vfsFileExtention.IsNULLOrEmpty() )
-    {
-        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
-            m_channelSettings.vfsFileExtention = "bin";
-        else
-        {
-            if ( "deflate" == m_channelSettings.encodeCodecName )
-                m_channelSettings.vfsFileExtention = "bin.gz";    
-            else
-                m_channelSettings.vfsFileExtention = "bin.encoded";
-        }
-    }
-    // the encoder and decoder almost always belong to the same codec family so we can make that the default
-    if ( m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() )
-    {
-        m_channelSettings.decodeCodecFamily = m_channelSettings.encodeCodecFamily;
-    }
-    if ( m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
-    {
-        if ( "deflate" == m_channelSettings.encodeCodecName )
-            m_channelSettings.decodeCodecName = "inflate";
-    }
-    m_vfsFilePostfix = ".v" + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_channelSettings.vfsFileExtention;
-        
-    return m_pubsubClient->LoadConfig( channelSettings );
-}
-
-/*-------------------------------------------------------------------------*/
-
-const ChannelSettings&
-CStorageChannel::GetChannelSettings( void ) const
-{GUCEF_TRACE;
-
-    return m_channelSettings;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-CStorageChannel::GetType( void ) const
-{GUCEF_TRACE;
-
-    return "StorageChannel";
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::WaitForTaskToFinish( CORE::Int32 timeoutInMs )
-{GUCEF_TRACE;
-
-    // Overriding the base class implementation because this consumer can start its own
-    // consumer based on settings transparent to the caller.
-    if ( CTaskConsumer::WaitForTaskToFinish( timeoutInMs ) )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "StorageChannel:WaitForTaskToFinish: Successfully waited for channel " + CORE::Int32ToString( m_channelSettings.channelId ) + "'s task to stop" );
-        if ( m_channelSettings.performPubSubInDedicatedThread )
-        {
-            if ( m_pubsubClient->WaitForTaskToFinish( timeoutInMs ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "StorageChannel:WaitForTaskToFinish: Successfully waited for channel " + CORE::Int32ToString( m_channelSettings.channelId ) + "'s dedicated pub sub task to stop" );
-                return true;
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StorageChannel:WaitForTaskToFinish: Failed waiting for dedicated pub sub task to stop for channel " + CORE::Int32ToString( m_channelSettings.channelId ) );
-            }
-        }
-        return true;
-    }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StorageChannel:WaitForTaskToFinish: Failed waiting for task to stop for channel " + CORE::Int32ToString( m_channelSettings.channelId ) );
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStorageChannel::ChannelMetrics::ChannelMetrics( void )
-    //: udpBytesReceived( 0 )
-    //, udpPacketsReceived( 0 )
-    //, redisMessagesTransmitted( 0 )
-    //, redisPacketsInMsgsTransmitted( 0 )
-    //, redisPacketsInMsgsRatio( 0 )
-    //, redisTransmitQueueSize( 0 )
-    //, redisErrorReplies( 0 )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStorageChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventId  ,
-                                      CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    //m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
-    //m_metrics.udpPacketsReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
-    //m_metrics.redisTransmitQueueSize = m_redisWriter->GetRedisTransmitQueueSize();
-    //m_metrics.redisMessagesTransmitted = m_redisWriter->GetRedisMsgsTransmittedCounter( true );
-    //m_metrics.redisPacketsInMsgsTransmitted = m_redisWriter->GetRedisPacketsInMsgsTransmittedCounter( true );
-    //m_metrics.redisPacketsInMsgsRatio = m_redisWriter->GetRedisPacketsInMsgsRatio();
-    //m_metrics.redisErrorReplies = m_redisWriter->GetRedisErrorRepliesCounter( true );
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CStorageChannel::ChannelMetrics&
-CStorageChannel::GetMetrics( void ) const
-{GUCEF_TRACE;
-
-    return m_metrics;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::OnTaskStart( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-    if ( m_channelSettings.performPubSubInDedicatedThread )
-    {
-        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
-        if ( !threadPool->StartTask( m_pubsubClient ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskStart: Failed to start dedicated task (dedicated thread) for pub-sub. Falling back to a single thread" );
-            m_channelSettings.performPubSubInDedicatedThread = false;
-        }
-        else
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskStart: Successfully requested the launch of a dedicated task (dedicated thread) for pub-sub" );
-        }
-    }
-
-    if ( !m_channelSettings.performPubSubInDedicatedThread )
-    {
-        if ( !m_pubsubClient->OnTaskStart( taskData ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskStart: Failed startup of pub-sub client logic" );
-            return false;
-        }
-    }
-
-    if ( ( m_channelSettings.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_channelSettings.autoPushAfterStartupIfStorageToPubSub ) )
-    {
-        AddStorageToPubSubRequest( StorageToPubSubRequest( m_channelSettings.oldestStoragePubSubMsgFileToLoad, m_channelSettings.youngestStoragePubSubMsgFileToLoad ) );
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-CStorageChannel::GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const
-{GUCEF_TRACE;
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    
-    CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter, true, false );
-
-    // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
-    // to get the last produced file
-    if ( !index.empty() )
-    {        
-        VFS::CVFS::TStringSet::reverse_iterator f = index.rbegin();
-        CORE::UInt32 n=0;
-        while ( n<lastOffset && f != index.rend() )   
-        {
-            ++f; ++n;
-        }
-
-        if ( f != index.rend() )
-        {
-            const CORE::CString& lastFilename = (*f);            
-            return lastFilename;
-        }
-    }
-    return CORE::CString::Empty;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
-                                                const CORE::CString& topicName , 
-                                                CORE::CVariant& msgId          , 
-                                                CORE::CDateTime& msgDt         )
-{GUCEF_TRACE;
-
-    bool success = true;
-    CORE::UInt32 lastFileOffset = 0;
-    bool fileExistedButHasIssue = false;
-    do
-    {
-        success = GetLastPersistedMsgAttributesWithOffset( channelId              ,
-                                                           topicName              ,
-                                                           msgId                  ,
-                                                           msgDt                  ,
-                                                           lastFileOffset         ,
-                                                           fileExistedButHasIssue );
-        ++lastFileOffset;
-    }
-    while ( !success && fileExistedButHasIssue );
-    return success;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::LoadStorageFile( const CORE::CString& vfsPath       ,
-                                  CORE::CDynamicBuffer& targetBuffer )
-{GUCEF_TRACE;
-
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-        
-    if ( !m_channelSettings.decodeCodecFamily.IsNULLOrEmpty() && !m_channelSettings.decodeCodecName.IsNULLOrEmpty() )
-    {
-        CORE::Float32 encodeRatio = m_encodeSizeRatio < 0 ? GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION : m_encodeSizeRatio;
-        CORE::UInt32 estimatedApproxDecodedSize = (CORE::UInt32) ( vfs.GetFileSize( vfsPath ) * encodeRatio );
-        targetBuffer.SetBufferSize( estimatedApproxDecodedSize, false );
-
-        if ( !vfs.DecodeAsFile( targetBuffer, 0, vfsPath, m_channelSettings.decodeCodecFamily, m_channelSettings.decodeCodecName ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:LoadStorageFile: Cannot decode and load persisted file. CodeFamily:" + m_channelSettings.decodeCodecFamily +
-                " CodecName: " + m_channelSettings.decodeCodecName + ". VFS File: " + vfsPath );
-            return false;
-        }
-
-        if ( targetBuffer.GetDataSize() > 0 )
-            m_encodeSizeRatio = (CORE::Float32) ( targetBuffer.GetDataSize() / vfs.GetFileSize( vfsPath ) );
-    }
-    else
-    {
-        // Not using any encoding, load the file as-is
-        if ( !vfs.LoadFile( targetBuffer, vfsPath, "rb" ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:LoadStorageFile: Cannot load last persisted file. VFS File: " + vfsPath );
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
-                                                          const CORE::CString& topicName , 
-                                                          CORE::CVariant& msgId          , 
-                                                          CORE::CDateTime& msgDt         ,
-                                                          CORE::UInt32 lastFileOffset    ,
-                                                          bool& fileExistedButHasIssue   )
-{GUCEF_TRACE;
-
-    // @TODO: topic name segregation
-    
-    if ( channelId != m_channelSettings.channelId )
-    {
-        fileExistedButHasIssue = false;
-        return false; // this should never happen
-    }
-
-    if ( m_lastPersistedMsgId.IsNULLOrEmpty() && m_lastPersistedMsgDt == CORE::CDateTime::Empty )
-    {
-        CORE::CString lastWrittenFilePath = GetPathToLastWrittenPubSubStorageFile( lastFileOffset );
-        if ( lastWrittenFilePath.IsNULLOrEmpty() )
-        {
-            fileExistedButHasIssue = false;
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Cannot obtain path to last written file with offset " + CORE::ToString( lastFileOffset ) );
-            return false;
-        }
-
-        CORE::CDynamicBuffer lastStorageFileContent;
-        if ( !LoadStorageFile( lastWrittenFilePath, lastStorageFileContent ) )
-        {
-            fileExistedButHasIssue = false;
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastWrittenPubSubMsgId: Unable to load file from storage. Loading using last offset " + CORE::ToString( lastFileOffset ) );
-            return false;
-        }
-
-        if ( 0 == lastStorageFileContent.GetDataSize() )
-        {
-            fileExistedButHasIssue = true;
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: last persisted file is empty. VFS File: " + lastWrittenFilePath );
-            return false;
-        }
-
-        bool isCorrupted = false;
-        COMCORE::CBasicPubSubMsg msg;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
-        {
-            if ( isCorrupted )
-            {
-                // Attempt to recover what we can with an index rebuild
-                // This could effectively move the "last" message received to the actually non-corrupt persisted message as the new "last"
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Failed to deserialize the last message, will attempt an index rebuild of the corrupt container" );
-               
-                CORE::UInt32 bytesRead = 0;
-                COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newRecoveredIndex;
-                if ( COMCORE::CPubSubMsgContainerBinarySerializer::IndexRebuildScan( newRecoveredIndex, lastStorageFileContent, bytesRead ) )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully performed an index rebuild of the corrupt container, discovered " + CORE::ToString( newRecoveredIndex.size() ) + " messages. Will attempt to add a new footer" );
-                    
-                    CORE::UInt32 bytesWritten = 0;
-                    if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newRecoveredIndex, lastStorageFileContent.GetDataSize()-1, lastStorageFileContent, bytesWritten ) )
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully serialized a new footer to the previously corrupt container. Will attempt to persist the amended container" );
-
-                        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-                        
-                        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
-                        {
-                            if ( vfs.StoreAsFile( lastWrittenFilePath, lastStorageFileContent, 0, true ) )
-                            {
-                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully stored rebuild pub-sub message container at: " + lastWrittenFilePath );
-                            }
-                            else
-                            {
-                                fileExistedButHasIssue = true;
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: StoreAsFile() Failed for rebuild message container" );
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if ( vfs.EncodeAsFile( lastStorageFileContent, 0, lastWrittenFilePath, true, m_channelSettings.encodeCodecFamily, m_channelSettings.encodeCodecName ) )
-                            {
-                                m_encodeSizeRatio = (CORE::Float32) ( lastStorageFileContent.GetDataSize() / vfs.GetFileSize( lastWrittenFilePath ) );
-                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully encoded and stored rebuild pub-sub message container resource at: \"" + lastWrittenFilePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
-                            }
-                            else
-                            {
-                                fileExistedButHasIssue = true;
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: EncodeAsFile() Failed for rebuild message container" );
-                                return false;
-                            }
-                        }
-                    }
-                }
-
-                // Lets try again, hopefully its fixed now best effort...
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
-                {
-                    // This should not happen, something is seriously wrong here.
-                    fileExistedButHasIssue = true;
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:GetLastPersistedMsgAttributes: Failed to load last message even after a successfull rebuild. isCorrupted=" + CORE::ToString( isCorrupted ) );
-                    return false;
-                }
-            }
-        }
-
-        m_lastPersistedMsgId = msg.GetMsgId();
-        m_lastPersistedMsgDt = msg.GetMsgDateTime();
-    }
-
-    msgId = m_lastPersistedMsgId;
-    msgDt = m_lastPersistedMsgDt;
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
-                                                      CORE::CDateTime& startDt      ,
-                                                      CORE::CDateTime& endDt        ) const
-{GUCEF_TRACE;
-
-    // first strip the extra stuff from the full path to get the string form timestamps
-    CORE::CString segment = CORE::ExtractFilename( fullPath );
-    segment = segment.CutChars( m_vfsFilePostfix.Length(), false, 0 );
-    CORE::CString startDtSegment = segment.SubstrToChar( '_', true );
-    CORE::CString endDtSegment = segment.SubstrToChar( '_', false );
-
-    // Try to parse what is left as a valid ISO 8601 DateTime
-    if ( startDt.FromIso8601DateTimeString( startDtSegment ) && endDt.FromIso8601DateTimeString( endDtSegment ) )
-        return true;
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
-                                               const CORE::CDateTime& endDt    ,
-                                               CORE::CString::StringSet& files ) const
-{GUCEF_TRACE;
-   
-    
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    
-    CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter, true, false );
-
-    VFS::CVFS::TStringSet::iterator i = index.begin();
-    while ( i != index.end() )
-    {        
-        CORE::CDateTime containerFileFirstMsgDt;
-        CORE::CDateTime containerFileLastMsgDt;
-        if ( GetStartAndEndFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt ) )
-        {
-            // Check the container first messgage dt against the our time range
-            // It is assumed here that the containers have messages chronologically ordered
-            if ( containerFileFirstMsgDt.IsWithinRange( startDt, endDt ) || containerFileLastMsgDt.IsWithinRange( startDt, endDt ) )
-            {
-                files.insert( (*i) );
-            }
-        }
-        ++i;
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::StoreNextReceivedPubSubBuffer( void )
-{GUCEF_TRACE;
-
-    CORE::CDynamicBufferSwap& buffers = m_pubsubClient->GetSerializedMsgBuffers();
-        
-    CORE::CDateTime msgBatchDt;
-    m_msgReceiveBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
-    if ( GUCEF_NULL != m_msgReceiveBuffer )
-    {
-        // Get the timestamp of the last message in the buffer.
-        // This is not as expensive an operation as it would appear because we just link to the bytes in the buffer we dont copy them
-        bool isCorrupted = false;
-        COMCORE::CBasicPubSubMsg lastMsg;
-        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( lastMsg, true, *m_msgReceiveBuffer, 0, false, isCorrupted );
-
-        CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsg.GetMsgDateTime().ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
-        CORE::CString vfsStoragePath = CORE::CombinePath( m_channelSettings.vfsStorageRootPath, vfsFilename );
-            
-        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-
-        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
-        {
-            if ( vfs.StoreAsFile( vfsStoragePath, *m_msgReceiveBuffer, 0, true ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully stored pub-sub mesage block at: " + vfsStoragePath );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: StoreAsFile() Failed" );
-            }
-        }
-        else
-        {
-            if ( vfs.EncodeAsFile( *m_msgReceiveBuffer, 0, vfsStoragePath, true, m_channelSettings.encodeCodecFamily, m_channelSettings.encodeCodecName ) )
-            {
-                m_encodeSizeRatio = (CORE::Float32) ( m_msgReceiveBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully encoded and stored pub-sub mesage block at: \"" + vfsStoragePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: EncodeAsFile() Failed" );
-            }
-        }
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStorageChannel::OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest )
-{GUCEF_TRACE;
-
-    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::ProcessNextStorageToPubSubRequest( void )
-{GUCEF_TRACE;
-
-    StorageToPubSubRequestDeque::iterator i = m_storageToPubSubRequests.begin();
-    if ( i != m_storageToPubSubRequests.end() )
-    {
-        StorageToPubSubRequest& queuedRequest = (*i);
-
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Request for messages in range " + 
-            CORE::ToString( queuedRequest.startDt ) + " to " + CORE::ToString( queuedRequest.endDt ) );
-
-        if ( queuedRequest.vfsPubSubMsgContainersToPush.empty() )
-        {
-            if ( !GetPathsToPubSubStorageFiles( queuedRequest.startDt                      ,
-                                                queuedRequest.endDt                        ,
-                                                queuedRequest.vfsPubSubMsgContainersToPush ) )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Did not obtain any storage paths for time range " +
-                    queuedRequest.startDt.ToIso8601DateTimeString( true, true ) + " to " + queuedRequest.endDt.ToIso8601DateTimeString( true, true ) );
-                
-                OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
-                m_storageToPubSubRequests.pop_back();
-                return false;    
-            }
-        }
-
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Available data in the request range spans " + 
-            CORE::ToString( queuedRequest.vfsPubSubMsgContainersToPush.size() ) + " containers" );
-    
-        size_t containersProcessed = 0;
-        CORE::CString::StringSet::iterator n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
-        while ( n != queuedRequest.vfsPubSubMsgContainersToPush.end() )
-        {
-            bool needContainerSubsetOnly = false;
-            bool containerStartIsInRange = true;
-            bool containerEndIsInRange = true;
-
-            CORE::CDateTime containerFileFirstMsgDt;
-            CORE::CDateTime containerFileLastMsgDt;
-            if ( GetStartAndEndFromContainerFilename( (*n), containerFileFirstMsgDt, containerFileLastMsgDt ) )
-            {
-                containerStartIsInRange = containerFileFirstMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );
-                containerEndIsInRange = containerFileLastMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );                 
-                needContainerSubsetOnly = !( containerStartIsInRange && containerEndIsInRange );
-
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Parsed file path container start and end DateTimes. Start=" +
-                    CORE::ToString( containerFileFirstMsgDt ) + ", End=" + CORE::ToString( containerFileLastMsgDt ) + ". containerStartIsInRange=" + CORE::ToString( containerStartIsInRange ) +
-                    ", containerEndIsInRange=" + CORE::ToString( containerEndIsInRange ) + ", needContainerSubsetOnly=" + CORE::ToString( needContainerSubsetOnly ) );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Failed to parse start and/or end DateTime from file path: " + (*n) );
-            }
-            
-            if ( needContainerSubsetOnly )
-            {
-                if ( GUCEF_NULL == m_msgReceiveBuffer )
-                    m_msgReceiveBuffer = m_pubsubClient->GetSerializedMsgBuffers().GetNextWriterBuffer( containerStartIsInRange ? containerFileFirstMsgDt : queuedRequest.startDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
-
-                if ( GUCEF_NULL != m_msgReceiveBuffer )
-                {
-                    if ( LoadStorageFile( (*n), *m_msgReceiveBuffer ) )
-                    {
-                        CORE::UInt32 bytesRead = 0;
-                        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-                        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead );
-
-                        // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
-                        // The way we can do that is by editing the footer in the buffer to logically eliminate entries we do not need
-                        // This will make it appear as if only the needed entries are in the container to the reader when reading the footer
-                        CORE::UInt32 startIndexOffset = 0;
-                        CORE::UInt32 endIndexOffset = 0;
-                        bool isCorrupted = false;                        
-                        COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
-                        if ( COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
-                        {
-                            // Check to see how many we need to trim from the start
-
-                            if ( !containerStartIsInRange )
-                            {
-                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator m = msgs.begin();
-                                while ( m != msgs.end() )    
-                                {
-                                    if ( (*m).GetMsgDateTime() >= queuedRequest.startDt )
-                                        break;                         
-                                    ++m; ++startIndexOffset;
-                                }
-                            }
-                            if ( !containerEndIsInRange )
-                            {
-                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::reverse_iterator m = msgs.rbegin();
-                                while ( m != msgs.rend() )    
-                                {
-                                    if ( (*m).GetMsgDateTime() <= queuedRequest.endDt )
-                                        break;                         
-                                    ++m; ++endIndexOffset;
-                                }
-                            }
-
-                            CORE::UInt32 o2=0;
-                            std::size_t newIndexSize = originalOffsetIndex.size() - ( startIndexOffset + endIndexOffset );
-                            endIndexOffset = (CORE::UInt32) originalOffsetIndex.size() - endIndexOffset;
-                            COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newOffsetIndex( newIndexSize );                            
-                            for ( CORE::UInt32 o=startIndexOffset; o<endIndexOffset; ++o )
-                            {
-                                newOffsetIndex[ o2 ] = originalOffsetIndex[ o ];
-                                ++o2;
-                            }
-
-                            // Now we overwrite the footer in the in-memory container to only have the subset of messages we care about referenced
-                            CORE::UInt32 bytesWritten = 0;
-                            if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newOffsetIndex, m_msgReceiveBuffer->GetDataSize()-1, *m_msgReceiveBuffer, bytesWritten ) )
-                            {
-                                // We are done with this container
-                                ++containersProcessed;
-                                m_msgReceiveBuffer = GUCEF_NULL;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // No write buffer available, we need to wait before processing more requests
-                    return false;
-                }
-            }
-            else
-            {
-                if ( GUCEF_NULL == m_msgReceiveBuffer )
-                    m_msgReceiveBuffer = m_pubsubClient->GetSerializedMsgBuffers().GetNextWriterBuffer( containerFileFirstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
-                
-                if ( GUCEF_NULL != m_msgReceiveBuffer )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:ProcessNextStorageToPubSubRequest: Loading the entire container as-is to serve (part of) the request" );
-
-                    if ( LoadStorageFile( (*n), *m_msgReceiveBuffer ) )
-                    {
-                        // Since we loaded the entire container and we dont need a subset we are done
-                        ++containersProcessed;
-                        m_msgReceiveBuffer = GUCEF_NULL;
-                    }
-                }
-                else
-                {
-                    // No write buffer available, we need to wait before processing more requests
-                    return false;
-                }
-            }
-            ++n;
-        }
-
-        if ( containersProcessed != queuedRequest.vfsPubSubMsgContainersToPush.size() )
-        {
-            OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
-        }
-        
-        m_storageToPubSubRequests.pop_front();
-        m_pubsubClient->GetSerializedMsgBuffers().SignalEndOfWriting();
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-    if ( !m_channelSettings.performPubSubInDedicatedThread )
-    {
-        m_pubsubClient->OnTaskCycle( taskData );
-    }
-
-    switch ( m_channelSettings.mode )
-    {
-        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
-        {
-            StoreNextReceivedPubSubBuffer();
-            break;
-        }
-        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
-        {
-            ProcessNextStorageToPubSubRequest();
-            break;
-        }
-    }
-
-    // We are never 'done' so return false
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStorageChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
-                               bool willBeForced           )
-{GUCEF_TRACE;
-
-    if ( !m_channelSettings.performPubSubInDedicatedThread )
-    {
-        m_pubsubClient->OnTaskEnding( taskdata, willBeForced );
-    }
-    else
-    {
-        // Since we are the ones that launched the dedicated Redis write thread we should also ask
-        // to have it cleaned up when we are shutting down this thread
-        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
-        if ( !threadPool->RequestTaskToStop( m_pubsubClient.StaticCast< CORE::CTaskConsumer >(), false ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskEnding: Failed to request the dedicated task (dedicated thread) for pub-sub to stop" );
-        }
-        else
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskEnding: Successfully requested the dedicated task (dedicated thread) for pub-sub to stop" );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStorageChannel::OnTaskEnded( CORE::CICloneable* taskData ,
-                              bool wasForced              )
-{GUCEF_TRACE;
-
-    delete m_metricsTimer;
-    m_metricsTimer = GUCEF_NULL;
-
-    if ( !m_channelSettings.performPubSubInDedicatedThread )
-    {
-        m_pubsubClient->OnTaskEnded( taskData, wasForced );
-    }
-
-    CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
-}
-
-/*-------------------------------------------------------------------------*/
-
-RestApiPubSub2StorageInfoResource::RestApiPubSub2StorageInfoResource( PubSub2Storage* app )
+RestApiPubSub2PubSubInfoResource::RestApiPubSub2PubSubInfoResource( PubSub2PubSub* app )
     : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
@@ -1775,7 +909,7 @@ RestApiPubSub2StorageInfoResource::RestApiPubSub2StorageInfoResource( PubSub2Sto
 
 /*-------------------------------------------------------------------------*/
 
-RestApiPubSub2StorageInfoResource::~RestApiPubSub2StorageInfoResource()
+RestApiPubSub2PubSubInfoResource::~RestApiPubSub2PubSubInfoResource()
 {GUCEF_TRACE;
 
 }
@@ -1783,15 +917,15 @@ RestApiPubSub2StorageInfoResource::~RestApiPubSub2StorageInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiPubSub2StorageInfoResource::Serialize( const CORE::CString& resourcePath   ,
-                                              CORE::CDataNode& output             ,
-                                              const CORE::CString& representation ,
-                                              const CORE::CString& params         )
+RestApiPubSub2PubSubInfoResource::Serialize( const CORE::CString& resourcePath   ,
+                                             CORE::CDataNode& output             ,
+                                             const CORE::CString& representation ,
+                                             const CORE::CString& params         )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
-    output.SetAttribute( "application", "pubsub2storage" );
-    output.SetAttribute( "appBuildDateTime", PubSub2Storage::GetAppCompileDateTime().ToIso8601DateTimeString( true, true ) );
+    output.SetAttribute( "application", "pubsub2pubsub" );
+    output.SetAttribute( "appBuildDateTime", PubSub2PubSub::GetAppCompileDateTime().ToIso8601DateTimeString( true, true ) );
     output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
@@ -1803,7 +937,7 @@ RestApiPubSub2StorageInfoResource::Serialize( const CORE::CString& resourcePath 
 
 /*-------------------------------------------------------------------------*/
 
-RestApiPubSub2StorageConfigResource::RestApiPubSub2StorageConfigResource( PubSub2Storage* app, bool appConfig )
+RestApiPubSub2PubSubConfigResource::RestApiPubSub2PubSubConfigResource( PubSub2PubSub* app, bool appConfig )
     : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
@@ -1815,7 +949,7 @@ RestApiPubSub2StorageConfigResource::RestApiPubSub2StorageConfigResource( PubSub
 
 /*-------------------------------------------------------------------------*/
 
-RestApiPubSub2StorageConfigResource::~RestApiPubSub2StorageConfigResource()
+RestApiPubSub2PubSubConfigResource::~RestApiPubSub2PubSubConfigResource()
 {GUCEF_TRACE;
 
 }
@@ -1823,10 +957,10 @@ RestApiPubSub2StorageConfigResource::~RestApiPubSub2StorageConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiPubSub2StorageConfigResource::Serialize( const CORE::CString& resourcePath   ,
-                                                CORE::CDataNode& output             ,
-                                                const CORE::CString& representation ,
-                                                const CORE::CString& params         )
+RestApiPubSub2PubSubConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                               CORE::CDataNode& output             ,
+                                               const CORE::CString& representation ,
+                                               const CORE::CString& params         )
 {GUCEF_TRACE;
 
     if ( m_appConfig )
@@ -1844,11 +978,11 @@ RestApiPubSub2StorageConfigResource::Serialize( const CORE::CString& resourcePat
 
 /*-------------------------------------------------------------------------*/
 
-RestApiPubSub2StorageConfigResource::TDeserializeState
-RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourcePath   ,
-                                                  const CORE::CDataNode& input        ,
-                                                  const CORE::CString& representation ,
-                                                  bool isDeltaUpdateOnly              )
+RestApiPubSub2PubSubConfigResource::TDeserializeState
+RestApiPubSub2PubSubConfigResource::Deserialize( const CORE::CString& resourcePath   ,
+                                                 const CORE::CDataNode& input        ,
+                                                 const CORE::CString& representation ,
+                                                 bool isDeltaUpdateOnly              )
 {GUCEF_TRACE;
 
     if ( m_appConfig )
@@ -1891,7 +1025,7 @@ RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourceP
                 }
                 else
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
                     return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
                 }
             }
@@ -1941,7 +1075,7 @@ RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourceP
 
 /*-------------------------------------------------------------------------*/
 
-PubSub2Storage::PubSub2Storage( void )
+PubSub2PubSub::PubSub2PubSub( void )
     : CORE::CObserver()
     , CORE::CIConfigurable()
     , m_isInStandby( false )
@@ -1963,7 +1097,7 @@ PubSub2Storage::PubSub2Storage( void )
     , m_transmitMetrics( true )
 {GUCEF_TRACE;
 
-    TEventCallback callback1( this, &PubSub2Storage::OnMetricsTimerCycle );
+    TEventCallback callback1( this, &PubSub2PubSub::OnMetricsTimerCycle );
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback1                      );
@@ -1971,7 +1105,7 @@ PubSub2Storage::PubSub2Storage( void )
 
 /*-------------------------------------------------------------------------*/
 
-PubSub2Storage::~PubSub2Storage()
+PubSub2PubSub::~PubSub2PubSub()
 {GUCEF_TRACE;
 
     m_httpServer.Close();
@@ -1980,7 +1114,7 @@ PubSub2Storage::~PubSub2Storage()
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2Storage::IsGlobalStandbyEnabled( void ) const
+PubSub2PubSub::IsGlobalStandbyEnabled( void ) const
 {GUCEF_TRACE;
 
     return m_globalStandbyEnabled;
@@ -1989,7 +1123,7 @@ PubSub2Storage::IsGlobalStandbyEnabled( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2Storage::Start( void )
+PubSub2PubSub::Start( void )
 {GUCEF_TRACE;
 
     m_isInStandby = true;
@@ -1997,7 +1131,7 @@ PubSub2Storage::Start( void )
 
     if ( !errorOccured )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage: Opening REST API" );
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API" );
         return m_httpServer.Listen();
     }
     return !errorOccured;
@@ -2006,13 +1140,13 @@ PubSub2Storage::Start( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
+PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
 {GUCEF_TRACE;
 
     // Check if we need to do anything
     if ( m_isInStandby == putInStandbyMode )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( " + CORE::BoolToString( putInStandbyMode ) + " ): Already in the desired mode (" + CORE::BoolToString( m_isInStandby ) + "), nothing to do" );
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( " + CORE::BoolToString( putInStandbyMode ) + " ): Already in the desired mode (" + CORE::BoolToString( m_isInStandby ) + "), nothing to do" );
         return true;
     }
 
@@ -2024,18 +1158,18 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
         // Signal all channel threads to stop gracefully
         // Since this standby operation is global not per channel we signal all to stop before
         // we starting any waiting operation
-        StorageChannelMap::iterator i = m_channels.begin();
+        PubSubClientChannelMap::iterator i = m_channels.begin();
         while ( i != m_channels.end() )
         {
-            CStorageChannelPtr channel = (*i).second;
+            CPubSubClientChannelPtr channel = (*i).second;
             if ( !threadPool->RequestTaskToStop( channel.StaticCast< CORE::CTaskConsumer >(), false ) )
             {
                 totalSuccess = false;
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( true ): Requested channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) + "'s task to stop" );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( true ): Requested channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) + "'s task to stop" );
             }
             ++i;
         }
@@ -2044,15 +1178,15 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
         i = m_channels.begin();
         while ( i != m_channels.end() )
         {
-            CStorageChannelPtr channel = (*i).second;
+            CPubSubClientChannelPtr channel = (*i).second;
             if ( !channel->WaitForTaskToFinish( 30000 ) )
             {
                 totalSuccess = false;
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( true ): Successfully waited for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) + "'s task to stop" );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( true ): Successfully waited for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) + "'s task to stop" );
             }
             ++i;
         }
@@ -2067,14 +1201,14 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
         bool totalSuccess = true;
 
         // Channel config could have changed such that we need to remove channels that should no longer exist
-        StorageChannelMap::iterator i = m_channels.begin();
+        PubSubClientChannelMap::iterator i = m_channels.begin();
         while ( i != m_channels.end() )
         {
             CORE::Int32 channelId = (*i).first;
             ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
             if ( n == m_channelSettings.end() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( false ): Found channel which no longer has corresponding channel settings, deleting channel with ID " + CORE::Int32ToString( channelId ) );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel which no longer has corresponding channel settings, deleting channel with ID " + CORE::Int32ToString( channelId ) );
                 m_channels.erase( i );
                 i = m_channels.begin();
                 break;
@@ -2087,12 +1221,12 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
         while ( n != m_channelSettings.end() )
         {
             CORE::Int32 channelId = (*n).first;
-            StorageChannelMap::iterator i = m_channels.find( channelId );
+            PubSubClientChannelMap::iterator i = m_channels.find( channelId );
             if ( i == m_channels.end() )
             {
                 // This is a brand new channel. Lets add the channel object for it
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating new channel with ID " + CORE::Int32ToString( channelId ) );
-                m_channels[ channelId ] = CStorageChannelPtr( new CStorageChannel() );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating new channel with ID " + CORE::Int32ToString( channelId ) );
+                m_channels[ channelId ] = CPubSubClientChannelPtr( new CPubSubClientChannel() );
             }
             ++n;
         }
@@ -2103,22 +1237,22 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
         while ( n != m_channelSettings.end() )
         {
             CORE::Int32 channelId = (*n).first;
-            StorageChannelMap::iterator i = m_channels.find( channelId );
+            PubSubClientChannelMap::iterator i = m_channels.find( channelId );
             if ( i != m_channels.end() )
             {
                 const ChannelSettings& channelSettings = (*n).second;
-                CStorageChannelPtr channel = (*i).second;
+                CPubSubClientChannelPtr channel = (*i).second;
 
                 if ( !channel->LoadConfig( channelSettings ) )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage::SetStandbyMode( false ): Failed to set channel settings on channel " + CORE::Int32ToString( channelId ) );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::SetStandbyMode( false ): Failed to set channel settings on channel " + CORE::Int32ToString( channelId ) );
                     totalSuccess = false;
                     break;
                 }
 
                 if ( !threadPool->StartTask( channel ) )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage::SetStandbyMode( false ): Failed to start task (dedicated thread) for channel " + CORE::Int32ToString( channelId ) );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::SetStandbyMode( false ): Failed to start task (dedicated thread) for channel " + CORE::Int32ToString( channelId ) );
                     totalSuccess = false;
                     break;
                 }
@@ -2140,7 +1274,7 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
+PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
 {GUCEF_TRACE;
 
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
@@ -2169,32 +1303,34 @@ PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
             channelSettings = &m_channelSettings[ channelId ];
         }
 
-        if ( channelSettings->applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
+        // Assign CPU affinity
+        ChannelSettings::TCharToPubSubSideChannelSettingsMap::iterator i = channelSettings->pubSubSideChannelSettingsMap.begin();
+        while ( i != channelSettings->pubSubSideChannelSettingsMap.end() )
         {
-            channelSettings->cpuAffinityForMainChannelThread = currentCpu;
-
-            ++currentCpu;
-            if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
-                currentCpu = 0;
-
-            if ( channelSettings->performPubSubInDedicatedThread )
+            PubSubSideChannelSettings& sideSettings = (*i).second;
+            if ( sideSettings.applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
             {
-                channelSettings->cpuAffinityForDedicatedPubSubThread = currentCpu;
+                if ( sideSettings.performPubSubInDedicatedThread )
+                {
+                    sideSettings.cpuAffinityForPubSubThread = currentCpu;
 
-                ++currentCpu;
-                if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
-                    currentCpu = 0;
+                    ++currentCpu;
+                    if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
+                        currentCpu = 0;
+                }
             }
+
+            ++i;
         }
     }
 
     m_appConfig = appConfig;
 
     m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
-    m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2StorageInfoResource::THTTPServerResourcePtr( new RestApiPubSub2StorageInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2PubSubInfoResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubInfoResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, false ) )  );
+    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
     return true;
@@ -2203,7 +1339,7 @@ PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
 /*-------------------------------------------------------------------------*/
 
 bool 
-PubSub2Storage::SaveConfig( CORE::CDataNode& tree ) const
+PubSub2PubSub::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     // not fully supported right now
@@ -2215,7 +1351,7 @@ PubSub2Storage::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-PubSub2Storage::LoadConfig( const CORE::CDataNode& cfg )
+PubSub2PubSub::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     TChannelCfgMap channelMap;
@@ -2288,7 +1424,7 @@ PubSub2Storage::LoadConfig( const CORE::CDataNode& cfg )
 /*-------------------------------------------------------------------------*/
 
 const CORE::CDateTime&
-PubSub2Storage::GetAppCompileDateTime( void )
+PubSub2PubSub::GetAppCompileDateTime( void )
 {GUCEF_TRACE;
 
     static CORE::CDateTime compileDt = CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ );
@@ -2298,27 +1434,27 @@ PubSub2Storage::GetAppCompileDateTime( void )
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString& 
-PubSub2Storage::GetClassTypeName( void ) const
+PubSub2PubSub::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "PubSub2Storage";
+    static const CORE::CString classTypeName = "PubSub2PubSub";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-PubSub2Storage::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventId  ,
-                                     CORE::CICloneable* eventData )
+PubSub2PubSub::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     CORE::Int32 channelId = m_storageStartChannelID;
-    StorageChannelMap::iterator i = m_channels.begin();
+    PubSubClientChannelMap::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        const CStorageChannel::ChannelMetrics& metrics = (*i).second->GetMetrics();
-        CORE::CString metricPrefix = "pubsub2storage.ch" + CORE::Int32ToString( channelId ) + ".";
+        //const CPubSubClientChannel::ChannelMetrics& metrics = (*i).second->GetMetrics();
+        //CORE::CString metricPrefix = "pubsub2pubsub.ch" + CORE::Int32ToString( channelId ) + ".";
 
         //GUCEF_METRIC_TIMING( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
         //GUCEF_METRIC_TIMING( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
@@ -2335,7 +1471,7 @@ PubSub2Storage::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 const CORE::CValueList&
-PubSub2Storage::GetAppConfig( void ) const
+PubSub2PubSub::GetAppConfig( void ) const
 {
     return m_appConfig;
 }
@@ -2343,7 +1479,7 @@ PubSub2Storage::GetAppConfig( void ) const
 /*-------------------------------------------------------------------------*/
 
 const CORE::CDataNode&
-PubSub2Storage::GetGlobalConfig( void ) const
+PubSub2PubSub::GetGlobalConfig( void ) const
 {
     return m_globalConfig;
 }

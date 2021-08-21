@@ -166,6 +166,9 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
     features.supportsMetrics = true;
     features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
+    features.supportsSubscriberMsgReceivedAck = false;  // since offsets are managed client-side there really is no such concept but could be implemented as a plugin specific add-on - todo?
+    features.supportsAutoMsgReceivedAck = false;        // not supported right now
+    features.supportsAbsentMsgReceivedAck = true;       // no such inherent concept
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
     features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
     features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered

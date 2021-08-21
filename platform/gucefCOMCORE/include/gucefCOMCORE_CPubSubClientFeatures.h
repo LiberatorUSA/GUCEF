@@ -72,6 +72,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
     bool supportsDuplicateKeysPerMsg;         /** whether the concept of a per message set of key-value attributes has the constraint of keys being unique */
     bool supportsMetaDataKeyValueSetPerMsg;   /** whether the concept of a per message set of key-value meta data attributes is supported */
 
+    bool supportsSubscriberMsgReceivedAck;    /** whether the concept of a per message acknowledglement of receipt is supported for subscribers */
+    bool supportsAutoMsgReceivedAck;          /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack explicitly at the app level, not recomended for garanteed handling */
+    bool supportsAbsentMsgReceivedAck;        /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack auto or otherwise */
+    
     bool supportsBookmarkingConcept;          /** whether the concept of bookmarking where you last were in the pub-sub subscription is supported at all. The other bookmarking related flags are meaningless if this is false */
     bool supportsAutoBookmarking;             /** whether the implementation takes care of remembering where you are wrt pub-sub subscriber consumption without needing help */
     bool supportsMsgIdBasedBookmark;          /** whether the implementation can accept a MsgId to setup pub-sub subscriber consumption */

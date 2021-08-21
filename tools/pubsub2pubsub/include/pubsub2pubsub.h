@@ -118,49 +118,47 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class PubSubSideChannelSettings : public CORE::CIConfigurable
+{
+    public:
+
+    PubSubSideChannelSettings( void );
+    PubSubSideChannelSettings( const PubSubSideChannelSettings& src );
+    PubSubSideChannelSettings& operator=( const PubSubSideChannelSettings& src );
+
+    COMCORE::CPubSubClientConfig pubsubClientConfig;
+    bool performPubSubInDedicatedThread;
+    bool applyThreadCpuAffinity;
+    CORE::UInt32 cpuAffinityForPubSubThread;
+    bool subscribeUsingDefaultBookmarkIfThereIsNoLast;
+
+    COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< COMCORE::CPubSubClientTopicConfig > TTopicConfigVector;
-    enum EChannelMode : CORE::Int32
-    {
-        CHANNELMODE_UNKNOWN = 0 ,
-
-        CHANNELMODE_PUBSUB_TO_STORAGE = 1,
-        CHANNELMODE_STORAGE_TO_PUBSUB = 2
-    };
-    typedef enum EChannelMode TChannelMode;
+    typedef std::map< char, PubSubSideChannelSettings > TCharToPubSubSideChannelSettingsMap;
 
     ChannelSettings( void );
     ChannelSettings( const ChannelSettings& src );
     ChannelSettings& operator=( const ChannelSettings& src );
 
-    COMCORE::CPubSubClientConfig pubsubClientConfig;
-    COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
-    CORE::UInt32 desiredMinimalSerializedBlockSize;
-    CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
-    CORE::CString vfsStorageRootPath;
-    CORE::CString vfsFileExtention;
-    CORE::CString encodeCodecFamily;
-    CORE::CString encodeCodecName;
-    CORE::CString decodeCodecFamily;
-    CORE::CString decodeCodecName;
+    PubSubSideChannelSettings* GetPubSubSideSettings( char side );
+
+    TCharToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
-    bool performPubSubInDedicatedThread;
-    bool applyThreadCpuAffinity;
-    CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
-    CORE::UInt32 cpuAffinityForMainChannelThread;
     bool collectMetrics;
-    TChannelMode mode;
-    bool subscribeUsingDefaultBookmarkIfThereIsNoLast;
-    bool autoPushAfterStartupIfStorageToPubSub;
-    CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
-    CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
-
-
-    COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -183,15 +181,15 @@ class CIPubSubMsgPersistance
 
 /*-------------------------------------------------------------------------*/
 
-class CPubSubClientChannel : public CORE::CTaskConsumer
+class CPubSubClientSide : public CORE::CTaskConsumer
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
-    typedef enum ChannelSettings::EChannelMode TChannelMode;
+    typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
 
-    CPubSubClientChannel( CIPubSubMsgPersistance* persistance );
-    virtual ~CPubSubClientChannel();
+    CPubSubClientSide( char side );
+    
+    virtual ~CPubSubClientSide();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -205,15 +203,13 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    bool LoadConfig( const ChannelSettings& channelSettings );
+    virtual bool LoadConfig( const ChannelSettings& channelSettings );
 
     const ChannelSettings& GetChannelSettings( void ) const;
 
     bool ConnectPubSubClient( void );
 
     bool DisconnectPubSubClient( bool destroyClient = false );
-
-    CORE::CDynamicBufferSwap& GetSerializedMsgBuffers( void );
 
     private:
 
@@ -236,29 +232,48 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
                                const CORE::CEvent& eventId  ,
                                CORE::CICloneable* eventData );
 
-    bool TransmitNextPubSubMsgBuffer( void );
+    bool TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
     void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
     
-    private:
+    protected:
 
-    CPubSubClientChannel( const CPubSubClientChannel& src ); // not implemented
+    CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
     typedef std::vector< COMCORE::CPubSubClientTopic* > TopicVector;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
+    CPubSubClientSide* m_otherSide;
     TopicVector m_topics;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
     TBufferMailbox::TMailList m_bulkMail;
     CORE::CTimer* m_metricsTimer;
-    CORE::CTimer* m_pubsubClientReconnectTimer;
-    CORE::CDynamicBufferSwap m_buffers;
-    CORE::CDynamicBuffer* m_msgReceiveBuffer;
-    CORE::CDateTime m_lastWriteBlockCompletion;    
-    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
+    CORE::CTimer* m_pubsubClientReconnectTimer;    
     CIPubSubMsgPersistance* m_persistance;
+    char m_side;
+};
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex > CPubSubClientSidePtr;
+
+/*-------------------------------------------------------------------------*/
+
+class CPubSubClientChannel : public CPubSubClientSide
+{
+    public:
+
+    CPubSubClientChannel( void );
+        
+    virtual ~CPubSubClientChannel();
+
+    virtual bool LoadConfig( const ChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    CPubSubClientSide* m_sideBPubSub;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -267,143 +282,15 @@ typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChann
 
 /*-------------------------------------------------------------------------*/
 
-class CStorageChannel : public CORE::CTaskConsumer ,
-                        public CIPubSubMsgPersistance
+class PubSub2PubSub;
+
+class RestApiPubSub2PubSubInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< CStorageChannel > TEventCallback;
-    typedef enum ChannelSettings::EChannelMode TChannelMode;
+    RestApiPubSub2PubSubInfoResource( PubSub2PubSub* app );
 
-    class StorageToPubSubRequest : public CORE::CIConfigurable
-    {
-        public:
-
-        CORE::CDateTime startDt;
-        CORE::CDateTime endDt;
-        CORE::CString::StringSet vfsPubSubMsgContainersToPush;
-
-        StorageToPubSubRequest( void );
-        StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt );
-        StorageToPubSubRequest( const StorageToPubSubRequest& src );
-
-        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-        virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
-        virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
-    };
-    typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
-
-    CStorageChannel();
-    CStorageChannel( const CStorageChannel& src );
-    virtual ~CStorageChannel();
-
-    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
-                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
-                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool WaitForTaskToFinish( CORE::Int32 timeoutInMs ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
-                                                const CORE::CString& topicName , 
-                                                CORE::CVariant& msgId          , 
-                                                CORE::CDateTime& msgDt         ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
-                                                          const CORE::CString& topicName , 
-                                                          CORE::CVariant& msgId          , 
-                                                          CORE::CDateTime& msgDt         ,
-                                                          CORE::UInt32 lastFileOffset    ,
-                                                          bool& fileExistedButHasIssue   );
-
-    bool
-    GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
-                                  const CORE::CDateTime& endDt    ,
-                                  CORE::CString::StringSet& files ) const;
-
-    bool AddStorageToPubSubRequest( const StorageToPubSubRequest& request );
-
-    void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
-    
-    bool LoadConfig( const ChannelSettings& channelSettings );
-
-    const ChannelSettings& GetChannelSettings( void ) const;
-
-    class ChannelMetrics
-    {
-        public:
-
-        ChannelMetrics( void );
-
-        CORE::UInt32 udpBytesReceived;
-        CORE::UInt32 udpPacketsReceived;
-        CORE::UInt32 redisMessagesTransmitted;
-        CORE::UInt32 redisPacketsInMsgsTransmitted;
-        CORE::UInt32 redisPacketsInMsgsRatio;
-        CORE::UInt32 redisTransmitQueueSize;
-        CORE::UInt32 redisErrorReplies;
-    };
-
-    const ChannelMetrics& GetMetrics( void ) const;
-
-    private:
-
-    void
-    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                         const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );
-
-    void RegisterEventHandlers( void );
-
-    CORE::CString GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const;
-
-    bool StoreNextReceivedPubSubBuffer( void );
-
-    bool ProcessNextStorageToPubSubRequest( void );
-
-    bool LoadStorageFile( const CORE::CString& vfsPath       ,
-                          CORE::CDynamicBuffer& targetBuffer );
-
-    bool GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
-                                              CORE::CDateTime& startDt      ,
-                                              CORE::CDateTime& endDt        ) const;
-
-    private:
-    
-    ChannelSettings m_channelSettings;
-    CORE::CTimer* m_metricsTimer;
-    ChannelMetrics m_metrics;
-    CPubSubClientChannelPtr m_pubsubClient;
-    CORE::CDynamicBuffer* m_msgReceiveBuffer;
-    CORE::CString m_vfsFilePostfix;
-    CORE::CVariant m_lastPersistedMsgId;
-    CORE::CDateTime m_lastPersistedMsgDt;
-    CORE::Float32 m_encodeSizeRatio;
-    StorageToPubSubRequestDeque m_storageToPubSubRequests;
-};
-
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< CStorageChannel, MT::CMutex > CStorageChannelPtr;
-
-/*-------------------------------------------------------------------------*/
-
-class PubSub2Storage;
-
-class RestApiPubSub2StorageInfoResource : public WEB::CCodecBasedHTTPServerResource
-{
-    public:
-
-    RestApiPubSub2StorageInfoResource( PubSub2Storage* app );
-
-    virtual ~RestApiPubSub2StorageInfoResource();
+    virtual ~RestApiPubSub2PubSubInfoResource();
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -412,18 +299,18 @@ class RestApiPubSub2StorageInfoResource : public WEB::CCodecBasedHTTPServerResou
 
     private:
 
-    PubSub2Storage* m_app;
+    PubSub2PubSub* m_app;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiPubSub2StorageConfigResource : public WEB::CCodecBasedHTTPServerResource
+class RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
-    RestApiPubSub2StorageConfigResource( PubSub2Storage* app, bool appConfig );
+    RestApiPubSub2PubSubConfigResource( PubSub2PubSub* app, bool appConfig );
 
-    virtual ~RestApiPubSub2StorageConfigResource();
+    virtual ~RestApiPubSub2PubSubConfigResource();
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -437,19 +324,19 @@ class RestApiPubSub2StorageConfigResource : public WEB::CCodecBasedHTTPServerRes
 
     private:
 
-    PubSub2Storage* m_app;
+    PubSub2PubSub* m_app;
     bool m_appConfig;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class PubSub2Storage : public CORE::CObserver ,
-                       public CORE::CIConfigurable
+class PubSub2PubSub : public CORE::CObserver ,
+                      public CORE::CIConfigurable
 {
     public:
 
-    PubSub2Storage( void );
-    virtual ~PubSub2Storage();
+    PubSub2PubSub( void );
+    virtual ~PubSub2PubSub();
 
     bool Start( void );
 
@@ -473,7 +360,7 @@ class PubSub2Storage : public CORE::CObserver ,
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< PubSub2Storage > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< PubSub2PubSub > TEventCallback;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -483,7 +370,7 @@ class PubSub2Storage : public CORE::CObserver ,
     private:
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
-    typedef std::map< CORE::Int32, CStorageChannelPtr > StorageChannelMap;
+    typedef std::map< CORE::Int32, CPubSubClientChannelPtr > PubSubClientChannelMap;
     typedef std::map< CORE::CString, CORE::CDataNode::TConstDataNodeSet > TChannelCfgMap;
 
     bool m_isInStandby;
@@ -494,7 +381,7 @@ class PubSub2Storage : public CORE::CObserver ,
     CORE::CString m_redisStreamName;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    StorageChannelMap m_channels;
+    PubSubClientChannelMap m_channels;
     ChannelSettingsMap m_channelSettings;
     ChannelSettings m_templateChannelSettings;
     WEB::CHTTPServer m_httpServer;

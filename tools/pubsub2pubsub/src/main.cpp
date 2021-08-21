@@ -97,7 +97,7 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
-#include "pubsub2storage.h"
+#include "pubsub2pubsub.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -120,9 +120,9 @@ LoadConfig( const CORE::CString& configPath            ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "pubsub2storage_d.ini";
+    const CORE::CString configFile = "pubsub2pubsub_d.ini";
     #else
-    const CORE::CString configFile = "pubsub2storage.ini";
+    const CORE::CString configFile = "pubsub2pubsub.ini";
     #endif
 
     CORE::CString configFilePath;
@@ -207,7 +207,7 @@ GucefAppSignalHandler( int signal )
  *      Application entry point
  */
 GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2storage" )
+//GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
 {GUCEF_TRACE;
 
     int returnValue = -100;
@@ -248,7 +248,7 @@ GUCEF_OSMAIN_BEGIN
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "pubsub2storage_log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "pubsub2pubsub_log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
@@ -266,25 +266,25 @@ GUCEF_OSMAIN_BEGIN
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
-    PubSub2Storage pubSub2Storage;
-    if ( !pubSub2Storage.LoadConfig( *globalConfig ) )
+    PubSub2PubSub pubSub2PubSub;
+    if ( !pubSub2PubSub.LoadConfig( *globalConfig ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Exiting because LoadConfig of global config failed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig of global config failed" );
         delete globalConfig;
         return -1;
     }
     delete globalConfig;
     
-    if ( !pubSub2Storage.LoadConfig( keyValueList ) )
+    if ( !pubSub2PubSub.LoadConfig( keyValueList ) )
     {
         delete globalConfig;
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Exiting because LoadConfig failed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig failed" );
         return -1;
     }
     
-    if ( !pubSub2Storage.Start() )
+    if ( !pubSub2PubSub.Start() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Failed to Start()" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Failed to Start()" );
         return -2;
     }
 
@@ -294,18 +294,18 @@ GUCEF_OSMAIN_BEGIN
     
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     returnValue = app.main( argc, argv, true );
-    pubSub2Storage.SetStandbyMode( true );
+    pubSub2PubSub.SetStandbyMode( true );
 
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Main thread stl exeption: " + CORE::CString( e.what() ) );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Main thread stl exeption: " + CORE::CString( e.what() ) );
         throw e;
     }
     #ifndef GUCEF_DEBUG_MODE
     catch ( ... )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Main thread unknown exeption occured. Caught in catch-all" );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Main thread unknown exeption occured. Caught in catch-all" );
         throw;
     }
     #endif

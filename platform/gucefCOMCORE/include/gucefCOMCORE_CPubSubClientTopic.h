@@ -123,6 +123,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      */
     virtual bool Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
     virtual bool Publish( const CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs );
+    virtual bool Publish( const TPubSubMsgsRefVector& msgs );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& payload );    

@@ -57,6 +57,9 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsDuplicateKeysPerMsg( false )
     , supportsMetaDataKeyValueSetPerMsg( false )
     , supportsMetrics( false )
+    , supportsSubscriberMsgReceivedAck( false )
+    , supportsAutoMsgReceivedAck( false )
+    , supportsAbsentMsgReceivedAck( false )
     , supportsBookmarkingConcept( false )
     , supportsAutoBookmarking( false )
     , supportsMsgIdBasedBookmark( false )
@@ -89,6 +92,9 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
     tree.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
     tree.SetAttribute( "supportsMetaDataKeyValueSetPerMsg", supportsMetaDataKeyValueSetPerMsg );
+    tree.SetAttribute( "supportsSubscriberMsgReceivedAck", supportsSubscriberMsgReceivedAck );
+    tree.SetAttribute( "supportsAutoMsgReceivedAck", supportsAutoMsgReceivedAck );
+    tree.SetAttribute( "supportsAbsentMsgReceivedAck", supportsAbsentMsgReceivedAck );
     tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
     tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
     tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
@@ -115,11 +121,14 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
     supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
     supportsMetaDataKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetaDataKeyValueSetPerMsg" ) ), supportsMetaDataKeyValueSetPerMsg );
-    supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept );
-    supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking );
-    supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark );
-    supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark );
-    supportsMetrics = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ) ), supportsMetrics );
+    supportsSubscriberMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriberMsgReceivedAck" ).AsBool( supportsSubscriberMsgReceivedAck, true );
+    supportsAutoMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAutoMsgReceivedAck" ).AsBool( supportsAutoMsgReceivedAck, true );
+    supportsAbsentMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAbsentMsgReceivedAck" ).AsBool( supportsAbsentMsgReceivedAck, true );
+    supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept, true );
+    supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking, true );
+    supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark, true );
+    supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark, true );
+    supportsMetrics = cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ).AsBool( supportsMetrics, true );
 
     return true;
 }

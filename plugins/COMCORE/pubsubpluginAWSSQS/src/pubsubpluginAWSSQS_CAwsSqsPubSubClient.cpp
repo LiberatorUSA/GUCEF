@@ -139,6 +139,9 @@ CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featu
     features.supportsSubscribing = true;                 // SQS supports reading messages from the queue
     features.supportsMetrics = true;                     // We add our own metrics support in this plugin for SQS specific stats
     features.supportsAutoReconnect = true;               // Our plugin adds auto reconnect out of the box
+    features.supportsSubscriberMsgReceivedAck = false;   // Since SQS is a queue where you consume the messages: this does not apply
+    features.supportsAutoMsgReceivedAck = false;         // Since SQS is a queue where you consume the messages: grabbing the message is in a way the ack but this does not really apply
+    features.supportsAbsentMsgReceivedAck = true;        // Since SQS is a queue where you consume the messages: this does not apply and hence can be absent
     features.supportsBookmarkingConcept = true;          // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
     features.supportsAutoBookmarking = true;             // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
     features.supportsMsgIdBasedBookmark = false;         // Since SQS is a queue where you consume the messages: You cannot provide a msg ID to resume from a given point

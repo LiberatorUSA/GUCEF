@@ -150,6 +150,9 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
     features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
     features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"
+    features.supportsSubscriberMsgReceivedAck = true;   // this is mandatory
+    features.supportsAutoMsgReceivedAck = false;        // this library can add not support for this - todo
+    features.supportsAbsentMsgReceivedAck = false;      // the ack is mandatory
     features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
     features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
     features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue
