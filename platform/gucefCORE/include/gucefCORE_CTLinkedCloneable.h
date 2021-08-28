@@ -69,8 +69,8 @@ namespace CORE {
  *  
  *  Please note that this is distinct from a Shared pointer which is about
  *  delegating lifecycle management of the object.
- *  This template is intended to be used as light weight references to costly 
- *  to create needlessly objects, such as internal buffer, where we do NOT want
+ *  This template is intended to be used as light weight references to avoid 
+ *  costly creation of objects needlessly, such as internal buffer, where we do NOT want
  *  to delegate lifecycle management. We'd want to reuse the buffer after say
  *  an event notification referencing the buffer contents. In this example 
  *  scenario it may be needed to store the referenced data in a queue for

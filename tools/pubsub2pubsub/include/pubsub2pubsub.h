@@ -24,10 +24,10 @@
 
 #include <deque>
 
-#ifndef GUCEF_MT_CTMAILBOX_H
-#include "gucefMT_CTMailBox.h"
-#define GUCEF_MT_CTMAILBOX_H
-#endif /* GUCEF_MT_CTMAILBOX_H ? */
+#ifndef GUCEF_MT_CMAILBOXFORCLONEABLES_H
+#include "gucefMT_CMailBoxForCloneables.h"
+#define GUCEF_MT_CMAILBOXFORCLONEABLES_H
+#endif /* GUCEF_MT_CMAILBOXFORCLONEABLES_H ? */
 
 #ifndef GUCEF_CORE_CITASKCONSUMER_H
 #include "gucefCORE_CITaskConsumer.h"
@@ -211,6 +211,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     bool DisconnectPubSubClient( bool destroyClient = false );
 
+    bool IsRunningInDedicatedThread( void ) const;
+
     private:
 
     void RegisterEventHandlers( void );
@@ -232,11 +234,16 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                const CORE::CEvent& eventId  ,
                                CORE::CICloneable* eventData );
 
-    bool TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
-
-    void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
+    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
     
     protected:
+
+    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+
+    template < typename TMsgCollection >
+    bool PublishMsgsSync( const TMsgCollection& msgs );
+
+    bool PublishMailboxMsgs( void );
 
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
@@ -247,12 +254,13 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     CPubSubClientSide* m_otherSide;
     TopicVector m_topics;
     ChannelSettings m_channelSettings;
-    TBufferMailbox m_mailbox;
-    TBufferMailbox::TMailList m_bulkMail;
+    PubSubSideChannelSettings* m_sideSettings;
+    MT::CMailboxForCloneables m_mailbox;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CIPubSubMsgPersistance* m_persistance;
     char m_side;
+    bool m_runsInDedicatedThread;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -268,6 +276,16 @@ class CPubSubClientChannel : public CPubSubClientSide
     CPubSubClientChannel( void );
         
     virtual ~CPubSubClientChannel();
+
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool LoadConfig( const ChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
 

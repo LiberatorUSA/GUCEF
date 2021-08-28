@@ -371,12 +371,13 @@ CPubSubClientSide::CPubSubClientSide( char side )
     , m_otherSide( GUCEF_NULL )
     , m_topics()
     , m_channelSettings()
+    , m_sideSettings( GUCEF_NULL )
     , m_mailbox()
-    , m_bulkMail()
     , m_metricsTimer( GUCEF_NULL )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_persistance( GUCEF_NULL )
     , m_side( side )
+    , m_runsInDedicatedThread( false )
 {GUCEF_TRACE;
 
 }
@@ -467,8 +468,9 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
 
 /*-------------------------------------------------------------------------*/
 
+template < typename TMsgCollection >
 bool
-CPubSubClientSide::TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_otherSide )
@@ -493,7 +495,7 @@ CPubSubClientSide::TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::T
                 else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):TransmitNextPubSubMsgBuffer: Failed to publish messages to topic" );
+                        "):PublishMsgsSync: Failed to publish messages to topic" );
                 }
             }
         }
@@ -501,10 +503,68 @@ CPubSubClientSide::TransmitMsgsToOtherSide( const COMCORE::CPubSubClientTopic::T
     }
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-        "):TransmitNextPubSubMsgBuffer: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
+        "):PublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
         CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
     
     return publishSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+{GUCEF_TRACE;
+
+    // Add the messages in bulk to the mailbox. Since we use pointer semantics we are actually
+    // Adding the IPubSubMsg* elements since the ref will be dereferenced
+    return m_mailbox.AddPtrBulkMail< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    if ( GUCEF_NULL != m_sideSettings )
+    {
+        // If we are running async from other sides we need to check the mailbox
+        if ( m_sideSettings->performPubSubInDedicatedThread )
+        {
+            return PublishMsgsASync( msgs );
+        }
+        else
+        {
+            return PublishMsgsSync( msgs );
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::PublishMailboxMsgs( void )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector msgs;
+    if ( m_mailbox.GetPtrBulkMail< COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector >( msgs ) )
+    {
+        bool publishResult = PublishMsgsSync< COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector >( msgs );
+
+        // We need to delete whatever we obtained from the mailbox
+        COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector::iterator i = msgs.begin();
+        while ( i != msgs.end() )
+        {
+            delete (*i);
+            ++i;
+        }
+
+        return publishResult;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -523,7 +583,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
         if ( !msgs.empty() )
         {                            
-            TransmitMsgsToOtherSide( msgs );        
+            PublishMsgs( msgs );        
         }
     }
     catch ( const std::exception& e )
@@ -763,6 +823,9 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
             "):OnTaskStart: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );        
         return false;
     }    
+    m_sideSettings = pubSubSideSettings;
+    
+    m_runsInDedicatedThread = m_sideSettings->performPubSubInDedicatedThread; 
     COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
@@ -807,11 +870,11 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPubSubClientSide::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt )
+bool
+CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
-    
+    return m_runsInDedicatedThread;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -820,6 +883,15 @@ bool
 CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;    
 
+    if ( GUCEF_NULL != m_sideSettings )
+    {
+        // If we are running async from other sides we need to check the mailbox
+        if ( m_sideSettings->performPubSubInDedicatedThread )
+        {
+            PublishMailboxMsgs();
+        }
+    }
+    
     // We are never 'done' so return false
     return false;
 }
@@ -831,6 +903,11 @@ CPubSubClientSide::OnTaskEnding( CORE::CICloneable* taskdata ,
                                  bool willBeForced           )
 {GUCEF_TRACE;
 
+    if ( willBeForced )
+    {
+        // reduce memory leaks
+        m_mailbox.Clear();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -856,6 +933,18 @@ CPubSubClientSide::LoadConfig( const ChannelSettings& channelSettings )
 {GUCEF_TRACE;
 
     m_channelSettings = channelSettings;
+
+    PubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
+    if ( GUCEF_NULL == pubSubSideSettings )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+            "):LoadConfig: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );        
+        return false;
+    }    
+
+    m_sideSettings = pubSubSideSettings;    
+    m_runsInDedicatedThread = m_sideSettings->performPubSubInDedicatedThread; 
+
     return true;
 }
 
@@ -876,6 +965,7 @@ CPubSubClientChannel::CPubSubClientChannel( void )
     , m_sideBPubSub( GUCEF_NULL )
 {GUCEF_TRACE;
 
+    // for now just work with a and b, we can do more sides later 
     m_sideBPubSub = new CPubSubClientSide( 'B' );
 }
 
@@ -886,6 +976,70 @@ CPubSubClientChannel::~CPubSubClientChannel()
 
     delete m_sideBPubSub;
     m_sideBPubSub = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    if ( CPubSubClientSide::OnTaskStart( taskData ) )
+    {
+        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+        {
+            return m_sideBPubSub->OnTaskStart( taskData );
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;    
+
+    CPubSubClientSide::OnTaskCycle( taskData );    
+    
+    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    {
+        m_sideBPubSub->OnTaskCycle( taskData );
+    }
+    
+    // We are never 'done' so return false
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                    bool willBeForced           )
+{GUCEF_TRACE;
+
+    CPubSubClientSide::OnTaskEnding( taskdata, willBeForced );    
+    
+    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    {
+        m_sideBPubSub->OnTaskEnding( taskdata, willBeForced );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
+                                   bool wasForced              )
+{GUCEF_TRACE;
+
+    CPubSubClientSide::OnTaskEnded( taskData, wasForced );    
+    
+    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    {
+        m_sideBPubSub->OnTaskEnded( taskData, wasForced );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

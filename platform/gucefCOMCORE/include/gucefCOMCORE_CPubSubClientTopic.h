@@ -92,6 +92,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     static void RegisterEvents( void );
 
+    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector       TIPubSubMsgConstRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector            TIPubSubMsgRawPtrVector;
     typedef CORE::CTLinkedCloneable< CIPubSubMsg >          TPubSubMsgRef;
     typedef std::vector< TPubSubMsgRef >                    TPubSubMsgsRefVector;
     typedef CORE::CTCloneableObj< TPubSubMsgsRefVector >    TMsgsRecievedEventData;
@@ -122,7 +124,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      *  Specific backend implementations may optionally override these if there is a gain from doing so
      */
     virtual bool Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
-    virtual bool Publish( const CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs );
+    virtual bool Publish( const TIPubSubMsgConstRawPtrVector& msgs );
+    virtual bool Publish( const TIPubSubMsgRawPtrVector& msgs );
     virtual bool Publish( const TPubSubMsgsRefVector& msgs );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
