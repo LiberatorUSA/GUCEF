@@ -395,10 +395,7 @@ class PubSub2PubSub : public CORE::CObserver ,
     bool m_globalStandbyEnabled;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
-    CORE::Int32 m_storageStartChannelID;
-    CORE::CString m_redisStreamName;
-    CORE::CString m_redisHost;
-    CORE::UInt16 m_redisPort;
+    CORE::Int32 m_pubSub2PubSubStartChannelID;
     PubSubClientChannelMap m_channels;
     ChannelSettingsMap m_channelSettings;
     ChannelSettings m_templateChannelSettings;

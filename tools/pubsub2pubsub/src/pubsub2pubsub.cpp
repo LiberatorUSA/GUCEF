@@ -1236,10 +1236,7 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_globalStandbyEnabled( false )
     , m_udpStartPort()
     , m_channelCount()
-    , m_storageStartChannelID()
-    , m_redisStreamName()
-    , m_redisHost()
-    , m_redisPort()
+    , m_pubSub2PubSubStartChannelID( 0 )
     , m_channels()
     , m_channelSettings()
     , m_templateChannelSettings()
@@ -1433,14 +1430,14 @@ PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
 
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
     m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
-    m_storageStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "StorageStartChannelID", "1" ) ) );
+    m_pubSub2PubSubStartChannelID = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "PubSub2PubSubStartChannelID", "1" ) ) );
 
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );    
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     CORE::UInt32 currentCpu = 0;
-    CORE::Int32 maxChannelId = m_storageStartChannelID + m_channelCount;
-    for ( CORE::Int32 channelId = m_storageStartChannelID; channelId < maxChannelId; ++channelId )
+    CORE::Int32 maxChannelId = m_pubSub2PubSubStartChannelID + m_channelCount;
+    for ( CORE::Int32 channelId = m_pubSub2PubSubStartChannelID; channelId < maxChannelId; ++channelId )
     {
         ChannelSettings* channelSettings = GUCEF_NULL;
         ChannelSettingsMap::iterator s = m_channelSettings.find( channelId );
@@ -1603,7 +1600,7 @@ PubSub2PubSub::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    CORE::Int32 channelId = m_storageStartChannelID;
+    CORE::Int32 channelId = m_pubSub2PubSubStartChannelID;
     PubSubClientChannelMap::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
