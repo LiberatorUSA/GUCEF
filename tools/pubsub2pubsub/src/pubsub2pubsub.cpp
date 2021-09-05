@@ -1429,36 +1429,114 @@ PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
 {GUCEF_TRACE;
 
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
+    
     m_pubSub2PubSubStartChannelID = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "PubSub2PubSubStartChannelID", "1" ) ) );
+    CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
+    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size() );   
 
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );    
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
-    CORE::UInt32 currentCpu = 0;
-    CORE::Int32 maxChannelId = m_pubSub2PubSubStartChannelID + m_channelCount;
-    for ( CORE::Int32 channelId = m_pubSub2PubSubStartChannelID; channelId < maxChannelId; ++channelId )
+    // We will assume we are always given a full not a partial config so we clear the existing channel settings
+    m_channelSettings.clear();
+
+    // Validate the channel IDs.
+    // Depending on the use case these could be vital identifiers not just an index so some validation is in order
+    Int32Set channelIDs;
+    CORE::CString::StringSet::iterator n = channelIDStrs.begin();
+    while ( n != channelIDStrs.end() )
     {
+        const CORE::CString& str = (*n);
+        if ( str.HasChar( '-' ) >= 0 )
+        {
+            CORE::Int32 startId = GUCEF_MT_INT32MIN;
+            CORE::Int32 endId = GUCEF_MT_INT32MIN;
+            
+            CORE::CString::StringVector rangeStrs = str.ParseElements( '-', false );
+            if ( rangeStrs.size() > 0 )
+                startId = CORE::StringToInt32( rangeStrs[ 0 ], GUCEF_MT_INT32MIN );
+            if ( rangeStrs.size() > 1 )
+                endId = CORE::StringToInt32( rangeStrs[ 1 ], GUCEF_MT_INT32MIN );
+
+            if ( startId != GUCEF_MT_INT32MIN && endId != GUCEF_MT_INT32MIN )
+            {
+                if ( endId < startId )
+                {
+                    CORE::Int32 tmp = startId;
+                    startId = endId;
+                    endId = tmp;
+                }
+
+                for ( CORE::Int32 i=startId; i<=endId; i++ )
+                    channelIDs.insert( i );    
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: Invalid channel ID range provided. Fix the config. Str: " + str );
+                return false;
+            }
+        }
+        else
+        {
+            CORE::Int32 id = CORE::StringToInt32( str, GUCEF_MT_INT32MIN );
+            if ( id != GUCEF_MT_INT32MIN )
+                channelIDs.insert( id );
+        }
+        ++n;
+    }
+    if ( channelIDs.size() < channelIDStrs.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
+        return false;
+    }
+
+    // Make sure we have enough channel IDs specified to cover the channel count
+    if ( channelIDs.size() < m_channelCount )
+    {
+        // auto-generate additional channel IDs
+        // This allows a configuration style where you don't have to specify all channel IDs
+        CORE::Int32 lastAutoGenChannelId = m_pubSub2PubSubStartChannelID;
+        CORE::Int32 missingChannels = m_channelCount - (CORE::Int32) channelIDs.size();
+        for ( CORE::Int32 i=0; i<missingChannels; ++i )
+        {
+            while ( channelIDs.find( lastAutoGenChannelId ) != channelIDs.end() )
+                ++lastAutoGenChannelId;
+            channelIDs.insert( lastAutoGenChannelId );
+            ++lastAutoGenChannelId;
+        }
+    }
+    else
+    if ( m_channelCount < channelIDs.size() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were provided but a total channel count of " + 
+            CORE::ToString( m_channelCount ) + " was configured. Channel count will be increased to match the nr of IDs" );
+        m_channelCount = (CORE::UInt16) channelIDs.size();
+    }
+
+    CORE::UInt32 currentCpu = 0;   
+    Int32Set::iterator idListIttr = channelIDs.begin();
+    for ( CORE::Int32 i=0; i<m_channelCount; ++i )
+    {
+        CORE::Int32 channelId = (*idListIttr);
+
         ChannelSettings* channelSettings = GUCEF_NULL;
         ChannelSettingsMap::iterator s = m_channelSettings.find( channelId );
         if ( s == m_channelSettings.end() )
         {
             channelSettings = &m_channelSettings[ channelId ];
             *channelSettings = m_templateChannelSettings;
-
-            if ( -1 == channelSettings->channelId )
-                channelSettings->channelId = channelId;
         }
         else
         {
             channelSettings = &m_channelSettings[ channelId ];
         }
+        channelSettings->channelId = channelId;
 
         // Assign CPU affinity
-        ChannelSettings::TCharToPubSubSideChannelSettingsMap::iterator i = channelSettings->pubSubSideChannelSettingsMap.begin();
-        while ( i != channelSettings->pubSubSideChannelSettingsMap.end() )
+        ChannelSettings::TCharToPubSubSideChannelSettingsMap::iterator n = channelSettings->pubSubSideChannelSettingsMap.begin();
+        while ( n != channelSettings->pubSubSideChannelSettingsMap.end() )
         {
-            PubSubSideChannelSettings& sideSettings = (*i).second;
+            PubSubSideChannelSettings& sideSettings = (*n).second;
             if ( sideSettings.applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
             {
                 if ( sideSettings.performPubSubInDedicatedThread )

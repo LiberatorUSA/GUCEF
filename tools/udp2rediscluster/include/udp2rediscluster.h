@@ -1,5 +1,5 @@
 /*
- *  Udp2RedisCluster: service which pushes UDP packets into kafka topics
+ *  Udp2RedisCluster: service which pushes UDP packets into clustered redis streams
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *

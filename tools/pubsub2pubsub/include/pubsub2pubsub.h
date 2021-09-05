@@ -390,6 +390,7 @@ class PubSub2PubSub : public CORE::CObserver ,
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
     typedef std::map< CORE::Int32, CPubSubClientChannelPtr > PubSubClientChannelMap;
     typedef std::map< CORE::CString, CORE::CDataNode::TConstDataNodeSet > TChannelCfgMap;
+    typedef std::set< CORE::Int32 > Int32Set;
 
     bool m_isInStandby;
     bool m_globalStandbyEnabled;
