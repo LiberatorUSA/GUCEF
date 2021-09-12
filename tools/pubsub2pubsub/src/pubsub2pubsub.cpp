@@ -90,7 +90,7 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     , pubsubClientConfig()
     , performPubSubInDedicatedThread()
     , applyThreadCpuAffinity( false )
-    , cpuAffinityForPubSubThread( -1 )
+    , cpuAffinityForPubSubThread( 0 )
     , subscribeUsingDefaultBookmarkIfThereIsNoLast( true )
 {GUCEF_TRACE;
 
@@ -155,7 +155,7 @@ bool
 PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
-    const CORE::CDataNode* psClientConfig = tree.Search( "PubSubClientConfig", '/', true );
+    const CORE::CDataNode* psClientConfig = tree.Search( "PubSubClientConfig", '/', false );
     if ( GUCEF_NULL != psClientConfig )
     {
         if ( !pubsubClientConfig.LoadConfig( *psClientConfig ) )
@@ -338,6 +338,17 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, having at least one topic configured for the client section is mandatory" );
                 return false;
             }
+
+            if ( (*n)->GetName().IsNULLOrEmpty() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, we need a valid name for the side" );
+                return false;
+            }
+
+            char sideId = (*n)->GetName()[ 0 ];
+            pubSubSideChannelSettingsMap[ sideId ] = sideSettings;
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side \'" + CORE::CString( sideId ) + "\' config successfully loaded" );
+
             ++n;
         }       
     }
@@ -1549,7 +1560,7 @@ PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
                 }
             }
 
-            ++i;
+            ++n;
         }
     }
 
@@ -1583,8 +1594,9 @@ bool
 PubSub2PubSub::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
+    // First store the per channel configs in a more conveniently accessable manner
+    // splitting them out from the global config document
     TChannelCfgMap channelMap;
-
     CORE::CDataNode::TConstDataNodeSet channelParentCfgs = cfg.FindChildrenOfType( "Channels", true );
     CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
     while ( i != channelParentCfgs.end() )
@@ -1593,54 +1605,48 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& cfg )
         while ( n != (*i)->ConstEnd() )
         {
             const CORE::CString& channelIndex = (*n)->GetName();
-            channelMap[ channelIndex ] = (*n)->FindChildrenOfType( "StorageChannel" );            
+            channelMap[ channelIndex ] = *(*n);            
             ++n;
         }                
         ++i;
     }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for storage channels" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for pubsub2pubsub channels" );
     
-    // load the template if any
+    // load the template config if any
+    // This is especially important in conjunction with command line params that would rely on a template config
     TChannelCfgMap::iterator m = channelMap.find( "*" );
     if ( m != channelMap.end() )
     {
-        CORE::CDataNode::TConstDataNodeSet& matches = (*m).second;
-        if ( !matches.empty() )
-        {            
-            if ( m_templateChannelSettings.LoadConfig( *(*matches.begin()) ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for storage channels" );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for storage channels" );
-                return false;
-            }
+        if ( m_templateChannelSettings.LoadConfig( (*m).second ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for pubsub2pubsub channels" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for pubsub2pubsub channels" );
+            return false;
         }
     }
 
     // load the specifically configured channels if any
+    // Such channels would not be defined via command line params but can possibly be influenced by such params with combined usage
     m = channelMap.begin();
     while ( m != channelMap.end() )
     {
         const CORE::CString& channelIndexStr = (*m).first;
         if ( channelIndexStr != '*' )
         {
-            CORE::CDataNode::TConstDataNodeSet& matches = (*m).second;
-            if ( !matches.empty() )
-            {            
-                CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
-                ChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
+            CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
+            ChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
 
-                if ( channelSettings.LoadConfig( *(*matches.begin()) ) )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for storage channels " + channelIndexStr );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for storage channels " + channelIndexStr );
-                    return false;
-                }
+            if ( channelSettings.LoadConfig( (*m).second ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for pubsub2pubsub channels " + channelIndexStr );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for pubsub2pubsub channels " + channelIndexStr );
+                return false;
             }
         }
         ++m;

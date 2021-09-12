@@ -149,6 +149,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     UInt8 GetTypeId( void ) const;  
 
     bool            AsBool( bool defaultIfNeeded = false, bool resolveVarsIfApplicable = false ) const;
+    char            AsChar( char defaultIfNeeded = '\0' ) const;
     Int8            AsInt8( Int8 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
     UInt8           AsUInt8( UInt8 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
     Int16           AsInt16( Int16 defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
@@ -163,7 +164,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CAsciiString    AsAsciiString( const CAsciiString& defaultIfNeeded = CAsciiString::Empty, bool resolveVarsIfApplicable = false ) const;
     CUtf8String     AsUtf8String( const CUtf8String& defaultIfNeeded = CUtf8String::Empty, bool resolveVarsIfApplicable = false ) const;
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
-    const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;
+    const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;    
     CDynamicBuffer  AsBuffer( void ) const;
 
     /**

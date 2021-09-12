@@ -796,6 +796,15 @@ CVariant::AsCharPtr( const char* defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
+char            
+CVariant::AsChar( char defaultIfNeeded ) const
+{GUCEF_TRACE;
+
+    return *AsCharPtr( &defaultIfNeeded );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const void*
 CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
 {GUCEF_TRACE;

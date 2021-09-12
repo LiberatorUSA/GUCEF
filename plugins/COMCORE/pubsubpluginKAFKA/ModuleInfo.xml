@@ -4,11 +4,13 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="RdKafka" />
         </Dependencies>
 		<Linker>
 			<Dependency Name="gucefMT" />
 			<Dependency Name="gucefCORE" />	
 			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="RdKafka" />
 		</Linker>
         <Preprocessor>
             <Define String="PUBSUBPLUGIN_KAFKA_BUILD_PLUGIN_DLL" />

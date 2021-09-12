@@ -173,16 +173,7 @@ CDataNode::operator=( const CDataNode& src )
 
     if ( this != &src )
     {
-        // detach from our current tree
-        Detach();
-        DelSubTree();
-        
-        m_nodeType = src.m_nodeType;
-        _name = src._name;
-        m_value = src.m_value;
-        _atts = src._atts;
-
-        SetAssociatedData( src.m_associatedData );
+        Copy( src );
     }               
     return *this;
 }
@@ -190,13 +181,21 @@ CDataNode::operator=( const CDataNode& src )
 /*-------------------------------------------------------------------------*/
 
 void 
-CDataNode::Copy( const CDataNode& root )
+CDataNode::Copy( const CDataNode& src )
 {GUCEF_TRACE;
 
-    if ( this != &root )
+    if ( this != &src )
     {
-        *this = root;
-        CopySubTree( root );
+        Clear();
+        
+        m_nodeType = src.m_nodeType;
+        _name = src._name;
+        m_value = src.m_value;
+        _atts = src._atts;
+
+        SetAssociatedData( src.m_associatedData );
+
+        CopySubTree( src );    
     }
 }
 

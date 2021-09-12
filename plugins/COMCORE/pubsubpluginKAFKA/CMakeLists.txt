@@ -38,11 +38,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "pubsubpluginKAFKA" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
-target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
+add_dependencies( ${MODULE_NAME} RdKafka gucefCOMCORE gucefCORE gucefMT )
+target_link_libraries( ${MODULE_NAME} RdKafka gucefCOMCORE gucefCORE gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PUBSUBPLUGIN_KAFKA_BUILD_PLUGIN_DLL" )
 
-include_directories( ../../../common/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/librdkafka/src ../../../dependencies/librdkafka/src-cpp ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )
