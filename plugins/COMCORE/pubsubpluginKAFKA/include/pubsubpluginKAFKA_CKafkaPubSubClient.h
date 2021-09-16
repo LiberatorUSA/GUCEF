@@ -50,6 +50,11 @@
 #define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPIC_H
 #endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginKAFKA_CKafkaPubSubClientConfig.h"
+#define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -102,9 +107,13 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public COMCORE:
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    COMCORE::CPubSubClientConfig& GetConfig( void );
+    virtual bool LoadConfig( const COMCORE::CPubSubClientConfig& config );
+
+    CKafkaPubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );
+
+    void Clear( void );
     
     private:
 
@@ -114,7 +123,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public COMCORE:
                          CORE::CICloneable* eventData );
 
     void RegisterEventHandlers( void );
-    
+
     CKafkaPubSubClient( void ); /**< not implemented */
 
     private:
@@ -122,7 +131,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public COMCORE:
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClient > TEventCallback;
     typedef std::map< CORE::CString, CKafkaPubSubClientTopic* > TTopicMap;
 
-    COMCORE::CPubSubClientConfig m_config;
+    CKafkaPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;

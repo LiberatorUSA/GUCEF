@@ -239,6 +239,10 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 
 inline CString ToString( const CVariant& var ) { return var.AsString(); }
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString::StringVector ToStringVector( const CVariant::VariantVector& var );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

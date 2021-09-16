@@ -479,9 +479,15 @@ CRedisClusterPubSubClient::Connect( void )
     
     try
     {
+        if ( m_config.remoteAddresses.empty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: No remote address was specified" );
+            return false;
+        }
+        
         sw::redis::ConnectionOptions rppConnectionOptions;
-        rppConnectionOptions.host = m_config.remoteAddress.GetHostname();  // Required.
-        rppConnectionOptions.port = m_config.remoteAddress.GetPortInHostByteOrder(); // Optional. The default port is 6379.
+        rppConnectionOptions.host = m_config.remoteAddresses.front().GetHostname();  // Required.
+        rppConnectionOptions.port = m_config.remoteAddresses.front().GetPortInHostByteOrder(); // Optional. The default port is 6379.
         //rppConnectionOptions.password = "auth";   // Optional. No password by default.
         //rppConnectionOptions.db = 1;  // Optional. Use the 0th database by default.
 
@@ -497,12 +503,12 @@ CRedisClusterPubSubClient::Connect( void )
         delete m_redisContext;
         m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
 
         // The following is not a must-have for connectivity
         if ( GetRedisClusterNodeMap( m_nodeMap ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully obtained Redis cluster nodes" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully obtained Redis cluster nodes" );
         }
 
         TTopicMap::iterator i = m_topicMap.begin();
@@ -517,19 +523,19 @@ CRedisClusterPubSubClient::Connect( void )
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Redis++ exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }

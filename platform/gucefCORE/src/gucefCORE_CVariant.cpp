@@ -1779,6 +1779,22 @@ CVariant::operator CUtf8String() const
     return AsUtf8String();
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString::StringVector 
+ToStringVector( const CVariant::VariantVector& var )
+{GUCEF_TRACE;
+
+    CString::StringVector result;
+    CVariant::VariantVector::const_iterator i = var.begin();
+    while ( i != var.end() )
+    {
+        result.push_back( (*i).AsString() );
+        ++i;
+    }
+    return result;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

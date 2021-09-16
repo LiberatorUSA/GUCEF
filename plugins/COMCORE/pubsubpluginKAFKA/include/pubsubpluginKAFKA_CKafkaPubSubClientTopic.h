@@ -45,6 +45,8 @@
 #define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H
 #endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H ? */
 
+#include "rdkafkacpp.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,11 +66,18 @@ namespace KAFKA {
 class CKafkaPubSubClient;
 
 /**
- *  MS Windows KAFKA implementation of the conceptual pub-sub "topic"
+ *  KAFKA implementation of the conceptual pub-sub "topic"
  */
-class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COMCORE::CPubSubClientTopic
+class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COMCORE::CPubSubClientTopic ,
+                                                                      private RdKafka::EventCb           ,
+                                                                      private RdKafka::DeliveryReportCb  ,
+                                                                      private RdKafka::ConsumeCb         ,
+                                                                      private RdKafka::RebalanceCb       ,
+                                                                      private RdKafka::OffsetCommitCb
 {
     public:
+
+    static const std::string KafkaMsgHeader_ProducerHostname;
 
     CKafkaPubSubClientTopic( CKafkaPubSubClient* client );
 
@@ -103,11 +112,32 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
-    void
-    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
+    CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
+
+    CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );
+
+    CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
+
+    CORE::UInt32 GetKafkaMsgsFilteredCounter( bool resetCounter );
     
+    class TopicMetrics
+    {
+        public:
+
+        TopicMetrics( void );
+
+        CORE::UInt32 kafkaMessagesTransmitted;
+        CORE::UInt32 kafkaTransmitQueueSize;
+        CORE::UInt32 kafkaTransmitOverflowQueueSize;
+
+        CORE::UInt32 kafkaMessagesReceived;
+        CORE::UInt32 kafkaMessagesFiltered;
+
+        CORE::UInt32 kafkaErrorReplies;
+    };
+
+    const TopicMetrics& GetMetrics( void ) const;
+
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
@@ -120,9 +150,53 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     void RegisterEventHandlers( void );
 
+    void Clear( void );
+
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
     bool SubscribeImpl( const std::string& readOffset );
+
+    CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
+                                                 CORE::Int32 partitionId                     ,
+                                                 CORE::Int32 timeoutInMs                     );
+
+    CORE::Int64 ConvertKafkaConsumerStartOffset( CORE::Int64 startOffsetDescription ,
+                                                 CORE::Int32 partitionId            ,
+                                                 CORE::Int32 timeoutInMs            );
+
+    static CORE::CString ConvertKafkaConsumerStartOffset( CORE::Int64 offset );
+
+    static const std::string& MsgStatusToString( RdKafka::Message::Status status );
+
+    void NotifyOfReceivedMsg( RdKafka::Message& message );
+
+    virtual void event_cb( RdKafka::Event& event ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void dr_cb( RdKafka::Message& message ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void consume_cb( RdKafka::Message& message, void* opaque ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void rebalance_cb( RdKafka::KafkaConsumer* consumer                  ,
+                               RdKafka::ErrorCode err                            ,
+                               std::vector<RdKafka::TopicPartition*>& partitions ) GUCEF_VIRTUAL_OVERRIDE;
+
+  /**
+   * @brief Set offset commit callback for use with consumer groups
+   *
+   * The results of automatic or manual offset commits will be scheduled
+   * for this callback and is served by RdKafka::KafkaConsumer::consume().
+   *
+   * If no partitions had valid offsets to commit this callback will be called
+   * with \p err == ERR__NO_OFFSET which is not to be considered an error.
+   *
+   * The \p offsets list contains per-partition information:
+   *   - \c topic      The topic committed
+   *   - \c partition  The partition committed
+   *   - \c offset:    Committed offset (attempted)
+   *   - \c err:       Commit error
+   */
+    virtual void offset_commit_cb( RdKafka::ErrorCode err                         ,
+                                   std::vector<RdKafka::TopicPartition*>& offsets ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -134,12 +208,30 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
     typedef std::vector< TBufferPair > TBufferVector;
 
+    typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
+
     CKafkaPubSubClient* m_client;
+    CORE::CTimer* m_metricsTimer;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     TBufferVector m_pubsubMsgAttribs;
-    COMCORE::CHostAddress m_redisShardHost;
     CKafkaPubSubClientTopicConfig m_config;
+    RdKafka::Conf* m_kafkaProducerTopicConf;
+    RdKafka::Conf* m_kafkaConsumerTopicConf;
+    RdKafka::Conf* m_kafkaProducerConf;
+    RdKafka::Conf* m_kafkaConsumerConf;
+    RdKafka::Producer* m_kafkaProducer;
+    RdKafka::Topic* m_kafkaProducerTopic;
+    RdKafka::KafkaConsumer* m_kafkaConsumer;
+    CORE::UInt32 m_kafkaErrorReplies;
+    CORE::UInt32 m_kafkaMsgsTransmitted;
+    CORE::UInt32 m_kafkaMessagesReceived;
+    CORE::UInt32 m_kafkaMessagesFiltered;
+    std::string m_producerHostname;
+    bool m_firstPartitionAssignment;
+    TInt32ToInt64Map m_consumerOffsets;
+    CORE::UInt64 m_tickCountAtLastOffsetCommit;
+    TopicMetrics m_metrics;
     MT::CMutex m_lock;
 };
 

@@ -51,8 +51,9 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , customConfig()
     , pulseGenerator( GUCEF_NULL )
     , reconnectDelayInMs( 0 )
-    , remoteAddress()
+    , remoteAddresses()
     , topics()
+    , metricsPrefix()
 {GUCEF_TRACE;
 
 }
@@ -66,8 +67,9 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , customConfig( src.customConfig )
     , pulseGenerator( src.pulseGenerator )
     , reconnectDelayInMs( src.reconnectDelayInMs )
-    , remoteAddress( src.remoteAddress )
+    , remoteAddresses( src.remoteAddresses )
     , topics( src.topics )
+    , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
 
 }
@@ -82,25 +84,40 @@ CPubSubClientConfig::~CPubSubClientConfig()
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientConfig::SaveConfig( CORE::CDataNode& tree ) const
+CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
     
-    tree.SetAttribute( "pubsubClientType", pubsubClientType );
-    tree.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs );
-    tree.SetAttribute( "remoteAddress", remoteAddress.HostnameAndPortAsString() );
-   
-    tree.CopySubTree( customConfig );    
+    cfg.SetAttribute( "pubsubClientType", pubsubClientType );
+    cfg.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs );
+    cfg.SetAttribute( "metricsPrefix", metricsPrefix );
+    
+    CORE::CDataNode* addressList = cfg.AddChild( "RemoteAddressess", GUCEF_DATATYPE_ARRAY );
+    if ( GUCEF_NULL != addressList )
+    {
+        THostAddressVector::const_iterator i = remoteAddresses.begin();
+        while ( i != remoteAddresses.end() )
+        {
+            cfg.AddChildWithValue( "remoteAddress", (*i).HostnameAndPortAsString() );
+            ++i;
+        }
+    }
+    else
+        return false;
+       
+    cfg.CopySubTree( customConfig );    
 
-    CORE::CDataNode* desiredFeaturesCfg = tree.FindChild( "DesiredFeatures" );
+    CORE::CDataNode* desiredFeaturesCfg = cfg.FindChild( "DesiredFeatures" );
     if ( GUCEF_NULL == desiredFeaturesCfg )
     {
-        desiredFeaturesCfg = tree.AddChild( "DesiredFeatures", GUCEF_DATATYPE_OBJECT );
+        desiredFeaturesCfg = cfg.AddChild( "DesiredFeatures", GUCEF_DATATYPE_OBJECT );
+        if ( GUCEF_NULL == desiredFeaturesCfg )
+            return false;
     }
     desiredFeatures.SaveConfig( *desiredFeaturesCfg );
 
     if ( !topics.empty() )
     {
-        CORE::CDataNode* topicsCollection = tree.AddChild( "Topics", GUCEF_DATATYPE_ARRAY );
+        CORE::CDataNode* topicsCollection = cfg.AddChild( "Topics", GUCEF_DATATYPE_ARRAY );
         if ( GUCEF_NULL != topicsCollection )
         {
             TPubSubClientTopicConfigVector::const_iterator i = topics.begin();
@@ -125,9 +142,20 @@ bool
 CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    pubsubClientType = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ) );
-    reconnectDelayInMs = CORE::StringToUInt32( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ) ), reconnectDelayInMs );
-    remoteAddress.SetHostnameAndPort( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "remoteAddress", remoteAddress.HostnameAndPortAsString() ) ) );
+    pubsubClientType = cfg.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ).AsString( pubsubClientType, true );
+    reconnectDelayInMs = cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ).AsUInt32( reconnectDelayInMs, true );
+    metricsPrefix = cfg.GetAttributeValueOrChildValueByName( "metricsPrefix" ).AsString( metricsPrefix, true ); 
+
+    CORE::CDataNode* remoteAddressessCfg = cfg.FindChild( "RemoteAddressess" );
+    if ( GUCEF_NULL != remoteAddressessCfg )
+    {
+        CORE::CDataNode::const_iterator i = remoteAddressessCfg->ConstBegin();
+        while ( i != remoteAddressessCfg->ConstEnd() )
+        {
+            remoteAddresses.push_back( CHostAddress( cfg.GetValue().AsString( CString::Empty, true ) ) );
+            ++i;
+        }
+    }
     
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )

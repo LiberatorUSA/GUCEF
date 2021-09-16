@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H
-#define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H
+#ifndef PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H
+#define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#include "gucefCOMCORE_CPubSubClientConfig.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_KAFKA_MACROS_H
 #include "pubsubpluginKAFKA_macros.h"
@@ -57,31 +57,25 @@ class CKafkaPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientConfig : public COMCORE::CPubSubClientConfig
 {
     public:
 
     typedef std::map< CORE::CString, CORE::CString >   StringMap;
-    
-    StringMap kafkaProducerTopicConfigSettings;
-    StringMap kafkaConsumerTopicConfigSettings;
-    CORE::CString consumerModeStartOffset;
-    bool useKafkaMsgHeadersForConsumerFiltering;
-    std::string kafkaMsgHeaderUsedForFiltering;
-    CORE::CString::StringVector kafkaMsgValuesUsedForFiltering;
-    bool addProducerHostnameAsKafkaMsgHeader;
-    CORE::CString prefixToAddForMetaDataKvPairs;
-    CORE::CString prefixToAddForKvPairs;
-    
-    CKafkaPubSubClientTopicConfig( void );
-    
-    CKafkaPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
 
-    virtual ~CKafkaPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
+    StringMap kafkaProducerGlobalConfigSettings;
+    StringMap kafkaConsumerGlobalConfigSettings;
+    StringMap kafkaConsumerDefaultTopicConfigSettings;
+    
+    CKafkaPubSubClientConfig( void );
+    
+    CKafkaPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig );
 
-    CKafkaPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
+    virtual ~CKafkaPubSubClientConfig() GUCEF_VIRTUAL_OVERRIDE;
 
-    CKafkaPubSubClientTopicConfig& operator=( const CKafkaPubSubClientTopicConfig& src );
+    CKafkaPubSubClientConfig& operator=( const COMCORE::CPubSubClientConfig& src );
+
+    CKafkaPubSubClientConfig& operator=( const CKafkaPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 };
@@ -98,4 +92,4 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H ? */
+#endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTCONFIG_H ? */

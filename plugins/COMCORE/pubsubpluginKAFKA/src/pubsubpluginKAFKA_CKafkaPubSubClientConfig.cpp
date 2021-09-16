@@ -27,7 +27,7 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
-#include "pubsubpluginKAFKA_CKafkaPubSubClientTopicConfig.h"
+#include "pubsubpluginKAFKA_CKafkaPubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,44 +45,30 @@ namespace KAFKA {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
-    : COMCORE::CPubSubClientTopicConfig()
-    , kafkaProducerTopicConfigSettings()
-    , kafkaConsumerTopicConfigSettings()
-    , consumerModeStartOffset( "stored" )
-    , useKafkaMsgHeadersForConsumerFiltering( false )
-    , kafkaMsgHeaderUsedForFiltering()
-    , kafkaMsgValuesUsedForFiltering()
-    , addProducerHostnameAsKafkaMsgHeader( false )
-    , prefixToAddForMetaDataKvPairs()
-    , prefixToAddForKvPairs()
+CKafkaPubSubClientConfig::CKafkaPubSubClientConfig( void )
+    : COMCORE::CPubSubClientConfig()
+    , kafkaProducerGlobalConfigSettings()
+    , kafkaConsumerGlobalConfigSettings()
+    , kafkaConsumerDefaultTopicConfigSettings()
 {GUCEF_TRACE;
 
-    consumerGroupName = "0";
 }
 
 /*-------------------------------------------------------------------------*/
 
-CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
-    : COMCORE::CPubSubClientTopicConfig( genericConfig )
-    , kafkaProducerTopicConfigSettings()
-    , kafkaConsumerTopicConfigSettings()
-    , consumerModeStartOffset( "stored" )
-    , useKafkaMsgHeadersForConsumerFiltering( false )
-    , kafkaMsgHeaderUsedForFiltering()
-    , kafkaMsgValuesUsedForFiltering()
-    , addProducerHostnameAsKafkaMsgHeader( false )
-    , prefixToAddForMetaDataKvPairs()
-    , prefixToAddForKvPairs()
+CKafkaPubSubClientConfig::CKafkaPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
+    : COMCORE::CPubSubClientConfig( genericConfig )
+    , kafkaProducerGlobalConfigSettings()
+    , kafkaConsumerGlobalConfigSettings()
+    , kafkaConsumerDefaultTopicConfigSettings()
 {GUCEF_TRACE;
 
-    consumerGroupName = "0";
     LoadCustomConfig( genericConfig.customConfig );  
 }
 
 /*-------------------------------------------------------------------------*/
 
-CKafkaPubSubClientTopicConfig::~CKafkaPubSubClientTopicConfig()
+CKafkaPubSubClientConfig::~CKafkaPubSubClientConfig()
 {GUCEF_TRACE;
 
 }
@@ -90,11 +76,11 @@ CKafkaPubSubClientTopicConfig::~CKafkaPubSubClientTopicConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
+CKafkaPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    // Load the topic config settings that are direct pass-through to RdKafka for producers
-    const CORE::CDataNode* producerCfgNode = config.Search( "KafkaProducerTopicConfig", '/', false, false ); 
+    // Load the global config settings that are direct pass-through to RdKafka for producers
+    const CORE::CDataNode* producerCfgNode = config.Search( "KafkaProducerGlobalConfig", '/', false, false ); 
     if ( GUCEF_NULL != producerCfgNode )
     {
         CORE::CDataNode::const_iterator i = producerCfgNode->ConstBegin();
@@ -105,15 +91,15 @@ CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 
             if ( !settingKey.IsNULLOrEmpty() && !settingValue.IsNULLOrEmpty() )
             {
-                kafkaProducerTopicConfigSettings[ settingKey ] = settingValue; 
+                kafkaProducerGlobalConfigSettings[ settingKey ] = settingValue; 
             }
             
             ++i;
         }
     }
 
-    // Load the topic config settings that are direct pass-through to RdKafka for consumers
-    const CORE::CDataNode* consumerCfgNode = config.Search( "KafkaConsumerTopicConfig", '/', false, false ); 
+    // Load the global config settings that are direct pass-through to RdKafka for consumers
+    const CORE::CDataNode* consumerCfgNode = config.Search( "KafkaConsumerGlobalConfig", '/', false, false ); 
     if ( GUCEF_NULL != consumerCfgNode )
     {
         CORE::CDataNode::const_iterator i = consumerCfgNode->ConstBegin();
@@ -124,32 +110,43 @@ CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 
             if ( !settingKey.IsNULLOrEmpty() && !settingValue.IsNULLOrEmpty() )
             {
-                kafkaConsumerTopicConfigSettings[ settingKey ] = settingValue; 
+                kafkaConsumerGlobalConfigSettings[ settingKey ] = settingValue; 
             }
             
             ++i;
         }
     }
 
-    consumerModeStartOffset = config.GetAttributeValueOrChildValueByName( "consumerModeStartOffset" ).AsString( consumerModeStartOffset, true ); 
-    useKafkaMsgHeadersForConsumerFiltering = config.GetAttributeValueOrChildValueByName( "useKafkaMsgHeadersForConsumerFiltering" ).AsBool( useKafkaMsgHeadersForConsumerFiltering, true ); 
-    kafkaMsgHeaderUsedForFiltering = config.GetAttributeValueOrChildValueByName( "kafkaMsgHeaderUsedForFiltering" ).AsString( kafkaMsgHeaderUsedForFiltering, true );
-    kafkaMsgValuesUsedForFiltering = ToStringVector( config.GetAttributeValueOrChildValuesByName( "kafkaMsgValuesUsedForFiltering" ) );
-    addProducerHostnameAsKafkaMsgHeader = config.GetAttributeValueOrChildValueByName( "addProducerHostnameAsKafkaMsgHeader" ).AsBool( addProducerHostnameAsKafkaMsgHeader, true ); 
-    prefixToAddForMetaDataKvPairs = config.GetAttributeValueOrChildValueByName( "prefixToAddForMetaDataKvPairs" ).AsString( prefixToAddForMetaDataKvPairs, true );
-    prefixToAddForKvPairs = config.GetAttributeValueOrChildValueByName( "prefixToAddForKvPairs" ).AsString( prefixToAddForKvPairs, true );
+    consumerCfgNode = config.Search( "KafkaConsumerDefaultTopicConfig", '/', false, false ); 
+    if ( GUCEF_NULL != consumerCfgNode )
+    {
+        CORE::CDataNode::const_iterator i = consumerCfgNode->ConstBegin();
+        while ( i != consumerCfgNode->ConstEnd() )
+        {
+            const CORE::CString& settingKey = (*i)->GetName();
+            CORE::CString settingValue = (*i)->GetValue().AsString();
+
+            if ( !settingKey.IsNULLOrEmpty() && !settingValue.IsNULLOrEmpty() )
+            {
+                kafkaConsumerDefaultTopicConfigSettings[ settingKey ] = settingValue; 
+            }
+            
+            ++i;
+        }
+    }
+
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CKafkaPubSubClientTopicConfig& 
-CKafkaPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfig& src )
+CKafkaPubSubClientConfig& 
+CKafkaPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        COMCORE::CPubSubClientConfig::operator=( src );
         LoadCustomConfig( src.customConfig );    
     }
     return *this;
@@ -157,13 +154,13 @@ CKafkaPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfi
 
 /*-------------------------------------------------------------------------*/
 
-CKafkaPubSubClientTopicConfig& 
-CKafkaPubSubClientTopicConfig::operator=( const CKafkaPubSubClientTopicConfig& src )
+CKafkaPubSubClientConfig& 
+CKafkaPubSubClientConfig::operator=( const CKafkaPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        COMCORE::CPubSubClientConfig::operator=( src );
 
     }
     return *this;

@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/pubsubpluginKAFKA.h
   include/pubsubpluginKAFKA_CKafkaPubSubClient.h
+  include/pubsubpluginKAFKA_CKafkaPubSubClientConfig.h
   include/pubsubpluginKAFKA_CKafkaPubSubClientTopic.h
   include/pubsubpluginKAFKA_CKafkaPubSubClientTopicConfig.h
   include/pubsubpluginKAFKA_config.h
@@ -23,6 +24,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/pubsubpluginKAFKA.cpp
   src/pubsubpluginKAFKA_CKafkaPubSubClient.cpp
+  src/pubsubpluginKAFKA_CKafkaPubSubClientConfig.cpp
   src/pubsubpluginKAFKA_CKafkaPubSubClientTopic.cpp
   src/pubsubpluginKAFKA_CKafkaPubSubClientTopicConfig.cpp
 )

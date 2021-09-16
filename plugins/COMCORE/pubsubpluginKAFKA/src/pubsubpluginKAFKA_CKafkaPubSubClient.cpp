@@ -78,32 +78,21 @@ CKafkaPubSubClient::CKafkaPubSubClient( const COMCORE::CPubSubClientConfig& conf
     , m_threadPool()
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != config.pulseGenerator )
-    {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-    }
-    else
-    {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-    }
-    
-    if ( config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "KafkaPubSubClient(" + CORE::ToString( this ) + ")", true );
 
-    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CKafkaPubSubClient::~CKafkaPubSubClient()
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClient::Clear( void )
 {GUCEF_TRACE;
 
     if ( !m_threadPool.IsNULL() )
@@ -115,7 +104,7 @@ CKafkaPubSubClient::~CKafkaPubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-COMCORE::CPubSubClientConfig& 
+CKafkaPubSubClientConfig& 
 CKafkaPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
@@ -168,6 +157,11 @@ CKafkaPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& 
     if ( rcTopic->LoadConfig( topicConfig ) )
     {
         m_topicMap[ topicConfig.topicName ] = rcTopic;
+    }
+    else
+    {
+        delete rcTopic;
+        rcTopic = GUCEF_NULL;
     }
     return rcTopic;
 }
@@ -266,11 +260,56 @@ CKafkaPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CKafkaPubSubClient::LoadConfig( const CORE::CDataNode& treeroot )
+bool
+CKafkaPubSubClient::LoadConfig( const COMCORE::CPubSubClientConfig& config )
 {GUCEF_TRACE;
 
-    return false;
+    Clear();
+
+    m_config = config;
+    
+    if ( GUCEF_NULL != m_config.pulseGenerator )
+    {
+        if ( m_config.desiredFeatures.supportsMetrics )
+        {
+            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        }
+    }
+    else
+    {
+        if ( m_config.desiredFeatures.supportsMetrics )
+        {
+            m_metricsTimer = new CORE::CTimer( 1000 );        
+            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        }
+    }
+    
+    if ( m_config.desiredFeatures.supportsSubscribing )
+        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "KafkaPubSubClient(" + CORE::ToString( this ) + ")", true );
+
+    RegisterEventHandlers();
+
+    if ( m_config.remoteAddresses.empty() )
+    {
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:LoadConfig: No remote addresses have been provided" );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig config;
+    if ( config.LoadConfig( cfg  ) )
+        return LoadConfig( config );
+    else        
+        return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,16 +360,30 @@ CKafkaPubSubClient::RegisterEventHandlers( void )
 
 void
 CKafkaPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                        const CORE::CEvent& eventId  ,
-                                        CORE::CICloneable* eventData )
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->OnMetricsTimerCycle( notifier  ,
-                                          eventId   ,
-                                          eventData );
+        const CKafkaPubSubClientTopic::TopicMetrics& metrics = (*i).second->GetMetrics();
+        const CORE::CString& topicName = (*i).second->GetTopicName();
+
+        GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
+
+        if ( m_config.desiredFeatures.supportsPublishing )
+        {
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesTransmitted", metrics.kafkaMessagesTransmitted, 1.0f );
+            GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".kafkaTransmitQueueSize", metrics.kafkaTransmitQueueSize, 1.0f );
+            GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".kafkaTransmitOverflowQueueSize", metrics.kafkaTransmitOverflowQueueSize, 1.0f );
+        }
+        if ( m_config.desiredFeatures.supportsSubscribing )
+        {
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceived", metrics.kafkaMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesFiltered", metrics.kafkaMessagesFiltered, 1.0f );
+        }
+
         ++i;
     }
 }
