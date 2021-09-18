@@ -653,7 +653,18 @@ bool
 CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
 {GUCEF_TRACE;
 
+    // For streaming Redis the msg ID and offset/index are the same thing
     return SubscribeImpl( msgIdBookmark.AsString() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+{GUCEF_TRACE;
+
+    // For streaming Redis the msg ID and offset/index are the same thing
+    return SubscribeImpl( msgIndexBookmark.AsString() );
 }
 
 /*-------------------------------------------------------------------------*/

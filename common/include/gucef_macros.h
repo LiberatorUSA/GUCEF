@@ -312,6 +312,19 @@
 
 /*-------------------------------------------------------------------------*/
 
+/*
+ *  Macro for checking type sizes compile time
+ */
+#define GUCEF_STATIC_SIZE_EQ_CHECK( var, refType ) ( { char const CompileTimeTypeSizeEqualsCheck[ sizeof( var ) == sizeof( refType ) ? 1 : -1 ]; } )
+#define GUCEF_STATIC_SIZE_SM_CHECK( var, refType ) ( { char const CompileTimeTypeSizeSmallerCheck[ sizeof( var ) < sizeof( refType ) ? 1 : -1 ]; } )
+#define GUCEF_STATIC_SIZE_SE_CHECK( var, refType ) ( { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( var ) <= sizeof( refType ) ? 1 : -1 ]; } )
+#define GUCEF_STATIC_SIZE_SE_LCHECK( var, checkSize ) ( { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( var ) <= checkSize ? 1 : -1 ]; } )
+#define GUCEF_STATIC_SIZE_GR_CHECK( var, refType ) ( { char const CompileTimeTypeSizeGreaterCheck[ sizeof( var ) > sizeof( refType ) ? 1 : -1 ]; } )
+#define GUCEF_STATIC_SIZE_GE_CHECK( var, refType ) ( { char const CompileTimeTypeSizeGreaterEqualsCheck[ sizeof( var ) >= sizeof( refType ) ? 1 : -1 ]; } )
+
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
 #undef GUCEF_DECLARE_SINGLETON_INTERFACE
 #define GUCEF_DECLARE_SINGLETON_INTERFACE( identifier )          \

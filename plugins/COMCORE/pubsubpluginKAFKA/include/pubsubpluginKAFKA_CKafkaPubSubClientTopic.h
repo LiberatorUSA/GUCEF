@@ -97,6 +97,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     
     virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -215,13 +217,21 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClientTopic > TEventCallback;
    
-
     // Types to implement/hook-up topic interface
     typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
     typedef std::vector< TBufferPair > TBufferVector;
 
     typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
+
+    #pragma pack(push, 1)  // No structure packing, we want to use this as a BSOB interpretation
+    struct SPartitionOffset
+    {
+        CORE::Int32 partitionId;
+        CORE::Int64 partitionOffset;
+    };
+    typedef struct SPartitionOffset TPartitionOffset;
+    #pragma pack(pop)
 
     CKafkaPubSubClient* m_client;
     CORE::CTimer* m_metricsTimer;

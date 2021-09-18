@@ -156,7 +156,8 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
-    features.supportsPerMsgIds = true;
+    features.supportsPerMsgIds = true;                  // the auto-generated id 
+    features.supportsMsgIndex = true;                   // the auto-generated id we get acts as a timestamp index into the stream
     features.supportsPrimaryPayloadPerMsg = false;      // We can fake this best effort but not natively supported
     features.supportsAbsentPrimaryPayloadPerMsg = true; // A primary payload concept is not supported to begin with
     features.supportsKeyValueSetPerMsg = true;          // This is the native Redis way of communicating message data
@@ -164,7 +165,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
     features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
     features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
-    features.supportsMetrics = true;
+    features.supportsMetrics = true;                    // this plugin adds metrics support
     features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
     features.supportsSubscriberMsgReceivedAck = false;  // since offsets are managed client-side there really is no such concept but could be implemented as a plugin specific add-on - todo?
     features.supportsAutoMsgReceivedAck = false;        // not supported right now
@@ -172,6 +173,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
     features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
     features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
+    features.supportsMsgIndexBasedBookmark = true;      // Same as supportsMsgIdBasedBookmark. This is the native Redis "bookmark" method and thus preferered
     features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
     return true;
 }

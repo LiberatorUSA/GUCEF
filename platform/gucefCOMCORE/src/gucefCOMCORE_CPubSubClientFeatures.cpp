@@ -51,6 +51,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsBinaryPayloads( false )
     , supportsMultiHostSharding( false )
     , supportsPerMsgIds( false )
+    , supportsMsgIndex( false )
     , supportsPrimaryPayloadPerMsg( false )
     , supportsAbsentPrimaryPayloadPerMsg( false )
     , supportsKeyValueSetPerMsg( false )
@@ -63,6 +64,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsBookmarkingConcept( false )
     , supportsAutoBookmarking( false )
     , supportsMsgIdBasedBookmark( false )
+    , supportsMsgIndexBasedBookmark( false )
     , supportsMsgDateTimeBasedBookmark( false )
 {GUCEF_TRACE;
 
@@ -87,6 +89,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
     tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
     tree.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
+    tree.SetAttribute( "supportsMsgIndex", supportsMsgIndex );
     tree.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg );
     tree.SetAttribute( "supportsAbsentPrimaryPayloadPerMsg", supportsAbsentPrimaryPayloadPerMsg );
     tree.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
@@ -98,6 +101,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
     tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
     tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
+    tree.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark );
     tree.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark );
     tree.SetAttribute( "supportsMetrics", supportsMetrics );
 
@@ -116,6 +120,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsBinaryPayloads = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ) ), supportsBinaryPayloads );
     supportsMultiHostSharding = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ) ), supportsMultiHostSharding );
     supportsPerMsgIds = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ) ), supportsPerMsgIds );
+    supportsMsgIndex = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndex" ).AsBool( supportsMsgIndex, true );
     supportsPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ) ), supportsPrimaryPayloadPerMsg );    
     supportsAbsentPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAbsentPrimaryPayloadPerMsg" ) ), supportsAbsentPrimaryPayloadPerMsg );    
     supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
@@ -127,6 +132,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept, true );
     supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking, true );
     supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark, true );
+    supportsMsgIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndexBasedBookmark" ).AsBool( supportsMsgIndexBasedBookmark, true );
     supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark, true );
     supportsMetrics = cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ).AsBool( supportsMetrics, true );
 

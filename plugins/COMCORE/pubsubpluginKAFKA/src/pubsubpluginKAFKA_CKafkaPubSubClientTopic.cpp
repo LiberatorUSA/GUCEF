@@ -636,6 +636,14 @@ bool
 CKafkaPubSubClientTopic::Subscribe( void )
 {GUCEF_TRACE;
 
+    /*
+        Per RdKafka docs:
+
+        The high-level Kafka consumer (KafkaConsumer in C++) will start consuming at the last committed offset by default, 
+        if there is no previously committed offset for the topic+partition and group it will fall back on the topic configuration property auto.offset.reset which defaults to latest, 
+        thus starting to consume at the end of the partition (only new messages will be consumed).
+    */
+
     MT::CScopeMutex lock( m_lock );
     return SetupBasedOnConfig();
 }
@@ -648,6 +656,27 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBo
 
     // This is not supported in Kafka
     // You can seek a stream based on index (offset) or with some effort get said index based on a timestamp
+    // duplicate IDs (keys) are to be expected as they are used for partition routing/sharding purposes
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+{GUCEF_TRACE;
+
+    /*
+        Per RdKafka docs:
+
+        To manually set the starting offset for a partition the assign() API allows you to specify the start offset for each partition 
+        by setting the .offset field in the topic_partition_t element to either an absolute offset (>=0) or one of the logical offsets (BEGINNING, END, STORED, TAIL(..)).
+    */
+
+    // @TODO: We could encode all partition IDs and their offsets into the bookmark variant as a unified bookmark concept
+
+    //CORE::Int32 partitionId = msgIndexBookmark.AsInt32( RdKafka::Topic::PARTITION_UA, false );
+
     return false;
 }
 
@@ -693,11 +722,10 @@ bool
 CKafkaPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
+    // Subscribing sets up the connectivity.
+    // All we will do here is trigger re-init by calling Disconnect()
     Disconnect();
-    
-    MT::CScopeMutex lock( m_lock );
-
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -781,8 +809,8 @@ CKafkaPubSubClientTopic::TopicMetrics::TopicMetrics( void )
 
 void
 CKafkaPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     const CKafkaPubSubClientConfig& clientConfig = m_client->GetConfig();
@@ -1073,9 +1101,12 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     }
     else
     {
-        msgWrap.GetMsgId().LinkTo( message.key_pointer(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_BINARY );
+        msgWrap.GetMsgId().LinkTo( message.key_pointer(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_BINARY_BLOB );
     }
-   
+
+    TPartitionOffset* partitionOffset = msgWrap.GetMsgIndex().AsBsobPtr< TPartitionOffset >();   
+    partitionOffset->partitionId = message.partition();
+    partitionOffset->partitionOffset = message.offset();
     
     msgWrap.GetPrimaryPayload().LinkTo( message.payload(), (CORE::UInt32) message.len() );
 

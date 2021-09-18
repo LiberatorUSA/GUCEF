@@ -105,9 +105,19 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 
     virtual ~CIPubSubMsg();
     
+    /**
+     *  If supported this represents the identifier or key of the message
+     */
     virtual CORE::CVariant& GetMsgId( void ) = 0;    
     virtual const CORE::CVariant& GetMsgId( void ) const = 0;
     
+    /**
+     *  If supported this represents the index identifier of the message
+     *  Something that has meaning to the pubsub backend as to message placement / storage
+     */
+    virtual CORE::CVariant& GetMsgIndex( void ) = 0;    
+    virtual const CORE::CVariant& GetMsgIndex( void ) const = 0;
+
     virtual CORE::CDateTime& GetMsgDateTime( void ) = 0;    
     virtual const CORE::CDateTime& GetMsgDateTime( void ) const = 0;
 

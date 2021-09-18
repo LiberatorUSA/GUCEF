@@ -131,13 +131,15 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      */
     CVariant( const std::string& utf8Str );
 
-    CVariant( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY );
+    CVariant( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
     bool IsString( void ) const;
     bool IsBoolean( void ) const;
     bool IsBinary( void ) const;
+    bool IsBlob( void ) const;
+    bool IsBsob( void ) const;
     
     static bool UsesDynamicMemory( UInt8 typeId );
     bool UsesDynamicMemory( void ) const;
@@ -166,6 +168,12 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
     const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;    
     CDynamicBuffer  AsBuffer( void ) const;
+
+    template < typename TemplateBsobType >
+    TemplateBsobType AsBsob( void ) const;
+
+    template < typename TemplateBsobType >
+    TemplateBsobType* AsBsobPtr( void );
 
     /**
      *  Returns the size of the storage used in bytes by the stored type
@@ -207,7 +215,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  indicated by dataSize. Please take care that the buffer pointed to by data
      *  has enough bytes to hold the varType indicated or the operation will fail.
      */
-    bool Set( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY, bool linkOnlyForDynMem = false );
+    bool Set( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB, bool linkOnlyForDynMem = false );
 
     bool SetString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
@@ -218,8 +226,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 
     const TVariantData* CStyleAccess( void ) const;
 
-    CVariant& LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY, UInt32 bytesToLink = 0 );
-    CVariant& LinkTo( const void* externalBuffer, UInt32 bufferSize, UInt8 varType = GUCEF_DATATYPE_BINARY );
+    CVariant& LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB, UInt32 bytesToLink = 0 );
+    CVariant& LinkTo( const void* externalBuffer, UInt32 bufferSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
     CVariant& LinkTo( const CVariant& src );
     CVariant& LinkTo( const CAsciiString& src );
     CVariant& LinkTo( const CUtf8String& src );
@@ -234,6 +242,44 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 
     TVariantData m_variantData;
 };
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TemplateBsobType >
+inline TemplateBsobType
+CVariant::AsBsob( void ) const
+{
+    // Compile time check to ensure the type size does not exceed the size available for a BSOB
+    // Failure to check for this would result in runtime access violations
+    // If you get a compiler error here your type does not fit in a BSOD and you need to use 
+    // alternate storage such as the BLOB type which uses the heap
+    #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    #else
+    { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
+    #endif 
+    
+    return *( reinterpret_cast< const TemplateBsobType* >( m_variantData.union_data.bsob_data ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TemplateBsobType >
+inline TemplateBsobType*
+CVariant::AsBsobPtr( void )
+{
+    // Compile time check to ensure the type size does not exceed the size available for a BSOB
+    // Failure to check for this would result in runtime access violations
+    // If you get a compiler error here your type does not fit in a BSOD and you need to use 
+    // alternate storage such as the BLOB type which uses the heap
+    #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    #else
+    { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
+    #endif 
+
+    return ( reinterpret_cast< TemplateBsobType* >( m_variantData.union_data.bsob_data ) );
+}
 
 /*-------------------------------------------------------------------------*/
 

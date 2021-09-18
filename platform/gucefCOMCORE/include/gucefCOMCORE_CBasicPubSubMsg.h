@@ -68,6 +68,9 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     virtual CORE::CVariant& GetMsgId( void ) GUCEF_VIRTUAL_OVERRIDE;    
     virtual const CORE::CVariant& GetMsgId( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
+    virtual CORE::CVariant& GetMsgIndex( void ) GUCEF_VIRTUAL_OVERRIDE;    
+    virtual const CORE::CVariant& GetMsgIndex( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual CORE::CDateTime& GetMsgDateTime( void ) GUCEF_VIRTUAL_OVERRIDE;    
     virtual const CORE::CDateTime& GetMsgDateTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -84,7 +87,7 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     
     bool SetKeyValuePairsAsEncodedPrimaryPayload( const TKeyValuePairs& kvPairs, const CORE::CString& dstoreCodecToUse );
-    bool MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse, int payloadVarType = GUCEF_DATATYPE_BINARY );
+    bool MoveKeyValuePairsToEncodedPrimaryPayload( const CORE::CString& dstoreCodecToUse, int payloadVarType = GUCEF_DATATYPE_BINARY_BLOB );
 
     /**
      *  Utility member functions
@@ -135,6 +138,7 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     protected:
 
     CORE::CVariant m_msgId;
+    CORE::CVariant m_msgIndex;
     CORE::CDateTime m_msgDateTime;
     CORE::CVariant m_primaryPayload;
     TKeyValuePairs m_keyValuePairs;    

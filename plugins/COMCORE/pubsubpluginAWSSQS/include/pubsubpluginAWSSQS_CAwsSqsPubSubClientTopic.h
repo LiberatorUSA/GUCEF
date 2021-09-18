@@ -88,6 +88,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
     
     virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -104,11 +106,6 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
-
-    void
-    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

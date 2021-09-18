@@ -60,6 +60,9 @@ struct SHeapData
 };
 typedef struct SHeapData THeapData;
 
+/* Binary Small Object, something encoded to use the same variant blob space without using the heap. Size based on largest alternate union fields as to not grow size requirements */
+#define GUCEF_VARIANT_BSOD_SIZE     13
+
 struct SVariantData
 {
     UInt8 containedType;
@@ -76,6 +79,7 @@ struct SVariantData
         Float32     float32_data;
         Float64     float64_data;
         THeapData   heap_data;
+        UInt8       bsob_data[ GUCEF_VARIANT_BSOD_SIZE ];  /**< Binary Small Object, something encoded to use the same variant blob space without using the heap. Size based on largest alternate union fields as to not grow size requirements */
     } union_data;
 };
 typedef struct SVariantData TVariantData;

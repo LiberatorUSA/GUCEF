@@ -62,6 +62,7 @@ namespace COMCORE {
 CBasicPubSubMsg::CBasicPubSubMsg( void )
     : COMCORE::CIPubSubMsg()
     , m_msgId()
+    , m_msgIndex()
     , m_msgDateTime()
     , m_primaryPayload()
     , m_keyValuePairs()
@@ -75,6 +76,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
 CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
     : COMCORE::CIPubSubMsg( src )
     , m_msgId( src.m_msgId )
+    , m_msgIndex( src.m_msgIndex )
     , m_msgDateTime( src.m_msgDateTime )
     , m_primaryPayload( src.m_primaryPayload )
     , m_keyValuePairs( src.m_keyValuePairs )
@@ -106,6 +108,24 @@ CBasicPubSubMsg::GetMsgId( void )
 {GUCEF_TRACE;
 
     return m_msgId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CVariant& 
+CBasicPubSubMsg::GetMsgIndex( void ) const
+{GUCEF_TRACE;
+
+    return m_msgIndex;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CVariant& 
+CBasicPubSubMsg::GetMsgIndex( void )
+{GUCEF_TRACE;
+
+    return m_msgIndex;
 }
 
 /*-------------------------------------------------------------------------*/

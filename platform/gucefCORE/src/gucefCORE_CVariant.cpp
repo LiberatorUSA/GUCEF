@@ -368,7 +368,25 @@ bool
 CVariant::IsBinary( void ) const
 {GUCEF_TRACE;
 
-    return m_variantData.containedType == GUCEF_DATATYPE_BINARY;
+    return m_variantData.containedType == GUCEF_DATATYPE_BINARY_BLOB || m_variantData.containedType == GUCEF_DATATYPE_BINARY_BSOB;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsBlob( void ) const
+{GUCEF_TRACE;
+
+    return m_variantData.containedType == GUCEF_DATATYPE_BINARY_BLOB;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsBsob( void ) const
+{GUCEF_TRACE;
+
+    return m_variantData.containedType == GUCEF_DATATYPE_BINARY_BSOB;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -385,7 +403,7 @@ CVariant::UsesDynamicMemory( UInt8 typeId )
         case GUCEF_DATATYPE_UTF8_STRING:
         case GUCEF_DATATYPE_UTF16_STRING:
         case GUCEF_DATATYPE_UTF32_STRING:
-        case GUCEF_DATATYPE_BINARY:
+        case GUCEF_DATATYPE_BINARY_BLOB:
         {
             return true;
         }
@@ -826,7 +844,8 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
-        case GUCEF_DATATYPE_BINARY: return m_variantData.union_data.heap_data.union_data.void_heap_data;
+        case GUCEF_DATATYPE_BINARY_BLOB: return m_variantData.union_data.heap_data.union_data.void_heap_data;
+        case GUCEF_DATATYPE_BINARY_BSOB: return m_variantData.union_data.bsob_data;
         default: return defaultIfNeeded;
     }
 }
@@ -850,7 +869,8 @@ CVariant::ByteSize( bool includeNullTerm ) const
         case GUCEF_DATATYPE_FLOAT32: return sizeof m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return sizeof m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return sizeof m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BINARY: return m_variantData.union_data.heap_data.heap_data_size;
+        case GUCEF_DATATYPE_BINARY_BSOB: return sizeof m_variantData.union_data.bsob_data;
+        case GUCEF_DATATYPE_BINARY_BLOB: return m_variantData.union_data.heap_data.heap_data_size;
 
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
@@ -1036,7 +1056,7 @@ CVariant&
 CVariant::operator=( const CDynamicBuffer& data )
 {GUCEF_TRACE;
 
-    Set( data.GetConstBufferPtr(), data.GetDataSize(), GUCEF_DATATYPE_BINARY, false );
+    Set( data.GetConstBufferPtr(), data.GetDataSize(), GUCEF_DATATYPE_BINARY_BLOB, false );
     return *this;
 }
 
@@ -1224,7 +1244,16 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             m_variantData.containedType = GUCEF_DATATYPE_BOOLEAN_INT32;
             return true;
         }
-        case GUCEF_DATATYPE_BINARY:
+        case GUCEF_DATATYPE_BINARY_BSOB:
+        {
+            if ( GUCEF_NULL == data || dataSize > sizeof(m_variantData.union_data.bsob_data) )
+                return false;
+            memset( m_variantData.union_data.bsob_data, 0, sizeof( m_variantData.union_data.bsob_data ) );
+            memcpy( m_variantData.union_data.bsob_data, data, dataSize );
+            m_variantData.containedType = GUCEF_DATATYPE_BINARY_BSOB;
+            return true;
+        }
+        case GUCEF_DATATYPE_BINARY_BLOB:
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
         case GUCEF_DATATYPE_UTF16_STRING:
@@ -1360,7 +1389,7 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
     if ( !UsesDynamicMemory() || !OwnsDynamicMemory() )
     {
         memset( &m_variantData, 0, sizeof( m_variantData ) );
-        m_variantData.containedType = GUCEF_DATATYPE_BINARY;
+        m_variantData.containedType = GUCEF_DATATYPE_BINARY_BLOB;
     }
 
     if ( allowReduction || m_variantData.union_data.heap_data.heap_data_size < byteSize )
@@ -1429,7 +1458,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return SetString( varType, data, defaultValue ); }
         case GUCEF_DATATYPE_ASCII_STRING:          { return SetString( varType, data, defaultValue ); }
         case GUCEF_DATATYPE_UTF8_STRING:           { return SetString( varType, data, defaultValue ); }
-        case GUCEF_DATATYPE_BINARY:                { return Base64Decode( data, HeapReserve( data.ByteSize()-1 ), data.ByteSize()-1, m_variantData.union_data.heap_data.heap_data_size ); }
+        case GUCEF_DATATYPE_BINARY_BLOB:           { return Base64Decode( data, HeapReserve( data.ByteSize()-1 ), data.ByteSize()-1, m_variantData.union_data.heap_data.heap_data_size ); }
         case GUCEF_DATATYPE_UNKNOWN:               { return false; }
         default:                                   { return false; }
     }
@@ -1468,7 +1497,8 @@ CVariant::operator==( const CVariant& other ) const
         {
             return AsBool() == other.AsBool();
         }
-        case GUCEF_DATATYPE_BINARY:
+        case GUCEF_DATATYPE_BINARY_BSOB:
+        case GUCEF_DATATYPE_BINARY_BLOB:
         {
             if ( ByteSize() == other.ByteSize() )
             {
@@ -1537,7 +1567,8 @@ CVariant::operator<( const CVariant& other ) const
             // Mostly nonsensical, but can be used for sorting a set
             return AsBool() < other.AsBool();
         }
-        case GUCEF_DATATYPE_BINARY:
+        case GUCEF_DATATYPE_BINARY_BSOB:
+        case GUCEF_DATATYPE_BINARY_BLOB:
         {
             // Mostly nonsensical, but can be used for sorting a set
             UInt32 byteSize = SMALLEST( ByteSize(), other.ByteSize() );
@@ -1604,7 +1635,8 @@ CVariant::operator<=( const CVariant& other ) const
             // Mostly nonsensical, but can be used for sorting a set
             return AsBool() <= other.AsBool();
         }
-        case GUCEF_DATATYPE_BINARY:
+        case GUCEF_DATATYPE_BINARY_BSOB:
+        case GUCEF_DATATYPE_BINARY_BLOB:
         {
             // Mostly nonsensical, but can be used for sorting a set
             UInt32 byteSize = SMALLEST( ByteSize(), other.ByteSize() );
@@ -1714,7 +1746,8 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_ASCII_STRING:          { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_UTF8_STRING:           { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
-            case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
+            case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
+            case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
             case GUCEF_DATATYPE_UNKNOWN:               { return ResolveVars( defaultIfNeeded ); }
             default:                                   { return ResolveVars( defaultIfNeeded ); }
         }
@@ -1738,7 +1771,8 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
-            case GUCEF_DATATYPE_BINARY:                { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
+            case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
+            case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
             case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }
             default:                                   { return defaultIfNeeded; }
         }

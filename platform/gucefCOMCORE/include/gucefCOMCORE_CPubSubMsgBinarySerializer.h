@@ -60,6 +60,8 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPubSubClientFeatures;
+
 /**
  *  Options for the basic serializer for generalized Pub Sub messages
  */
@@ -81,7 +83,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::
 
     void FromOptionsBitMask( UInt32 bitMask );
 
+    void FromPubSubClientFeatures( const CPubSubClientFeatures& features );
+
     bool msgIdIncluded;
+    bool msgIndexIncluded;
     bool msgDateTimeIncluded;
     bool msgDateTimeAsMsSinceUnixEpochInUtc;
     bool msgPrimaryPayloadIncluded;

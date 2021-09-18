@@ -77,8 +77,8 @@
 /*
  *      Macros to get the smallest or largest of 2 values.
  */
-#define SMALLEST(a,b) (((a) < (b)) ? (a) : (b))
-#define LARGEST(a,b) (((a) > (b)) ? (a) : (b))
+#define GUCEF_SMALLEST(a,b) (((a) < (b)) ? (a) : (b))
+#define GUCEF_LARGEST(a,b) (((a) > (b)) ? (a) : (b))
 
 /*-------------------------------------------------------------------------*/
 

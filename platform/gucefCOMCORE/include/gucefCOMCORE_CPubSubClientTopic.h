@@ -106,6 +106,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual bool Subscribe( void ) = 0;
     virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) = 0;
+    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) = 0;
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) = 0;
 
     virtual bool Disconnect( void ) = 0;

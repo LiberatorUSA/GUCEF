@@ -475,6 +475,19 @@ CMsmqPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBoo
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CMsmqPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    // Currently not supported.
+    // Could theoretically be implemented using a cursor?
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMsmqPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
@@ -803,15 +816,15 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         
         // The CLSID (GUID) record type is a C structure. The adapter does not need a size field for this record because it is a fixed length field. 
         // It is critical that the data must be exactly sizeof(CLSID) bytes (16) long for proper I/O with MSMQ.
-        case VT_CLSID:                  { return targetVariant.Set( msmqSourceVariant.puuid, sizeof(CLSID), GUCEF_DATATYPE_BINARY, linkIfPossible ); }
+        case VT_CLSID:                  { return targetVariant.Set( msmqSourceVariant.puuid, sizeof(CLSID), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); }
 
         // Rememeber that like the COM concept the length is actually stored at (BSTR pointer address)-4  
         // Since in the COM world this type is often used to shuttle binary data around we will mark it as a binary and not GUCEF_DATATYPE_UTF16_STRING
-        case VT_BSTR:                   { return targetVariant.Set( msmqSourceVariant.pwszVal, SysStringLen( msmqSourceVariant.bstrVal ), GUCEF_DATATYPE_BINARY, linkIfPossible ); } 
+        case VT_BSTR:                   { return targetVariant.Set( msmqSourceVariant.pwszVal, SysStringLen( msmqSourceVariant.bstrVal ), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); } 
 
         case VT_LPSTR:                  { return targetVariant.Set( msmqSourceVariant.pszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF8_STRING, linkIfPossible ); } 
         case VT_LPWSTR:                 { return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_STRING, linkIfPossible ); } 
-        case VT_BLOB:                   { return targetVariant.Set( msmqSourceVariant.blob.pBlobData, msmqSourceVariant.blob.cbSize, GUCEF_DATATYPE_BINARY, linkIfPossible ); }
+        case VT_BLOB:                   { return targetVariant.Set( msmqSourceVariant.blob.pBlobData, msmqSourceVariant.blob.cbSize, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); }
         
         case VT_DATE:                   
         { 
@@ -843,7 +856,7 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         {
             // msmqSourceVariant.caub.cElems contains the nr of elements possible in the available buffer not the nr of bytes actually used for elements inside said buffer
             // Hence we need to rely on the "lengthIfApplicable" param which obtains the size from a different property
-            return targetVariant.Set( msmqSourceVariant.caub.pElems, lengthIfApplicable, GUCEF_DATATYPE_BINARY, linkIfPossible ); 
+            return targetVariant.Set( msmqSourceVariant.caub.pElems, lengthIfApplicable, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); 
         }
 
         case VT_EMPTY:

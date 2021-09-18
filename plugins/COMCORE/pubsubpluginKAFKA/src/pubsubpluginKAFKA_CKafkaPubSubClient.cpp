@@ -125,24 +125,25 @@ CKafkaPubSubClient::GetThreadPool( void )
 bool
 CKafkaPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
-                                 // @TODO: implement for Kafka
+                     
     features.supportsBinaryPayloads = true;               // Kafka supports this natively
     features.supportsPerMsgIds = true;                    // Kafka supports this natively
     features.supportsPrimaryPayloadPerMsg = true;         // This is the primary method for conveying data
-    features.supportsAbsentPrimaryPayloadPerMsg = false;  // With SQS the primary payload is not optional
+    features.supportsAbsentPrimaryPayloadPerMsg = false;  // With Kafka the primary payload is not optional
     features.supportsKeyValueSetPerMsg = true;            // Kafka supports adding attibutes beyond the primary payload
-    features.supportsDuplicateKeysPerMsg = true;          // Redis does not care about duplicate keys, they are just "fields"
+    features.supportsDuplicateKeysPerMsg = true;          // Kafka not care about duplicate header keys, they are just "fields". Some client libraries might have issues with lookups though
     features.supportsMultiHostSharding = true;            // Kafka supports a cluster of brokers with multiple replicated partitions
     features.supportsPublishing = true;                   // We support being a Kafka producer in this plugin
     features.supportsSubscribing = true;                  // We support being a Kafka consumer in this plugin
-    features.supportsMetrics = true;
-    features.supportsAutoReconnect = true;                // Our plugin adds auto reconnect out of the box
+    features.supportsMetrics = true;                      // We support metrics in this plugin
+    features.supportsAutoReconnect = true;                // RdKafka adds auto reconnect out of the box
     features.supportsSubscriberMsgReceivedAck = true;     // Normal Kafka behaviour
-    features.supportsAutoMsgReceivedAck = false;          // This is configurable on the Kafka client library
+    features.supportsAutoMsgReceivedAck = true;           // This is configurable on the Kafka client library
     features.supportsAbsentMsgReceivedAck = true;         // supported if you wish to 'peek' only without removing messages but can become problematic in various scenarios
-    features.supportsBookmarkingConcept = true;           // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
-    features.supportsAutoBookmarking = false;             // Redis does not support this concept. The client needs to take care of remembering the offset
-    features.supportsMsgIdBasedBookmark = true;           // This is the native Redis "bookmark" method and thus preferered
+    features.supportsBookmarkingConcept = true;           // Bookmarks are a native Kafka concept
+    features.supportsAutoBookmarking = true;              // Kafka keeps bookmarks for a given client id Kafka-side and supports auto commit in RdKafka
+    features.supportsMsgIdBasedBookmark = false;          // Kafka does not support finding a conclusive offset based on a message key, there could be many across many partitions making it useless
+    features.supportsMsgIndexBasedBookmark = true;        // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsMsgDateTimeBasedBookmark = true;     // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
     return true;
 }

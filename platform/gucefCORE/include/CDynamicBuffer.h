@@ -342,7 +342,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     /**
      *  Causes the contained data to be copied to a private copy owned by the Variant
      */
-    CVariant AsVariant( UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY ) const;
+    CVariant AsVariant( UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB ) const;
 
     /**
      *  Utility member function:

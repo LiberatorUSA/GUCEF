@@ -488,6 +488,16 @@ CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdB
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+{GUCEF_TRACE;
+
+    // Not supported
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
