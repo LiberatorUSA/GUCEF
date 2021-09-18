@@ -72,6 +72,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
     bool addProducerHostnameAsKafkaMsgHeader;
     CORE::CString prefixToAddForMetaDataKvPairs;
     CORE::CString prefixToAddForKvPairs;
+    bool stripPrefixForMetaDataKvPairs;
+    bool stripPrefixForKvPairs;
     
     CKafkaPubSubClientTopicConfig( void );
     

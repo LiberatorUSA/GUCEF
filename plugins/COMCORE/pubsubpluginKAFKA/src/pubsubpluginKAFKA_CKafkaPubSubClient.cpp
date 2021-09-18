@@ -267,22 +267,19 @@ CKafkaPubSubClient::LoadConfig( const COMCORE::CPubSubClientConfig& config )
     Clear();
 
     m_config = config;
-    
+
     if ( GUCEF_NULL != m_config.pulseGenerator )
     {
-        if ( m_config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
+        // Use the global pulse generator.
+        // now what you want if you want thread isolation or basically any time you are not
+        // writing a single threaded app
+        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     }
-    else
+        
+    if ( m_config.desiredFeatures.supportsMetrics )
     {
-        if ( m_config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
+        m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
     
     if ( m_config.desiredFeatures.supportsSubscribing )
@@ -305,9 +302,14 @@ bool
 CKafkaPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClientConfig config;
+    // Make sure we can actually load the config before overwriting anything
+    CKafkaPubSubClientConfig config;
     if ( config.LoadConfig( cfg  ) )
-        return LoadConfig( config );
+    {
+        // make the new config the active config
+        m_config = config;
+        return true;
+    }
     else        
         return false;
 }
@@ -318,7 +320,19 @@ bool
 CKafkaPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
-    return true;
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
+        
+    bool totalSuccess = true;
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        totalSuccess = (*i).second->Disconnect() && totalSuccess;
+        ++i;
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic disconnect" );
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -329,6 +343,18 @@ CKafkaPubSubClient::Connect( void )
 
     Disconnect();
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic connect" );
+        
+    bool totalSuccess = true;
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        totalSuccess = (*i).second->Subscribe() && totalSuccess;
+        ++i;
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic connect" );
+
     return false;
 }
 
@@ -338,7 +364,17 @@ bool
 CKafkaPubSubClient::IsConnected( void )
 {GUCEF_TRACE;
 
-    return false;
+    if ( m_topicMap.empty() )
+        return false;
+    
+    bool fullyConnected = true;
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        fullyConnected = (*i).second->IsConnected() && fullyConnected;
+        ++i;
+    }
+    return fullyConnected;
 }
 
 /*-------------------------------------------------------------------------*/

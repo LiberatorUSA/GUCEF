@@ -151,6 +151,11 @@ CKafkaPubSubClientTopic::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+
+    TEventCallback callback2( this, &CKafkaPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( m_client->GetConfig().pulseGenerator ,
+                 CORE::CPulseGenerator::PulseEvent    ,
+                 callback2                            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -301,9 +306,29 @@ CKafkaPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& co
 
     MT::CScopeMutex lock( m_lock );
     
-    Clear();
-    
+    Clear();    
     m_config = config;
+    return SetupBasedOnConfig();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClientTopic::LoadConfig( const CKafkaPubSubClientTopicConfig& config )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    Clear();    
+    m_config = config;
+    return SetupBasedOnConfig();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
+{GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_client )
         return false;
@@ -472,16 +497,14 @@ CKafkaPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& co
             return false;
         }
 
-        // We dont want the offsets managed by the RdKafka library because that can cause data gaps
-        // We want to wait till we successfully transmitted the message on UDP before we commit to stating we processed it.
-        // ie garanteed handling. While UDP itself is not reliable, that doesnt mean we should add to the problem here.
-        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.commit", "false", errStr ) )
+        bool autoCommit = clientConfig.desiredFeatures.supportsAutoMsgReceivedAck;
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.commit", CORE::ToString( autoCommit ), errStr ) )
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer global config's enable.auto.commit, error message: " + errStr );
             ++m_kafkaErrorReplies;
             return false;
         }
-        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.offset.store", "false", errStr ) )
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.offset.store", CORE::ToString( autoCommit ), errStr ) )
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer global config's enable.auto.offset.store, error message: " + errStr );
             ++m_kafkaErrorReplies;
@@ -508,6 +531,21 @@ CKafkaPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicConfig& co
 	    }
         m_kafkaConsumer = consumer;
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka consumer" );
+
+        RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaConsumer, m_config.topicName, m_kafkaConsumerConf, errStr );
+	    if ( topic == GUCEF_NULL ) 
+        {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to obtain Kafka Consumer Topic handle for topic \"" + 
+                m_config.topicName + "\", error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+	    }
+        m_kafkaConsumerTopic = topic;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka Consumer Topic handle for topic: " + m_config.topicName );
+
+        
+
+
 
         std::vector< std::string > topics;
         topics.push_back( m_config.topicName );
@@ -552,9 +590,44 @@ CKafkaPubSubClientTopic::Disconnect( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+    bool totalSuccess = true;
 
+    if ( GUCEF_NULL != m_kafkaConsumer )
+    {
+        RdKafka::ErrorCode response = m_kafkaConsumer->unsubscribe();
+        if ( RdKafka::ERR_NO_ERROR != response ) 
+        {
+		    std::string errStr = RdKafka::err2str( response );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Disconnect: Failed to unsubscribe() Kafka Consumer for topic \"" + 
+                m_config.topicName + ", error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            totalSuccess = false;
+        }
+        response = m_kafkaConsumer->close();
+        if ( RdKafka::ERR_NO_ERROR != response ) 
+        {
+		    std::string errStr = RdKafka::err2str( response );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Disconnect: Failed to close() Kafka Consumer for topic \"" + 
+                m_config.topicName + ", error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            totalSuccess = false;
+        }
+    }
 
-    return true;
+    if ( GUCEF_NULL != m_kafkaProducer )
+    {
+        RdKafka::ErrorCode response = m_kafkaProducer->flush( 10000 );
+        if ( RdKafka::ERR_NO_ERROR != response ) 
+        {
+		    std::string errStr = RdKafka::err2str( response );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Disconnect: Failed to flush Kafka Producer for topic \"" + 
+                m_config.topicName + ", error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            totalSuccess = false;
+        }
+    }
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -564,7 +637,7 @@ CKafkaPubSubClientTopic::Subscribe( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    return false;
+    return SetupBasedOnConfig();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -573,7 +646,8 @@ bool
 CKafkaPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_lock );
+    // This is not supported in Kafka
+    // You can seek a stream based on index (offset) or with some effort get said index based on a timestamp
     return false;
 }
 
@@ -584,6 +658,21 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& 
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+  //  RdKafka::Metadata* topicMetaData = GUCEF_NULL;
+  //  RdKafka::ErrorCode response = m_kafkaConsumer->metadata( false, m_kafkaConsumerTopic, &topicMetaData, 10000 );
+  //  if ( RdKafka::ERR_NO_ERROR != response ) 
+  //  {
+		//std::string errStr = RdKafka::err2str( response );
+  //      GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to obtain metadata() for topic \"" + 
+  //          m_config.topicName + ", error message: " + errStr );
+  //      ++m_kafkaErrorReplies;
+  //      delete topicMetaData;
+  //      return false;
+  //  }
+
+    // @TODO
+    //RdKafka::ErrorCode response = m_kafkaConsumer->offsetsForTimes( 
     return false;
 }
 
@@ -593,8 +682,9 @@ bool
 CKafkaPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_lock );
-    return false;
+    // Snapshot in time as such no lock needed. 
+    // note that connected is a very relative term here, more like prepared to connect as needed
+    return ( m_config.needPublishSupport && GUCEF_NULL != m_kafkaProducer ) || ( m_config.needSubscribeSupport && GUCEF_NULL != m_kafkaConsumer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -795,7 +885,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         }
 
         std::string errStr = RdKafka::err2str( err );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"BEGINNING\" into offset for partition " + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"BEGINNING\" into offset for partition " + 
                 CORE::Int32ToString( partitionId ) + ". ErrorCode : " + errStr );
         return RdKafka::Topic::OFFSET_INVALID;
     }
@@ -971,6 +1061,77 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
 void
 CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
 {GUCEF_TRACE;
+
+    PrepStorageForReadMsgs( 1 );
+    
+    COMCORE::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
+    msgWrap.Clear();    
+
+    if ( GUCEF_NULL != message.key() )
+    {
+        msgWrap.GetMsgId().LinkTo( message.key()->c_str(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_UTF8_STRING );
+    }
+    else
+    {
+        msgWrap.GetMsgId().LinkTo( message.key_pointer(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_BINARY );
+    }
+   
+    
+    msgWrap.GetPrimaryPayload().LinkTo( message.payload(), (CORE::UInt32) message.len() );
+
+    RdKafka::MessageTimestamp msgTimestamp = message.timestamp();
+    switch ( msgTimestamp.type )
+    {        
+        case RdKafka::MessageTimestamp::MSG_TIMESTAMP_CREATE_TIME:      // Message creation time (source)
+        case RdKafka::MessageTimestamp::MSG_TIMESTAMP_LOG_APPEND_TIME:  // Message log append time (broker) 
+        {
+            msgWrap.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( (CORE::UInt64 ) msgTimestamp.timestamp );
+            break;
+        }
+        case RdKafka::MessageTimestamp::MSG_TIMESTAMP_NOT_AVAILABLE:    // Timestamp not available
+        default:
+        {
+            msgWrap.GetMsgDateTime() = CORE::CDateTime::NowUTCDateTime();
+        }
+    }
+    
+    // Kafka does not differentiate between meta-data vs non-meta-data key-value pairs
+    // as a feature to enhance out-of-the-box compatibility with other backend types we support stripping a prefix that allows detecting
+    // of such a differentiation
+    const RdKafka::Headers* headers = message.headers();
+    if ( GUCEF_NULL != headers ) 
+    {
+        std::vector<RdKafka::Headers::Header> hdrs = headers->get_all();
+        for ( size_t i=0; i<hdrs.size(); ++i ) 
+        {
+            // sadly not available as a reference... dynamic allocation
+            CORE::CString headerKeyStr = hdrs[ i ].key();
+            CORE::CVariant headerKey;
+            CORE::CVariant headerValue( hdrs[ i ].value(), (CORE::UInt32) hdrs[ i ].value_size() );
+
+            if ( !m_config.stripPrefixForMetaDataKvPairs && !m_config.stripPrefixForKvPairs )
+            {
+                headerKey = headerKeyStr;
+                msgWrap.AddKeyValuePair( headerKey, headerValue );
+            }
+            else
+            if ( m_config.stripPrefixForMetaDataKvPairs && 0 == headerKeyStr.HasSubstr( m_config.prefixToAddForMetaDataKvPairs, true ) )
+            {
+                headerKey = headerKeyStr.CutChars( m_config.prefixToAddForMetaDataKvPairs.Length(), true, 0 );
+                msgWrap.AddMetaDataKeyValuePair( headerKey, headerValue );
+            }
+            else
+            if ( m_config.stripPrefixForKvPairs && 0 == headerKeyStr.HasSubstr( m_config.prefixToAddForKvPairs, true ) )
+            {
+                headerKey = headerKeyStr.CutChars( m_config.prefixToAddForKvPairs.Length(), true, 0 );
+                msgWrap.AddKeyValuePair( headerKey, headerValue );
+            }
+            else
+            {
+                msgWrap.AddKeyValuePair( headerKey, headerValue );
+            }
+        }
+    }
 
     // Communicate all the messages received via an event notification
     NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs );
@@ -1214,6 +1375,149 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
                                                 ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_kafkaConsumer )
+        return false;
+
+    // Now commit the latest offsets
+    std::vector<RdKafka::TopicPartition*> partitions;
+    RdKafka::ErrorCode err = m_kafkaConsumer->assignment( partitions );
+    if ( RdKafka::ERR_NO_ERROR == err )
+    {
+        // Match the current Topic objects with our simplistic bookkeeping and sync them
+        std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
+        while ( p != partitions.end() )
+        {
+            CORE::Int32 partitionId = (*p)->partition();
+            TInt32ToInt64Map::iterator o = m_consumerOffsets.find( partitionId );
+            if ( o != m_consumerOffsets.end() )
+            {
+                (*p)->set_offset( (*o).second );
+            }
+            ++p;
+        }
+
+        // Now we actually tell the client library locally about the new offsets
+        err = m_kafkaConsumer->offsets_store( partitions );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            // Now we request to send the local offset bookkeeping to Kafka
+            err = m_kafkaConsumer->commitAsync( partitions );
+            if ( RdKafka::ERR_NO_ERROR == err )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
+                return true;
+            }
+            else
+            {
+                std::string errStr = RdKafka::err2str( err );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
+                return false;
+            }
+        }
+        else
+        {
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to store current offets on local topic objects. ErrorCode : " + errStr );
+            return false;
+        }
+    }
+    else
+    {
+        std::string errStr = RdKafka::err2str( err );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to obtain current partition assignment. ErrorCode : " + errStr );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CPulseGenerator*
+CKafkaPubSubClientTopic::GetPulseGenerator( void )
+{GUCEF_TRACE;
+
+    return m_client->GetConfig().pulseGenerator;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+                      
+    // You are required to periodically call poll() on a producer to trigger queued callbacks if any
+    if ( GUCEF_NULL != m_kafkaProducer )
+    { 
+        int i=0;
+        for ( ; i<50; ++i )
+        {
+            CORE::Int32 opsServed = (CORE::Int32) m_kafkaProducer->poll( 0 );
+            if ( 0 == opsServed )
+            {
+                break;
+            }
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:OnPulseCycle: poll() on the kafkaProducer served " + 
+                    CORE::Int32ToString( opsServed ) + " events");
+        }
+        if ( i == 50 )
+        {
+            // We have more work to do. Make sure we dont go to sleep
+            GetPulseGenerator()->RequestImmediatePulse();
+        }
+    }
+
+    if ( GUCEF_NULL != m_kafkaConsumer )
+    { 
+        int i=0;
+        for ( ; i<50; ++i )
+        {
+            RdKafka::Message* msg = m_kafkaConsumer->consume( 0 );
+            int errState = msg->err();
+            if ( RdKafka::ERR__TIMED_OUT == errState || RdKafka::ERR__PARTITION_EOF == errState )
+            {
+                delete msg;
+                break;
+            }
+            
+            consume_cb( *msg, GUCEF_NULL );
+            delete msg;
+        }
+        if ( i == 50 )
+        {
+            // We have more work to do. Make sure we dont go to sleep
+            GetPulseGenerator()->RequestImmediatePulse();
+        } 
+
+        // Periodically commit our offsets
+        // This can slow things down so we dont want to do this too often
+        if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
+        {
+            if ( CommitConsumerOffsets() )
+            {
+                m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();   
+            }
+        }
+    }
+
+    //if ( m_kafkaErrorReplies > 0 )
+    //{
+    //    HostAddressVector::iterator h = m_kafkaBrokers.begin();
+    //    while ( h != m_kafkaBrokers.end() )
+    //    {
+    //        (*h).Refresh();
+    //        ++h;
+    //    }    
+    //}
 }
 
 /*-------------------------------------------------------------------------//

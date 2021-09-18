@@ -56,6 +56,8 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
     , addProducerHostnameAsKafkaMsgHeader( false )
     , prefixToAddForMetaDataKvPairs()
     , prefixToAddForKvPairs()
+    , stripPrefixForMetaDataKvPairs( true )
+    , stripPrefixForKvPairs( true )
 {GUCEF_TRACE;
 
     consumerGroupName = "0";
@@ -74,6 +76,8 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const COMCORE::CPu
     , addProducerHostnameAsKafkaMsgHeader( false )
     , prefixToAddForMetaDataKvPairs()
     , prefixToAddForKvPairs()
+    , stripPrefixForMetaDataKvPairs( true )
+    , stripPrefixForKvPairs( true )
 {GUCEF_TRACE;
 
     consumerGroupName = "0";
@@ -138,6 +142,8 @@ CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     addProducerHostnameAsKafkaMsgHeader = config.GetAttributeValueOrChildValueByName( "addProducerHostnameAsKafkaMsgHeader" ).AsBool( addProducerHostnameAsKafkaMsgHeader, true ); 
     prefixToAddForMetaDataKvPairs = config.GetAttributeValueOrChildValueByName( "prefixToAddForMetaDataKvPairs" ).AsString( prefixToAddForMetaDataKvPairs, true );
     prefixToAddForKvPairs = config.GetAttributeValueOrChildValueByName( "prefixToAddForKvPairs" ).AsString( prefixToAddForKvPairs, true );
+    stripPrefixForMetaDataKvPairs = config.GetAttributeValueOrChildValueByName( "stripPrefixForMetaDataKvPairs" ).AsBool( stripPrefixForMetaDataKvPairs, true ); 
+    stripPrefixForKvPairs = config.GetAttributeValueOrChildValueByName( "stripPrefixForKvPairs" ).AsBool( stripPrefixForKvPairs, true ); 
     return true;
 }
 
@@ -164,6 +170,18 @@ CKafkaPubSubClientTopicConfig::operator=( const CKafkaPubSubClientTopicConfig& s
     if ( &src != this )
     {
         COMCORE::CPubSubClientTopicConfig::operator=( src );
+
+        kafkaProducerTopicConfigSettings = src.kafkaProducerTopicConfigSettings;
+        kafkaConsumerTopicConfigSettings = src.kafkaConsumerTopicConfigSettings;
+        consumerModeStartOffset = src.consumerModeStartOffset;
+        useKafkaMsgHeadersForConsumerFiltering = src.useKafkaMsgHeadersForConsumerFiltering;
+        kafkaMsgHeaderUsedForFiltering = src.kafkaMsgHeaderUsedForFiltering;
+        kafkaMsgValuesUsedForFiltering = src.kafkaMsgValuesUsedForFiltering;
+        addProducerHostnameAsKafkaMsgHeader = src.addProducerHostnameAsKafkaMsgHeader;
+        prefixToAddForMetaDataKvPairs = src.prefixToAddForMetaDataKvPairs;
+        prefixToAddForKvPairs = src.prefixToAddForKvPairs;
+        stripPrefixForMetaDataKvPairs = src.stripPrefixForMetaDataKvPairs;
+        stripPrefixForKvPairs = src.stripPrefixForKvPairs;
 
     }
     return *this;

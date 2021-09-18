@@ -219,7 +219,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     const TVariantData* CStyleAccess( void ) const;
 
     CVariant& LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY, UInt32 bytesToLink = 0 );
-    CVariant& LinkTo( const void* externalBuffer, UInt32 bufferSize );
+    CVariant& LinkTo( const void* externalBuffer, UInt32 bufferSize, UInt8 varType = GUCEF_DATATYPE_BINARY );
     CVariant& LinkTo( const CVariant& src );
     CVariant& LinkTo( const CAsciiString& src );
     CVariant& LinkTo( const CUtf8String& src );

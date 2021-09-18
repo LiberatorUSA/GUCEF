@@ -107,10 +107,19 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
+    virtual bool LoadConfig( const CKafkaPubSubClientTopicConfig& config );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnPulseCycle( CORE::CNotifier* notifier    ,
+                  const CORE::CEvent& eventId  ,
+                  CORE::CICloneable* eventData );
+
+    CORE::CPulseGenerator* GetPulseGenerator( void );
 
     CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
 
@@ -153,6 +162,10 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     void Clear( void );
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+
+    bool SetupBasedOnConfig( void );
+
+    bool CommitConsumerOffsets( void );
 
     bool SubscribeImpl( const std::string& readOffset );
 
@@ -223,6 +236,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
+    RdKafka::Topic* m_kafkaConsumerTopic;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
     CORE::UInt32 m_kafkaMessagesReceived;

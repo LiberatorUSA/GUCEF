@@ -1282,10 +1282,10 @@ CVariant::LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset, UInt8 varType,
 /*-------------------------------------------------------------------------*/
 
 CVariant&
-CVariant::LinkTo( const void* externalBuffer, UInt32 bufferSize )
+CVariant::LinkTo( const void* externalBuffer, UInt32 bufferSize, UInt8 varType )
 {GUCEF_TRACE;
 
-    Set( externalBuffer, bufferSize, GUCEF_DATATYPE_BINARY, true );
+    Set( externalBuffer, bufferSize, varType, true );
     return *this;
 }
 
