@@ -234,6 +234,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                const CORE::CEvent& eventId  ,
                                CORE::CICloneable* eventData );
 
+    void
+    OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
+
     bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
     
     protected:

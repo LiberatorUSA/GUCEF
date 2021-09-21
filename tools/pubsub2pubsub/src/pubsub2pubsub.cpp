@@ -431,6 +431,12 @@ CPubSubClientSide::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topi
     SubscribeTo( &topic                                         ,
                  COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
                  callback                                       );
+
+    TEventCallback callback2( this, &CPubSubClientSide::OnPubSubTopicMsgsPublished );
+    SubscribeTo( &topic                                          ,
+                 COMCORE::CPubSubClientTopic::MsgsPublishedEvent ,
+                 callback2                                       );
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -605,6 +611,20 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == eventData )
+        return;
+    
+    // @TODO: Ack to other sides, if applicable, that we successfully published
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 {GUCEF_TRACE;
@@ -714,6 +734,8 @@ CPubSubClientSide::ConnectPubSubClient( void )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                 "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + (*t)->GetTopicName() + "\". Proceeding" );
 
+// @TODO: Make the ordering of bookmark method preference configurable
+
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
             const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( (*t)->GetTopicName() );
@@ -729,7 +751,38 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     subscribeSuccess = (*t)->Subscribe();
                 }
                 else
-                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // seconds preference is msgId based bookmarking because of its exact addressability
+                if ( clientFeatures.supportsMsgIndexBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // seconds preference is msgIndex based bookmarking because of its exact addressability
+                {
+                    CORE::CVariant msgIndex;
+                    CORE::CDateTime msgDt;      // @TODO
+                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgIndex, msgDt ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
+                        
+                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
+                        {
+                            subscribeSuccess = (*t)->Subscribe();
+                            if ( !subscribeSuccess )
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
+                                return false;
+                            }
+                        }
+                        else
+                            return false;
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Index. Index=" + msgIndex.AsString() );
+
+                        subscribeSuccess = (*t)->SubscribeStartingAtMsgIndex( msgIndex );
+                    }
+                }
+                else
+                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // third preference is msgId based bookmarking because of its exact addressability
                 {
                     CORE::CVariant msgId;
                     CORE::CDateTime msgDt;
@@ -760,7 +813,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     }
                 }
                 else
-                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // third preference is DateTime based bookmarking. Not as exact but better than nothing
+                if ( clientFeatures.supportsMsgDateTimeBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // fourth preference is DateTime based bookmarking. Not as exact but better than nothing
                 {
                     CORE::CVariant msgId;
                     CORE::CDateTime msgDt;

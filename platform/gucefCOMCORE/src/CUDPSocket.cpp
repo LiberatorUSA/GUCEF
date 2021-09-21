@@ -83,6 +83,7 @@ const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocke
 const CORE::CEvent CUDPSocket::UDPPacketsRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketsRecievedEvent";
 
 #define GUCEF_PULSE_UPDATE_INTERVAL                         25     // We use 25 as the magic number to allow for some real yielding
+#define GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS          10     // default nr of packets we can process per pulse and/or can grab in bulk from the OS layer
 #define GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE        9216   // Set a default buffer size large enough to handle Jumbo frames
 #define GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE      65535  // Set the default OS level buffer a little more generous then historical defaults
 
@@ -141,7 +142,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
-    SetNrOfReceiveBuffers( 1, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
+    SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -182,7 +183,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
-    SetNrOfReceiveBuffers( 1, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
+    SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -500,7 +501,7 @@ CUDPSocket::Update( bool performRead )
         {
             // We reached out max bulk operation size per notification
             // However there is more work to do
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):Update: Max operations per notification cycle reached for the current nr of read buffers" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):Update: Max operations per Update() cycle reached for the current nr of read buffers" );
             return true;
         }
         else
@@ -551,8 +552,11 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
         if ( cycleCount >= m_maxUpdatesPerCycle )
         {
             // This is a busy socket, don't yield to the scheduler
-            m_pulseGenerator->RequestImmediatePulse();
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):OnPulse: Max update cycles per pulse reached, will request an immediate pulse (CPU burst mode)" );
+            if ( GUCEF_NULL != m_pulseGenerator )
+            {
+                m_pulseGenerator->RequestImmediatePulse();
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):OnPulse: Max update cycles per pulse reached, will request an immediate pulse (CPU burst mode)" );
+            }
         }
     }
     else
@@ -572,7 +576,7 @@ CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier              
 
     if ( notifier == m_pulseGenerator )
     {
-        m_pulseGenerator = NULL;
+        m_pulseGenerator = GUCEF_NULL;
     }
 }
 

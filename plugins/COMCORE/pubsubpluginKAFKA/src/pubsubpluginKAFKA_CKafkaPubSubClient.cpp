@@ -321,19 +321,23 @@ bool
 CKafkaPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
-        
-    bool totalSuccess = true;
-    TTopicMap::iterator i = m_topicMap.begin();
-    while ( i != m_topicMap.end() )
+    if ( IsConnected() )
     {
-        totalSuccess = (*i).second->Disconnect() && totalSuccess;
-        ++i;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
+        
+        bool totalSuccess = true;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            totalSuccess = (*i).second->Disconnect() && totalSuccess;
+            ++i;
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic disconnect" );
+
+        return totalSuccess;
     }
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic disconnect" );
-
-    return totalSuccess;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -350,13 +354,19 @@ CKafkaPubSubClient::Connect( void )
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        totalSuccess = (*i).second->Subscribe() && totalSuccess;
+        if ( !(*i).second->IsConnected() )
+        {
+            if ( (*i).second->IsSubscribingSupported() )
+            {
+                totalSuccess = (*i).second->Subscribe() && totalSuccess;
+            }
+        }
         ++i;
     }
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic connect" );
 
-    return false;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -48,6 +48,9 @@ const CORE::CEvent CPubSubClientTopic::ConnectedEvent = "GUCEF::COMCORE::CPubSub
 const CORE::CEvent CPubSubClientTopic::DisconnectedEvent = "GUCEF::COMCORE::CPubSubClientTopic::DisconnectedEvent";
 const CORE::CEvent CPubSubClientTopic::ConnectionErrorEvent = "GUCEF::COMCORE::CPubSubClientTopic::ConnectionErrorEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsRecievedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsRecievedEvent";
+const CORE::CEvent CPubSubClientTopic::MsgsPublishedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsPublishedEvent";
+const CORE::CEvent CPubSubClientTopic::LocalPublishQueueFullEvent = "GUCEF::COMCORE::CPubSubClientTopic::LocalPublishQueueFullEvent";
+const CORE::CEvent CPubSubClientTopic::PublishThrottleEvent = "GUCEF::COMCORE::CPubSubClientTopic::PublishThrottleEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,6 +66,9 @@ CPubSubClientTopic::RegisterEvents( void )
     DisconnectedEvent.Initialize();
     ConnectionErrorEvent.Initialize();
     MsgsRecievedEvent.Initialize();
+    MsgsPublishedEvent.Initialize();
+    LocalPublishQueueFullEvent.Initialize();
+    PublishThrottleEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

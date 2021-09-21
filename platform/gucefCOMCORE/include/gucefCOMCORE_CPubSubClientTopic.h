@@ -88,7 +88,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent ConnectionErrorEvent;
-    static const CORE::CEvent MsgsRecievedEvent;
+    static const CORE::CEvent MsgsRecievedEvent;                /**< event msg sent when the backend has received 1-N messages from the pubsub system as a subscriber */
+    static const CORE::CEvent MsgsPublishedEvent;               /**< event msg sent when the backend has successfully published messages */
+    static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
+    static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
 
     static void RegisterEvents( void );
 

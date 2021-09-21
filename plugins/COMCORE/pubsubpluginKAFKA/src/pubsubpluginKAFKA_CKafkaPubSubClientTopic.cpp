@@ -91,6 +91,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_firstPartitionAssignment( true )
     , m_consumerOffsets()
     , m_tickCountAtLastOffsetCommit( 0 )
+    , m_msgsReceivedSinceLastOffsetCommit( false )
     , m_metrics()
     , m_lock()
 {GUCEF_TRACE;
@@ -274,7 +275,12 @@ CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         case RdKafka::ERR__QUEUE_FULL:
         {
             // We dont treat queue full as an error metrics wise. This is an expected and handled scenario
+            ++m_metrics.kafkaTransmitOverflowQueueSize;
+            m_metrics.kafkaTransmitQueueSize = (CORE::UInt32) m_kafkaProducer->outq_len();
+
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full" );
+
+            NotifyObservers( LocalPublishQueueFullEvent );
             return false;
         }
         default:
@@ -455,8 +461,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         m_kafkaConsumerConf->set( "enable.partition.eof", "true", errStr );
         #endif
 
-        // Apply default topic config as an overlay
-        // start with the client level defined config first
+        // Apply default client level topic config as an overlay
         RdKafka::Conf* kafkaConsumerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
         m = clientConfig.kafkaConsumerDefaultTopicConfigSettings.begin();
         while ( m != clientConfig.kafkaConsumerDefaultTopicConfigSettings.end() )
@@ -472,9 +477,9 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
     
         }
 
-        // Now the topic level config if any
+        // Now the topic level topic config (if any)
         m = m_config.kafkaConsumerTopicConfigSettings.begin();
-        while ( m != clientConfig.kafkaConsumerDefaultTopicConfigSettings.end() )
+        while ( m != m_config.kafkaConsumerTopicConfigSettings.end() )
         {
             if ( RdKafka::Conf::CONF_OK != kafkaConsumerTopicConfig->set( (*m).first, (*m).second, errStr ) )
             {
@@ -511,7 +516,11 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             return false;
         }
 
-        if ( !m_config.consumerGroupName.IsNULLOrEmpty() )
+        // Check for the mandatory group ID property.
+        // This may have already been set by the generic custom property setting that occured above
+        std::string confValue;
+        m_kafkaConsumerConf->get( "group.id", confValue );
+        if ( confValue.empty() )
         {
             if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.id", m_config.consumerGroupName, errStr ) )
             {
@@ -531,33 +540,6 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 	    }
         m_kafkaConsumer = consumer;
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka consumer" );
-
-        RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaConsumer, m_config.topicName, m_kafkaConsumerConf, errStr );
-	    if ( topic == GUCEF_NULL ) 
-        {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to obtain Kafka Consumer Topic handle for topic \"" + 
-                m_config.topicName + "\", error message: " + errStr );
-            ++m_kafkaErrorReplies;
-            return false;
-	    }
-        m_kafkaConsumerTopic = topic;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka Consumer Topic handle for topic: " + m_config.topicName );
-
-        
-
-
-
-        std::vector< std::string > topics;
-        topics.push_back( m_config.topicName );
-        RdKafka::ErrorCode response = m_kafkaConsumer->subscribe( topics );
-        if ( RdKafka::ERR_NO_ERROR != response ) 
-        {
-		    errStr = RdKafka::err2str( response );
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to start Kafka Consumer for topic \"" + 
-                m_config.topicName + ", error message: " + errStr );
-            ++m_kafkaErrorReplies;
-            return false;
-        }
     }
 
     return true;
@@ -569,16 +551,20 @@ void
 CKafkaPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 {GUCEF_TRACE;
 
+    if ( msgCount > m_pubsubMsgs.size() )
+    {
+        // Add extra slots
+        m_pubsubMsgs.resize( msgCount );
+    }
+
     // reset size, note this does not dealloc the underlying memory
-    m_pubsubMsgs.clear();
     TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
     msgRefs.clear();
 
-    if ( msgCount > m_pubsubMsgs.capacity() )
+    if ( msgCount > msgRefs.capacity() )
     {
         // Grow the actual storage, this is allowed to become larger than msgCount to limit
         // the nr of dynamic allocations
-        m_pubsubMsgs.reserve( msgCount );        
         msgRefs.reserve( msgCount );
     }
 }
@@ -645,7 +631,23 @@ CKafkaPubSubClientTopic::Subscribe( void )
     */
 
     MT::CScopeMutex lock( m_lock );
-    return SetupBasedOnConfig();
+
+    if ( !IsConnected() )
+        if ( !SetupBasedOnConfig() )
+            return false;
+    
+    std::vector< std::string > topics;
+    topics.push_back( m_config.topicName );
+    RdKafka::ErrorCode response = m_kafkaConsumer->subscribe( topics );
+    if ( RdKafka::ERR_NO_ERROR != response ) 
+    {
+		std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to start Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -722,9 +724,8 @@ bool
 CKafkaPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
-    // Subscribing sets up the connectivity.
-    // All we will do here is trigger re-init by calling Disconnect()
-    Disconnect();
+    // We dont have any per-topic connectivity setup work that is 
+    // not tied directly to publishing/subscribing. RdKafka takes care of all that.
     return true;
 }
 
@@ -819,7 +820,6 @@ CKafkaPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     if ( clientConfig.desiredFeatures.supportsPublishing )
     {
         m_metrics.kafkaTransmitQueueSize = (CORE::UInt32) m_kafkaProducer->outq_len();
-        //m_metrics.kafkaTransmitOverflowQueueSize = (CORE::UInt32) m_kafkaMsgQueueOverflowQueue.size();   
         m_metrics.kafkaMessagesTransmitted = GetKafkaMsgsTransmittedCounter( true );
     }
     if ( clientConfig.desiredFeatures.supportsSubscribing )
@@ -1092,6 +1092,7 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
 
     PrepStorageForReadMsgs( 1 );
     
+    // Grab a message wrapper from pre-allocated storage
     COMCORE::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
     msgWrap.Clear();    
 
@@ -1164,6 +1165,12 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
         }
     }
 
+    // Now that we have prepared our wrapped message let's link it
+    // as a reference in the list of received messages we send out
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    msgRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
+    msgRefs.back().LinkTo( &msgWrap );
+
     // Communicate all the messages received via an event notification
     NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs );
 }
@@ -1183,16 +1190,19 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         }
         case RdKafka::ERR_NO_ERROR:
         {
+            // Since something was recieved we want to set the flag to ensure we start commiting offsets again
+            m_msgsReceivedSinceLastOffsetCommit = true;
+
             #ifdef GUCEF_DEBUG_MODE
             if ( GUCEF_NULL != message.key() )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:consume_cb: Received " + CORE::UInt64ToString( CORE::UInt64( message.len() ) ) + " byte message on topic \"" +          
-                        m_config.topicName + "\" with key \"" + *message.key() + "\" and offset " + CORE::Int64ToString( message.offset() ) );
+                        m_config.topicName + "\" with key \"" + *message.key() + "\" and offset " + CORE::Int64ToString( message.offset() ) + " for partition " + CORE::ToString( message.partition() ) );
             }
             else
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:consume_cb: Received " + CORE::UInt64ToString( CORE::UInt64( message.len() ) ) + " byte message on topic \"" +          
-                        m_config.topicName + " without a key and with offset " + CORE::Int64ToString( message.offset() ) );
+                        m_config.topicName + " without a key and with offset " + CORE::Int64ToString( message.offset() ) + " for partition " + CORE::ToString( message.partition() ) );
             }
             #endif
             
@@ -1280,16 +1290,38 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
     {
         case RdKafka::Event::EVENT_ERROR:
         {
-            #ifdef GUCEF_DEBUG_MODE
-            if ( RdKafka::ERR__PARTITION_EOF == event.err() )
+            switch (  event.err() )
             {
-                // Last message that was available has been read
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka topic \"" + m_config.topicName + "\" doesnt have any new messages waiting to be consumed" );
-                break;
+                #ifdef GUCEF_DEBUG_MODE
+                case RdKafka::ERR__PARTITION_EOF:
+                {
+                    // Last message that was available has been read
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka topic \"" + m_config.topicName + "\" doesnt have any new messages waiting to be consumed" );
+                    break;
+                }
+                #endif
+                case RdKafka::ERR__RESOLVE:
+                {
+                    // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
+                    //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName + "\". Wrong DNS?" );
+                    if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
+                    break;
+                }
+                case RdKafka::ERR__TRANSPORT:
+                {
+                    // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
+                    //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + "\"" );
+                    if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
+                    break;
+                }
+                default:
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:event_cb: Kafka error: " + RdKafka::err2str( event.err() ) + " from KafkaEventCallback()" );
+                    break;
+                }
             }
-            #endif
-
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka error: " + RdKafka::err2str( event.err() ) + " from KafkaEventCallback()" );
             break;
         }
         case RdKafka::Event::EVENT_STATS:
@@ -1342,6 +1374,7 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka Throttle event: throttled for " + CORE::Int32ToString( event.throttle_time() ) + "ms by broker " + 
                 event.broker_name() + " with ID " + CORE::Int32ToString( event.broker_id() ) );
+            NotifyObservers( PublishThrottleEvent );
             break;
         }
         default:
@@ -1400,6 +1433,8 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
     else 
     {
         ++m_kafkaMsgsTransmitted;
+        NotifyObservers( MsgsPublishedEvent );
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: " + MsgStatusToString( message.status() ) + ": topic: " + message.topic_name() + 
                                                 ", partition: " + CORE::ToString( message.partition() ).STL_String() +
                                                 ", offset: " + CORE::ToString( message.offset() ).STL_String() +
@@ -1443,6 +1478,9 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
             err = m_kafkaConsumer->commitAsync( partitions );
             if ( RdKafka::ERR_NO_ERROR == err )
             {
+                // Reset our flag so that we do not commit needlessly
+                m_msgsReceivedSinceLastOffsetCommit = false;
+
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
                 return true;
             }
@@ -1529,26 +1567,19 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
             GetPulseGenerator()->RequestImmediatePulse();
         } 
 
-        // Periodically commit our offsets
-        // This can slow things down so we dont want to do this too often
-        if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
+        if ( m_msgsReceivedSinceLastOffsetCommit )
         {
-            if ( CommitConsumerOffsets() )
+            // Periodically commit our offsets
+            // This can slow things down so we dont want to do this too often
+            if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
             {
-                m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();   
+                if ( CommitConsumerOffsets() )
+                {
+                    m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();   
+                }
             }
         }
     }
-
-    //if ( m_kafkaErrorReplies > 0 )
-    //{
-    //    HostAddressVector::iterator h = m_kafkaBrokers.begin();
-    //    while ( h != m_kafkaBrokers.end() )
-    //    {
-    //        (*h).Refresh();
-    //        ++h;
-    //    }    
-    //}
 }
 
 /*-------------------------------------------------------------------------//

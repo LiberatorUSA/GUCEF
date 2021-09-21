@@ -152,7 +152,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
         CORE::CDataNode::const_iterator i = remoteAddressessCfg->ConstBegin();
         while ( i != remoteAddressessCfg->ConstEnd() )
         {
-            remoteAddresses.push_back( CHostAddress( cfg.GetValue().AsString( CString::Empty, true ) ) );
+            remoteAddresses.push_back( CHostAddress( (*i)->GetValue().AsString( CString::Empty, true ) ) );
             ++i;
         }
     }

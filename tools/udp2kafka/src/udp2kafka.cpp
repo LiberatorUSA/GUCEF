@@ -720,7 +720,15 @@ Udp2KafkaChannel::event_cb( RdKafka::Event& event )
             }
             #endif
 
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka error: " + RdKafka::err2str( event.err() ) + " from KafkaEventCallback()" );
+            if ( RdKafka::ERR__RESOLVE == event.err() )
+            {
+                // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
+                //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to resolve Kafka brokers with setting value \"" + m_channelSettings.kafkaBrokers + "\" for Kafka topic \"" + m_channelSettings.channelTopicName + "\". Wrong DNS?" );
+                break;
+            }
+
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka error: " + RdKafka::err2str( event.err() ) + " from event_cb()" );
             break;
         }
         case RdKafka::Event::EVENT_STATS:

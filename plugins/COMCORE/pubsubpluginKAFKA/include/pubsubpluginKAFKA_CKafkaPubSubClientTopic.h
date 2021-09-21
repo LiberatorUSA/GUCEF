@@ -169,8 +169,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     bool CommitConsumerOffsets( void );
 
-    bool SubscribeImpl( const std::string& readOffset );
-
     CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
                                                  CORE::Int32 partitionId                     ,
                                                  CORE::Int32 timeoutInMs                     );
@@ -246,7 +244,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
-    RdKafka::Topic* m_kafkaConsumerTopic;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
     CORE::UInt32 m_kafkaMessagesReceived;
@@ -255,6 +252,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     bool m_firstPartitionAssignment;
     TInt32ToInt64Map m_consumerOffsets;
     CORE::UInt64 m_tickCountAtLastOffsetCommit;
+    bool m_msgsReceivedSinceLastOffsetCommit;
     TopicMetrics m_metrics;
     MT::CMutex m_lock;
 };
