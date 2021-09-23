@@ -94,12 +94,14 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtTopicIndex( const CORE::CVariant& msgIndexBookmark );
     
-    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark );
+
+    virtual bool SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual COMCORE::CPubSubBookmark GetCurrentBookmark( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -158,6 +160,20 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
+
+    #pragma pack(push, 1)  // No structure packing, we want to use this as a BSOB interpretation
+    struct SPartitionOffset
+    {
+        CORE::Int32 partitionId;
+        CORE::Int64 partitionOffset;
+    };
+    typedef struct SPartitionOffset TPartitionOffset;
+    #pragma pack(pop)
+
+    typedef std::vector< TPartitionOffset > TPartitionOffsetVector;
+    typedef std::map< CORE::Int32, TPartitionOffset > TPartitionOffsetMap;
+
+    bool VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets );
 
     void RegisterEventHandlers( void );
 
@@ -221,15 +237,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     typedef std::vector< TBufferPair > TBufferVector;
 
     typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
-
-    #pragma pack(push, 1)  // No structure packing, we want to use this as a BSOB interpretation
-    struct SPartitionOffset
-    {
-        CORE::Int32 partitionId;
-        CORE::Int64 partitionOffset;
-    };
-    typedef struct SPartitionOffset TPartitionOffset;
-    #pragma pack(pop)
 
     CKafkaPubSubClient* m_client;
     CORE::CTimer* m_metricsTimer;

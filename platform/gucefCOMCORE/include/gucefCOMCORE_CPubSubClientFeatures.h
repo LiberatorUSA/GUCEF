@@ -59,29 +59,32 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
 {
     public:
 
-    bool supportsPublishing;                  /** not every client may support full pub-sub: Is publishing supported? */
-    bool supportsSubscribing;                 /** not every client may support full pub-sub: Is subscribing supported? */
+    bool supportsPublishing;                    /** not every client may support full pub-sub: Is publishing supported? */
+    bool supportsSubscribing;                   /** not every client may support full pub-sub: Is subscribing supported? */
     bool supportsAutoReconnect;
     
-    bool supportsBinaryPayloads;              /** if not supported and a binary payload is given it will be converted to base64 */
-    bool supportsMultiHostSharding;           /** if the pub-sub system supports sharding across multiple hosts */
-    bool supportsPerMsgIds;                   /** whether per message IDs are supported inside a topic, if not the msgId param is irrelevant and not used */
-    bool supportsMsgIndex;                    /** whether a message index or offset concept is supported inside a topic, if not the msgIndex param is irrelevant and not used */
-    bool supportsPrimaryPayloadPerMsg;        /** whether the concept of a per message primary payload is supported. If the backend only supports key-value ideally this feature is not used by the app */
-    bool supportsAbsentPrimaryPayloadPerMsg;  /** whether the concept of a per message primary payload is supported but usage is optional. Only relevant if supportsPrimaryPayloadPerMsg=true */
-    bool supportsKeyValueSetPerMsg;           /** whether the concept of a per message set of key-value attributes is supported. If the backend only supports a primary payload ideally this feature is not used by the app */
-    bool supportsDuplicateKeysPerMsg;         /** whether the concept of a per message set of key-value attributes has the constraint of keys being unique */
-    bool supportsMetaDataKeyValueSetPerMsg;   /** whether the concept of a per message set of key-value meta data attributes is supported */
+    bool supportsBinaryPayloads;                /** if not supported and a binary payload is given it will be converted to base64 */
+    bool supportsMultiHostSharding;             /** if the pub-sub system supports sharding across multiple hosts */
+    bool supportsPerMsgIds;                     /** whether per message IDs are supported inside a topic, if not the msgId param is irrelevant and not used */
+    bool supportsMsgIndex;                      /** whether a message index or offset concept is supported inside a topic, if not the msgIndex param is irrelevant and not used */
+    bool supportsPrimaryPayloadPerMsg;          /** whether the concept of a per message primary payload is supported. If the backend only supports key-value ideally this feature is not used by the app */
+    bool supportsAbsentPrimaryPayloadPerMsg;    /** whether the concept of a per message primary payload is supported but usage is optional. Only relevant if supportsPrimaryPayloadPerMsg=true */
+    bool supportsKeyValueSetPerMsg;             /** whether the concept of a per message set of key-value attributes is supported. If the backend only supports a primary payload ideally this feature is not used by the app */
+    bool supportsDuplicateKeysPerMsg;           /** whether the concept of a per message set of key-value attributes has the constraint of keys being unique */
+    bool supportsMetaDataKeyValueSetPerMsg;     /** whether the concept of a per message set of key-value meta data attributes is supported */
 
-    bool supportsSubscriberMsgReceivedAck;    /** whether the concept of a per message acknowledglement of receipt is supported for subscribers */
-    bool supportsAutoMsgReceivedAck;          /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack explicitly at the app level, not recomended for garanteed handling */
-    bool supportsAbsentMsgReceivedAck;        /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack auto or otherwise */
+    bool supportsSubscriberMsgReceivedAck;      /** whether the concept of a per message acknowledglement of receipt is supported for subscribers */
+    bool supportsAutoMsgReceivedAck;            /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack explicitly at the app level, not recomended for garanteed handling */
+    bool supportsAbsentMsgReceivedAck;          /** only relevant if 'supportsSubscriberMsgReceivedAck'=true : whether you can forgo sending a msg received ack auto or otherwise */
     
-    bool supportsBookmarkingConcept;          /** whether the concept of bookmarking where you last were in the pub-sub subscription is supported at all. The other bookmarking related flags are meaningless if this is false */
-    bool supportsAutoBookmarking;             /** whether the implementation takes care of remembering where you are wrt pub-sub subscriber consumption without needing help */
-    bool supportsMsgIdBasedBookmark;          /** whether the implementation can accept a MsgId to setup pub-sub subscriber consumption */
-    bool supportsMsgIndexBasedBookmark;       /** whether the implementation can accept a Msg Index to setup pub-sub subscriber consumption */
-    bool supportsMsgDateTimeBasedBookmark;    /** whether the implementation can accept a message DateTime to setup pub-sub subscriber consumption */
+    bool supportsBookmarkingConcept;            /** whether the concept of bookmarking where you last were in the pub-sub subscription is supported at all. The other bookmarking related flags are meaningless if this is false */
+    bool supportsSubscribingUsingBookmark;      /** whether it is possible to subscribe using a client provided bookmark as the subscription starting point */
+    bool supportsServerSideBookmarkPersistance; /** whether the implementation supports server-side persistance of bookmarks, meaning no local persistance feature is needed by the client application */
+    bool supportsAutoBookmarking;               /** whether the implementation takes care of remembering where you are wrt pub-sub subscriber consumption without needing an explicit ack call to the backend */
+    bool supportsMsgIdBasedBookmark;            /** whether the implementation can accept a MsgId to setup pub-sub subscriber consumption */
+    bool supportsMsgIndexBasedBookmark;         /** whether the implementation can accept a Msg Index to setup pub-sub subscriber consumption */
+    bool supportsTopicIndexBasedBookmark;       /** whether the implementation can accept a Msg Index to setup pub-sub subscriber consumption */
+    bool supportsMsgDateTimeBasedBookmark;      /** whether the implementation can accept a message DateTime to setup pub-sub subscriber consumption */
     
     bool supportsMetrics;
 

@@ -69,6 +69,11 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENT_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#include "gucefCOMCORE_CPubSubBookmark.h"
+#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
 #include "gucefCOMCORE_CPubSubClientFactory.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
@@ -154,7 +159,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 cpuAffinityForMainChannelThread;
     bool collectMetrics;
     TChannelMode mode;
-    bool subscribeUsingDefaultBookmarkIfThereIsNoLast;
+    bool subscribeWithoutBookmarkIfNoneIsPersisted;
     bool autoPushAfterStartupIfStorageToPubSub;
     CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
     CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
@@ -171,14 +176,13 @@ class ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class CIPubSubMsgPersistance
+class CIPubSubBookmarkPersistance
 {
     public:
 
-    virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
-                                                const CORE::CString& topicName , 
-                                                CORE::CVariant& msgId          , 
-                                                CORE::CDateTime& msgDt         ) = 0;
+    virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
+                                       const CORE::CString& topicName     , 
+                                       COMCORE::CPubSubBookmark& bookmark ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -190,7 +194,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
     typedef enum ChannelSettings::EChannelMode TChannelMode;
 
-    CPubSubClientChannel( CIPubSubMsgPersistance* persistance );
+    CPubSubClientChannel( CIPubSubBookmarkPersistance* persistance );
     virtual ~CPubSubClientChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
@@ -258,7 +262,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     CORE::CDynamicBuffer* m_msgReceiveBuffer;
     CORE::CDateTime m_lastWriteBlockCompletion;    
     COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
-    CIPubSubMsgPersistance* m_persistance;
+    CIPubSubBookmarkPersistance* m_persistance;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -268,7 +272,7 @@ typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChann
 /*-------------------------------------------------------------------------*/
 
 class CStorageChannel : public CORE::CTaskConsumer ,
-                        public CIPubSubMsgPersistance
+                        public CIPubSubBookmarkPersistance
 {
     public:
 
@@ -311,10 +315,14 @@ class CStorageChannel : public CORE::CTaskConsumer ,
 
     virtual bool WaitForTaskToFinish( CORE::Int32 timeoutInMs ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
+                                       const CORE::CString& topicName     , 
+                                       COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
                                                 const CORE::CString& topicName , 
                                                 CORE::CVariant& msgId          , 
-                                                CORE::CDateTime& msgDt         ) GUCEF_VIRTUAL_OVERRIDE;
+                                                CORE::CDateTime& msgDt         );
 
     virtual bool GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
                                                           const CORE::CString& topicName , 

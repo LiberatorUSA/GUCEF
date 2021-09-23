@@ -154,8 +154,12 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsAutoMsgReceivedAck = false;        // this library can add not support for this - todo
     features.supportsAbsentMsgReceivedAck = false;      // the ack is mandatory
     features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
+    features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
+    features.supportsSubscribingUsingBookmark = false;  // Currently not supported although there are some possibilities of faking out something
     features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
     features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsTopicIndexBasedBookmark = false;   // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     return true;
 }

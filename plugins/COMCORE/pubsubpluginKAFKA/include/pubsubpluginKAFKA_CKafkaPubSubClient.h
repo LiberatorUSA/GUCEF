@@ -126,6 +126,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public COMCORE:
 
     CKafkaPubSubClient( void ); /**< not implemented */
 
+    bool SetupBasedOnConfig( void );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClient > TEventCallback;

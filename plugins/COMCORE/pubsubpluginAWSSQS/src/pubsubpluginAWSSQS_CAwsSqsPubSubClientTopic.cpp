@@ -479,7 +479,7 @@ CAwsSqsPubSubClientTopic::Subscribe( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
+CAwsSqsPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) 
 {GUCEF_TRACE;
 
     // Not supported
@@ -488,22 +488,12 @@ CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdB
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+COMCORE::CPubSubBookmark 
+CAwsSqsPubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
     // Not supported
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CAwsSqsPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
-{GUCEF_TRACE;
-
-    // Not supported
-    return false;
+    return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
 }
 
 /*-------------------------------------------------------------------------*/

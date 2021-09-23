@@ -91,7 +91,7 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     , performPubSubInDedicatedThread()
     , applyThreadCpuAffinity( false )
     , cpuAffinityForPubSubThread( 0 )
-    , subscribeUsingDefaultBookmarkIfThereIsNoLast( true )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( true )
 {GUCEF_TRACE;
 
 }
@@ -104,7 +104,7 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSet
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
-    , subscribeUsingDefaultBookmarkIfThereIsNoLast( src.subscribeUsingDefaultBookmarkIfThereIsNoLast )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
 {GUCEF_TRACE;
 
 }
@@ -123,7 +123,7 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
-        subscribeUsingDefaultBookmarkIfThereIsNoLast = src.subscribeUsingDefaultBookmarkIfThereIsNoLast;
+        subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
     }
     return *this;
 }
@@ -144,7 +144,7 @@ PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
-    tree.SetAttribute( "subscribeUsingDefaultBookmarkIfThereIsNoLast", subscribeUsingDefaultBookmarkIfThereIsNoLast );
+    tree.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
 
     return true;
 }
@@ -188,7 +188,7 @@ PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     performPubSubInDedicatedThread = tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
     applyThreadCpuAffinity = tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
-    subscribeUsingDefaultBookmarkIfThereIsNoLast = tree.GetAttributeValueOrChildValueByName( "subscribeUsingDefaultBookmarkIfThereIsNoLast" ).AsBool( subscribeUsingDefaultBookmarkIfThereIsNoLast, true );
+    subscribeWithoutBookmarkIfNoneIsPersisted = tree.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
     return true;
 }
 
@@ -490,14 +490,11 @@ bool
 CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_otherSide )
-        return false;
-
     CORE::UInt32 topicsToPublishOn = 0;
     CORE::UInt32 topicsPublishedOn = 0;
     bool publishSuccess = true;
-    TopicVector::iterator i = m_otherSide->m_topics.begin();
-    while ( i != m_otherSide->m_topics.end() )
+    TopicVector::iterator i = m_topics.begin();
+    while ( i != m_topics.end() )
     {
         COMCORE::CPubSubClientTopic* topic = (*i);
         if ( GUCEF_NULL != topic )
@@ -600,7 +597,32 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
         if ( !msgs.empty() )
         {                            
-            PublishMsgs( msgs );        
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s)" ); 
+
+            TPubSubClientSideVector* sides = GUCEF_NULL;
+            if ( GetAllSides( sides ) && GUCEF_NULL != sides )
+            {
+                TPubSubClientSideVector::iterator i = sides->begin();
+                while ( i != sides->end() )
+                {
+                    CPubSubClientSide* side = (*i);
+                    if ( this != side )
+                    {
+                        if ( (*i)->PublishMsgs( msgs ) )
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                                "):OnPubSubTopicMsgsReceived: Successfully published message(s) to side " + (*i)->m_side ); 
+                        }
+                        else
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                                "):OnPubSubTopicMsgsReceived: Failed to publish message(s) to side " + (*i)->m_side );
+                        }
+                    }
+                    ++i;
+                }
+            }
         }
     }
     catch ( const std::exception& e )
@@ -720,9 +742,11 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
             }
         }
-
-        RegisterTopicEventHandlers( *topic );
-        m_topics.push_back( topic );
+        else
+        {
+            RegisterTopicEventHandlers( *topic );
+            m_topics.push_back( topic );
+        }
         ++i;
     }
 
@@ -734,8 +758,6 @@ CPubSubClientSide::ConnectPubSubClient( void )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                 "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + (*t)->GetTopicName() + "\". Proceeding" );
 
-// @TODO: Make the ordering of bookmark method preference configurable
-
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
             const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( (*t)->GetTopicName() );
@@ -743,7 +765,15 @@ CPubSubClientSide::ConnectPubSubClient( void )
             {            
                 // The method of subscription depends on the supported feature set
                 bool subscribeSuccess = false;
-                if ( clientFeatures.supportsAutoBookmarking && clientFeatures.supportsBookmarkingConcept ) // first preference is backend managed bookmarking
+                if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
+
+                    subscribeSuccess = (*t)->Subscribe();
+                }
+                else
+                if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
@@ -751,16 +781,17 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     subscribeSuccess = (*t)->Subscribe();
                 }
                 else
-                if ( clientFeatures.supportsMsgIndexBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // seconds preference is msgIndex based bookmarking because of its exact addressability
                 {
-                    CORE::CVariant msgIndex;
-                    CORE::CDateTime msgDt;      // @TODO
-                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgIndex, msgDt ) )
+                    // bookmarks are supported but they rely on client-side persistance
+                    // we will need to obtain said bookmark
+                    
+                    COMCORE::CPubSubBookmark bookmark;
+                    if ( !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, (*t)->GetTopicName(), bookmark ) )
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
                         
-                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
+                        if ( pubSubSideSettings->subscribeWithoutBookmarkIfNoneIsPersisted )
                         {
                             subscribeSuccess = (*t)->Subscribe();
                             if ( !subscribeSuccess )
@@ -776,88 +807,10 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     else
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Index. Index=" + msgIndex.AsString() );
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
 
-                        subscribeSuccess = (*t)->SubscribeStartingAtMsgIndex( msgIndex );
+                        subscribeSuccess = (*t)->SubscribeStartingAtBookmark( bookmark );
                     }
-                }
-                else
-                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // third preference is msgId based bookmarking because of its exact addressability
-                {
-                    CORE::CVariant msgId;
-                    CORE::CDateTime msgDt;
-                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id but we failed at obtaining the last used message id" );
-                        
-                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
-                        {
-                            subscribeSuccess = (*t)->Subscribe();
-                            if ( !subscribeSuccess )
-                            {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
-                                return false;
-                            }
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id. ID=" + msgId );
-
-                        subscribeSuccess = (*t)->SubscribeStartingAtMsgId( msgId );
-                    }
-                }
-                else
-                if ( clientFeatures.supportsMsgDateTimeBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // fourth preference is DateTime based bookmarking. Not as exact but better than nothing
-                {
-                    CORE::CVariant msgId;
-                    CORE::CDateTime msgDt;
-                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime but we failed at obtaining it" );
-
-                        if ( pubSubSideSettings->subscribeUsingDefaultBookmarkIfThereIsNoLast )
-                        {
-                            subscribeSuccess = (*t)->Subscribe();
-                            if ( !subscribeSuccess )
-                            {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
-                                return false;
-                            }
-                        }
-                        else
-                            return false;
-
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime which is " + msgDt.ToIso8601DateTimeString( true, true ) );
-                    
-                        subscribeSuccess = (*t)->SubscribeStartingAtMsgDateTime( msgDt );
-                    }
-                }
-                else
-                if ( !clientFeatures.supportsBookmarkingConcept )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend. We will subscribe and get whatever we get" );
-
-                    subscribeSuccess = (*t)->Subscribe();
-                }
-                else
-                {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Unsupported/Unknown bookmark handling by the backend. We will subscribe and get whatever we get best effort" );
-
-                    subscribeSuccess = (*t)->Subscribe();
                 }
 
                 if ( !subscribeSuccess )
@@ -1021,16 +974,44 @@ CPubSubClientSide::GetChannelSettings( void ) const
     return m_channelSettings;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientOtherSide::CPubSubClientOtherSide( CPubSubClientChannel* parentChannel, char side ) 
+    : CPubSubClientSide( side )
+    , m_parentChannel( parentChannel )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientOtherSide::~CPubSubClientOtherSide()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
+{GUCEF_TRACE;
+    
+    return m_parentChannel->GetAllSides( sides );
+}
 
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientChannel::CPubSubClientChannel( void ) 
     : CPubSubClientSide( 'A' )
     , m_sideBPubSub( GUCEF_NULL )
+    , m_sides()
 {GUCEF_TRACE;
 
     // for now just work with a and b, we can do more sides later 
-    m_sideBPubSub = new CPubSubClientSide( 'B' );
+    m_sideBPubSub = new CPubSubClientOtherSide( this, 'B' );
+        
+    m_sides.push_back( this );
+    m_sides.push_back( m_sideBPubSub );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1040,6 +1021,18 @@ CPubSubClientChannel::~CPubSubClientChannel()
 
     delete m_sideBPubSub;
     m_sideBPubSub = GUCEF_NULL;
+
+    m_sides.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
+{GUCEF_TRACE;
+    
+    sides = &m_sides;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

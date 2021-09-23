@@ -650,31 +650,23 @@ CRedisClusterPubSubClientTopic::Subscribe( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
+CRedisClusterPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) 
 {GUCEF_TRACE;
 
+    // With Redis the default ID format is a Unix Epoch based datetime
     // For streaming Redis the msg ID and offset/index are the same thing
-    return SubscribeImpl( msgIdBookmark.AsString() );
+    MT::CScopeMutex lock( m_lock );
+    return SubscribeImpl( bookmark.GetBookmarkData().AsString() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+COMCORE::CPubSubBookmark 
+CRedisClusterPubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
-    // For streaming Redis the msg ID and offset/index are the same thing
-    return SubscribeImpl( msgIndexBookmark.AsString() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CRedisClusterPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
-{GUCEF_TRACE;
-
-    // With Redis the default ID format is a Unix Epoch based datetime 
-    return SubscribeImpl( CORE::ToString( msgDtBookmark.ToUnixEpochBasedTicksInMillisecs() ) );
+    MT::CScopeMutex lock( m_lock );
+    return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, CORE::CVariant( m_readOffset ) );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -132,6 +132,11 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant( const std::string& utf8Str );
 
     CVariant( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
+
+    /**
+     *  Creates a private copy of any data contained within the buffer
+     */
+    CVariant( const CDynamicBuffer& data, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;

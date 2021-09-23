@@ -78,7 +78,7 @@ CKafkaPubSubClient::CKafkaPubSubClient( const COMCORE::CPubSubClientConfig& conf
     , m_threadPool()
 {GUCEF_TRACE;
 
-
+    SetupBasedOnConfig();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,10 +141,13 @@ CKafkaPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featur
     features.supportsAutoMsgReceivedAck = true;           // This is configurable on the Kafka client library
     features.supportsAbsentMsgReceivedAck = true;         // supported if you wish to 'peek' only without removing messages but can become problematic in various scenarios
     features.supportsBookmarkingConcept = true;           // Bookmarks are a native Kafka concept
+    features.supportsSubscribingUsingBookmark = true;     // We provide limited support for client-side provided bookmarks
+    features.supportsServerSideBookmarkPersistance = true;// The natural way to interact with Kafka is to let it manage bookmarks server-side
     features.supportsAutoBookmarking = true;              // Kafka keeps bookmarks for a given client id Kafka-side and supports auto commit in RdKafka
     features.supportsMsgIdBasedBookmark = false;          // Kafka does not support finding a conclusive offset based on a message key, there could be many across many partitions making it useless
     features.supportsMsgIndexBasedBookmark = true;        // Offsets (index) is the native Kafka "bookmark"method and thus preferred
-    features.supportsMsgDateTimeBasedBookmark = true;     // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
+    features.supportsTopicIndexBasedBookmark = true;      // Offsets (index) is the native Kafka "bookmark"method and thus preferred
+    features.supportsMsgDateTimeBasedBookmark = true;     // We support this via code that converts the DateTime to offsets
     return true;
 }
 
@@ -262,39 +265,47 @@ CKafkaPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClient::LoadConfig( const COMCORE::CPubSubClientConfig& config )
+CKafkaPubSubClient::SetupBasedOnConfig( void )
 {GUCEF_TRACE;
 
-    Clear();
-
-    m_config = config;
-
-    if ( GUCEF_NULL != m_config.pulseGenerator )
+    if ( GUCEF_NULL == m_config.pulseGenerator )
     {
         // Use the global pulse generator.
-        // now what you want if you want thread isolation or basically any time you are not
+        // NOT what you want if you want thread isolation or basically any time you are not
         // writing a single threaded app
         m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     }
         
     if ( m_config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
-        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        m_metricsTimer = new CORE::CTimer( m_config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( m_config.desiredFeatures.supportsMetrics );
     }
     
-    if ( m_config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "KafkaPubSubClient(" + CORE::ToString( this ) + ")", true );
+    //if ( m_config.desiredFeatures.supportsSubscribing )
+    //    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "KafkaPubSubClient(" + CORE::ToString( this ) + ")", true );
 
     RegisterEventHandlers();
 
     if ( m_config.remoteAddresses.empty() )
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:LoadConfig: No remote addresses have been provided" );
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:SetupBasedOnConfig: No remote addresses have been provided" );
         return false;
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::LoadConfig( const COMCORE::CPubSubClientConfig& config )
+{GUCEF_TRACE;
+
+    Clear();
+
+    m_config = config;
+    return SetupBasedOnConfig();
 }
 
 /*-------------------------------------------------------------------------*/

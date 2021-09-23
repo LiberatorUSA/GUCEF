@@ -62,6 +62,8 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsAutoMsgReceivedAck( false )
     , supportsAbsentMsgReceivedAck( false )
     , supportsBookmarkingConcept( false )
+    , supportsSubscribingUsingBookmark( false )
+    , supportsServerSideBookmarkPersistance( false )
     , supportsAutoBookmarking( false )
     , supportsMsgIdBasedBookmark( false )
     , supportsMsgIndexBasedBookmark( false )
@@ -99,6 +101,8 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsAutoMsgReceivedAck", supportsAutoMsgReceivedAck );
     tree.SetAttribute( "supportsAbsentMsgReceivedAck", supportsAbsentMsgReceivedAck );
     tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
+    tree.SetAttribute( "supportsSubscribingUsingBookmark", supportsSubscribingUsingBookmark );
+    tree.SetAttribute( "supportsServerSideBookmarkPersistance", supportsServerSideBookmarkPersistance );
     tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
     tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
     tree.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark );
@@ -130,6 +134,8 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsAutoMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAutoMsgReceivedAck" ).AsBool( supportsAutoMsgReceivedAck, true );
     supportsAbsentMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAbsentMsgReceivedAck" ).AsBool( supportsAbsentMsgReceivedAck, true );
     supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept, true );
+    supportsSubscribingUsingBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribingUsingBookmark" ).AsBool( supportsSubscribingUsingBookmark, true );
+    supportsServerSideBookmarkPersistance = cfg.GetAttributeValueOrChildValueByName( "supportsServerSideBookmarkPersistance" ).AsBool( supportsServerSideBookmarkPersistance, true );
     supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking, true );
     supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark, true );
     supportsMsgIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndexBasedBookmark" ).AsBool( supportsMsgIndexBasedBookmark, true );

@@ -86,11 +86,15 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark );
 
-    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark );
 
-    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark );
+
+    virtual bool SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual COMCORE::CPubSubBookmark GetCurrentBookmark( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

@@ -239,6 +239,16 @@ CVariant::CVariant( const void* data, UInt32 dataSize, UInt8 varType )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( const CDynamicBuffer& data, UInt8 varType )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( data.GetConstBufferPtr(), data.GetDataSize(), varType );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant::CVariant( const CVariant& data )
     : m_variantData( data.m_variantData )
 {GUCEF_TRACE;

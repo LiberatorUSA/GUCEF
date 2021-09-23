@@ -143,8 +143,12 @@ CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featu
     features.supportsAutoMsgReceivedAck = false;         // Since SQS is a queue where you consume the messages: grabbing the message is in a way the ack but this does not really apply
     features.supportsAbsentMsgReceivedAck = true;        // Since SQS is a queue where you consume the messages: this does not apply and hence can be absent
     features.supportsBookmarkingConcept = true;          // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
+    features.supportsSubscribingUsingBookmark = false;   // Since SQS is a queue where you consume the messages: This is not supported
+    features.supportsServerSideBookmarkPersistance = true; // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
     features.supportsAutoBookmarking = true;             // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
     features.supportsMsgIdBasedBookmark = false;         // Since SQS is a queue where you consume the messages: You cannot provide a msg ID to resume from a given point
+    features.supportsMsgIndexBasedBookmark = false;      // Since SQS is a queue where you consume the messages: You cannot provide a msg index to resume from a given point
+    features.supportsTopicIndexBasedBookmark = false;    // Since SQS is a queue where you consume the messages: You cannot provide a msg index to resume from a given point
     features.supportsMsgDateTimeBasedBookmark = false;   // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
     return true;
 }

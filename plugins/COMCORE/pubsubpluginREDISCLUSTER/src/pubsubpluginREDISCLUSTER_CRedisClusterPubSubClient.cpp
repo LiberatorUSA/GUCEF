@@ -171,9 +171,12 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsAutoMsgReceivedAck = false;        // not supported right now
     features.supportsAbsentMsgReceivedAck = true;       // no such inherent concept
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
+    features.supportsServerSideBookmarkPersistance = false; // no such support
+    features.supportsSubscribingUsingBookmark = true;   // supported via giving Redis the starting offset
     features.supportsAutoBookmarking = false;           // Redis does not support this concept. The client needs to take care of remembering the offset
     features.supportsMsgIdBasedBookmark = true;         // This is the native Redis "bookmark" method and thus preferered
     features.supportsMsgIndexBasedBookmark = true;      // Same as supportsMsgIdBasedBookmark. This is the native Redis "bookmark" method and thus preferered
+    features.supportsTopicIndexBasedBookmark = true;    // Same as supportsMsgIdBasedBookmark. This is the native Redis "bookmark" method and thus preferered
     features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
     return true;
 }

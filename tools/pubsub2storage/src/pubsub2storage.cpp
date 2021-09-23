@@ -108,7 +108,7 @@ ChannelSettings::ChannelSettings( void )
     , cpuAffinityForMainChannelThread( 0 )
     , collectMetrics( true )
     , mode( CHANNELMODE_PUBSUB_TO_STORAGE )
-    , subscribeUsingDefaultBookmarkIfThereIsNoLast( true )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
@@ -137,7 +137,7 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
     , collectMetrics( src.collectMetrics )
     , mode( src.mode )
-    , subscribeUsingDefaultBookmarkIfThereIsNoLast( src.subscribeUsingDefaultBookmarkIfThereIsNoLast )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
     , autoPushAfterStartupIfStorageToPubSub( src.autoPushAfterStartupIfStorageToPubSub )
     , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
     , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
@@ -171,7 +171,7 @@ ChannelSettings::operator=( const ChannelSettings& src )
         cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
         collectMetrics = src.collectMetrics;
         mode = src.mode;
-        subscribeUsingDefaultBookmarkIfThereIsNoLast = src.subscribeUsingDefaultBookmarkIfThereIsNoLast;
+        subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
         autoPushAfterStartupIfStorageToPubSub = src.autoPushAfterStartupIfStorageToPubSub;
         youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;
         oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
@@ -201,7 +201,7 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
     tree.SetAttribute( "collectMetrics", collectMetrics );
     tree.SetAttribute( "mode", mode );
-    tree.SetAttribute( "subscribeUsingDefaultBookmarkIfThereIsNoLast", subscribeUsingDefaultBookmarkIfThereIsNoLast );
+    tree.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
     tree.SetAttribute( "autoPushAfterStartupIfStorageToPubSub", autoPushAfterStartupIfStorageToPubSub );
     tree.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) );
     tree.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) );
@@ -269,7 +269,7 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     cpuAffinityForMainChannelThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread" ).AsUInt32( cpuAffinityForMainChannelThread, true );
     collectMetrics = tree.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     mode = (TChannelMode) tree.GetAttributeValueOrChildValueByName( "mode" ).AsInt32( mode, true );
-    subscribeUsingDefaultBookmarkIfThereIsNoLast = tree.GetAttributeValueOrChildValueByName( "subscribeUsingDefaultBookmarkIfThereIsNoLast" ).AsBool( subscribeUsingDefaultBookmarkIfThereIsNoLast, true );
+    subscribeWithoutBookmarkIfNoneIsPersisted = tree.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
     autoPushAfterStartupIfStorageToPubSub = tree.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIfStorageToPubSub" ).AsBool( autoPushAfterStartupIfStorageToPubSub, true ); 
     youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( tree.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( tree.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
@@ -303,7 +303,7 @@ ChannelSettings::GetTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientChannel::CPubSubClientChannel( CIPubSubMsgPersistance* persistance )
+CPubSubClientChannel::CPubSubClientChannel( CIPubSubBookmarkPersistance* persistance )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
     , m_topics()
@@ -616,7 +616,15 @@ CPubSubClientChannel::ConnectPubSubClient( void )
             {            
                 // The method of subscription depends on the supported feature set
                 bool subscribeSuccess = false;
-                if ( clientFeatures.supportsAutoBookmarking && clientFeatures.supportsBookmarkingConcept ) // first preference is backend managed bookmarking
+                if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
+
+                    subscribeSuccess = (*t)->Subscribe();
+                }
+                else
+                if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
@@ -624,82 +632,36 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     subscribeSuccess = (*t)->Subscribe();
                 }
                 else
-                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // seconds preference is msgId based bookmarking because of its exact addressability
                 {
-                    CORE::CVariant msgId;
-                    CORE::CDateTime msgDt;
-                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id but we failed at obtaining the last used message id" );
-                        
-                        if ( m_channelSettings.subscribeUsingDefaultBookmarkIfThereIsNoLast )
-                        {
-                            subscribeSuccess = (*t)->Subscribe();
-                            if ( !subscribeSuccess )
-                            {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
-                                return false;
-                            }
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message Id. ID=" + msgId );
-
-                        subscribeSuccess = (*t)->SubscribeStartingAtMsgId( msgId );
-                    }
-                }
-                else
-                if ( clientFeatures.supportsMsgIdBasedBookmark && clientFeatures.supportsBookmarkingConcept ) // third preference is DateTime based bookmarking. Not as exact but better than nothing
-                {
-                    CORE::CVariant msgId;
-                    CORE::CDateTime msgDt;
-                    if ( !m_persistance->GetLastPersistedMsgAttributes( m_channelSettings.channelId, (*t)->GetTopicName(), msgId, msgDt ) )
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime but we failed at obtaining it" );
-
-                        if ( m_channelSettings.subscribeUsingDefaultBookmarkIfThereIsNoLast )
-                        {
-                            subscribeSuccess = (*t)->Subscribe();
-                            if ( !subscribeSuccess )
-                            {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
-                                return false;
-                            }
-                        }
-                        else
-                            return false;
-
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a last-received client-side message DateTime which is " + msgDt.ToIso8601DateTimeString( true, true ) );
+                    // bookmarks are supported but they rely on client-side persistance
+                    // we will need to obtain said bookmark
                     
-                        subscribeSuccess = (*t)->SubscribeStartingAtMsgDateTime( msgDt );
+                    COMCORE::CPubSubBookmark bookmark;
+                    if ( !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, (*t)->GetTopicName(), bookmark ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
+                        
+                        if ( m_channelSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
+                        {
+                            subscribeSuccess = (*t)->Subscribe();
+                            if ( !subscribeSuccess )
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
+                                return false;
+                            }
+                        }
+                        else
+                            return false;
                     }
-                }
-                else
-                if ( !clientFeatures.supportsBookmarkingConcept )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend. We will subscribe and get whatever we get" );
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
 
-                    subscribeSuccess = (*t)->Subscribe();
-                }
-                else
-                {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Unsupported/Unknown bookmark handling by the backend. We will subscribe and get whatever we get best effort" );
-
-                    subscribeSuccess = (*t)->Subscribe();
+                        subscribeSuccess = (*t)->SubscribeStartingAtBookmark( bookmark );
+                    }
                 }
 
                 if ( !subscribeSuccess )
@@ -1250,6 +1212,38 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
     }
     while ( !success && fileExistedButHasIssue );
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStorageChannel::GetPersistedBookmark( CORE::Int32 channelId              , 
+                                       const CORE::CString& topicName     , 
+                                       COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    // @TODO: Update to use dedicated bookmark persistance
+
+    CORE::CVariant msgId;
+    CORE::CDateTime msgDt; 
+    if ( GetLastPersistedMsgAttributes( channelId, topicName, msgId, msgDt ) )
+    {
+        if ( msgId.IsInitialized() )
+        {
+            bookmark.SetBookmarkData( msgId );
+            bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID );
+        }
+        else
+        {
+            CORE::CVariant dtStrVar = msgDt.ToIso8601DateTimeString( true, true );
+            bookmark.SetBookmarkData( dtStrVar );
+            bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME );
+        }
+        return true;
+    }
+
+    bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -130,7 +130,7 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool performPubSubInDedicatedThread;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
-    bool subscribeUsingDefaultBookmarkIfThereIsNoLast;
+    bool subscribeWithoutBookmarkIfNoneIsPersisted;
 
     COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
@@ -169,14 +169,13 @@ class ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class CIPubSubMsgPersistance
+class CIPubSubBookmarkPersistance
 {
     public:
 
-    virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
-                                                const CORE::CString& topicName , 
-                                                CORE::CVariant& msgId          , 
-                                                CORE::CDateTime& msgDt         ) = 0;
+    virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
+                                       const CORE::CString& topicName     , 
+                                       COMCORE::CPubSubBookmark& bookmark ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -186,6 +185,7 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     public:
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
+    typedef std::vector< CPubSubClientSide* >                TPubSubClientSideVector;
 
     CPubSubClientSide( char side );
     
@@ -212,6 +212,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     bool DisconnectPubSubClient( bool destroyClient = false );
 
     bool IsRunningInDedicatedThread( void ) const;
+
+    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
     private:
 
@@ -263,7 +265,7 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     MT::CMailboxForCloneables m_mailbox;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
-    CIPubSubMsgPersistance* m_persistance;
+    CIPubSubBookmarkPersistance* m_persistance;
     char m_side;
     bool m_runsInDedicatedThread;
 };
@@ -271,6 +273,27 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex > CPubSubClientSidePtr;
+
+/*-------------------------------------------------------------------------*/
+
+class CPubSubClientChannel;
+
+class CPubSubClientOtherSide : public CPubSubClientSide
+{
+    public:
+
+    CPubSubClientOtherSide( CPubSubClientChannel* parentChannel, char side );
+        
+    virtual ~CPubSubClientOtherSide();
+
+    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    CPubSubClientOtherSide( void );
+
+    CPubSubClientChannel* m_parentChannel;
+};
 
 /*-------------------------------------------------------------------------*/
 
@@ -294,9 +317,12 @@ class CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool LoadConfig( const ChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     CPubSubClientSide* m_sideBPubSub;
+    TPubSubClientSideVector m_sides;
 };
 
 /*-------------------------------------------------------------------------*/

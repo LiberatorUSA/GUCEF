@@ -444,7 +444,7 @@ CDynamicBuffer::AsType( const UInt32 byteOffset /* = 0 */ )
 
     if ( byteOffset + sizeof( T ) <= GetDataSize() )
     {
-        return *reinterpret_cast< T* >( static_cast< const char* >( GetBufferPtr() ) + byteOffset );
+        return *reinterpret_cast< T* >( static_cast< char* >( GetBufferPtr() ) + byteOffset );
     }
 
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsType(): Cannot cast to the given type" );

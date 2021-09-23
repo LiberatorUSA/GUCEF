@@ -55,6 +55,11 @@
 #define GUCEF_COMCORE_CIPUBSUBMSG_H
 #endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#include "gucefCOMCORE_CPubSubBookmark.h"
+#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+
 #ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
 #include "gucefCOMCORE_CBasicPubSubMsg.h"
 #define GUCEF_COMCORE_CBASICPUBSUBMSG_H
@@ -107,10 +112,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual bool InitializeConnectivity( void ) = 0;
 
-    virtual bool Subscribe( void ) = 0;
-    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) = 0;
-    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) = 0;
-    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) = 0;
+    virtual bool Subscribe( void ) = 0;                                                /**< attempt to commence subscription. This will subscribe per config and defaults of the given backend */
+    virtual bool SubscribeStartingAtBookmark( const CPubSubBookmark& bookmark ) = 0;   /**< attempt to commence subscription starting at the given client-side provided bookmark */
+
+    virtual CPubSubBookmark GetCurrentBookmark( void ) = 0;
 
     virtual bool Disconnect( void ) = 0;
 

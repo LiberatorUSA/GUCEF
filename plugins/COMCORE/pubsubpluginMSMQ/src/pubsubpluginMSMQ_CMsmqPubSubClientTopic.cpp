@@ -503,6 +503,26 @@ CMsmqPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& m
 /*-------------------------------------------------------------------------*/
 
 bool 
+CMsmqPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) 
+{GUCEF_TRACE;
+
+    // Currently not supported.
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+COMCORE::CPubSubBookmark 
+CMsmqPubSubClientTopic::GetCurrentBookmark( void )
+{GUCEF_TRACE;
+
+    // Not supported
+    return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CMsmqPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
 

@@ -269,7 +269,7 @@ CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
     {
         case RdKafka::ERR_NO_ERROR:
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued packet for transmission" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued message for transmission" );
             return true;
         }
         case RdKafka::ERR__QUEUE_FULL:
@@ -652,20 +652,43 @@ CKafkaPubSubClientTopic::Subscribe( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CKafkaPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
+bool
+CKafkaPubSubClientTopic::VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets )
 {GUCEF_TRACE;
 
-    // This is not supported in Kafka
-    // You can seek a stream based on index (offset) or with some effort get said index based on a timestamp
-    // duplicate IDs (keys) are to be expected as they are used for partition routing/sharding purposes
+    try
+    {
+        CORE::CDynamicBuffer blob;
+        blob.LinkTo( indexBookmarkBlob );
+
+        CORE::UInt32 partitionCount = (CORE::UInt32) blob.GetDataSize() / sizeof( TPartitionOffset );
+        
+        CORE::UInt32 offset = 0;
+        for ( CORE::UInt32 i=0; i<partitionCount; ++i )
+        {
+            CORE::UInt32 partitionId = blob.AsConstType< CORE::UInt32 >( offset );
+            offset += sizeof( CORE::UInt32 );
+
+            TPartitionOffset& offsetEntry = offsets[ partitionId ];
+            offsetEntry.partitionId = partitionId;
+            
+            offsetEntry.partitionOffset = blob.AsConstType< CORE::Int64 >( offset );
+            offset += sizeof( CORE::Int64 );
+        }
+
+        return true;
+    }
+    catch ( CORE::CDynamicBuffer::EIllegalCast& )
+    {
+
+    }    
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CKafkaPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
+CKafkaPubSubClientTopic::SubscribeStartingAtTopicIndex( const CORE::CVariant& indexBookmark )
 {GUCEF_TRACE;
 
     /*
@@ -675,11 +698,139 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgI
         by setting the .offset field in the topic_partition_t element to either an absolute offset (>=0) or one of the logical offsets (BEGINNING, END, STORED, TAIL(..)).
     */
 
-    // @TODO: We could encode all partition IDs and their offsets into the bookmark variant as a unified bookmark concept
+    std::string errStr;
+    RdKafka::ErrorCode response;
 
-    //CORE::Int32 partitionId = msgIndexBookmark.AsInt32( RdKafka::Topic::PARTITION_UA, false );
+    // First we need to set up RdKafka with the relevant internal stuctures for our topics
+    std::vector< std::string > topics;
+    topics.push_back( m_config.topicName );
+    response = m_kafkaConsumer->subscribe( topics );
+    if ( RdKafka::ERR_NO_ERROR != response ) 
+    {
+		std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to start Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
 
-    return false;
+    std::vector< RdKafka::TopicPartition* > partitions;
+        
+    // Now obtain the relevant partitions for our topic
+    response = m_kafkaConsumer->position( partitions );
+    if ( RdKafka::ERR_NO_ERROR != response )
+    {
+		m_kafkaConsumer->unsubscribe();
+        std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to obtain current partitions for Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+
+    // If a BLOB is passed we assume we are trying to set exact dictated offsets per partition
+    // Using the same concept as in GetCurrentBookmark()
+    if ( indexBookmark.IsBlob() )
+    {
+        TPartitionOffsetMap offsets;
+        if ( !VariantToPartitionOffsets( indexBookmark, offsets ) )
+        {
+            m_kafkaConsumer->unsubscribe();
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to convert bookmark variant blob into partition offsets for Kafka Consumer for topic: " + m_config.topicName );
+            return false;
+        }
+
+        // Now locally modify the offsets for the partitions that are still valid
+        std::vector< RdKafka::TopicPartition* >::iterator i = partitions.begin();
+        while ( i != partitions.end() )
+        {
+            TPartitionOffsetMap::iterator o = offsets.find( (*i)->partition() );
+            if ( o != offsets.end() )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Found offset stored in the blob bookmark for partition " + 
+                    CORE::ToString( (*i)->partition() ) + ". Existing offset " + CORE::ToString( (*i)->offset() ) + " will be replaced by " + CORE::ToString( (*o).second.partitionOffset ) + " for topic: " + m_config.topicName );
+
+                // The offset given could be a numerical alias, we account for that here as well
+                // if its truly a numerical offset this will just be pass through
+                CORE::Int64 newOffset = ConvertKafkaConsumerStartOffset( (*o).second.partitionOffset ,
+                                                                         (*i)->partition()           ,
+                                                                         10000                       );
+                
+                if ( RdKafka::Topic::OFFSET_INVALID == newOffset )
+                {
+                    
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to convert numerical offset description for Kafka Consumer for topic \"" + 
+                        m_config.topicName + " to a valid offset, offset alias=" + CORE::ToString( (*o).second.partitionOffset ) + " partition=" + CORE::ToString( (*i)->partition() ) );
+                    ++m_kafkaErrorReplies;
+                    
+                    // We don't allow for partial success as that would leave us in an unpredictable state
+                    m_kafkaConsumer->unsubscribe();
+                    return false;                
+                } 
+
+                (*i)->set_offset( (*o).second.partitionOffset );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: No offset was stored in the blob bookmark for partition " + 
+                    CORE::ToString( (*i)->partition() ) + ". Will use existing offset " + CORE::ToString( (*i)->offset() ) + " instead for topic: " + m_config.topicName );
+            }
+
+            ++i;
+        }
+    }
+    else
+    {
+        CORE::CString startOffsetDescription = indexBookmark.AsString();
+
+        // Now locally modify the offsets for the partitions based on the alias given
+        std::vector< RdKafka::TopicPartition* >::iterator i = partitions.begin();
+        while ( i != partitions.end() )
+        {
+            CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( startOffsetDescription ,
+                                                                       (*i)->partition()      ,
+                                                                       10000                  );
+            
+            
+            if ( RdKafka::Topic::OFFSET_INVALID == startOffset )
+            {                
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to convert start offset description for Kafka Consumer for topic \"" + 
+                    m_config.topicName + " to a valid offset, startOffsetDescription=" + startOffsetDescription + " partition=" + CORE::ToString( (*i)->partition() ) );
+                ++m_kafkaErrorReplies;
+
+                // We don't allow for partial success as that would leave us in an unpredictable state
+                m_kafkaConsumer->unsubscribe();
+                return false;                
+            }            
+            (*i)->set_offset( startOffset );
+
+            ++i;
+        }
+    }
+
+    // Now persist our now locally modified offsets into RdKafka
+    response = m_kafkaConsumer->assign( partitions );
+    if ( RdKafka::ERR_NO_ERROR != response )
+    {
+		m_kafkaConsumer->unsubscribe();
+        std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to assign() new offsets to current partitions for Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+
+    // And finally persist our changes server-side
+    if ( !CommitConsumerOffsets() )
+    {
+        m_kafkaConsumer->unsubscribe();
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to commit new parition offsets for consumer to Kafka for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;        
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -688,7 +839,17 @@ bool
 CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_lock );
+    std::vector< RdKafka::TopicPartition* > partitions;
+        
+    RdKafka::ErrorCode response = m_kafkaConsumer->position( partitions );
+    if ( RdKafka::ERR_NO_ERROR != response )
+    {
+		std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to obtain current partitions for Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
 
   //  RdKafka::Metadata* topicMetaData = GUCEF_NULL;
   //  RdKafka::ErrorCode response = m_kafkaConsumer->metadata( false, m_kafkaConsumerTopic, &topicMetaData, 10000 );
@@ -705,6 +866,115 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& 
     // @TODO
     //RdKafka::ErrorCode response = m_kafkaConsumer->offsetsForTimes( 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) 
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( !IsConnected() )
+        if ( !SetupBasedOnConfig() )
+            return false;
+
+    switch ( bookmark.GetBookmarkType() )
+    {
+        case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID:
+        {
+            // This is not supported in Kafka
+            // You can seek a stream based on index (offset) or with some effort get said index based on a timestamp
+            // duplicate IDs (keys) are to be expected as they are used for partition routing/sharding purposes
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Cannot subscribe with a Msg ID based bookmark when using Kafka. Bookmark=" + bookmark.GetBookmarkData().AsString() );
+            break;
+        }
+        case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME:
+        {
+            CORE::CDateTime msgDt;
+            if ( bookmark.GetBookmarkData().IsInteger() )
+            {
+                CORE::UInt64 dtInt = bookmark.GetBookmarkData().AsUInt64( GUCEF_MT_UINT64MAX );
+                if ( GUCEF_MT_UINT64MAX != dtInt  )
+                {
+                    msgDt.FromUnixEpochBasedTicksInMillisecs( dtInt );
+                    return SubscribeStartingAtMsgDateTime( msgDt );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to use Unix epoch based ticks in millisecs based timestamp. Bookmark=" + bookmark.GetBookmarkData().AsString() );
+                }
+            }
+            else
+            {
+                if ( msgDt.FromIso8601DateTimeString( bookmark.GetBookmarkData().AsString() ) )
+                {
+                    return SubscribeStartingAtMsgDateTime( msgDt );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to parse ISO 8601 string based timestamp. Bookmark=" + bookmark.GetBookmarkData().AsString() );
+                }
+            }
+            break;
+        }
+        case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX:
+        case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX:
+        {
+            return SubscribeStartingAtTopicIndex( bookmark.GetBookmarkData() );
+        }
+        default:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Cannot subscribe with the bookmark type given when using Kafka. Type=" + CORE::ToString( (CORE::Int32) bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
+            break;
+        }
+    }
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+COMCORE::CPubSubBookmark 
+CKafkaPubSubClientTopic::GetCurrentBookmark( void )
+{GUCEF_TRACE;
+
+    try
+    {
+        MT::CScopeMutex lock( m_lock );
+    
+        // In Kafka there is no singular offset or such per topic. Such bookmarks are per partition instead for which a topic represents 1-N of them
+        // This poses a problem when trying to represent this as a unified bookmark concept
+        // To remedy we encode/serialize all partition IDs and their offsets into a blob bookmark
+        // This will achieve the aim, to the extent possible with Kafka, of being able to retain this information client-side as a unified concept
+
+        if ( !m_consumerOffsets.empty() )
+        {    
+            CORE::CDynamicBuffer consumerOffsetsBuffer( m_consumerOffsets.size() * ( sizeof(CORE::UInt32) + sizeof(CORE::Int64) ) );
+    
+            CORE::UInt32 byteOffset = 0;
+            TInt32ToInt64Map::iterator i = m_consumerOffsets.begin();
+            while ( i != m_consumerOffsets.end() )
+            {
+                *consumerOffsetsBuffer.AsTypePtr< CORE::UInt32 >( byteOffset ) = (*i).first;
+                byteOffset += sizeof(CORE::UInt32);
+                *consumerOffsetsBuffer.AsTypePtr< CORE::Int64 >( byteOffset ) = (*i).second;
+                byteOffset += sizeof(CORE::Int64);
+
+                consumerOffsetsBuffer.SetDataSize( byteOffset );        
+                ++i;
+            }
+
+            return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, CORE::CVariant( consumerOffsetsBuffer ) );
+        }
+    }
+    catch ( CORE::CDynamicBuffer::EIllegalCast& )
+    {        
+    }
+    
+    // Cannot provide a bookmark at this time
+    return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1096,13 +1366,16 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     COMCORE::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
     msgWrap.Clear();    
 
-    if ( GUCEF_NULL != message.key() )
+    if ( message.key_len() > 0 )
     {
-        msgWrap.GetMsgId().LinkTo( message.key()->c_str(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_UTF8_STRING );
-    }
-    else
-    {
-        msgWrap.GetMsgId().LinkTo( message.key_pointer(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_BINARY_BLOB );
+        if ( GUCEF_NULL != message.key() )
+        {
+            msgWrap.GetMsgId().LinkTo( message.key()->c_str(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_UTF8_STRING );
+        }
+        else
+        {
+            msgWrap.GetMsgId().LinkTo( message.key_pointer(), (CORE::UInt32) message.key_len(), GUCEF_DATATYPE_BINARY_BLOB );
+        }
     }
 
     TPartitionOffset* partitionOffset = msgWrap.GetMsgIndex().AsBsobPtr< TPartitionOffset >();   

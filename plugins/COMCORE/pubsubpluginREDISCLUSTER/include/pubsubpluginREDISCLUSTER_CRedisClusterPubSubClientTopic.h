@@ -97,12 +97,10 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual COMCORE::CPubSubBookmark GetCurrentBookmark( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

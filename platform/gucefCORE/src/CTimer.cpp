@@ -152,6 +152,9 @@ CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
       m_pulseGenerator( pulseGenerator )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_pulseGenerator )
+        m_pulseGenerator = &CCoreGlobal::Instance()->GetPulseGenerator();
+
     RegisterEvents();
 
     if ( 0 == m_updateDeltaInMilliSecs )
