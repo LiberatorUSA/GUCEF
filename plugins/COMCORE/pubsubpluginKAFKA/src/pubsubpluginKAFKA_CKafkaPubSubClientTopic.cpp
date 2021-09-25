@@ -602,12 +602,25 @@ CKafkaPubSubClientTopic::Disconnect( void )
 
     if ( GUCEF_NULL != m_kafkaProducer )
     {
-        RdKafka::ErrorCode response = m_kafkaProducer->flush( 10000 );
-        if ( RdKafka::ERR_NO_ERROR != response ) 
+        RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
+        int waited = 0;
+        int queuedMsgs = m_kafkaProducer->outq_len();
+        while ( queuedMsgs > 0 && waited <= 30000 ) 
         {
-		    std::string errStr = RdKafka::err2str( response );
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Disconnect: Failed to flush Kafka Producer for topic \"" + 
-                m_config.topicName + ", error message: " + errStr );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Disconnect: Waiting on Kafka Producer for topic: \"" + 
+                m_config.topicName + "\" to finish " + CORE::Int32ToString( queuedMsgs ) + " queued messages" );
+            
+            response = m_kafkaProducer->flush( 1000 );
+            if ( RdKafka::ERR_NO_ERROR == response )
+                break;
+
+            waited += 1000;
+            queuedMsgs = m_kafkaProducer->outq_len();
+        }
+        if ( waited > 30000 || RdKafka::ERR_NO_ERROR != response )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Disconnect: Timed out waiting on Kafka Producer for topic: \"" + 
+                m_config.topicName + "\" to finish " + CORE::Int32ToString( queuedMsgs ) + " queued messages. Shutdown will continue regardless. Data loss will occur!" );
             ++m_kafkaErrorReplies;
             totalSuccess = false;
         }
@@ -708,7 +721,7 @@ CKafkaPubSubClientTopic::SubscribeStartingAtTopicIndex( const CORE::CVariant& in
     if ( RdKafka::ERR_NO_ERROR != response ) 
     {
 		std::string errStr = RdKafka::err2str( response );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to start Kafka Consumer for topic \"" + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtTopicIndex: Failed to start Kafka Consumer for topic \"" + 
             m_config.topicName + ", error message: " + errStr );
         ++m_kafkaErrorReplies;
         return false;
@@ -839,32 +852,115 @@ bool
 CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
 
-    std::vector< RdKafka::TopicPartition* > partitions;
-        
-    RdKafka::ErrorCode response = m_kafkaConsumer->position( partitions );
-    if ( RdKafka::ERR_NO_ERROR != response )
+    std::string errStr;
+    RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
+    CORE::UInt64 ticksSinceEpoch = msgDtBookmark.ToUnixEpochBasedTicksInMillisecs();
+
+    // First we need to set up RdKafka with the relevant internal stuctures for our topics
+    std::vector< std::string > topics;
+    topics.push_back( m_config.topicName );
+    response = m_kafkaConsumer->subscribe( topics );
+    if ( RdKafka::ERR_NO_ERROR != response ) 
     {
 		std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to start Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+
+    std::vector< RdKafka::TopicPartition* > partitions;
+        
+    // Now obtain the relevant partitions for our topic
+    response = m_kafkaConsumer->position( partitions );
+    if ( RdKafka::ERR_NO_ERROR != response )
+    {
+		m_kafkaConsumer->unsubscribe();
+        std::string errStr = RdKafka::err2str( response );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to obtain current partitions for Kafka Consumer for topic \"" + 
             m_config.topicName + ", error message: " + errStr );
         ++m_kafkaErrorReplies;
         return false;
     }
 
-  //  RdKafka::Metadata* topicMetaData = GUCEF_NULL;
-  //  RdKafka::ErrorCode response = m_kafkaConsumer->metadata( false, m_kafkaConsumerTopic, &topicMetaData, 10000 );
-  //  if ( RdKafka::ERR_NO_ERROR != response ) 
-  //  {
-		//std::string errStr = RdKafka::err2str( response );
-  //      GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to obtain metadata() for topic \"" + 
-  //          m_config.topicName + ", error message: " + errStr );
-  //      ++m_kafkaErrorReplies;
-  //      delete topicMetaData;
-  //      return false;
-  //  }
+    // Now locally modify the offsets for the partitions based on the timestamp given
+    std::vector< RdKafka::TopicPartition* >::iterator i = partitions.begin();
+    while ( i != partitions.end() )
+    {
+        // IMPORTANT: The API for getting time based offsets is a bit wonkey in that you need to abuse the 
+        // offset field on input as a ticks since Epoch field. Due to the calling function context the RdKafka library will
+        // know you actually filled it with time ticks and not with an absolute offset nr
+        (*i)->set_offset( ticksSinceEpoch );
+        ++i;
+    }
 
-    // @TODO
-    //RdKafka::ErrorCode response = m_kafkaConsumer->offsetsForTimes( 
+    response = m_kafkaConsumer->offsetsForTimes( partitions, 10000 );
+    if ( RdKafka::ERR_NO_ERROR != response ) 
+    {
+		m_kafkaConsumer->unsubscribe();
+        std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to obtain offsetsForTimes() for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+
+    // Now persist our now locally modified offsets into RdKafka
+    response = m_kafkaConsumer->assign( partitions );
+    if ( RdKafka::ERR_NO_ERROR != response )
+    {
+		m_kafkaConsumer->unsubscribe();
+        std::string errStr = RdKafka::err2str( response );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to assign() new offsets to current partitions for Kafka Consumer for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;
+    }
+
+    // And finally persist our changes server-side
+    if ( !CommitConsumerOffsets() )
+    {
+        m_kafkaConsumer->unsubscribe();
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to commit new parition offsets for consumer to Kafka for topic \"" + 
+            m_config.topicName + ", error message: " + errStr );
+        ++m_kafkaErrorReplies;
+        return false;        
+    }
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CVariant& msgDtBookmark )
+{GUCEF_TRACE;
+
+    CORE::CDateTime msgDt;
+    if ( msgDtBookmark.IsInteger() )
+    {
+        CORE::UInt64 dtInt = msgDtBookmark.AsUInt64( GUCEF_MT_UINT64MAX );
+        if ( GUCEF_MT_UINT64MAX != dtInt  )
+        {
+            msgDt.FromUnixEpochBasedTicksInMillisecs( dtInt );
+            return SubscribeStartingAtMsgDateTime( msgDt );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to use Unix epoch based ticks in millisecs based timestamp. Bookmark=" + msgDtBookmark.AsString() );
+        }
+    }
+    else
+    {
+        if ( msgDt.FromIso8601DateTimeString( msgDtBookmark.AsString() ) )
+        {
+            return SubscribeStartingAtMsgDateTime( msgDt );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to parse ISO 8601 string based timestamp. Bookmark=" + msgDtBookmark.AsString() );            
+        }
+    }
     return false;
 }
 
@@ -892,32 +988,7 @@ CKafkaPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBook
         }
         case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME:
         {
-            CORE::CDateTime msgDt;
-            if ( bookmark.GetBookmarkData().IsInteger() )
-            {
-                CORE::UInt64 dtInt = bookmark.GetBookmarkData().AsUInt64( GUCEF_MT_UINT64MAX );
-                if ( GUCEF_MT_UINT64MAX != dtInt  )
-                {
-                    msgDt.FromUnixEpochBasedTicksInMillisecs( dtInt );
-                    return SubscribeStartingAtMsgDateTime( msgDt );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to use Unix epoch based ticks in millisecs based timestamp. Bookmark=" + bookmark.GetBookmarkData().AsString() );
-                }
-            }
-            else
-            {
-                if ( msgDt.FromIso8601DateTimeString( bookmark.GetBookmarkData().AsString() ) )
-                {
-                    return SubscribeStartingAtMsgDateTime( msgDt );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:SubscribeStartingAtBookmark: Failed to parse ISO 8601 string based timestamp. Bookmark=" + bookmark.GetBookmarkData().AsString() );
-                }
-            }
-            break;
+            return SubscribeStartingAtMsgDateTime( bookmark.GetBookmarkData() );
         }
         case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX:
         case COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX:
@@ -1695,23 +1766,26 @@ void
 CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
 {GUCEF_TRACE;
 
+    static const std::string NULLstr = "NULL";
+
     if ( message.err() ) 
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: " + message.errstr() + 
-                                                ", on topic: " + message.topic_name() + 
-                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: \"" + message.errstr() + 
+                                                "\", on topic: \"" + message.topic_name() + 
+                                                "\", key: " + ( message.key() ? (*message.key()) : NULLstr ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() +
-                                                ", msg has " + MsgStatusToString( message.status() ) );
+                                                ", msg has status: " + MsgStatusToString( message.status() ) );
     }
     else 
     {
         ++m_kafkaMsgsTransmitted;
         NotifyObservers( MsgsPublishedEvent );
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: " + MsgStatusToString( message.status() ) + ": topic: " + message.topic_name() + 
-                                                ", partition: " + CORE::ToString( message.partition() ).STL_String() +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: " + MsgStatusToString( message.status() ) + 
+                                                ": topic: \"" + message.topic_name() + 
+                                                "\", partition: " + CORE::ToString( message.partition() ).STL_String() +
                                                 ", offset: " + CORE::ToString( message.offset() ).STL_String() +
-                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
+                                                ", key: " + ( message.key() ? (*message.key()) : NULLstr ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() );
     }
 }

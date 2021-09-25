@@ -99,6 +99,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark );
 
+    virtual bool SubscribeStartingAtMsgDateTime( const CORE::CVariant& msgDtBookmark );
+
     virtual bool SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual COMCORE::CPubSubBookmark GetCurrentBookmark( void ) GUCEF_VIRTUAL_OVERRIDE;
