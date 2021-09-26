@@ -522,6 +522,26 @@ CMsmqPubSubClientTopic::GetCurrentBookmark( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    // Not supported
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    // Not supported
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CMsmqPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;

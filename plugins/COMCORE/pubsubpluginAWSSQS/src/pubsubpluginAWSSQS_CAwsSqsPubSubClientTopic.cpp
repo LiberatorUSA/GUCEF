@@ -246,6 +246,26 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubM
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    // Does not apply to SQS
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    // Does not apply to SQS
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 template< class T >
 bool
 CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubMsg* msg, CORE::UInt32& msgByteSize )

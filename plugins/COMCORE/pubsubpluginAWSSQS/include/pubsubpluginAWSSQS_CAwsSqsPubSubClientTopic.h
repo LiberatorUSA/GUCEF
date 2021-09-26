@@ -96,6 +96,9 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
     virtual bool Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );

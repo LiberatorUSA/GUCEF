@@ -671,6 +671,26 @@ CRedisClusterPubSubClientTopic::GetCurrentBookmark( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    // Does not apply to Redis wrt what this plugin supports
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    // Does not apply to Redis wrt what this plugin supports
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CRedisClusterPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;

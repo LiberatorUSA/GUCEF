@@ -90,6 +90,24 @@ CPubSubClientTopic::~CPubSubClientTopic()
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientTopic::AcknowledgeReceipt( const CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientTopic::AcknowledgeReceipt( const CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload )
 {GUCEF_TRACE;
 

@@ -140,6 +140,8 @@ CKafkaPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featur
     features.supportsSubscriberMsgReceivedAck = true;     // Normal Kafka behaviour
     features.supportsAutoMsgReceivedAck = true;           // This is configurable on the Kafka client library
     features.supportsAbsentMsgReceivedAck = true;         // supported if you wish to 'peek' only without removing messages but can become problematic in various scenarios
+    features.supportsAckUsingLastMsgInBatch = true;       // This is supported via how you trigger offset commits and is standard practice 
+    features.supportsAckUsingBookmark = true;             // This is supported via how you trigger offset commits
     features.supportsBookmarkingConcept = true;           // Bookmarks are a native Kafka concept
     features.supportsSubscribingUsingBookmark = true;     // We provide limited support for client-side provided bookmarks
     features.supportsServerSideBookmarkPersistance = true;// The natural way to interact with Kafka is to let it manage bookmarks server-side

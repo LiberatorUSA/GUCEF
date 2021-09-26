@@ -170,6 +170,8 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsSubscriberMsgReceivedAck = false;  // since offsets are managed client-side there really is no such concept but could be implemented as a plugin specific add-on - todo?
     features.supportsAutoMsgReceivedAck = false;        // not supported right now
     features.supportsAbsentMsgReceivedAck = true;       // no such inherent concept
+    features.supportsAckUsingLastMsgInBatch = false;    // not supported right now
+    features.supportsAckUsingBookmark = false;          // not supported right now
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
     features.supportsServerSideBookmarkPersistance = false; // no such support
     features.supportsSubscribingUsingBookmark = true;   // supported via giving Redis the starting offset

@@ -109,6 +109,9 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
@@ -175,7 +178,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     typedef std::vector< TPartitionOffset > TPartitionOffsetVector;
     typedef std::map< CORE::Int32, TPartitionOffset > TPartitionOffsetMap;
 
-    bool VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets );
+    static bool VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets );
+    static bool VariantToPartitionOffset( const CORE::CVariant& partitionOffsetBlob, TPartitionOffset& offset );
 
     void RegisterEventHandlers( void );
 
@@ -186,6 +190,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     bool SetupBasedOnConfig( void );
 
     bool CommitConsumerOffsets( void );
+
+    bool AcknowledgeReceipt( const TPartitionOffset& offset );
 
     CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
                                                  CORE::Int32 partitionId                     ,
@@ -262,6 +268,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     TInt32ToInt64Map m_consumerOffsets;
     CORE::UInt64 m_tickCountAtLastOffsetCommit;
     bool m_msgsReceivedSinceLastOffsetCommit;
+    bool m_consumerOffsetWaitsForExplicitMsgAck;
     TopicMetrics m_metrics;
     MT::CMutex m_lock;
 };

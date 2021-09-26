@@ -61,6 +61,8 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsSubscriberMsgReceivedAck( false )
     , supportsAutoMsgReceivedAck( false )
     , supportsAbsentMsgReceivedAck( false )
+    , supportsAckUsingLastMsgInBatch( false )
+    , supportsAckUsingBookmark( false )
     , supportsBookmarkingConcept( false )
     , supportsSubscribingUsingBookmark( false )
     , supportsServerSideBookmarkPersistance( false )
@@ -100,6 +102,8 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsSubscriberMsgReceivedAck", supportsSubscriberMsgReceivedAck );
     tree.SetAttribute( "supportsAutoMsgReceivedAck", supportsAutoMsgReceivedAck );
     tree.SetAttribute( "supportsAbsentMsgReceivedAck", supportsAbsentMsgReceivedAck );
+    tree.SetAttribute( "supportsAckUsingLastMsgInBatch", supportsAckUsingLastMsgInBatch );
+    tree.SetAttribute( "supportsAckUsingBookmark", supportsAckUsingBookmark );
     tree.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
     tree.SetAttribute( "supportsSubscribingUsingBookmark", supportsSubscribingUsingBookmark );
     tree.SetAttribute( "supportsServerSideBookmarkPersistance", supportsServerSideBookmarkPersistance );
@@ -118,21 +122,23 @@ bool
 CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    supportsPublishing = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPublishing" ) ), supportsPublishing );
-    supportsSubscribing = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ) ), supportsSubscribing );
-    supportsAutoReconnect = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ) ), supportsAutoReconnect );
-    supportsBinaryPayloads = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ) ), supportsBinaryPayloads );
-    supportsMultiHostSharding = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ) ), supportsMultiHostSharding );
-    supportsPerMsgIds = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ) ), supportsPerMsgIds );
+    supportsPublishing = cfg.GetAttributeValueOrChildValueByName( "supportsPublishing" ).AsBool( supportsPublishing, true );
+    supportsSubscribing = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ).AsBool( supportsSubscribing, true );
+    supportsAutoReconnect = cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ).AsBool( supportsAutoReconnect, true );
+    supportsBinaryPayloads = cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ).AsBool( supportsBinaryPayloads, true );
+    supportsMultiHostSharding = cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ).AsBool( supportsMultiHostSharding, true );
+    supportsPerMsgIds = cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ).AsBool( supportsPerMsgIds, true );
     supportsMsgIndex = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndex" ).AsBool( supportsMsgIndex, true );
-    supportsPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ) ), supportsPrimaryPayloadPerMsg );    
-    supportsAbsentPrimaryPayloadPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAbsentPrimaryPayloadPerMsg" ) ), supportsAbsentPrimaryPayloadPerMsg );    
-    supportsKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ) ), supportsKeyValueSetPerMsg );
-    supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
-    supportsMetaDataKeyValueSetPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetaDataKeyValueSetPerMsg" ) ), supportsMetaDataKeyValueSetPerMsg );
+    supportsPrimaryPayloadPerMsg = cfg.GetAttributeValueOrChildValueByName( "supportsPrimaryPayloadPerMsg" ).AsBool( supportsPrimaryPayloadPerMsg, true );    
+    supportsAbsentPrimaryPayloadPerMsg = cfg.GetAttributeValueOrChildValueByName( "supportsAbsentPrimaryPayloadPerMsg" ).AsBool( supportsAbsentPrimaryPayloadPerMsg, true );    
+    supportsKeyValueSetPerMsg = cfg.GetAttributeValueOrChildValueByName( "supportsKeyValueSetPerMsg" ).AsBool( supportsKeyValueSetPerMsg, true );
+    supportsDuplicateKeysPerMsg = cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ).AsBool( supportsDuplicateKeysPerMsg, true );
+    supportsMetaDataKeyValueSetPerMsg = cfg.GetAttributeValueOrChildValueByName( "supportsMetaDataKeyValueSetPerMsg" ).AsBool( supportsMetaDataKeyValueSetPerMsg, true );
     supportsSubscriberMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriberMsgReceivedAck" ).AsBool( supportsSubscriberMsgReceivedAck, true );
     supportsAutoMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAutoMsgReceivedAck" ).AsBool( supportsAutoMsgReceivedAck, true );
     supportsAbsentMsgReceivedAck = cfg.GetAttributeValueOrChildValueByName( "supportsAbsentMsgReceivedAck" ).AsBool( supportsAbsentMsgReceivedAck, true );
+    supportsAckUsingLastMsgInBatch = cfg.GetAttributeValueOrChildValueByName( "supportsAckUsingLastMsgInBatch" ).AsBool( supportsAckUsingLastMsgInBatch, true );
+    supportsAckUsingBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsAckUsingBookmark" ).AsBool( supportsAckUsingBookmark, true );
     supportsBookmarkingConcept = cfg.GetAttributeValueOrChildValueByName( "supportsBookmarkingConcept" ).AsBool( supportsBookmarkingConcept, true );
     supportsSubscribingUsingBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribingUsingBookmark" ).AsBool( supportsSubscribingUsingBookmark, true );
     supportsServerSideBookmarkPersistance = cfg.GetAttributeValueOrChildValueByName( "supportsServerSideBookmarkPersistance" ).AsBool( supportsServerSideBookmarkPersistance, true );

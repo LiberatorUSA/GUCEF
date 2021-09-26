@@ -142,6 +142,8 @@ CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featu
     features.supportsSubscriberMsgReceivedAck = false;   // Since SQS is a queue where you consume the messages: this does not apply
     features.supportsAutoMsgReceivedAck = false;         // Since SQS is a queue where you consume the messages: grabbing the message is in a way the ack but this does not really apply
     features.supportsAbsentMsgReceivedAck = true;        // Since SQS is a queue where you consume the messages: this does not apply and hence can be absent
+    features.supportsAckUsingLastMsgInBatch = false;     // Since SQS is a queue where you consume the messages: this does not apply
+    features.supportsAckUsingBookmark = false;           // Since SQS is a queue where you consume the messages: this does not apply
     features.supportsBookmarkingConcept = true;          // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
     features.supportsSubscribingUsingBookmark = false;   // Since SQS is a queue where you consume the messages: This is not supported
     features.supportsServerSideBookmarkPersistance = true; // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue

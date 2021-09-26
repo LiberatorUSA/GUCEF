@@ -145,7 +145,22 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Publish( const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
     virtual bool Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs );    
 
+    /**
+     *  Publish the given message to the pub-sub backend system using that system's specifics
+     *  If the backend does not support publishing messages this operation will always fail
+     *
+     *  @return success flag with true on success per backend criterea or false on failure
+     */
     virtual bool Publish( const CIPubSubMsg& msg ) = 0;
+
+    /**
+     *  Ack that the given message was successfully received and/or handled by the application
+     *  If the backend does not support ack'ing messages this operation will always fail
+     *
+     *  @return success flag with true on success per backend criterea or false on failure     
+     */    
+    virtual bool AcknowledgeReceipt( const CIPubSubMsg& msg );
+    virtual bool AcknowledgeReceipt( const CPubSubBookmark& bookmark );
 
 };
 

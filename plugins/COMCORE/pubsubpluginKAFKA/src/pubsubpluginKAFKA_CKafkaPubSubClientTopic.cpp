@@ -92,6 +92,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_consumerOffsets()
     , m_tickCountAtLastOffsetCommit( 0 )
     , m_msgsReceivedSinceLastOffsetCommit( false )
+    , m_consumerOffsetWaitsForExplicitMsgAck( false )
     , m_metrics()
     , m_lock()
 {GUCEF_TRACE;
@@ -255,7 +256,8 @@ CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
                                            RdKafka::Producer::RK_MSG_COPY,                             // <- Copy payload, tradeoff against blocking on kafka produce
                                            const_cast< void* >( msg.GetPrimaryPayload().AsVoidPtr() ), // <- MSG_COPY flag will cause buffer to be copied, const cast to avoid copying again due to bad constness on library API
                                            (size_t) msg.GetPrimaryPayload().ByteSize(), 
-                                           NULL, 0,
+                                           const_cast< void* >( msg.GetMsgId().AsVoidPtr() ), 
+                                           (size_t) msg.GetMsgId().ByteSize(),
                                            headers,
                                            NULL );
     
@@ -515,6 +517,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             ++m_kafkaErrorReplies;
             return false;
         }
+        m_consumerOffsetWaitsForExplicitMsgAck = !autoCommit;
 
         // Check for the mandatory group ID property.
         // This may have already been set by the generic custom property setting that occured above
@@ -661,6 +664,34 @@ CKafkaPubSubClientTopic::Subscribe( void )
         return false;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::VariantToPartitionOffset( const CORE::CVariant& partitionOffsetBlob, TPartitionOffset& offset )
+{GUCEF_TRACE;
+
+    try
+    {
+        CORE::CDynamicBuffer blob;
+        blob.LinkTo( partitionOffsetBlob );
+        CORE::UInt32 byteOffset = 0;
+
+        CORE::UInt32 partitionId = blob.AsConstType< CORE::UInt32 >( byteOffset );
+        byteOffset += sizeof( CORE::UInt32 );
+        offset.partitionId = partitionId;
+            
+        offset.partitionOffset = blob.AsConstType< CORE::Int64 >( byteOffset );
+        byteOffset += sizeof( CORE::Int64 );
+
+        return true;
+    }
+    catch ( CORE::CDynamicBuffer::EIllegalCast& )
+    {
+
+    }    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1050,6 +1081,71 @@ CKafkaPubSubClientTopic::GetCurrentBookmark( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CKafkaPubSubClientTopic::AcknowledgeReceipt( const TPartitionOffset& offset )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    TInt32ToInt64Map::iterator p = m_consumerOffsets.find( offset.partitionId );
+    if ( p != m_consumerOffsets.end() )
+    {
+        CORE::Int64& currentOffset = (*p).second;
+        if ( offset.partitionOffset > currentOffset )
+        {
+            currentOffset = offset.partitionOffset;
+            m_msgsReceivedSinceLastOffsetCommit = true;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    TPartitionOffset offset;
+    if ( VariantToPartitionOffset( msg.GetMsgIndex(), offset ) )
+    {
+        return AcknowledgeReceipt( offset );
+    }
+    
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:AcknowledgeReceipt: Failed to obtain partition offset from Msg Index field" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    if ( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX == bookmark.GetBookmarkType() )
+    {    
+        TPartitionOffset offset;
+        if ( VariantToPartitionOffset( bookmark.GetBookmarkData(), offset ) )
+        {
+            return AcknowledgeReceipt( offset );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:AcknowledgeReceipt: Failed to obtain partition offset from bookmark data" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:AcknowledgeReceipt: Unsupported bookmark type, expected bookmark type is MSG_INDEX" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CKafkaPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
@@ -1067,6 +1163,36 @@ CKafkaPubSubClientTopic::InitializeConnectivity( void )
 
     // We dont have any per-topic connectivity setup work that is 
     // not tied directly to publishing/subscribing. RdKafka takes care of all that.
+    
+    // We can take the oppertunity to perform a settings sanity check though...
+    
+    MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:InitializeConnectivity: Internal error: Parent client object is missing" );
+        return false;
+    }
+   
+    const CKafkaPubSubClientConfig& clientConfig = m_client->GetConfig();
+
+    if ( clientConfig.remoteAddresses.empty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:InitializeConnectivity: No Kafka broker addressess have been provided" );        
+        return false;
+    }
+
+    if ( m_config.topicName.IsNULLOrEmpty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:InitializeConnectivity: No Kafka topic name" );        
+        return false;
+    }
+
+    if ( !m_config.needPublishSupport && !m_config.needSubscribeSupport )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:InitializeConnectivity: topic config claims no need for publishing or subscribing and neither will be available. Dummy mode only" );        
+    }
+
     return true;
 }
 
@@ -1534,9 +1660,6 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         }
         case RdKafka::ERR_NO_ERROR:
         {
-            // Since something was recieved we want to set the flag to ensure we start commiting offsets again
-            m_msgsReceivedSinceLastOffsetCommit = true;
-
             #ifdef GUCEF_DEBUG_MODE
             if ( GUCEF_NULL != message.key() )
             {
@@ -1574,7 +1697,14 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
 
                                     // A filtered message also counts as successfully handled
                                     // As such we need to update the offset so that its taken into account for a later commit of said offsets
-                                    m_consumerOffsets[ message.partition() ] = message.offset();
+                                    CORE::Int64& offset = m_consumerOffsets[ message.partition() ];
+                                    if ( message.offset() > offset )
+                                    {
+                                        offset = message.offset(); 
+
+                                        // Even when using an explicit ack this counts as the ack since the msg will never leave the backend as it was filtered
+                                        m_msgsReceivedSinceLastOffsetCommit = true; 
+                                    }
 
                                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:consume_cb: Filtered message on topic \"" +          
                                             m_config.topicName + " with offset " + CORE::Int64ToString( message.offset() ) );    
@@ -1590,7 +1720,17 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
             }
 
             if ( !isFiltered )
-            {
+            {                
+                if ( !m_consumerOffsetWaitsForExplicitMsgAck )
+                {
+                    // Right away update the local offsets, don't wait for AcknowledgeReceipt()
+                    CORE::Int64& offset = m_consumerOffsets[ message.partition() ];
+                    if ( message.offset() > offset )
+                    {
+                        offset = message.offset(); 
+                        m_msgsReceivedSinceLastOffsetCommit = true;  // Since something was recieved we want to set the flag to ensure we start commiting offsets again
+                    }
+                }
                 NotifyOfReceivedMsg( message );
             }
             break;
