@@ -331,6 +331,24 @@ CPubSubClientChannel::~CPubSubClientChannel()
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientChannel::TopicLink::TopicLink( void )
+    : topic( GUCEF_NULL )
+    , publishActionIds()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientChannel::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
+    : topic( t )
+    , publishActionIds()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubClientChannel::RegisterEventHandlers( void )
 {GUCEF_TRACE;
@@ -597,21 +615,24 @@ CPubSubClientChannel::ConnectPubSubClient( void )
         }
 
         RegisterTopicEventHandlers( *topic );
-        m_topics.push_back( topic );
+        m_topics.push_back( TopicLink( topic ) );
         ++i;
     }
 
     TopicVector::iterator t = m_topics.begin();
     while ( t != m_topics.end() )
     {
-        if ( (*t)->InitializeConnectivity() )
+        TopicLink& topicLink = (*t);
+        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+
+        if ( topic->InitializeConnectivity() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + (*t)->GetTopicName() + "\". Proceeding" );
+                "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + topic->GetTopicName() + "\". Proceeding" );
 
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
-            COMCORE::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( (*t)->GetTopicName() );
+            COMCORE::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( topic->GetTopicName() );
             if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
             {            
                 // The method of subscription depends on the supported feature set
@@ -621,7 +642,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
 
-                    subscribeSuccess = (*t)->Subscribe();
+                    subscribeSuccess = topic->Subscribe();
                 }
                 else
                 if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
@@ -629,7 +650,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
 
-                    subscribeSuccess = (*t)->Subscribe();
+                    subscribeSuccess = topic->Subscribe();
                 }
                 else
                 {
@@ -637,14 +658,14 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     // we will need to obtain said bookmark
                     
                     COMCORE::CPubSubBookmark bookmark;
-                    if ( !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, (*t)->GetTopicName(), bookmark ) )
+                    if ( !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic->GetTopicName(), bookmark ) )
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
                         
                         if ( m_channelSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
                         {
-                            subscribeSuccess = (*t)->Subscribe();
+                            subscribeSuccess = topic->Subscribe();
                             if ( !subscribeSuccess )
                             {
                                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
@@ -660,14 +681,14 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
 
-                        subscribeSuccess = (*t)->SubscribeStartingAtBookmark( bookmark );
+                        subscribeSuccess = topic->SubscribeStartingAtBookmark( bookmark );
                     }
                 }
 
                 if ( !subscribeSuccess )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Failed to subscribe to topic: " + (*t)->GetTopicName() );
+                        "):ConnectPubSubClient: Failed to subscribe to topic: " + topic->GetTopicName() );
                     return false;
                 }
             }
@@ -786,13 +807,15 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
     TopicVector::iterator i = m_topics.begin();
     while ( i != m_topics.end() )
     {
-        COMCORE::CPubSubClientTopic* topic = (*i);
+        TopicLink& topicLink = (*i);
+        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+
         if ( GUCEF_NULL != topic )
         {
             if ( topic->IsPublishingSupported() )
             {
                 ++topicsToPublishOn;
-                if ( topic->Publish( msgs ) )
+                if ( topic->Publish( topicLink.publishActionIds, msgs ) )
                 {
                     ++topicsPublishedOn;
                 }

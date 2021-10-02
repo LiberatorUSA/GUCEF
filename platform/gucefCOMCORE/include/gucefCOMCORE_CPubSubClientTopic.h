@@ -90,26 +90,38 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 {
     public:
 
+    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector               TIPubSubMsgConstRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                    TIPubSubMsgRawPtrVector;
+    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                  TPubSubMsgRef;
+    typedef std::vector< TPubSubMsgRef >                            TPubSubMsgsRefVector;
+    typedef CORE::CTCloneableObj< TPubSubMsgsRefVector >            TMsgsRecievedEventData;
+    typedef CORE::CTCloneableExpansion< std::vector< UInt64 > >     TPublishActionIdVector;
+
+
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent ConnectionErrorEvent;
     static const CORE::CEvent MsgsRecievedEvent;                /**< event msg sent when the backend has received 1-N messages from the pubsub system as a subscriber */
     static const CORE::CEvent MsgsPublishedEvent;               /**< event msg sent when the backend has successfully published messages */
+    static const CORE::CEvent MsgsPublishFailureEvent;          /**< event msg sent when the backend has failed to successfully publish messages */
     static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
     static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
 
-    static void RegisterEvents( void );
+    typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishFailureEventData;
+    typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishedEventData;
 
-    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector       TIPubSubMsgConstRawPtrVector;
-    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector            TIPubSubMsgRawPtrVector;
-    typedef CORE::CTLinkedCloneable< CIPubSubMsg >          TPubSubMsgRef;
-    typedef std::vector< TPubSubMsgRef >                    TPubSubMsgsRefVector;
-    typedef CORE::CTCloneableObj< TPubSubMsgsRefVector >    TMsgsRecievedEventData;
+    static void RegisterEvents( void );
 
     CPubSubClientTopic( void );
 
     virtual ~CPubSubClientTopic();
 
+    /**
+     *  Explicitly calls for initialization of connectivity if relevant for the given backend
+     *  The intent is to allow the application to choose when to take the setup cost hit and also provide better error reporting
+     *  Backends should be implement such that if no explicit call to InitializeConnectivity() is made and such a call is relevant that 
+     *  lazy initialization is used upon subscribe/publish
+     */
     virtual bool InitializeConnectivity( void ) = 0;
 
     virtual bool Subscribe( void ) = 0;                                                /**< attempt to commence subscription. This will subscribe per config and defaults of the given backend */
@@ -132,18 +144,18 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      *  Note that these all call Publish( const CIPubSubMsg& msg )
      *  Specific backend implementations may optionally override these if there is a gain from doing so
      */
-    virtual bool Publish( const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
-    virtual bool Publish( const TIPubSubMsgConstRawPtrVector& msgs );
-    virtual bool Publish( const TIPubSubMsgRawPtrVector& msgs );
-    virtual bool Publish( const TPubSubMsgsRefVector& msgs );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& payload );    
-    virtual bool Publish( const CORE::CVariant& msgId, const CORE::CVariant& payload );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs );    
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload );    
+    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs );    
 
     /**
      *  Publish the given message to the pub-sub backend system using that system's specifics
@@ -151,7 +163,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      *
      *  @return success flag with true on success per backend criterea or false on failure
      */
-    virtual bool Publish( const CIPubSubMsg& msg ) = 0;
+    virtual bool Publish( UInt64& publishActionId, const CIPubSubMsg& msg ) = 0;
 
     /**
      *  Ack that the given message was successfully received and/or handled by the application
@@ -161,7 +173,13 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      */    
     virtual bool AcknowledgeReceipt( const CIPubSubMsg& msg );
     virtual bool AcknowledgeReceipt( const CPubSubBookmark& bookmark );
+    virtual bool AcknowledgeReceipt( const UInt64 consumeActionId );
 
+    /**
+     *  If supported by the backend implementation this will set the given bookmark
+     *  to information that act for said bookmark indicates locality of this message 
+     */
+    virtual bool DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const;
 };
 
 typedef CORE::CTSharedPtr< CPubSubClientTopic, MT::CMutex > CPubSubClientTopicPtr;

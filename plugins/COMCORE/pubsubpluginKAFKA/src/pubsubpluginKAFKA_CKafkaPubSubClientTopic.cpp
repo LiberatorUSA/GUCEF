@@ -93,6 +93,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_tickCountAtLastOffsetCommit( 0 )
     , m_msgsReceivedSinceLastOffsetCommit( false )
     , m_consumerOffsetWaitsForExplicitMsgAck( false )
+    , m_currentPublishActionId( 1 )
     , m_metrics()
     , m_lock()
 {GUCEF_TRACE;
@@ -138,6 +139,8 @@ CKafkaPubSubClientTopic::Clear( void )
 
     delete m_kafkaConsumer;
     m_kafkaConsumer = GUCEF_NULL;
+
+    m_currentPublishActionId = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -191,7 +194,7 @@ CKafkaPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
+CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
@@ -250,6 +253,23 @@ CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         }
     }
 
+    // Nothing wrong with msg, we will make the publish attempt
+    publishActionId = m_currentPublishActionId; 
+    ++m_currentPublishActionId;
+
+    // We encode the publish action Id into the passthrough opaque void*
+    // This saves us from having to perform another memory allocation
+    #ifdef GUCEF_64BIT
+    void* msg_opaque = reinterpret_cast< void* >( publishActionId );
+    #else
+    void* msg_opaque = 0;
+    if ( publishActionId > GUCEF_MT_UINT32MAX )
+        msg_opaque = reinterpret_cast< void* >( publishActionId - GUCEF_MT_UINT32MAX );
+    else
+        msg_opaque = reinterpret_cast< void* >( static_cast< CORE::UInt32 >( publishActionId ) );
+    #endif
+
+
     retCode = 
         m_kafkaProducer->dvcustom_produce( m_kafkaProducerTopic, 
                                            RdKafka::Topic::PARTITION_UA,
@@ -259,7 +279,7 @@ CKafkaPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
                                            const_cast< void* >( msg.GetMsgId().AsVoidPtr() ), 
                                            (size_t) msg.GetMsgId().ByteSize(),
                                            headers,
-                                           NULL );
+                                           msg_opaque );
     
     if ( retCode != RdKafka::ERR_NO_ERROR )
     {
@@ -1908,25 +1928,49 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
 
     static const std::string NULLstr = "NULL";
 
+    // We decode the publish action Id from the passthrough opaque void*
+    // This saved us from having to perform another memory allocation
+    #ifdef GUCEF_64BIT
+    CORE::UInt64 publishActionId = reinterpret_cast< CORE::UInt64 >( message.msg_opaque() );
+    #else
+    CORE::UInt64 publishActionId = reinterpret_cast< CORE::UInt32 >( message.msg_opaque() );
+    if ( m_currentPublishActionId > GUCEF_MT_UINT32MAX || publishActionId < m_currentPublishActionId )
+    {
+        publishActionId += GUCEF_MT_UINT32MAX; 
+    }
+    #endif
+
+    TPublishActionIdVector ids;
+    ids.push_back( publishActionId );
+
     if ( message.err() ) 
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: \"" + message.errstr() + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: publishActionId: " + CORE::ToString( publishActionId ) +
+                                                ". error: \"" + message.errstr() + 
                                                 "\", on topic: \"" + message.topic_name() + 
                                                 "\", key: " + ( message.key() ? (*message.key()) : NULLstr ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() +
                                                 ", msg has status: " + MsgStatusToString( message.status() ) );
+        
+        TMsgsPublishFailureEventData eData;
+        eData.LinkTo( &ids );
+        NotifyObservers( MsgsPublishFailureEvent, &eData );
     }
     else 
     {
         ++m_kafkaMsgsTransmitted;
-        NotifyObservers( MsgsPublishedEvent );
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: " + MsgStatusToString( message.status() ) + 
-                                                ": topic: \"" + message.topic_name() + 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: publishActionId: " + CORE::ToString( publishActionId ) +
+                                                ". status: " + MsgStatusToString( message.status() ) + 
+                                                " , topic: \"" + message.topic_name() + 
                                                 "\", partition: " + CORE::ToString( message.partition() ).STL_String() +
                                                 ", offset: " + CORE::ToString( message.offset() ).STL_String() +
                                                 ", key: " + ( message.key() ? (*message.key()) : NULLstr ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() );
+
+        TMsgsPublishedEventData eData;
+        eData.LinkTo( &ids );
+        NotifyObservers( MsgsPublishedEvent, &eData );
     }
 }
 
@@ -2067,6 +2111,25 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
             }
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClientTopic::DeriveBookmarkFromMsg( const COMCORE::CIPubSubMsg& msg, COMCORE::CPubSubBookmark& bookmark ) const
+{
+    // Note that this does not require a lock as data we access is local to the message
+    // The code is here because only the backend logic knows which bookmark type can be derived (if any) 
+    // from a message for the given backend
+
+    // For Kafka we know that we encode the partition offset on the Index property
+    if ( msg.GetMsgIndex().ByteSize() > 0 && msg.GetMsgIndex().GetTypeId() == GUCEF_DATATYPE_BINARY_BSOB )
+    {
+        bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX );
+        bookmark.SetBookmarkData( msg.GetMsgIndex() );
+        return true;
+    }    
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

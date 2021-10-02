@@ -62,10 +62,14 @@ class CTCloneableExpansion : public T ,
     CTCloneableExpansion( void );
 
     CTCloneableExpansion( const CTCloneableExpansion& src );
+
+    CTCloneableExpansion( const T& src );
         
     virtual ~CTCloneableExpansion();
     
     CTCloneableExpansion& operator=( const CTCloneableExpansion& src );
+
+    CTCloneableExpansion& operator=( const T& src );
     
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
@@ -93,6 +97,15 @@ CTCloneableExpansion< T >::CTCloneableExpansion( const CTCloneableExpansion< T >
 }
 
 /*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTCloneableExpansion< T >::CTCloneableExpansion( const T& src )
+    : T( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 template< typename T >
 CTCloneableExpansion< T >::~CTCloneableExpansion()
@@ -111,6 +124,17 @@ CTCloneableExpansion< T >::operator=( const CTCloneableExpansion< T >& src )
     {
         T::operator=( src );
     }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+template< typename T >
+CTCloneableExpansion< T >& 
+CTCloneableExpansion< T >::operator=( const T& src )
+{GUCEF_TRACE;
+
+    T::operator=( src );
     return *this;
 }
 

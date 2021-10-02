@@ -104,7 +104,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -113,7 +113,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
-    bool RedisSendSyncImpl( const sw::redis::StringView& msgId, const TRedisArgs& kvPairs );
+    bool RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs );
 
     bool RedisRead( void );
 
@@ -184,6 +184,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CRedisClusterPubSubClientTopicConfig m_config;
     std::string m_readOffset;    
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
+    CORE::UInt64 m_currentPublishActionId;
     MT::CMutex m_lock;
 };
 

@@ -274,10 +274,10 @@ GUCEF_OSMAIN_BEGIN
         return -1;
     }
     delete globalConfig;
+    globalConfig = GUCEF_NULL;
     
     if ( !pubSub2PubSub.LoadConfig( keyValueList ) )
     {
-        delete globalConfig;
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig failed" );
         return -1;
     }

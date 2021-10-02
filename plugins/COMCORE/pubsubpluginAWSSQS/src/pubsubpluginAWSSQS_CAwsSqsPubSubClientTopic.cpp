@@ -102,6 +102,7 @@ CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client 
     , m_lock()
     , m_queueUrl()
     , m_publishBulkMsgRemapStorage()
+    , m_currentPublishActionId( 1 )
 {GUCEF_TRACE;
         
     RegisterEventHandlers();
@@ -191,9 +192,11 @@ CAwsSqsPubSubClientTopic::GetSqsQueueUrlForQueueName( const CORE::CString& queue
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
+CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
+    publishActionId = 0;
+    bool success = false;
     MT::CScopeMutex lock( m_lock );
     try
     {  
@@ -203,11 +206,15 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         CORE::UInt32 msgByteSize = 0;                     
         if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageRequest >( sm_req, &msg, msgByteSize ) )
         {
+            // Nothing wrong with msg, we will make the publish attempt
+            publishActionId = m_currentPublishActionId; 
+            ++m_currentPublishActionId;
+
             Aws::SQS::Model::SendMessageOutcome sm_out = m_client->GetSqsClient().SendMessage( sm_req );
             if ( sm_out.IsSuccess() )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
-                return true;
+                success = true;
             }
             else
             {
@@ -223,13 +230,43 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:Publish: experienced an unknown exception, your application may be unstable" );
     }
-    return false;
+    
+    if ( notify )
+    {
+        lock.EarlyUnlock();
+
+        TPublishActionIdVector ids;
+        ids.push_back( publishActionId );
+
+        if ( success )
+        {           
+            TMsgsPublishedEventData eData;
+            eData.LinkTo( &ids );
+            NotifyObservers( MsgsPublishedEvent, &eData );
+        }
+        else
+        {
+            TMsgsPublishFailureEventData eData;
+            eData.LinkTo( &ids );
+            NotifyObservers( MsgsPublishFailureEvent, &eData );
+        }
+    }
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClientTopic::Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
+CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    return Publish( publishActionId, msg, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -241,7 +278,7 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubM
         m_publishBulkMsgRemapStorage.push_back( &(*i) );
         ++i;
     }
-    return Publish( m_publishBulkMsgRemapStorage );
+    return Publish( publishActionIds, m_publishBulkMsgRemapStorage );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -354,7 +391,8 @@ CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubM
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
+CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                       , 
+                                   const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -370,13 +408,19 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
+                CORE::UInt64 publishActionId = 0;
                 const COMCORE::CIPubSubMsg* msg = (*i);            
                 CORE::UInt32 msgByteSize = 0;
                 Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;                        
                 if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageBatchRequestEntry >( sqsMsg, msg, msgByteSize ) )
                 {
+                    // Nothing wrong with msg, we will make the publish attempt
+                    publishActionId = m_currentPublishActionId; 
+                    ++m_currentPublishActionId;
+
                     sm_req.AddEntries( sqsMsg );
                 }
+                publishActionIds.push_back( publishActionId );
                 ++i;
             }
 
@@ -407,7 +451,9 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                totalSuccess = Publish( *(*i) ) && totalSuccess;
+                CORE::UInt64 publishActionId = 0;
+                totalSuccess = Publish( publishActionId, *(*i), false ) && totalSuccess;
+                publishActionIds.push_back( publishActionId );
                 ++i;
             }
         }
@@ -421,6 +467,19 @@ CAwsSqsPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstR
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
     }
 
+    lock.EarlyUnlock();
+    if ( totalSuccess )
+    {
+        TMsgsPublishedEventData eData;
+        eData.LinkTo( &publishActionIds );
+        NotifyObservers( MsgsPublishedEvent, &eData );
+    }
+    else
+    {
+        TMsgsPublishFailureEventData eData;
+        eData.LinkTo( &publishActionIds );
+        NotifyObservers( MsgsPublishFailureEvent, &eData );
+    }
     return totalSuccess;
 }
 

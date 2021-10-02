@@ -89,6 +89,18 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer : public virtual MT::CILockable
                  const UInt32 elementsToRead  );
 
     /**
+     *  Helper function for templated approach, avoiding direct use of void* in calling code
+     */
+    template < typename T >
+    inline UInt32 Read( T* destObj ) { return Read( destObj, sizeof( T ), 1 ); }
+
+    /**
+     *  Helper function for templated approach, avoiding direct use of void* in calling code
+     */
+    template < typename T >
+    inline UInt32 Read( T& destObj ) { return Read( &destObj, sizeof( T ), 1 ); }
+
+    /**
      *  Same as Read() except that the data that is read remains available in the buffer after the Peek()
      *  whereas a Read will remove the data
      */
@@ -113,6 +125,18 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer : public virtual MT::CILockable
     UInt32 Write( const void* srcBuffer        ,
                   const UInt32 bytesPerElement ,
                   const UInt32 elementsToWrite );
+
+    /**
+     *  Helper function for templated approach, avoiding direct use of void* in calling code
+     */
+    template < typename T >
+    inline UInt32 Write( const T* srcObj ) { return Write( srcObj, sizeof( T ), 1 ); }
+
+    /**
+     *  Helper function for templated approach, avoiding direct use of void* in calling code
+     */
+    template < typename T >
+    inline UInt32 Write( const T srcObj ) { return Write( &srcObj, sizeof( T ), 1 ); }
 
     /**
      *  Writes the entire logical content of the buffer into the cyclic buffer

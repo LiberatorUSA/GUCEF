@@ -98,7 +98,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -201,6 +201,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     MT::CMutex m_lock;
     QUEUEHANDLE m_receiveQueueHandle;
     QUEUEHANDLE m_sendQueueHandle;
+    CORE::UInt64 m_currentPublishActionId;
 };
 
 /*-------------------------------------------------------------------------//

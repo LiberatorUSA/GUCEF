@@ -92,9 +92,10 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
-    virtual bool Publish( const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
-    virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify );
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -147,6 +148,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
     MT::CMutex m_lock;
     Aws::String m_queueUrl;
     COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector m_publishBulkMsgRemapStorage;
+    CORE::UInt64 m_currentPublishActionId;
 };
 
 /*-------------------------------------------------------------------------//

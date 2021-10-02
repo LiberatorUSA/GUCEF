@@ -65,8 +65,13 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#include "gucefCOMCORE_CPubSubBookmark.h"
+#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+
 #ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
+#include "gucefCOMCORE_macros.h"    
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 

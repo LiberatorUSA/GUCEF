@@ -140,6 +140,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_lock()
     , m_receiveQueueHandle( GUCEF_NULL )
     , m_sendQueueHandle( GUCEF_NULL )
+    , m_currentPublishActionId( 1 )
 {GUCEF_TRACE;
         
     m_syncReadTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
@@ -205,9 +206,10 @@ CMsmqPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
+CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
+    publishActionId = 0;
     MT::CScopeMutex lock( m_lock );
     
     // Each Message Queuing message can have no more than 4 MB of data.
@@ -271,7 +273,30 @@ CMsmqPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
         ++i;
     }
 
-    return false;
+    // Nothing wrong with msg, we will make the publish attempt
+    publishActionId = m_currentPublishActionId; 
+    ++m_currentPublishActionId;
+    
+    bool totalSuccess = false;
+    // @TODO: Code the actual publish to MSMQ, not implemented yet
+
+    lock.EarlyUnlock();
+
+    TPublishActionIdVector ids;
+    ids.push_back( publishActionId );
+    if ( totalSuccess )
+    {
+        TMsgsPublishedEventData eData;
+        eData.LinkTo( &ids );
+        NotifyObservers( MsgsPublishedEvent, &eData );
+    }
+    else
+    {
+        TMsgsPublishFailureEventData eData;
+        eData.LinkTo( &ids );
+        NotifyObservers( MsgsPublishFailureEvent, &eData );
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

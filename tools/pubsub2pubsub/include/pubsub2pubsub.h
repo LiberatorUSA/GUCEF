@@ -254,7 +254,18 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
-    typedef std::vector< COMCORE::CPubSubClientTopic* > TopicVector;
+    class TopicLink
+    {
+        public:
+
+        TopicLink( void );
+        TopicLink( COMCORE::CPubSubClientTopic* t );
+
+        COMCORE::CPubSubClientTopic* topic;
+        COMCORE::CPubSubClientTopic::TPublishActionIdVector publishActionIds;
+    };
+    
+    typedef std::vector< TopicLink > TopicVector;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
