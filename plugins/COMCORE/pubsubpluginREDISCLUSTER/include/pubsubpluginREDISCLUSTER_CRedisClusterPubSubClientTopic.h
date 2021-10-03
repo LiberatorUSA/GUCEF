@@ -104,7 +104,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -113,7 +113,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
-    bool RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs );
+    bool RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs, bool notify );
 
     bool RedisRead( void );
 
@@ -128,6 +128,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
+
+    void
+    OnPulseCycle( CORE::CNotifier* notifier    ,
+                  const CORE::CEvent& eventId  ,
+                  CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -185,6 +190,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     std::string m_readOffset;    
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
     CORE::UInt64 m_currentPublishActionId;
+    CORE::UInt64 m_currentReceiveActionId;
+    TPublishActionIdVector m_publishSuccessActionIds;
+    TMsgsPublishedEventData m_publishSuccessActionEventData;
+    TPublishActionIdVector m_publishFailureActionIds;
+    TMsgsPublishFailureEventData m_publishFailureActionEventData;
     MT::CMutex m_lock;
 };
 

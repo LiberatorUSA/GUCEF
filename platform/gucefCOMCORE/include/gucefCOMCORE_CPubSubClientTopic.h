@@ -84,18 +84,64 @@ namespace COMCORE {
  *  Class providing the abstract client-side representation of a 'topic' within the publish-subscribe system
  *
  *  A topic is the logical representation of that to which one can publish and subscribe.
- *  The actual nomenclature would depend on the underlying implementation but the pub-sub concept should apply. 
+ *  The actual nomenclature would depend on the underlying implementation but the pub-sub concept should apply.
+ *
+ *  About publishActionId:
+ *  One of the problemsets when dealing with providing a generic interface to a plethora of different pubsub
+ *  style backends is that each of the dependencies have their own limits in what they can or cannot achieve
+ *  The ability to use an eventing approach, a mainstay in these libraries, to async be notified of the publish 
+ *  success or failure of your earlier publish action is thus something that is hard to standardize in any meaningful way
+ *  In order the allow tracing between the cause and effect, the Publish() action and the eventual resulting 
+ *  success or failure indicator on a per-message basis the publishActionId concept was introduced.
+ *  It is backend agnostic and simplistic enough that regardless of backend capabilities every backend should be able to
+ *  implement support.
+ *  You might ask why not just send the originally published messages along with the publish outcome event notifications?
+ *  The answer for that is performance and backend simplicity. Often times that would possibly result in putting additional 
+ *  message memory management overhead/complexity requirements on all backends. Consider that due to the 'wrapper' nature
+ *  of our IPubSubMsg interface the actual storage of said message is abstracted such that often we can link to backend
+ *  specific messages/memory storage thus avoiding memory copies. This same benefit though also means that we cannot efficiently
+ *  keep the messages around for async notification in backends because the message lifecycle on a Publish() is not managed by 
+ *  the backend and is only valid for the duration of the Publish() call. For this reason we'd have to brute force copy messages
+ *  in order to utilize them for the notification.
+ *  The publishActionId is a way of sidestepping this message lifecycle management problemset while still allowing for async
+ *  event messaging with indicators on a per message basis.
+ *  Why not support a void* or similar for user-data you ask? Simply because such mechanisms have historically been responsible for
+ *  many reliability issues due to invalid pointer access, especially in cases like this where due to the very nature of the abstractions
+ *  you have no idea what the lifecycle of the pointer you passed would look like. Using a backend managed integer avoids this problem.
+ *  It is mandatory for all backends to support the publishActionId concept. All backends must provide an id per message published
+ *  for any message where a publish attempt is/will-be made. For efficiency of early rejects it is allowed for backends to give an
+ *  id of 0 (zero) for any message that failed to meet basic requirements and thus the message was rejected at the time of Publish()
+ *  invocation. All backends shall issue ids in the same order as the messages given within the context of multi-message batch
+ *  operations. As such the message batch index can be matched against the id index to get the id per specific message.
+ *  Backends are mandated to scope the uniqueness of publishActionId on a per-topic basis and coupled with the lifecycle of the topic
+ *  object lifecycle.
+ *
+ *  How to use publishActionId:
+ *  When you Publish() a message the backend will provide you with a publishActionId value. At minimum you can use this value to trace 
+ *  your specific message's journey in any relevant error logging of a given backend to help diagnose issues. Keep in mind that backends
+ *  could use async processing so without such an id the ordering of the logs does not always garantee correlation. 
+ *  Beyond that you can specify notify=true in the likely case that you do not just want to perform fire-and-forget publishing.
+ *  If you did select notify=false note that on Publish() invocation the same id rules apply with the difference that there will be no
+ *  further publish success or failure communication via notification. If you are Ok with fire-and-forget publishing using notify=false
+ *  will allow for slightly less work to be carried out and thus amounts to better overall efficiency.
+ *  With notify=true you will receive MsgsPublishedEvent or MsgsPublishFailureEvent which in periodic batch fashion will notify observers
+ *  of the publish action outcomes. The Ids that are passed along with those events are the same ids you were given at the time of Publish() 
+ *  invocation. As such you can correlate what happened to the original messages you published. If you want to obtain the original published
+ *  messages the calling application can itself manage the message lifecycle such that using the publishActionId the messages are mapped to
+ *  said ids across the points in time.
+ *  Note that you should not persist the publishActionId out-of-proc as it is a runtime in-memory aspect only with no correlation retained between 
+ *  distinct process runs or backend topic lifecycles.
+ *
  */
 class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifier
 {
     public:
 
-    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector               TIPubSubMsgConstRawPtrVector;
-    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                    TIPubSubMsgRawPtrVector;
-    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                  TPubSubMsgRef;
-    typedef std::vector< TPubSubMsgRef >                            TPubSubMsgsRefVector;
-    typedef CORE::CTCloneableObj< TPubSubMsgsRefVector >            TMsgsRecievedEventData;
-    typedef CORE::CTCloneableExpansion< std::vector< UInt64 > >     TPublishActionIdVector;
+    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector                   TIPubSubMsgConstRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                        TIPubSubMsgRawPtrVector;
+    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                      TPubSubMsgRef;
+    typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef > >  TPubSubMsgsRefVector;    
+    typedef CORE::CTCloneableExpansion< std::vector< UInt64 > >         TPublishActionIdVector;
 
 
     static const CORE::CEvent ConnectedEvent;
@@ -107,6 +153,16 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
     static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
 
+    class GUCEF_COMCORE_EXPORT_CPP CMsgsRecieveActionData
+    {
+        public:
+        TPubSubMsgsRefVector msgs;
+        UInt64 receiveActionId;
+
+        CMsgsRecieveActionData( void );
+        CMsgsRecieveActionData( const CMsgsRecieveActionData& src );
+    };
+    typedef CORE::CTCloneableExpansion< CMsgsRecieveActionData >    TMsgsRecievedEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishFailureEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishedEventData;
 
@@ -144,18 +200,18 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      *  Note that these all call Publish( const CIPubSubMsg& msg )
      *  Specific backend implementations may optionally override these if there is a gain from doing so
      */
-    virtual bool Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs );
-    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs );
-    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs );
-    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload );    
-    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs );    
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs, bool notify );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs, bool notify );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify );    
+    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify );    
 
     /**
      *  Publish the given message to the pub-sub backend system using that system's specifics
@@ -163,7 +219,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      *
      *  @return success flag with true on success per backend criterea or false on failure
      */
-    virtual bool Publish( UInt64& publishActionId, const CIPubSubMsg& msg ) = 0;
+    virtual bool Publish( UInt64& publishActionId, const CIPubSubMsg& msg, bool notify ) = 0;
 
     /**
      *  Ack that the given message was successfully received and/or handled by the application
@@ -173,7 +229,6 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      */    
     virtual bool AcknowledgeReceipt( const CIPubSubMsg& msg );
     virtual bool AcknowledgeReceipt( const CPubSubBookmark& bookmark );
-    virtual bool AcknowledgeReceipt( const UInt64 consumeActionId );
 
     /**
      *  If supported by the backend implementation this will set the given bookmark

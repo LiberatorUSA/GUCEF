@@ -141,8 +141,16 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_receiveQueueHandle( GUCEF_NULL )
     , m_sendQueueHandle( GUCEF_NULL )
     , m_currentPublishActionId( 1 )
+    , m_currentReceiveActionId( 1 )
+    , m_publishSuccessActionIds()
+    , m_publishSuccessActionEventData()
+    , m_publishFailureActionIds()
+    , m_publishFailureActionEventData()
 {GUCEF_TRACE;
         
+    m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
+    m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
+
     m_syncReadTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
 
     RegisterEventHandlers();
@@ -173,6 +181,10 @@ CMsmqPubSubClientTopic::RegisterEventHandlers( void )
                      callback                       );
     }
 
+    TEventCallback callback( this, &CMsmqPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( m_client->GetConfig().pulseGenerator ,
+                 CORE::CPulseGenerator::PulseEvent    ,
+                 callback                             );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -206,7 +218,7 @@ CMsmqPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
+CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
     publishActionId = 0;
@@ -277,26 +289,17 @@ CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::C
     publishActionId = m_currentPublishActionId; 
     ++m_currentPublishActionId;
     
-    bool totalSuccess = false;
+    bool success = false;
     // @TODO: Code the actual publish to MSMQ, not implemented yet
 
-    lock.EarlyUnlock();
-
-    TPublishActionIdVector ids;
-    ids.push_back( publishActionId );
-    if ( totalSuccess )
+    if ( notify )
     {
-        TMsgsPublishedEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishedEvent, &eData );
+        if ( success )
+            m_publishSuccessActionIds.push_back( publishActionId );
+        else
+            m_publishFailureActionIds.push_back( publishActionId );
     }
-    else
-    {
-        TMsgsPublishFailureEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishFailureEvent, &eData );
-    }
-    return totalSuccess;
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -345,7 +348,7 @@ CMsmqPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 {GUCEF_TRACE;
 
     // reset size, note this does not dealloc the underlying memory
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
     msgRefs.clear();
 
     if ( msgCount > msgRefs.capacity() )
@@ -1493,7 +1496,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
                 
                 ++msgsRead;
-                m_pubsubMsgsRefs.GetData().push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                m_pubsubMsgsRefs.msgs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
                 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a MSMQ message" );
                 break;
@@ -1532,8 +1535,31 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a total of " + CORE::ToString( msgsRead ) + 
             " messages out of a max of " + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
 
+        m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
+        ++m_currentReceiveActionId;
+
         if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return;
-        m_pubsubMsgsRefs.GetData().clear();
+        m_pubsubMsgsRefs.msgs.clear();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+                      
+    if ( !m_publishSuccessActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+        m_publishSuccessActionIds.clear();
+    }
+    if ( !m_publishFailureActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+        m_publishFailureActionIds.clear();
     }
 }
 

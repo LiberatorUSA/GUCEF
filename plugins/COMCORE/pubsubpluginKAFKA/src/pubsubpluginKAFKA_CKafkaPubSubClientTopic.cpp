@@ -94,10 +94,18 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_msgsReceivedSinceLastOffsetCommit( false )
     , m_consumerOffsetWaitsForExplicitMsgAck( false )
     , m_currentPublishActionId( 1 )
+    , m_currentReceiveActionId( 1 )
+    , m_publishSuccessActionIds()
+    , m_publishSuccessActionEventData()
+    , m_publishFailureActionIds()
+    , m_publishFailureActionEventData()
     , m_metrics()
     , m_lock()
 {GUCEF_TRACE;
         
+    m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
+    m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
+
     RegisterEventHandlers();
 }
 
@@ -194,7 +202,7 @@ CKafkaPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
+CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
     RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
@@ -257,18 +265,20 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     publishActionId = m_currentPublishActionId; 
     ++m_currentPublishActionId;
 
-    // We encode the publish action Id into the passthrough opaque void*
-    // This saves us from having to perform another memory allocation
-    #ifdef GUCEF_64BIT
-    void* msg_opaque = reinterpret_cast< void* >( publishActionId );
-    #else
-    void* msg_opaque = 0;
-    if ( publishActionId > GUCEF_MT_UINT32MAX )
-        msg_opaque = reinterpret_cast< void* >( publishActionId - GUCEF_MT_UINT32MAX );
-    else
-        msg_opaque = reinterpret_cast< void* >( static_cast< CORE::UInt32 >( publishActionId ) );
-    #endif
-
+    void* msg_opaque = GUCEF_NULL;
+    if ( notify )
+    {
+        // We encode the publish action Id into the passthrough opaque void*
+        // This saves us from having to perform another memory allocation
+        #ifdef GUCEF_64BIT
+        msg_opaque = reinterpret_cast< void* >( publishActionId );
+        #else
+        if ( publishActionId > GUCEF_MT_UINT32MAX )
+            msg_opaque = reinterpret_cast< void* >( publishActionId - GUCEF_MT_UINT32MAX );
+        else
+            msg_opaque = reinterpret_cast< void* >( static_cast< CORE::UInt32 >( publishActionId ) );
+        #endif
+    }
 
     retCode = 
         m_kafkaProducer->dvcustom_produce( m_kafkaProducerTopic, 
@@ -581,7 +591,7 @@ CKafkaPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
     }
 
     // reset size, note this does not dealloc the underlying memory
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
     msgRefs.clear();
 
     if ( msgCount > msgRefs.capacity() )
@@ -1657,9 +1667,12 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
 
     // Now that we have prepared our wrapped message let's link it
     // as a reference in the list of received messages we send out
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
     msgRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
     msgRefs.back().LinkTo( &msgWrap );
+
+    m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
+    ++m_currentReceiveActionId;
 
     // Communicate all the messages received via an event notification
     NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs );
@@ -1928,20 +1941,20 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
 
     static const std::string NULLstr = "NULL";
 
+    bool notify = GUCEF_NULL != message.msg_opaque();
+    CORE::UInt64 publishActionId = 0;
+
     // We decode the publish action Id from the passthrough opaque void*
     // This saved us from having to perform another memory allocation
     #ifdef GUCEF_64BIT
-    CORE::UInt64 publishActionId = reinterpret_cast< CORE::UInt64 >( message.msg_opaque() );
+    publishActionId = reinterpret_cast< CORE::UInt64 >( message.msg_opaque() );
     #else
-    CORE::UInt64 publishActionId = reinterpret_cast< CORE::UInt32 >( message.msg_opaque() );
+    publishActionId = reinterpret_cast< CORE::UInt32 >( message.msg_opaque() );
     if ( m_currentPublishActionId > GUCEF_MT_UINT32MAX || publishActionId < m_currentPublishActionId )
     {
         publishActionId += GUCEF_MT_UINT32MAX; 
     }
     #endif
-
-    TPublishActionIdVector ids;
-    ids.push_back( publishActionId );
 
     if ( message.err() ) 
     {
@@ -1952,9 +1965,12 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() +
                                                 ", msg has status: " + MsgStatusToString( message.status() ) );
         
-        TMsgsPublishFailureEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishFailureEvent, &eData );
+        if ( notify )
+        {
+            m_publishFailureActionIds.push_back( publishActionId );
+            if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+            m_publishFailureActionIds.clear();
+        }
     }
     else 
     {
@@ -1968,9 +1984,12 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
                                                 ", key: " + ( message.key() ? (*message.key()) : NULLstr ) + 
                                                 ", payload size: " + CORE::ToString( message.len() ).STL_String() );
 
-        TMsgsPublishedEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishedEvent, &eData );
+        if ( notify )
+        {
+            m_publishSuccessActionIds.push_back( publishActionId );
+            if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+            m_publishSuccessActionIds.clear();
+        }
     }
 }
 

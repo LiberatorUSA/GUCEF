@@ -107,7 +107,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -272,6 +272,11 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     bool m_msgsReceivedSinceLastOffsetCommit;
     bool m_consumerOffsetWaitsForExplicitMsgAck;
     CORE::UInt64 m_currentPublishActionId;
+    CORE::UInt64 m_currentReceiveActionId;
+    TPublishActionIdVector m_publishSuccessActionIds;
+    TMsgsPublishedEventData m_publishSuccessActionEventData;
+    TPublishActionIdVector m_publishFailureActionIds;
+    TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     MT::CMutex m_lock;
 };

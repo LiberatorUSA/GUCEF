@@ -98,7 +98,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -176,6 +176,11 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
                           const CORE::CEvent& eventId  ,
                           CORE::CICloneable* eventData );
 
+    void
+    OnPulseCycle( CORE::CNotifier* notifier    ,
+                  const CORE::CEvent& eventId  ,
+                  CORE::CICloneable* eventData );
+
     void OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible );
 
     bool OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData );
@@ -202,6 +207,11 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     QUEUEHANDLE m_receiveQueueHandle;
     QUEUEHANDLE m_sendQueueHandle;
     CORE::UInt64 m_currentPublishActionId;
+    CORE::UInt64 m_currentReceiveActionId;
+    TPublishActionIdVector m_publishSuccessActionIds;
+    TMsgsPublishedEventData m_publishSuccessActionEventData;
+    TPublishActionIdVector m_publishFailureActionIds;
+    TMsgsPublishFailureEventData m_publishFailureActionEventData;
 };
 
 /*-------------------------------------------------------------------------//

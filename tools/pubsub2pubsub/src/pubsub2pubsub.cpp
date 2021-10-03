@@ -521,7 +521,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
             if ( topic->IsPublishingSupported() )
             {
                 ++topicsToPublishOn;
-                if ( topic->Publish( topicLink.publishActionIds, msgs ) )
+                if ( topic->Publish( topicLink.publishActionIds, msgs, true ) )
                 {
                     ++topicsPublishedOn;
                 }
@@ -570,7 +570,7 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
         }
         else
         {
-            return PublishMsgsSync( msgs );
+            return PublishMsgsSync< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
         }
     }
     return false;
@@ -613,7 +613,8 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
     
     try
     {
-        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
+        COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* eData = static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData );
+        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = eData->msgs;
         if ( !msgs.empty() )
         {                            
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +

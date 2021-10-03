@@ -91,6 +91,24 @@ CPubSubClientTopic::~CPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientTopic::CMsgsRecieveActionData::CMsgsRecieveActionData( void )
+    : msgs()
+    , receiveActionId( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopic::CMsgsRecieveActionData::CMsgsRecieveActionData( const CMsgsRecieveActionData& src )
+    : msgs( src.msgs )
+    , receiveActionId( src.receiveActionId )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientTopic::AcknowledgeReceipt( const CIPubSubMsg& msg )
 {GUCEF_TRACE;
@@ -102,15 +120,6 @@ CPubSubClientTopic::AcknowledgeReceipt( const CIPubSubMsg& msg )
 
 bool 
 CPubSubClientTopic::AcknowledgeReceipt( const CPubSubBookmark& bookmark )
-{GUCEF_TRACE;
-
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CPubSubClientTopic::AcknowledgeReceipt( const UInt64 consumeActionId )
 {GUCEF_TRACE;
 
     return false;
@@ -130,103 +139,103 @@ CPubSubClientTopic::DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookma
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.GetPrimaryPayload().LinkTo( payload );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.GetPrimaryPayload().LinkTo( payload );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.GetPrimaryPayload().LinkTo( payload );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePair( key, value );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePair( key, value );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePair( key, value );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePair( key, value );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs )
+CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
     msg.GetMsgId().LinkTo( msgId );
     msg.AddLinkedKeyValuePairs( kvPairs );
-    return Publish( publishActionId, msg );
+    return Publish( publishActionId, msg, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
+CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -234,7 +243,7 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const CBa
     while ( i != msgs.end() )    
     {
         UInt64 publishActionId = 0;
-        totalSuccess = totalSuccess && Publish( publishActionId, (*i) );
+        totalSuccess = totalSuccess && Publish( publishActionId, (*i), false );
         publishActionIds.push_back( publishActionId );
         ++i;
     }
@@ -244,7 +253,7 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const CBa
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs )
+CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs, bool notify )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -254,11 +263,26 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
+    }
+    if ( notify )
+    {
+        if ( totalSuccess )
+        {
+            TMsgsPublishedEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishedEvent, &eData );
+        }
+        else
+        {
+            TMsgsPublishFailureEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishFailureEvent, &eData );
+        }
     }
     return totalSuccess;
 }
@@ -266,7 +290,7 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs )
+CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs, bool notify )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -276,11 +300,26 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
+    }
+    if ( notify )
+    {
+        if ( totalSuccess )
+        {
+            TMsgsPublishedEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishedEvent, &eData );
+        }
+        else
+        {
+            TMsgsPublishFailureEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishFailureEvent, &eData );
+        }
     }
     return totalSuccess;
 }
@@ -288,7 +327,7 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs )
+CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -298,11 +337,26 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPu
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
+    }
+    if ( notify )
+    {
+        if ( totalSuccess )
+        {
+            TMsgsPublishedEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishedEvent, &eData );
+        }
+        else
+        {
+            TMsgsPublishFailureEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishFailureEvent, &eData );
+        }
     }
     return totalSuccess;
 }

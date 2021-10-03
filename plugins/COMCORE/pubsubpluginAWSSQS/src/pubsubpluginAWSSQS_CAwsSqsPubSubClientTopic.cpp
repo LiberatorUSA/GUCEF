@@ -103,8 +103,16 @@ CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client 
     , m_queueUrl()
     , m_publishBulkMsgRemapStorage()
     , m_currentPublishActionId( 1 )
+    , m_currentReceiveActionId( 1 )
+    , m_publishSuccessActionIds()
+    , m_publishSuccessActionEventData()
+    , m_publishFailureActionIds()
+    , m_publishFailureActionEventData()
 {GUCEF_TRACE;
         
+    m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
+    m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
+    
     RegisterEventHandlers();
 }
 
@@ -123,6 +131,10 @@ void
 CAwsSqsPubSubClientTopic::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
+    TEventCallback callback( this, &CAwsSqsPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( m_client->GetConfig().pulseGenerator ,
+                 CORE::CPulseGenerator::PulseEvent    ,
+                 callback                             );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -233,22 +245,13 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE:
     
     if ( notify )
     {
-        lock.EarlyUnlock();
-
-        TPublishActionIdVector ids;
-        ids.push_back( publishActionId );
-
         if ( success )
         {           
-            TMsgsPublishedEventData eData;
-            eData.LinkTo( &ids );
-            NotifyObservers( MsgsPublishedEvent, &eData );
+            m_publishSuccessActionIds.push_back( publishActionId );
         }
         else
         {
-            TMsgsPublishFailureEventData eData;
-            eData.LinkTo( &ids );
-            NotifyObservers( MsgsPublishFailureEvent, &eData );
+            m_publishFailureActionIds.push_back( publishActionId );
         }
     }
     return success;
@@ -257,16 +260,7 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE:
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
-{GUCEF_TRACE;
-
-    return Publish( publishActionId, msg, true );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs )
+CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -278,7 +272,7 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, con
         m_publishBulkMsgRemapStorage.push_back( &(*i) );
         ++i;
     }
-    return Publish( publishActionIds, m_publishBulkMsgRemapStorage );
+    return Publish( publishActionIds, m_publishBulkMsgRemapStorage, notify );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -392,7 +386,8 @@ CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubM
 
 bool
 CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                       , 
-                                   const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs )
+                                   const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ,
+                                   bool notify                                                    )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -405,6 +400,7 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             Aws::SQS::Model::SendMessageBatchRequest sm_req;
             sm_req.SetQueueUrl( m_queueUrl );
        
+            size_t preExistingActionIds = publishActionIds.size();
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
@@ -434,12 +430,20 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
                 Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
                 if ( sm_out.IsSuccess() )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
-                    return totalSuccess;
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending batch message to \"" + m_queueUrl + "\"" );
+
+                    if ( notify && !msgs.empty() )
+                        for ( size_t i=0; i<msgs.size(); ++i )    
+                            m_publishSuccessActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+                    totalSuccess = false;
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending batch message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+
+                    if ( notify && !msgs.empty() )
+                        for ( size_t i=0; i<msgs.size(); ++i )    
+                            m_publishFailureActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
                 }   
             }
         }
@@ -452,8 +456,19 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             while ( i != msgs.end() )
             {        
                 CORE::UInt64 publishActionId = 0;
-                totalSuccess = Publish( publishActionId, *(*i), false ) && totalSuccess;
+                
+                bool success = Publish( publishActionId, *(*i), false );
                 publishActionIds.push_back( publishActionId );
+
+                if ( notify )
+                {
+                    if ( success )
+                        m_publishSuccessActionIds.push_back( publishActionId );
+                    else
+                        m_publishFailureActionIds.push_back( publishActionId );
+                }
+
+                totalSuccess = success && totalSuccess;                
                 ++i;
             }
         }
@@ -467,20 +482,27 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:GetSqsQueueUrlForQueueName: experienced an unknown exception, your application may be unstable" );
     }
 
-    lock.EarlyUnlock();
-    if ( totalSuccess )
-    {
-        TMsgsPublishedEventData eData;
-        eData.LinkTo( &publishActionIds );
-        NotifyObservers( MsgsPublishedEvent, &eData );
-    }
-    else
-    {
-        TMsgsPublishFailureEventData eData;
-        eData.LinkTo( &publishActionIds );
-        NotifyObservers( MsgsPublishFailureEvent, &eData );
-    }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsSqsPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+                      
+    if ( !m_publishSuccessActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+        m_publishSuccessActionIds.clear();
+    }
+    if ( !m_publishFailureActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+        m_publishFailureActionIds.clear();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -521,7 +543,7 @@ CAwsSqsPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 
     // reset size, note this does not dealloc the underlying memory
     m_pubsubMsgs.clear();
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
     msgRefs.clear();
 
     if ( msgCount > m_pubsubMsgs.capacity() )

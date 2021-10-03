@@ -92,8 +92,16 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_readOffset( "0" )
     , m_readerThread()
     , m_currentPublishActionId( 1 )
+    , m_currentReceiveActionId( 1 )
+    , m_publishSuccessActionIds()
+    , m_publishSuccessActionEventData()
+    , m_publishFailureActionIds()
+    , m_publishFailureActionEventData()
     , m_lock()
 {GUCEF_TRACE;
+
+    m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
+    m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
     if ( GUCEF_NULL != client->GetConfig().pulseGenerator )
     {
@@ -135,6 +143,11 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+
+    TEventCallback callback( this, &CRedisClusterPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( m_client->GetConfig().pulseGenerator ,
+                 CORE::CPulseGenerator::PulseEvent    ,
+                 callback                             );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,7 +181,7 @@ CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg )
+CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -212,7 +225,7 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const CO
         ++i;
     }
     
-    return RedisSendSyncImpl( publishActionId, idSV, m_redisMsgArgs );
+    return RedisSendSyncImpl( publishActionId, idSV, m_redisMsgArgs, notify );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -248,7 +261,10 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs )
+CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId      , 
+                                                   const sw::redis::StringView& msgId , 
+                                                   const TRedisArgs& kvPairs          , 
+                                                   bool notify                        )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
@@ -272,7 +288,6 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
             m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
 
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
-
         
         size_t replyCount = redisReplies.size();
         for ( size_t r=0; r<replyCount; ++r )
@@ -345,20 +360,14 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
     }
 
-    TPublishActionIdVector ids;
-    ids.push_back( publishActionId );
-    if ( totalSuccess )
+    if ( notify )
     {
-        TMsgsPublishedEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishedEvent, &eData );
+        if ( totalSuccess )
+            m_publishSuccessActionIds.push_back( publishActionId );
+        else
+            m_publishFailureActionIds.push_back( publishActionId );
     }
-    else
-    {
-        TMsgsPublishFailureEventData eData;
-        eData.LinkTo( &ids );
-        NotifyObservers( MsgsPublishFailureEvent, &eData );
-    }
+
     return totalSuccess;
 } 
 
@@ -370,7 +379,7 @@ CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 
     // reset size, note this does not dealloc the underlying memory
     m_pubsubMsgs.clear();
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
     msgRefs.clear();
 
     if ( msgCount > m_pubsubMsgs.capacity() )
@@ -388,10 +397,11 @@ bool
 CRedisClusterPubSubClientTopic::RedisRead( void )
 {GUCEF_TRACE;
 
+    bool totalSuccess = false;
     MT::CScopeMutex lock( m_lock );
     
     if ( GUCEF_NULL == m_redisContext || m_config.topicName.IsNULLOrEmpty() )
-        return false;
+        return totalSuccess;
 
     try
     {       
@@ -420,7 +430,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                 PrepStorageForReadMsgs( (CORE::UInt32) msgs.size() );
 
                 // Cycle through the messages received and build the generic representations
-                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
                 TRedisMsgVector::iterator i = msgs.begin();
                 while ( i != msgs.end() )
                 {
@@ -474,21 +484,14 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
                 ++s;
             }
-
-            // Communicate all the messages received via an event notification
-            if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return false;
-
-            m_redisReadMsgs.clear();
-            m_pubsubMsgsRefs.GetData().clear();
-            m_pubsubMsgAttribs.clear();
         }
-        return true;
+
+        totalSuccess = true;
     }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
-        return false;
     }
     catch ( const sw::redis::MovedError& e )
     {
@@ -498,7 +501,6 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                 " exception: " + e.what() );
         Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
-        return false;
     }
     catch ( const sw::redis::RedirectionError& e )
     {
@@ -509,7 +511,6 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
         Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
-        return false;
     }
     catch ( const sw::redis::Error& e )
     {
@@ -517,13 +518,25 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
         Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
-        return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
-        return false;
     }
+
+    if ( totalSuccess )
+    {
+        m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
+        ++m_currentReceiveActionId;
+        
+        // Communicate all the messages received via an event notification
+        if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return totalSuccess;
+    }
+    m_redisReadMsgs.clear();
+    m_pubsubMsgsRefs.msgs.clear();
+    m_pubsubMsgAttribs.clear();
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -801,6 +814,26 @@ CRedisClusterPubSubClientTopic::OnRedisReconnectTimerCycle( CORE::CNotifier* not
     if ( InitializeConnectivity() )
     {
         m_redisReconnectTimer->SetEnabled( false );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+                      
+    if ( !m_publishSuccessActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+        m_publishSuccessActionIds.clear();
+    }
+    if ( !m_publishFailureActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+        m_publishFailureActionIds.clear();
     }
 }
 
