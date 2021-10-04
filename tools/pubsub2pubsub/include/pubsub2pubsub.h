@@ -24,10 +24,15 @@
 
 #include <deque>
 
-#ifndef GUCEF_MT_CMAILBOXFORCLONEABLES_H
-#include "gucefMT_CMailBoxForCloneables.h"
-#define GUCEF_MT_CMAILBOXFORCLONEABLES_H
-#endif /* GUCEF_MT_CMAILBOXFORCLONEABLES_H ? */
+#ifndef GUCEF_MT_CNOLOCK_H
+#include "gucefMT_CNoLock.h"
+#define GUCEF_MT_CNOLOCK_H
+#endif /* GUCEF_MT_CNOLOCK_H ? */
+
+#ifndef GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
+#include "gucefCORE_CTMailboxForSharedCloneables.h"
+#define GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
+#endif /* GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H ? */
 
 #ifndef GUCEF_CORE_CITASKCONSUMER_H
 #include "gucefCORE_CITaskConsumer.h"
@@ -267,13 +272,14 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     
     typedef std::vector< TopicLink > TopicVector;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
+    typedef CORE::CTMailboxForSharedCloneables< COMCORE::CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
     CPubSubClientSide* m_otherSide;
     TopicVector m_topics;
     ChannelSettings m_channelSettings;
     PubSubSideChannelSettings* m_sideSettings;
-    MT::CMailboxForCloneables m_mailbox;
+    TPubSubMsgMailbox m_mailbox;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CIPubSubBookmarkPersistance* m_persistance;

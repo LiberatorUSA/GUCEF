@@ -191,6 +191,7 @@ set( HEADER_FILES
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTLinkedCloneable.h
+  include/gucefCORE_CTMailboxForSharedCloneables.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CThreadPool.h

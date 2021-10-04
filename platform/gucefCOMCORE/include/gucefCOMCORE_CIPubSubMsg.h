@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CNOLOCK_H
+#include "gucefMT_CNoLock.h"
+#define GUCEF_MT_CNOLOCK_H
+#endif /* GUCEF_MT_CNOLOCK_H ? */
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -99,10 +104,12 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 {
     public:
 
-    typedef std::pair< CORE::CVariant, CORE::CVariant > TKeyValuePair;
-    typedef std::vector< TKeyValuePair >                TKeyValuePairs;
-    typedef std::vector< CIPubSubMsg* >                 TIPubSubMsgRawPtrVector;
-    typedef std::vector< const CIPubSubMsg* >           TIPubSubMsgConstRawPtrVector;
+    typedef std::pair< CORE::CVariant, CORE::CVariant >     TKeyValuePair;
+    typedef std::vector< TKeyValuePair >                    TKeyValuePairs;
+    typedef std::vector< CIPubSubMsg* >                     TIPubSubMsgRawPtrVector;
+    typedef std::vector< const CIPubSubMsg* >               TIPubSubMsgConstRawPtrVector;
+    typedef CORE::CTSharedPtr< CIPubSubMsg, MT::CNoLock >   TNoLockSharedPtr;
+    typedef std::vector< TNoLockSharedPtr >                 TIPubSubMsgSPtrVector;
 
     CIPubSubMsg( void );
 

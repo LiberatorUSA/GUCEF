@@ -582,19 +582,10 @@ bool
 CPubSubClientSide::PublishMailboxMsgs( void )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector msgs;
-    if ( m_mailbox.GetPtrBulkMail< COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector >( msgs ) )
+    COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
+    if ( m_mailbox.GetSPtrBulkMail( msgs ) )
     {
-        bool publishResult = PublishMsgsSync< COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector >( msgs );
-
-        // We need to delete whatever we obtained from the mailbox
-        COMCORE::CPubSubClientTopic::TIPubSubMsgRawPtrVector::iterator i = msgs.begin();
-        while ( i != msgs.end() )
-        {
-            delete (*i);
-            ++i;
-        }
-
+        bool publishResult = PublishMsgsSync< COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
         return publishResult;
     }
     return true;

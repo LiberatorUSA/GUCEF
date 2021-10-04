@@ -187,7 +187,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
     CMailboxForCloneables( const CMailboxForCloneables& src );             /**< not implemented */
     CMailboxForCloneables& operator=( const CMailboxForCloneables& src );  /**< not implemented */
 
-    private:
+    protected:
 
     TMailList m_mailStack;
     CMutex m_datalock;

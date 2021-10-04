@@ -327,6 +327,42 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgSPtrVector& msgs, bool notify )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CIPubSubMsg::TIPubSubMsgSPtrVector::const_iterator i = msgs.begin();
+    while ( i != msgs.end() )    
+    {
+        UInt64 publishActionId = 0;
+        if ( !(*i).IsNULL() )
+            totalSuccess = totalSuccess && Publish( publishActionId, *(*i).GetPointerAlways(), false );
+        else
+            totalSuccess = false;    
+        publishActionIds.push_back( publishActionId );
+        ++i;
+    }
+    if ( notify )
+    {
+        if ( totalSuccess )
+        {
+            TMsgsPublishedEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishedEvent, &eData );
+        }
+        else
+        {
+            TMsgsPublishFailureEventData eData;
+            eData.LinkTo( &publishActionIds );
+            NotifyObservers( MsgsPublishFailureEvent, &eData );
+        }
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify )
 {GUCEF_TRACE;
 

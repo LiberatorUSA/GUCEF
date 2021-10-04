@@ -139,6 +139,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector                   TIPubSubMsgConstRawPtrVector;
     typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                        TIPubSubMsgRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgSPtrVector                          TIPubSubMsgSPtrVector;
     typedef CORE::CTLinkedCloneable< CIPubSubMsg >                      TPubSubMsgRef;
     typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef > >  TPubSubMsgsRefVector;    
     typedef CORE::CTCloneableExpansion< std::vector< UInt64 > >         TPublishActionIdVector;
@@ -203,6 +204,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify );
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs, bool notify );
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs, bool notify );
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgSPtrVector& msgs, bool notify );    
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify );
     virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify );
     virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify );
@@ -236,6 +238,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
      */
     virtual bool DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const;
 };
+
+/*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPubSubClientTopic, MT::CMutex > CPubSubClientTopicPtr;
 
