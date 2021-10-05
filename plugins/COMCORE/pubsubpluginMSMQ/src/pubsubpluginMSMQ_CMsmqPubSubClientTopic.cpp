@@ -1045,6 +1045,24 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
     
     switch ( propertyId )
     {
+        case PROPID_M_HASH_ALG: { return VT_UI4; }
+        case PROPID_M_ENCRYPTION_ALG: { return VT_UI4; }
+        case PROPID_M_SENDER_CERT: { return VT_VECTOR | VT_UI1; } 
+        case PROPID_M_SENDER_CERT_LEN: { return VT_UI4; } 
+        case PROPID_M_SECURITY_CONTEXT: { return VT_UI4; } 
+        case PROPID_M_XACT_STATUS_QUEUE: { return VT_LPWSTR; } 
+        case PROPID_M_XACT_STATUS_QUEUE_LEN: { return VT_UI4; } 
+        case PROPID_M_DEST_SYMM_KEY: { return VT_VECTOR | VT_UI1; }
+        case PROPID_M_DEST_SYMM_KEY_LEN: { return VT_UI4; }
+        case PROPID_M_SIGNATURE: { return VT_VECTOR | VT_UI1; }
+        case PROPID_M_SIGNATURE_LEN: { return VT_UI4; }
+        case PROPID_M_PROV_TYPE: { return VT_UI4; }
+        case PROPID_M_PROV_NAME: { return VT_LPWSTR; }
+        case PROPID_M_PROV_NAME_LEN: { return VT_UI4; }
+        case PROPID_M_PRIV_LEVEL: { return VT_UI4; }
+        case PROPID_M_SENDERID: { return VT_VECTOR | VT_UI1; } 
+        case PROPID_M_SENDERID_LEN: { return VT_UI4; } 
+        case PROPID_M_SENDERID_TYPE: { return VT_UI4; } 
         case PROPID_M_ABORT_COUNT: { return VT_UI4; }
         case PROPID_M_ACKNOWLEDGE: { return VT_UI1; }
         case PROPID_M_ADMIN_QUEUE: { return VT_LPWSTR; }                // Format name string of the administration queue.
@@ -1501,6 +1519,18 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a MSMQ message" );
                 break;
             }
+            case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
+            {
+                // Received a message but some warnings were triggered
+                // Since we are doing a sync cycle we can use linking
+                OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
+                
+                ++msgsRead;
+                m_pubsubMsgsRefs.msgs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a MSMQ message but with warnings" );
+                break;
+            }
 
             case (CORE::UInt64) MQ_ERROR_BUFFER_OVERFLOW:
             case (CORE::UInt64) MQ_ERROR_FORMATNAME_BUFFER_TOO_SMALL:
@@ -1518,7 +1548,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
                 break; 
             }
-
+            
             default:
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
