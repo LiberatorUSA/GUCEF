@@ -242,11 +242,10 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public COM
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClientTopic > TEventCallback;
    
     // Types to implement/hook-up topic interface
-    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
-    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
-    typedef std::vector< TBufferPair > TBufferVector;
-
-    typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
+    typedef std::vector< COMCORE::CBasicPubSubMsg >                     TPubSubMsgsVector;
+    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >     TBufferPair;
+    typedef std::vector< TBufferPair >                                  TBufferVector;
+    typedef std::map< CORE::Int32, CORE::Int64 >                        TInt32ToInt64Map;
 
     CKafkaPubSubClient* m_client;
     CORE::CTimer* m_metricsTimer;

@@ -41,6 +41,16 @@ namespace MSMQ {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+// BODY is by far the largest in allowing up to 4MB per msg so we handle that as a special case
+// This prevents what would likely be common resizes. Half the max allowed seems like a decent default
+#define DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES       (1024 * 1024 * 2)
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -53,7 +63,10 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , maxMsmqMsgsToReadPerSyncCycle( 100 )
     , topicNameIsMsmqFormatName( false )
     , convertMsmqMsgIdToString( false )
+    , convertMsmqClsIdToString( false )
     , ignoreUnmappableMetaDataFieldOnPublish( false )
+    , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
+    , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -71,7 +84,10 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubS
     , maxMsmqMsgsToReadPerSyncCycle( 100 )
     , topicNameIsMsmqFormatName( false )
     , convertMsmqMsgIdToString( false )
+    , convertMsmqClsIdToString( false )
     , ignoreUnmappableMetaDataFieldOnPublish( false )
+    , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
+    , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -97,11 +113,17 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 
     maxMsmqMsgsToReadPerSyncCycle = config.GetAttributeValueOrChildValueByName( "maxMsmqMsgsToReadPerSyncCycle" ).AsUInt32( maxMsmqMsgsToReadPerSyncCycle, true );
     if ( 0 == maxMsmqMsgsToReadPerSyncCycle )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqPubSubClientTopicConfig:LoadCustomConfig: maxMsmqMsgsToReadPerSyncCycle=0, this is invalid. Setting to minimum of 1" );
         maxMsmqMsgsToReadPerSyncCycle = 1;
+    }
 
+    defaultMsmqBodyBufferSizeInBytes = config.GetAttributeValueOrChildValueByName( "defaultMsmqBodyBufferSizeInBytes" ).AsUInt32( defaultMsmqBodyBufferSizeInBytes, true );
     topicNameIsMsmqFormatName = config.GetAttributeValueOrChildValueByName( "topicNameIsMsmqFormatName" ).AsBool( topicNameIsMsmqFormatName, true );
     convertMsmqMsgIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqMsgIdToString" ).AsBool( convertMsmqMsgIdToString, true );
+    convertMsmqClsIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqClsIdToString" ).AsBool( convertMsmqClsIdToString, true );
     ignoreUnmappableMetaDataFieldOnPublish = config.GetAttributeValueOrChildValueByName( "ignoreUnmappableMetaDataFieldOnPublish" ).AsBool( ignoreUnmappableMetaDataFieldOnPublish, true );
+    msmqMsgPropIdToMapToMsgIdOnReceive = config.GetAttributeValueOrChildValueByName( "msmqMsgPropIdToMapToMsgIdOnReceive" ).AsUInt64( msmqMsgPropIdToMapToMsgIdOnReceive, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
     msmqPropIdsToReceive.clear();
@@ -157,6 +179,12 @@ CMsmqPubSubClientTopicConfig::operator=( const CMsmqPubSubClientTopicConfig& src
         msmqPropIdsToReceive = src.msmqPropIdsToReceive;
         msmqPropIdsToSend = src.msmqPropIdsToSend;
         maxMsmqMsgsToReadPerSyncCycle = src.maxMsmqMsgsToReadPerSyncCycle;
+        topicNameIsMsmqFormatName = src.topicNameIsMsmqFormatName;
+        convertMsmqMsgIdToString = src.convertMsmqMsgIdToString;
+        convertMsmqClsIdToString = src.convertMsmqClsIdToString;
+        ignoreUnmappableMetaDataFieldOnPublish = src.ignoreUnmappableMetaDataFieldOnPublish;
+        msmqMsgPropIdToMapToMsgIdOnReceive = src.msmqMsgPropIdToMapToMsgIdOnReceive;
+        defaultMsmqBodyBufferSizeInBytes = src.defaultMsmqBodyBufferSizeInBytes;
     }
     return *this;
 }

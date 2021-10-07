@@ -139,7 +139,7 @@ CPubSubClientTopic::DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookma
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -151,7 +151,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -163,7 +163,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -175,7 +175,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgI
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -187,7 +187,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -199,7 +199,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -211,7 +211,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -223,7 +223,7 @@ CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CVariant& msgI
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopic::Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify )
+CPubSubClientTopic::Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify )
 {GUCEF_TRACE;
 
     CBasicPubSubMsg msg;
@@ -263,26 +263,11 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
-    }
-    if ( notify )
-    {
-        if ( totalSuccess )
-        {
-            TMsgsPublishedEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishedEvent, &eData );
-        }
-        else
-        {
-            TMsgsPublishFailureEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishFailureEvent, &eData );
-        }
     }
     return totalSuccess;
 }
@@ -300,26 +285,11 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
-    }
-    if ( notify )
-    {
-        if ( totalSuccess )
-        {
-            TMsgsPublishedEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishedEvent, &eData );
-        }
-        else
-        {
-            TMsgsPublishFailureEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishFailureEvent, &eData );
-        }
     }
     return totalSuccess;
 }
@@ -336,26 +306,11 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
     {
         UInt64 publishActionId = 0;
         if ( !(*i).IsNULL() )
-            totalSuccess = totalSuccess && Publish( publishActionId, *(*i).GetPointerAlways(), false );
+            totalSuccess = totalSuccess && Publish( publishActionId, *(*i).GetPointerAlways(), notify );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
-    }
-    if ( notify )
-    {
-        if ( totalSuccess )
-        {
-            TMsgsPublishedEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishedEvent, &eData );
-        }
-        else
-        {
-            TMsgsPublishFailureEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishFailureEvent, &eData );
-        }
     }
     return totalSuccess;
 }
@@ -373,26 +328,11 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPu
         UInt64 publishActionId = 0;
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
-            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, false );
+            totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
         publishActionIds.push_back( publishActionId );
         ++i;
-    }
-    if ( notify )
-    {
-        if ( totalSuccess )
-        {
-            TMsgsPublishedEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishedEvent, &eData );
-        }
-        else
-        {
-            TMsgsPublishFailureEventData eData;
-            eData.LinkTo( &publishActionIds );
-            NotifyObservers( MsgsPublishFailureEvent, &eData );
-        }
     }
     return totalSuccess;
 }

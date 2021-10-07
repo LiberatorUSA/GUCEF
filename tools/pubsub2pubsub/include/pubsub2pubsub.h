@@ -136,6 +136,8 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
+    bool performFireAndForgetPublishing;
+    COMCORE::CPubSubClientFeatures backendSupportedFeatures;
 
     COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
@@ -246,7 +248,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
 
-    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                      CPubSubClientSide* srcSide                                    );
     
     protected:
 
@@ -263,20 +266,29 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     {
         public:
 
+        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
+
+        COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
+        TUInt64ToIPubSubMsgNoLockSharedPtrMap inFlightMsgs;
+
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
+        
+        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
 
-        COMCORE::CPubSubClientTopic* topic;
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector publishActionIds;
+        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
+
     };
     
-    typedef std::vector< TopicLink > TopicVector;
-    typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
+    typedef std::map< COMCORE::CPubSubClientTopic*, TopicLink > TopicMap;
     typedef CORE::CTMailboxForSharedCloneables< COMCORE::CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
     CPubSubClientSide* m_otherSide;
-    TopicVector m_topics;
+    TopicMap m_topics;
     ChannelSettings m_channelSettings;
     PubSubSideChannelSettings* m_sideSettings;
     TPubSubMsgMailbox m_mailbox;

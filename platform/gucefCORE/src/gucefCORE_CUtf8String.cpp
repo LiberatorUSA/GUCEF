@@ -760,7 +760,7 @@ CUtf8String::STL_String( void ) const
 
     if ( m_length > 0 )
     {
-        return std::string( reinterpret_cast< const char* >( m_string ), m_byteSize );
+        return std::string( reinterpret_cast< const char* >( m_string ), m_byteSize-1 );
     }
     return std::string();
 }

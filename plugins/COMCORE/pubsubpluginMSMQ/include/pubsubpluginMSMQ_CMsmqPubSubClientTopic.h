@@ -65,6 +65,56 @@ class CMsmqPubSubClient;
 
 /**
  *  MS Windows MSMQ implementation of the conceptual pub-sub "topic"
+ *  MSMQ feature support is implemented on a as-needed basis and as such this backend may not
+ *  be feature complete for every usecase
+ *  MSMQ generally is not very friendly towards the implementation of a config driven backend as generally the approach is to use
+ *  hardcoded message property lists. We deal with that by using a default common set with the ability to specify other properties
+ *  via property ID nr via the backend custom config
+ *
+ *  Note that a lot of effort was put into the code to ensure that we can use pre-allocated structures, reusing memory
+ *  This greatly adds to the performance of the code as we are merely setting memory addresses and not doing allocations on a per message basis
+ *  As a tradeoff this makes the code in the backend appear more complex due to the memory mapping aspect.
+ * 
+ *  General MSMQ notes not specific to this implementation:
+ * 
+ *      All message properties can be read. However, only those properties specified in the pMessagePropsparameter are returned to the calling application; other properties are simply discarded when the message is read. 
+ *      For example, you may choose to retrieve the size of the message without retrieving the message body itself.
+ *
+ *      The hCursorparameter contains the handle to a cursor created by MQCreateCursor. Using a cursor is optional and is only necessary when you want to read messages that are not at the front of the queue. 
+ *      When using a cursor, you must peek at the first message in the queue by setting dwActionto MQ_ACTION_PEEK_CURRENT before you make calls with dwActionset to MQ_ACTION_PEEK_NEXT.
+ *
+ *      To retrieve the message body, you must specify PROPID_M_BODY in pMessageProps. The VT field of the corresponding element in the aPropVararray should be set to VT_UI1 | VT_VECTOR, allowing MSMQ to use the buffer specified in the CAUI1structure to store the message. 
+ *      If the supplied buffer is too small to contain the entire message body, MQReceiveMessagefails and MQ_ERROR_BUFFER_OVERFLOW is returned. 
+ *      The buffer is filled to capacity, and the full message remains in the queue. When this happens, the other properties specified by pMessagePropsare still read.
+ *
+ *      To retrieve the size of the message, specify PROPID_M_BODY_SIZE in pMessageProps. MSMQ sets PROPID_M_BODY_SIZE to the size of the message body, even if MQReceiveMessage fails because the message body exceeded the buffer allocated by PROPID_M_BODY. 
+ *      When retrieving the message body size, the CAUI1structure associated with the PROPID_M_BODY property does not indicate the size. The cElemsfield of the CAUI1structure merely indicates the maximum message body, which could be copied into the pElemsbuffer. 
+ *      The cElemsfield is never modified by MSMQ.
+ *      Not all properties require the application to specify the property type in the VT field of the aPropVararray. For these properties, the corresponding VT field in the aPropVararray can be set to VT_NULL.
+ *      When reading messages in a queue, the function's time-out timer ( dwTimeout) can be set to 0, a specific amount of time, or INFINITE. A message can be retrieved if it is available at that period of time.
+ *      Messages cannot be read from a queue that resides on a computer without a direct connection. Opening a queue with receive or peek access requires a direct connection to the computer where the queue resides.
+ *
+ *      Synchronously Reading Messages:
+ *      To synchronously read messages, set fnReceiveCallbackand lpOverlappedto NULL. When this is done, the calling thread is blocked until a suitable message is available or a time-out occurs.
+ *      Using a zero timeout allows for a non-blocking check for messages
+ *
+ *      Asynchronously Reading Messages:
+ *      When asynchronously reading messages, MQReceiveMessagereturns a SUCCESS value if a suitable message is found. Otherwise, the function returns immediately with the return value MQ_INFORMATION_OPERATION_PENDING. 
+ *      This return value indicates that the operation is pending and will be completed as soon as a suitable message can be found. Asynchronous receive is based on standard Microsoft Win32 mechanisms.
+ *      Applications can use a callback function, a Windows Event mechanism, or a completion port to read messages asynchronously. When using a callback function, you can register only 64 callbacks at the same time.
+ *      Completion ports cannot be used by dependent client applications. On MSMQ independent clients and servers, queue handles are implemented as file handles and so, can be associated with completion ports. 
+ *      However, on dependent clients, queue handles are not file handles and as a result, cannot be used with completion ports.
+ *      The output parameters to an asynchronous call to MQReceiveMessageshould be kept intact until the operation is complete (that is, you cannot free them or reuse them). Use automatic variables with caution.
+ *
+ *      Messages in Administration Queues
+ *      When reading acknowledgment messages in an administration queue, you can see if the original message failed to reach its destination or was not retrieved from the queue by looking at the class property ( PROPID_M_CLASS) of the acknowledgment message. 
+ *      The class property will contain a positive or negative acknowledgment, depending on the acknowledgment level specified by the original message.
+ *      If the class property is positive, the original message body is not included in the acknowledgment message. If the class property is negative, the message body is included as the message body of the acknowledgment message.
+ *
+ *      Responding to Messages
+ *      The receiving application can determine if the sending application expects a response by retrieving the PROPID_M_RESP_QUEUE and PROPID_M_RESP_QUEUE_LEN properties when reading a message. 
+ *      PROPID_M_RESP_QUEUE contains the format name of a response queue if a response is requested.
+ *      When opening a response queue to send several response messages, the receiving application can cache the queue handle returned by MQOpenQueue, thus eliminating the need to call MQOpenQueueseveral times for the same response queue. 
  */
 class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
@@ -98,6 +148,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    const CORE::CString& GetMetricFriendlyTopicName( void ) const;
+
     virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
@@ -106,6 +158,31 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
+
+    CORE::UInt64 GetMsmqErrorsOnReceiveCounter( bool resetCounter );
+
+    CORE::UInt64 GetMsmqMessagesReceivedCounter( bool resetCounter );
+
+    CORE::UInt64 GetMsmqMessagesPublishedCounter( bool resetCounter );
+
+    CORE::UInt64 GetMsmqErrorsOnPublishCounter( bool resetCounter );
+    
+    class TopicMetrics
+    {
+        public:
+
+        TopicMetrics( void );
+
+        CORE::Int64 msmqMsgsInQueue;
+
+        CORE::UInt64 msmqMessagesPublished;
+        CORE::UInt64 msmqErrorsOnPublish;
+
+        CORE::UInt64 msmqMessagesReceived;
+        CORE::UInt64 msmqErrorsOnReceive;
+    };
+
+    const TopicMetrics& GetMetrics( void ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -152,12 +229,12 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     void RegisterEventHandlers( void );
 
-    void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
-    void PrepMsmqMsgsStorage( void );
-    void PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse );
+    bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+    bool PrepMsmqMsgsStorage( void );
+    bool PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse );
+    bool PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData );
+    bool PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& propIndexMapToBuild, const MSGPROPIDVector& msmqPropIdsToUse );
 
-    void PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData );
-    void PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& propIndexMapToBuild, const MSGPROPIDVector& msmqPropIdsToUse );
     bool SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UInt32 valueToSet, TMsmqMsg& msgData );
 
     static VARTYPE GetMsmqVariantTypeForMsmqProperty( PROPID propertyId );
@@ -170,6 +247,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
                                                    std::wstring& queueFormatName  );
 
     const std::wstring& GetMsmqQueueFormatName( void ) const;
+
+    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
     void
     OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
@@ -187,7 +266,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
 
-    static bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
+    bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
     static bool VariantToMsmqProperty( MSGPROPID propId, const CORE::CVariant& sourceVariant, MQPROPVARIANT& msmqTargetVariant );
     static CORE::Int32 SizeOfVarType( VARTYPE vt );
     
@@ -201,8 +280,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     MSGPROPIDToUInt32Map m_msgSendPropMap;
     CMsmqPubSubClientTopicConfig m_config;
     mutable std::wstring m_msmqQueueFormatName;
-    CORE::CTimer* m_syncReadTimer;
-    CORE::Int64 m_msmqMsgsQueued;
+    CORE::CTimer* m_syncReadTimer;    
     MT::CMutex m_lock;
     QUEUEHANDLE m_receiveQueueHandle;
     QUEUEHANDLE m_sendQueueHandle;
@@ -212,6 +290,13 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     TMsgsPublishedEventData m_publishSuccessActionEventData;
     TPublishActionIdVector m_publishFailureActionIds;
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
+    CORE::CAsciiString m_guidStr;
+    CORE::UInt64 m_msmqMessagesPublished;
+    CORE::UInt64 m_msmqErrorsOnPublish;
+    CORE::UInt64 m_msmqMessagesReceived;
+    CORE::UInt64 m_msmqErrorsOnReceive;
+    TopicMetrics m_metrics;
+    CORE::CString m_metricFriendlyTopicName;
 };
 
 /*-------------------------------------------------------------------------//

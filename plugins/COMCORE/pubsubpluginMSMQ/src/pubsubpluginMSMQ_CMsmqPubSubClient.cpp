@@ -331,12 +331,39 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                         CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    // Quickly grab a snapshot of metric values for all topics 
+    // we don't combine this with metrics publishing as it adds to metrics timeframe drift across topics
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
         (*i).second->OnMetricsTimerCycle( notifier  ,
                                           eventId   ,
                                           eventData );
+        ++i;
+    }
+
+    // Now publish all the metrics to the metrics system
+    i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        const CMsmqPubSubClientTopic::TopicMetrics& metrics = (*i).second->GetMetrics();
+
+        const CORE::CString& topicName = (*i).second->GetMetricFriendlyTopicName();
+
+        if ( metrics.msmqMsgsInQueue >= 0 )
+            GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".msmqMsgsInQueue", metrics.msmqMsgsInQueue, 1.0f );
+
+        if ( m_config.desiredFeatures.supportsPublishing )
+        {
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesPublished", metrics.msmqMessagesPublished, 1.0f );
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnPublish", metrics.msmqErrorsOnPublish, 1.0f );
+        }
+        if ( m_config.desiredFeatures.supportsSubscribing )
+        {
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesReceived", metrics.msmqMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnReceive", metrics.msmqErrorsOnReceive, 1.0f );
+        }
+
         ++i;
     }
 }

@@ -137,12 +137,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 {
     public:
 
-    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector                   TIPubSubMsgConstRawPtrVector;
-    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                        TIPubSubMsgRawPtrVector;
-    typedef CIPubSubMsg::TIPubSubMsgSPtrVector                          TIPubSubMsgSPtrVector;
-    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                      TPubSubMsgRef;
-    typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef > >  TPubSubMsgsRefVector;    
-    typedef CORE::CTCloneableExpansion< std::vector< UInt64 > >         TPublishActionIdVector;
+    typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector                       TIPubSubMsgConstRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                            TIPubSubMsgRawPtrVector;
+    typedef CIPubSubMsg::TIPubSubMsgSPtrVector                              TIPubSubMsgSPtrVector;
+    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                          TPubSubMsgRef;
+    typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef > >      TPubSubMsgsRefVector;    
+    typedef UInt64                                                          TPublishActionId;
+    typedef CORE::CTCloneableExpansion< std::vector< TPublishActionId > >   TPublishActionIdVector;
+    
 
 
     static const CORE::CEvent ConnectedEvent;
@@ -206,14 +208,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs, bool notify );
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgSPtrVector& msgs, bool notify );    
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify );    
-    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
-    virtual bool Publish( UInt64& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify );    
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& payload, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& payload, bool notify );    
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CVariant& msgId, const CORE::CVariant& payload, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value, bool notify );
+    virtual bool Publish( TPublishActionId& publishActionId, const CORE::CString& msgId, const CORE::CValueList& kvPairs, bool notify );    
 
     /**
      *  Publish the given message to the pub-sub backend system using that system's specifics

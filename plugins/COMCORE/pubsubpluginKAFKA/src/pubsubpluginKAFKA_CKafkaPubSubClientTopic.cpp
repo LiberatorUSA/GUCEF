@@ -148,7 +148,7 @@ CKafkaPubSubClientTopic::Clear( void )
     delete m_kafkaConsumer;
     m_kafkaConsumer = GUCEF_NULL;
 
-    m_currentPublishActionId = 0;
+    m_currentPublishActionId = 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -281,13 +281,13 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     }
 
     retCode = 
-        m_kafkaProducer->dvcustom_produce( m_kafkaProducerTopic, 
-                                           RdKafka::Topic::PARTITION_UA,
+        m_kafkaProducer->dvcustom_produce( m_kafkaProducerTopic,                                        
+                                           RdKafka::Topic::PARTITION_UA,                               // <- use configured partitioner to keep it config driven
                                            RdKafka::Producer::RK_MSG_COPY,                             // <- Copy payload, tradeoff against blocking on kafka produce
                                            const_cast< void* >( msg.GetPrimaryPayload().AsVoidPtr() ), // <- MSG_COPY flag will cause buffer to be copied, const cast to avoid copying again due to bad constness on library API
-                                           (size_t) msg.GetPrimaryPayload().ByteSize(), 
+                                           (size_t) msg.GetPrimaryPayload().ByteSize( false ), 
                                            const_cast< void* >( msg.GetMsgId().AsVoidPtr() ), 
-                                           (size_t) msg.GetMsgId().ByteSize(),
+                                           (size_t) msg.GetMsgId().ByteSize( false ),
                                            headers,
                                            msg_opaque );
     
@@ -1330,7 +1330,8 @@ CKafkaPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 const CKafkaPubSubClientTopic::TopicMetrics& 
 CKafkaPubSubClientTopic::GetMetrics( void ) const
-{
+{GUCEF_TRACE;
+
     return m_metrics;
 }
 

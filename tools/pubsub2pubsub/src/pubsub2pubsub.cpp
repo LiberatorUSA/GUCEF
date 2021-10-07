@@ -92,6 +92,8 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     , applyThreadCpuAffinity( false )
     , cpuAffinityForPubSubThread( 0 )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
+    , performFireAndForgetPublishing( false )
+    , backendSupportedFeatures()
 {GUCEF_TRACE;
 
 }
@@ -105,6 +107,8 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSet
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
+    , performFireAndForgetPublishing( src.performFireAndForgetPublishing )
+    , backendSupportedFeatures()
 {GUCEF_TRACE;
 
 }
@@ -124,6 +128,8 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
+        performFireAndForgetPublishing = src.performFireAndForgetPublishing;
+        backendSupportedFeatures = src.backendSupportedFeatures;
     }
     return *this;
 }
@@ -145,6 +151,7 @@ PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
     tree.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
+    tree.SetAttribute( "performFireAndForgetPublishing", performFireAndForgetPublishing );
 
     return true;
 }
@@ -189,6 +196,7 @@ PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     applyThreadCpuAffinity = tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = tree.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
+    performFireAndForgetPublishing = tree.GetAttributeValueOrChildValueByName( "performFireAndForgetPublishing" ).AsBool( performFireAndForgetPublishing, true );
     return true;
 }
 
@@ -404,7 +412,8 @@ CPubSubClientSide::~CPubSubClientSide()
 
 CPubSubClientSide::TopicLink::TopicLink( void )
     : topic( GUCEF_NULL )
-    , publishActionIds()
+    , currentPublishActionIds()
+    , inFlightMsgs()
 {GUCEF_TRACE;
 
 }
@@ -413,9 +422,37 @@ CPubSubClientSide::TopicLink::TopicLink( void )
 
 CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
     : topic( t )
-    , publishActionIds()
+    , currentPublishActionIds()
+    , inFlightMsgs()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                               const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
+{GUCEF_TRACE;
+    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    for ( size_t i=0; i<max; ++i )
+        inFlightMsgs[ publishActionIds[ i ] ] = msgs[ i ];
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                               const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
+{GUCEF_TRACE;
+    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    for ( size_t i=0; i<max; ++i )
+    {
+        COMCORE::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+        inFlightMsgs[ publishActionIds[ i ] ] = ptr;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -507,13 +544,15 @@ bool
 CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
+    bool needToTrackInFlightMsgs = !m_sideSettings->performFireAndForgetPublishing;
+    
     CORE::UInt32 topicsToPublishOn = 0;
     CORE::UInt32 topicsPublishedOn = 0;
     bool publishSuccess = true;
-    TopicVector::iterator i = m_topics.begin();
+    TopicMap::iterator i = m_topics.begin();
     while ( i != m_topics.end() )
     {
-        TopicLink& topicLink = (*i);
+        TopicLink& topicLink = (*i).second;
         COMCORE::CPubSubClientTopic* topic = topicLink.topic;
         
         if ( GUCEF_NULL != topic )
@@ -521,8 +560,12 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
             if ( topic->IsPublishingSupported() )
             {
                 ++topicsToPublishOn;
-                if ( topic->Publish( topicLink.publishActionIds, msgs, true ) )
+
+                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, needToTrackInFlightMsgs ) )
                 {
+                    //if ( needToTrackInFlightMsgs )
+                    //    topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs );
+
                     ++topicsPublishedOn;
                 }
                 else
@@ -556,7 +599,8 @@ CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubM
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                                CPubSubClientSide* srcSide                                    )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -621,7 +665,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                     CPubSubClientSide* side = (*i);
                     if ( this != side )
                     {
-                        if ( (*i)->PublishMsgs( msgs ) )
+                        if ( (*i)->PublishMsgs( msgs, this ) )
                         {
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Successfully published message(s) to side " + (*i)->m_side ); 
@@ -651,14 +695,32 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                                                CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier )
         return;
+
     const COMCORE::CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< COMCORE::CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
     const COMCORE::CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
+    COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
 
+    TopicMap::iterator i = m_topics.find( topic );
+    if ( i != m_topics.end() )
+    {
+        const TopicLink& topicLink = (*i).second;
+        
+        COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
+        while ( n != publishActionIds->end() )
+        {
+            TopicLink::TUInt64ToIPubSubMsgNoLockSharedPtrMap::const_iterator m = topicLink.inFlightMsgs.find( (*n) );
+            if ( m != topicLink.inFlightMsgs.end() )
+            {
+                const COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg = (*m).second;
 
-
-    // @TODO: Ack to other sides, if applicable, that we successfully published
+                // @TODO: Ack to other sides, if applicable, that we successfully published
+            }            
+            ++n;
+        }
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -739,7 +801,6 @@ CPubSubClientSide::ConnectPubSubClient( void )
 
     // Create and configure the pub-sub client's topics
     m_topics.clear();
-    m_topics.reserve( pubSubConfig.topics.size() );
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
     while ( i != pubSubConfig.topics.end() )
     {
@@ -761,15 +822,15 @@ CPubSubClientSide::ConnectPubSubClient( void )
         else
         {
             RegisterTopicEventHandlers( *topic );
-            m_topics.push_back( topic );
+            m_topics[ topic ].topic = topic;
         }
         ++i;
     }
 
-    TopicVector::iterator t = m_topics.begin();
+    TopicMap::iterator t = m_topics.begin();
     while ( t != m_topics.end() )
     {
-        TopicLink& topicLink = (*t);
+        TopicLink& topicLink = (*t).second;
         COMCORE::CPubSubClientTopic* topic = topicLink.topic;
 
         if ( topic->InitializeConnectivity() )

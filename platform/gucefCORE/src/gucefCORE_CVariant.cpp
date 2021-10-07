@@ -887,7 +887,7 @@ CVariant::ByteSize( bool includeNullTerm ) const
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
         {
-            if ( !includeNullTerm || 0 == m_variantData.union_data.heap_data.heap_data_size )
+            if ( includeNullTerm || 0 == m_variantData.union_data.heap_data.heap_data_size )
                 return m_variantData.union_data.heap_data.heap_data_size;
 
             const char* heapPtr = static_cast< const char* >( m_variantData.union_data.heap_data.union_data.char_heap_data );
@@ -897,7 +897,7 @@ CVariant::ByteSize( bool includeNullTerm ) const
         }
         case GUCEF_DATATYPE_UTF16_STRING:
         {
-            if ( !includeNullTerm || 1 > m_variantData.union_data.heap_data.heap_data_size )
+            if ( includeNullTerm || 1 > m_variantData.union_data.heap_data.heap_data_size )
                 return m_variantData.union_data.heap_data.heap_data_size;
 
             const UInt16 lastCodePoint = *reinterpret_cast< const UInt16* >( m_variantData.union_data.heap_data.union_data.char_heap_data + m_variantData.union_data.heap_data.heap_data_size - 2 );
