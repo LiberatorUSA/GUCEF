@@ -49,6 +49,8 @@ namespace MSMQ {
 // This prevents what would likely be common resizes. Half the max allowed seems like a decent default
 #define DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES       (1024 * 1024 * 2)
 
+#define DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES       (128)
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
@@ -67,6 +69,7 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , ignoreUnmappableMetaDataFieldOnPublish( false )
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
+    , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -88,6 +91,7 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubS
     , ignoreUnmappableMetaDataFieldOnPublish( false )
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
+    , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -119,6 +123,7 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     }
 
     defaultMsmqBodyBufferSizeInBytes = config.GetAttributeValueOrChildValueByName( "defaultMsmqBodyBufferSizeInBytes" ).AsUInt32( defaultMsmqBodyBufferSizeInBytes, true );
+    defaultMsmqMiscBufferSizeInBytes = config.GetAttributeValueOrChildValueByName( "defaultMsmqMiscBufferSizeInBytes" ).AsUInt32( defaultMsmqMiscBufferSizeInBytes, true );
     topicNameIsMsmqFormatName = config.GetAttributeValueOrChildValueByName( "topicNameIsMsmqFormatName" ).AsBool( topicNameIsMsmqFormatName, true );
     convertMsmqMsgIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqMsgIdToString" ).AsBool( convertMsmqMsgIdToString, true );
     convertMsmqClsIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqClsIdToString" ).AsBool( convertMsmqClsIdToString, true );
@@ -185,6 +190,7 @@ CMsmqPubSubClientTopicConfig::operator=( const CMsmqPubSubClientTopicConfig& src
         ignoreUnmappableMetaDataFieldOnPublish = src.ignoreUnmappableMetaDataFieldOnPublish;
         msmqMsgPropIdToMapToMsgIdOnReceive = src.msmqMsgPropIdToMapToMsgIdOnReceive;
         defaultMsmqBodyBufferSizeInBytes = src.defaultMsmqBodyBufferSizeInBytes;
+        defaultMsmqMiscBufferSizeInBytes = src.defaultMsmqMiscBufferSizeInBytes;
     }
     return *this;
 }

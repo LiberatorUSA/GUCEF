@@ -333,7 +333,8 @@ CPubSubClientChannel::~CPubSubClientChannel()
 
 CPubSubClientChannel::TopicLink::TopicLink( void )
     : topic( GUCEF_NULL )
-    , publishActionIds()
+    , currentPublishActionIds()
+    , inFlightMsgs()
 {GUCEF_TRACE;
 
 }
@@ -342,9 +343,37 @@ CPubSubClientChannel::TopicLink::TopicLink( void )
 
 CPubSubClientChannel::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
     : topic( t )
-    , publishActionIds()
+    , currentPublishActionIds()
+    , inFlightMsgs()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientChannel::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                                  const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
+{GUCEF_TRACE;
+    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    for ( size_t i=0; i<max; ++i )
+        inFlightMsgs[ publishActionIds[ i ] ] = msgs[ i ];
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientChannel::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                                  const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
+{GUCEF_TRACE;
+    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    for ( size_t i=0; i<max; ++i )
+    {
+        COMCORE::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+        inFlightMsgs[ publishActionIds[ i ] ] = ptr;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -448,10 +477,10 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
     
     try
     {
-        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
-        if ( !msgs.empty() )
+        const COMCORE::CPubSubClientTopic::CMsgsRecieveActionData& receiveAction = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
+        if ( !receiveAction.msgs.empty() )
         {                            
-            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = msgs.begin();
+            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = receiveAction.msgs.begin();
             const CORE::CDateTime& firstMsgDt = (*i)->GetMsgDateTime();
 
             bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
@@ -474,7 +503,7 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             }
             CORE::UInt32 bufferOffset = m_msgReceiveBuffer->GetDataSize();
 
-            while ( i != msgs.end() )    
+            while ( i != receiveAction.msgs.end() )    
             {
                 CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
                 CORE::UInt32 msgBytesWritten = 0;
@@ -815,7 +844,7 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
             if ( topic->IsPublishingSupported() )
             {
                 ++topicsToPublishOn;
-                if ( topic->Publish( topicLink.publishActionIds, msgs ) )
+                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, true ) )
                 {
                     ++topicsPublishedOn;
                 }

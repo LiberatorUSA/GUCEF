@@ -1233,6 +1233,12 @@ CMsmqPubSubClientTopic::GetPayloadPropertyForPayloadSizeProperty( PROPID payload
 
     switch ( payloadSizePropId )
     {
+        case PROPID_M_SENDERID_LEN:          { return PROPID_M_SENDERID; }
+        case PROPID_M_PROV_NAME_LEN:         { return PROPID_M_PROV_NAME; }
+        case PROPID_M_SIGNATURE_LEN:         { return PROPID_M_SIGNATURE; }
+        case PROPID_M_DEST_SYMM_KEY_LEN:     { return PROPID_M_DEST_SYMM_KEY; }
+        case PROPID_M_XACT_STATUS_QUEUE_LEN: { return PROPID_M_XACT_STATUS_QUEUE; }
+        case PROPID_M_SENDER_CERT_LEN:       { return PROPID_M_SENDER_CERT; }
         case PROPID_M_ADMIN_QUEUE_LEN:       { return PROPID_M_ADMIN_QUEUE; }
         case PROPID_M_BODY_SIZE:             { return PROPID_M_BODY; }
         case PROPID_M_COMPOUND_MESSAGE_SIZE: { return PROPID_M_COMPOUND_MESSAGE; }
@@ -1259,6 +1265,12 @@ CMsmqPubSubClientTopic::GetPayloadSizePropertyForPayloadProperty( PROPID payload
 
     switch ( payloadPropId )
     {
+        case PROPID_M_SENDERID:          { return PROPID_M_SENDERID_LEN; }
+        case PROPID_M_PROV_NAME:         { return PROPID_M_PROV_NAME_LEN; }
+        case PROPID_M_SIGNATURE:         { return PROPID_M_SIGNATURE_LEN; }
+        case PROPID_M_DEST_SYMM_KEY:     { return PROPID_M_DEST_SYMM_KEY_LEN; }
+        case PROPID_M_XACT_STATUS_QUEUE: { return PROPID_M_XACT_STATUS_QUEUE_LEN; }
+        case PROPID_M_SENDER_CERT:       { return PROPID_M_SENDER_CERT_LEN; }
         case PROPID_M_ADMIN_QUEUE:       { return PROPID_M_ADMIN_QUEUE_LEN; }
         case PROPID_M_BODY:              { return PROPID_M_BODY_SIZE; }
         case PROPID_M_COMPOUND_MESSAGE:  { return PROPID_M_COMPOUND_MESSAGE_SIZE; }
@@ -1355,7 +1367,7 @@ CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQ
                     case PROPID_M_CORRELATIONID:
                     case PROPID_M_MSGID: { buffer.SetDataSize( PROPID_M_MSGID_SIZE ); break; }
 
-                    default: { buffer.SetDataSize( 128 ); break; }
+                    default: { buffer.SetDataSize( m_config.defaultMsmqMiscBufferSizeInBytes ); break; }
                 }          
              
                 msmqVariant.caub.cElems = (ULONG) buffer.GetBufferSize();
@@ -1380,25 +1392,35 @@ CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
 {GUCEF_TRACE;
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: The to-be-mapped MSMQ message reportedly needs larger buffer space to copy the data" );
-    
+
     // If this happens we need cycle through the message properties and find any mismatch between
     // size/length of the property as relayed vs the buffer of the associated paired property
     CORE::UInt32 foundIssues = 0;
     for ( DWORD i=0; i<msgsData.msgprops.cProp; ++i )
     {
-        PROPID relatedPayloadProperty = GetPayloadPropertyForPayloadSizeProperty( msgsData.msgprops.aPropID[ i ] );
-        if ( relatedPayloadProperty != PROPID_M_BASE )
-        {
+        TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msgsData.msgprops.aStatus[ i ] );
+        if ( TMsmqHresultSeverityCode::Success != sevCode )
+        {        
             CORE::UInt32 requiredSize = msgsData.msgprops.aPropVar[ i ].ulVal; 
-            CORE::CDynamicBuffer& buffer = msgsData.propBuffers[ relatedPayloadProperty ];
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " possibly has insufficient storage. Needs " + CORE::ToString( requiredSize ) + " bytes. Will attempt to adjust" );
+            
+            PROPID relatedPayloadProperty = GetPayloadPropertyForPayloadSizeProperty( msgsData.msgprops.aPropID[ i ] );
+            if ( relatedPayloadProperty != PROPID_M_BASE )
+            { 
+                CORE::CDynamicBuffer& buffer = msgsData.propBuffers[ relatedPayloadProperty ];
 
-            if ( buffer.GetBufferSize() < requiredSize )
+                if ( buffer.GetBufferSize() < requiredSize )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Buffer size for payload property " + CORE::ToString( (CORE::UInt32) relatedPayloadProperty ) + " as specified by property " + 
+                        CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " is insufficient at " + CORE::ToString( buffer.GetBufferSize() ) + " bytes. It needs " + CORE::ToString( requiredSize ) + " bytes"  );
+
+                    msgsData.propBuffers[ relatedPayloadProperty ].SetDataSize( requiredSize );
+                    ++foundIssues;
+                }
+            }
+            else
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Buffer size for payload property " + CORE::ToString( (CORE::UInt32) relatedPayloadProperty ) + " as specified by property " + 
-                    CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " is insufficient at " + CORE::ToString( buffer.GetBufferSize() ) + " bytes. It needs " + CORE::ToString( requiredSize ) + " bytes"  );
-
-                msgsData.propBuffers[ relatedPayloadProperty ].SetDataSize( requiredSize );
-                ++foundIssues;
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " does not have a mapping to a payload property. Some other issue?" );
             }
         }
     }
@@ -1516,6 +1538,16 @@ CMsmqPubSubClientTopic::PrepMsmqMsgsStorage( void )
         return false;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::TMsmqHresultSeverityCode
+CMsmqPubSubClientTopic::ExtractSeverityCode( HRESULT code )
+{GUCEF_TRACE;
+
+    CORE::UInt32 sevCode = ( 10 * GUCEF_GETBITX( code, 0 ) ) + GUCEF_GETBITX( code, 1 );
+    return (TMsmqHresultSeverityCode) sevCode;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1657,6 +1689,33 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
             }
             case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
             {
+                const MQMSGPROPS& msg = m_msmqReceiveMsgs[ i ].msgprops;
+                for ( CORE::UInt32 i=0; i<msg.cProp; ++i )
+                {
+                    TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msg.aStatus[ i ] );
+                    switch ( sevCode )
+                    {
+                        case TMsmqHresultSeverityCode::Error:
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having an error status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Warning:
+                        {
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having a warning status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Informational:
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having an informational status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Success:
+                        default:
+                            break;
+                    } 
+                }
+
                 // Received a message but some warnings were triggered
                 // Since we are doing a sync cycle we can use linking
                 OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );

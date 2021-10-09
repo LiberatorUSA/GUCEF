@@ -252,11 +252,20 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     {
         public:
 
+        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
+
+        COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
+        TUInt64ToIPubSubMsgNoLockSharedPtrMap inFlightMsgs;
+
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
+        
+        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
 
-        COMCORE::CPubSubClientTopic* topic;
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector publishActionIds;
+        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
     };
 
     typedef std::vector< TopicLink > TopicVector;

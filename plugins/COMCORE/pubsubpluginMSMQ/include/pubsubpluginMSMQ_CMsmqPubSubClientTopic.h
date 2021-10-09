@@ -227,6 +227,15 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     private:
 
+    enum EMsmqHresultSeverityCode : char
+    {
+        Success       = 0,  // bits 00
+        Informational = 1,  // bits 01
+        Warning       = 10, // bits 10
+        Error         = 11, // bits 11
+    };
+    typedef enum EMsmqHresultSeverityCode TMsmqHresultSeverityCode;
+
     void RegisterEventHandlers( void );
 
     bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
@@ -240,6 +249,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     static VARTYPE GetMsmqVariantTypeForMsmqProperty( PROPID propertyId );
     static PROPID GetPayloadPropertyForPayloadSizeProperty( PROPID payloadSizePropId );
     static PROPID GetPayloadSizePropertyForPayloadProperty( PROPID payloadPropId );
+    static TMsmqHresultSeverityCode ExtractSeverityCode( HRESULT code );
 
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 
