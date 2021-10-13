@@ -88,6 +88,9 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     CORE::CString PropIdsToCsvString( const MSGPROPIDVector& propIds );
     bool CsvStringToPropIds( const CORE::CString& csvStr, MSGPROPIDVector& propIds );
     void ErasePropId( PROPID propId, MSGPROPIDVector& propIds );
+    bool IsPairedPropId( PROPID id ) const;
+    static void AddPropId( PROPID id, MSGPROPIDVector& propIds );
+    static bool HasPropId( PROPID id, const MSGPROPIDVector& propIds );
 
     MSGPROPIDVector msmqPropIdsToReceive;
     MSGPROPIDVector msmqPropIdsToSend;
@@ -97,6 +100,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     bool convertMsmqMsgIdToString;
     bool convertMsmqClsIdToString;
     bool ignoreUnmappableMetaDataFieldOnPublish;
+    bool gatherMsmqTransitTimeOnReceiveMetric;
+    CORE::UInt32 maxMsmqTransitTimeOnReceiveMetricDataPoints;
     CORE::UInt64 msmqMsgPropIdToMapToMsgIdOnReceive;
     CORE::UInt32 defaultMsmqBodyBufferSizeInBytes;
     CORE::UInt32 defaultMsmqMiscBufferSizeInBytes;

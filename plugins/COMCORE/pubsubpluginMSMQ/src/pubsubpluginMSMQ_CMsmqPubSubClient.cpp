@@ -346,22 +346,34 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        const CMsmqPubSubClientTopic::TopicMetrics& metrics = (*i).second->GetMetrics();
+        CMsmqPubSubClientTopic* topic = (*i).second;
+        const CMsmqPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
+        const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
+        const CMsmqPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
 
-        const CORE::CString& topicName = (*i).second->GetMetricFriendlyTopicName();
-
-        if ( metrics.msmqMsgsInQueue >= 0 )
-            GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".msmqMsgsInQueue", metrics.msmqMsgsInQueue, 1.0f );
+        if ( topicMetrics.msmqMsgsInQueue >= 0 )
+            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", topicMetrics.msmqMsgsInQueue, 1.0f );
 
         if ( m_config.desiredFeatures.supportsPublishing )
         {
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesPublished", metrics.msmqMessagesPublished, 1.0f );
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnPublish", metrics.msmqErrorsOnPublish, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqMessagesPublished", topicMetrics.msmqMessagesPublished, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnPublish", topicMetrics.msmqErrorsOnPublish, 1.0f );
         }
         if ( m_config.desiredFeatures.supportsSubscribing )
         {
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesReceived", metrics.msmqMessagesReceived, 1.0f );
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnReceive", metrics.msmqErrorsOnReceive, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqMessagesReceived", topicMetrics.msmqMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnReceive", topicMetrics.msmqErrorsOnReceive, 1.0f );
+        }
+        
+        if ( topicConfig.gatherMsmqTransitTimeOnReceiveMetric )
+        {
+            CMsmqPubSubClientTopic::UInt32Vector::const_iterator n = topicMetrics.msmqMsgSentToArriveLatencies.begin();
+            while ( n != topicMetrics.msmqMsgSentToArriveLatencies.end() )
+            {
+                GUCEF_METRIC_TIMING( metricsPrefix + ".msmqMsgSentToArriveLatencyInMs", (*n), 1.0f );
+                ++n;
+            }
         }
 
         ++i;

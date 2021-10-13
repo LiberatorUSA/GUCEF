@@ -51,6 +51,11 @@ namespace MSMQ {
 
 #define DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES       (128)
 
+// If you have a very busy queue you do not want to spend all your time sending detailed
+// per message MSMQ latency metrics. As such we provide a max nr of samples to take per 
+// measuring cycle as dictated by the metrics interval.
+#define DEFAULT_MAX_MSMQ_TRANSIT_TIME_ON_RECEIVE_DATA_POINTS    50
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
@@ -67,6 +72,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , convertMsmqMsgIdToString( false )
     , convertMsmqClsIdToString( false )
     , ignoreUnmappableMetaDataFieldOnPublish( false )
+    , gatherMsmqTransitTimeOnReceiveMetric( false )
+    , maxMsmqTransitTimeOnReceiveMetricDataPoints( DEFAULT_MAX_MSMQ_TRANSIT_TIME_ON_RECEIVE_DATA_POINTS )
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
@@ -89,6 +96,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubS
     , convertMsmqMsgIdToString( false )
     , convertMsmqClsIdToString( false )
     , ignoreUnmappableMetaDataFieldOnPublish( false )
+    , gatherMsmqTransitTimeOnReceiveMetric( false )
+    , maxMsmqTransitTimeOnReceiveMetricDataPoints( DEFAULT_MAX_MSMQ_TRANSIT_TIME_ON_RECEIVE_DATA_POINTS )
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
@@ -128,6 +137,8 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     convertMsmqMsgIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqMsgIdToString" ).AsBool( convertMsmqMsgIdToString, true );
     convertMsmqClsIdToString = config.GetAttributeValueOrChildValueByName( "convertMsmqClsIdToString" ).AsBool( convertMsmqClsIdToString, true );
     ignoreUnmappableMetaDataFieldOnPublish = config.GetAttributeValueOrChildValueByName( "ignoreUnmappableMetaDataFieldOnPublish" ).AsBool( ignoreUnmappableMetaDataFieldOnPublish, true );
+    gatherMsmqTransitTimeOnReceiveMetric = config.GetAttributeValueOrChildValueByName( "gatherMsmqTransitTimeOnReceiveMetric" ).AsBool( gatherMsmqTransitTimeOnReceiveMetric, true ); 
+    maxMsmqTransitTimeOnReceiveMetricDataPoints = config.GetAttributeValueOrChildValueByName( "maxMsmqTransitTimeOnReceiveMetricDataPoints" ).AsUInt32( maxMsmqTransitTimeOnReceiveMetricDataPoints, true ); 
     msmqMsgPropIdToMapToMsgIdOnReceive = config.GetAttributeValueOrChildValueByName( "msmqMsgPropIdToMapToMsgIdOnReceive" ).AsUInt64( msmqMsgPropIdToMapToMsgIdOnReceive, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
@@ -148,6 +159,13 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 
     SupplementPropIdsWithPairedPropId( msmqPropIdsToReceive );
     SupplementPropIdsWithPairedPropId( msmqPropIdsToSend );
+
+    if ( gatherMsmqTransitTimeOnReceiveMetric )
+    {
+        AddPropId( PROPID_M_SENTTIME, msmqPropIdsToReceive );
+        AddPropId( PROPID_M_ARRIVEDTIME, msmqPropIdsToReceive );
+    }
+
     return true;
 }
 
@@ -188,6 +206,8 @@ CMsmqPubSubClientTopicConfig::operator=( const CMsmqPubSubClientTopicConfig& src
         convertMsmqMsgIdToString = src.convertMsmqMsgIdToString;
         convertMsmqClsIdToString = src.convertMsmqClsIdToString;
         ignoreUnmappableMetaDataFieldOnPublish = src.ignoreUnmappableMetaDataFieldOnPublish;
+        gatherMsmqTransitTimeOnReceiveMetric = src.gatherMsmqTransitTimeOnReceiveMetric;
+        maxMsmqTransitTimeOnReceiveMetricDataPoints = src.maxMsmqTransitTimeOnReceiveMetricDataPoints;
         msmqMsgPropIdToMapToMsgIdOnReceive = src.msmqMsgPropIdToMapToMsgIdOnReceive;
         defaultMsmqBodyBufferSizeInBytes = src.defaultMsmqBodyBufferSizeInBytes;
         defaultMsmqMiscBufferSizeInBytes = src.defaultMsmqMiscBufferSizeInBytes;
@@ -290,6 +310,7 @@ void
 CMsmqPubSubClientTopicConfig::PopulateDefaultPairedPropIds( void )
 {GUCEF_TRACE;
 
+    msmqPairedPropIds[ PROPID_M_ADMIN_QUEUE ].push_back( PROPID_M_ADMIN_QUEUE_LEN );
     msmqPairedPropIds[ PROPID_M_BODY ].push_back( PROPID_M_BODY_SIZE );
     msmqPairedPropIds[ PROPID_M_BODY ].push_back( PROPID_M_BODY_TYPE );
     msmqPairedPropIds[ PROPID_M_DEST_QUEUE ].push_back( PROPID_M_DEST_QUEUE_LEN );
@@ -332,6 +353,54 @@ CMsmqPubSubClientTopicConfig::ErasePropId( PROPID propId, MSGPROPIDVector& propI
 
 /*--------------------------------------------------------------------------*/
 
+bool
+CMsmqPubSubClientTopicConfig::HasPropId( PROPID id, const MSGPROPIDVector& propIds )
+{GUCEF_TRACE;
+
+    MSGPROPIDVector::const_iterator i = propIds.begin();
+    while ( i != propIds.end() )
+    {
+        if ( id == (*i) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopicConfig::AddPropId( PROPID id, MSGPROPIDVector& propIds )
+{GUCEF_TRACE;
+
+    if ( !HasPropId( id, propIds ) )
+        propIds.push_back( id );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopicConfig::IsPairedPropId( PROPID id ) const
+{GUCEF_TRACE;
+
+    MSGPROPIDMapVector::const_iterator n = msmqPairedPropIds.begin();
+    while ( n != msmqPairedPropIds.end() )
+    {
+        const MSGPROPIDVector& pairedPropIds = (*n).second;
+        MSGPROPIDVector::const_iterator i = pairedPropIds.begin();
+        while ( i != pairedPropIds.end() )
+        {
+            if ( id == (*i) )
+                return true;
+            ++i;
+        }
+        ++n;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool 
 CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector& propIds )
 {GUCEF_TRACE;
@@ -346,6 +415,7 @@ CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector
     MSGPROPIDVector::iterator i = propIds.begin();
     while ( i != propIds.end() )
     {
+        // is the property one that needs associated paired properties which are meta-data about the main property?
         MSGPROPIDMapVector::iterator n = msmqPairedPropIds.find( (*i) );
         if ( n != msmqPairedPropIds.end() )
         {                                  
@@ -361,8 +431,10 @@ CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector
                 ++m;
             }
         }
-        
-        newPropIds.push_back( (*i) );
+        if ( !IsPairedPropId( (*i) ) )
+        {
+            newPropIds.push_back( (*i) );
+        }
         ++i;
     }
 

@@ -152,6 +152,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_msmqErrorsOnReceive( 0 )
     , m_metrics()
     , m_metricFriendlyTopicName()
+    , m_msmqMsgSentToArriveLatencies()
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -1420,7 +1421,11 @@ CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
             }
             else
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " does not have a mapping to a payload property. Some other issue?" );
+                // Since we could not find the actual payload property lets make sure we dont accidentally pass to MSMQ the altered buffer size
+                // this could potentially cause MSMQ to access invalid memory
+                msgsData.msgprops.aPropVar[ i ].ulVal = 0;
+
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " does not have a mapping to a payload property. Some other issue?" );
             }
         }
     }
@@ -1552,12 +1557,24 @@ CMsmqPubSubClientTopic::ExtractSeverityCode( HRESULT code )
 
 /*-------------------------------------------------------------------------*/
 
+const CMsmqPubSubClientTopicConfig& 
+CMsmqPubSubClientTopic::GetTopicConfig( void ) const
+{GUCEF_TRACE;
+
+    return m_config;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible )
 {GUCEF_TRACE;
 
     COMCORE::CBasicPubSubMsg& translatedMsg = m_pubsubMsgs[ msgCycleIndex ];
     translatedMsg.Clear();
+
+    CORE::UInt64 sentTimeUnixEpocInSecs = 0;
+    CORE::UInt64 arriveTimeUnixEpocInSecs = 0;
 
     CORE::UInt32 bodyType = VT_EMPTY;
     CORE::UInt32 bodySize = 0;
@@ -1570,7 +1587,7 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
 
         CORE::CVariant keyVar( (CORE::UInt64) msg.aPropID[ i ] );
         CORE::CVariant ValueVar;
-
+        
         MSGPROPID propertyId = msg.aPropID[ i ];        
         switch ( propertyId )
         {
@@ -1601,7 +1618,8 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 {
                     // Time is Unix epoch based in second resolution
                     // It is stored as a UInt32 but we use a UInt64 because we need the headroom to convert to milliseconds
-                    translatedMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( ValueVar.AsUInt64() * 1000 );
+                    sentTimeUnixEpocInSecs = ValueVar.AsUInt64();
+                    translatedMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( sentTimeUnixEpocInSecs * 1000 );
                 }
                 else
                 {
@@ -1611,7 +1629,23 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 }
                 break;
             }
-                        
+            case PROPID_M_ARRIVEDTIME: 
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    // Time is Unix epoch based in second resolution
+                    arriveTimeUnixEpocInSecs = ValueVar.AsUInt64();
+                }
+                else
+                {
+                    // PROPID_M_SENTTIME should always be available since its MSMQ generated
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_ARRIVEDTIME" );
+                }
+                
+                // We intentionally dont break here, we also want the default case code below
+                // break;
+            }
+            
             default:
             {
                 if ( !MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
@@ -1646,7 +1680,19 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 }
             }
         }
-    }    
+    }
+    
+    // Collect MSMQ transit time metric if so configured
+    // Its a little extra work but can help diagnose the root of latency issues
+    if ( m_config.gatherMsmqTransitTimeOnReceiveMetric && 0 != sentTimeUnixEpocInSecs && 0 != arriveTimeUnixEpocInSecs && m_config.maxMsmqTransitTimeOnReceiveMetricDataPoints >= m_msmqMsgSentToArriveLatencies.size() )
+    {
+        // signed vs unsigned: Ignore errant deltas due to clock drift
+        CORE::Int64 msmqTransitTimeInSecs = (CORE::Int64) ( arriveTimeUnixEpocInSecs - sentTimeUnixEpocInSecs );
+        if ( msmqTransitTimeInSecs >= 0 )
+        {
+            m_msmqMsgSentToArriveLatencies.push_back( (CORE::UInt32) ( msmqTransitTimeInSecs * 1000 ) );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1921,6 +1967,11 @@ CMsmqPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     {
         m_metrics.msmqMessagesReceived = GetMsmqMessagesReceivedCounter( true );
         m_metrics.msmqErrorsOnReceive = GetMsmqErrorsOnReceiveCounter( true );
+    }
+    if ( m_config.gatherMsmqTransitTimeOnReceiveMetric )
+    {
+        m_metrics.msmqMsgSentToArriveLatencies = m_msmqMsgSentToArriveLatencies;
+        m_msmqMsgSentToArriveLatencies.clear();
     }
 }
 
