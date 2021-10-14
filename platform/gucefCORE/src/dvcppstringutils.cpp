@@ -163,12 +163,13 @@ ConvertBytesToHexString( const void* byteBuffer ,
     if ( addSpaces ) hexStrSize += bufferSize;
     if ( addHexPrefix ) hexStrSize += 2*bufferSize;
 
-    CString hexString;
+    CAsciiString hexString;
     char* digits = hexString.Reserve( hexStrSize );
 
     Int32 digitIndex1 = 0;
     Int32 digitIndex2 = 0;
     UInt32 digitOffset = 0;
+    UInt32 lastDigit = 0;
 
     for ( UInt32 i=0; i<bufferSize; ++i )
     {
@@ -177,8 +178,10 @@ ConvertBytesToHexString( const void* byteBuffer ,
                            digitIndex1         ,
                            digitIndex2         );
 
-        if ( digitIndex1 < 0 ) digitIndex1 *= -1;
-        if ( digitIndex2 < 0 ) digitIndex2 *= -1;
+        if ( digitIndex1 < 0 ) 
+            digitIndex1 *= -1;
+        if ( digitIndex2 < 0 ) 
+            digitIndex2 *= -1;
 
         if ( addSpaces )
         {
@@ -190,6 +193,7 @@ ConvertBytesToHexString( const void* byteBuffer ,
                 digits[ digitOffset + 2 ] = g_hexDigits[ digitIndex2 ];
                 digits[ digitOffset + 3 ] = g_hexDigits[ digitIndex1 ];
                 digits[ digitOffset + 4 ] = ' ';
+                lastDigit = digitOffset + 4;
             }
             else
             {
@@ -197,6 +201,7 @@ ConvertBytesToHexString( const void* byteBuffer ,
                 digits[ digitOffset ] = g_hexDigits[ digitIndex2 ];
                 digits[ digitOffset + 1 ] = g_hexDigits[ digitIndex1 ];
                 digits[ digitOffset + 2 ] = ' ';
+                lastDigit = digitOffset + 2;
             }
         }
         else
@@ -208,20 +213,25 @@ ConvertBytesToHexString( const void* byteBuffer ,
                 digits[ digitOffset + 1 ] = 'x';
                 digits[ digitOffset + 2 ] = g_hexDigits[ digitIndex2 ];
                 digits[ digitOffset + 3 ] = g_hexDigits[ digitIndex1 ];
+                lastDigit = digitOffset + 3;
             }
             else
             {
                 digitOffset = 2 * i;
                 digits[ digitOffset ] = g_hexDigits[ digitIndex2 ];
                 digits[ digitOffset + 1 ] = g_hexDigits[ digitIndex1 ];
+                lastDigit = digitOffset + 1;
             }
         }
     }
-    if ( hexString.Length() >= 1 )
+    if ( 0 < lastDigit )
     {
-        digits[ hexString.Length()-1 ] = '\0';
+        ++lastDigit;
+        digits[ lastDigit ] = '\0';
+        hexString.SetLength( lastDigit );
+        return ToString( hexString );
     }
-    return hexString;
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

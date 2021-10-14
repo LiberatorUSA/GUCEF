@@ -272,6 +272,11 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
                           CORE::CICloneable* eventData );
 
     void
+    OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+    
+    void
     OnPulseCycle( CORE::CNotifier* notifier    ,
                   const CORE::CEvent& eventId  ,
                   CORE::CICloneable* eventData );
@@ -297,6 +302,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CMsmqPubSubClientTopicConfig m_config;
     mutable std::wstring m_msmqQueueFormatName;
     CORE::CTimer* m_syncReadTimer;    
+    CORE::CTimer* m_reconnectTimer;
     MT::CMutex m_lock;
     QUEUEHANDLE m_receiveQueueHandle;
     QUEUEHANDLE m_sendQueueHandle;

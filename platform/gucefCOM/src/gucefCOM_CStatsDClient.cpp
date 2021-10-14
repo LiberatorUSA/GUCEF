@@ -362,7 +362,7 @@ CStatsDClient::Open( void )
 
     if ( m_udpSender.Open( m_statsInterface ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Open(): Successfully opened socket at " + m_statsInterface.AddressAndPortAsString() );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Open(): Successfully opened socket at " + m_statsInterface.AddressAsString() + ':' + CORE::ToString( m_udpSender.GetPort() ) );
         return true;
     }
     else
