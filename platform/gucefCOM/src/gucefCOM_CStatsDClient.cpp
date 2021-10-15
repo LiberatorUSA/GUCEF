@@ -60,6 +60,7 @@ CStatsDClient::CStatsDClient( void )
     , m_statsInterface()
     , m_statNamePrefix()
     , m_transmit( false )
+    , m_logStats( false )
 {GUCEF_TRACE;
 
     m_statsDestination.SetPortInHostByteOrder( 8125 );
@@ -74,6 +75,7 @@ CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
     , m_statsInterface()
     , m_statNamePrefix()
     , m_transmit( false )
+    , m_logStats( false )
 {GUCEF_TRACE;
 
     m_statsDestination.SetPortInHostByteOrder( 8125 );
@@ -227,7 +229,7 @@ CStatsDClient::Transmit( const CString& key      ,
                          const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    if ( !m_transmit )
+    if ( !m_transmit && !m_logStats )
         return;
 
     if ( !m_udpSender.IsActive() )
@@ -271,10 +273,32 @@ CStatsDClient::Transmit( const CString& key      ,
     // Send the message via the UDP sender
     if ( msgSize > 0 )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
-        if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize ) )
+        #ifdef GUCEF_DEBUG_MODE
+        
+        if ( m_logStats )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Transmit: Failed to send stat via UDP of " + CORE::ToString( msgSize ) + " bytes: " + CORE::CString( buffer ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
+        }
+        
+        #else
+        
+        if ( m_logStats )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
+        }
+
+        #endif
+        
+        if ( m_transmit )
+        {
+            if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Transmit: Failed to send stat via UDP of " + CORE::ToString( msgSize ) + " bytes: " + CORE::CString( buffer ) );
+            }
         }
     }
 }
@@ -296,7 +320,8 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
     node->SetAttribute( "StatsDestination", m_statsDestination.AddressAndPortAsString() );
     node->SetAttribute( "StatsNamePrefix", m_statNamePrefix );
     node->SetAttribute( "StatsInterface", m_statsInterface.AddressAndPortAsString() );
-    node->SetAttribute( "Transmit", CORE::BoolToString( m_transmit ) );
+    node->SetAttribute( "Transmit", m_transmit );
+    node->SetAttribute( "logStats", m_logStats );
     return true;
 }
 
@@ -321,22 +346,10 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
             return false;
 
         // Load extra settings for which the default can also be good enough
-        value = node->GetAttributeValueOrChildValueByName( "StatsNamePrefix" );
-        if ( !value.IsNULLOrEmpty() )
-        {
-            m_statNamePrefix = CORE::ResolveVars( value.AsString() );
-        }
-        value = node->GetAttributeValueOrChildValueByName( "StatsInterface" );
-        if ( !value.IsNULLOrEmpty() )
-        {
-            value = CORE::ResolveVars( value.AsString() );
-            m_statsInterface.SetHostnameAndPort( value );
-        }
-        value = node->GetAttributeValueOrChildValueByName( "Transmit" );
-        if ( !value.IsNULLOrEmpty() )
-        {
-            m_transmit = value.AsBool();
-        }
+        m_statNamePrefix = node->GetAttributeValueOrChildValueByName( "StatsNamePrefix" ).AsString( m_statNamePrefix, true );
+        m_statsInterface.SetHostnameAndPort( node->GetAttributeValueOrChildValueByName( "StatsInterface" ).AsString( m_statsInterface.HostnameAndPortAsString(), true ) );
+        m_transmit = node->GetAttributeValueOrChildValueByName( "Transmit" ).AsBool( m_transmit, true );
+        m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
     }
     return true;
 }
