@@ -893,9 +893,9 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
 /*-------------------------------------------------------------------------*/
 
 CUtf8String
-CUtf8String::ReplaceChars( Int32* oldchars     ,
-                           UInt32 nrOfOldChars ,
-                           Int32 newchar       ) const
+CUtf8String::ReplaceChars( const Int32* oldchars ,
+                           UInt32 nrOfOldChars   ,
+                           Int32 newchar         ) const
 {GUCEF_TRACE;
 
     // @TODO: Optimize

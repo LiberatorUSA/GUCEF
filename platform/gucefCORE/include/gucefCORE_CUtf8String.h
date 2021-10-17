@@ -276,9 +276,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     CUtf8String ReplaceChar( Int32 oldchar ,
                              Int32 newchar ) const;
 
-    CUtf8String ReplaceChars( Int32* oldchars     ,
-                              UInt32 nrOfOldChars ,
-                              Int32 newchar       ) const;
+    CUtf8String ReplaceChars( const Int32* oldchars ,
+                              UInt32 nrOfOldChars   ,
+                              Int32 newchar         ) const;
 
     CUtf8String ReplaceSubstr( const CUtf8String& substr      ,
                                const CUtf8String& replacement ) const;

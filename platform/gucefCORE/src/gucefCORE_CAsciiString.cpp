@@ -742,9 +742,9 @@ CAsciiString::ReplaceChar( char oldchar ,
 /*-------------------------------------------------------------------------*/
 
 CAsciiString
-CAsciiString::ReplaceChars( char* oldchars      ,
-                            UInt32 nrOfOldChars ,
-                            char newchar        ) const
+CAsciiString::ReplaceChars( const char* oldchars ,
+                            UInt32 nrOfOldChars  ,
+                            char newchar         ) const
 {GUCEF_TRACE;
 
     CAsciiString result( *this );

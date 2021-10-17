@@ -120,6 +120,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 {
     public:
 
+    typedef std::vector< CORE::UInt32 > UInt32Vector;
+
     CMsmqPubSubClientTopic( CMsmqPubSubClient* client );
 
     virtual ~CMsmqPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
@@ -180,9 +182,13 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
         CORE::UInt64 msmqMessagesReceived;
         CORE::UInt64 msmqErrorsOnReceive;
+
+        UInt32Vector msmqMsgSentToArriveLatencies;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
+
+    const CMsmqPubSubClientTopicConfig& GetTopicConfig( void ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -266,6 +272,11 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
                           CORE::CICloneable* eventData );
 
     void
+    OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+    
+    void
     OnPulseCycle( CORE::CNotifier* notifier    ,
                   const CORE::CEvent& eventId  ,
                   CORE::CICloneable* eventData );
@@ -291,6 +302,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CMsmqPubSubClientTopicConfig m_config;
     mutable std::wstring m_msmqQueueFormatName;
     CORE::CTimer* m_syncReadTimer;    
+    CORE::CTimer* m_reconnectTimer;
     MT::CMutex m_lock;
     QUEUEHANDLE m_receiveQueueHandle;
     QUEUEHANDLE m_sendQueueHandle;
@@ -307,6 +319,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CORE::UInt64 m_msmqErrorsOnReceive;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
+    UInt32Vector m_msmqMsgSentToArriveLatencies;
 };
 
 /*-------------------------------------------------------------------------//

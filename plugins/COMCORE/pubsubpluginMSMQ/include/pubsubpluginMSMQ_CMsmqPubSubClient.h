@@ -104,8 +104,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public COMCORE::C
 
     COMCORE::CPubSubClientConfig& GetConfig( void );
 
-    CORE::ThreadPoolPtr GetThreadPool( void );
-    
     private:
 
     void
@@ -125,7 +123,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public COMCORE::C
     COMCORE::CPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
-    CORE::ThreadPoolPtr m_threadPool;
 };
 
 /*-------------------------------------------------------------------------//

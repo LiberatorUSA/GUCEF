@@ -74,18 +74,20 @@ const CEvent CTimer::TimerIntervalChangedEvent = "GUCEF::CORE::CTimer::TimerInte
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
-    : m_lastTimerCycle( 0 )                                    ,
-      m_enabled( false )                                       ,
-      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
-      m_activationTickCount( 0 )                               ,
-      m_tickCount( 0 )                                         ,
-      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
-      m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
+    : CObservingNotifier()
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
+    , m_lastTimerCycle( 0 )                                    
+    , m_tickCount( 0 )
+    , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
+    , m_activationTickCount( 0 )
+    , m_enabled( false )
+    , m_immediateTriggerRequested( false )
+    , m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -110,13 +112,15 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
 
 CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
                 const UInt32 updateDeltaInMilliSecs /* = 25 */ )
-    : m_lastTimerCycle( 0 )                                    ,
-      m_enabled( false )                                       ,
-      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
-      m_activationTickCount( 0 )                               ,
-      m_tickCount( 0 )                                         ,
-      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
-      m_pulseGenerator( &pulseGenerator )
+    : CObservingNotifier()
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
+    , m_lastTimerCycle( 0 )                                    
+    , m_tickCount( 0 )
+    , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
+    , m_activationTickCount( 0 )
+    , m_enabled( false )
+    , m_immediateTriggerRequested( false )
+    , m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_pulseGenerator )
@@ -143,13 +147,15 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
 
 CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
                 const UInt32 updateDeltaInMilliSecs /* = 25 */ )
-    : m_lastTimerCycle( 0 )                                    ,
-      m_enabled( false )                                       ,
-      m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
-      m_activationTickCount( 0 )                               ,
-      m_tickCount( 0 )                                         ,
-      m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
-      m_pulseGenerator( pulseGenerator )
+    : CObservingNotifier()
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
+    , m_lastTimerCycle( 0 )                                    
+    , m_tickCount( 0 )
+    , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
+    , m_activationTickCount( 0 )
+    , m_enabled( false )
+    , m_immediateTriggerRequested( false )
+    , m_pulseGenerator( pulseGenerator )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_pulseGenerator )
@@ -175,13 +181,15 @@ CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
 /*-------------------------------------------------------------------------*/
 
 CTimer::CTimer( const CTimer& src )
-     : m_updateDeltaInMilliSecs( src.m_updateDeltaInMilliSecs ) ,
-       m_lastTimerCycle( src.m_lastTimerCycle )                 ,
-       m_enabled( false )                                       ,
-       m_activationTickCount( 0 )                               ,
-       m_tickCount( 0 )                                         ,
-       m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   ,
-       m_pulseGenerator( src.m_pulseGenerator )
+    : CObservingNotifier( src )
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
+    , m_lastTimerCycle( src.m_lastTimerCycle )                                    
+    , m_tickCount( 0 )
+    , m_updateDeltaInMilliSecs( src.m_updateDeltaInMilliSecs )
+    , m_activationTickCount( 0 )
+    , m_enabled( false )
+    , m_immediateTriggerRequested( false )
+    , m_pulseGenerator( src.m_pulseGenerator )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -206,7 +214,7 @@ CTimer::CTimer( const CTimer& src )
 CTimer::~CTimer()
 {GUCEF_TRACE;
 
-    if ( NULL != m_pulseGenerator )
+    if ( GUCEF_NULL != m_pulseGenerator )
     {
         // Make sure this object is not still registered as requiring periodic updates
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
@@ -316,7 +324,7 @@ CTimer::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
 
     if ( notifier == m_pulseGenerator )
     {
-        m_pulseGenerator = NULL;
+        m_pulseGenerator = GUCEF_NULL;
     }
 }
 
@@ -335,8 +343,9 @@ CTimer::OnPulse( CNotifier* notifier                 ,
 		Float64 deltaMilliSecs = deltaTicks / m_timerFreq;
         m_tickCount += deltaTicks;
 
-        if ( deltaMilliSecs >= m_updateDeltaInMilliSecs )
+        if ( m_immediateTriggerRequested || deltaMilliSecs >= m_updateDeltaInMilliSecs )
         {
+            m_immediateTriggerRequested = false;
             m_lastTimerCycle = newTickCount;
 
             TimerUpdateEventData cuData;
@@ -415,9 +424,22 @@ CTimer::Reset( void )
     TTimerUpdateData& updateData = cuData.GetData();
     updateData.tickCount = m_tickCount;
     updateData.updateDeltaInMilliSecs = deltaMilliSecs;
-    NotifyObservers( TimerUpdateEvent, &cuData );
+    if ( !NotifyObservers( TimerUpdateEvent, &cuData ) ) return;
  
     Reset();
+ }
+
+ /*-------------------------------------------------------------------------*/
+
+ void 
+ CTimer::RequestImmediateTrigger( void )
+ {GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_pulseGenerator )
+    {
+        m_immediateTriggerRequested = true;
+        m_pulseGenerator->RequestImmediatePulse();
+    }
  }
 
 /*-------------------------------------------------------------------------*/

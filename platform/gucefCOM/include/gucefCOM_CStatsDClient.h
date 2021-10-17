@@ -140,6 +140,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
     COMCORE::CHostAddress m_statsInterface;
     CString m_statNamePrefix;
     bool m_transmit;
+    bool m_logStats;
 };
 
 /*-------------------------------------------------------------------------//

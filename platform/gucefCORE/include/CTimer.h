@@ -108,7 +108,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
     CTimer( const CTimer& src );
 
-    ~CTimer();
+    virtual ~CTimer();
 
     CTimer& operator=( const CTimer& src );
 
@@ -144,9 +144,26 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
     /**
      *  Allows you to bypass the wait on the timer time-out and 
-     *  trigger the timer event right away
+     *  trigger the timer event right away.
+     * 
+     *  Note that this makes the calling thread the thread within which the 
+     *  TimerUpdateEvent is triggered
+     *  When working with single-threaded code you most likely want to use this variant instead of RequestImmediateTrigger()
+     *  You are essentially in-line looping in an additional timer cycle when using this member function    
      */
     void TriggerNow( void );
+
+    /**
+     *  Allows you to bypass the wait on the timer time-out and 
+     *  trigger the timer event right away, provided the pulse generator does not
+     *  disallow an immediate pulse
+     * 
+     *  Note that this retains the used pulse generator's thread as the thread within which the 
+     *  TimerUpdateEvent is triggered. 
+     *  When working with multi-threaded code you most likely want to use this variant instead of TriggerNow()
+     *  as it ties in wioth RequestImmediatePulse() on the pulse generator which allows for bypassing any thread yielding
+     */
+    void RequestImmediateTrigger( void );
 
 	const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -185,6 +202,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     UInt32 m_updateDeltaInMilliSecs;
     UInt64 m_activationTickCount;
     bool m_enabled;
+    bool m_immediateTriggerRequested;
     CPulseGenerator* m_pulseGenerator;
 };
 

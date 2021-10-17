@@ -76,7 +76,6 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
-    , m_threadPool()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -95,9 +94,6 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
-    
-    if ( config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "MsmqPubSubClient(" + CORE::ToString( this ) + ")", true );
 
     RegisterEventHandlers();
 }
@@ -106,9 +102,6 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
 
 CMsmqPubSubClient::~CMsmqPubSubClient()
 {GUCEF_TRACE;
-
-    if ( !m_threadPool.IsNULL() )
-        m_threadPool->RequestAllThreadsToStop( true, false );
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -121,15 +114,6 @@ CMsmqPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
     return m_config;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::ThreadPoolPtr 
-CMsmqPubSubClient::GetThreadPool( void )
-{GUCEF_TRACE;
-
-    return m_threadPool;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -287,7 +271,14 @@ bool
 CMsmqPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
-    return true;
+    bool totalSuccess = true;
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        totalSuccess = (*i).second->Disconnect() && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -296,6 +287,17 @@ bool
 CMsmqPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
+    if ( !m_topicMap.empty() )
+    {
+        bool allConnected = true;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            allConnected = (*i).second->InitializeConnectivity() && allConnected;
+            ++i;
+        }
+        return allConnected;
+    }
     return true;
 }
 
@@ -305,7 +307,18 @@ bool
 CMsmqPubSubClient::IsConnected( void )
 {GUCEF_TRACE;
 
-    return true;
+    if ( !m_topicMap.empty() )
+    {
+        bool allConnected = true;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            allConnected = (*i).second->IsConnected() && allConnected;
+            ++i;
+        }
+        return allConnected;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -346,22 +359,34 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        const CMsmqPubSubClientTopic::TopicMetrics& metrics = (*i).second->GetMetrics();
+        CMsmqPubSubClientTopic* topic = (*i).second;
+        const CMsmqPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
+        const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
+        const CMsmqPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
 
-        const CORE::CString& topicName = (*i).second->GetMetricFriendlyTopicName();
-
-        if ( metrics.msmqMsgsInQueue >= 0 )
-            GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".msmqMsgsInQueue", metrics.msmqMsgsInQueue, 1.0f );
+        if ( topicMetrics.msmqMsgsInQueue >= 0 )
+            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", topicMetrics.msmqMsgsInQueue, 1.0f );
 
         if ( m_config.desiredFeatures.supportsPublishing )
         {
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesPublished", metrics.msmqMessagesPublished, 1.0f );
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnPublish", metrics.msmqErrorsOnPublish, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqMessagesPublished", topicMetrics.msmqMessagesPublished, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnPublish", topicMetrics.msmqErrorsOnPublish, 1.0f );
         }
         if ( m_config.desiredFeatures.supportsSubscribing )
         {
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqMessagesReceived", metrics.msmqMessagesReceived, 1.0f );
-            GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".msmqErrorsOnReceive", metrics.msmqErrorsOnReceive, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqMessagesReceived", topicMetrics.msmqMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnReceive", topicMetrics.msmqErrorsOnReceive, 1.0f );
+        }
+        
+        if ( topicConfig.gatherMsmqTransitTimeOnReceiveMetric )
+        {
+            CMsmqPubSubClientTopic::UInt32Vector::const_iterator n = topicMetrics.msmqMsgSentToArriveLatencies.begin();
+            while ( n != topicMetrics.msmqMsgSentToArriveLatencies.end() )
+            {
+                GUCEF_METRIC_TIMING( metricsPrefix + ".msmqMsgSentToArriveLatencyInMs", (*n), 1.0f );
+                ++n;
+            }
         }
 
         ++i;
