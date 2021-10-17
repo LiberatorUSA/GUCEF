@@ -222,6 +222,10 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
+    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
+                                            CPubSubClientSide* msgSourceSide   ,
+                                            CPubSubClientSide* msgReceiverSide ) = 0;
+
     private:
 
     void RegisterEventHandlers( void );
@@ -253,10 +257,12 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     
     protected:
 
-    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                           CPubSubClientSide* sourceSide                                 );
 
     template < typename TMsgCollection >
-    bool PublishMsgsSync( const TMsgCollection& msgs );
+    bool PublishMsgsSync( const TMsgCollection& msgs , 
+                          CPubSubClientSide* srcSide );
 
     bool PublishMailboxMsgs( void );
 
@@ -266,20 +272,31 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     {
         public:
 
-        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
+        class MsgLink
+        {
+            public:
+            COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+            CPubSubClientSide* sourceSide;
+
+            MsgLink( void );
+            MsgLink( COMCORE::CIPubSubMsg::TNoLockSharedPtr& m, CPubSubClientSide* srcSide );
+        };
+        typedef std::map< CORE::UInt64, MsgLink >    TUInt64ToMsgLinkMap;
 
         COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
         COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
-        TUInt64ToIPubSubMsgNoLockSharedPtrMap inFlightMsgs;
+        TUInt64ToMsgLinkMap inFlightMsgs;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
         
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
+                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
+                              CPubSubClientSide* srcSide                                                  );
 
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
+                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
+                              CPubSubClientSide* srcSide                                                  );
 
     };
     
@@ -317,6 +334,10 @@ class CPubSubClientOtherSide : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
+                                            CPubSubClientSide* msgSourceSide   ,
+                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     CPubSubClientOtherSide( void );
@@ -347,6 +368,10 @@ class CPubSubClientChannel : public CPubSubClientSide
     virtual bool LoadConfig( const ChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
+                                            CPubSubClientSide* msgSourceSide   ,
+                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
