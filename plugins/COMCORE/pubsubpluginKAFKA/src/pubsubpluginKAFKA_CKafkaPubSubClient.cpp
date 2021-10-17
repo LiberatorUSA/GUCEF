@@ -159,6 +159,8 @@ COMCORE::CPubSubClientTopic*
 CKafkaPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     CKafkaPubSubClientTopic* rcTopic = new CKafkaPubSubClientTopic( this );
     if ( rcTopic->LoadConfig( topicConfig ) )
     {
@@ -178,6 +180,8 @@ COMCORE::CPubSubClientTopic*
 CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -192,6 +196,8 @@ void
 CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -206,6 +212,8 @@ const COMCORE::CPubSubClientTopicConfig*
 CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -224,6 +232,8 @@ void
 CKafkaPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -238,6 +248,8 @@ void
 CKafkaPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
@@ -334,6 +346,8 @@ bool
 CKafkaPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( IsConnected() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
@@ -360,7 +374,8 @@ CKafkaPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
     Disconnect();
-
+    
+    MT::CObjectScopeLock lock( this );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic connect" );
         
     bool totalSuccess = true;
@@ -388,6 +403,8 @@ bool
 CKafkaPubSubClient::IsConnected( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( m_topicMap.empty() )
         return false;
     

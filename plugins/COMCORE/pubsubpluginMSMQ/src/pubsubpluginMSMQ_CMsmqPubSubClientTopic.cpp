@@ -185,6 +185,15 @@ CMsmqPubSubClientTopic::~CMsmqPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+COMCORE::CPubSubClient*
+CMsmqPubSubClientTopic::GetClient( void )
+{GUCEF_TRACE;
+
+    return m_client;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMsmqPubSubClientTopic::RegisterEventHandlers( void )
 {GUCEF_TRACE;
@@ -785,9 +794,10 @@ CMsmqPubSubClientTopic::GetCurrentNrOfMessagesInQueue( void ) const
     mgmtprops.aPropVar = aMgmtPropVar;// management property values  
     mgmtprops.aStatus  = NULL;// no storage for error codes   
 
-    // Now that we formulated the request                // @TODO: L"QUEUE=
+    // Now that we formulated the request
     // actually ask for the info
-    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueFormatName.c_str(), &mgmtprops );
+    std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
+    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueInfoFormatName.c_str(), &mgmtprops );
     if ( MQ_OK == queueInfoFetchResult )
     {
         return (CORE::Int64) aMgmtPropVar[ 0 ].ulVal;
@@ -1631,6 +1641,7 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
 
     COMCORE::CBasicPubSubMsg& translatedMsg = m_pubsubMsgs[ msgCycleIndex ];
     translatedMsg.Clear();
+    translatedMsg.SetOriginClientTopic( this );
 
     CORE::UInt64 sentTimeUnixEpocInSecs = 0;
     CORE::UInt64 arriveTimeUnixEpocInSecs = 0;

@@ -120,6 +120,15 @@ CKafkaPubSubClientTopic::~CKafkaPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+COMCORE::CPubSubClient*
+CKafkaPubSubClientTopic::GetClient( void )
+{GUCEF_TRACE;
+
+    return m_client;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CKafkaPubSubClientTopic::Clear( void )
 {GUCEF_TRACE;
@@ -1593,6 +1602,7 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     // Grab a message wrapper from pre-allocated storage
     COMCORE::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
     msgWrap.Clear();    
+    msgWrap.SetOriginClientTopic( this );
 
     if ( message.key_len() > 0 )
     {

@@ -74,6 +74,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public C
 
     virtual ~CAwsSqsPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual COMCORE::CPubSubClient* GetClient( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool InitializeConnectivity( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;

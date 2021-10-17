@@ -123,6 +123,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     virtual const CString& GetType( void ) const = 0;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    void SetOpaqueUserData( void* opaqueUserData );
+    
+    void* GetOpaqueUserData( void ) const;
+
+    private:
+
+    void* m_opaqueUserData;
 };
 
 typedef CORE::CTBasicSharedPtr< CPubSubClient, MT::CMutex > CPubSubClientPtr;

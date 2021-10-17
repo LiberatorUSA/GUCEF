@@ -67,6 +67,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
     , m_primaryPayload()
     , m_keyValuePairs()
     , m_metaDataKeyValuePairs()
+    , m_msgOriginClientTopic( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -81,6 +82,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
     , m_primaryPayload( src.m_primaryPayload )
     , m_keyValuePairs( src.m_keyValuePairs )
     , m_metaDataKeyValuePairs( src.m_metaDataKeyValuePairs )
+    , m_msgOriginClientTopic( src.m_msgOriginClientTopic )
 {GUCEF_TRACE;
 
 }
@@ -220,6 +222,7 @@ CBasicPubSubMsg::Clear( void )
     m_primaryPayload.Clear();
     m_keyValuePairs.clear();    
     m_metaDataKeyValuePairs.clear(); 
+    m_msgOriginClientTopic = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -445,6 +448,23 @@ CBasicPubSubMsg::AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE:
     return AddKeyValuePair( key, value, m_metaDataKeyValuePairs );
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopic* 
+CBasicPubSubMsg::GetOriginClientTopic( void ) const
+{GUCEF_TRACE;
+
+    return m_msgOriginClientTopic;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CBasicPubSubMsg::SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic )
+{GUCEF_TRACE;
+
+    m_msgOriginClientTopic = msgOriginClientTopic;
+}
 /*-------------------------------------------------------------------------*/
 
 bool 

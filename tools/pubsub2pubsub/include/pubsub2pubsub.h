@@ -223,7 +223,6 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
     virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgSourceSide   ,
                                             CPubSubClientSide* msgReceiverSide ) = 0;
 
     private:
@@ -252,17 +251,14 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
 
-    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                      CPubSubClientSide* srcSide                                    );
+    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
     
     protected:
 
-    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                           CPubSubClientSide* sourceSide                                 );
+    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
     template < typename TMsgCollection >
-    bool PublishMsgsSync( const TMsgCollection& msgs , 
-                          CPubSubClientSide* srcSide );
+    bool PublishMsgsSync( const TMsgCollection& msgs );
 
     bool PublishMailboxMsgs( void );
 
@@ -272,31 +268,20 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     {
         public:
 
-        class MsgLink
-        {
-            public:
-            COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
-            CPubSubClientSide* sourceSide;
-
-            MsgLink( void );
-            MsgLink( COMCORE::CIPubSubMsg::TNoLockSharedPtr& m, CPubSubClientSide* srcSide );
-        };
-        typedef std::map< CORE::UInt64, MsgLink >    TUInt64ToMsgLinkMap;
+        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToNoLockSharedMsgPtrMap;
 
         COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
         COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
-        TUInt64ToMsgLinkMap inFlightMsgs;
+        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
         
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
-                              CPubSubClientSide* srcSide                                                  );
+                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
 
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
-                              CPubSubClientSide* srcSide                                                  );
+                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
 
     };
     
@@ -335,7 +320,6 @@ class CPubSubClientOtherSide : public CPubSubClientSide
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgSourceSide   ,
                                             CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
@@ -370,7 +354,6 @@ class CPubSubClientChannel : public CPubSubClientSide
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgSourceSide   ,
                                             CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:

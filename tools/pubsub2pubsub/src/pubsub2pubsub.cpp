@@ -430,37 +430,16 @@ CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientSide::TopicLink::MsgLink::MsgLink( void )
-    : msg()
-    , sourceSide( GUCEF_NULL )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubClientSide::TopicLink::MsgLink::MsgLink( COMCORE::CIPubSubMsg::TNoLockSharedPtr& m, CPubSubClientSide* srcSide )
-    : msg( m )
-    , sourceSide( srcSide )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
 void 
 CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                               const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
-                                               CPubSubClientSide* srcSide                                                  )
+                                               const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
 {GUCEF_TRACE;
     
     // this variation gets called during async flow
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
     for ( size_t i=0; i<max; ++i )
     {
-        MsgLink& msgLink = inFlightMsgs[ publishActionIds[ i ] ];
-        msgLink.msg = msgs[ i ];
-        msgLink.sourceSide = srcSide;
+        inFlightMsgs[ publishActionIds[ i ] ] = msgs[ i ];
     }
 }
 
@@ -468,8 +447,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
 
 void 
 CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                               const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
-                                               CPubSubClientSide* srcSide                                                  )
+                                               const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
 {GUCEF_TRACE;
     
     // this variation gets called during sync flow
@@ -479,10 +457,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
         // in the sync/blocking flow we have not yet made a copy, lifecycle is for the call chain which doesnt work
         // for keeping longer term references. As such we create a copy of the message here
         COMCORE::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
-
-        MsgLink& msgLink = inFlightMsgs[ publishActionIds[ i ] ];
-        msgLink.msg = ptr;
-        msgLink.sourceSide = srcSide;
+        inFlightMsgs[ publishActionIds[ i ] ] = ptr;
     }
 }
 
@@ -572,7 +547,7 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
 
 template < typename TMsgCollection >
 bool
-CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs, CPubSubClientSide* srcSide )
+CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
     bool needToTrackInFlightMsgs = !m_sideSettings->performFireAndForgetPublishing;
@@ -619,8 +594,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs, CPubSubClientSid
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                                     CPubSubClientSide* sourceSide                                 )
+CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
 
     // Add the messages in bulk to the mailbox. Since we use pointer semantics we are actually
@@ -631,8 +605,7 @@ CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubM
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                                CPubSubClientSide* srcSide                                    )
+CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -642,11 +615,11 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
         // If we are running async from other sides we need to check the mailbox
         if ( m_sideSettings->performPubSubInDedicatedThread )
         {
-            return PublishMsgsASync( msgs, srcSide );
+            return PublishMsgsASync( msgs );
         }
         else
         {
-            return PublishMsgsSync< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs, srcSide );
+            return PublishMsgsSync< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
         }
     }
     return false;
@@ -697,7 +670,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                     CPubSubClientSide* side = (*i);
                     if ( this != side )
                     {
-                        if ( (*i)->PublishMsgs( msgs, this ) )
+                        if ( (*i)->PublishMsgs( msgs ) )
                         {
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Successfully published message(s) to side " + (*i)->m_side ); 
@@ -742,11 +715,10 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
         COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
         while ( n != publishActionIds->end() )
         {
-            TopicLink::TUInt64ToMsgLinkMap::const_iterator m = topicLink.inFlightMsgs.find( (*n) );
+            TopicLink::TUInt64ToNoLockSharedMsgPtrMap::const_iterator m = topicLink.inFlightMsgs.find( (*n) );
             if ( m != topicLink.inFlightMsgs.end() )
             {
-                const TopicLink::MsgLink& msgLink = (*m).second;
-                if ( !AcknowledgeReceiptForSide( *msgLink.msg, msgLink.sourceSide, this ) )
+                if ( !AcknowledgeReceiptForSide( *(*m).second.GetPointerAlways(), this ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):OnPubSubTopicMsgsPublished: Failed to signal receipt of message acknowledgement" );
@@ -824,6 +796,11 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 "):ConnectPubSubClient: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );        
             return false;
         }
+        
+        // Link the client back to this object
+        // This allows getting all the way from:
+        //      a message -> a topic -> a client -> a pubsub side
+        m_pubsubClient->SetOpaqueUserData( this );
     }
 
     COMCORE::CPubSubClientFeatures clientFeatures;
@@ -1127,12 +1104,10 @@ CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
 
 bool
 CPubSubClientOtherSide::AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                                   CPubSubClientSide* msgSourceSide   ,
                                                    CPubSubClientSide* msgReceiverSide )
 {GUCEF_TRACE;
 
     return m_parentChannel->AcknowledgeReceiptForSide( msg             ,
-                                                       msgSourceSide   ,
                                                        msgReceiverSide );
 }
 
@@ -1176,19 +1151,31 @@ CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
 
 bool
 CPubSubClientChannel::AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                                 CPubSubClientSide* msgSourceSide   ,
                                                  CPubSubClientSide* msgReceiverSide )
 {GUCEF_TRACE;
 
     // if we only have 2 sides, no need for anything more complicated
     if ( m_sides.size() <= 2 )
     {
-        //msgSourceSide->
+        COMCORE::CPubSubClientTopic* originTopic = msg.GetOriginClientTopic();
+        if ( GUCEF_NULL != originTopic )
+        {
+            return originTopic->AcknowledgeReceipt( msg );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since no origin topic was provided on the message. Check your config and backend feature compatibility" );
+            return false;
+        }
     }
     else
     {
         // @TODO: support for more than 2 sides is not implemented yet
+            // The trickyness in this case is that you have to wait to ack until all sides have 
+            // acked (or perhaps just 1 based on config?)
     }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

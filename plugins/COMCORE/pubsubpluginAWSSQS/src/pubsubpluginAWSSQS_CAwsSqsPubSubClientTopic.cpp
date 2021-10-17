@@ -124,6 +124,14 @@ CAwsSqsPubSubClientTopic::~CAwsSqsPubSubClientTopic()
     Disconnect();
 }
 
+/*-------------------------------------------------------------------------*/
+
+COMCORE::CPubSubClient*
+CAwsSqsPubSubClientTopic::GetClient( void )
+{GUCEF_TRACE;
+
+    return m_client;
+}
 
 /*-------------------------------------------------------------------------*/
 

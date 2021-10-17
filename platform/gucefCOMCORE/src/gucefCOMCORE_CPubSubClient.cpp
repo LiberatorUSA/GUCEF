@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -47,6 +52,7 @@ namespace COMCORE {
 CPubSubClient::CPubSubClient( void )
     : CORE::CObservingNotifier()
     , CORE::CIConfigurable()
+    , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -56,6 +62,7 @@ CPubSubClient::CPubSubClient( void )
 CPubSubClient::CPubSubClient( const CPubSubClient& src )
     : CORE::CObservingNotifier( src )
     , CORE::CIConfigurable( src )
+    , m_opaqueUserData( src.m_opaqueUserData )
 {GUCEF_TRACE;
 
 }
@@ -113,6 +120,8 @@ CPubSubClientTopic*
 CPubSubClient::CreateTopicAccess( const CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != topicConfig )
     {
@@ -120,6 +129,25 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
         return topicAccess;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClient::SetOpaqueUserData( void* opaqueUserData )
+{GUCEF_TRACE;
+
+   MT::CObjectScopeLock lock( this );
+   m_opaqueUserData = opaqueUserData;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void*
+CPubSubClient::GetOpaqueUserData( void ) const
+{GUCEF_TRACE;
+
+    return m_opaqueUserData;
 }
 
 /*-------------------------------------------------------------------------//

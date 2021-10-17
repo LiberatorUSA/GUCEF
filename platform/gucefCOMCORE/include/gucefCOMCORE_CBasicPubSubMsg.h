@@ -83,6 +83,17 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     virtual TKeyValuePairs& GetMetaDataKeyValuePairs( void ) GUCEF_VIRTUAL_OVERRIDE;
     virtual const TKeyValuePairs& GetMetaDataKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  For a message that was received by a pub-sub topic this would provide
+     *  a link back to the topic where the message originated via a subscription
+     *
+     *  For a message constructed by the application for publishing this can be left 
+     *  as GUCEF_NULL
+     */ 
+    virtual CPubSubClientTopic* GetOriginClientTopic( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    void SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic );
+
     bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     
@@ -143,6 +154,7 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     CORE::CVariant m_primaryPayload;
     TKeyValuePairs m_keyValuePairs;    
     TKeyValuePairs m_metaDataKeyValuePairs;    
+    CPubSubClientTopic* m_msgOriginClientTopic;
 };
 
 /*-------------------------------------------------------------------------//

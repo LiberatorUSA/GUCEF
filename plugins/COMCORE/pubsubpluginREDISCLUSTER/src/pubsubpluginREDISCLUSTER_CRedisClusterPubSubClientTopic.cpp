@@ -129,7 +129,6 @@ CRedisClusterPubSubClientTopic::~CRedisClusterPubSubClientTopic()
     Disconnect();
 }
 
-
 /*-------------------------------------------------------------------------*/
 
 void
@@ -148,6 +147,15 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
     SubscribeTo( m_client->GetConfig().pulseGenerator ,
                  CORE::CPulseGenerator::PulseEvent    ,
                  callback                             );
+}
+
+/*-------------------------------------------------------------------------*/
+
+COMCORE::CPubSubClient*
+CRedisClusterPubSubClientTopic::GetClient( void )
+{GUCEF_TRACE;
+
+    return m_client;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -442,6 +450,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     msgRefs.push_back( TPubSubMsgRef() );
                     TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
                     pubsubMsgRef.LinkTo( &pubsubMsg );
+                    pubsubMsg.SetOriginClientTopic( this );
 
                     // set basic message properties
                     

@@ -80,6 +80,8 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPubSubClient;
+
 /**
  *  Class providing the abstract client-side representation of a 'topic' within the publish-subscribe system
  *
@@ -174,6 +176,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     CPubSubClientTopic( void );
 
     virtual ~CPubSubClientTopic();
+
+    virtual CPubSubClient* GetClient( void ) = 0;
 
     /**
      *  Explicitly calls for initialization of connectivity if relevant for the given backend

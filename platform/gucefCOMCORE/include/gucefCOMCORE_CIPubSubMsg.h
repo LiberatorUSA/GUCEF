@@ -95,6 +95,8 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPubSubClientTopic;
+
 /**
  *  Class providing a generic representation of a pub-sub message
  *  Based on the client used different capabilities will be available and 
@@ -149,6 +151,15 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 
     virtual TKeyValuePairs& GetMetaDataKeyValuePairs( void ) = 0;
     virtual const TKeyValuePairs& GetMetaDataKeyValuePairs( void ) const = 0;
+
+    /**
+     *  For a message that was received by a pub-sub topic this would provide
+     *  a link back to the topic where the message originated via a subscription
+     *
+     *  For a message constructed by the application for publishing this can be left 
+     *  as GUCEF_NULL
+     */ 
+    virtual CPubSubClientTopic* GetOriginClientTopic( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//
