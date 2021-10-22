@@ -193,6 +193,9 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const CO
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+    publishActionId = m_currentPublishActionId;
+    ++m_currentPublishActionId;
     
     const CORE::CVariant& msgId = msg.GetMsgId();
     sw::redis::StringView idSV( msgId.AsCharPtr(), msgId.ByteSize( false ) );
@@ -283,11 +286,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
     bool totalSuccess = true;
 
     try
-    {
-        // Nothing wrong with msg, we will make the publish attempt
-        publishActionId = m_currentPublishActionId;
-        ++m_currentPublishActionId;
-        
+    {        
         sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
 
         if ( m_config.redisXAddMaxLen >= 0 )
@@ -387,7 +386,7 @@ CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 
     // reset size, note this does not dealloc the underlying memory
     m_pubsubMsgs.clear();
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
     msgRefs.clear();
 
     if ( msgCount > m_pubsubMsgs.capacity() )
@@ -438,7 +437,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                 PrepStorageForReadMsgs( (CORE::UInt32) msgs.size() );
 
                 // Cycle through the messages received and build the generic representations
-                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
                 TRedisMsgVector::iterator i = msgs.begin();
                 while ( i != msgs.end() )
                 {
@@ -451,6 +450,9 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
                     pubsubMsgRef.LinkTo( &pubsubMsg );
                     pubsubMsg.SetOriginClientTopic( this );
+
+                    pubsubMsg.SetReceiveActionId( m_currentReceiveActionId );
+                    ++m_currentReceiveActionId;
 
                     // set basic message properties
                     
@@ -535,14 +537,11 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
     if ( totalSuccess )
     {
-        m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
-        ++m_currentReceiveActionId;
-        
         // Communicate all the messages received via an event notification
         if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return totalSuccess;
     }
     m_redisReadMsgs.clear();
-    m_pubsubMsgsRefs.msgs.clear();
+    m_pubsubMsgsRefs.clear();
     m_pubsubMsgAttribs.clear();
 
     return totalSuccess;

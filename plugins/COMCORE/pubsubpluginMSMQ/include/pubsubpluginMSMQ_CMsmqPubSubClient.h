@@ -50,6 +50,11 @@
 #define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTTOPIC_H
 #endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginMSMQ_CMsmqPubSubClientConfig.h"
+#define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -102,7 +107,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public COMCORE::C
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    COMCORE::CPubSubClientConfig& GetConfig( void );
+    CMsmqPubSubClientConfig& GetConfig( void );
 
     private:
 
@@ -120,7 +125,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public COMCORE::C
     typedef CORE::CTEventHandlerFunctor< CMsmqPubSubClient > TEventCallback;
     typedef std::map< CORE::CString, CMsmqPubSubClientTopic* > TTopicMap;
 
-    COMCORE::CPubSubClientConfig m_config;
+    CMsmqPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
 };

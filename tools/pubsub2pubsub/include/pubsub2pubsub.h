@@ -29,6 +29,11 @@
 #define GUCEF_MT_CNOLOCK_H
 #endif /* GUCEF_MT_CNOLOCK_H ? */
 
+#ifndef GUCEF_MT_CTMAILBOX_H
+#include "gucefMT_CTMailBox.h"
+#define GUCEF_MT_CTMAILBOX_H
+#endif /* GUCEF_MT_CTMAILBOX_H ? */
+
 #ifndef GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
 #include "gucefCORE_CTMailboxForSharedCloneables.h"
 #define GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
@@ -136,8 +141,8 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
-    bool performFireAndForgetPublishing;
-    COMCORE::CPubSubClientFeatures backendSupportedFeatures;
+    
+    bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
 
     COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
@@ -214,6 +219,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     const ChannelSettings& GetChannelSettings( void ) const;
 
+    PubSubSideChannelSettings* GetSideSettings( void );
+
     bool ConnectPubSubClient( void );
 
     bool DisconnectPubSubClient( bool destroyClient = false );
@@ -222,9 +229,13 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
-    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgReceiverSide ) = 0;
+    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide          ) = 0;
 
+    bool AcknowledgeReceiptASync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+
+    bool AcknowledgeReceiptSync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+    
     private:
 
     void RegisterEventHandlers( void );
@@ -262,6 +273,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     bool PublishMailboxMsgs( void );
 
+    void ProcessAcknowledgeReceiptsMailbox( void );
+
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
     class TopicLink
@@ -269,10 +282,12 @@ class CPubSubClientSide : public CORE::CTaskConsumer
         public:
 
         typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToNoLockSharedMsgPtrMap;
+        typedef MT::CTMailBox< COMCORE::CIPubSubMsg::TNoLockSharedPtr >             TPubSubMsgPtrMailbox;
 
         COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
         COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
-        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;
+        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;        
+        TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
@@ -289,7 +304,6 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     typedef CORE::CTMailboxForSharedCloneables< COMCORE::CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
-    CPubSubClientSide* m_otherSide;
     TopicMap m_topics;
     ChannelSettings m_channelSettings;
     PubSubSideChannelSettings* m_sideSettings;
@@ -298,7 +312,6 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CIPubSubBookmarkPersistance* m_persistance;
     char m_side;
-    bool m_runsInDedicatedThread;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -319,8 +332,8 @@ class CPubSubClientOtherSide : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -353,8 +366,8 @@ class CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

@@ -160,6 +160,26 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
      *  as GUCEF_NULL
      */ 
     virtual CPubSubClientTopic* GetOriginClientTopic( void ) const = 0;
+
+    /**
+     *  Receive Action ID is a backend runtime unique ID used for referencing
+     *  The message uniquely to said backend without having to retain said backend
+     *  Generic Pubsub system requirement, not backend specific
+     *
+     *  Note that if this mesage is constructed application side and not the result
+     *  of a subscription the value must be set to 0 which is the default value
+     */ 
+    virtual void SetReceiveActionId( UInt64 receiveActionId ) = 0;
+
+    /**
+     *  Receive Action ID is a backend runtime unique ID used for referencing
+     *  The message uniquely to said backend without having to retain said backend
+     *  Generic Pubsub system requirement, not backend specific
+     *
+     *  Note that if this mesage is constructed application side and not the result
+     *  of a subscription the value must be set to 0 which is the default value
+     */
+    virtual UInt64 GetReceiveActionId( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

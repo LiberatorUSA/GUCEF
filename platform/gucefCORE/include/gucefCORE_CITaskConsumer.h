@@ -105,6 +105,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     CPulseGenerator* GetPulseGenerator( void );
 
+    UInt32 GetDelegatorThreadId( void ) const;
+
     /**
      *  Sets the CPU affinity mask for the thread
      */

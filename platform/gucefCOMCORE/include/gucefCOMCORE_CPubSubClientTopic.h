@@ -110,13 +110,11 @@ class CPubSubClient;
  *  Why not support a void* or similar for user-data you ask? Simply because such mechanisms have historically been responsible for
  *  many reliability issues due to invalid pointer access, especially in cases like this where due to the very nature of the abstractions
  *  you have no idea what the lifecycle of the pointer you passed would look like. Using a backend managed integer avoids this problem.
- *  It is mandatory for all backends to support the publishActionId concept. All backends must provide an id per message published
- *  for any message where a publish attempt is/will-be made. For efficiency of early rejects it is allowed for backends to give an
- *  id of 0 (zero) for any message that failed to meet basic requirements and thus the message was rejected at the time of Publish()
- *  invocation. All backends shall issue ids in the same order as the messages given within the context of multi-message batch
- *  operations. As such the message batch index can be matched against the id index to get the id per specific message.
- *  Backends are mandated to scope the uniqueness of publishActionId on a per-topic basis and coupled with the lifecycle of the topic
- *  object lifecycle.
+ *  It is mandatory for all backends to support the publishActionId concept. All backends must provide an id per message 
+ *  for any message where a publish attempt is/will-be made. All backends shall issue ids in the same order as the messages 
+ *  given within the context of multi-message batch operations. As such the message batch index can be matched against the id index 
+ *  to get the id per specific message. Backends are mandated to scope the uniqueness of publishActionId on a per-topic basis 
+ *  and coupled with the lifecycle of the topic object lifecycle.
  *
  *  How to use publishActionId:
  *  When you Publish() a message the backend will provide you with a publishActionId value. At minimum you can use this value to trace 
@@ -158,16 +156,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
     static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
 
-    class GUCEF_COMCORE_EXPORT_CPP CMsgsRecieveActionData
-    {
-        public:
-        TPubSubMsgsRefVector msgs;
-        UInt64 receiveActionId;
-
-        CMsgsRecieveActionData( void );
-        CMsgsRecieveActionData( const CMsgsRecieveActionData& src );
-    };
-    typedef CORE::CTCloneableExpansion< CMsgsRecieveActionData >    TMsgsRecievedEventData;
+    typedef TPubSubMsgsRefVector                                    TMsgsRecievedEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishFailureEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishedEventData;
 

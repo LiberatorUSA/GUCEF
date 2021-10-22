@@ -142,8 +142,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     
     virtual bool SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark );
 
-    virtual bool SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark );
-
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark );
 
     virtual bool SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -322,6 +320,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
     UInt32Vector m_msmqMsgSentToArriveLatencies;
+    CORE::UInt64 m_msmqLastLookupId;
 };
 
 /*-------------------------------------------------------------------------//

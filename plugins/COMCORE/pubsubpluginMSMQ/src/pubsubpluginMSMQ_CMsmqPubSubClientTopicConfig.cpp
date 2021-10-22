@@ -166,6 +166,11 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
         AddPropId( PROPID_M_ARRIVEDTIME, msmqPropIdsToReceive );
     }
 
+    // For MSMQ 3.0 and above:
+    #if(_WIN32_WINNT >= 0x0501)
+    AddPropId( PROPID_M_LOOKUPID, msmqPropIdsToReceive );
+    #endif
+
     return true;
 }
 
@@ -272,6 +277,11 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultReceivePropIds( void )
     
     // Maps to our PubSubMsg MsgId, 20 unicode chars 
     msmqPropIdsToReceive.push_back( PROPID_M_MSGID );
+
+    // Maps to our PubSubMsg MsgIndex
+    #if(_WIN32_WINNT >= 0x0501)
+    msmqPropIdsToReceive.push_back( PROPID_M_LOOKUPID );
+    #endif
 
     // Maps to our PubSubMsg DateTime, uses Unix Epoch based UInt32 in seconds
     msmqPropIdsToReceive.push_back( PROPID_M_SENTTIME );

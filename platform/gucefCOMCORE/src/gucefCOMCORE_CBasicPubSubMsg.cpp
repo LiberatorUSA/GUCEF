@@ -68,6 +68,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
     , m_keyValuePairs()
     , m_metaDataKeyValuePairs()
     , m_msgOriginClientTopic( GUCEF_NULL )
+    , m_receiveActionId( 0 )
 {GUCEF_TRACE;
 
 }
@@ -83,6 +84,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
     , m_keyValuePairs( src.m_keyValuePairs )
     , m_metaDataKeyValuePairs( src.m_metaDataKeyValuePairs )
     , m_msgOriginClientTopic( src.m_msgOriginClientTopic )
+    , m_receiveActionId( src.m_receiveActionId )
 {GUCEF_TRACE;
 
 }
@@ -223,6 +225,7 @@ CBasicPubSubMsg::Clear( void )
     m_keyValuePairs.clear();    
     m_metaDataKeyValuePairs.clear(); 
     m_msgOriginClientTopic = GUCEF_NULL;
+    m_receiveActionId = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -465,6 +468,25 @@ CBasicPubSubMsg::SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic 
 
     m_msgOriginClientTopic = msgOriginClientTopic;
 }
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64 
+CBasicPubSubMsg::GetReceiveActionId( void ) const
+{GUCEF_TRACE;
+
+    return m_receiveActionId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CBasicPubSubMsg::SetReceiveActionId( CORE::UInt64 receiveActionId )
+{GUCEF_TRACE;
+
+    m_receiveActionId = receiveActionId;
+}
+
 /*-------------------------------------------------------------------------*/
 
 bool 

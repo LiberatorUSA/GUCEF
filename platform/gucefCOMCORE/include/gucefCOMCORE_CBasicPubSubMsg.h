@@ -94,6 +94,26 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 
     void SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic );
 
+    /**
+     *  Receive Action ID is a backend runtime unique ID used for referencing
+     *  The message uniquely to said backend without having to retain said backend
+     *  Generic Pubsub system requirement, not backend specific
+     *
+     *  Note that if this mesage is constructed application side and not the result
+     *  of a subscription the value must be set to 0 which is the default value
+     */ 
+    virtual void SetReceiveActionId( CORE::UInt64 receiveActionId ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Receive Action ID is a backend runtime unique ID used for referencing
+     *  The message uniquely to said backend without having to retain said backend
+     *  Generic Pubsub system requirement, not backend specific
+     *
+     *  Note that if this mesage is constructed application side and not the result
+     *  of a subscription the value must be set to 0 which is the default value
+     */
+    virtual CORE::UInt64 GetReceiveActionId( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     
@@ -155,6 +175,7 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     TKeyValuePairs m_keyValuePairs;    
     TKeyValuePairs m_metaDataKeyValuePairs;    
     CPubSubClientTopic* m_msgOriginClientTopic;
+    CORE::UInt64 m_receiveActionId;
 };
 
 /*-------------------------------------------------------------------------//

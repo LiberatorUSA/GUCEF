@@ -154,6 +154,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_metrics()
     , m_metricFriendlyTopicName()
     , m_msmqMsgSentToArriveLatencies()
+    , m_msmqLastLookupId( 0 )
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -163,7 +164,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
     }
 
     RegisterEventHandlers();
@@ -254,9 +255,11 @@ bool
 CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
-    publishActionId = 0;
     MT::CScopeMutex lock( m_lock );
     
+    publishActionId = m_currentPublishActionId; 
+    ++m_currentPublishActionId;
+
     // Each Message Queuing message can have no more than 4 MB of data.
     // We cannot do anything with a DateTime already set on the message since MSMQ fully controls the timestamps
 
@@ -318,9 +321,7 @@ CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::C
         ++i;
     }
 
-    // Nothing wrong with msg, we will make the publish attempt
-    publishActionId = m_currentPublishActionId; 
-    ++m_currentPublishActionId;
+
     
     bool success = false;
     // @TODO: Code the actual publish to MSMQ, not implemented yet
@@ -411,7 +412,7 @@ CMsmqPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
         try
         {
             // reset size, note this does not dealloc the underlying memory
-            TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+            TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
             msgRefs.clear();
 
             if ( msgCount > msgRefs.capacity() )
@@ -440,7 +441,7 @@ CMsmqPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
         {
             // First release all the memory, we dont know where we failed
             // get back to a clean/consistent state
-            m_pubsubMsgsRefs.msgs.resize( 0 );
+            m_pubsubMsgsRefs.resize( 0 );
             m_pubsubMsgs.resize( 0 );
             m_msmqReceiveMsgs.resize( 0 );
 
@@ -622,19 +623,6 @@ CMsmqPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBoo
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CMsmqPubSubClientTopic::SubscribeStartingAtMsgIndex( const CORE::CVariant& msgIndexBookmark )
-{GUCEF_TRACE;
-
-    MT::CScopeMutex lock( m_lock );
-    
-    // Currently not supported.
-    // Could theoretically be implemented using a cursor?
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CMsmqPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
@@ -653,8 +641,23 @@ bool
 CMsmqPubSubClientTopic::SubscribeStartingAtBookmark( const COMCORE::CPubSubBookmark& bookmark ) 
 {GUCEF_TRACE;
 
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    MT::CScopeMutex lock( m_lock );
+    if ( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX == bookmark.GetBookmarkType() )
+    {
+        m_msmqLastLookupId = bookmark.GetBookmarkData().AsUInt64();
+        return Subscribe();
+    }
+    return false;
+
+    #else
+
     // Currently not supported.
     return false;
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -663,8 +666,18 @@ COMCORE::CPubSubBookmark
 CMsmqPubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    MT::CScopeMutex lock( m_lock );
+    return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, CORE::CVariant( m_msmqLastLookupId ) );
+
+    #else
+
     // Not supported
     return COMCORE::CPubSubBookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
+    
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -673,8 +686,8 @@ bool
 CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    // Not supported
-    return false;
+    COMCORE::CPubSubBookmark bookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, msg.GetMsgIndex() );
+    return AcknowledgeReceipt( bookmark );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -683,7 +696,49 @@ bool
 CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    // Not supported
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    if ( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX != bookmark.GetBookmarkType() )
+        return false;
+    
+    MT::CScopeMutex lock( m_lock );
+
+    const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
+    bool supportsAcksViaLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+    if ( supportsAcksViaLookup )
+    {
+        CORE::UInt64 lookupId = bookmark.GetBookmarkData().AsUInt64();
+        if ( 0 != lookupId )
+        {
+            HRESULT receiveHResult = ::MQReceiveMessageByLookupId( m_receiveQueueHandle      ,        // Handle to the queue 
+                                                                   lookupId                  ,        // The lookup identifier  
+                                                                   MQ_LOOKUP_RECEIVE_CURRENT ,        // Access mode: There is no delete per se, we 'receive' the message to delete it
+                                                                   NULL                      ,        // Normally pointer to the MQMSGPROPS structure, we dont care since we care deleting thus NULL
+                                                                   NULL                      ,        // No OVERLAPPED structure  
+                                                                   NULL                      ,        // No callback function  
+                                                                   NULL                      );       // Not in a transaction  
+
+            if ( receiveHResult == MQ_OK )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Successfully removed message with msg index (LookupId) " + CORE::ToString( lookupId ) );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Unhandled issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
+                    ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                    ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Cannot remove message with invalid init msg index (LookupId) 0" );
+        }
+    }
+
+    #endif
+
     return false;
 }
 
@@ -1229,7 +1284,6 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
         case PROPID_M_SENDERID: { return VT_VECTOR | VT_UI1; } 
         case PROPID_M_SENDERID_LEN: { return VT_UI4; } 
         case PROPID_M_SENDERID_TYPE: { return VT_UI4; } 
-        case PROPID_M_ABORT_COUNT: { return VT_UI4; }
         case PROPID_M_ACKNOWLEDGE: { return VT_UI1; }
         case PROPID_M_ADMIN_QUEUE: { return VT_LPWSTR; }                // Format name string of the administration queue.
         case PROPID_M_ADMIN_QUEUE_LEN: { return VT_UI4; }
@@ -1242,15 +1296,9 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
         case PROPID_M_BODY_SIZE: { return VT_UI4; }
         case PROPID_M_BODY_TYPE: { return VT_UI4; }
         case PROPID_M_CLASS: { return VT_UI2; }
-        case PROPID_M_COMPOUND_MESSAGE: { return VT_VECTOR | VT_UI1; }  // An array of bytes that represents the entire contents of an SRMP message, including both the SOAP envelope and the SOAP attachments (MIME binary attachments) associated with it.
-        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return VT_UI4; }         // The size (in bytes) of the entire SRMP message, including both the SOAP envelope and the SOAP attachments, provided by PROPID_M_COMPOUND_MESSAGE.
         case PROPID_M_CONNECTOR_TYPE: { return VT_CLSID; }              // Pointer to a connector application identifier.
         case PROPID_M_CORRELATIONID: { return VT_VECTOR | VT_UI1; }     // Application-defined 20-byte message identifier (default is 0).
-        case PROPID_M_DEADLETTER_QUEUE: { return VT_LPWSTR; }           // The path name of an application-specific DLQ.
-        case PROPID_M_DEADLETTER_QUEUE_LEN: { return VT_UI4; }          // Input: The length of the application-specific dead letter queue (DLQ) name buffer (in Unicode characters) allocated by the receiving application. | Return: The length (in Unicode characters) of the application-specific DLQ name string (including the null-terminating character) returned by PROPID_M_DEADLETTER_QUEUE.
         case PROPID_M_DELIVERY: { return VT_UI1; }                      // The PROPID_M_DELIVERY property specifies how Message Queuing delivers the message to the queue.
-        case PROPID_M_DEST_FORMAT_NAME: { return VT_LPWSTR; }           // String that contains a public, private, direct, distribution list, or multiple-element format name.
-        case PROPID_M_DEST_FORMAT_NAME_LEN: { return VT_UI4; }          // On input: The length of the format name buffer (in Unicode characters) allocated by the receiving application. | On return: The length (in Unicode characters) of the format name string (including the null-terminating character) returned in PROPID_M_DEST_FORMAT_NAME.
         case PROPID_M_DEST_QUEUE: { return VT_LPWSTR; }                 // Format name of the original destination queue.
         case PROPID_M_DEST_QUEUE_LEN: { return VT_UI4; }                // The length (in Unicode characters) of the supplied format name buffer OR length of the returned format name string for the destination queue
         case PROPID_M_EXTENSION: { return VT_UI1 | VT_VECTOR; }         // This property provides a place to put additional application-defined information that is associated with the message.
@@ -1265,10 +1313,6 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
         case PROPID_M_RESP_QUEUE: { return VT_LPWSTR; }                 // This property specifies the queue where application-generated response messages are returned.
         case PROPID_M_RESP_QUEUE_LEN: { return VT_UI4; }                // This property indicates the length (in Unicode characters) of the response queue format name buffer.
         case PROPID_M_SENTTIME: { return VT_UI4; }                      // This property indicates the date and time that the message was sent by the source Queue Manager.
-        case PROPID_M_SOAP_BODY: { return VT_LPWSTR; }                  // This property specifies additional application-generated body elements for inclusion in the SOAP envelope of an HTTP message.
-        case PROPID_M_SOAP_ENVELOPE: { return VT_LPWSTR; }              // This property provides the SOAP envelope of an HTTP message and does not include binary attachments.
-        case PROPID_M_SOAP_ENVELOPE_LEN: { return VT_UI4; }             // This property provides the size of the SOAP envelope of an HTTP message.
-        case PROPID_M_SOAP_HEADER: { return VT_LPWSTR; }                // This property specifies additional application-generated header elements for inclusion in the SOAP envelope of an HTTP message.
         case PROPID_M_SRC_MACHINE_ID: { return VT_CLSID; }              // This property specifies the computer where the message originated.
         case PROPID_M_TIME_TO_BE_RECEIVED: { return VT_UI4; }           // This property specifies the total time (in seconds) the message is allowed to live. This includes the time it spends getting to the destination queue plus the time spent waiting in the queue before it is retrieved by an application.
         case PROPID_M_TIME_TO_REACH_QUEUE: { return VT_UI4; }           // This property specifies a time limit (in seconds) for the message to reach the queue.
@@ -1286,7 +1330,27 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
         case PROPID_Q_QUOTA: { return VT_UI4; }                         // Optional. This property specifies the maximum size (in kilobytes) of the queue. The default is INFINITE.
         case PROPID_Q_TRANSACTION: { return VT_UI1; }                   // Optional. This property specifies whether the queue is a transactional queue or a nontransactional queue.
         case PROPID_QM_MACHINE_ID: { return VT_CLSID; }                 // This property identifies the computer. The PROPID_QM_MACHINE_ID property is set by MSMQ when the computer is defined.
-        
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME: { return VT_LPWSTR; }
+        case PROPID_M_RESP_FORMAT_NAME_LEN: { return VT_UI4; }
+        case PROPID_M_DEST_FORMAT_NAME: { return VT_LPWSTR; }           // String that contains a public, private, direct, distribution list, or multiple-element format name.
+        case PROPID_M_DEST_FORMAT_NAME_LEN: { return VT_UI4; }          // On input: The length of the format name buffer (in Unicode characters) allocated by the receiving application. | On return: The length (in Unicode characters) of the format name string (including the null-terminating character) returned in PROPID_M_DEST_FORMAT_NAME.
+        case PROPID_M_LOOKUPID: { return VT_UI8; } 
+        case PROPID_M_SOAP_ENVELOPE: { return VT_LPWSTR; }              // This property provides the SOAP envelope of an HTTP message and does not include binary attachments.
+        case PROPID_M_SOAP_ENVELOPE_LEN: { return VT_UI4; }             // This property provides the size of the SOAP envelope of an HTTP message.
+        case PROPID_M_COMPOUND_MESSAGE: { return VT_VECTOR | VT_UI1; }  // An array of bytes that represents the entire contents of an SRMP message, including both the SOAP envelope and the SOAP attachments (MIME binary attachments) associated with it.
+        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return VT_UI4; }         // The size (in bytes) of the entire SRMP message, including both the SOAP envelope and the SOAP attachments, provided by PROPID_M_COMPOUND_MESSAGE.
+        case PROPID_M_SOAP_HEADER: { return VT_LPWSTR; }                // This property specifies additional application-generated header elements for inclusion in the SOAP envelope of an HTTP message.
+        case PROPID_M_SOAP_BODY: { return VT_LPWSTR; }                  // This property specifies additional application-generated body elements for inclusion in the SOAP envelope of an HTTP message.
+        case PROPID_M_DEADLETTER_QUEUE: { return VT_LPWSTR; }           // The path name of an application-specific DLQ.
+        case PROPID_M_DEADLETTER_QUEUE_LEN: { return VT_UI4; }          // Input: The length of the application-specific dead letter queue (DLQ) name buffer (in Unicode characters) allocated by the receiving application. | Return: The length (in Unicode characters) of the application-specific DLQ name string (including the null-terminating character) returned by PROPID_M_DEADLETTER_QUEUE.
+        case PROPID_M_ABORT_COUNT: { return VT_UI4; } 
+        case PROPID_M_MOVE_COUNT: { return VT_UI4; } 
+        case PROPID_M_LAST_MOVE_TIME: { return VT_UI4; }
+        #endif
+
         default: 
         { 
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqVariantTypeForMsmqProperty: Unable to map property " + CORE::ToString( (CORE::UInt32) propertyId ) );
@@ -1310,15 +1374,20 @@ CMsmqPubSubClientTopic::GetPayloadPropertyForPayloadSizeProperty( PROPID payload
         case PROPID_M_XACT_STATUS_QUEUE_LEN: { return PROPID_M_XACT_STATUS_QUEUE; }
         case PROPID_M_SENDER_CERT_LEN:       { return PROPID_M_SENDER_CERT; }
         case PROPID_M_ADMIN_QUEUE_LEN:       { return PROPID_M_ADMIN_QUEUE; }
-        case PROPID_M_BODY_SIZE:             { return PROPID_M_BODY; }
-        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return PROPID_M_COMPOUND_MESSAGE; }
-        case PROPID_M_DEADLETTER_QUEUE_LEN:  { return PROPID_M_DEADLETTER_QUEUE; }
-        case PROPID_M_DEST_FORMAT_NAME_LEN:  { return PROPID_M_DEST_FORMAT_NAME; }
+        case PROPID_M_BODY_SIZE:             { return PROPID_M_BODY; }                
         case PROPID_M_DEST_QUEUE_LEN:        { return PROPID_M_DEST_QUEUE; }
         case PROPID_M_EXTENSION_LEN:         { return PROPID_M_EXTENSION; }
         case PROPID_M_LABEL_LEN:             { return PROPID_M_LABEL; }
-        case PROPID_M_RESP_QUEUE_LEN:        { return PROPID_M_RESP_QUEUE; }
+        case PROPID_M_RESP_QUEUE_LEN:        { return PROPID_M_RESP_QUEUE; }        
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME_LEN:  { return PROPID_M_RESP_FORMAT_NAME; }
+        case PROPID_M_DEST_FORMAT_NAME_LEN:  { return PROPID_M_DEST_FORMAT_NAME; }
         case PROPID_M_SOAP_ENVELOPE_LEN:     { return PROPID_M_SOAP_ENVELOPE; }
+        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return PROPID_M_COMPOUND_MESSAGE; }
+        case PROPID_M_DEADLETTER_QUEUE_LEN:  { return PROPID_M_DEADLETTER_QUEUE; }
+        #endif
                 
         default: 
         { 
@@ -1343,14 +1412,19 @@ CMsmqPubSubClientTopic::GetPayloadSizePropertyForPayloadProperty( PROPID payload
         case PROPID_M_SENDER_CERT:       { return PROPID_M_SENDER_CERT_LEN; }
         case PROPID_M_ADMIN_QUEUE:       { return PROPID_M_ADMIN_QUEUE_LEN; }
         case PROPID_M_BODY:              { return PROPID_M_BODY_SIZE; }
-        case PROPID_M_COMPOUND_MESSAGE:  { return PROPID_M_COMPOUND_MESSAGE_SIZE; }
-        case PROPID_M_DEADLETTER_QUEUE:  { return PROPID_M_DEADLETTER_QUEUE_LEN; }
-        case PROPID_M_DEST_FORMAT_NAME:  { return PROPID_M_DEST_FORMAT_NAME_LEN; }
         case PROPID_M_DEST_QUEUE:        { return PROPID_M_DEST_QUEUE_LEN; }
         case PROPID_M_EXTENSION:         { return PROPID_M_EXTENSION_LEN; }
         case PROPID_M_LABEL:             { return PROPID_M_LABEL_LEN; }
         case PROPID_M_RESP_QUEUE:        { return PROPID_M_RESP_QUEUE_LEN; }
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME:  { return PROPID_M_RESP_FORMAT_NAME_LEN; }
+        case PROPID_M_DEST_FORMAT_NAME:  { return PROPID_M_DEST_FORMAT_NAME_LEN; }
         case PROPID_M_SOAP_ENVELOPE:     { return PROPID_M_SOAP_ENVELOPE_LEN; }
+        case PROPID_M_COMPOUND_MESSAGE:  { return PROPID_M_COMPOUND_MESSAGE_SIZE; }
+        case PROPID_M_DEADLETTER_QUEUE:  { return PROPID_M_DEADLETTER_QUEUE_LEN; }
+        #endif
                 
         default: 
         { 
@@ -1643,6 +1717,9 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
     translatedMsg.Clear();
     translatedMsg.SetOriginClientTopic( this );
 
+    translatedMsg.SetReceiveActionId( m_currentReceiveActionId );
+    ++m_currentReceiveActionId;
+
     CORE::UInt64 sentTimeUnixEpocInSecs = 0;
     CORE::UInt64 arriveTimeUnixEpocInSecs = 0;
 
@@ -1681,6 +1758,26 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 }
                 break;
             }
+
+            #if(_WIN32_WINNT >= 0x0501)
+            case PROPID_M_LOOKUPID:
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    translatedMsg.GetMsgIndex() = ValueVar.AsUInt64();
+
+                    // IMPORTANT: For the peek cycle to work we need to obtain the lookup id and retain it as state so that
+                    //            we can use it to iterate to the next message
+                    m_msmqLastLookupId = ValueVar.AsUInt64();
+                }
+                else
+                {
+                    // PROPID_M_LOOKUPID should always be available since its MSMQ generated in MSMQ 3.0 and above
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to obtain MSMQ PROPID_M_LOOKUPID. Translated message won't have a message index value" );
+                }
+                break;
+            }
+            #endif
 
             case PROPID_M_SENTTIME: 
             {
@@ -1776,17 +1873,52 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     DWORD dwAction = MQ_ACTION_RECEIVE;                 // could support peeking: isPeekOnly ? MQ_ACTION_PEEK_CURRENT : MQ_ACTION_RECEIVE;
     DWORD dwTimeout = 0;                                // We dont wait for messages during sync reads, we get what we can this cycle and thats it
     ITransaction* pTransaction = MQ_NO_TRANSACTION;     // could support transactions: isTransactional ? MQ_SINGLE_MESSAGE : MQ_NO_TRANSACTION;
+
+    // For MSMQ 3.0 and above:
+    const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
+    bool supportLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+
     CORE::UInt32 msgsRead = 0;
     for ( CORE::UInt32 i=0; i<m_config.maxMsmqMsgsToReadPerSyncCycle; ++i )
     {
-        HRESULT receiveHResult = ::MQReceiveMessage( m_receiveQueueHandle             ,  // Handle to the destination queue
+        // For MSMQ 3.0 and above:
+        #if ( _WIN32_WINNT >= 0x0501 )
+        
+        HRESULT receiveHResult = MQ_OK;
+        if ( !supportLookup )
+        {
+            receiveHResult = ::MQReceiveMessage( m_receiveQueueHandle             ,  // Handle to the queue
+                                                 dwTimeout                        ,  // Time out interval
+                                                 dwAction                         ,  // Peek?  or Dequeue.  Receive action
+                                                 &m_msmqReceiveMsgs[ i ].msgprops ,  // Pointer to the MQMSGPROPS structure
+                                                 NULL                             ,  // No OVERLAPPED structure etc.
+                                                 NULL                             ,  // No OVERLAPPED structure etc.
+                                                 NULL                             ,  // NULL, we dont use a cursor
+                                                 pTransaction                     ); // MQ_SINGLE_MESSAGE | MQ_MTS_TRANSACTION | MQ_XA_TRANSACTION   
+        }
+        else
+        {
+            receiveHResult = MQReceiveMessageByLookupId( m_receiveQueueHandle ,                 // Handle to the queue 
+                                                         m_msmqLastLookupId   ,                 // The lookup identifier  
+                                                         0 == m_msmqLastLookupId ? MQ_LOOKUP_PEEK_FIRST  : MQ_LOOKUP_PEEK_NEXT,   // Access mode  
+                                                         &m_msmqReceiveMsgs[ i ].msgprops ,     // Pointer to the MQMSGPROPS structure
+                                                         NULL                 ,                 // No OVERLAPPED structure  
+                                                         NULL                 ,                 // No callback function  
+                                                         pTransaction         );                // Not in a transaction  
+        }
+
+        #else
+
+        HRESULT receiveHResult = ::MQReceiveMessage( m_receiveQueueHandle             ,  // Handle to the queue
                                                      dwTimeout                        ,  // Time out interval
                                                      dwAction                         ,  // Peek?  or Dequeue.  Receive action
                                                      &m_msmqReceiveMsgs[ i ].msgprops ,  // Pointer to the MQMSGPROPS structure
                                                      NULL                             ,  // No OVERLAPPED structure etc.
                                                      NULL                             ,  // No OVERLAPPED structure etc.
-                                                     NULL                             ,  // No OVERLAPPED structure etc.
-                                                     pTransaction                     ); // MQ_SINGLE_MESSAGE | MQ_MTS_TRANSACTION | MQ_XA_TRANSACTION   
+                                                     NULL                             ,  // NULL, we dont use a cursor
+                                                     pTransaction                     ); // MQ_SINGLE_MESSAGE | MQ_MTS_TRANSACTION | MQ_XA_TRANSACTION  
+
+        #endif
 
         CORE::UInt64 receiveResult = (CORE::UInt64) receiveHResult;
         switch ( receiveResult )
@@ -1798,7 +1930,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
                 
                 ++msgsRead;
-                m_pubsubMsgsRefs.msgs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
                 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle" );
                 break;
@@ -1837,14 +1969,23 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
                 
                 ++msgsRead;
-                m_pubsubMsgsRefs.msgs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
                 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle but with MSMQ property warnings upon retrieval" );
                 break;
             }
 
             // Not an error in the way we use it to check for messages
+            // This is how we find out there are no more messages when using MQReceiveMessage()
             case (CORE::UInt64) MQ_ERROR_IO_TIMEOUT: 
+            {
+                // No more messages are available, stop trying to read more
+                i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
+                break; 
+            }
+
+            // This is how we find out there are no more messages when using MQReceiveMessageByLookupId()
+            case (CORE::UInt64) MQ_ERROR_MESSAGE_NOT_FOUND:
             {
                 // No more messages are available, stop trying to read more
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
@@ -1863,6 +2004,14 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 break;
             }
 
+            case (CORE::UInt64) MQ_ERROR_QUEUE_DELETED:        // <- queue was deleted outside the app, just keep trying to 'reconnect'
+            {
+                // If the queue is deleted the lookup id becomes invalid since its a property of that instance of the queue
+                m_msmqLastLookupId = 0;
+
+                // we intentiontionally dont break here because we want the code below as well
+                // break;
+            }
             case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_ACTIVE:     // <- caused by someone messing with the queue outside the app?
             case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_FOUND:      // <- caused by someone messing with the queue outside the app?
             case (CORE::UInt64) MQ_ERROR_INVALID_HANDLE:
@@ -1900,15 +2049,12 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
 
     if ( msgsRead > 0 )
     {
-        m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
-        ++m_currentReceiveActionId;
-
         // Communicate all the messages received via an event notification
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a total of " + CORE::ToString( msgsRead ) + 
-            " messages out of a poll cycle max of " + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) + ". receiveActionId=" + CORE::ToString( m_pubsubMsgsRefs.receiveActionId ) );
+            " messages out of a poll cycle max of " + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
 
         if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return;
-        m_pubsubMsgsRefs.msgs.clear();
+        m_pubsubMsgsRefs.clear();
 
         if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
         {

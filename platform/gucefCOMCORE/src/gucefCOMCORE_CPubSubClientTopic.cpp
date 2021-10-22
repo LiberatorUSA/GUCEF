@@ -96,24 +96,6 @@ CPubSubClientTopic::~CPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopic::CMsgsRecieveActionData::CMsgsRecieveActionData( void )
-    : msgs()
-    , receiveActionId( 0 )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubClientTopic::CMsgsRecieveActionData::CMsgsRecieveActionData( const CMsgsRecieveActionData& src )
-    : msgs( src.msgs )
-    , receiveActionId( src.receiveActionId )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CPubSubClientTopic::AcknowledgeReceipt( const CIPubSubMsg& msg )
 {GUCEF_TRACE;

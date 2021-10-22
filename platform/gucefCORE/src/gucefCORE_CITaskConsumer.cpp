@@ -129,7 +129,6 @@ CTaskConsumer::GetTaskDelegator( void )
     return m_delegator;
 }
 
-
 /*-------------------------------------------------------------------------*/
 
 CPulseGenerator*
@@ -137,6 +136,15 @@ CTaskConsumer::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
     return m_delegator != GUCEF_NULL ? &m_delegator->GetPulseGenerator() : GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CTaskConsumer::GetDelegatorThreadId( void ) const
+{GUCEF_TRACE;
+
+    return m_delegator != GUCEF_NULL ? m_delegator->GetThreadID() : 0;
 }
 
 /*-------------------------------------------------------------------------*/

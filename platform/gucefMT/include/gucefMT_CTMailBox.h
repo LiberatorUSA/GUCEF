@@ -93,8 +93,8 @@ class CTMailBox : public virtual MT::CILockable
      *  @param eventid the ID of the event you wish to add to the mailbox
      *  @param data cloneable data container for optional event data.
      */
-    void AddMail( const T& eventid               ,
-                  const CICloneable* data = NULL );
+    void AddMail( const T& eventid                     ,
+                  const CICloneable* data = GUCEF_NULL );
 
     /**
      *  Attempts to retrieve mail from the mailbox.
@@ -107,8 +107,8 @@ class CTMailBox : public virtual MT::CILockable
      *  @param data cloneable data container for optional event data.
      *  @return whether mail was successfully retrieved from the mailbox.
      */
-    bool GetMail( T& eventid         ,
-                  CICloneable** data );
+    bool GetMail( T& eventid                      ,
+                  CICloneable** data = GUCEF_NULL );
 
     /**
      *  Attempts to retrieve mail from the mailbox for inspection without removing it from the mail stack
@@ -230,7 +230,7 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
 
     TMailElement entry;
     entry.eventid = eventid;
-    if ( data )
+    if ( GUCEF_NULL != data )
     {
         entry.data = data->Clone();
     }
@@ -254,12 +254,18 @@ CTMailBox< T >::GetMail( T& eventid         ,
     {
         TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
         eventid = entry.eventid;
-        *data = entry.data;
+
+        if ( GUCEF_NULL != data )
+            *data = entry.data;
+        else
+            delete entry.data;
 
         m_mailStack.pop_back();
         return true;
     }
-    *data = GUCEF_NULL;
+    
+    if ( GUCEF_NULL != data )
+        *data = GUCEF_NULL;
     return false;
 }
 

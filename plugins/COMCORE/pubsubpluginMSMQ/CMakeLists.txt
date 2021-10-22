@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/pubsubpluginMSMQ.h
   include/pubsubpluginMSMQ_CMsmqPubSubClient.h
+  include/pubsubpluginMSMQ_CMsmqPubSubClientConfig.h
   include/pubsubpluginMSMQ_CMsmqPubSubClientTopic.h
   include/pubsubpluginMSMQ_CMsmqPubSubClientTopicConfig.h
   include/pubsubpluginMSMQ_config.h
@@ -23,6 +24,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/pubsubpluginMSMQ.cpp
   src/pubsubpluginMSMQ_CMsmqPubSubClient.cpp
+  src/pubsubpluginMSMQ_CMsmqPubSubClientConfig.cpp
   src/pubsubpluginMSMQ_CMsmqPubSubClientTopic.cpp
   src/pubsubpluginMSMQ_CMsmqPubSubClientTopicConfig.cpp
 )

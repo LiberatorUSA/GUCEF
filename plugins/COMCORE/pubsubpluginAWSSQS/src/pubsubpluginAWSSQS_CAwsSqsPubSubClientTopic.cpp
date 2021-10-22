@@ -215,9 +215,12 @@ bool
 CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
-    publishActionId = 0;
     bool success = false;
     MT::CScopeMutex lock( m_lock );
+
+    publishActionId = m_currentPublishActionId; 
+    ++m_currentPublishActionId;
+
     try
     {  
         Aws::SQS::Model::SendMessageRequest sm_req;
@@ -226,10 +229,6 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE:
         CORE::UInt32 msgByteSize = 0;                     
         if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageRequest >( sm_req, &msg, msgByteSize ) )
         {
-            // Nothing wrong with msg, we will make the publish attempt
-            publishActionId = m_currentPublishActionId; 
-            ++m_currentPublishActionId;
-
             Aws::SQS::Model::SendMessageOutcome sm_out = m_client->GetSqsClient().SendMessage( sm_req );
             if ( sm_out.IsSuccess() )
             {
@@ -412,19 +411,17 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                CORE::UInt64 publishActionId = 0;
+                CORE::UInt64 publishActionId = m_currentPublishActionId;
+                ++m_currentPublishActionId;
+                publishActionIds.push_back( publishActionId );
+
                 const COMCORE::CIPubSubMsg* msg = (*i);            
                 CORE::UInt32 msgByteSize = 0;
                 Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;                        
                 if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageBatchRequestEntry >( sqsMsg, msg, msgByteSize ) )
                 {
-                    // Nothing wrong with msg, we will make the publish attempt
-                    publishActionId = m_currentPublishActionId; 
-                    ++m_currentPublishActionId;
-
                     sm_req.AddEntries( sqsMsg );
                 }
-                publishActionIds.push_back( publishActionId );
                 ++i;
             }
 
@@ -463,8 +460,7 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                CORE::UInt64 publishActionId = 0;
-                
+                CORE::UInt64 publishActionId = 0;                
                 bool success = Publish( publishActionId, *(*i), false );
                 publishActionIds.push_back( publishActionId );
 
@@ -551,7 +547,7 @@ CAwsSqsPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 
     // reset size, note this does not dealloc the underlying memory
     m_pubsubMsgs.clear();
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
     msgRefs.clear();
 
     if ( msgCount > m_pubsubMsgs.capacity() )

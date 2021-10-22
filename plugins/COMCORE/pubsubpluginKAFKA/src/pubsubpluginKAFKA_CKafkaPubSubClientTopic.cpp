@@ -217,6 +217,9 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
     
     MT::CScopeMutex lock( m_lock );
+
+    publishActionId = m_currentPublishActionId; 
+    ++m_currentPublishActionId;
     
     // First write any backend auto generated headers per config
     RdKafka::Headers* headers = GUCEF_NULL;
@@ -226,7 +229,8 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
         retCode = headers->add( KafkaMsgHeader_ProducerHostname, m_producerHostname );
         if ( retCode != RdKafka::ERR_NO_ERROR )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add auto generated Producer Hostname Kafka Msg header: " + RdKafka::err2str( retCode ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add auto generated Producer Hostname Kafka Msg header: " + RdKafka::err2str( retCode ) +
+                ". publishActionId=" + CORE::ToString( publishActionId ).STL_String() );
         }
     }
 
@@ -243,7 +247,9 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             retCode = headers->add( m_config.prefixToAddForMetaDataKvPairs + (*k).first.AsString(), (*k).second.AsVoidPtr(), (*k).second.ByteSize() );
             if ( retCode != RdKafka::ERR_NO_ERROR )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg meta-data key \"" + m_config.prefixToAddForMetaDataKvPairs + (*k).first.AsString() + "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg meta-data key \"" + m_config.prefixToAddForMetaDataKvPairs + (*k).first.AsString() + 
+                    "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() +
+                    ". publishActionId=" + CORE::ToString( publishActionId ) );
                 return false;
             }
             ++k;
@@ -263,16 +269,14 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             retCode = headers->add( m_config.prefixToAddForKvPairs + (*k).first.AsString(), (*k).second.AsVoidPtr(), (*k).second.ByteSize() );
             if ( retCode != RdKafka::ERR_NO_ERROR )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg key-value entry \"" + m_config.prefixToAddForKvPairs + (*k).first.AsString() + "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg key-value entry \"" + m_config.prefixToAddForKvPairs + (*k).first.AsString() + 
+                        "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() +
+                        ". publishActionId=" + CORE::ToString( publishActionId ) );
                 return false;
             }
             ++k;
         }
     }
-
-    // Nothing wrong with msg, we will make the publish attempt
-    publishActionId = m_currentPublishActionId; 
-    ++m_currentPublishActionId;
 
     void* msg_opaque = GUCEF_NULL;
     if ( notify )
@@ -310,7 +314,7 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     {
         case RdKafka::ERR_NO_ERROR:
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued message for transmission" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued message for transmission with publishActionId " + CORE::ToString( publishActionId ) );
             return true;
         }
         case RdKafka::ERR__QUEUE_FULL:
@@ -319,14 +323,14 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             ++m_metrics.kafkaTransmitOverflowQueueSize;
             m_metrics.kafkaTransmitQueueSize = (CORE::UInt32) m_kafkaProducer->outq_len();
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full. publishActionId=" + CORE::ToString( publishActionId ) );
 
             NotifyObservers( LocalPublishQueueFullEvent );
             return false;
         }
         default:
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Publish: Kafka error: " + RdKafka::err2str( retCode ) + " from kafkaProducer->produce()" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Publish: Kafka error: " + RdKafka::err2str( retCode ) + " from kafkaProducer->produce(). publishActionId=" + CORE::ToString( publishActionId ).STL_String() );
             ++m_kafkaErrorReplies;
             return false;
         }
@@ -600,7 +604,7 @@ CKafkaPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
     }
 
     // reset size, note this does not dealloc the underlying memory
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
     msgRefs.clear();
 
     if ( msgCount > msgRefs.capacity() )
@@ -1603,6 +1607,9 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     COMCORE::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
     msgWrap.Clear();    
     msgWrap.SetOriginClientTopic( this );
+    
+    msgWrap.SetReceiveActionId( m_currentReceiveActionId );
+    ++m_currentReceiveActionId;
 
     if ( message.key_len() > 0 )
     {
@@ -1678,12 +1685,9 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
 
     // Now that we have prepared our wrapped message let's link it
     // as a reference in the list of received messages we send out
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.msgs;
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
     msgRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
     msgRefs.back().LinkTo( &msgWrap );
-
-    m_pubsubMsgsRefs.receiveActionId = m_currentReceiveActionId;
-    ++m_currentReceiveActionId;
 
     // Communicate all the messages received via an event notification
     NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs );

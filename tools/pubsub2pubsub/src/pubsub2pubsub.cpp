@@ -88,12 +88,11 @@
 PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     : CORE::CIConfigurable()
     , pubsubClientConfig()
-    , performPubSubInDedicatedThread()
+    , performPubSubInDedicatedThread( true )
     , applyThreadCpuAffinity( false )
     , cpuAffinityForPubSubThread( 0 )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
-    , performFireAndForgetPublishing( false )
-    , backendSupportedFeatures()
+    , needToTrackInFlightPublishedMsgsForAck( false )
 {GUCEF_TRACE;
 
 }
@@ -107,8 +106,7 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSet
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
-    , performFireAndForgetPublishing( src.performFireAndForgetPublishing )
-    , backendSupportedFeatures()
+    , needToTrackInFlightPublishedMsgsForAck( false )
 {GUCEF_TRACE;
 
 }
@@ -128,8 +126,7 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
-        performFireAndForgetPublishing = src.performFireAndForgetPublishing;
-        backendSupportedFeatures = src.backendSupportedFeatures;
+        needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
     }
     return *this;
 }
@@ -151,7 +148,7 @@ PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
     tree.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
-    tree.SetAttribute( "performFireAndForgetPublishing", performFireAndForgetPublishing );
+    tree.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck );
 
     return true;
 }
@@ -196,7 +193,6 @@ PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     applyThreadCpuAffinity = tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = tree.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
-    performFireAndForgetPublishing = tree.GetAttributeValueOrChildValueByName( "performFireAndForgetPublishing" ).AsBool( performFireAndForgetPublishing, true );
     return true;
 }
 
@@ -387,7 +383,6 @@ ChannelSettings::GetClassTypeName( void ) const
 CPubSubClientSide::CPubSubClientSide( char side )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
-    , m_otherSide( GUCEF_NULL )
     , m_topics()
     , m_channelSettings()
     , m_sideSettings( GUCEF_NULL )
@@ -396,7 +391,6 @@ CPubSubClientSide::CPubSubClientSide( char side )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_persistance( GUCEF_NULL )
     , m_side( side )
-    , m_runsInDedicatedThread( false )
 {GUCEF_TRACE;
 
 }
@@ -436,7 +430,14 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
 {GUCEF_TRACE;
     
     // this variation gets called during async flow
-    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
+    if ( publishActionIds.size() != msgs.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
+            ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
+    }
+    
     for ( size_t i=0; i<max; ++i )
     {
         inFlightMsgs[ publishActionIds[ i ] ] = msgs[ i ];
@@ -451,7 +452,14 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
 {GUCEF_TRACE;
     
     // this variation gets called during sync flow
-    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
+    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
+    if ( publishActionIds.size() != msgs.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
+            ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
+    }
+
     for ( size_t i=0; i<max; ++i )
     {
         // in the sync/blocking flow we have not yet made a copy, lifecycle is for the call chain which doesnt work
@@ -550,8 +558,6 @@ bool
 CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
-    bool needToTrackInFlightMsgs = !m_sideSettings->performFireAndForgetPublishing;
-    
     CORE::UInt32 topicsToPublishOn = 0;
     CORE::UInt32 topicsPublishedOn = 0;
     bool publishSuccess = true;
@@ -567,10 +573,11 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
             {
                 ++topicsToPublishOn;
 
-                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, needToTrackInFlightMsgs ) )
+                topicLink.currentPublishActionIds.clear();
+                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, m_sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
                 {
-                    //if ( needToTrackInFlightMsgs )
-                    //    topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, srcSide );
+                    if ( m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                        topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs );
 
                     ++topicsPublishedOn;
                 }
@@ -653,8 +660,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
     
     try
     {
-        COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* eData = static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData );
-        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = eData->msgs;
+        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = *static_cast< COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector* >( eventData );
         if ( !msgs.empty() )
         {                            
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
@@ -695,30 +701,83 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
+{GUCEF_TRACE;
+
+    TopicMap::iterator i = m_topics.begin();
+    while ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+
+        COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+        while ( topicLink.publishAckdMsgsMailbox.GetMail( msg ) )
+        {
+            AcknowledgeReceiptSync( msg );
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientSide::AcknowledgeReceiptSync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+
+    return msg->GetOriginClientTopic()->AcknowledgeReceipt( *msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientSide::AcknowledgeReceiptASync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+
+    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic() );
+    if ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+        topicLink.publishAckdMsgsMailbox.AddMail( msg );
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                                                const CORE::CEvent& eventId  ,
                                                CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
         return;
 
     const COMCORE::CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< COMCORE::CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
     const COMCORE::CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
     COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
 
+    // Here we translate the publish action IDs back into the original messages
+    // Subsequently we use said original messages to ack that to the message origin that we received the message
+    // This is what allows us to provide a garanteed handling garantee since its an explicit handoff all the way through
+
     TopicMap::iterator i = m_topics.find( topic );
     if ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        
+
         COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
         while ( n != publishActionIds->end() )
         {
             TopicLink::TUInt64ToNoLockSharedMsgPtrMap::const_iterator m = topicLink.inFlightMsgs.find( (*n) );
             if ( m != topicLink.inFlightMsgs.end() )
             {
-                if ( !AcknowledgeReceiptForSide( *(*m).second.GetPointerAlways(), this ) )
+                COMCORE::CIPubSubMsg::TNoLockSharedPtr msg = (*m).second;
+                topicLink.inFlightMsgs.erase( m );
+
+                if ( !AcknowledgeReceiptForSide( msg, this ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                         "):OnPubSubTopicMsgsPublished: Failed to signal receipt of message acknowledgement" );
@@ -730,12 +789,14 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                         "):OnPubSubTopicMsgsPublished: Signaled receipt of message acknowledgement" );
                 }
                 #endif
-
-                topicLink.inFlightMsgs.erase( m );
             }            
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnPubSubTopicMsgsPublished: Failed to locate original in-flight message related to publishActionId " + CORE::ToString( (*n) ) );
+            }
             ++n;
         }
-        ++i;
     }
 }
 
@@ -811,6 +872,11 @@ CPubSubClientSide::ConnectPubSubClient( void )
         if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
             m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
     }
+
+    // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
+    // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
+    // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
+    pubSubSideSettings->needToTrackInFlightPublishedMsgsForAck = pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck && clientFeatures.supportsSubscriberMsgReceivedAck;
 
     SubscribeTo( m_pubsubClient.GetPointerAlways() );
     if ( !m_pubsubClient->Connect() )
@@ -943,7 +1009,6 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     }    
     m_sideSettings = pubSubSideSettings;
     
-    m_runsInDedicatedThread = m_sideSettings->performPubSubInDedicatedThread; 
     COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
@@ -992,7 +1057,7 @@ bool
 CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
-    return m_runsInDedicatedThread;
+    return m_sideSettings->performPubSubInDedicatedThread;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1006,6 +1071,7 @@ CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
         // If we are running async from other sides we need to check the mailbox
         if ( m_sideSettings->performPubSubInDedicatedThread )
         {
+            ProcessAcknowledgeReceiptsMailbox();
             PublishMailboxMsgs();
         }
     }
@@ -1060,9 +1126,7 @@ CPubSubClientSide::LoadConfig( const ChannelSettings& channelSettings )
         return false;
     }    
 
-    m_sideSettings = pubSubSideSettings;    
-    m_runsInDedicatedThread = m_sideSettings->performPubSubInDedicatedThread; 
-
+    m_sideSettings = pubSubSideSettings;
     return true;
 }
 
@@ -1073,6 +1137,15 @@ CPubSubClientSide::GetChannelSettings( void ) const
 {GUCEF_TRACE;
 
     return m_channelSettings;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSubSideChannelSettings*
+CPubSubClientSide::GetSideSettings( void )
+{GUCEF_TRACE;
+
+    return m_sideSettings;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1103,8 +1176,8 @@ CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientOtherSide::AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                                   CPubSubClientSide* msgReceiverSide )
+CPubSubClientOtherSide::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                                   CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
     return m_parentChannel->AcknowledgeReceiptForSide( msg             ,
@@ -1150,17 +1223,40 @@ CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::AcknowledgeReceiptForSide( const COMCORE::CIPubSubMsg& msg    ,
-                                                 CPubSubClientSide* msgReceiverSide )
+CPubSubClientChannel::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                                 CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
     // if we only have 2 sides, no need for anything more complicated
     if ( m_sides.size() <= 2 )
     {
-        COMCORE::CPubSubClientTopic* originTopic = msg.GetOriginClientTopic();
+        COMCORE::CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
         if ( GUCEF_NULL != originTopic )
         {
-            return originTopic->AcknowledgeReceipt( msg );
+            COMCORE::CPubSubClient* originClient = originTopic->GetClient();
+            if ( GUCEF_NULL != originClient )
+            {
+                CPubSubClientSide* originSide = static_cast< CPubSubClientSide* >( originClient->GetOpaqueUserData() );
+                if ( GUCEF_NULL != originSide )
+                {
+                    if ( GetDelegatorThreadId() != originSide->GetDelegatorThreadId() )
+                        return originSide->AcknowledgeReceiptASync( msg );
+                    else
+                        return originSide->AcknowledgeReceiptSync( msg );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since parent client owning the origin topic provided on the message does not have a link back to the owner pubsub side. This should never happen." );
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since no parent client owns the origin topic provided on the message. This should never happen." );
+                return false;
+            }
         }
         else
         {
@@ -1190,7 +1286,22 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         {
             return m_sideBPubSub->OnTaskStart( taskData );
         }
-        return true;
+        else
+        {
+            CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+            if ( !threadPool->StartTask( m_sideBPubSub ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to start dedicated thread for other side. Falling back to a single thread" );
+                m_sideBPubSub->GetSideSettings()->performPubSubInDedicatedThread = false;
+
+                return m_sideBPubSub->OnTaskStart( taskData );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskStart: Successfully requested the launch of a dedicated thread for other side" );
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -1224,6 +1335,20 @@ CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
     if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
     {
         m_sideBPubSub->OnTaskEnding( taskdata, willBeForced );
+    }
+    else
+    {
+        // Since we are the ones that launched the dedicated thread for the other sides we should also ask
+        // to have it cleaned up when we are shutting down this thread
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+        if ( !threadPool->RequestTaskToStop( m_sideBPubSub, false ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskEnding: Failed to request the dedicated thread for other side to stop" );
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskEnding: Successfully requested the dedicated thread for the other side to stop" );
+        }
     }
 }
 
