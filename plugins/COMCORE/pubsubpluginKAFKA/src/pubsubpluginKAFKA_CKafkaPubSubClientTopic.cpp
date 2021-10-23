@@ -323,6 +323,10 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             ++m_metrics.kafkaTransmitOverflowQueueSize;
             m_metrics.kafkaTransmitQueueSize = (CORE::UInt32) m_kafkaProducer->outq_len();
 
+            // We will not be getting a delivery report callback on this message so we add it here 
+            // to messages for which a failure needs to be notified
+            m_publishFailureActionIds.push_back( publishActionId );
+            
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full. publishActionId=" + CORE::ToString( publishActionId ) );
 
             NotifyObservers( LocalPublishQueueFullEvent );
@@ -330,6 +334,10 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
         }
         default:
         {
+            // We will not be getting a delivery report callback on this message so we add it here 
+            // to messages for which a failure needs to be notified
+            m_publishFailureActionIds.push_back( publishActionId );
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Publish: Kafka error: " + RdKafka::err2str( retCode ) + " from kafkaProducer->produce(). publishActionId=" + CORE::ToString( publishActionId ).STL_String() );
             ++m_kafkaErrorReplies;
             return false;
@@ -1983,8 +1991,6 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
         if ( notify )
         {
             m_publishFailureActionIds.push_back( publishActionId );
-            if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
-            m_publishFailureActionIds.clear();
         }
     }
     else 
@@ -2002,8 +2008,6 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
         if ( notify )
         {
             m_publishSuccessActionIds.push_back( publishActionId );
-            if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
-            m_publishSuccessActionIds.clear();
         }
     }
 }
@@ -2088,6 +2092,17 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
                       
+    if ( !m_publishFailureActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+        m_publishFailureActionIds.clear();
+    }
+    if ( !m_publishSuccessActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+        m_publishSuccessActionIds.clear();
+    }
+
     // You are required to periodically call poll() on a producer to trigger queued callbacks if any
     if ( GUCEF_NULL != m_kafkaProducer )
     { 

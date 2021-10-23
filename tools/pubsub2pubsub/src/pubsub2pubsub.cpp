@@ -92,6 +92,10 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     , applyThreadCpuAffinity( false )
     , cpuAffinityForPubSubThread( 0 )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
+    , retryFailedPublishAttempts( true )
+    , allowOutOfOrderPublishRetry( false )
+    , maxMsgPublishRetryAttempts( -1 )
+    , maxMsgPublishRetryTotalTimeInMs( -1 )
     , needToTrackInFlightPublishedMsgsForAck( false )
 {GUCEF_TRACE;
 
@@ -106,6 +110,10 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSet
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
+    , retryFailedPublishAttempts( src.retryFailedPublishAttempts )
+    , allowOutOfOrderPublishRetry( src.allowOutOfOrderPublishRetry )
+    , maxMsgPublishRetryAttempts( src.maxMsgPublishRetryAttempts )
+    , maxMsgPublishRetryTotalTimeInMs( src.maxMsgPublishRetryTotalTimeInMs )
     , needToTrackInFlightPublishedMsgsForAck( false )
 {GUCEF_TRACE;
 
@@ -126,6 +134,11 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
+        retryFailedPublishAttempts = src.retryFailedPublishAttempts;
+        allowOutOfOrderPublishRetry = src.allowOutOfOrderPublishRetry;
+        maxMsgPublishRetryAttempts = src.maxMsgPublishRetryAttempts;
+        maxMsgPublishRetryTotalTimeInMs = src.maxMsgPublishRetryTotalTimeInMs;
+        
         needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
     }
     return *this;
@@ -134,21 +147,27 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
     
-    CORE::CDataNode* psClientConfig = tree.Structure( "PubSubClientConfig", '/' );
+    CORE::CDataNode* psClientConfig = cfg.Structure( "PubSubClientConfig", '/' );
     if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
         return false;        
     }
 
-    tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
-    tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
-    tree.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
-    tree.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
-    tree.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck );
+    cfg.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
+    cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
+    cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
+    cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
+    cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts );
+    cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry );
+    cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts );
+    cfg.SetAttribute( "maxMsgPublishRetryTotalTimeInMs", maxMsgPublishRetryTotalTimeInMs );
+            
+    // Derived settings are advisory outputs only meaning we will save them but we wont load them
+    cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck );
 
     return true;
 }
@@ -156,10 +175,10 @@ PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
+PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    const CORE::CDataNode* psClientConfig = tree.Search( "PubSubClientConfig", '/', false );
+    const CORE::CDataNode* psClientConfig = cfg.Search( "PubSubClientConfig", '/', false );
     if ( GUCEF_NULL != psClientConfig )
     {
         if ( !pubsubClientConfig.LoadConfig( *psClientConfig ) )
@@ -189,10 +208,16 @@ PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& tree )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, a PubSubClientConfig section is mandatory" );
         return false;
     }
-    performPubSubInDedicatedThread = tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
-    applyThreadCpuAffinity = tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
-    cpuAffinityForPubSubThread = tree.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
-    subscribeWithoutBookmarkIfNoneIsPersisted = tree.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
+
+    performPubSubInDedicatedThread = cfg.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
+    applyThreadCpuAffinity = cfg.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
+    cpuAffinityForPubSubThread = cfg.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
+    subscribeWithoutBookmarkIfNoneIsPersisted = cfg.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
+    retryFailedPublishAttempts = cfg.GetAttributeValueOrChildValueByName( "retryFailedPublishAttempts" ).AsBool( retryFailedPublishAttempts, true );
+    allowOutOfOrderPublishRetry = cfg.GetAttributeValueOrChildValueByName( "allowOutOfOrderPublishRetry" ).AsBool( allowOutOfOrderPublishRetry, true );
+    maxMsgPublishRetryAttempts = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryAttempts" ).AsInt32( maxMsgPublishRetryAttempts, true );
+    maxMsgPublishRetryTotalTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryTotalTimeInMs" ).AsInt32( maxMsgPublishRetryTotalTimeInMs, true );
+    
     return true;
 }
 
@@ -391,6 +416,7 @@ CPubSubClientSide::CPubSubClientSide( char side )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_persistance( GUCEF_NULL )
     , m_side( side )
+    , m_awaitingFailureReport( false )
 {GUCEF_TRACE;
 
 }
@@ -408,6 +434,8 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     : topic( GUCEF_NULL )
     , currentPublishActionIds()
     , inFlightMsgs()
+    , publishAckdMsgsMailbox()
+    , publishFailedMsgs()
 {GUCEF_TRACE;
 
 }
@@ -418,8 +446,20 @@ CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
+    , publishAckdMsgsMailbox()
+    , publishFailedMsgs()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId                ,
+                                              COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+    
+    inFlightMsgs[ publishActionId ] = msg;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -433,7 +473,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -455,7 +495,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -467,6 +507,130 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
         COMCORE::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
         inFlightMsgs[ publishActionIds[ i ] ] = ptr;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientSide::TopicLink::MsgRetryEntry::MsgRetryEntry( void )
+    : retryCount( 0 )
+    , firstPublishAttempt( CORE::CDateTime::Empty )
+    , lastPublishAttempt( CORE::CDateTime::Empty )
+    , originalPublishActionId( 0 )
+    , msg()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientSide::TopicLink::MsgRetryEntry::MsgRetryEntry( CORE::UInt64 publishActionId, COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+    : retryCount( 0 )
+    , firstPublishAttempt( CORE::CDateTime::NowUTCDateTime() )
+    , lastPublishAttempt( CORE::CDateTime::Empty )
+    , originalPublishActionId( publishActionId )
+    , msg( msg )
+{GUCEF_TRACE;
+
+    lastPublishAttempt = firstPublishAttempt;
+}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void 
+//CPubSubClientSide::TopicLink::AddFailedToPublishMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+//                                                      const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
+//{GUCEF_TRACE;
+//    
+//    // this variation gets called during async flow
+//    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
+//    if ( publishActionIds.size() > msgs.size() )
+//    {
+//        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//            "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
+//            ") is greater than Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
+//    }
+//    
+//    for ( size_t i=0; i<max; ++i )
+//    {
+//        if ( 0 == publishActionIds[ i ] )
+//        {
+//            COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr = msgs[ i ];
+//            publishFailedMsgs.push_back( MsgRetryEntry( msgPtr ) );
+//
+//            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//                "):TopicLink:AddFailedToPublishMsgs: Message nr " + CORE::ToString( i ) + " of " + CORE::ToString( msgs.size() ) + " has a publishActionId of 0. Queueing message for retry" );
+//        }
+//    }
+//    if ( publishActionIds.size() < msgs.size() )
+//    {
+//        for ( size_t i=max; i<msgs.size(); ++i )
+//        {
+//            COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr = msgs[ i ];
+//            publishFailedMsgs.push_back( MsgRetryEntry(msgPtr ) );
+//
+//            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//                "):TopicLink:AddFailedToPublishMsgs: Message nr " + CORE::ToString( i ) + " of " + CORE::ToString( msgs.size() ) + " has no publishActionId. Queueing message for retry" );
+//        }
+//    }
+//}
+//
+///*-------------------------------------------------------------------------*/
+//
+//void 
+//CPubSubClientSide::TopicLink::AddFailedToPublishMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+//                                                      const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
+//{GUCEF_TRACE;
+//    
+//    // this variation gets called during sync flow
+//    size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
+//    if ( publishActionIds.size() > msgs.size() )
+//    {
+//        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//            "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) + 
+//            ") is greater than Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
+//    }
+//    
+//    for ( size_t i=0; i<max; ++i )
+//    {
+//        if ( 0 == publishActionIds[ i ] )
+//        {
+//            // in the sync/blocking flow we have not yet made a copy, lifecycle is for the call chain which doesnt work
+//            // for keeping longer term references. As such we create a copy of the message here
+//            COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+//
+//            publishFailedMsgs.push_back( MsgRetryEntry( msgPtr ) );
+//
+//            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//                "):TopicLink:AddFailedToPublishMsgs: Message nr " + CORE::ToString( i ) + " of " + CORE::ToString( msgs.size() ) + " has a publishActionId of 0. Queueing message for retry" );
+//        }
+//    }
+//    if ( publishActionIds.size() < msgs.size() )
+//    {
+//        for ( size_t i=max; i<msgs.size(); ++i )
+//        {
+//            // in the sync/blocking flow we have not yet made a copy, lifecycle is for the call chain which doesnt work
+//            // for keeping longer term references. As such we create a copy of the message here
+//            COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+//
+//            publishFailedMsgs.push_back( MsgRetryEntry( msgPtr ) );
+//
+//            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+//                "):TopicLink:AddFailedToPublishMsgs: Message nr " + CORE::ToString( i ) + " of " + CORE::ToString( msgs.size() ) + " has no publishActionId. Queueing message for retry" );
+//        }
+//    }
+//}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientSide::TopicLink::AddFailedToPublishMsg( CORE::UInt64 publishActionId                ,
+                                                     COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+    
+    publishFailedMsgs.push_back( MsgRetryEntry( publishActionId, msg ) );
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        "):AddFailedToPublishMsg: Message with publishActionId of " + CORE::ToString( publishActionId ) + " queued for retry" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -504,7 +668,16 @@ CPubSubClientSide::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topi
     SubscribeTo( &topic                                          ,
                  COMCORE::CPubSubClientTopic::MsgsPublishedEvent ,
                  callback2                                       );
+
+    TEventCallback callback3( this, &CPubSubClientSide::OnPubSubTopicMsgsPublishFailure );
+    SubscribeTo( &topic                                               ,
+                 COMCORE::CPubSubClientTopic::MsgsPublishFailureEvent ,
+                 callback3                                            );
     
+    TEventCallback callback4( this, &CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull );
+    SubscribeTo( &topic                                                  ,
+                 COMCORE::CPubSubClientTopic::LocalPublishQueueFullEvent ,
+                 callback4                                               );        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -583,18 +756,28 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    publishSuccess = false;
+
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                         "):PublishMsgsSync: Failed to publish messages to topic" );
+
+                    if ( m_sideSettings->retryFailedPublishAttempts )
+                    {
+                        topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs );
+                        m_awaitingFailureReport = true;                        
+                    }
                 }
             }
         }
         ++i;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-        "):PublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
-        CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
-    
+    if ( publishSuccess )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            "):PublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " + 
+            CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
+    }    
     return publishSuccess;
 }
 
@@ -620,7 +803,7 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
     if ( GUCEF_NULL != m_sideSettings )
     {
         // If we are running async from other sides we need to check the mailbox
-        if ( m_sideSettings->performPubSubInDedicatedThread )
+        if ( m_sideSettings->performPubSubInDedicatedThread || m_awaitingFailureReport )
         {
             return PublishMsgsASync( msgs );
         }
@@ -630,6 +813,132 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
         }
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CPubSubClientSide::GetMsgAttributesForLog( const COMCORE::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    return "MsgId=\"" + msg.GetMsgId().AsString() + "\", MsgIndex=\"" + msg.GetMsgIndex().AsString() + "\", MsgDateTime=\"" + CORE::ToString( msg.GetMsgDateTime() ) + 
+            "\", MsgPrimaryPayloadSize=\"" + CORE::ToString( msg.GetPrimaryPayload().ByteSize( false ) ) + "\", MsgNrOfKeyValuePairs=\"" + CORE::ToString( msg.GetKeyValuePairs().size() ) + "\", MsgNrOfMetaDataKeyValuePairs=\"" + CORE::ToString( msg.GetMetaDataKeyValuePairs().size() ) +
+            "\", ReceiveActionId=\"" + CORE::ToString( msg.GetReceiveActionId() ) + "\", OriginClientTopic=\"" + ( msg.GetOriginClientTopic() != GUCEF_NULL ?  msg.GetOriginClientTopic()->GetTopicName() : CORE::CString::Empty ) + "\"";
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::RetryPublishFailedMsgs( void )
+{GUCEF_TRACE;
+    
+    bool publishRetrySuccess = true;
+    TopicMap::iterator i = m_topics.begin();
+    while ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        
+        if ( GUCEF_NULL != topic )
+        {
+            if ( !topicLink.publishFailedMsgs.empty() )
+            {
+                if ( !topic->IsPublishingSupported() )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( topicLink.publishFailedMsgs.size() ) + 
+                        " publish failed messages and yet the topic is set as being incapable of publishing. This should never happen! Clearing the failed message as resolving the situation is impossible" );
+
+                    topicLink.publishFailedMsgs.clear();
+                    ++i; continue;
+                }
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( topicLink.publishFailedMsgs.size() ) + " messages queued for retry" );
+
+                TopicLink::TMsgRetryEntryList::iterator n = topicLink.publishFailedMsgs.begin();
+                while ( n != topicLink.publishFailedMsgs.end() )
+                {
+                    TopicLink::MsgRetryEntry& retryEntry = (*n);
+                    if ( !retryEntry.msg.IsNULL() )
+                    {
+                        ++retryEntry.retryCount;
+                        retryEntry.lastPublishAttempt = CORE::CDateTime::NowUTCDateTime();
+
+                        CORE::UInt64 publishActionId = 0;
+                        if ( topic->Publish( publishActionId, *retryEntry.msg.GetPointerAlways(), m_sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
+                        {
+                            // It worked this time!
+                            topicLink.AddInFlightMsg( publishActionId, retryEntry.msg );
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                "):RetryPublishFailedMsgs: Successfully retried publish of message on topic " + topic->GetTopicName() + " after " + CORE::ToString( retryEntry.retryCount ) + 
+                                " retries. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) + 
+                                " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
+                                ". publishActionId=" + CORE::ToString( publishActionId ) + ". originalPublishActionId=" + CORE::ToString( retryEntry.originalPublishActionId ) + ". " + 
+                                GetMsgAttributesForLog( *retryEntry.msg ) );
+
+                            retryEntry.msg.Unlink();
+                            n = topicLink.publishFailedMsgs.erase( n );
+                        }
+                        else
+                        {
+                            // Still didnt work :(
+                            publishRetrySuccess = false;
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                "):RetryPublishFailedMsgs: Retry failed of publish of message on topic " + topic->GetTopicName() + ". Retry attempt " + CORE::ToString( retryEntry.retryCount ) + 
+                                ". First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) + 
+                                " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
+                                ". publishActionId=" + CORE::ToString( publishActionId ) + ". originalPublishActionId=" + CORE::ToString( retryEntry.originalPublishActionId ) + ". " + 
+                                GetMsgAttributesForLog( *retryEntry.msg ) );
+
+                            // Check if we are applying a max nr of retries and if we are in violation if so
+                            if ( m_sideSettings->maxMsgPublishRetryAttempts >= 0                                    && 
+                                 retryEntry.retryCount >= (CORE::UInt32) m_sideSettings->maxMsgPublishRetryAttempts )
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                    "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of retries (" + CORE::ToString( retryEntry.retryCount ) + 
+                                    ") for publishing a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) + 
+                                    " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
+                                    ". publishActionId=" + CORE::ToString( publishActionId ) + + ". originalPublishActionId=" + CORE::ToString( retryEntry.originalPublishActionId ) + ". " + 
+                                    GetMsgAttributesForLog( *retryEntry.msg ) );
+
+                                retryEntry.msg.Unlink();
+                                n = topicLink.publishFailedMsgs.erase( n );
+                            }
+                            else
+                            if ( m_sideSettings->maxMsgPublishRetryTotalTimeInMs >= 0 )
+                            {
+                                CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
+                                if ( timeDiffInMs >= m_sideSettings->maxMsgPublishRetryTotalTimeInMs )
+                                {
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                        "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of retry time in ms (" + CORE::ToString( timeDiffInMs ) + 
+                                        ") for publishing a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) + 
+                                        " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
+                                        ". publishActionId=" + CORE::ToString( publishActionId ) + + ". originalPublishActionId=" + CORE::ToString( retryEntry.originalPublishActionId ) + ". " + 
+                                        GetMsgAttributesForLog( *retryEntry.msg ) );
+
+                                    retryEntry.msg.Unlink();
+                                    n = topicLink.publishFailedMsgs.erase( n );
+                                }
+                            }
+
+                            if ( !m_sideSettings->allowOutOfOrderPublishRetry )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    ++n;
+                }
+            }
+        }
+        ++i;
+    }
+    
+    return publishRetrySuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -645,6 +954,19 @@ CPubSubClientSide::PublishMailboxMsgs( void )
         return publishResult;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        "):OnPubSubTopicLocalPublishQueueFull" );
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -798,6 +1120,52 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
             ++n;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventId  ,
+                                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->retryFailedPublishAttempts )
+        return;
+
+    const COMCORE::CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< COMCORE::CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
+    const COMCORE::CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
+    COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
+
+    // Here we translate the publish action IDs back into the original messages
+    // Subsequently we use said original messages to set up the retry mechanism
+
+    TopicMap::iterator i = m_topics.find( topic );
+    if ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+
+        COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
+        while ( n != publishActionIds->end() )
+        {
+            TopicLink::TUInt64ToNoLockSharedMsgPtrMap::const_iterator m = topicLink.inFlightMsgs.find( (*n) );
+            if ( m != topicLink.inFlightMsgs.end() )
+            {
+                COMCORE::CIPubSubMsg::TNoLockSharedPtr msg = (*m).second;
+                topicLink.inFlightMsgs.erase( m );
+
+                topicLink.AddFailedToPublishMsg( (*n), msg );
+            }            
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnPubSubTopicMsgsPublishFailure: Failed to locate original in-flight message related to publishActionId " + CORE::ToString( (*n) ) );
+            }
+            ++n;
+        }
+    }
+
+    m_awaitingFailureReport = false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1072,7 +1440,12 @@ CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
         if ( m_sideSettings->performPubSubInDedicatedThread )
         {
             ProcessAcknowledgeReceiptsMailbox();
-            PublishMailboxMsgs();
+
+            if ( !m_awaitingFailureReport )
+            {
+                if ( RetryPublishFailedMsgs() || m_sideSettings->allowOutOfOrderPublishRetry )
+                    PublishMailboxMsgs();
+            }
         }
     }
     

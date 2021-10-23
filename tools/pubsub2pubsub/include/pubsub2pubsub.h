@@ -141,6 +141,10 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
+    bool retryFailedPublishAttempts;
+    bool allowOutOfOrderPublishRetry;
+    CORE::Int32 maxMsgPublishRetryAttempts;
+    CORE::Int32 maxMsgPublishRetryTotalTimeInMs;
     
     bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
 
@@ -262,6 +266,16 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
 
+    void
+    OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
+    void
+    OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData );
+
     bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
     
     protected:
@@ -273,7 +287,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     bool PublishMailboxMsgs( void );
 
+    bool RetryPublishFailedMsgs( void );
+
     void ProcessAcknowledgeReceiptsMailbox( void );
+
+    static CORE::CString GetMsgAttributesForLog( const COMCORE::CIPubSubMsg& msg );
 
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
@@ -281,13 +299,29 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     {
         public:
 
+        class MsgRetryEntry
+        {
+            public:
+            CORE::UInt32 retryCount;
+            CORE::CDateTime firstPublishAttempt;
+            CORE::CDateTime lastPublishAttempt;
+            CORE::UInt64 originalPublishActionId;
+            COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+
+            MsgRetryEntry( void );
+            MsgRetryEntry( CORE::UInt64 publishActionId, COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+        };
+        
         typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToNoLockSharedMsgPtrMap;
         typedef MT::CTMailBox< COMCORE::CIPubSubMsg::TNoLockSharedPtr >             TPubSubMsgPtrMailbox;
+        typedef std::list< MsgRetryEntry >                                          TMsgRetryEntryList;
 
         COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
         COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
-        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;        
+        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
+        TMsgRetryEntryList publishFailedMsgs;
+        bool awaitingFailureReport;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
@@ -298,6 +332,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                               const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
 
+        void AddInFlightMsg( CORE::UInt64 publishActionId                ,
+                             COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+
+        void AddFailedToPublishMsg( CORE::UInt64 publishActionId                ,
+                                    COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
     };
     
     typedef std::map< COMCORE::CPubSubClientTopic*, TopicLink > TopicMap;
@@ -312,6 +351,7 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CIPubSubBookmarkPersistance* m_persistance;
     char m_side;
+    bool m_awaitingFailureReport;
 };
 
 /*-------------------------------------------------------------------------*/
