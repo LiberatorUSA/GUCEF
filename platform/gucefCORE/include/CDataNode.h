@@ -200,6 +200,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     bool SetAttribute( const CString& name, bool value );
     bool SetAttribute( const CString& name, UInt32 value );
     bool SetAttribute( const CString& name, Int32 value );
+    bool SetAttribute( const CString& name, Int64 value );
     bool SetAttribute( const CString& name, const CVariant& value );
 
     void DelAttribute( const CString& name );

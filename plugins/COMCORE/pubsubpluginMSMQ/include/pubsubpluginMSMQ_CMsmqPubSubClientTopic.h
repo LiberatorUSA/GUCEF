@@ -156,6 +156,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    bool AcknowledgeReceiptImpl( const COMCORE::CPubSubBookmark& bookmark, CORE::UInt64 receiveActionId );
 
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
@@ -168,6 +169,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CORE::UInt64 GetMsmqMessagesPublishedCounter( bool resetCounter );
 
     CORE::UInt64 GetMsmqErrorsOnPublishCounter( bool resetCounter );
+
+    CORE::UInt64 GetMsmqErrorsOnAckCounter( bool resetCounter );
     
     class TopicMetrics
     {
@@ -179,6 +182,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
         CORE::UInt64 msmqMessagesPublished;
         CORE::UInt64 msmqErrorsOnPublish;
+        CORE::UInt64 msmqErrorsOnAck;
 
         CORE::UInt64 msmqMessagesReceived;
         CORE::UInt64 msmqErrorsOnReceive;
@@ -317,6 +321,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     CORE::UInt64 m_msmqErrorsOnPublish;
     CORE::UInt64 m_msmqMessagesReceived;
     CORE::UInt64 m_msmqErrorsOnReceive;
+    CORE::UInt64 m_msmqErrorsOnAck;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
     UInt32Vector m_msmqMsgSentToArriveLatencies;

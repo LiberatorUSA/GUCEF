@@ -151,6 +151,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_msmqErrorsOnPublish( 0 )
     , m_msmqMessagesReceived( 0 )
     , m_msmqErrorsOnReceive( 0 )
+    , m_msmqErrorsOnAck( 0 )
     , m_metrics()
     , m_metricFriendlyTopicName()
     , m_msmqMsgSentToArriveLatencies()
@@ -257,8 +258,11 @@ CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::C
 
     MT::CScopeMutex lock( m_lock );
     
-    publishActionId = m_currentPublishActionId; 
-    ++m_currentPublishActionId;
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId; 
+        ++m_currentPublishActionId;
+    }
 
     // Each Message Queuing message can have no more than 4 MB of data.
     // We cannot do anything with a DateTime already set on the message since MSMQ fully controls the timestamps
@@ -687,13 +691,23 @@ CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     COMCORE::CPubSubBookmark bookmark( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, msg.GetMsgIndex() );
-    return AcknowledgeReceipt( bookmark );
+    return AcknowledgeReceiptImpl( bookmark, msg.GetReceiveActionId() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+    
+    return AcknowledgeReceiptImpl( bookmark, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const COMCORE::CPubSubBookmark& bookmark , 
+                                                CORE::UInt64 receiveActionId             )
 {GUCEF_TRACE;
 
     // For MSMQ 3.0 and above:
@@ -719,21 +733,68 @@ CMsmqPubSubClientTopic::AcknowledgeReceipt( const COMCORE::CPubSubBookmark& book
                                                                    NULL                      ,        // No callback function  
                                                                    NULL                      );       // Not in a transaction  
 
-            if ( receiveHResult == MQ_OK )
+            CORE::UInt64 receiveResult = (CORE::UInt64) receiveHResult;
+            switch ( receiveResult )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Successfully removed message with msg index (LookupId) " + CORE::ToString( lookupId ) );
-                return true;
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Unhandled issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
-                    ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
-                    ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
+                case (CORE::UInt64) MQ_OK:
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Successfully removed message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
+                        ". receiveActionId=" + CORE::ToString( receiveActionId ) );
+                    return true;
+                }
+                case (CORE::UInt64) MQ_ERROR_MESSAGE_NOT_FOUND:
+                {
+                    // Per docs: "The message referenced by the lookup identifier does not exist. Either the lookup identifier is incorrect or the message has been removed from the queue."
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
+                        " cannot be found, we will treat this as successfully removed. receiveActionId=" + CORE::ToString( receiveActionId ) );
+                    return true;
+                }
+
+                case (CORE::UInt64) MQ_ERROR_QUEUE_DELETED:        // <- queue was deleted outside the app, just keep trying to 'reconnect'
+                {
+                    // If the queue is deleted the lookup id becomes invalid since its a property of that instance of the queue
+                    m_msmqLastLookupId = 0;
+
+                    // we intentiontionally dont break here because we want the code below as well
+                    // break;
+                }
+                case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_ACTIVE:     // <- caused by someone messing with the queue outside the app?
+                case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_FOUND:      // <- caused by someone messing with the queue outside the app?
+                case (CORE::UInt64) MQ_ERROR_INVALID_HANDLE:
+                case (CORE::UInt64) MQ_ERROR_OPERATION_CANCELLED:  // <- caused by handle becoming invalid as well? Per docs: "For example, the queue handle was closed by another thread while waiting for a message"
+                case (CORE::UInt64) MQ_ERROR_INVALID_PARAMETER:    // <- caused by handle becoming invalid as well?
+                {
+                    ++m_msmqErrorsOnAck;                
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Queue Access issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) +
+                        ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                        ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
+
+                    Disconnect();
+                    NotifyObservers( ConnectionErrorEvent );
+
+                    if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
+                    {
+                        m_reconnectTimer->SetEnabled( true );
+                    }
+                    break;
+                }
+
+                default:
+                {
+                    ++m_msmqErrorsOnAck;
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Unhandled issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) +
+                        ". receiveActionId=" + CORE::ToString( receiveActionId ) +
+                        ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                        ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );          
+                    break;
+                }
             }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Cannot remove message with invalid init msg index (LookupId) 0" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Cannot remove message with invalid init msg index (LookupId) 0. receiveActionId=" + CORE::ToString( receiveActionId ) );
         }
     }
 
@@ -1931,8 +1992,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 
                 ++msgsRead;
                 m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
-                
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle" );
+                 
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle. receiveActionId=" + CORE::ToString( m_pubsubMsgs[ i ].GetReceiveActionId() ) );
                 break;
             }
             case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
@@ -2169,12 +2230,29 @@ CMsmqPubSubClientTopic::GetMsmqErrorsOnReceiveCounter( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqErrorsOnAckCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqErrorsOnAck = m_msmqErrorsOnAck;
+        m_msmqErrorsOnAck = 0;
+        return msmqErrorsOnAck;
+    }
+    else
+        return m_msmqErrorsOnAck;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CMsmqPubSubClientTopic::TopicMetrics::TopicMetrics( void )
     : msmqMsgsInQueue( 0 )
     , msmqMessagesPublished( 0 )
     , msmqErrorsOnPublish( 0 )
     , msmqMessagesReceived( 0 )
     , msmqErrorsOnReceive( 0 )
+    , msmqErrorsOnAck( 0 )
 {GUCEF_TRACE;
 
 }
@@ -2223,6 +2301,7 @@ CMsmqPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     {
         m_metrics.msmqMessagesReceived = GetMsmqMessagesReceivedCounter( true );
         m_metrics.msmqErrorsOnReceive = GetMsmqErrorsOnReceiveCounter( true );
+        m_metrics.msmqErrorsOnAck = GetMsmqErrorsOnAckCounter( true ); 
     }
     if ( m_config.gatherMsmqTransitTimeOnReceiveMetric )
     {

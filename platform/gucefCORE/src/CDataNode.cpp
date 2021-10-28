@@ -509,6 +509,17 @@ CDataNode::SetAttribute( const CString& name ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CDataNode::SetAttribute( const CString& name ,
+                         Int64 value         )
+{GUCEF_TRACE;
+
+    _atts[ name ] = value;
+    return true;                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CDataNode::SetAttribute( const CString& name   ,
                          const CVariant& value )
 {GUCEF_TRACE;

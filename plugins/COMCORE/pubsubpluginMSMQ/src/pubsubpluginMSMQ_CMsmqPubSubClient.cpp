@@ -136,8 +136,7 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"        
     features.supportsAbsentMsgReceivedAck = false;      // Since MSMQ is a queue, by default you consume the message when you read it
     features.supportsAckUsingLastMsgInBatch = false;    // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
-    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
-    features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
+    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
     features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
     features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
     features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
@@ -148,20 +147,22 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     
     bool supportLookup = m_config.simulateReceiveAckFeatureViaLookupId && m_config.desiredFeatures.supportsSubscriberMsgReceivedAck; 
     
-    features.supportsAutoMsgReceivedAck = !supportLookup;         // When simulating receive acks we never auto ack
-    features.supportsSubscriberMsgReceivedAck = supportLookup;    // The whole point is simulating the ability to ack that a message was handled
-    features.supportsAckUsingBookmark = supportLookup;            // Bookmark or message, either way we use the LookupID which we count as a topic index
+    features.supportsAutoMsgReceivedAck = !supportLookup;            // When simulating receive acks we never auto ack
+    features.supportsSubscriberMsgReceivedAck = supportLookup;       // The whole point is simulating the ability to ack that a message was handled
+    features.supportsAckUsingBookmark = supportLookup;               // Bookmark or message, either way we use the LookupID which we count as a topic index
+    features.supportsServerSideBookmarkPersistance = !supportLookup; // If we are using lookups the LookUp will need to be persisted externally from the app between runs
     
     features.supportsSubscribingUsingBookmark = true;             // we use the LookupID which we count as a topic index
     features.supportsTopicIndexBasedBookmark = true;              // we use the LookupID which we count as a topic index
     
     #else
 
-    features.supportsAutoMsgReceivedAck = true;         // Since MSMQ is a queue, by default you consume the message when you read it we can consider this an ack
-    features.supportsSubscriberMsgReceivedAck = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsAckUsingBookmark = false;          // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsSubscribingUsingBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsTopicIndexBasedBookmark = false;   // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
+    features.supportsAutoMsgReceivedAck = true;            // Since MSMQ is a queue, by default you consume the message when you read it we can consider this an ack
+    features.supportsSubscriberMsgReceivedAck = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsAckUsingBookmark = false;             // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsSubscribingUsingBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     
     #endif
 
@@ -395,6 +396,13 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".msmqMessagesReceived", topicMetrics.msmqMessagesReceived, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnReceive", topicMetrics.msmqErrorsOnReceive, 1.0f );
+
+            // For MSMQ 3.0 and above:
+            #if ( _WIN32_WINNT >= 0x0501 )
+
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msmqErrorsOnReceiveAck", topicMetrics.msmqErrorsOnAck, 1.0f );
+
+            #endif
         }
         
         if ( topicConfig.gatherMsmqTransitTimeOnReceiveMetric )

@@ -145,8 +145,14 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool allowOutOfOrderPublishRetry;
     CORE::Int32 maxMsgPublishRetryAttempts;
     CORE::Int32 maxMsgPublishRetryTotalTimeInMs;
+    CORE::Int32 maxPublishedMsgInFlightTimeInMs;
+    bool allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
+    CORE::Int32 maxMsgPublishAckRetryAttempts;
+    CORE::Int32 maxMsgPublishAckRetryTotalTimeInMs;
+    CORE::Int64 maxTotalMsgsInFlight;
     
     bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
+    CORE::CString metricsPrefix;                       //< this setting is derived and cached from other settings   
 
     COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
@@ -171,10 +177,13 @@ class ChannelSettings : public CORE::CIConfigurable
 
     PubSubSideChannelSettings* GetPubSubSideSettings( char side );
 
+    void UpdateDerivedSettings( void );
+
     TCharToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
-    bool collectMetrics;
+    bool collectMetrics;                                                   
+    CORE::CString metricsPrefix;                                          //< this setting is derived and cached from other settings
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -252,6 +261,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                          CORE::CICloneable* eventData );
 
     void
+    OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventId  ,
+                                                  CORE::CICloneable* eventData );
+
+    void
     OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
@@ -293,50 +307,56 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     static CORE::CString GetMsgAttributesForLog( const COMCORE::CIPubSubMsg& msg );
 
+    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
+
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 
     class TopicLink
     {
         public:
 
-        class MsgRetryEntry
+        class MsgTrackingEntry
         {
             public:
             CORE::UInt32 retryCount;
             CORE::CDateTime firstPublishAttempt;
             CORE::CDateTime lastPublishAttempt;
-            CORE::UInt64 originalPublishActionId;
+            CORE::UInt64 publishActionId;
             COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+            bool isInFlight;
+            bool waitingForInFlightConfirmation;
+            bool readyToAckPublishSuccessButAckFailed;
 
-            MsgRetryEntry( void );
-            MsgRetryEntry( CORE::UInt64 publishActionId, COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+            MsgTrackingEntry( void );
+            MsgTrackingEntry( const MsgTrackingEntry& src );
+            MsgTrackingEntry( CORE::UInt64 publishActionId, COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg, bool isInFlightState = false );
+            MsgTrackingEntry& operator=( const MsgTrackingEntry& src );
         };
         
-        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToNoLockSharedMsgPtrMap;
         typedef MT::CTMailBox< COMCORE::CIPubSubMsg::TNoLockSharedPtr >             TPubSubMsgPtrMailbox;
-        typedef std::list< MsgRetryEntry >                                          TMsgRetryEntryList;
+        typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
+        typedef std::set< CORE::UInt64 >                                            TUInt64Set;
 
         COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
         COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
-        TUInt64ToNoLockSharedMsgPtrMap inFlightMsgs;
+        TUInt64ToMsgTrackingEntryMap inFlightMsgs;
+        TUInt64Set publishFailedMsgs;
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
-        TMsgRetryEntryList publishFailedMsgs;
-        bool awaitingFailureReport;
+        CORE::CString metricFriendlyTopicName;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
         
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
+                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
+                              bool inFlightDefaultState                                                   );
 
         void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
+                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
+                              bool inFlightDefaultState                                                   );
 
         void AddInFlightMsg( CORE::UInt64 publishActionId                ,
                              COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
-
-        void AddFailedToPublishMsg( CORE::UInt64 publishActionId                ,
-                                    COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
     };
     
     typedef std::map< COMCORE::CPubSubClientTopic*, TopicLink > TopicMap;
@@ -349,9 +369,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     TPubSubMsgMailbox m_mailbox;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
+    CORE::CTimer* m_timedOutInFlightMessagesCheckTimer;
     CIPubSubBookmarkPersistance* m_persistance;
     char m_side;
     bool m_awaitingFailureReport;
+    CORE::UInt64 m_totalMsgsInFlight;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -409,6 +431,10 @@ class CPubSubClientChannel : public CPubSubClientSide
     virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
                                             CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
 
+    
+    bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId                ,
+                                        COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                        CPubSubClientSide* msgReceiverSide          );
     private:
 
     CPubSubClientSide* m_sideBPubSub;

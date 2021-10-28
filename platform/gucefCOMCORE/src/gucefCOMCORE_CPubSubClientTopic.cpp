@@ -226,13 +226,24 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const CBa
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
     CBasicPubSubMsg::TBasicPubSubMsgVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
-        UInt64 publishActionId = 0;
+        CORE::UInt64 publishActionId = 0;
+        if ( preExistingActionIds > n )
+        {
+            publishActionId = publishActionIds[ n ];
+        }
+
         totalSuccess = totalSuccess && Publish( publishActionId, (*i), false );
-        publishActionIds.push_back( publishActionId );
-        ++i;
+
+        if ( preExistingActionIds > n )
+            publishActionIds[ n ] = publishActionId;
+        else
+            publishActionIds.push_back( publishActionId );
+
+        ++i; ++n;
     }
     return totalSuccess;
 }
@@ -244,17 +255,28 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
     CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
-        UInt64 publishActionId = 0;
+        CORE::UInt64 publishActionId = 0;
+        if ( preExistingActionIds > n )
+        {
+            publishActionId = publishActionIds[ n ];
+        }
+
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
             totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
-        publishActionIds.push_back( publishActionId );
-        ++i;
+
+        if ( preExistingActionIds > n )
+            publishActionIds[ n ] = publishActionId;
+        else
+            publishActionIds.push_back( publishActionId );
+
+        ++i; ++n;
     }
     return totalSuccess;
 }
@@ -266,17 +288,28 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
     CIPubSubMsg::TIPubSubMsgRawPtrVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
-        UInt64 publishActionId = 0;
+        CORE::UInt64 publishActionId = 0;
+        if ( preExistingActionIds > n )
+        {
+            publishActionId = publishActionIds[ n ];
+        }
+
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
             totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
-        publishActionIds.push_back( publishActionId );
-        ++i;
+
+        if ( preExistingActionIds > n )
+            publishActionIds[ n ] = publishActionId;
+        else
+            publishActionIds.push_back( publishActionId );
+
+        ++i; ++n;
     }
     return totalSuccess;
 }
@@ -288,16 +321,27 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
     CIPubSubMsg::TIPubSubMsgSPtrVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
-        UInt64 publishActionId = 0;
+        CORE::UInt64 publishActionId = 0;
+        if ( preExistingActionIds > n )
+        {
+            publishActionId = publishActionIds[ n ];
+        }
+
         if ( !(*i).IsNULL() )
             totalSuccess = totalSuccess && Publish( publishActionId, *(*i).GetPointerAlways(), notify );
         else
             totalSuccess = false;    
-        publishActionIds.push_back( publishActionId );
-        ++i;
+
+        if ( preExistingActionIds > n )
+            publishActionIds[ n ] = publishActionId;
+        else
+            publishActionIds.push_back( publishActionId );
+
+        ++i; ++n;
     }
     return totalSuccess;
 }
@@ -309,17 +353,28 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPu
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
     TPubSubMsgsRefVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
-        UInt64 publishActionId = 0;
+        CORE::UInt64 publishActionId = 0;
+        if ( preExistingActionIds > n )
+        {
+            publishActionId = publishActionIds[ n ];
+        }
+
         const CIPubSubMsg* rawMsgPtr = (*i);
         if ( GUCEF_NULL != rawMsgPtr )
             totalSuccess = totalSuccess && Publish( publishActionId, *rawMsgPtr, notify );
         else
             totalSuccess = false;    
-        publishActionIds.push_back( publishActionId );
-        ++i;
+
+        if ( preExistingActionIds > n )
+            publishActionIds[ n ] = publishActionId;
+        else
+            publishActionIds.push_back( publishActionId );
+
+        ++i; ++n;
     }
     return totalSuccess;
 }

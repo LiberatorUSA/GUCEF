@@ -194,8 +194,11 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const CO
 
     MT::CScopeMutex lock( m_lock );
 
-    publishActionId = m_currentPublishActionId;
-    ++m_currentPublishActionId;
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId; 
+        ++m_currentPublishActionId;
+    }
     
     const CORE::CVariant& msgId = msg.GetMsgId();
     sw::redis::StringView idSV( msgId.AsCharPtr(), msgId.ByteSize( false ) );

@@ -117,9 +117,11 @@ class CPubSubClient;
  *  and coupled with the lifecycle of the topic object lifecycle.
  *
  *  How to use publishActionId:
- *  When you Publish() a message the backend will provide you with a publishActionId value. At minimum you can use this value to trace 
- *  your specific message's journey in any relevant error logging of a given backend to help diagnose issues. Keep in mind that backends
- *  could use async processing so without such an id the ordering of the logs does not always garantee correlation. 
+ *  When you Publish() a message the backend will provide you with a publishActionId value. 
+ *  You are required to pass 0 as the publishActionId unless you are re-publishing a previously Published message for which the backend
+ *  already provided a publishActionId. In such a retry scenario you required to pass the original publishActionId.
+ *  At minimum you can use publishActionId to trace your specific message's journey in any relevant error logging of a given backend to help diagnose issues. 
+ *  Keep in mind that backends could use async processing so without such an id the ordering of the logs does not always garantee correlation. 
  *  Beyond that you can specify notify=true in the likely case that you do not just want to perform fire-and-forget publishing.
  *  If you did select notify=false note that on Publish() invocation the same id rules apply with the difference that there will be no
  *  further publish success or failure communication via notification. If you are Ok with fire-and-forget publishing using notify=false

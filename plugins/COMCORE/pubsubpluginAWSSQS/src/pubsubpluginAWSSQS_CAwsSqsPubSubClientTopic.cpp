@@ -218,8 +218,11 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE:
     bool success = false;
     MT::CScopeMutex lock( m_lock );
 
-    publishActionId = m_currentPublishActionId; 
-    ++m_currentPublishActionId;
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId; 
+        ++m_currentPublishActionId;
+    }
 
     try
     {  
@@ -407,13 +410,27 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             Aws::SQS::Model::SendMessageBatchRequest sm_req;
             sm_req.SetQueueUrl( m_queueUrl );
        
-            size_t preExistingActionIds = publishActionIds.size();
+            size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                CORE::UInt64 publishActionId = m_currentPublishActionId;
-                ++m_currentPublishActionId;
-                publishActionIds.push_back( publishActionId );
+                CORE::UInt64 publishActionId = 0;
+                if ( preExistingActionIds > n )
+                {
+                    publishActionId = publishActionIds[ n ];
+                    if ( 0 == publishActionId )
+                    {
+                        publishActionId = m_currentPublishActionId; 
+                        ++m_currentPublishActionId;
+                        publishActionIds[ n ] = publishActionId;
+                    }
+                }
+                else
+                {
+                    publishActionId = m_currentPublishActionId; 
+                    ++m_currentPublishActionId;
+                    publishActionIds.push_back( publishActionId );
+                }
 
                 const COMCORE::CIPubSubMsg* msg = (*i);            
                 CORE::UInt32 msgByteSize = 0;
@@ -422,7 +439,7 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
                 {
                     sm_req.AddEntries( sqsMsg );
                 }
-                ++i;
+                ++i; ++n;
             }
 
             if ( msgs.size() != sm_req.GetEntries().size() )
@@ -457,12 +474,29 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
             Aws::SQS::Model::SendMessageRequest sm_req;
             sm_req.SetQueueUrl( m_queueUrl );
        
+            size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
             COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                CORE::UInt64 publishActionId = 0;                
+                CORE::UInt64 publishActionId = 0;
+                if ( preExistingActionIds > n )
+                {
+                    publishActionId = publishActionIds[ n ];
+                    if ( 0 == publishActionId )
+                    {
+                        publishActionId = m_currentPublishActionId; 
+                        ++m_currentPublishActionId;
+                        publishActionIds[ n ] = publishActionId;
+                    }
+                }
+                else
+                {
+                    publishActionId = m_currentPublishActionId; 
+                    ++m_currentPublishActionId;
+                    publishActionIds.push_back( publishActionId );
+                }
+
                 bool success = Publish( publishActionId, *(*i), false );
-                publishActionIds.push_back( publishActionId );
 
                 if ( notify )
                 {
@@ -473,7 +507,7 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
                 }
 
                 totalSuccess = success && totalSuccess;                
-                ++i;
+                ++i; ++n;
             }
         }
     }

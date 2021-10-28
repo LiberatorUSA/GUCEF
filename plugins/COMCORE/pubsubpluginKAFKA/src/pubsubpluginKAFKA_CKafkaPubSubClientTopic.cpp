@@ -218,8 +218,11 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     
     MT::CScopeMutex lock( m_lock );
 
-    publishActionId = m_currentPublishActionId; 
-    ++m_currentPublishActionId;
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId; 
+        ++m_currentPublishActionId;
+    }
     
     // First write any backend auto generated headers per config
     RdKafka::Headers* headers = GUCEF_NULL;
@@ -230,7 +233,7 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
         if ( retCode != RdKafka::ERR_NO_ERROR )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add auto generated Producer Hostname Kafka Msg header: " + RdKafka::err2str( retCode ) +
-                ". publishActionId=" + CORE::ToString( publishActionId ).STL_String() );
+                ". publishActionId=" + CORE::ToString( publishActionId ).STL_String() + ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ).STL_String() );
         }
     }
 
@@ -249,7 +252,7 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg meta-data key \"" + m_config.prefixToAddForMetaDataKvPairs + (*k).first.AsString() + 
                     "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() +
-                    ". publishActionId=" + CORE::ToString( publishActionId ) );
+                    ". publishActionId=" + CORE::ToString( publishActionId ) + ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
                 return false;
             }
             ++k;
@@ -271,7 +274,7 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Failed to add msg key-value entry \"" + m_config.prefixToAddForKvPairs + (*k).first.AsString() + 
                         "\" as Kafka Msg header: " + RdKafka::err2str( retCode ) + ". Value=" + (*k).second.AsString() +
-                        ". publishActionId=" + CORE::ToString( publishActionId ) );
+                        ". publishActionId=" + CORE::ToString( publishActionId ) + ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
                 return false;
             }
             ++k;
@@ -314,7 +317,8 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
     {
         case RdKafka::ERR_NO_ERROR:
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued message for transmission with publishActionId " + CORE::ToString( publishActionId ) );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: Successfully queued message for transmission with publishActionId " + CORE::ToString( publishActionId ) +
+                    ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
             return true;
         }
         case RdKafka::ERR__QUEUE_FULL:
@@ -327,7 +331,8 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             // to messages for which a failure needs to be notified
             m_publishFailureActionIds.push_back( publishActionId );
             
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full. publishActionId=" + CORE::ToString( publishActionId ) );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Publish: transmission queue is full. publishActionId=" + CORE::ToString( publishActionId ) +
+                    ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
 
             NotifyObservers( LocalPublishQueueFullEvent );
             return false;
@@ -338,7 +343,9 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::
             // to messages for which a failure needs to be notified
             m_publishFailureActionIds.push_back( publishActionId );
 
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Publish: Kafka error: " + RdKafka::err2str( retCode ) + " from kafkaProducer->produce(). publishActionId=" + CORE::ToString( publishActionId ).STL_String() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Publish: Kafka error: " + RdKafka::err2str( retCode ) + 
+                    " from kafkaProducer->produce(). publishActionId=" + CORE::ToString( publishActionId ).STL_String() + 
+                    ". receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ).STL_String() );
             ++m_kafkaErrorReplies;
             return false;
         }
