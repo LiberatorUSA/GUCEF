@@ -399,6 +399,21 @@
 /*-------------------------------------------------------------------------*/
 
 /*
+ *  now we include macros for activating memory checking related redirects
+ *  if the facility is turned on per the build config
+ */
+#ifdef GUCEF_USE_MEMORY_LEAK_CHECKER
+
+    #ifndef GUCEF_DYNNEWON_H 
+    #include "gucef_dynnewon.h"
+    #define GUCEF_DYNNEWON_H
+    #endif /* GUCEF_DYNNEWON_H ? */
+
+#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER ? */
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *  now we include some dynamicly linked module macro's
  */
 #ifndef GUCEF_DLLINIT_H

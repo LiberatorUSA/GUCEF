@@ -70,14 +70,17 @@ struct SRWLock
 TRWLock*
 rwl_create( UInt32 writer_overrules )
 {
-	TRWLock *rwlock = malloc( sizeof( TRWLock ) );
+	TRWLock* rwlock = malloc( sizeof( TRWLock ) );
+    if ( GUCEF_NULL != rwlock )
+    {
         rwlock->delflag = 0;
         rwlock->rcount = 0;
         rwlock->wcount = 0;
         rwlock->wflag = 0;
         rwlock->wpriority = writer_overrules;
         rwlock->datalock = MutexCreate();
-        return rwlock;
+    }
+    return rwlock;
 }
 
 /*-------------------------------------------------------------------------*/

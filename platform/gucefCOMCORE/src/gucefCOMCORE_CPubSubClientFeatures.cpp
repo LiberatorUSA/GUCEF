@@ -48,6 +48,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     : supportsPublishing( false )
     , supportsSubscribing( false )    
     , supportsAutoReconnect( false )
+    , supportsSubscriberRateThrottling( false )
     , supportsBinaryPayloads( false )
     , supportsMultiHostSharding( false )
     , supportsPerMsgIds( false )
@@ -69,6 +70,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsAutoBookmarking( false )
     , supportsMsgIdBasedBookmark( false )
     , supportsMsgIndexBasedBookmark( false )
+    , supportsTopicIndexBasedBookmark( false )
     , supportsMsgDateTimeBasedBookmark( false )
 {GUCEF_TRACE;
 
@@ -90,6 +92,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsPublishing", supportsPublishing );
     tree.SetAttribute( "supportsSubscribing", supportsSubscribing );
     tree.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect );
+    tree.SetAttribute( "supportsSubscriberRateThrottling", supportsSubscriberRateThrottling );    
     tree.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
     tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
     tree.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
@@ -110,6 +113,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
     tree.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
     tree.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark );
+    tree.SetAttribute( "supportsTopicIndexBasedBookmark", supportsTopicIndexBasedBookmark );    
     tree.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark );
     tree.SetAttribute( "supportsMetrics", supportsMetrics );
 
@@ -125,6 +129,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsPublishing = cfg.GetAttributeValueOrChildValueByName( "supportsPublishing" ).AsBool( supportsPublishing, true );
     supportsSubscribing = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ).AsBool( supportsSubscribing, true );
     supportsAutoReconnect = cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ).AsBool( supportsAutoReconnect, true );
+    supportsSubscriberRateThrottling = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriberRateThrottling" ).AsBool( supportsSubscriberRateThrottling, true );
     supportsBinaryPayloads = cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ).AsBool( supportsBinaryPayloads, true );
     supportsMultiHostSharding = cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ).AsBool( supportsMultiHostSharding, true );
     supportsPerMsgIds = cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ).AsBool( supportsPerMsgIds, true );
@@ -145,6 +150,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsAutoBookmarking = cfg.GetAttributeValueOrChildValueByName( "supportsAutoBookmarking" ).AsBool( supportsAutoBookmarking, true );
     supportsMsgIdBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIdBasedBookmark" ).AsBool( supportsMsgIdBasedBookmark, true );
     supportsMsgIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndexBasedBookmark" ).AsBool( supportsMsgIndexBasedBookmark, true );
+    supportsTopicIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsTopicIndexBasedBookmark" ).AsBool( supportsTopicIndexBasedBookmark, true );
     supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark, true );
     supportsMetrics = cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ).AsBool( supportsMetrics, true );
 

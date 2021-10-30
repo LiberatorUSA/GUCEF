@@ -79,7 +79,7 @@
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
 #define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
-#define GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT                     10000
+#define GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT                     1000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -283,6 +283,7 @@ ChannelSettings::ChannelSettings( void )
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , collectMetrics( true )
+    , metricsIntervalInMs( 1000 )
     , metricsPrefix()
 {GUCEF_TRACE;
 
@@ -296,6 +297,7 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , collectMetrics( src.collectMetrics )
+    , metricsIntervalInMs( src.metricsIntervalInMs )
     , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
 
@@ -313,6 +315,7 @@ ChannelSettings::operator=( const ChannelSettings& src )
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         collectMetrics = src.collectMetrics;
+        metricsIntervalInMs = src.metricsIntervalInMs;
         metricsPrefix = src.metricsPrefix;
     }
     return *this;
@@ -371,14 +374,15 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
+ChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    channelId = tree.GetAttributeValueOrChildValueByName( "channelId" ).AsInt32( channelId, true );
-    ticketRefillOnBusyCycle = tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
-    collectMetrics = tree.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
+    channelId = cfg.GetAttributeValueOrChildValueByName( "channelId" ).AsInt32( channelId, true );
+    ticketRefillOnBusyCycle = cfg.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
+    collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
+    metricsIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "metricsIntervalInMs" ).AsUInt32( metricsIntervalInMs, true );
 
-    const CORE::CDataNode* pubSubSidesCollection = tree.Find( "PubSubSides" );
+    const CORE::CDataNode* pubSubSidesCollection = cfg.Find( "PubSubSides" );
     if ( GUCEF_NULL != pubSubSidesCollection )
     {
         CORE::CDataNode::const_iterator n = pubSubSidesCollection->ConstBegin();
@@ -1679,7 +1683,7 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     
     COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.metricsIntervalInMs );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
     m_timedOutInFlightMessagesCheckTimer = new CORE::CTimer( *GetPulseGenerator(), (CORE::UInt32) m_sideSettings->maxPublishedMsgInFlightTimeInMs );
@@ -1728,7 +1732,9 @@ bool
 CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
-    return m_sideSettings->performPubSubInDedicatedThread;
+    if ( GUCEF_NULL != m_sideSettings )
+        return m_sideSettings->performPubSubInDedicatedThread;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1767,6 +1773,8 @@ CPubSubClientSide::OnTaskEnding( CORE::CICloneable* taskdata ,
                                  bool willBeForced           )
 {GUCEF_TRACE;
 
+    CORE::CTaskConsumer::OnTaskEnding( taskdata, willBeForced );
+    
     if ( willBeForced )
     {
         // reduce memory leaks
@@ -1846,11 +1854,34 @@ CPubSubClientOtherSide::~CPubSubClientOtherSide()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPubSubClientOtherSide::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                      bool willBeForced           )
+{GUCEF_TRACE;
+
+    CPubSubClientSide::OnTaskEnding( taskdata, willBeForced );    
+    m_parentChannel = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientOtherSide::OnTaskEnded( CORE::CICloneable* taskData ,
+                                     bool wasForced              )
+{GUCEF_TRACE;
+
+    CPubSubClientSide::OnTaskEnded( taskData, wasForced );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
 {GUCEF_TRACE;
     
-    return m_parentChannel->GetAllSides( sides );
+    if ( GUCEF_NULL != m_parentChannel )
+        return m_parentChannel->GetAllSides( sides );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1860,9 +1891,13 @@ CPubSubClientOtherSide::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLock
                                                    CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
-    return m_parentChannel->AcknowledgeReceiptForSideImpl( GetDelegatorThreadId() ,
-                                                           msg                    ,
-                                                           msgReceiverSide        );
+    if ( GUCEF_NULL != m_parentChannel )
+    {
+        return m_parentChannel->AcknowledgeReceiptForSideImpl( GetDelegatorThreadId() ,
+                                                               msg                    ,
+                                                               msgReceiverSide        );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1874,10 +1909,10 @@ CPubSubClientChannel::CPubSubClientChannel( void )
 {GUCEF_TRACE;
 
     // for now just work with a and b, we can do more sides later 
-    m_sideBPubSub = new CPubSubClientOtherSide( this, 'B' );
+    m_sideBPubSub = CPubSubClientOtherSidePtr( new CPubSubClientOtherSide( this, 'B' ) );
         
     m_sides.push_back( this );
-    m_sides.push_back( m_sideBPubSub );
+    m_sides.push_back( m_sideBPubSub.GetPointerAlways() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1885,9 +1920,7 @@ CPubSubClientChannel::CPubSubClientChannel( void )
 CPubSubClientChannel::~CPubSubClientChannel()
 {GUCEF_TRACE;
 
-    delete m_sideBPubSub;
-    m_sideBPubSub = GUCEF_NULL;
-
+    m_sideBPubSub.Unlink();
     m_sides.clear();
 }
 
@@ -1984,7 +2017,11 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
             if ( !threadPool->StartTask( m_sideBPubSub ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to start dedicated thread for other side. Falling back to a single thread" );
-                m_sideBPubSub->GetSideSettings()->performPubSubInDedicatedThread = false;
+                PubSubSideChannelSettings* sideSettings = m_sideBPubSub->GetSideSettings();
+                if ( GUCEF_NULL != sideSettings )
+                    sideSettings->performPubSubInDedicatedThread = false;
+                else
+                    return false;
 
                 return m_sideBPubSub->OnTaskStart( taskData );
             }
@@ -2006,9 +2043,12 @@ CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
 
     CPubSubClientSide::OnTaskCycle( taskData );    
     
-    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    if ( !m_sideBPubSub.IsNULL() )
     {
-        m_sideBPubSub->OnTaskCycle( taskData );
+        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+        {
+            m_sideBPubSub->OnTaskCycle( taskData );
+        }
     }
     
     // We are never 'done' so return false
@@ -2024,22 +2064,25 @@ CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
 
     CPubSubClientSide::OnTaskEnding( taskdata, willBeForced );    
     
-    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    if ( !m_sideBPubSub.IsNULL() )
     {
-        m_sideBPubSub->OnTaskEnding( taskdata, willBeForced );
-    }
-    else
-    {
-        // Since we are the ones that launched the dedicated thread for the other sides we should also ask
-        // to have it cleaned up when we are shutting down this thread
-        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
-        if ( !threadPool->RequestTaskToStop( m_sideBPubSub, false ) )
+        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskEnding: Failed to request the dedicated thread for other side to stop" );
+            m_sideBPubSub->OnTaskEnding( taskdata, willBeForced );
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskEnding: Successfully requested the dedicated thread for the other side to stop" );
+            // Since we are the ones that launched the dedicated thread for the other sides we should also ask
+            // to have it cleaned up when we are shutting down this thread
+            CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+            if ( !threadPool->RequestTaskToStop( m_sideBPubSub.StaticCast< CORE::CTaskConsumer >(), false ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskEnding: Failed to request the dedicated thread for other side to stop" );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskEnding: Successfully requested the dedicated thread for the other side to stop" );
+            }
         }
     }
 }
@@ -2053,9 +2096,12 @@ CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
 
     CPubSubClientSide::OnTaskEnded( taskData, wasForced );    
     
-    if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+    if ( !m_sideBPubSub.IsNULL() )
     {
-        m_sideBPubSub->OnTaskEnded( taskData, wasForced );
+        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+        {
+            m_sideBPubSub->OnTaskEnded( taskData, wasForced );
+        }
     }
 }
 
@@ -2076,6 +2122,40 @@ RestApiPubSub2PubSubInfoResource::RestApiPubSub2PubSubInfoResource( PubSub2PubSu
 {GUCEF_TRACE;
 
     m_allowSerialize = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPubSubClientChannelConfigResource::RestApiPubSubClientChannelConfigResource( PubSub2PubSub* app )
+    : WEB::CCodecBasedHTTPServerResource()
+    , m_app( app )
+{GUCEF_TRACE;
+
+    m_allowSerialize = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPubSubClientChannelConfigResource::~RestApiPubSubClientChannelConfigResource()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RestApiPubSubClientChannelConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                                     CORE::CDataNode& output             ,
+                                                     const CORE::CString& representation ,
+                                                     const CORE::CString& params         )
+{GUCEF_TRACE;
+
+    CORE::Int32 channelId = -1;      // @TODO: parse channel id
+    CPubSubClientChannelPtr channel = m_app->GetChannelByChannelId( channelId );
+    if ( !channel.IsNULL() )
+        return channel->GetChannelSettings().SaveConfig( output );
+    else
+        return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2277,6 +2357,21 @@ PubSub2PubSub::~PubSub2PubSub()
 {GUCEF_TRACE;
 
     m_httpServer.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientChannelPtr
+PubSub2PubSub::GetChannelByChannelId( CORE::Int32 cid ) const
+{GUCEF_TRACE;
+
+    PubSubClientChannelMap::const_iterator i = m_channels.find( cid );
+    if ( i != m_channels.end() )
+    {
+        return (*i).second;
+        ++i;
+    }
+    return CPubSubClientChannelPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2578,6 +2673,7 @@ PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
     m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2PubSubInfoResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, false ) )  );
+    m_httpRouter.SetResourceMapping( "/config/channels/*", RestApiPubSubClientChannelConfigResource::THTTPServerResourcePtr( new RestApiPubSubClientChannelConfigResource( this ) )  );
     m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

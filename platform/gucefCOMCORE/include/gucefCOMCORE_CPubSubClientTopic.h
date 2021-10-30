@@ -181,6 +181,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Subscribe( void ) = 0;                                                /**< attempt to commence subscription. This will subscribe per config and defaults of the given backend */
     virtual bool SubscribeStartingAtBookmark( const CPubSubBookmark& bookmark ) = 0;   /**< attempt to commence subscription starting at the given client-side provided bookmark */
 
+    /**
+     *  Allows for making a request to the pub-sub backend for throttling the rate at which new messages are received for the topic
+     *  This is an optional feature, not all backends may support it. You can query the backend's supported features and check
+     *  the "supportsSubscriberRateThrottling" feature flag to verify whether this feature is supported
+     *  Note that a rate that is smaller than 0 is interpreted as "no rate limit"
+     */
+    virtual bool RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPerSec );
+
     virtual CPubSubBookmark GetCurrentBookmark( void ) = 0;
 
     virtual bool Disconnect( void ) = 0;

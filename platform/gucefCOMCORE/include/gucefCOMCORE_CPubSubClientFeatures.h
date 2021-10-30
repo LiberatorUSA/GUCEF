@@ -61,7 +61,9 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
 
     bool supportsPublishing;                    /** not every client may support full pub-sub: Is publishing supported? */
     bool supportsSubscribing;                   /** not every client may support full pub-sub: Is subscribing supported? */
-    bool supportsAutoReconnect;
+    
+    bool supportsAutoReconnect;                 /** whether the backend is capable of handling disconnects on its own */
+    bool supportsSubscriberRateThrottling;      /** whether the backend is capable of throttling the rate at which messages are received when subscribed */
     
     bool supportsBinaryPayloads;                /** if not supported and a binary payload is given it will be converted to base64 */
     bool supportsMultiHostSharding;             /** if the pub-sub system supports sharding across multiple hosts */

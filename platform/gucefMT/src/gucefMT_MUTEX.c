@@ -79,12 +79,15 @@ MutexCreate( void )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
     TMutex* mutex = malloc( sizeof( TMutex ) );
-    mutex->locked = 0;
-    mutex->id = CreateMutex( NULL, FALSE, NULL );
-    if ( !mutex->id )
+    if ( GUCEF_NULL != mutex )
     {
-            free( mutex );
-            return NULL;
+        mutex->locked = 0;
+        mutex->id = CreateMutex( NULL, FALSE, NULL );
+        if ( !mutex->id )
+        {
+                free( mutex );
+                return NULL;
+        }
     }
     return mutex;
     

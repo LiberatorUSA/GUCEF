@@ -115,6 +115,15 @@ CPubSubClientTopic::AcknowledgeReceipt( const CPubSubBookmark& bookmark )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientTopic::RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPerSec )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientTopic::DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;
     

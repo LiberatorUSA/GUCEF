@@ -183,6 +183,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool collectMetrics;                                                   
+    CORE::UInt32 metricsIntervalInMs;
     CORE::CString metricsPrefix;                                          //< this setting is derived and cached from other settings
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -392,6 +393,12 @@ class CPubSubClientOtherSide : public CPubSubClientSide
         
     virtual ~CPubSubClientOtherSide();
 
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
@@ -403,6 +410,10 @@ class CPubSubClientOtherSide : public CPubSubClientSide
 
     CPubSubClientChannel* m_parentChannel;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPubSubClientOtherSide, MT::CMutex > CPubSubClientOtherSidePtr;
 
 /*-------------------------------------------------------------------------*/
 
@@ -437,7 +448,7 @@ class CPubSubClientChannel : public CPubSubClientSide
                                         CPubSubClientSide* msgReceiverSide          );
     private:
 
-    CPubSubClientSide* m_sideBPubSub;
+    CPubSubClientOtherSidePtr m_sideBPubSub;
     TPubSubClientSideVector m_sides;
 };
 
@@ -495,6 +506,26 @@ class RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerReso
 
 /*-------------------------------------------------------------------------*/
 
+class RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiPubSubClientChannelConfigResource( PubSub2PubSub* app );
+
+    virtual ~RestApiPubSubClientChannelConfigResource();
+
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    PubSub2PubSub* m_app;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class PubSub2PubSub : public CORE::CObserver ,
                       public CORE::CIConfigurable
 {
@@ -522,6 +553,8 @@ class PubSub2PubSub : public CORE::CObserver ,
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     static const CORE::CDateTime& GetAppCompileDateTime( void );
+
+    CPubSubClientChannelPtr GetChannelByChannelId( CORE::Int32 cid ) const;
 
     private:
 
