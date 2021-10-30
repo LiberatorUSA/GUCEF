@@ -55,10 +55,22 @@ namespace MLF {
 
 /*-------------------------------------------------------------------------*/
 
-#define SETBREAKPOINT __asm { int 3 }
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+#include <debugapi.h>
+
+#define GUCEF_SETBREAKPOINT { DebugBreak(); }
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+#include <signal.h>
+
+#define GUCEF_GUCEF_SETBREAKPOINT { raise(SIGTRAP); }
+
+#endif 
 
 // Define our own version of assert to simply set a break point.
-#define m_assert(x) if ( (x) == false ) SETBREAKPOINT  // Set a break point
+#define m_assert(x) if ( (x) == false ) GUCEF_SETBREAKPOINT  // Set a break point
 
 #define ALLOC_TYPE char 
 
@@ -220,8 +232,8 @@ void MEMMAN_Shutdown( void );
 char *formatOwnerString( const char *file, int line );
 char *sourceFileStripper( const char *sourceFile );
 void log( char *s, ... );
-char *insertCommas( unsigned long value );
-char *memorySizeString( unsigned long size, bool lengthenString = true );
+char *insertCommas( size_t value );
+char *memorySizeString( size_t size, bool lengthenString = true );
 
 
 MemoryManager::MemoryManager( void )
@@ -405,7 +417,7 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
                 if ( !g_manager.ValidateMemory() )
                 {
                         g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", info->fileName, info->lineNumber );
-                        //SETBREAKPOINT;
+                        //GUCEF_SETBREAKPOINT;
                         return;
                 }                 
         }
@@ -816,7 +828,7 @@ void MemoryManager::dumpLogReport( void )
 	// Header Information
 	fprintf( fp, "\r\n" );
 	fprintf( fp, "******************************************************************************* \r\n");
-  fprintf( fp, "*********           Memory report for: %02d/%02d/%04d %02d:%02d:%02d            ********* \r\n", time->tm_mon + 1, time->tm_mday, time->tm_year + 1900, time->tm_hour, time->tm_min, time->tm_sec );
+	fprintf( fp, "*********           Memory report for: %02d/%02d/%04d %02d:%02d:%02d            ********* \r\n", time->tm_mon + 1, time->tm_mday, time->tm_year + 1900, time->tm_hour, time->tm_min, time->tm_sec );
 	fprintf( fp, "******************************************************************************* \r\n");
 	fprintf( fp, "\r\n" );
 
@@ -855,7 +867,7 @@ void MemoryManager::dumpLogReport( void )
 	fprintf( fp, "                 Amount of Memory Un-Allocated: %s\r\n", memorySizeString( memoryLeak ) );
 	fprintf( fp, "   Percentage of Allocated Memory Un-Allocated: %10.2f %%\r\n", (float)(1 - (m_totalMemoryAllocated - memoryLeak)/(float)totalMemoryDivider) * 100 );
 	fprintf( fp, "\r\n");
-        fflush( fp );
+    fflush( fp );
 
 	if (m_numAllocations != 0) {  // Are there memory leaks?
 		fclose( fp );               // Close the log file.
@@ -953,7 +965,11 @@ void MemoryManager::log( char *s, ... )
  */
 int MemoryManager::getHashIndex( const void *address )
 {
+	#if GUCEF_32BIT
 	return ((Int32)address >> 4) & (HASH_SIZE -1);
+	#else
+	return ((Int64)address >> 8) & (HASH_SIZE -1);
+	#endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1153,11 +1169,11 @@ void log( char *s, ... )
  *  Arguments   : 
  *  	unsigned long value	: The value to insert commas into.
  */
-char *insertCommas( unsigned long value )
+char* insertCommas( size_t value )
 {
 	static	char	str[30];
 	for (int ii = 0; ii < 30; ++ii) str[ii] = NULL;
-	sprintf(str, "%d", value);
+	sprintf(str, "%zu", value);
 	if (strlen(str) > 3) {
 		memmove( &str[strlen(str)-3], &str[strlen(str)-4], 4 );
 		str[strlen(str) - 4] = ',';
@@ -1185,7 +1201,7 @@ char *insertCommas( unsigned long value )
  *  	unsigned long size	: The size of the memory.
  *  	bool lengthenString : Whether or not to pad the string with white spaces.
  */
-char *memorySizeString( unsigned long size, bool lengthenString /* = true */ )
+char* memorySizeString( size_t size, bool lengthenString /* = true */ )
 {
 	static	char	str[90];
 	if (lengthenString) {
@@ -1411,7 +1427,7 @@ MEMMAN_Validate( const void* address ,
         if ( !g_manager.ValidateMemory() )
         {
             g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
-            SETBREAKPOINT;
+            GUCEF_SETBREAKPOINT;
             return;
         }                 
     }
@@ -1426,14 +1442,14 @@ MEMMAN_Validate( const void* address ,
                 g_manager.log( "MEMMAN: Request to access %p with blocksize %d but the actual blocksize is %d @ %s:%d\n", address, blocksize, file, line );
                 //g_manager.dumpLogReport();
                                 
-                SETBREAKPOINT;
+                GUCEF_SETBREAKPOINT;
                 return;                                        
             }
             return;
         }
         g_manager.log( "MEMMAN: Block validation failed at address %p, possible memory corruption !!! @ %s:%d", address, file, line ); 
         //g_manager.dumpLogReport();
-        SETBREAKPOINT;
+        GUCEF_SETBREAKPOINT;
         return;
     }
         
@@ -1442,7 +1458,7 @@ MEMMAN_Validate( const void* address ,
     if ( !g_manager.ValidateMemory() )
     {
         g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
-        SETBREAKPOINT;
+        GUCEF_SETBREAKPOINT;
         return;
     }                
 }
@@ -1465,7 +1481,7 @@ MEMMAN_ValidateChunk( const void* address ,
         if ( !g_manager.ValidateMemory() )
         {
             g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
-            SETBREAKPOINT;
+            GUCEF_SETBREAKPOINT;
             return;
         }                 
     }        
@@ -1483,25 +1499,25 @@ MEMMAN_ValidateChunk( const void* address ,
 
             g_manager.log( "Request to access segment %p with blocksize %d but the address is not a sub-section of %p @ %s:%d", chunk, blocksize, address, file, line );
             g_manager.dumpLogReport();
-            SETBREAKPOINT;
+            GUCEF_SETBREAKPOINT;
             return;
         }                        
 
         g_manager.log( "MEMMAN: Block validation failed at address %p, possible memory corruption !!! @ %s:%d", address, file, line ); 
         g_manager.dumpLogReport();
-        SETBREAKPOINT;
+        GUCEF_SETBREAKPOINT;
         return;                
     }                
         
     if ( !g_manager.ValidateMemory() )
     {
         g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
-        SETBREAKPOINT;
+        GUCEF_SETBREAKPOINT;
         return;
     } 
          
     g_manager.log( "MEMMAN: Request to access an unknown address %p with blocksize %d @ %s:%d", address, blocksize, file, line );        
-    //SETBREAKPOINT;
+    //GUCEF_SETBREAKPOINT;
 }                 
 
 /*-------------------------------------------------------------------------*/
@@ -1531,7 +1547,7 @@ MEMMAN_SetOwner( const char *file, int line )
 		return;
 	}
 	
-	SETBREAKPOINT;
+	GUCEF_SETBREAKPOINT;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1572,18 +1588,18 @@ MEMMAN_SysAllocStringByteLen( const char* file        ,
 {
     MT::CScopeMutex scopeLock( g_manager.m_mutex );
     
-    char* buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+bufferSize, MM_OLE_ALLOC, NULL );
-    if ( NULL != buffer )
+    char* buffer = (char*) MEMMAN_AllocateMemory( file, line, (size_t)4+bufferSize, MM_OLE_ALLOC, NULL );
+    if ( GUCEF_NULL != buffer )
     {
         unsigned int* bufferPrefix = (unsigned int*) buffer;
         *bufferPrefix = bufferSize;
         buffer += 4;
         
-        if ( NULL != str && 0 < bufferSize )
+        if ( GUCEF_NULL != str && 0 < bufferSize )
         {
-            unsigned int strLength = strlen( str );
+            size_t strLength = strlen( str );
             if ( strLength > bufferSize )
-                strLength = bufferSize-1;
+                strLength = (size_t) bufferSize-1;
 
             memcpy( buffer, str, strLength );
             buffer[ strLength ] = 0;

@@ -33,7 +33,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-//#ifdef USE_MEMORY_LEAK_CHECKER
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+#ifdef GUCEF_USE_MEMORY_LEAK_CHECKER
 
 #include "gucef_dynnewoff.h"      /* Make sure that the new/delete are not declared to avoid circular definitions. */
 
@@ -186,7 +191,7 @@ inline
 void
 MEMMAN_free( const char *file, int line, void* ptr )
 {
-    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
+    ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -303,11 +308,11 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
 
 /*-------------------------------------------------------------------------*/
 
-//#else
+#else
 
-//#include "gucef_dynnewoff.h" 
+#include "gucef_dynnewoff.h" 
 
-//#endif /* USE_MEMORY_LEAK_CHECKER ? */
+#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER ? */
 
 /*-------------------------------------------------------------------------*/
 

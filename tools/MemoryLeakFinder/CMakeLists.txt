@@ -15,6 +15,7 @@
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -24,6 +25,7 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -35,6 +37,7 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -44,6 +47,7 @@ elseif (EMSCRIPTEN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -55,6 +59,7 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -64,6 +69,7 @@ elseif (GLX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -75,6 +81,7 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -84,6 +91,7 @@ elseif (GTK)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -95,6 +103,7 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -104,6 +113,7 @@ elseif (IOS)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -115,6 +125,7 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -124,6 +135,7 @@ elseif (LINUX32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -135,6 +147,7 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -144,6 +157,7 @@ elseif (LINUX64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -155,6 +169,7 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -164,6 +179,7 @@ elseif (NACL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -175,6 +191,7 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -184,6 +201,7 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -195,6 +213,7 @@ elseif (OSX)
 
 elseif (POSIX)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -204,6 +223,7 @@ elseif (POSIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -215,6 +235,7 @@ elseif (POSIX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -224,6 +245,7 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -235,6 +257,7 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -244,6 +267,7 @@ elseif (SYMBIAN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -255,6 +279,7 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -264,6 +289,7 @@ elseif (UNIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -275,6 +301,7 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -291,6 +318,7 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
@@ -302,6 +330,7 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
@@ -318,6 +347,7 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c

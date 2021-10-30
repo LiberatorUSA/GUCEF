@@ -168,8 +168,8 @@ static TFP_MEMMAN_SysReAllocStringLen fp_MEMMAN_SysReAllocStringLen = 0;
 
 /*-------------------------------------------------------------------------*/
 
-static void* g_memoryManagerModulePtr = 0; 
-static void* g_dynLoadMutex = CreateMutex( NULL, FALSE, NULL );
+static void* g_memoryManagerModulePtr = NULL; 
+static void* g_dynLoadMutex = NULL;
 static const char* MemoryLeakFinderLib = "MemoryLeakFinder_d.dll";
 
 /*-------------------------------------------------------------------------//
@@ -182,10 +182,18 @@ static int
 LazyLoadMemoryManager( void )
 {
     /* check to make sure we havent already loaded the library */
-    if ( 0 != g_memoryManagerModulePtr ) return 1;
-    if ( 0 == g_dynLoadMutex ) return 0;    
-    if ( WAIT_FAILED == WaitForSingleObject( (HANDLE) g_dynLoadMutex, 30000 ) ) return 0;
-    if ( 0 != g_memoryManagerModulePtr ) return 1;
+    if ( 0 != g_memoryManagerModulePtr ) 
+        return 1;
+    if ( 0 == g_dynLoadMutex )
+    {
+        g_dynLoadMutex = CreateMutex( NULL, FALSE, NULL );
+        if ( 0 == g_dynLoadMutex )
+            return 0;
+    }
+    if ( WAIT_FAILED == WaitForSingleObject( (HANDLE) g_dynLoadMutex, 30000 ) ) 
+        return 0;
+    if ( 0 != g_memoryManagerModulePtr ) 
+        return 1;
 
     /* check to see if the module is already loaded elsewhere in the process */
     g_memoryManagerModulePtr = (void*) GetModuleHandleA( MemoryLeakFinderLib );

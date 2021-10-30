@@ -6,5 +6,7 @@
 		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />
 		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeMutex.h" TYPE="FILE" />		
 		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />
+		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CILockable.h" TYPE="FILE" />		
+		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CILockable.cpp" TYPE="FILE" />
     </INCLUDES>
 </PROJECTGENERATOR>
