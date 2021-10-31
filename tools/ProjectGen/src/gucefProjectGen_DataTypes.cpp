@@ -624,7 +624,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         CORE::CDataNode headersInfoNode;
         headersInfoNode.SetName( "Files" );
         headersInfoNode.SetAttribute( "Type", "Headers" );
-        headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        headersInfoNode.SetAttribute( "DirCount", CORE::ToString( moduleInfo.includeDirs.size() ) );
         TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
@@ -636,7 +636,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
             fileNode.SetName( "File" );
 
             const TStringSet& fileSet = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileSet.size() ) );
+            pathNode.SetAttribute( "FileCount", CORE::ToString( fileSet.size() ) );
             TStringSet::const_iterator m = fileSet.begin();
             while ( m != fileSet.end() )
             {
@@ -664,7 +664,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         CORE::CDataNode sourceInfoNode;
         sourceInfoNode.SetName( "Files" );
         sourceInfoNode.SetAttribute( "Type", "Source" );
-        sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+        sourceInfoNode.SetAttribute( "DirCount", CORE::ToString( moduleInfo.sourceDirs.size() ) );
         TStringSetMap::const_iterator n = moduleInfo.sourceDirs.begin();
         while ( n != moduleInfo.sourceDirs.end() )
         {
@@ -676,7 +676,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
             fileNode.SetName( "File" );
 
             const TStringSet& fileSet = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileSet.size() ) );
+            pathNode.SetAttribute( "FileCount", CORE::ToString( fileSet.size() ) );
             TStringSet::const_iterator m = fileSet.begin();
             while ( m != fileSet.end() )
             {
@@ -702,7 +702,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     if ( moduleInfo.dependencyIncludeDirs.size() > 0 )
     {
         CORE::CDataNode includesInfoNode( "Includes" );
-        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Count", CORE::ToString( moduleInfo.dependencyIncludeDirs.size() ) );
         includesInfoNode.SetAttribute( "Source", "Dependency" );
         TStringSet::const_iterator q = moduleInfo.dependencyIncludeDirs.begin();
         while ( q != moduleInfo.dependencyIncludeDirs.end() )
@@ -725,7 +725,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     if ( moduleInfo.includeDirs.size() > 0 )
     {
        CORE::CDataNode includesInfoNode( "Includes" );
-        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Count", CORE::ToString( moduleInfo.includeDirs.size() ) );
         includesInfoNode.SetAttribute( "Source", "Self" );
         TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
@@ -764,7 +764,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         CORE::CDataNode dependenciesNode;
         dependenciesNode.SetName( "Dependencies" );
-        dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
+        dependenciesNode.SetAttribute( "Count", CORE::ToString( moduleInfo.dependencies.size() ) );
         TStringSet::const_iterator m = moduleInfo.dependencies.begin();
         while ( m != moduleInfo.dependencies.end() )
         {
@@ -782,7 +782,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         CORE::CDataNode dependenciesNode;
         dependenciesNode.SetName( "RuntimeDependencies" );
-        dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.runtimeDependencies.size() ) );
+        dependenciesNode.SetAttribute( "Count", CORE::ToString( moduleInfo.runtimeDependencies.size() ) );
         TStringSet::const_iterator m = moduleInfo.runtimeDependencies.begin();
         while ( m != moduleInfo.runtimeDependencies.end() )
         {
@@ -964,7 +964,7 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
 
     // Add project info
     rootNodeToBe.SetName( "Project" );
-    rootNodeToBe.SetAttribute( "ModuleCount", CORE::UInt32ToString( projectInfo.modules.size() ) );
+    rootNodeToBe.SetAttribute( "ModuleCount", CORE::ToString( projectInfo.modules.size() ) );
     rootNodeToBe.SetAttribute( "Name", projectInfo.projectName );
 
     // Add info for each module
@@ -1534,7 +1534,7 @@ DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
                 ++i;
             }
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully deserialized " + CORE::UInt32ToString( moduleEntryNodes.size()-errorCount ) + "/" + CORE::UInt32ToString( moduleEntryNodes.size() ) + " entries from file \"" + inputFilepath + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully deserialized " + CORE::ToString( moduleEntryNodes.size()-errorCount ) + "/" + CORE::ToString( moduleEntryNodes.size() ) + " entries from file \"" + inputFilepath + "\"" );
             return 0 == errorCount;
         }
         else

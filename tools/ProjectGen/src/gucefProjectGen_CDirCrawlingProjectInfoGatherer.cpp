@@ -1746,7 +1746,7 @@ CMakeParseIncludeDirs( const CORE::CString& fileSuffix )
             TStringVector elements = dependenciesStr.ParseElements( ' ' );
             if ( !elements.empty() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " include dirs in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " include dirs in suffix file" );
             }
 
             // Add this collection to the list of all include dirs we found
@@ -1798,7 +1798,7 @@ CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuf
             {
                 // the first element is the name of the module, we don't need it
                 elements.erase( elements.begin() );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " libraries to link to in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " libraries to link to in suffix file" );
             }
 
             // Add this collection to the list of all linked libraries we found
@@ -1852,7 +1852,7 @@ CMakeParseDependencies( const CORE::CString& fileSuffix ,
             {
                 moduleName = *(elements.begin());
                 elements.erase( elements.begin() );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " dependencies in suffix file" );
             }
 
             // Add this collection to the list of all dependencies we found
@@ -2658,7 +2658,7 @@ PreprocessDir( const CORE::CString& path )
     CDirPreprocessorManager& dirPreprocessorManager = CProjectGenGlobal::Instance()->GetDirPreprocessorManager();
     const CDirPreprocessorManager::TDirPreprocessorsList& dirPreprocessorsList = dirPreprocessorManager.GetDirPreprocessors();
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( dirPreprocessorsList.size() ) + " preprocessors registered" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::ToString( dirPreprocessorsList.size() ) + " preprocessors registered" );
 
     CDirPreprocessorManager::TDirPreprocessorsList::const_iterator i = dirPreprocessorsList.begin();
     while ( i != dirPreprocessorsList.end() )
@@ -2761,7 +2761,7 @@ GetModuleDependencyCount( const TModuleInfoEntry& moduleInfoEntry ,
     TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( n != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        dependencyCount = (*n).second.dependencies.size();
+        dependencyCount = (CORE::UInt32) (*n).second.dependencies.size();
     }
 
     // Get dependencies which are specific for the target platform
@@ -2770,7 +2770,7 @@ GetModuleDependencyCount( const TModuleInfoEntry& moduleInfoEntry ,
         n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
         if ( n != moduleInfoEntry.modulesPerPlatform.end() )
         {
-            dependencyCount += (*n).second.dependencies.size();
+            dependencyCount += (CORE::UInt32) (*n).second.dependencies.size();
         }
     }
     return dependencyCount;

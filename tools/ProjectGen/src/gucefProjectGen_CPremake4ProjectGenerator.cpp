@@ -400,7 +400,7 @@ GeneratePremake4FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
             sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n";
             sectionContent += GeneratePremake4FileSection( sectionContent, includeFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include file dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( includeFiles.size() ) + " include file dirs for module " + consensusModuleName );
             return sectionContent;
         }
         else
@@ -429,7 +429,7 @@ GeneratePremake4FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
             sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n";
             sectionContent += GeneratePremake4FileSection( sectionContent, srcFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( srcFiles.size() ) + " source dirs for module " + consensusModuleName );
             return sectionContent;
         }
         else

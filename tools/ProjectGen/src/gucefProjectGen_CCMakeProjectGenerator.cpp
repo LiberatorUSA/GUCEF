@@ -398,7 +398,7 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
             sectionContent = "set( HEADER_FILES \n";
             sectionContent = GenerateCMakeListsFileSection( sectionContent, includeFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
             return sectionContent;
         }
     }
@@ -424,7 +424,7 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
             sectionContent = "set( SOURCE_FILES \n";
             sectionContent = GenerateCMakeListsFileSection( sectionContent, srcFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
             return sectionContent;
         }
     }

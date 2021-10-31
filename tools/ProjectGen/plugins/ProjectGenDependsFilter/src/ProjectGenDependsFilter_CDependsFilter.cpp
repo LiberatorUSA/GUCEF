@@ -217,7 +217,7 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
     CORE::CString binarySrcDirsStr = params.GetValueAlways( "DependsFilter:BinarySrcDirs" );
     TStringVector binarySrcDirs = binarySrcDirsStr.ParseElements( ';', false );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Executing Depends filter on the given project info. There are " + CORE::UInt32ToString( dependsCsvFiles.size() ) + " csv files given" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Executing Depends filter on the given project info. There are " + CORE::ToString( dependsCsvFiles.size() ) + " csv files given" );
     
     // Obtain a list of all modules from the Depends generated csv files.
     TStringSet modules = GetListOfModules( dependsCsvFiles, binarySrcDirs );
@@ -253,7 +253,7 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
         }
         ++i;
     }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Based on the Depends filter there are now " + CORE::UInt32ToString( deleteList.size() ) + " modules listed for deletion" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Based on the Depends filter there are now " + CORE::ToString( deleteList.size() ) + " modules listed for deletion" );
 
     if ( !deleteList.empty() )
     {

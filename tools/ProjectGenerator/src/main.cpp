@@ -268,7 +268,7 @@ GUCEF_OSMAIN_BEGIN
     try
     {
         rootDirs = keyValueList.GetValueVector( "rootDir" );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::UInt32ToString( rootDirs.size() ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::ToString( rootDirs.size() ) );
     }
     catch ( CORE::CValueList::EUnknownKey& )
     {
@@ -291,7 +291,7 @@ GUCEF_OSMAIN_BEGIN
 
     // Set any global dir excludes that where passed as cmd parameters
     projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
 
