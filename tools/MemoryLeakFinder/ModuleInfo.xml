@@ -4,11 +4,14 @@
             <Dependency Name="gucefHeaders" />		
         </Dependencies>
         <Linker>
+            <Dependency Name="Winmm" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_MLF_BUILD_MODULE" />
-			<Define String="MEMCHECK_OLEAPI" />
+			<Define String="GUCEF_MEMCHECK_OLEAPI" />
+			<Define String="GUCEF_DYNNEWON_DISABLED" />
 			<Define String="GUCEF_MT_EMBED_CODE" />
+			<Define String="GUCEF_CORE_EMBED_CODE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

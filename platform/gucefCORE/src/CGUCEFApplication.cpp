@@ -411,20 +411,25 @@ void
 CGUCEFApplication::Stop( bool wait )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
-    if ( !m_shutdownRequested )
     {
-        m_shutdownRequested = true;
-        if ( !NotifyObservers( AppShutdownEvent ) ) return;
-       
-        CPulseGenerator* pulseGenerator = GetPulseGenerator();
-        if ( GUCEF_NULL != pulseGenerator )
+        MT::CObjectScopeLock lock( this );
+
+        if ( !m_shutdownRequested )
         {
-            pulseGenerator->ForceStopOfPeriodicPulses();
-            pulseGenerator->ForceDirectPulse();
+            m_shutdownRequested = true;
+            if ( !NotifyObservers( AppShutdownEvent ) ) return;
+       
+            CPulseGenerator* pulseGenerator = GetPulseGenerator();
+            if ( GUCEF_NULL != pulseGenerator )
+            {
+                pulseGenerator->ForceStopOfPeriodicPulses();
+                pulseGenerator->ForceDirectPulse();
+            }
         }
     }
+
+    CCoreGlobal::Instance()->GetTaskManager().RequestAllThreadsToStop( wait, false );
+    CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 }
 
 /*-------------------------------------------------------------------------*/

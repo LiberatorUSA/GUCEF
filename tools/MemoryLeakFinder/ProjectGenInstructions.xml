@@ -1,6 +1,8 @@
 <PROJECTGENERATOR>
     <INCLUDES PLATFORM="ALL">
-        <ITEM NAME="../../platform/gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
+        <ITEM NAME="../../platform/gucefMT/include/gucefMT_dvmtoswrap.h" TYPE="FILE" />
+		<ITEM NAME="../../platform/gucefMT/src/gucefMT_dvmtoswrap.c" TYPE="FILE" />
+		<ITEM NAME="../../platform/gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
         <ITEM NAME="../../platform/gucefMT/src/gucefMT_MUTEX.c" TYPE="FILE" />
 		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
 		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />

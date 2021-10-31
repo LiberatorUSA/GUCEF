@@ -1,24 +1,23 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucef common header: provides header based platform wide facilities
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
-#ifndef GUCEF_CORE_DYNMEMORYMANAGERLOADER_H
-#define GUCEF_CORE_DYNMEMORYMANAGERLOADER_H
+#ifndef GUCEF_MEMORYMANAGERLOADER_H
+#define GUCEF_MEMORYMANAGERLOADER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +25,32 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucef_dynnewoff.h"      /* Make sure that the new/delete are not declared to avoid circular definitions. */
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
 
-#include <windows.h>
-#include <malloc.h>
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
+
+#ifndef GUCEF_DYNNEWOFF_H 
+#include "gucef_dynnewoff.h"      /* Make sure that the new/delete are not declared to avoid circular definitions. */
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"      /* GUCEF platform build configuration */
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
+
+#ifndef GUCEF_CALLCONV_H
+#include "gucef_callconv.h"      /* GUCEF platform calling convention macros */
+#define GUCEF_CALLCONV_H
+#endif /* GUCEF_CALLCONV_H ? */
+
+#ifndef GUCEF_SHAREDMODULE_H
+#include "gucef_sharedmodule.h"  /* GUCEF platform macros related to the use of shared modules */
+#define GUCEF_SHAREDMODULE_H
+#endif /* GUCEF_SHAREDMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,7 +101,7 @@
  *      Memory Manager automatically.
  */
 
-typedef unsigned __int32 ( *TFP_MEMMAN_Initialize )( void );
+typedef __int32 ( *TFP_MEMMAN_Initialize )( void );
 typedef void ( *TFP_MEMMAN_Shutdown )( void );
 typedef void ( *TFP_MEMMAN_DumpLogReport )( void );
 typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
@@ -104,12 +125,12 @@ typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chu
 typedef void* ( *TFP_MEMMAN_AllocateMemory )( const char *file, int line, size_t size, char type, void *address );
 typedef void ( *TFP_MEMMAN_DeAllocateMemory )( void *address, char type );
 typedef void ( *TFP_MEMMAN_DeAllocateMemoryEx )( const char *file, int line, void *address, char type );
-typedef void ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
+typedef __int32 ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
 
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MEMCHECK_OLEAPI
+#ifdef GUCEF_MEMCHECK_OLEAPI
 
 /*
  *  OLE Memory tracking functions which are invoked by the OLE memory allocation overrides
@@ -122,7 +143,7 @@ typedef void ( *TFP_MEMMAN_SysFreeString )( const char *file, int line, wchar_t*
 typedef int ( *TFP_MEMMAN_SysReAllocString )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz );
 typedef int ( *TFP_MEMMAN_SysReAllocStringLen )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len );
 
-#endif /* MEMCHECK_OLEAPI ? */
+#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -155,7 +176,7 @@ static TFP_MEMMAN_SetOwner fp_MEMMAN_SetOwner = 0;
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MEMCHECK_OLEAPI
+#ifdef GUCEF_MEMCHECK_OLEAPI
 
 static TFP_MEMMAN_SysAllocString fp_MEMMAN_SysAllocString = 0;
 static TFP_MEMMAN_SysAllocStringByteLen fp_MEMMAN_SysAllocStringByteLen = 0;
@@ -164,7 +185,7 @@ static TFP_MEMMAN_SysFreeString fp_MEMMAN_SysFreeString = 0;
 static TFP_MEMMAN_SysReAllocString fp_MEMMAN_SysReAllocString = 0;
 static TFP_MEMMAN_SysReAllocStringLen fp_MEMMAN_SysReAllocStringLen = 0;
 
-#endif /* MEMCHECK_OLEAPI ? */
+#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -178,7 +199,7 @@ static const char* MemoryLeakFinderLib = "MemoryLeakFinder_d.dll";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static int 
+static int GUCEF_HIDDEN
 LazyLoadMemoryManager( void )
 {
     /* check to make sure we havent already loaded the library */
@@ -251,7 +272,7 @@ LazyLoadMemoryManager( void )
         return 0;
     }
 
-    #ifdef MEMCHECK_OLEAPI
+    #ifdef GUCEF_MEMCHECK_OLEAPI
 
     fp_MEMMAN_SysAllocString = (TFP_MEMMAN_SysAllocString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocString" );
     fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_SysAllocStringByteLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
@@ -272,7 +293,7 @@ LazyLoadMemoryManager( void )
         return 0;
     }
 
-    #endif /* MEMCHECK_OLEAPI ? */
+    #endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
     if ( fp_MEMMAN_Initialize() )
     {
@@ -286,4 +307,82 @@ LazyLoadMemoryManager( void )
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_DYNMEMORYMANAGERLOADER_H ? */
+inline
+void
+MEMMAN_SetLogFile( const char *file )
+{
+    if ( 0 != LazyLoadMemoryManager() )
+        fp_MEMMAN_SetLogFile( file );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_SetExhaustiveTesting( unsigned __int32 test )
+{
+    if ( 0 != LazyLoadMemoryManager() )
+        fp_MEMMAN_SetExhaustiveTesting( test );   
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_SetPaddingSize( unsigned __int32 clean )
+{
+    if ( 0 != LazyLoadMemoryManager() )
+        fp_MEMMAN_SetPaddingSize( clean );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+__int32
+MEMMAN_Initialize( void )
+{
+    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Initialize() );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_Shutdown( void )
+{
+    if ( NULL != fp_MEMMAN_Shutdown )
+        fp_MEMMAN_Shutdown();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_DumpLogReport( void )
+{
+    if ( NULL != fp_MEMMAN_DumpLogReport )
+        fp_MEMMAN_DumpLogReport();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+__int32
+MEMMAN_SetOwner( const char *file, int line  )
+{
+    if ( 0 != LazyLoadMemoryManager() )
+        return fp_MEMMAN_SetOwner( file, line );    
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+#undef GUCEF_DYNNEWOFF_H  /* allow the undef header to be included again later */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER && GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER? */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_MEMORYMANAGERLOADER_H ? */

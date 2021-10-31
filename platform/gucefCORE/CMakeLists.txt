@@ -215,8 +215,6 @@ set( HEADER_FILES
   include/gucefCORE_macros.h
   include/gucefCORE_utf8.h
   include/gucef_essentials.h
-  include/gucef_new_off.h
-  include/gucef_new_on.h
   include/ioaccess.h
   include/macros.h
   include/md5.h

@@ -25,10 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PLATFORM_H
-#include "gucef_platform.h"
-#define GUCEF_PLATFORM_H
-#endif /* GUCEF_PLATFORM_H ? */
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"           /* include the GUCEF common config */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"           /* include the GUCEF common macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

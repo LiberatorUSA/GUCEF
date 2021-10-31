@@ -84,7 +84,7 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_MLF_PUBLIC_C UInt32
+GUCEF_MLF_PUBLIC_C __int32
 MEMMAN_Initialize( void );
 
 /*-------------------------------------------------------------------------*/
@@ -298,7 +298,7 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
  *      seperate method for deallocation since we can not pass the addition parameters to
  *      the delete methods like we do with the new methods.
  */
-GUCEF_MLF_PUBLIC_C void
+GUCEF_MLF_PUBLIC_C __int32
 MEMMAN_SetOwner( const char *file ,
                  int line         );
 

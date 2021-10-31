@@ -1,0 +1,198 @@
+/*
+ *  gucef common header: provides header based platform wide facilities
+ *
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+#ifndef GUCEF_CALLCONV_H
+#define GUCEF_CALLCONV_H
+
+/*
+ *      calling convention macros for the GUCEF platform
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"        /* GUCEF configuration */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"      /* GUCEF platform compilation targets */
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/*
+ *      Change calling convention notation depending on the compiler used.
+ */
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_C __cdecl
+#else
+  #define GUCEF_CALLSPEC_C cdecl
+#endif
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_STD __stdcall
+#else
+  #define GUCEF_CALLSPEC_STD stdcall
+#endif
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_PASCAL __pascal
+#else
+  #define GUCEF_CALLSPEC_PASCAL pascal
+#endif
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_FAST __fastcall
+#else
+  #define GUCEF_CALLSPEC_FAST fastcall
+#endif
+
+/*
+ *      Macro that switches to the desired calling convention
+ *      for GUCEF modules. Default GUCEF_CALLSPEC_C
+ */
+#undef GUCEF_CALLSPEC_TYPE
+#ifdef GUCEF_USE_CALLSPEC_C
+  #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+#else
+  #ifdef GUCEF_USE_CALLSPEC_STD
+    #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_STD
+  #else
+    #ifdef GUCEF_USE_CALLSPEC_PASCAL
+      #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_PASCAL
+    #else
+       #ifdef GUCEF_USE_CALLSPEC_FAST
+         #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_FAST
+       #else
+         #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+       #endif
+     #endif
+  #endif
+#endif
+
+/*
+ *      Macro that switches to the desired calling convention
+ *      for plugins. Default GUCEF_CALLSPEC_C
+ */
+#undef GUCEF_PLUGIN_CALLSPEC_TYPE
+#ifdef GUCEF_USE_PLUGIN_CALLSPEC_C
+  #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+#else
+  #ifdef GUCEF_USE_PLUGIN_CALLSPEC_STD
+    #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_STD
+  #else
+    #ifdef GUCEF_USE_PLUGIN_CALLSPEC_PASCAL
+      #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_PASCAL
+    #else
+       #ifdef GUCEF_USE_PLUGIN_CALLSPEC_FAST
+         #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_FAST
+       #else
+         #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+       #endif
+     #endif
+  #endif
+#endif
+
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro.
+ */
+#undef GUCEF_CALLSPEC_PREFIX
+#undef GUCEF_CALLSPEC_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_PREFIX GUCEF_CALLSPEC_TYPE
+  #define GUCEF_CALLSPEC_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_PREFIX GUCEF_PLUGIN_CALLSPEC_TYPE
+  #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+  #define GUCEF_CALLSPEC_PREFIX
+  #define GUCEF_CALLSPEC_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#else
+  #define GUCEF_CALLSPEC_PREFIX __attribute__((GUCEF_CALLSPEC_TYPE))
+  #define GUCEF_CALLSPEC_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_PREFIX __attribute__((GUCEF_PLUGIN_CALLSPEC_TYPE))
+  #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#endif
+
+
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro for the std
+ *      calling convention
+ */
+#undef GUCEF_CALLSPEC_STD_PREFIX
+#undef GUCEF_CALLSPEC_STD_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_STD_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_STD_PREFIX GUCEF_CALLSPEC_STD
+  #define GUCEF_CALLSPEC_STD_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX GUCEF_CALLSPEC_STD
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+  #define GUCEF_CALLSPEC_STD_PREFIX
+  #define GUCEF_CALLSPEC_STD_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#else
+  #define GUCEF_CALLSPEC_STD_PREFIX __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_CALLSPEC_STD_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_STD_PREFIX __attribute__((GUCEF_CALLSPEC_STD))
+  #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
+#endif
+
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro for the c
+ *      calling convention
+ */
+#undef GUCEF_CALLSPEC_C_PREFIX
+#undef GUCEF_CALLSPEC_C_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_C_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_C_PREFIX GUCEF_CALLSPEC_C
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX GUCEF_CALLSPEC_C
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+  #define GUCEF_CALLSPEC_C_PREFIX
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#else
+  #define GUCEF_CALLSPEC_C_PREFIX __attribute__((GUCEF_CALLSPEC_C))
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX __attribute__((GUCEF_CALLSPEC_C))
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CALLCONV_H ? */

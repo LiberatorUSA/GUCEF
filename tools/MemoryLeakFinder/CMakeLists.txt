@@ -18,6 +18,7 @@ if (ANDROID)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -29,6 +30,7 @@ if (ANDROID)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -40,6 +42,7 @@ elseif (EMSCRIPTEN)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -51,6 +54,7 @@ elseif (EMSCRIPTEN)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -62,6 +66,7 @@ elseif (GLX)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -73,6 +78,7 @@ elseif (GLX)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -84,6 +90,7 @@ elseif (GTK)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -95,6 +102,7 @@ elseif (GTK)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -106,6 +114,7 @@ elseif (IOS)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -117,6 +126,7 @@ elseif (IOS)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -128,6 +138,7 @@ elseif (LINUX32)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -139,6 +150,7 @@ elseif (LINUX32)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -150,6 +162,7 @@ elseif (LINUX64)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -161,6 +174,7 @@ elseif (LINUX64)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -172,6 +186,7 @@ elseif (NACL)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -183,6 +198,7 @@ elseif (NACL)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -194,6 +210,7 @@ elseif (OSX)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -205,6 +222,7 @@ elseif (OSX)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -216,6 +234,7 @@ elseif (POSIX)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -227,6 +246,7 @@ elseif (POSIX)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -238,6 +258,7 @@ elseif (SDL)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -249,6 +270,7 @@ elseif (SDL)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -260,6 +282,7 @@ elseif (SYMBIAN)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -271,6 +294,7 @@ elseif (SYMBIAN)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -282,6 +306,7 @@ elseif (UNIX)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
 
@@ -293,6 +318,7 @@ elseif (UNIX)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -304,14 +330,12 @@ elseif (WIN32)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
-    include/DynMemoryManagerLoader.h
     include/MemoryManager.h
     include/gucefMLF_ETypes.h
     include/gucefMLF_config.h
     include/gucefMLF_macros.h
-    include/gucef_dynnewoff.h
-    include/gucef_dynnewon.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -322,6 +346,7 @@ elseif (WIN32)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -333,14 +358,12 @@ elseif (WIN64)
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
-    include/DynMemoryManagerLoader.h
     include/MemoryManager.h
     include/gucefMLF_ETypes.h
     include/gucefMLF_config.h
     include/gucefMLF_macros.h
-    include/gucef_dynnewoff.h
-    include/gucef_dynnewon.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -351,6 +374,7 @@ elseif (WIN64)
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/MemoryManager.cpp
   )
 
@@ -375,11 +399,13 @@ elseif( WIN64 )
 endif()
 
 if ( WIN32 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;MEMCHECK_OLEAPI" )
+  target_link_libraries( ${MODULE_NAME} Winmm )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MEMCHECK_OLEAPI;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE" )
 endif( WIN32 )
 
 if ( WIN64 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;MEMCHECK_OLEAPI" )
+  target_link_libraries( ${MODULE_NAME} Winmm )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MEMCHECK_OLEAPI;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE" )
 endif( WIN64 )
 
 include_directories( ../../common/include )

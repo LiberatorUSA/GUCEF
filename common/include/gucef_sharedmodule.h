@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_MACROS_H
-#define GUCEF_MACROS_H
+#ifndef GUCEF_SHAREDMODULE_H
+#define GUCEF_SHAREDMODULE_H
 
 /*
  *      Build configuration specific macros for the GUCEF platform
@@ -35,50 +35,50 @@
 #endif /* GUCEF_CONFIG_H ? */
 
 #ifndef GUCEF_PLATFORM_H
-#include "gucef_platform.h"      /* GUCEF platform build configuration */
+#include "gucef_platform.h"      /* GUCEF platform compilation targets */
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
-
-#ifndef GUCEF_BASICHELPERS_H
-#include "gucef_basichelpers.h"  /* GUCEF platform convenience basic helper macros */
-#define GUCEF_BASICHELPERS_H
-#endif /* GUCEF_BASICHELPERS_H ? */
 
 #ifndef GUCEF_CALLCONV_H
 #include "gucef_callconv.h"      /* GUCEF platform calling convention macros */
 #define GUCEF_CALLCONV_H
 #endif /* GUCEF_CALLCONV_H ? */
 
-#ifndef GUCEF_IO_H
-#include "gucef_io.h"            /* GUCEF platform macros/constants related to I/O */
-#define GUCEF_IO_H
-#endif /* GUCEF_IO_H ? */
 
-#ifndef GUCEF_CPP_H
-#include "gucef_cpp.h"           /* GUCEF platform macros/constants related to C++ feature support */
-#define GUCEF_CPP_H
-#endif /* GUCEF_CPP_H ? */
+/* @TODO: the dll init header should be merged into this header at some point */
+#ifndef GUCEF_DLLINIT_H
+#include "gucef_DLLInit.h"       /* O/S dependent shared library entry point macros */
+#define GUCEF_DLLINIT_H
+#endif /* GUCEF_DLLINIT_H ? */
 
-#ifndef GUCEF_MEMORY_H
-#include "gucef_memory.h"        /* GUCEF platform macros related to memory management */
-#define GUCEF_MEMORY_H
-#endif /* GUCEF_MEMORY_H ? */
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GENERAL MACROS                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_SHAREDMODULE_H
-#include "gucef_sharedmodule.h"  /* GUCEF platform macros related to the use of shared modules */
-#define GUCEF_SHAREDMODULE_H
-#endif /* GUCEF_SHAREDMODULE_H ? */
+/*
+ *      O/S Specific Switches
+ */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #define WIN32_LEAN_AND_MEAN     /* trim fat from windoze by default */
+    #define WIN32_EXTRA_LEAN        /* trim additional tub of lard from windoze by default */
 
-#ifndef GUCEF_SINGLETON_H
-#include "gucef_singleton.h"     /* GUCEF platform legacy singleton macros */
-#define GUCEF_SINGLETON_H
-#endif /* GUCEF_SINGLETON_H ? */
-
-#ifndef GUCEF_OSMAIN_H
-#include "gucef_osmain.h"        /* GUCEF platform convenience macros for application entry point management */
-#define GUCEF_OSMAIN_H
-#endif /* GUCEF_OSMAIN_H ? */
+    #define GUCEF_EXPORT __declspec( dllexport )
+    #define GUCEF_IMPORT __declspec( dllimport )
+    #define GUCEF_HIDDEN
+#else
+    #if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC ) && ( __GNUC__ >= 4 )
+        #define GUCEF_EXPORT __attribute__ ((__visibility__("default")))
+        #define GUCEF_IMPORT __attribute__ ((__visibility__("default")))
+        #define GUCEF_HIDDEN __attribute__ ((__visibility__("hidden")))
+    #else
+        #define GUCEF_EXPORT
+        #define GUCEF_IMPORT
+        #define GUCEF_HIDDEN
+    #endif
+#endif
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MACROS_H ? */
+#endif /* GUCEF_SHAREDMODULE_H ? */

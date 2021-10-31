@@ -26,8 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucef_new_off.h"        /* don't scare the STL with our memory manager */
-
 #include <vector>
 #include <set>
 #include <string>

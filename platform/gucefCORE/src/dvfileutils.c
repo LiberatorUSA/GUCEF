@@ -28,6 +28,8 @@
 #include <string.h>             /* standard string utils */
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #ifndef GUCEF_CORE_CONFIG_H
 #include "gucefCORE_config.h"     /* build defines */

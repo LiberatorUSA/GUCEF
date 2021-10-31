@@ -66,6 +66,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if defined( __GNUG__ ) && !defined( GCC_VERSION ) /* GNU C++ compiler */
+    #define GCC_VERSION (__GNUC__ * 10000 \
+                         + __GNUC_MINOR__ * 100 \
+                         + __GNUC_PATCHLEVEL__)
+#endif
+
 /* Finds the compiler type and version.
 */
 #if defined( _MSC_VER )
@@ -117,6 +123,25 @@
 #else
 #   define GUCEF_PLATFORM GUCEF_PLATFORM_LINUX
 #   define GUCEF_LINUX_BUILD
+#endif
+
+/*
+ *      Bit target
+ */
+#if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        #ifdef _WIN64
+            #define GUCEF_64BIT
+        #endif
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #ifdef __LP64__
+            #define GUCEF_64BIT
+        #endif
+    #endif
+#endif
+
+#if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
+    #define GUCEF_32BIT
 #endif
 
 /*-------------------------------------------------------------------------*/

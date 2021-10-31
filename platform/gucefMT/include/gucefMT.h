@@ -32,6 +32,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"           /* GUCEF platform wide config */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"          /* GUCEF platform wide macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 /*
  *      Library build configuration
  */

@@ -75,13 +75,13 @@ CMemoryBlockPool&
 CMemoryBlockPool::operator=( const CMemoryBlockPool& src )
 {
         GUCEF_BEGIN;
-        CHECKMEM( _pool, _capacity*_blocksize );
+        GUCEF_CHECKMEM( _pool, _capacity*_blocksize );
         _capacity = src._capacity;
         _blocksize = src._blocksize;
         free( _pool );
         _pool = (UInt8*) malloc( _capacity*_blocksize );
         memcpy( _pool, src._pool, _capacity*_blocksize );
-        CHECKMEM( _pool, _capacity*_blocksize );
+        GUCEF_CHECKMEM( _pool, _capacity*_blocksize );
         GUCEF_END;
         return *this;
 }
@@ -95,7 +95,7 @@ CMemoryBlockPool::CMemoryBlockPool( UInt32 capacity  ,
 {
         GUCEF_BEGIN;
         _pool = (UInt8*) malloc( capacity*blocksize );
-        CHECKMEM( _pool, capacity*blocksize );
+        GUCEF_CHECKMEM( _pool, capacity*blocksize );
         GUCEF_END;
 }
 
@@ -104,7 +104,7 @@ CMemoryBlockPool::CMemoryBlockPool( UInt32 capacity  ,
 CMemoryBlockPool::~CMemoryBlockPool()
 {
         GUCEF_BEGIN;
-        CHECKMEM( _pool, _capacity*_blocksize );
+        GUCEF_CHECKMEM( _pool, _capacity*_blocksize );
         free( _pool );
         GUCEF_END;
 }
@@ -117,7 +117,7 @@ CMemoryBlockPool::SetBlock( UInt32 blockindex ,
                             UInt32 size       )
 {
         GUCEF_BEGIN;
-        CHECKMEMSEG( _pool, _pool+(blockindex*_blocksize), size );
+        GUCEF_CHECKMEMSEG( _pool, _pool+(blockindex*_blocksize), size );
         memcpy( _pool+(blockindex*_blocksize) ,
                 dest                          ,
                 size                          );
@@ -131,7 +131,7 @@ CMemoryBlockPool::SetBlock( UInt32 blockindex ,
                             const void* dest  )
 {
         GUCEF_BEGIN;
-        CHECKMEMSEG( _pool, _pool+(blockindex*_blocksize), _blocksize );
+        GUCEF_CHECKMEMSEG( _pool, _pool+(blockindex*_blocksize), _blocksize );
         memcpy( _pool+(blockindex*_blocksize) ,
                 dest                          ,
                 _blocksize                    );
@@ -144,7 +144,7 @@ void*
 CMemoryBlockPool::GetBlock( UInt32 blockindex ) const
 {
         GUCEF_BEGIN;
-        CHECKMEMSEG( _pool, (_pool+(blockindex*_blocksize)), _blocksize );
+        GUCEF_CHECKMEMSEG( _pool, (_pool+(blockindex*_blocksize)), _blocksize );
         GUCEF_END;        
         return (_pool+(blockindex*_blocksize));
 }
@@ -161,7 +161,7 @@ CMemoryBlockPool::SetCapacity( UInt32 capacity )
                 return;
         }                
         _pool = (UInt8*) realloc( _pool, capacity*_blocksize );
-        CHECKMEM( _pool, capacity*_blocksize );
+        GUCEF_CHECKMEM( _pool, capacity*_blocksize );
         _capacity = capacity;        
         GUCEF_END;
 }
@@ -193,8 +193,8 @@ CMemoryBlockPool::SetBlockSize( UInt32 blocksize ,
                 if ( movedata )
                 {
                         UInt8* pool = _pool, *newpool = (UInt8*) malloc( _capacity*blocksize );
-                        CHECKMEM( _pool, _capacity*_blocksize );
-                        CHECKMEM( newpool, _capacity*blocksize );
+                        GUCEF_CHECKMEM( _pool, _capacity*_blocksize );
+                        GUCEF_CHECKMEM( newpool, _capacity*blocksize );
                         for ( UInt32 i=0; i<_capacity; ++i )
                         {
                                 memcpy( newpool, pool, _blocksize );
@@ -207,7 +207,7 @@ CMemoryBlockPool::SetBlockSize( UInt32 blocksize ,
                 else
                 {
                         _pool = (UInt8*) realloc( _pool, _capacity*blocksize );
-                        CHECKMEM( _pool, _capacity*blocksize );
+                        GUCEF_CHECKMEM( _pool, _capacity*blocksize );
                 }
                 _blocksize = blocksize;
                 GUCEF_END;
@@ -220,7 +220,7 @@ CMemoryBlockPool::SetBlockSize( UInt32 blocksize ,
                 return false;
         }                
         _pool = (UInt8*) realloc( _pool, _capacity*blocksize );
-        CHECKMEM( _pool, _capacity*blocksize );
+        GUCEF_CHECKMEM( _pool, _capacity*blocksize );
         _blocksize = blocksize;
         GUCEF_END;
         return true;                                
@@ -247,8 +247,8 @@ CMemoryBlockPool::ShiftBlocksUp( void )
                 UInt8* i = (_pool+((_capacity-2)*_blocksize));
                 while ( i >= _pool )
                 {
-                        CHECKMEMSEG( _pool, i, _blocksize );
-                        CHECKMEMSEG( _pool, i+_blocksize, _blocksize );
+                        GUCEF_CHECKMEMSEG( _pool, i, _blocksize );
+                        GUCEF_CHECKMEMSEG( _pool, i+_blocksize, _blocksize );
                         memcpy( i+_blocksize ,
                                 i            ,
                                 _blocksize   );
@@ -269,8 +269,8 @@ CMemoryBlockPool::ShiftBlocksDown( void )
                 UInt8* i = _pool+((_capacity-2)*_blocksize);
                 while ( i >= _pool )
                 {
-                        CHECKMEMSEG( _pool, i, _blocksize );
-                        CHECKMEMSEG( _pool, i+_blocksize, _blocksize );                
+                        GUCEF_CHECKMEMSEG( _pool, i, _blocksize );
+                        GUCEF_CHECKMEMSEG( _pool, i+_blocksize, _blocksize );                
                         memcpy( i            ,
                                 i+_blocksize ,
                                 _blocksize   );

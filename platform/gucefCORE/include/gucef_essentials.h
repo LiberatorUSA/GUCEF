@@ -26,9 +26,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF__MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
-  #include "gucefCORE_macros.h"
-  #define GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_CALLSTACK_H 
@@ -54,19 +59,6 @@
 #endif /* GUCEF_CORE_EXCEPTIONTHROWMACROS_H ? */
 
 #endif /* __cplusplus ? */ 
-
-#ifdef GUCEFCORE_ADD_MEMORY_MANAGER
-  #ifndef GUCEF_CORE_MEMORYMANAGER_H
-    #include "MemoryManager.h"    /* memory manager API */
-    #define GUCEF_CORE_MEMORYMANAGER_H
-  #endif /* GUCEF_CORE_MEMORYMANAGER_H ? */
-  #ifndef GUCEF_NEW_ON_H
-    #include "gucef_new_on.h"     /* Memory manager redirect macros & code */
-    #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#else
-  #include "gucef_new_off.h"
-#endif /* ADD_MEMORY_MANAGER ? */    
 
 /*-------------------------------------------------------------------------*/
 

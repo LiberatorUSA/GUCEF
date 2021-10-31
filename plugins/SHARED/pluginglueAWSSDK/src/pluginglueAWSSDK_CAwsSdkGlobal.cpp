@@ -22,8 +22,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <aws/core/utils/logging/AWSLogging.h>
-
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -45,6 +43,13 @@
 #endif /* GUCEF_PLUGINGLUE_AWSSDK_CLOGGINGADAPTER_H ? */
 
 #include "pluginglueAWSSDK_CAwsSdkGlobal.h"
+
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
+#include <aws/core/utils/logging/AWSLogging.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

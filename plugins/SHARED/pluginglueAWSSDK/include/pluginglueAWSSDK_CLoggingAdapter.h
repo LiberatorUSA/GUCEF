@@ -25,13 +25,18 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <aws/core/Aws.h>
-#include <aws/core/utils/logging/FormattedLogSystem.h>
-
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
 #include "pluginglueAWSSDK_macros.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
 #endif /* GUCEF_PLUGINGLUE_AWSSDK_MACROS_H ? */
+
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
+#include <aws/core/Aws.h>
+#include <aws/core/utils/logging/FormattedLogSystem.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

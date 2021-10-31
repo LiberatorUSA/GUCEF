@@ -25,10 +25,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <aws/core/Aws.h>
-#include <aws/core/auth/AWSCredentialsProvider.h>
-#include <aws/core/auth/AWSCredentialsProviderChain.h>
-
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -38,6 +34,15 @@
 #include "pluginglueAWSSDK_macros.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
 #endif /* GUCEF_PLUGINGLUE_AWSSDK_MACROS_H ? */
+
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
+#include <aws/core/Aws.h>
+#include <aws/core/auth/AWSCredentialsProvider.h>
+#include <aws/core/auth/AWSCredentialsProviderChain.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

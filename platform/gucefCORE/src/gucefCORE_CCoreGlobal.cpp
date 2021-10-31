@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
 #ifndef GUCEF_CORE_CSTREAMEREVENTS_H
 #include "CStreamerEvents.h"
 #define GUCEF_CORE_CSTREAMEREVENTS_H
@@ -186,10 +191,10 @@ CCoreGlobal*
 CCoreGlobal::Instance()
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
+    if ( GUCEF_NULL == g_instance )
     {
         g_dataLock.Lock();
-        if ( NULL == g_instance )
+        if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CCoreGlobal();
             g_instance->Initialize();
@@ -207,7 +212,7 @@ CCoreGlobal::Deinstance( void )
 
     g_dataLock.Lock();
     delete g_instance;
-    g_instance = NULL;
+    g_instance = GUCEF_NULL;
     g_dataLock.Unlock();
 }
 
@@ -218,16 +223,19 @@ CCoreGlobal::Initialize( void )
 {GUCEF_TRACE;
 
     // it is important to initialize the call stack tracer at an early stage
+    #ifdef GUCEF_CALLSTACK_TRACKING
     GUCEF_InitCallstackUtility();
+    #endif /* GUCEF_CALLSTACK_TRACKING ? */
 
     /*
-     *      Very important: Initialize the memory manager before anything else !!!!!
+     *      Very important: Initialize the memory manager second, after the stack tracer !!!!!
      */
-    #ifdef ADD_MEMORY_MANAGER
-    MEMMAN_SetLogFile( "GUCEFMemoryLog.txt" );
-    MEMMAN_SetExhaustiveTesting( 0 );
-    MEMMAN_SetPaddingSize( 0 );
+    #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )  
     MEMMAN_Initialize();
+    MEMMAN_SetExhaustiveTesting( 0 );
+    MEMMAN_SetPaddingSize( 0 );    
+    CString memLogFilePath = RelativePath( "$MODULEDIR$/GUCEFMemoryLog.txt" );
+    MEMMAN_SetLogFile( memLogFilePath.C_String() );
     #endif
 
     /*
@@ -327,6 +335,10 @@ CCoreGlobal::~CCoreGlobal()
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Shutting down gucefCORE global systems" );
 
+    m_application->Stop( true );
+    m_taskManager->RequestAllThreadsToStop( true, false );
+    m_logManager->FlushLogs();
+
     /*
      *      cleanup all singletons
      *      Take care to deinstance them in the correct order !!!
@@ -365,14 +377,16 @@ CCoreGlobal::~CCoreGlobal()
     m_pulseGenerator = GUCEF_NULL;
 
     /*
-     *      Very important: Shutdown the memory manager last !!!!!
+     *      Very important: Shutdown the memory manager second last !!!!!
      */
-    #ifdef ADD_MEMORY_MANAGER
+    #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
     MEMMAN_Shutdown();
     #endif
 
     // it important to shutdown the call stack tracer last
+    #ifdef GUCEF_CALLSTACK_TRACKING
     GUCEF_ShutdowntCallstackUtility();
+    #endif /* GUCEF_CALLSTACK_TRACKING ? */
 }
 
 /*-------------------------------------------------------------------------*/

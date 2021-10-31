@@ -31,6 +31,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CONFIG_H
+#include "gucef_config.h"           /* include the GUCEF common config */
+#define GUCEF_CONFIG_H
+#endif /* GUCEF_CONFIG_H ? */
+
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"           /* include the GUCEF common macros */
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 #ifndef GUCEF_CORE_ETYPES_H
 #include "gucefCORE_ETypes.h"
 #define GUCEF_CORE_ETYPES_H
@@ -40,11 +50,6 @@
 #include "gucefCORE_config.h"      /* Module build configuration */
 #define GUCEF_CORE_CONFIG_H
 #endif /* GUCEF_CORE_CONFIG_H ? */
-
-#ifndef GUCEF_MACROS_H
-#include "gucef_macros.h"           /* include the GUCEF common macros */
-#define GUCEF_MACROS_H
-#endif /* GUCEF_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

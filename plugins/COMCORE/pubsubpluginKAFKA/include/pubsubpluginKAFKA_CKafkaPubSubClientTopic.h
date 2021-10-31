@@ -45,6 +45,11 @@
 #define PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H
 #endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPICCONFIG_H ? */
 
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
 #include "rdkafkacpp.h"
 
 /*-------------------------------------------------------------------------//

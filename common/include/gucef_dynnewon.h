@@ -1,20 +1,19 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucef common header: provides header based platform wide facilities
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*
@@ -34,28 +33,38 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CONFIG_H
-#include "gucef_config.h"
+#include "gucef_config.h"            /* GUCEF configuration */
 #define GUCEF_CONFIG_H
 #endif /* GUCEF_CONFIG_H ? */
 
-#ifdef GUCEF_USE_MEMORY_LEAK_CHECKER
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && !defined( GUCEF_DYNNEWON_DISABLED )
 
-#include "gucef_dynnewoff.h"      /* Make sure that the new/delete are not declared to avoid circular definitions. */
+#ifndef GUCEF_PLATFORM_H
+#include "gucef_platform.h"          /* GUCEF platform compilation targets */
+#define GUCEF_PLATFORM_H
+#endif /* GUCEF_PLATFORM_H ? */
+
+#ifndef GUCEF_BASICHELPERS_H
+#include "gucef_basichelpers.h"  /* GUCEF platform convenience basic helper macros */
+#define GUCEF_BASICHELPERS_H
+#endif /* GUCEF_BASICHELPERS_H ? */
 
 #include <stdlib.h>               /* Required for malloc() and free() */
 #include <assert.h>
 
 #ifdef __cplusplus
-
-#include <new>
-#include <crtdbg.h>
-
+  #include <new>
 #endif /* __cplusplus ? */
 
-#ifndef GUCEF_CORE_DYNMEMORYMANAGERLOADER_H
-#include "DynMemoryManagerLoader.h"
-#define GUCEF_CORE_DYNMEMORYMANAGERLOADER_H
-#endif /* GUCEF_CORE_DYNMEMORYMANAGERLOADER_H ? */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #define _CRTDBG_MAP_ALLOC
+  #include <crtdbg.h>             /* only included here to prevent later inclusion from clobbering our macros */
+#endif
+
+#ifndef GUCEF_MEMORYMANAGERLOADER_H
+#include "gucef_MemoryManagerLoader.h"       /* header that includes the header-only functionality to load the external memory manager */
+#define GUCEF_MEMORYMANAGERLOADER_H
+#endif /* GUCEF_MEMORYMANAGERLOADER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,8 +72,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef MEMCHECK_NEWDELETE
 #ifdef __cplusplus
+
+#if ( GUCEF_COMPILER == GUCEF_COMPILER_MSVC )
+  #pragma warning( push )
+  #pragma warning( disable : 4595 )  /* warning C4595: 'operator delete': non-member operator new or delete functions may not be declared inline */
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -88,8 +101,9 @@
  */
 inline void* operator new( size_t size, const char *file, int line ) 
 {
-    if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return 0; }
-    return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW, NULL ); 
+    if ( 0 == LazyLoadMemoryManager() ) 
+        { GUCEF_ASSERT_ALWAYS; return 0; }
+    return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW, GUCEF_NULL ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,8 +121,9 @@ inline void* operator new( size_t size, const char *file, int line )
  */
 inline void* operator new[]( size_t size, const char *file, int line )
 {
-    if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return 0; }
-    return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW_ARRAY, NULL );
+    if ( 0 == LazyLoadMemoryManager() ) 
+        { GUCEF_ASSERT_ALWAYS; return 0; }
+    return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW_ARRAY, GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -123,8 +138,10 @@ inline void* operator new[]( size_t size, const char *file, int line )
  */
 inline void operator delete( void *address )
 {
-    if (!address) return;  // ANSI states that delete will allow NULL pointers.
-    if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; }
+    if ( GUCEF_NULL == address )  
+        return;  // ANSI states that delete will allow NULL pointers.
+    if ( 0 == LazyLoadMemoryManager() ) 
+        { GUCEF_ASSERT_ALWAYS; return; }
     fp_MEMMAN_DeAllocateMemory( address, MM_DELETE );
 }
 
@@ -140,8 +157,10 @@ inline void operator delete( void *address )
  */
 inline void operator delete[]( void *address )
 {
-    if (!address) return;  // ANSI states that delete will allow NULL pointers.
-    if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; }
+    if ( GUCEF_NULL == address )  
+        return;  // ANSI states that delete will allow NULL pointers.
+    if ( 0 == LazyLoadMemoryManager() ) 
+        { GUCEF_ASSERT_ALWAYS; return; }
     fp_MEMMAN_DeAllocateMemory( address, MM_DELETE_ARRAY );
 }
 
@@ -150,13 +169,18 @@ inline void operator delete[]( void *address )
 // ***** If there was an allocation problem these method would be called automatically by 
 // ***** the operating system.  C/C++ Users Journal (Vol. 19 No. 4 -> April 2001 pg. 60)  
 // ***** has an excellent explanation of what is going on here.
-inline void operator delete( void *address, const char *file, int line )   { if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; } fp_MEMMAN_DumpLogReport(); free( address ); }
-inline void operator delete[]( void *address, const char *file, int line ) { if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; } fp_MEMMAN_DumpLogReport(); free( address ); }
+inline void operator delete( void *address, const char *file, int line )   { if ( 0 == LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
+inline void operator delete[]( void *address, const char *file, int line ) { if ( 0 == LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
+
+/*-------------------------------------------------------------------------*/
+
+#if ( GUCEF_COMPILER == GUCEF_COMPILER_MSVC )
+  #pragma warning( pop )
+#endif
 
 /*-------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
-#endif /* MEMCHECK_NEWDELETE ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -196,7 +220,7 @@ MEMMAN_free( const char *file, int line, void* ptr )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef MEMCHECK_OLEAPI
+#ifdef GUCEF_MEMCHECK_OLEAPI
 
 inline
 wchar_t* 
@@ -261,7 +285,7 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
     return result;
 }
 
-#endif /* MEMCHECK_OLEAPI ? */
+#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -274,24 +298,33 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
  *      to our memory manager.
  */
 
-#ifdef MEMCHECK_NEWDELETE 
 #ifdef __cplusplus
+
+#undef new
+#undef delete
+
 #define new              new( __FILE__, __LINE__ )
-#define delete           ( if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; } fp_MEMMAN_SetOwner( __FILE__, __LINE__ ), false) ? fp_MEMMAN_SetOwner( "", 0 ) : delete
+/* #define delete           MEMMAN_SetOwner( __FILE__, __LINE__ ) ? delete : delete <- fix me */
+
 #endif /* __cplusplus ? */
-#endif /* MEMCHECK_NEWDELETE ? */
+
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
 
 #define malloc(size)     MEMMAN_malloc( __FILE__, __LINE__, size )
 #define calloc(num, sz)  MEMMAN_calloc( __FILE__, __LINE__, num, sz )
 #define realloc(ptr, sz) MEMMAN_realloc( __FILE__, __LINE__, ptr, sz )
 #define free(ptr)        MEMMAN_free( __FILE__, __LINE__, ptr )
 
-#undef CHECKMEM
-#undef CHECKMEMSEG
-#define CHECKMEM( addr, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ) )
-#define CHECKMEMSEG( addr, chunk, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ) )
+#undef GUCEF_CHECKMEM
+#undef GUCEF_CHECKMEMSEG
+#define GUCEF_CHECKMEM( addr, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ) )
+#define GUCEF_CHECKMEMSEG( addr, chunk, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ) )
 
-#ifdef MEMCHECK_OLEAPI
+#ifdef GUCEF_MEMCHECK_OLEAPI
+
 #undef SysAllocString
 #undef SysAllocStringByteLen
 #undef SysAllocStringLen
@@ -304,27 +337,20 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
 #define SysFreeString( bstrString )             MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString )
 #define SysReAllocString( pbstr, psz )          MEMMAN_SysReAllocString( __FILE__, __LINE__, pbstr, psz )
 #define SysReAllocStringLen( pbstr, psz, len )  MEMMAN_SysReAllocStringLen( __FILE__, __LINE__, pbstr, psz, len )
-#endif /* MEMCHECK_OLEAPI ? */
+
+#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/
 
-#else
+#else  /* GUCEF_USE_MEMORY_LEAK_CHECKER && GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER? */
 
-#include "gucef_dynnewoff.h" 
+#ifndef GUCEF_DYNNEWOFF_H 
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
 
-#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER ? */
+#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER && GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER? */
 
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_DYNNEWON_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 11-04-2005 :
-       - Initial version of this file.
-
------------------------------------------------------------------------------*/

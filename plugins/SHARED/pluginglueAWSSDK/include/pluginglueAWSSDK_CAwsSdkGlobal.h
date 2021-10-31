@@ -25,8 +25,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <aws/core/Aws.h>
-
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -55,7 +53,14 @@
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H
 #include "pluginglueAWSSDK_CClientConfiguration.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H
-#endif /* GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H ? */ 
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H ? */
+
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
+#include <aws/core/Aws.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

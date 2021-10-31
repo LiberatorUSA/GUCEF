@@ -108,7 +108,7 @@ CStack::Push( void *data )
          *      Push node onto the stack - FILO
          */
         CLLNode *new_node = new CLLNode( data );
-        CHECKMEM( new_node, sizeof( CLLNode ) );
+        GUCEF_CHECKMEM( new_node, sizeof( CLLNode ) );
 
         nodecount++;
         if ( first )
@@ -181,7 +181,7 @@ CStack::Get_Top( void **data )
                 {
                 	first = NULL;
                 }
-                CHECKMEM( tmp_node, sizeof(CLLNode) );
+                GUCEF_CHECKMEM( tmp_node, sizeof(CLLNode) );
                 delete tmp_node;
 
                 GUCEF_END;
@@ -203,7 +203,7 @@ CStack::Set_Top( void *data )
          *      Set topmost node on stack, together with Push FIFO
          */
         CLLNode *new_node = new CLLNode( data );
-        CHECKMEM( new_node, sizeof(CLLNode) );
+        GUCEF_CHECKMEM( new_node, sizeof(CLLNode) );
 
         nodecount++;
         if ( last )
@@ -253,7 +253,7 @@ CStack::Clear_Stack( void )
         {
                 delnode = tmp_node;
                 tmp_node = tmp_node->GetPrev();
-                CHECKMEM( delnode, sizeof( CLLNode ) );
+                GUCEF_CHECKMEM( delnode, sizeof( CLLNode ) );
                 delete delnode;
         }
         nodecount=0;
