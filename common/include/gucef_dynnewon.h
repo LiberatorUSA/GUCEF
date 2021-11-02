@@ -101,8 +101,11 @@
  */
 inline void* operator new( size_t size, const char *file, int line ) 
 {
-    if ( 0 == LazyLoadMemoryManager() ) 
-        { GUCEF_ASSERT_ALWAYS; return 0; }
+    if ( 0 == MEMMAN_LazyLoadMemoryManager() ) 
+    { 
+        //GUCEF_ASSERT_ALWAYS; 
+        return malloc( size ); 
+    }
     return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW, GUCEF_NULL ); 
 }
 
@@ -121,8 +124,11 @@ inline void* operator new( size_t size, const char *file, int line )
  */
 inline void* operator new[]( size_t size, const char *file, int line )
 {
-    if ( 0 == LazyLoadMemoryManager() ) 
-        { GUCEF_ASSERT_ALWAYS; return 0; }
+    if ( 0 == MEMMAN_LazyLoadMemoryManager() ) 
+    { 
+        //GUCEF_ASSERT_ALWAYS; 
+        return malloc( size ); 
+    }
     return fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW_ARRAY, GUCEF_NULL );
 }
 
@@ -140,8 +146,11 @@ inline void operator delete( void *address )
 {
     if ( GUCEF_NULL == address )  
         return;  // ANSI states that delete will allow NULL pointers.
-    if ( 0 == LazyLoadMemoryManager() ) 
-        { GUCEF_ASSERT_ALWAYS; return; }
+    if ( 0 == MEMMAN_LazyLoadMemoryManager() ) 
+    { 
+        //GUCEF_ASSERT_ALWAYS; 
+        return free( address ); 
+    }
     fp_MEMMAN_DeAllocateMemory( address, MM_DELETE );
 }
 
@@ -159,8 +168,11 @@ inline void operator delete[]( void *address )
 {
     if ( GUCEF_NULL == address )  
         return;  // ANSI states that delete will allow NULL pointers.
-    if ( 0 == LazyLoadMemoryManager() ) 
-        { GUCEF_ASSERT_ALWAYS; return; }
+    if ( 0 == MEMMAN_LazyLoadMemoryManager() ) 
+    { 
+        //GUCEF_ASSERT_ALWAYS; 
+        return free( address ); 
+    }
     fp_MEMMAN_DeAllocateMemory( address, MM_DELETE_ARRAY );
 }
 
@@ -169,8 +181,8 @@ inline void operator delete[]( void *address )
 // ***** If there was an allocation problem these method would be called automatically by 
 // ***** the operating system.  C/C++ Users Journal (Vol. 19 No. 4 -> April 2001 pg. 60)  
 // ***** has an excellent explanation of what is going on here.
-inline void operator delete( void *address, const char *file, int line )   { if ( 0 == LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
-inline void operator delete[]( void *address, const char *file, int line ) { if ( 0 == LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
+inline void operator delete( void *address, const char *file, int line )   { if ( 0 == MEMMAN_LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
+inline void operator delete[]( void *address, const char *file, int line ) { if ( 0 == MEMMAN_LazyLoadMemoryManager() ) { GUCEF_ASSERT_ALWAYS; return; } fp_MEMMAN_DumpLogReport(); free( address ); }
 
 /*-------------------------------------------------------------------------*/
 
@@ -181,111 +193,6 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 /*-------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void*
-MEMMAN_malloc( const char *file, int line, size_t size )
-{
-    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) );    
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void*
-MEMMAN_calloc( const char *file, int line, size_t num, size_t size )
-{
-    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( file, line, size*num, MM_CALLOC, NULL ) );    
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void*
-MEMMAN_realloc( const char *file, int line, void* ptr, size_t size )
-{
-    return ( 0 == LazyLoadMemoryManager() ? 0 : ( ptr ? fp_MEMMAN_AllocateMemory( file, line, size, MM_REALLOC, ptr ) : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void
-MEMMAN_free( const char *file, int line, void* ptr )
-{
-    ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MEMCHECK_OLEAPI
-
-inline
-wchar_t* 
-MEMMAN_SysAllocString( const char *file, int line, wchar_t* wcharStr )
-{    
-    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocString( file, line, wcharStr ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-    return ptr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-wchar_t* 
-MEMMAN_SysAllocStringByteLen( const char *file, int line, const char* str, unsigned int bufferSize )
-{
-    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringByteLen( file, line, str, bufferSize ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-    return ptr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-wchar_t* 
-MEMMAN_SysAllocStringLen( const char *file, int line, const wchar_t* str, unsigned int charsToCopy )
-{
-    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringLen( file, line, str, charsToCopy ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-    return ptr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void 
-MEMMAN_SysFreeString( const char *file, int line, wchar_t* bstrString )
-{
-    ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysFreeString( file, line, bstrString ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-int 
-MEMMAN_SysReAllocString( const char* file, int line, wchar_t** pbstr, const wchar_t* psz )
-{
-    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocString( file, line, pbstr, psz ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-    return result;
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-int 
-MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len )
-{
-    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocStringLen( file, line, pbstr, psz, len ) );
-    //fp_MEMMAN_DumpMemoryAllocations();
-    return result;
-}
-
-#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -318,10 +225,12 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
 #define realloc(ptr, sz) MEMMAN_realloc( __FILE__, __LINE__, ptr, sz )
 #define free(ptr)        MEMMAN_free( __FILE__, __LINE__, ptr )
 
+#undef GUCEF_CHECKALLOCPTR
 #undef GUCEF_CHECKMEM
 #undef GUCEF_CHECKMEMSEG
-#define GUCEF_CHECKMEM( addr, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ) )
-#define GUCEF_CHECKMEMSEG( addr, chunk, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ) )
+#define GUCEF_CHECKALLOCPTR( addr )             { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_ValidateKnownAllocPtr( addr, __FILE__, __LINE__ ); }
+#define GUCEF_CHECKMEM( addr, size )            { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ); }
+#define GUCEF_CHECKMEMSEG( addr, chunk, size )  { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ); }
 
 #ifdef GUCEF_MEMCHECK_OLEAPI
 

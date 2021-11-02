@@ -23,10 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DLLINIT_H
-#include "gucef_DLLInit.h"
-#define GUCEF_DLLINIT_H
-#endif /* GUCEF_DLLINIT_H ? */
+#ifndef GUCEF_SHAREDMODULE_H
+#include "gucef_sharedmodule.h"
+#define GUCEF_SHAREDMODULE_H
+#endif /* GUCEF_SHAREDMODULE_H ? */
 
 #ifndef GUCEF_WEB_CMODULE_H
 #include "gucefWEB_CModule.h"
@@ -37,11 +37,13 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_WEB_EMBED_CODE
 GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::WEB::CModule );
+#endif
 
 /*-------------------------------------------------------------------------*/
 

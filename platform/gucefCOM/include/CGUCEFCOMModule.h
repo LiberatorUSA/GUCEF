@@ -46,19 +46,19 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
+class CModule
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
+    public:
+    
+    static bool Load( void );
+    
+    static bool Unload( void );
+    
+    private:
+    CModule( void );                              /**< not implemented */
+    CModule( const CModule& src );                /**< not implemented */
+    ~CModule();                                   /**< not implemented */
+    CModule& operator=( const CModule& src );     /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//

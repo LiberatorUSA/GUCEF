@@ -88,6 +88,8 @@
 #define MM_OLE_ALLOC      9
 #define MM_OLE_FREE       10
 
+#define MEMMAN_Int32      __int32
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
@@ -101,8 +103,8 @@
  *      Memory Manager automatically.
  */
 
-typedef __int32 ( *TFP_MEMMAN_Initialize )( void );
-typedef void ( *TFP_MEMMAN_Shutdown )( void );
+typedef MEMMAN_Int32 ( *TFP_MEMMAN_Initialize )( void );
+typedef MEMMAN_Int32 ( *TFP_MEMMAN_Shutdown )( void );
 typedef void ( *TFP_MEMMAN_DumpLogReport )( void );
 typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
 typedef void ( *TFP_MEMMAN_SetLogFile )( const char *file );
@@ -113,6 +115,7 @@ typedef void ( *TFP_MEMMAN_CleanLogFile )( unsigned __int32 test );
 typedef void ( *TFP_MEMMAN_BreakOnAllocation )( int alloccount );
 typedef void ( *TFP_MEMMAN_BreakOnDeallocation )( void *address );
 typedef void ( *TFP_MEMMAN_BreakOnReallocation )( void *address );
+typedef void ( *TFP_MEMMAN_ValidateKnownAllocPtr )( const void* address, const char *file, int line );
 typedef void ( *TFP_MEMMAN_Validate )( const void* address, unsigned __int32 blocksize, const char *file, int line );
 typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chunk, unsigned __int32 blocksize, const char *file, int line );
 
@@ -125,7 +128,7 @@ typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chu
 typedef void* ( *TFP_MEMMAN_AllocateMemory )( const char *file, int line, size_t size, char type, void *address );
 typedef void ( *TFP_MEMMAN_DeAllocateMemory )( void *address, char type );
 typedef void ( *TFP_MEMMAN_DeAllocateMemoryEx )( const char *file, int line, void *address, char type );
-typedef __int32 ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
+typedef MEMMAN_Int32 ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
 
 
 /*-------------------------------------------------------------------------*/
@@ -163,6 +166,7 @@ static TFP_MEMMAN_CleanLogFile fp_MEMMAN_CleanLogFile = 0;
 static TFP_MEMMAN_BreakOnAllocation fp_MEMMAN_BreakOnAllocation = 0;
 static TFP_MEMMAN_BreakOnDeallocation fp_MEMMAN_BreakOnDeallocation = 0;
 static TFP_MEMMAN_BreakOnReallocation fp_MEMMAN_BreakOnReallocation = 0;
+static TFP_MEMMAN_ValidateKnownAllocPtr fp_MEMMAN_ValidateKnownAllocPtr = 0;
 static TFP_MEMMAN_Validate fp_MEMMAN_Validate = 0;
 static TFP_MEMMAN_ValidateChunk fp_MEMMAN_ValidateChunk = 0;
 
@@ -195,12 +199,55 @@ static const char* MemoryLeakFinderLib = "MemoryLeakFinder_d.dll";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+static MEMMAN_Int32 GUCEF_HIDDEN
+MEMMAN_UnloadMemoryManager( void )
+{
+    /* check to make sure we have actually loaded the library */
+    if ( 0 == g_memoryManagerModulePtr || 0 == g_dynLoadMutex ) 
+        return 1;
+    /* try to get a lock to safely unload */
+    if ( WAIT_OBJECT_0 != WaitForSingleObject( (HANDLE) g_dynLoadMutex, 30000 ) ) 
+        return 0;
+    /* double check module and lock availability after obtaining the lock */
+    if ( 0 == g_memoryManagerModulePtr || 0 == g_dynLoadMutex ) 
+        return 1;
+
+    if ( GUCEF_NULL != fp_MEMMAN_Shutdown )
+    {
+        MEMMAN_Int32 callResult = fp_MEMMAN_Shutdown();
+        if ( 1 == callResult )
+        {
+            FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+            g_memoryManagerModulePtr = 0;
+
+            ReleaseMutex( (HANDLE) g_dynLoadMutex );
+            g_dynLoadMutex = 0;
+
+            return 1;
+        }
+        return callResult;
+    }
+    else
+    {
+        /* we have the module loaded and lock availability but we dont have the functions correctly linked */
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+
+        ReleaseMutex( (HANDLE) g_dynLoadMutex );
+        g_dynLoadMutex = 0;
+
+        return 1;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 static int GUCEF_HIDDEN
-LazyLoadMemoryManager( void )
+MEMMAN_LazyLoadMemoryManager( void )
 {
     /* check to make sure we havent already loaded the library */
     if ( 0 != g_memoryManagerModulePtr ) 
@@ -242,6 +289,7 @@ LazyLoadMemoryManager( void )
     fp_MEMMAN_BreakOnAllocation = (TFP_MEMMAN_BreakOnAllocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnAllocation" );
     fp_MEMMAN_BreakOnDeallocation = (TFP_MEMMAN_BreakOnDeallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnDeallocation" );
     fp_MEMMAN_BreakOnReallocation = (TFP_MEMMAN_BreakOnReallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnReallocation" );
+    fp_MEMMAN_ValidateKnownAllocPtr = (TFP_MEMMAN_ValidateKnownAllocPtr) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateKnownAllocPtr" );
     fp_MEMMAN_Validate = (TFP_MEMMAN_Validate) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_Validate" );
     fp_MEMMAN_ValidateChunk = (TFP_MEMMAN_ValidateChunk) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateChunk" );
     fp_MEMMAN_AllocateMemory = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_AllocateMemory" );
@@ -261,6 +309,7 @@ LazyLoadMemoryManager( void )
          0 == fp_MEMMAN_BreakOnAllocation ||
          0 == fp_MEMMAN_BreakOnDeallocation ||
          0 == fp_MEMMAN_BreakOnReallocation ||
+         0 == fp_MEMMAN_ValidateKnownAllocPtr ||
          0 == fp_MEMMAN_Validate ||
          0 == fp_MEMMAN_ValidateChunk ||
          0 == fp_MEMMAN_AllocateMemory ||
@@ -295,13 +344,11 @@ LazyLoadMemoryManager( void )
 
     #endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
-    if ( fp_MEMMAN_Initialize() )
-    {
-        ReleaseMutex( (HANDLE) g_dynLoadMutex );
-        g_dynLoadMutex = 0;
-
+    if ( 1 == fp_MEMMAN_Initialize() )
+    {        
         return 1;
     }
+    MEMMAN_UnloadMemoryManager();
     return 0;
 }
 
@@ -311,7 +358,7 @@ inline
 void
 MEMMAN_SetLogFile( const char *file )
 {
-    if ( 0 != LazyLoadMemoryManager() )
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
         fp_MEMMAN_SetLogFile( file );    
 }
 
@@ -321,7 +368,7 @@ inline
 void
 MEMMAN_SetExhaustiveTesting( unsigned __int32 test )
 {
-    if ( 0 != LazyLoadMemoryManager() )
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
         fp_MEMMAN_SetExhaustiveTesting( test );   
 }
 
@@ -331,27 +378,26 @@ inline
 void
 MEMMAN_SetPaddingSize( unsigned __int32 clean )
 {
-    if ( 0 != LazyLoadMemoryManager() )
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
         fp_MEMMAN_SetPaddingSize( clean );
 }
 
 /*-------------------------------------------------------------------------*/
 
 inline
-__int32
+MEMMAN_Int32
 MEMMAN_Initialize( void )
 {
-    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Initialize() );    
+    return ( 0 == MEMMAN_LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Initialize() );    
 }
 
 /*-------------------------------------------------------------------------*/
 
 inline
-void
+MEMMAN_Int32
 MEMMAN_Shutdown( void )
 {
-    if ( NULL != fp_MEMMAN_Shutdown )
-        fp_MEMMAN_Shutdown();    
+   return MEMMAN_UnloadMemoryManager();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -367,13 +413,118 @@ MEMMAN_DumpLogReport( void )
 /*-------------------------------------------------------------------------*/
 
 inline
-__int32
+MEMMAN_Int32
 MEMMAN_SetOwner( const char *file, int line  )
 {
-    if ( 0 != LazyLoadMemoryManager() )
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
         return fp_MEMMAN_SetOwner( file, line );    
     return 0;
 }
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_malloc( const char *file, int line, size_t size )
+{
+    return ( 0 == MEMMAN_LazyLoadMemoryManager() ? malloc( size ) : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_calloc( const char *file, int line, size_t num, size_t size )
+{
+    return ( 0 == MEMMAN_LazyLoadMemoryManager() ? calloc( num, size ) : fp_MEMMAN_AllocateMemory( file, line, size*num, MM_CALLOC, NULL ) );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_realloc( const char *file, int line, void* ptr, size_t size )
+{
+    return ( 0 == MEMMAN_LazyLoadMemoryManager() ? realloc( ptr, size ) : ( ptr ? fp_MEMMAN_AllocateMemory( file, line, size, MM_REALLOC, ptr ) : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_free( const char *file, int line, void* ptr )
+{
+    ( 0 == MEMMAN_LazyLoadMemoryManager() ? free( ptr ) : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_MEMCHECK_OLEAPI
+
+inline
+wchar_t* 
+MEMMAN_SysAllocString( const char *file, int line, wchar_t* wcharStr )
+{    
+    wchar_t* ptr = ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysAllocString( wcharStr ) : fp_MEMMAN_SysAllocString( file, line, wcharStr ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+wchar_t* 
+MEMMAN_SysAllocStringByteLen( const char *file, int line, const char* str, unsigned int bufferSize )
+{
+    wchar_t* ptr = ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysAllocStringByteLen( str, bufferSize ) : fp_MEMMAN_SysAllocStringByteLen( file, line, str, bufferSize ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+wchar_t* 
+MEMMAN_SysAllocStringLen( const char *file, int line, const wchar_t* str, unsigned int charsToCopy )
+{
+    wchar_t* ptr = ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysAllocStringLen( str, charsToCopy ) : fp_MEMMAN_SysAllocStringLen( file, line, str, charsToCopy ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_SysFreeString( const char *file, int line, wchar_t* bstrString )
+{
+    ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysFreeString( bstrString ) : fp_MEMMAN_SysFreeString( file, line, bstrString ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocString( const char* file, int line, wchar_t** pbstr, const wchar_t* psz )
+{
+    int result = ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysReAllocString( pbstr, psz ) : fp_MEMMAN_SysReAllocString( file, line, pbstr, psz ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len )
+{
+    int result = ( 0 == MEMMAN_LazyLoadMemoryManager() ? SysReAllocStringLen( pbstr, psz, len ) : fp_MEMMAN_SysReAllocStringLen( file, line, pbstr, psz, len ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
+#endif /* GUCEF_MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/
 

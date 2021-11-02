@@ -73,6 +73,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     CPubSubClientFactory& GetPubSubClientFactory( void );
 
     private:
+    friend class CModule;
 
     static void Deinstance( void );
 

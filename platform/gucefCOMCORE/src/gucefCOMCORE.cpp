@@ -32,12 +32,27 @@
 #define GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H
 #endif /* GUCEF_COMCORE_CGUCEFCOMCOREMODULE_H ? */
 
+#ifndef GUCEFCOMCORE_H
+#include "gucefCOMCORE.h"
+#define GUCEFCOMCORE_H
+#endif /* GUCEFCOMCORE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CGUCEFCOMCOREModule )
+#ifndef GUCEF_COMCORE_EMBED_CODE
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CModule );
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+GUCEF_COMCORE_ModuleCompileTimeStamp( void )
+{
+    return __TIMESTAMP__;
+}
 
 /*-------------------------------------------------------------------------*/

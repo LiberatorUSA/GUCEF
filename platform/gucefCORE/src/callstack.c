@@ -39,6 +39,15 @@
 
 #include "callstack.h"
 
+/*
+ *  We specifically do NOT want to redirect memory management here
+ *  stack tracing can work toghether with memory tracing
+ */
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

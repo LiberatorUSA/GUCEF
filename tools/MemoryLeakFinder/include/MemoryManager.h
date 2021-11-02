@@ -89,7 +89,7 @@ MEMMAN_Initialize( void );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_MLF_PUBLIC_C void
+GUCEF_MLF_PUBLIC_C __int32
 MEMMAN_Shutdown( void );
 
 /*-------------------------------------------------------------------------*/
@@ -187,6 +187,11 @@ GUCEF_MLF_PUBLIC_C void
 MEMMAN_BreakOnReallocation( void *address );
 
 /*-------------------------------------------------------------------------*/
+
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_ValidateKnownAllocPtr( const void* address ,
+                              const char *file    ,
+                              int line            );
 
 GUCEF_MLF_PUBLIC_C void
 MEMMAN_Validate( const void* address ,

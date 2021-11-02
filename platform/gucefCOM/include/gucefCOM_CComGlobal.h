@@ -62,6 +62,7 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
     static CComGlobal* Instance( void );
 
     private:
+    friend class CModule;
 
     static void Deinstance( void );
 

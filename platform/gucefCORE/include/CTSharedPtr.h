@@ -239,7 +239,7 @@ CTSharedPtr< T, LockType >::CTSharedPtr( T* ptr                                 
     : CTBasicSharedPtr< T, LockType >()
 {GUCEF_TRACE;
 
-    if ( NULL != objectDestructor )
+    if ( GUCEF_NULL == ptr || GUCEF_NULL != objectDestructor )
     {
         CTBasicSharedPtr< T, LockType >::Initialize( ptr, objectDestructor );
     }

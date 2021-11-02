@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -40,18 +45,18 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 bool
-CGUCEFCOMCOREModule::Load( void )
+CModule::Load( void )
 {
-
+    CComCoreGlobal::Instance();
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUCEFCOMCOREModule::Unload( void )
+CModule::Unload( void )
 {
-
+    CComCoreGlobal::Deinstance();
     return true;
 }
 

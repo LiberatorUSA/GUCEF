@@ -33,7 +33,10 @@
 #define CGUCEFCOMMODULE_H
 #endif /* CGUCEFCOMMODULE_H ? */
 
+#ifndef GUCEF_COM_H
 #include "gucefCOM.h"
+#define GUCEF_COM_H
+#endif /* GUCEF_COM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,7 +44,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
+#ifndef GUCEF_COM_EMBED_CODE
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COM::CModule );
+#endif
 
 /*-------------------------------------------------------------------------*/
 

@@ -54,6 +54,7 @@ bool
 CModule::Load( void )
 {GUCEF_TRACE;
 
+    CVfsGlobal::Instance();
     return true;
 }
 

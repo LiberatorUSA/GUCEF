@@ -1,3 +1,12 @@
+/**
+ *  Modified from original implementation by Dinand Vanvelzen
+ *      - Added thread safety
+ *      - Added x64 support
+ *      - Added better edge case handling
+ *      - various tweaks leveraging GUCEF platform abilities
+ *      - Fixed realloc wiping prior memory contents during realloc
+ */
+
 /***
  * File:   MemoryManager.cpp - Implements MemoryManager.h
  *         -----------------------------------------------------
@@ -113,6 +122,7 @@ struct MemoryNode                   // This struct defines the primary container
   MemoryNode    *next, *prev;
 
     void InitializeMemory( long body = BODY ) ; // Initailize the nodes memory for interrogation.
+    void InitializeReallocMemory( long body, size_t originalContentSize );
 };
 
 // This class implements a basic stack for record keeping.  It is necessary to use this class
@@ -222,13 +232,14 @@ private:
 };
 
 bool manager_is_constructed = false;
+bool manager_is_destructed = false;
 MemoryManager g_manager;      // Declaration of the one and only Memory Manager Object 
 
 /*******************************************************************************************/
 // ***** Function Prototypes:  Refer to implemations below for additional details.
 
 __int32 MEMMAN_Initialize( void );
-void MEMMAN_Shutdown( void );
+__int32 MEMMAN_Shutdown( void );
 
 char *formatOwnerString( const char *file, int line );
 char *sourceFileStripper( const char *sourceFile );
@@ -247,12 +258,14 @@ MemoryManager::MemoryManager( void )
 
 MemoryManager::~MemoryManager()
 {
+    manager_is_destructed = true;
     if ( !m_shutdownCalled )
     {
         // for whatever reason shutdown was not called explicitly
         // we will do a release here to clean up and dump the information gathered
         release();
     }
+    manager_is_constructed = false;
 }
 
 /*******************************************************************************************/
@@ -308,6 +321,7 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
     // this error.
     m_assert( type != MM_UNKNOWN );
 
+    size_t originalReportedSize = 0;
     if (type == MM_REALLOC) 
     {
         memory = g_manager.removeMemoryNode( address );
@@ -327,9 +341,12 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         // Validate that a break point on reallocation has not been requested.
         m_assert( (memory->options & BREAK_ON_REALLOC) == 0x0 );
 
+        originalReportedSize = memory->reportedSize;
         memory->actualSize    = size + g_manager.m_paddingSize * sizeof(long)*2;
         memory->reportedSize  = size;
         memory->actualAddress = realloc( memory->actualAddress, memory->actualSize );
+
+
     }
     else 
     {
@@ -370,14 +387,24 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
     }
 
     // Initialize the memory allocated for tracking upon deallocation
-    if (type == MM_CALLOC)
+    switch ( type )
     {
-        memory->InitializeMemory( 0x00000000 );
-    }                
-    else
-    {
-        memory->InitializeMemory( 0xBAADC0DE );
-    }                
+        case MM_CALLOC: 
+        {
+            memory->InitializeMemory( 0x00000000 );
+            break;
+        }
+        case MM_REALLOC: 
+        {
+            //memory->InitializeReallocMemory( 0xBAADC0DE, originalReportedSize );
+            break;
+        }
+        default:
+        {
+            memory->InitializeMemory( 0xBAADC0DE );
+            break;
+        }
+    }
 
     // Insert the memory node into the hash table, this is a linked list hash table.
     g_manager.insertMemoryNode( memory );
@@ -399,19 +426,28 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
 void 
 MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type ) 
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
-    
+    if ( manager_is_destructed ) 
+    {
+        // Only reason to come here is if the module was not unlinked via MEMMAN_Shutdown
+        // We are in a bit of an undefined state, more than likely the memory is from global vars 
+        // for which we cannot handle the delete/free
+        return;
+    } 
+
     // If the memory manager has not yet been initialized due to the order in which static
     // variables are allocated, create the memory manager here.
     if ( 0 == MEMMAN_Initialize() ) 
     {
-        free( address );   // Release the memory
+        if ( GUCEF_NULL != address )
+            free( address );   // Release the memory
         if ( NumAllocations != 0 ) 
         {
             log( "MEMMAN: The Memory Manager has already been released from memory, however a deallocation was requested" );
         }
         return;
     }
+
+    MT::CScopeMutex scopeLock( g_manager.m_mutex );
 
     // The topStack contains the logged information, such as file name and line number.
     StackNode *info = g_manager.m_topStack.empty() ? NULL : g_manager.m_topStack.top();
@@ -435,11 +471,15 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
     {      
         if ( NULL != info )
             g_manager.log( "MEMMAN: Request to deallocate an unknown memory block %p @ %s:%d\n", address, info->fileName, info->lineNumber );  
-        else
-            g_manager.log( "MEMMAN: Request to deallocate an unknown memory block %p\n", address );  
+        //else
+        //    g_manager.log( "MEMMAN: Request to deallocate an unknown memory block %p\n", address );  
+        
         // Validate that the memory was previously allocated.  If the memory was not logged 
-        //free( address );  // by the memory manager simple free the memory and return.  We do not log or 
-        return;           // create any errors since we want the memory manager to be as seemless as possible.
+        // by the memory manager simple free the memory and return.  We do not log or
+        // create any errors since we want the memory manager to be as seemless as possible.
+
+        free( address );   
+        return;           
     }
 
     // Log the memory deallocation if desired.
@@ -480,6 +520,7 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
 
     // Free the memory
     free( memory->actualAddress );
+    memory->actualAddress = GUCEF_NULL;
 
     // Free the memory used to create the Memory Node
     g_manager.deallocateMemory( memory );
@@ -498,6 +539,27 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
                            void *address    ,
                            char type        )
 {
+    if ( manager_is_destructed ) 
+    {
+        // Only reason to come here is if the module was not unlinked via MEMMAN_Shutdown
+        // We are in a bit of an undefined state, more than likely the memory is from global vars 
+        // for which we cannot handle the delete/free
+        return;
+    }    
+    
+    // If the memory manager has not yet been initialized due to the order in which static
+    // variables are allocated, create the memory manager here.
+    if ( 0 == MEMMAN_Initialize() ) 
+    {
+        if ( GUCEF_NULL != address )
+            free( address );   // Release the memory
+        if ( NumAllocations != 0 ) 
+        {
+            log( "MEMMAN: The Memory Manager has already been released from memory, however a deallocation was requested" );
+        }
+        return;
+    }
+
     MT::CScopeMutex scopeLock( g_manager.m_mutex );
     
     MEMMAN_SetOwner( file, line );
@@ -985,7 +1047,7 @@ int MemoryManager::getHashIndex( const void *address )
     #if GUCEF_32BIT
     return ((Int32)address >> 4) & (HASH_SIZE -1);
     #else
-    return ((Int64)address >> 8) & (HASH_SIZE -1);
+    return ((Int64)address >> 4) & (HASH_SIZE -1);
     #endif
 }
 
@@ -1049,6 +1111,36 @@ void MemoryNode::InitializeMemory( long body )
     predefinedBody = body;
 }
 
+void MemoryNode::InitializeReallocMemory( long body, size_t originalContentSize ) 
+{
+    // Initialize the memory padding for detecting bounds violations.    
+    long *beginning = (long*)actualAddress;
+    long *ending    = (long*)((char*)actualAddress + actualSize - paddingSize*sizeof(long));
+    for (unsigned short ii = 0; ii < paddingSize; ++ii) {
+        beginning[ii] = ending[ii] = PADDING;
+    }
+
+    size_t bytesToPreserve = originalContentSize;
+    if ( originalContentSize > reportedSize ) // did we shrink instead of grow?
+        bytesToPreserve = reportedSize;    
+    
+    // Initialize the memory body for detecting unused memory.
+    // we cannot override the pre-existing memory since it may contain data
+    beginning        = (long*)(((char*)reportedAddress)+bytesToPreserve);
+    unsigned int len = (UInt32)(reportedSize-bytesToPreserve) / sizeof(long);
+    unsigned int cnt;
+    for (cnt = 0; cnt < len; ++cnt) {                         // Initialize the majority of the memory
+        beginning[cnt] = body;
+    }
+    char *cptr = (char*)(&beginning[cnt]);
+    len = (UInt32)reportedSize - len*sizeof(long);
+    for (cnt = 0; cnt < len; ++cnt) {    // Initialize the remaining memory
+        cptr[cnt] = (char)body;
+    }
+
+    predefinedBody = body;
+}
+
 
 /*-------------------------------------------------------------------------*/
 // ****** Implementation of Helper Functions
@@ -1097,18 +1189,24 @@ MEMMAN_Initialize( void )
  *  manager object should be the last object to be destoryed, thus this must be the first 
  *  method logged to perform application clean up.
  * 
- *  Return Type : void 
+ *  Return Type : bool -> True if shut down, otherwise False. 
  *  Arguments   : NONE
  */
-void 
+__int32 
 MEMMAN_Shutdown( void ) 
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
-    if ( g_manager.m_initialized ) 
+    if ( manager_is_destructed )
+        return 1;
+    if ( manager_is_constructed )
     {
-        NumAllocations = g_manager.m_numAllocations;
-        g_manager.release();  // Dump the log report and free remaining memory.
+        MT::CScopeMutex scopeLock( g_manager.m_mutex );
+        if ( g_manager.m_initialized ) 
+        {
+            NumAllocations = g_manager.m_numAllocations;
+            g_manager.release();  // Dump the log report and free remaining memory.
+        }
     }
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1450,6 +1548,51 @@ MEMMAN_BreakOnReallocation( void *address )
 /*-------------------------------------------------------------------------*/
 
 void
+MEMMAN_ValidateKnownAllocPtr( const void* address ,
+                              const char* file    ,
+                              int line            )
+{
+    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+
+    if ( !g_manager.m_initialized || !address ) 
+        return;
+        
+    if ( g_manager.extremetest )
+    {
+        if ( !g_manager.ValidateMemory() )
+        {
+            g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
+            GUCEF_SETBREAKPOINT;
+            return;
+        }                 
+    }
+        
+    MemoryNode *node = g_manager.getMemoryNode( address );
+    if ( node )
+    {
+        if ( !g_manager.validateMemoryUnit( node ) )
+        {
+            g_manager.log( "MEMMAN: Block validation failed at address %p, possible memory corruption !!! @ %s:%d", address, file, line ); 
+            //g_manager.dumpLogReport();
+            GUCEF_SETBREAKPOINT;
+            return;
+        }
+        return;
+    }
+        
+    g_manager.log( "MEMMAN: Request to access an unknown address %p @ %s:%d", address, file, line );
+        
+    if ( !g_manager.ValidateMemory() )
+    {
+        g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
+        GUCEF_SETBREAKPOINT;
+        return;
+    }                
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 MEMMAN_Validate( const void* address ,
                  UInt32 blocksize    ,
                  const char* file    ,
@@ -1577,13 +1720,16 @@ MEMMAN_SetOwner( const char *file, int line )
 {
     MT::CScopeMutex scopeLock( g_manager.m_mutex );
 
-    if (g_manager.m_initialized) {
-    
-        StackNode *n = (StackNode*)malloc( sizeof(StackNode) );
-        n->fileName = file;
-        n->lineNumber = (UInt16)line;
-        g_manager.m_topStack.push( n );
-        return 1;
+    if (g_manager.m_initialized) 
+    {    
+        StackNode* n = (StackNode*)malloc( sizeof(StackNode) );
+        if ( GUCEF_NULL != n )
+        {
+            n->fileName = file;
+            n->lineNumber = (UInt16)line;
+            g_manager.m_topStack.push( n );
+            return 1;
+        }
     }
     
     GUCEF_SETBREAKPOINT;

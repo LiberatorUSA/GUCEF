@@ -53,6 +53,7 @@ namespace CORE {
 bool
 CGUCEFCOREModule::Load( void )
 {
+    CCoreGlobal::Instance();
     return true;
 }
 
@@ -61,6 +62,7 @@ CGUCEFCOREModule::Load( void )
 bool
 CGUCEFCOREModule::Unload( void )
 {
+    CCoreGlobal::Deinstance();
     return true;
 }
 

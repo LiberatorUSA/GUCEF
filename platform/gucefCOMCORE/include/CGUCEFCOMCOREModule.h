@@ -45,7 +45,7 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMCOREModule
+class CModule
 {
     public:
     
@@ -54,10 +54,10 @@ class CGUCEFCOMCOREModule
     static bool Unload( void );
     
     private:
-    CGUCEFCOMCOREModule( void );
-    CGUCEFCOMCOREModule( const CGUCEFCOMCOREModule& src );
-    ~CGUCEFCOMCOREModule();
-    CGUCEFCOMCOREModule& operator=( const CGUCEFCOMCOREModule& src );
+    CModule( void );                              /**< not implemented */
+    CModule( const CModule& src );                /**< not implemented */
+    ~CModule();                                   /**< not implemented */
+    CModule& operator=( const CModule& src );     /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//

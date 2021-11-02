@@ -25,6 +25,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
@@ -82,7 +87,7 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier )
       m_scheduledForDestruction( false )
 {GUCEF_TRACE;
 
-    assert( m_ownerNotifier != NULL );
+    assert( m_ownerNotifier != GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +103,7 @@ CNotifierImplementor::CNotifierImplementor( CNotifier* ownerNotifier ,
       m_scheduledForDestruction( false )
 {GUCEF_TRACE;
 
-    assert( m_ownerNotifier != NULL );
+    assert( m_ownerNotifier != GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -165,7 +170,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
 
     m_isBusy = true;
 
-    CObserver* oPtr = NULL;
+    CObserver* oPtr = GUCEF_NULL;
     TObserverSet notifiedObservers;
 
     TObserverList::iterator i = m_observers.begin();
@@ -182,7 +187,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
                                   data            );
 
             // Check if someone deleted our owner notifier
-            if ( m_ownerNotifier == NULL )
+            if ( m_ownerNotifier == GUCEF_NULL )
             {
                 // Gracefully handle the destruction sequence
                 m_isBusy = false;
@@ -214,7 +219,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
 
     if ( m_scheduledForDestruction )
     {
-        m_ownerNotifier->m_imp = NULL;
+        m_ownerNotifier->m_imp = GUCEF_NULL;
         delete m_ownerNotifier;
         return false;
     }
@@ -228,7 +233,7 @@ void
 CNotifierImplementor::UnsubscribeAllFromNotifier( void )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
@@ -248,14 +253,12 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
         TCmdMailElement cmdMailElement;
         cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE_ALL;
         cmdMailElement.eventID = CEvent();     // <- not used in this context
-        cmdMailElement.observer = NULL;        // <- not used in this context
-        cmdMailElement.callback = NULL;        // <- not used in this context
+        cmdMailElement.observer = GUCEF_NULL;        // <- not used in this context
+        cmdMailElement.callback = GUCEF_NULL;        // <- not used in this context
         cmdMailElement.notify = true;          // <- not used in this context
         cmdMailElement.observerIsDestroyed = true;
         m_cmdMailStack.push_back( cmdMailElement );
     }
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -264,7 +267,7 @@ void
 CNotifierImplementor::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
@@ -272,8 +275,8 @@ CNotifierImplementor::Subscribe( CObserver* observer )
         {
             if ( m_scheduledForDestruction )
             {
-                Unlock();
-                m_ownerNotifier->m_imp = NULL;
+                lock.EarlyUnlock();
+                m_ownerNotifier->m_imp = GUCEF_NULL;
                 delete m_ownerNotifier;
                 return;
             }
@@ -287,14 +290,13 @@ CNotifierImplementor::Subscribe( CObserver* observer )
         cmdMailElement.cmdType = REQUEST_SUBSCRIBE;
         cmdMailElement.eventID = CEvent();     // <- not used in this context
         cmdMailElement.observer = observer;
-        cmdMailElement.callback = NULL;
+        cmdMailElement.callback = GUCEF_NULL;
         cmdMailElement.notify = true;
         cmdMailElement.observerIsDestroyed = false;
         m_cmdMailStack.push_back( cmdMailElement );
 
         LinkObserver( observer, true );
     }
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -302,10 +304,10 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 void
 CNotifierImplementor::Subscribe( CObserver* observer                              ,
                                  const CEvent& eventid                            ,
-                                 CIEventHandlerFunctorBase* callback /* = NULL */ )
+                                 CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
@@ -332,14 +334,13 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                     // The observer is already subscribed to this event
                     // All we have to do is make sure the callback is up-to-date
                     delete (*i).second;
-                    (*i).second = NULL;
-                    if ( NULL != callback )
+                    (*i).second = GUCEF_NULL;
+                    if ( GUCEF_NULL != callback )
                     {
                         (*i).second = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
                     }
 
                     m_isBusy = false;
-                    Unlock();
                     return;
                 }
 
@@ -347,13 +348,13 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  *  If we get here then we have a new observer on our hands for the given
                  *  known event, as such we need to update our administration.
                  */
-                if ( NULL != callback )
+                if ( GUCEF_NULL != callback )
                 {
                     eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
                 }
                 else
                 {
-                    eventObservers[ observer ] = NULL;
+                    eventObservers[ observer ] = GUCEF_NULL;
                 }
             }
             else
@@ -365,13 +366,13 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  *  Adding the event entry is accomplished by using the index operator on the map
                  */
                 TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];
-                if ( NULL != callback )
+                if ( GUCEF_NULL != callback )
                 {
                     eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
                 }
                 else
                 {
-                    eventObservers[ observer ] = NULL;
+                    eventObservers[ observer ] = GUCEF_NULL;
                 }
             }
         }
@@ -382,8 +383,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
 
         if ( m_scheduledForDestruction )
         {
-            Unlock();
-            m_ownerNotifier->m_imp = NULL;
+            lock.EarlyUnlock();
+            m_ownerNotifier->m_imp = GUCEF_NULL;
             delete m_ownerNotifier; // <- This will delete this object as well thus self-destructing
             return;
         }
@@ -398,20 +399,18 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
         cmdMailElement.observer = observer;
         cmdMailElement.notify = true;
         cmdMailElement.observerIsDestroyed = false;
-        if ( callback != NULL )
+        if ( callback != GUCEF_NULL )
         {
             cmdMailElement.callback = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
         }
         else
         {
-            cmdMailElement.callback = NULL;
+            cmdMailElement.callback = GUCEF_NULL;
         }
         m_cmdMailStack.push_back( cmdMailElement );
 
         LinkObserver( observer, false );
     }
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -485,11 +484,11 @@ void
 CNotifierImplementor::Unsubscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
+
     UnsubscribeFromAllEvents( observer ,
                               true     ,
                               false    );
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -526,7 +525,13 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             {
                 /*
                  *  Remove the reference to the given observer
+                 *  Also delete the event handler functor as needed
                  */
+                if ( GUCEF_NULL != (*i).second )
+                {
+                    delete (*i).second;
+                    (*i).second = GUCEF_NULL;
+                }
                 eventObservers.erase( i );
             }
 
@@ -555,7 +560,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
         if ( m_scheduledForDestruction )
         {
             Unlock();
-            m_ownerNotifier->m_imp = NULL;
+            m_ownerNotifier->m_imp = GUCEF_NULL;
             delete m_ownerNotifier;
             return;
         }
@@ -571,7 +576,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
             cmdMailElement.eventID = CEvent();    // <- not used in this context
             cmdMailElement.observer = observer;
-            cmdMailElement.callback = NULL;
+            cmdMailElement.callback = GUCEF_NULL;
             cmdMailElement.notify = notifyObserver;
             cmdMailElement.observerIsDestroyed = observerDestruction;
             m_cmdMailStack.push_back( cmdMailElement );
@@ -614,7 +619,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                                    const CEvent& eventid )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
@@ -635,9 +640,13 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                      *  We found the observer and we will remove it from
                      *  our notification list for this event.
                      */
+                    if ( GUCEF_NULL != (*i).second )
+                    {
+                        delete (*i).second;
+                        (*i).second = GUCEF_NULL;
+                    }
                     eventObservers.erase( i );
-                    Unlock();
-                    m_isBusy = false;
+                    m_isBusy = false;                    
                     return;
                 }
                 ++i;
@@ -648,8 +657,8 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
 
         if ( m_scheduledForDestruction )
         {
-            Unlock();
-            m_ownerNotifier->m_imp = NULL;
+            lock.EarlyUnlock();
+            m_ownerNotifier->m_imp = GUCEF_NULL;
             delete m_ownerNotifier;
             return;
         }
@@ -662,12 +671,11 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
         cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
         cmdMailElement.eventID = eventid;
         cmdMailElement.observer = observer;
-        cmdMailElement.callback = NULL;    // <- not used in this context
+        cmdMailElement.callback = GUCEF_NULL;    // <- not used in this context
         cmdMailElement.notify = true;
         cmdMailElement.observerIsDestroyed = false;
         m_cmdMailStack.push_back( cmdMailElement );
     }
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -680,7 +688,7 @@ CNotifierImplementor::GetSubscriptionCountForObserver( CObserver* observer ) con
         return 0;
 
     UInt32 subscriptionCount( 0 );
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     TObserverList::const_iterator i = m_observers.find( observer );
     if ( i != m_observers.end() )
@@ -704,8 +712,6 @@ CNotifierImplementor::GetSubscriptionCountForObserver( CObserver* observer ) con
 
     // We will ignore possible extra subscriptions that might be lurking in mailboxes
     // This is a snapshot in time anyway
-
-    Unlock();
     return subscriptionCount;
 }
 
@@ -766,13 +772,13 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
      *  in a new notification request on the same notifier this could muck up our administration
      *  It could also cause stack overflows if the event chain where long enough.
      */
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
         m_isBusy = true;
 
-        CObserver* oPtr = NULL;
+        CObserver* oPtr = GUCEF_NULL;
         TObserverSet notifiedObservers;
 
         // First we process observers that are subscribed to all events
@@ -795,10 +801,11 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                                     eventData );
 
                     // Check if someone deleted our owner notifier
-                    if ( m_ownerNotifier == NULL )
+                    if ( m_ownerNotifier == GUCEF_NULL )
                     {
                         // Gracefully handle the destruction sequence
                         m_isBusy = false;
+                        lock.EarlyUnlock();
                         Destroy( this );
                         return false;
                     }
@@ -850,7 +857,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                         // Check if we should perform notification using the generic
                         // handler or a user specified callback.
                         CIEventHandlerFunctorBase* callback = (*n).second;
-                        if ( NULL != callback )
+                        if ( GUCEF_NULL != callback )
                         {
                             GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
 
@@ -885,10 +892,11 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                 if ( notified )
                 {
                     // Check if someone deleted our owner notifier
-                    if ( m_ownerNotifier == NULL )
+                    if ( m_ownerNotifier == GUCEF_NULL )
                     {
                         // Gracefully handle the destruction sequence
                         m_isBusy = false;
+                        lock.EarlyUnlock();
                         Destroy( this );
                         return false;
                     }
@@ -918,9 +926,9 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
         m_isBusy = false;
 
         if ( m_scheduledForDestruction )
-        {
-            Unlock();
-            m_ownerNotifier->m_imp = NULL;
+        {            
+            m_ownerNotifier->m_imp = GUCEF_NULL;
+            lock.EarlyUnlock();
             delete m_ownerNotifier;
             return false;
         }
@@ -939,18 +947,16 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
         mail.specificObserver = GUCEF_NULL; // <- not used in this context  
         mail.specificObserverIsDestroyed = false;
         mail.sender = &sender;
-        if ( eventData != NULL )
+        if ( eventData != GUCEF_NULL )
         {
             mail.eventData = eventData->Clone();
         }
         else
         {
-            mail.eventData = NULL;
+            mail.eventData = GUCEF_NULL;
         }
         m_eventMailStack.push_back( mail );
     }
-
-    Unlock();
 
     return true;
 }
@@ -1104,7 +1110,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
      *  in a new notification request on the same notifier this could muck up our administration
      *  It could also cause stack overflows if the event chain where long enough.
      */
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusy )
     {
@@ -1127,9 +1133,10 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                 m_isBusy = false;
 
                 // Check if someone deleted our owner notifier
-                if ( m_ownerNotifier == NULL )
+                if ( m_ownerNotifier == GUCEF_NULL )
                 {
                     // Gracefully handle the destruction sequence
+                    lock.EarlyUnlock();
                     Destroy( this );
                     return false;
                 }
@@ -1143,7 +1150,6 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
 
                 // Since we only have no notify a single observer we can stop here
                 // since an observer cannot be notified twice for the same event
-                Unlock();
                 return true;
             }
         }
@@ -1156,7 +1162,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             // Check if we should perform notification using the generic
             // handler or a user specified callback.
             CIEventHandlerFunctorBase* callback = (*n).second;
-            if ( NULL != callback )
+            if ( GUCEF_NULL != callback )
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
 
@@ -1175,9 +1181,10 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             m_isBusy = false;
 
             // Check if someone deleted our owner notifier
-            if ( m_ownerNotifier == NULL )
+            if ( m_ownerNotifier == GUCEF_NULL )
             {
                 // Gracefully handle the destruction sequence
+                lock.EarlyUnlock();
                 Destroy( this );
                 return false;
             }
@@ -1192,8 +1199,8 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
 
         if ( m_scheduledForDestruction )
         {
-            Unlock();
-            m_ownerNotifier->m_imp = NULL;
+            m_ownerNotifier->m_imp = GUCEF_NULL;
+            lock.EarlyUnlock();
             delete m_ownerNotifier;
             return false;
         }
@@ -1209,18 +1216,17 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         mail.specificObserver = &specificObserver;
         mail.specificObserverIsDestroyed = false;
         mail.sender = &sender;
-        if ( eventData != NULL )
+        if ( eventData != GUCEF_NULL )
         {
             mail.eventData = eventData->Clone();
         }
         else
         {
-            mail.eventData = NULL;
+            mail.eventData = GUCEF_NULL;
         }
         m_eventMailStack.push_back( mail );
     }
 
-    Unlock();
     return true;
 }
 
@@ -1262,7 +1268,7 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
      *  We null the owner pointer which functions as a flag signaling that
      *  the owner notifier is now considered to be destroyed.
      */
-    m_ownerNotifier = NULL;
+    m_ownerNotifier = GUCEF_NULL;
 
     if ( !m_isBusy )
     {
@@ -1280,7 +1286,7 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
 void
 CNotifierImplementor::ScheduleForDestruction( void )
 {
-   Lock();
+   MT::CObjectScopeLock lock( this );
 
    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Scheduling for destruction" );
 
@@ -1290,7 +1296,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
          *  We are not busy, meaning we did not arrive here trough some action
          *  trigger by the notifier itself. Thus we can safely delete the notifier
          */
-        Unlock();
+        lock.EarlyUnlock();
         delete m_ownerNotifier;
     }
     else
@@ -1301,19 +1307,18 @@ CNotifierImplementor::ScheduleForDestruction( void )
          *  once it finishes it's current operation
          */
         m_scheduledForDestruction = true;
-        Unlock();
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::Lock( void ) const
+CNotifierImplementor::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    if ( m_ownerNotifier != NULL )
+    if ( m_ownerNotifier != GUCEF_NULL )
     {
-        return m_ownerNotifier->Lock();
+        return m_ownerNotifier->Lock( lockWaitTimeoutInMs );
     }
     return false;
 }
@@ -1324,11 +1329,20 @@ bool
 CNotifierImplementor::Unlock( void ) const
 {GUCEF_TRACE;
 
-    if ( m_ownerNotifier != NULL )
+    if ( m_ownerNotifier != GUCEF_NULL )
     {
         return m_ownerNotifier->Unlock();
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable*
+CNotifierImplementor::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------//

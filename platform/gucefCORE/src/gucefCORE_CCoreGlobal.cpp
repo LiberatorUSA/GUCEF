@@ -230,7 +230,7 @@ CCoreGlobal::Initialize( void )
     /*
      *      Very important: Initialize the memory manager second, after the stack tracer !!!!!
      */
-    #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )  
+    #if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && !defined( GUCEF_DYNNEWON_DISABLED ) )
     MEMMAN_Initialize();
     MEMMAN_SetExhaustiveTesting( 0 );
     MEMMAN_SetPaddingSize( 0 );    
@@ -375,13 +375,6 @@ CCoreGlobal::~CCoreGlobal()
     m_codecRegistry = GUCEF_NULL;
     delete m_pulseGenerator;
     m_pulseGenerator = GUCEF_NULL;
-
-    /*
-     *      Very important: Shutdown the memory manager second last !!!!!
-     */
-    #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
-    MEMMAN_Shutdown();
-    #endif
 
     // it important to shutdown the call stack tracer last
     #ifdef GUCEF_CALLSTACK_TRACKING

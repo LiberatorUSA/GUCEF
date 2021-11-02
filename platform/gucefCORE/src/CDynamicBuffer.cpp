@@ -118,8 +118,11 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
     , m_linked( false )
 {GUCEF_TRACE;
 
-    _buffer = (Int8*) malloc( initialsize );
-    _bsize = initialsize;               
+    if ( initialsize > 0 )
+    {
+        _buffer = (Int8*) malloc( initialsize );
+        _bsize = initialsize;               
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,14 +142,20 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
     if ( shrinkToDataSize )
     {
         _bsize = src.m_dataSize;
-        _buffer = (Int8*) malloc( src.m_dataSize );    
-        memcpy( _buffer, src._buffer, m_dataSize ); 
+        if ( _bsize > 0 )
+        {
+            _buffer = (Int8*) malloc( src.m_dataSize );    
+            memcpy( _buffer, src._buffer, m_dataSize ); 
+        }
     }
     else
     {
         _bsize = src._bsize;
-        _buffer = (Int8*) malloc( src._bsize );    
-        memcpy( _buffer, src._buffer, m_dataSize ); 
+        if ( _bsize > 0 )
+        {
+            _buffer = (Int8*) malloc( src._bsize );    
+            memcpy( _buffer, src._buffer, m_dataSize ); 
+        }
     }
 }
 
@@ -309,13 +318,20 @@ CDynamicBuffer::operator=( const CDynamicBuffer &src )
 
     if ( this != &src )
     {
-        Clear( true );
+        if ( 0 != src._bsize )
+        {
+            Clear( true );
         
-        _buffer = (Int8*) realloc( _buffer, src._bsize );
-        memcpy( _buffer, src._buffer, src._bsize );
-        _bsize = src._bsize;
-        m_dataSize = src.m_dataSize;
-        m_linked = false;                 
+            _buffer = (Int8*) realloc( _buffer, src._bsize );
+            memcpy( _buffer, src._buffer, src._bsize );
+            _bsize = src._bsize;
+            m_dataSize = src.m_dataSize;
+            m_linked = false;                 
+        }
+        else
+        {
+            Clear( false );
+        }
     }
     return *this;                        
 }
@@ -333,47 +349,29 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     SecureLinkBeforeMutation();
     
     if ( _bsize == newSize ) 
-    {
-        return true;
-    }
-
-    if ( newSize < _bsize )
-    {
-        if ( !allowreduction )
-        {
-            return false;        
-        }
-        else
-        {
-            if ( m_dataSize > newSize )
-            {
-                m_dataSize = newSize;
-            }
-        }
-    }
+        return true;  // already at the desired size
+    if ( newSize < _bsize && !allowreduction )
+        return false; // we do not allow size reductions
 
     if ( 0 == newSize )
     {
         Clear( false );
         return true;
     }
-    
-    if ( GUCEF_NULL == _buffer )
+
+    Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
+    assert( GUCEF_NULL != newBuffer );
+    if ( GUCEF_NULL != newBuffer )
     {
-        _buffer = (Int8*) malloc( newSize );
+        _buffer = newBuffer;
         _bsize = newSize;
+        if ( m_dataSize > newSize )
+        {
+            m_dataSize = newSize;
+        }
         return true;
     }
-    else
-    {
-        Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
-        if ( GUCEF_NULL != newBuffer )
-        {
-            _buffer = newBuffer;
-            _bsize = newSize;
-            return true;
-        }
-    }
+
     return false;
 }
 

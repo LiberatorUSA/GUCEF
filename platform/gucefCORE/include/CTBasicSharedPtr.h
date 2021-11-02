@@ -399,13 +399,11 @@ CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
 
     #ifdef GUCEF_DEBUG_MODE
     {
-        MT::CObjectScopeLock lock( this );
-
         // If you get an assert here:
         //    You have an error in your decending class: you cannot initialize twice
+        assert( m_shared == GUCEF_NULL );
         assert( m_ptr == GUCEF_NULL );
-        assert( m_objectDestructor == GUCEF_NULL );
-        assert( m_shared->m_refCounter == GUCEF_NULL );
+        assert( m_objectDestructor == GUCEF_NULL );        
     }
     #endif
 
@@ -413,10 +411,13 @@ CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
     // mode without asserts we will still allow the scenario by unlinking first
     Unlink();
 
-    MT::CObjectScopeLock lock( this );
-    m_ptr = ptr;
-    m_shared->m_refCounter = 1UL;
-    m_objectDestructor = objectDestructor;
+    if ( GUCEF_NULL != ptr )
+    {
+        m_shared = new TBasicSharedPtrSharedData< LockType >();
+        m_ptr = ptr;
+        m_shared->m_refCounter = 1UL;
+        m_objectDestructor = objectDestructor;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -484,12 +485,15 @@ CTBasicSharedPtr< T, LockType >::operator=( const CTBasicSharedPtr< T, LockType 
     {
         Unlink();
 
-        MT::CObjectScopeLock lockSrc( src );
+        if ( GUCEF_NULL != src.m_shared )
+        {
+            MT::CObjectScopeLock lockSrc( src );
 
-        m_shared = src.m_shared;
-        ++m_shared->m_refCounter;
-        m_ptr = src.m_ptr;
-        m_objectDestructor = src.m_objectDestructor;
+            m_shared = src.m_shared;
+            ++m_shared->m_refCounter;
+            m_ptr = src.m_ptr;
+            m_objectDestructor = src.m_objectDestructor;
+        }
     }
     return *this;
 }
@@ -872,7 +876,8 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
 
     if ( GUCEF_NULL != m_shared )
     {
-        MT::CObjectScopeLock lock( this );
+        m_shared->m_lock.Lock(); // We cannot use CObjectScopeLock here because we may have to delete the lock itself
+        GUCEF_CHECKALLOCPTR( m_shared );
         if ( GUCEF_NULL != m_ptr )
         {
             --m_shared->m_refCounter;
@@ -883,22 +888,39 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                 // A descending class may NULL it for its own purposes.
                 if ( GUCEF_NULL != m_objectDestructor )
                 {
+                    GUCEF_CHECKALLOCPTR( m_ptr );
                     m_objectDestructor->DestroyObject( m_ptr );
                     m_objectDestructor = GUCEF_NULL;
                 }
                 m_ptr = GUCEF_NULL;
 
-                TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
+                TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;                
                 m_shared = GUCEF_NULL;
-                localSharedRef->m_lock.Unlock();
+                localSharedRef->m_lock.Unlock();                
                 delete localSharedRef;
             }
+            else
+            {
+                // Not the last reference but we are unlinking our usage
+                TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
+
+                // this object may not have been the last reference but we still have to NULL
+                // the attributes to allow this object to be re-used
+                m_shared = GUCEF_NULL;
+                m_ptr = GUCEF_NULL;
+
+                localSharedRef->m_lock.Unlock();
+            }
+        }
+        else
+        {
+            // All we ever had was a lock
+            TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
+            m_shared = GUCEF_NULL;
+            localSharedRef->m_lock.Unlock();
+            delete localSharedRef;
         }
     }
-
-    // this object may not have been the last reference but we still have to NULL
-    // the attributes to allow this object to be re-used
-    m_shared = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -918,11 +940,12 @@ bool
 CTBasicSharedPtr< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
                                                  
-    if ( GUCEF_NULL == m_shared )
+    if ( GUCEF_NULL != m_shared )
     {
-        m_shared = new TBasicSharedPtrSharedData< LockType >();
+        GUCEF_CHECKALLOCPTR( m_shared );
+        return m_shared->m_lock.Lock( lockWaitTimeoutInMs );
     }
-    return m_shared->m_lock.Lock( lockWaitTimeoutInMs );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -933,7 +956,10 @@ CTBasicSharedPtr< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_shared )
+    {
+        GUCEF_CHECKALLOCPTR( m_shared );
         return m_shared->m_lock.Unlock();
+    }
     return false;
 }
 

@@ -1,3 +1,4 @@
+<ModuleInfoEntries>
 <ModuleInfoEntry>
     <Module Name="gucefCORE" Type="SharedLibrary" Platform="All" Tags="platform">
         <Dependencies>
@@ -28,3 +29,34 @@
         </Linker>
     </Module>
 </ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="gucefCORE_Integrated" Type="CodeIntegrateLocation" Platform="All" >
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_CORE_EMBED_CODE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="Ws2_32.lib" />
+        </Linker>
+    </Module>  
+    <Module Platform="Linux">
+        <Linker>
+            <Dependency Name="dl" />
+            <Dependency Name="rt" />
+            <Dependency Name="X11" />
+        </Linker>
+    </Module>
+    <Module Platform="Android">
+        <Linker>
+            <Dependency Name="dl" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
+</ModuleInfoEntries>

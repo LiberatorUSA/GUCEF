@@ -78,8 +78,10 @@
  *  We still need to provide the GUCEF memory check macros to prevent compilation errors
  *  However we turn them into no-ops
  */
+#undef GUCEF_CHECKALLOCPTR
 #undef GUCEF_CHECKMEM
 #undef GUCEF_CHECKMEMSEG
+#define GUCEF_CHECKALLOCPTR( addr )
 #define GUCEF_CHECKMEM( addr, size )
 #define GUCEF_CHECKMEMSEG( addr, chunk, size )
 

@@ -835,6 +835,9 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
                           Int32 newchar ) const
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_string || 0 == m_byteSize )
+        return Empty;
+    
     // Calculate new space required
 
     Int32 codePointSizeDiff = (Int32) ( utf8codepointsize( newchar ) - utf8codepointsize( oldchar ) );
@@ -923,10 +926,15 @@ CUtf8String::ReplaceSubstr( const CUtf8String& substr      ,
         subStrIndex = testStr.HasSubstr( substr, true );
         if ( subStrIndex >= 0 )
         {
+            // turn the code point offset into a byte offset
             UInt32 bytesFromStart=0;
             testStr.CodepointPtrAtIndex( subStrIndex, bytesFromStart );
+
+            // add the prefix segment (if any) before the matching segment
             newStr.Append( testStr.C_String(), bytesFromStart );
+            // put in the replacement segment
             newStr += replacement;
+            // jump ahead 
             testStr = testStr.CutChars( (UInt32)subStrIndex + substr.Length(), true );
         }
     }

@@ -31,6 +31,11 @@
 #include <vector>
 #include <map>
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
 #define GUCEF_CORE_CICLONEABLE_H
@@ -84,8 +89,16 @@ class CNotifier;
  *  One of those scenarios is destruction of the notifier as a result of it's notification.
  *  this class makes that scenario something that can be handled safely and care-free.
  */
-class CNotifierImplementor
+class CNotifierImplementor : public MT::CILockable
 {  
+    public:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+
+    virtual bool Unlock( void ) const;
+
+    virtual const MT::CILockable* AsLockable( void ) const;
+
     private:
     friend class CNotifier;
     
@@ -101,7 +114,7 @@ class CNotifierImplementor
     CNotifierImplementor( CNotifier* ownerNotifier ,
                           const CNotifier& src     );
     
-    ~CNotifierImplementor();
+    virtual ~CNotifierImplementor();
     
     CNotifierImplementor& operator=( const CNotifierImplementor& src );
 
@@ -252,10 +265,6 @@ class CNotifierImplementor
     void OnObserverDestroy( CObserver* observer );
     
     void OnDeathOfOwnerNotifier( void );    
-
-    bool Lock( void ) const;
-    
-    bool Unlock( void ) const;
     
     void ScheduleForDestruction( void );
    
@@ -286,7 +295,6 @@ class CNotifierImplementor
     
     private:
     
-    typedef std::pair< CObserver*, CIEventHandlerFunctorBase* > TEventNotificationMapEntry;
     typedef std::map< CObserver*, CIEventHandlerFunctorBase* > TEventNotificationMap;
     
     typedef std::set< CObserver* > TObserverSet;

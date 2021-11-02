@@ -119,7 +119,7 @@ CComGlobal::Instance()
     if ( GUCEF_NULL == g_instance )
     {
         g_dataLock.Lock();
-        if ( NULL == g_instance )
+        if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CComGlobal();
             g_instance->Initialize();

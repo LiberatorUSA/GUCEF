@@ -724,9 +724,13 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             if ( topic->IsPublishingSupported() )
             {
-                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "msgsInFlight", topicLink.inFlightMsgs.size(), 1.0f );
+                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "publishedMsgsInFlight", topicLink.inFlightMsgs.size(), 1.0f );
                 GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "publishOrAckFailedMsgs", topicLink.publishFailedMsgs.size(), 1.0f );
                 GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "lastPublishBatchSize", topicLink.currentPublishActionIds.size(), 1.0f );
+            }
+            if ( topic->IsSubscribingSupported() )
+            {
+                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "queuedReceiveSuccessAcks", topicLink.publishAckdMsgsMailbox.AmountOfMail(), 1.0f );
             }
         }
         ++i;

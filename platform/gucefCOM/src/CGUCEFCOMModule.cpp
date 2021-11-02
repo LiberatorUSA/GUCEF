@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
 #include "CGUCEFCOMModule.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -41,16 +46,18 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 bool 
-CGUCEFCOMModule::Load( void )
+CModule::Load( void )
 {        
+    CComGlobal::Instance();
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
         
 bool 
-CGUCEFCOMModule::Unload( void )
+CModule::Unload( void )
 {        
+    CComGlobal::Deinstance();
     return true;
 }
 
