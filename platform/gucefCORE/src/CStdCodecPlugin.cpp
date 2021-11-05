@@ -241,12 +241,9 @@ CStdCodecPlugin::UnlinkCodecSet( void )
                 if ( codecRegistry.IsRegistered( codecLink->codecFamily ) )
                 {
                     // we now have access to a registry for this codec family
-                    // We will add this codec if there no codec already registered with such a name
+                    // We will remove the codec if registered
                     CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry = codecRegistry.Lookup( codecLink->codecFamily );
-                    if ( !familyRegistry->IsRegistered( codecLink->codecType ) )
-                    {
-                        familyRegistry->Unregister( codecLink->codecType );
-                    }
+                    familyRegistry->TryUnregister( codecLink->codecType );
                 }
 
                 ( (TCODECPLUGFPTR_FreeCodecLink) m_fpTable[ STDCODEC_FREECODECLINK ] )( pluginItem->GetPluginData()      ,
@@ -502,7 +499,14 @@ CStdCodecPlugin::Unlink( bool forceEvenIfInUse )
             CCodecFamilySet::iterator n = codecFamily.begin();
             while ( n != codecFamily.end() )
             {
-                if ( (*n).second.GetReferenceCount() > 1 )
+                // Why a reference check on 2: 
+                //      We know this class has a reference to the codec linking it into the plugin, thats 1
+                //      When codecs are successfully loaded they are registered in the global codec registry for their
+                //      respective families, thats 2.
+                //      Anyone using a codec would need to have an additional reference outstanding thus > 2
+                //      When unloading a plugin you want to always make sure nobody is using the functionality/code
+                //      from that plugin because any reference to it would become invalid leading to crashes.
+                if ( (*n).second.GetReferenceCount() > 2 )
                 {
                     // Cannot unload the module if someone is still using one of it's codec's
                     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Unable to unlink codec module since there are outstanding references to the codecs from module: " + PointerToString( m_soHandle ) );

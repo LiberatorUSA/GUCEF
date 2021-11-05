@@ -38,11 +38,6 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"  
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */  
 #define WIN32_LEAN_AND_MEAN
 #define _STD_USING

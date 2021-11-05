@@ -171,6 +171,18 @@ template< typename SelectionCriteriaType, class BaseClassType, typename Construc
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::~CTAbstractFactoryWithParam()
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    if ( m_assumeFactoryOwnership )
+    {
+        TFactoryList::iterator i = m_concreteFactoryList.begin();
+        while ( i != m_concreteFactoryList.end() )
+        {
+            delete (*i).second;
+            (*i).second = GUCEF_NULL;
+            ++i;
+        }
+    }
+    m_concreteFactoryList.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,7 +236,8 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
 void
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::ObtainKeySet( TKeySet& keySet ) const
-{
+{GUCEF_TRACE;
+
     MT::CObjectScopeLock lock( this );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.begin() );
     while ( i != m_concreteFactoryList.end() )

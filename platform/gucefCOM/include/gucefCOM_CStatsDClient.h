@@ -60,6 +60,8 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 {
     public:
 
+    static const CORE::CString Type;
+
     CStatsDClient( void );
 
     CStatsDClient( CORE::CPulseGenerator& pulseGenerator );
@@ -119,6 +121,8 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 
     const CString& GetStatNamePrefix( void ) const;
 
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:

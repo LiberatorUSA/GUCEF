@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -193,13 +198,16 @@ CCoreGlobal::Instance()
 
     if ( GUCEF_NULL == g_instance )
     {
-        g_dataLock.Lock();
+        MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CCoreGlobal();
-            g_instance->Initialize();
+            if ( GUCEF_NULL != g_instance )
+            {
+                g_instance->Initialize();
+                atexit( CCoreGlobal::Deinstance );
+            }
         }
-        g_dataLock.Unlock();
     }
     return g_instance;
 }
@@ -210,10 +218,9 @@ void
 CCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
-    g_dataLock.Lock();
+    MT::CScopeMutex lock( g_dataLock );
     delete g_instance;
     g_instance = GUCEF_NULL;
-    g_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,11 +228,6 @@ CCoreGlobal::Deinstance( void )
 void
 CCoreGlobal::Initialize( void )
 {GUCEF_TRACE;
-
-    // it is important to initialize the call stack tracer at an early stage
-    #ifdef GUCEF_CALLSTACK_TRACKING
-    GUCEF_InitCallstackUtility();
-    #endif /* GUCEF_CALLSTACK_TRACKING ? */
 
     /*
      *      Very important: Initialize the memory manager second, after the stack tracer !!!!!
@@ -254,12 +256,12 @@ CCoreGlobal::Initialize( void )
     CConfigStore::RegisterEvents();
     CNotifier::RegisterEvents();
     CPulseGenerator::RegisterEvents();
-    CStreamerEvents::RegisterEvents();
-    CTimer::RegisterEvents();
-    CPluginControl::RegisterEvents();
-    CIURLEvents::RegisterEvents();
-    CNotifyingMapEvents::RegisterEvents();
     CGUCEFApplication::RegisterEvents();
+    CPluginControl::RegisterEvents();
+    CStreamerEvents::RegisterEvents();
+    CTimer::RegisterEvents();    
+    CIURLEvents::RegisterEvents();
+    CNotifyingMapEvents::RegisterEvents();    
     CTaskDelegator::RegisterEvents();
     CTaskConsumer::RegisterEvents();
     CTaskManager::RegisterEvents();
@@ -284,17 +286,17 @@ CCoreGlobal::Initialize( void )
 
     /*
      *  Instantiate the rest of the singletons
-     */
-    m_dstoreCodecRegistry = new CDStoreCodecRegistry();
-    m_urlHandlerRegistry = new CURLHandlerRegistry();
+     */    
     m_sysConsole = new CSysConsole();
     m_application = new CGUCEFApplication();
     m_taskManager = new CTaskManager();
+    m_dstoreCodecRegistry = new CDStoreCodecRegistry();
+    m_codecRegistry = new CCodecRegistry();
     m_pluginControl = new CPluginControl();
     m_dstoreCodecPluginManager = new CDStoreCodecPluginManager();
     m_genericPluginManager = new CGenericPluginManager();
-    m_stdCodecPluginManager = new CStdCodecPluginManager();
-    m_codecRegistry = new CCodecRegistry();
+    m_stdCodecPluginManager = new CStdCodecPluginManager();        
+    m_urlHandlerRegistry = new CURLHandlerRegistry();
 
     /*
      *      Register some default codecs/handlers
@@ -333,10 +335,18 @@ CCoreGlobal::CCoreGlobal( void )
 CCoreGlobal::~CCoreGlobal()
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( g_dataLock );
+    
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Shutting down gucefCORE global systems" );
 
     m_application->Stop( true );
     m_taskManager->RequestAllThreadsToStop( true, false );
+
+    m_urlHandlerRegistry->UnregisterAll();
+    m_codecRegistry->UnregisterAll();
+    m_dstoreCodecRegistry->UnregisterAll();
+    m_pluginControl->UnloadAll();
+
     m_logManager->FlushLogs();
 
     /*
@@ -376,10 +386,6 @@ CCoreGlobal::~CCoreGlobal()
     delete m_pulseGenerator;
     m_pulseGenerator = GUCEF_NULL;
 
-    // it important to shutdown the call stack tracer last
-    #ifdef GUCEF_CALLSTACK_TRACKING
-    GUCEF_ShutdowntCallstackUtility();
-    #endif /* GUCEF_CALLSTACK_TRACKING ? */
 }
 
 /*-------------------------------------------------------------------------*/

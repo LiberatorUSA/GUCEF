@@ -30,6 +30,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -87,7 +92,8 @@ CNotificationIDRegistry::CNotificationIDRegistry( void )
 CNotificationIDRegistry::~CNotificationIDRegistry()
 {GUCEF_TRACE;
 
-    /* nothing to do here */
+    MT::CScopeMutex lock( m_dataLock );
+    m_list.clear();
 }
 
 /*-------------------------------------------------------------------------*/

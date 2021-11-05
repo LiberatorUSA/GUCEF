@@ -84,22 +84,12 @@
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 
-#ifndef GUCEF_CORE_CALLSTACK_H
-#include "callstack.h"
-#define GUCEF_CORE_CALLSTACK_H
-#endif /* GUCEF_CORE_CALLSTACK_H ? */
-
 /*---------------------------------------------------------------------------/
 
         C++ includes
 
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
 
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"

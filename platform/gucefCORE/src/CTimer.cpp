@@ -30,11 +30,6 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #include "gucefCORE_CPulseGenerator.h"
 #define GUCEF_CORE_CPULSEGENERATOR_H

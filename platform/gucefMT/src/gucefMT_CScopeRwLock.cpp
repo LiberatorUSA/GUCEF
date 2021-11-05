@@ -43,7 +43,8 @@ namespace MT {
 
 CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
-{
+{GUCEF_TRACE;
+
     assert( m_rwLock );
     m_rwLock->ReaderStart();
 }
@@ -51,7 +52,8 @@ CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
 /*--------------------------------------------------------------------------*/
 
 CScopeReaderLock::~CScopeReaderLock()
-{
+{GUCEF_TRACE;
+
     m_rwLock->ReaderStop();
 }
 
@@ -59,7 +61,8 @@ CScopeReaderLock::~CScopeReaderLock()
 
 bool 
 CScopeReaderLock::IsReadLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_rwLock->ReaderCount() > 0;
 }
 
@@ -67,7 +70,8 @@ CScopeReaderLock::IsReadLocked( void ) const
 
 bool 
 CScopeReaderLock::IsWriteLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_rwLock->WriterCount() > 0;
 }
 
@@ -75,7 +79,8 @@ CScopeReaderLock::IsWriteLocked( void ) const
 
 CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
-{
+{GUCEF_TRACE;
+
     assert( m_rwLock );
     m_rwLock->WriterStart();
 }
@@ -83,7 +88,8 @@ CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
 /*--------------------------------------------------------------------------*/
 
 CScopeWriterLock::~CScopeWriterLock()
-{
+{GUCEF_TRACE;
+
     m_rwLock->WriterStop();
 }
 
@@ -91,7 +97,8 @@ CScopeWriterLock::~CScopeWriterLock()
 
 bool 
 CScopeWriterLock::IsReadLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_rwLock->ReaderCount() > 0;
 }
 
@@ -99,7 +106,8 @@ CScopeWriterLock::IsReadLocked( void ) const
 
 bool 
 CScopeWriterLock::IsWriteLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_rwLock->WriterCount() > 0;
 }
 

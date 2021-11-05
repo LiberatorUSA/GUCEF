@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -46,10 +51,11 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 void
-CMetricsClientManager::AddMetricsClient( CIMetricsSystemClientPtr client )
+CMetricsClientManager::AddMetricsClient( const CString& name, CIMetricsSystemClientPtr client )
 {GUCEF_TRACE;
 
-    m_clients.insert( client );
+    MT::CScopeMutex lock( m_dataLock );
+    m_clients[ name ] = client;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -58,7 +64,20 @@ void
 CMetricsClientManager::RemoveMetricsClient( CIMetricsSystemClientPtr client )
 {GUCEF_TRACE;
 
-    m_clients.erase( client );
+    if ( client.IsNULL() )
+        return;
+    MT::CScopeMutex lock( m_dataLock );
+    m_clients.erase( client->GetName() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::RemoveMetricsClient( const CString& name )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+    m_clients.erase( name );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -85,6 +104,8 @@ CMetricsClientManager::CMetricsClientManager( void )
 CMetricsClientManager::~CMetricsClientManager()
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_dataLock );
+    ClearMetricsClients();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,11 +114,13 @@ bool
 CMetricsClientManager::Open( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_dataLock );
+
     bool totalSuccess = true;
-    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    TMetricsSystemClientPtrMap::iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        CIMetricsSystemClientPtr client = (*i);
+        CIMetricsSystemClientPtr client = (*i).second;
         totalSuccess &= client->Open();
         ++i;
     }
@@ -110,11 +133,13 @@ bool
 CMetricsClientManager::Close( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_dataLock );
+
     bool totalSuccess = true;
-    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    TMetricsSystemClientPtrMap::iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        CIMetricsSystemClientPtr client = (*i);
+        CIMetricsSystemClientPtr client = (*i).second;
         totalSuccess &= client->Close();
         ++i;
     }
@@ -127,11 +152,12 @@ bool
 CMetricsClientManager::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_dataLock );
     bool totalSuccess = true;
-    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        totalSuccess &= (*i)->SaveConfig( tree );
+        totalSuccess &= (*i).second->SaveConfig( tree );
         ++i;
     }
     return totalSuccess;
@@ -143,15 +169,25 @@ bool
 CMetricsClientManager::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_dataLock );
     bool totalSuccess = true;
-    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    TMetricsSystemClientPtrMap::iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        CIMetricsSystemClientPtr client = (*i);
+        CIMetricsSystemClientPtr client = (*i).second;
         totalSuccess &= client->LoadConfig( treeroot );
         ++i;
     }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CMetricsClientManager::GetName( void ) const
+{GUCEF_TRACE;
+
+    return GetClassTypeName();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -170,10 +206,11 @@ void
 CMetricsClientManager::Increment( const CString& key, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Increment( key, frequency );
+        (*i).second->Increment( key, frequency );
         ++i;
     }
 }
@@ -184,10 +221,11 @@ void
 CMetricsClientManager::Decrement( const CString& key, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Decrement( key, frequency );
+        (*i).second->Decrement( key, frequency );
         ++i;
     }
 }
@@ -198,10 +236,11 @@ void
 CMetricsClientManager::Count( const CString& key, const Int32 delta, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Count( key, delta, frequency );
+        (*i).second->Count( key, delta, frequency );
         ++i;
     }
 }
@@ -212,10 +251,11 @@ void
 CMetricsClientManager::Count( const CString& key, const Int64 delta, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Count( key, delta, frequency );
+        (*i).second->Count( key, delta, frequency );
         ++i;
     }
 }
@@ -226,10 +266,11 @@ void
 CMetricsClientManager::Count( const CString& key, const UInt64 delta, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Count( key, delta, frequency );
+        (*i).second->Count( key, delta, frequency );
         ++i;
     }
 }
@@ -240,10 +281,11 @@ void
 CMetricsClientManager::Count( const CString& key, const UInt32 delta, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Count( key, delta, frequency );
+        (*i).second->Count( key, delta, frequency );
         ++i;
     }
 }
@@ -254,10 +296,11 @@ void
 CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Gauge( key, value, frequency );
+        (*i).second->Gauge( key, value, frequency );
         ++i;
     }
 }
@@ -268,10 +311,11 @@ void
 CMetricsClientManager::Gauge( const CString& key, const Int64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Gauge( key, value, frequency );
+        (*i).second->Gauge( key, value, frequency );
         ++i;
     }
 }
@@ -282,10 +326,11 @@ void
 CMetricsClientManager::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Gauge( key, value, frequency );
+        (*i).second->Gauge( key, value, frequency );
         ++i;
     }
 }
@@ -296,10 +341,11 @@ void
 CMetricsClientManager::Gauge( const CString& key, const Float32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Gauge( key, value, frequency );
+        (*i).second->Gauge( key, value, frequency );
         ++i;
     }
 }
@@ -310,10 +356,11 @@ void
 CMetricsClientManager::Gauge( const CString& key, const Float64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Gauge( key, value, frequency );
+        (*i).second->Gauge( key, value, frequency );
         ++i;
     }
 }
@@ -324,10 +371,11 @@ void
 CMetricsClientManager::Timing( const CString& key, const UInt32 ms, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Timing( key, ms, frequency );
+        (*i).second->Timing( key, ms, frequency );
         ++i;
     }
 }
@@ -338,10 +386,11 @@ void
 CMetricsClientManager::Timing( const CString& key, const UInt64 ms, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
     while ( i != m_clients.end() )
     {
-        (*i)->Timing( key, ms, frequency );
+        (*i).second->Timing( key, ms, frequency );
         ++i;
     }
 }

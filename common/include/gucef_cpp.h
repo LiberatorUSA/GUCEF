@@ -77,6 +77,17 @@
             /* Rely on only cpp version check */
             #define GUCEF_NOEXCEPT_IS_SUPPORTED 1
         #endif
+    #else /* some compilers still support it before official inclusion in C++11 */
+        #if defined(__clang__)
+            #if __has_feature(cxx_noexcept)
+                #define GUCEF_NOEXCEPT_IS_SUPPORTED 1
+            #endif
+        #else
+            #if defined(__GXX_EXPERIMENTAL_CXX0X__) && __GNUC__ * 10 + __GNUC_MINOR__ >= 46 || \
+                defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023026
+                #define GUCEF_NOEXCEPT_IS_SUPPORTED 1
+            #endif
+        #endif
     #endif
 #endif
 

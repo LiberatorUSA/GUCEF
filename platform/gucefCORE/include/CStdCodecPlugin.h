@@ -31,6 +31,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_CICODECPLUGIN_H
 #include "CICodecPlugin.h"
 #define GUCEF_CORE_CICODECPLUGIN_H
@@ -121,6 +126,10 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
     TPluginMetaDataStoragePtr m_metaData;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CStdCodecPlugin, MT::CMutex >  CStdCodecPluginPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -133,14 +142,3 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CSTDCODECPLUGIN_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 15-12-2006 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/

@@ -33,11 +33,6 @@
 #define GUCEF_CORE_CSYSCONSOLE_H
 #endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #include "CSysConsoleClient.h"
 
 /*-------------------------------------------------------------------------//

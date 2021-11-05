@@ -55,7 +55,8 @@ namespace MT {
  *      constructor, allocates storage for a semaphore.
  */
 CSemaphore::CSemaphore( UInt32 initial_value )
-{
+{GUCEF_TRACE;
+
       assert( 0 ); 
        // sem = SDL_CreateSemaphore( initial_value );
 }
@@ -66,7 +67,8 @@ CSemaphore::CSemaphore( UInt32 initial_value )
  *      Destructor, de-allocates storage for a semaphore.
  */
 CSemaphore::~CSemaphore()
-{
+{GUCEF_TRACE;
+
        // SDL_DestroySemaphore( sem );
 }
 
@@ -79,7 +81,8 @@ CSemaphore::~CSemaphore()
  */
 bool
 CSemaphore::Wait( void )
-{
+{GUCEF_TRACE;
+
         return false;// SDL_SemWait( sem ) == 1;
 }
 
@@ -91,7 +94,8 @@ CSemaphore::Wait( void )
  */
 Int32
 CSemaphore::TryWait( void )
-{
+{GUCEF_TRACE;
+
         return 0;//SDL_SemTryWait( sem );
 }
 
@@ -106,7 +110,8 @@ CSemaphore::TryWait( void )
  */
 Int32
 CSemaphore::WaitOrTimeout( UInt32 ms )
-{
+{GUCEF_TRACE;
+
         return 0;// SDL_SemWaitTimeout( sem ,
                    //                ms  );
 }
@@ -119,7 +124,8 @@ CSemaphore::WaitOrTimeout( UInt32 ms )
  */
 bool
 CSemaphore::Post( void )
-{
+{GUCEF_TRACE;
+
         return false;//SDL_SemPost( sem ) > 0;       
 }
 
@@ -130,7 +136,8 @@ CSemaphore::Post( void )
  */
 UInt32
 CSemaphore::Value( void ) const
-{
+{GUCEF_TRACE;
+
         return false; //SDL_SemValue( (SDL_sem*) sem );
 }
 

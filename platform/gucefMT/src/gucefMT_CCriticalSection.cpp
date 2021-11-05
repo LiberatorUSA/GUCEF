@@ -50,7 +50,8 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CCriticalSection::CCriticalSection( void )
-{
+{GUCEF_TRACE;
+
         #ifdef GUCEF_MSWIN_BUILD
         _data = new CRITICAL_SECTION;
         InitializeCriticalSection( (CRITICAL_SECTION*) _data );
@@ -62,7 +63,8 @@ CCriticalSection::CCriticalSection( void )
 /*--------------------------------------------------------------------------*/
 
 CCriticalSection::~CCriticalSection()
-{
+{GUCEF_TRACE;
+
         #ifdef GUCEF_MSWIN_BUILD
         DeleteCriticalSection( (CRITICAL_SECTION*) _data );
         delete (CRITICAL_SECTION*) _data;
@@ -75,7 +77,8 @@ CCriticalSection::~CCriticalSection()
 
 void
 CCriticalSection::Enter( void )
-{
+{GUCEF_TRACE;
+
         #ifdef GUCEF_MSWIN_BUILD
         EnterCriticalSection( (CRITICAL_SECTION*) _data );
         #else
@@ -87,7 +90,8 @@ CCriticalSection::Enter( void )
 
 void
 CCriticalSection::Leave( void )
-{
+{GUCEF_TRACE;
+
         #ifdef GUCEF_MSWIN_BUILD
         LeaveCriticalSection( (CRITICAL_SECTION*) _data );
         #else

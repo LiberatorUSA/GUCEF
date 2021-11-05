@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -133,6 +138,11 @@ CWebGlobal::~CWebGlobal()
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType );
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerResponseHandler::TaskType );
 
+    m_globalHttpCodecLinks->RemoveEncodingCodecLinks();
+    m_globalHttpCodecLinks->RemoveMimeCodecLinks();
+    
+    CHTTPURLHandler::Unregister();
+
     delete m_globalHttpCodecLinks;
     m_globalHttpCodecLinks = GUCEF_NULL;
 }
@@ -145,13 +155,16 @@ CWebGlobal::Instance()
 
     if ( GUCEF_NULL == g_instance )
     {
-        g_dataLock.Lock();
+        MT::CScopeMutex scopeLock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CWebGlobal();
-            g_instance->Initialize();
+            if ( GUCEF_NULL != g_instance )
+            {
+                g_instance->Initialize();
+                atexit( CWebGlobal::Deinstance );
+            }
         }
-        g_dataLock.Unlock();
     }
     return g_instance;
 }
@@ -162,6 +175,7 @@ void
 CWebGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex scopeLock( g_dataLock );
     delete g_instance;
     g_instance = NULL;
 }

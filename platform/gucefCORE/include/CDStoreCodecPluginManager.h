@@ -69,23 +69,21 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 
     TDStoreCodecPluginPtr GetCodec( const CString& codectype ) const;
 
-    virtual CString GetPluginType( void ) const;
+    virtual CString GetPluginType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+                                       TPluginMetaDataPtr pluginMetaData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
-
-    void RegisterCodecPlugin( CDStoreCodecPlugin* plugin );
+    virtual void UnregisterPlugin( TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
 
     CDStoreCodecPluginManager( void );
 
-    virtual ~CDStoreCodecPluginManager();
+    virtual ~CDStoreCodecPluginManager() GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

@@ -48,9 +48,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CBlockStack::CBlockStack( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -60,25 +59,23 @@ CBlockStack::CBlockStack( UInt32 capacity  ,
         : _pool( capacity  ,
                  blocksize ) ,
           _itemcount( 0 )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CBlockStack::~CBlockStack()
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CBlockStack::Push( const void *srcdata )
-{                               
-        GUCEF_BEGIN;        
+{GUCEF_TRACE;                           
+       
         if ( _itemcount == _pool.GetCapacity() )
         {
                 _pool.SetCapacity( _pool.GetCapacity()+5 );
@@ -86,15 +83,14 @@ CBlockStack::Push( const void *srcdata )
         _pool.ShiftBlocksUp();
         _pool.SetBlock( 0, srcdata );
         ++_itemcount;
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CBlockStack::Pop( void* datadest )
-{       
-        GUCEF_BEGIN;        
+{GUCEF_TRACE;
+
         if ( _itemcount )
         {
                 memcpy( datadest             ,
@@ -102,10 +98,8 @@ CBlockStack::Pop( void* datadest )
                         _pool.GetBlockSize() );
                 _pool.ShiftBlocksDown();
                 --_itemcount;
-                GUCEF_END;
                 return true;
         }
-        GUCEF_END;
         return false;
 }
 
@@ -113,18 +107,16 @@ CBlockStack::Pop( void* datadest )
 
 bool
 CBlockStack::GetTop( void* datadest )
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
+
         if ( _itemcount )
         {
                 memcpy( datadest                       ,
                         _pool.GetBlock( _itemcount-1 ) ,
                         _pool.GetBlockSize()           );
                 --_itemcount;
-                GUCEF_END;
                 return true;
         }
-        GUCEF_END;
         return false;
 }
 
@@ -132,28 +124,26 @@ CBlockStack::GetTop( void* datadest )
 
 void 
 CBlockStack::SetTop( const void *srcdata )
-{
-        GUCEF_BEGIN;        
+{GUCEF_TRACE;
+
         if ( _itemcount == _pool.GetCapacity() )
         {
                 _pool.SetCapacity( _pool.GetCapacity()+5 );
         }
         _pool.SetBlock( _itemcount, srcdata );
         ++_itemcount;
-        GUCEF_END;        
 }
 
 /*-------------------------------------------------------------------------*/
 
 void* 
 CBlockStack::PeekTop( void ) const
-{       
-        GUCEF_BEGIN;        
+{GUCEF_TRACE;
+
         if ( _itemcount )
         {
-                GUCEF_END_RET( void*, _pool.GetBlock( _itemcount-1 ) );
+                return _pool.GetBlock( _itemcount-1 );
         }
-        GUCEF_END;
         return NULL;                
 }
 
@@ -161,13 +151,12 @@ CBlockStack::PeekTop( void ) const
 
 void* 
 CBlockStack::Peek( void ) const
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
+
         if ( _itemcount )
         {                
-                GUCEF_END_RET( void*, _pool.GetBlock( 0 ) );
+                return _pool.GetBlock( 0 );
         }
-        GUCEF_END;
         return NULL;                 
 }
 
@@ -175,9 +164,8 @@ CBlockStack::Peek( void ) const
 
 UInt32
 CBlockStack::GetItemCount( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;        
+{GUCEF_TRACE;
+
         return _itemcount;
 }
 

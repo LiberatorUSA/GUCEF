@@ -95,6 +95,15 @@ CPluginGroup::GetPlugins( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CPluginGroup::TPluginSet&
+CPluginGroup::GetPlugins( void ) const
+{GUCEF_TRACE;
+
+    return m_plugins;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPluginGroup::TPluginMetaDataSet&
 CPluginGroup::GetPluginMetaData( void )
 {GUCEF_TRACE;
@@ -104,9 +113,19 @@ CPluginGroup::GetPluginMetaData( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CPluginGroup::TPluginMetaDataSet&
+CPluginGroup::GetPluginMetaData( void ) const
+{GUCEF_TRACE;
+
+    return m_pluginMetaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPluginGroup::HasPluginWithFileName( const CString& moduleFileName ) const
-{
+{GUCEF_TRACE;
+
     TPluginSet::const_iterator i = m_plugins.begin();
     while ( i != m_plugins.end() )
     {
@@ -132,6 +151,28 @@ CPluginGroup::HasPluginWithFileName( const CString& moduleFileName ) const
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TPluginPtr 
+CPluginGroup::FindPluginWithModuleName( const CString& moduleName )
+{GUCEF_TRACE;
+
+    TPluginSet::const_iterator i = m_plugins.begin();
+    while ( i != m_plugins.end() )
+    {
+        TPluginMetaDataPtr metadata = (*i)->GetMetaData();
+        if ( !metadata.IsNULL() )
+        {
+            if ( moduleName == metadata->GetModuleFilename() )
+            {
+                return (*i);
+            }
+        }
+        ++i;
+    }
+    return TPluginPtr();
 }
 
 /*-------------------------------------------------------------------------//

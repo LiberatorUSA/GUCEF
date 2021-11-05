@@ -26,8 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <string>
-#include "gucefCORE_macros.h"
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +62,7 @@ class GUCEF_CORE_PUBLIC_CPP CINamedInstance
 
     CINamedInstance& operator=( const CINamedInstance& src );
 
-    virtual std::string GetName( void ) const = 0;
+    virtual const CString& GetName( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

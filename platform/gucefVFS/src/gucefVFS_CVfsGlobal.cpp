@@ -75,8 +75,8 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVfsGlobal* CVfsGlobal::g_instance = NULL;
 MT::CMutex CVfsGlobal::g_datalock;
+CVfsGlobal* CVfsGlobal::g_instance = GUCEF_NULL;
 TAsyncVfsOperationTaskFactory g_asyncVfsOperationTaskFactory;
 
 /*-------------------------------------------------------------------------//
@@ -95,7 +95,11 @@ CVfsGlobal::Instance()
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CVfsGlobal();
-            g_instance->Initialize();
+            if ( GUCEF_NULL != g_instance )
+            {
+                g_instance->Initialize();
+                atexit( CVfsGlobal::Deinstance );
+            }
         }
     }
     return g_instance;
@@ -107,6 +111,7 @@ void
 CVfsGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex scopeLock( g_datalock );
     delete g_instance;
     g_instance = NULL;
 }

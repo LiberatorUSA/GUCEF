@@ -46,7 +46,8 @@ namespace MT {
 
 bool
 CGUCEFMTModule::Load( void )
-{
+{GUCEF_TRACE;
+
     #if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && !defined( GUCEF_DYNNEWON_DISABLED ) )
     MEMMAN_Initialize();
     #endif
@@ -61,7 +62,8 @@ CGUCEFMTModule::Load( void )
 
 bool
 CGUCEFMTModule::Unload( void )
-{
+{GUCEF_TRACE;
+
     // shutdown the performance timer last
     PrecisionTimerShutdown();
 

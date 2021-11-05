@@ -42,16 +42,34 @@
 #include <time.h>             // the MemoryManager.h header.  All other custom file should be
 #include <assert.h>           // included after the MemoryManager.h header. 
 
-#include "gucefMT_CMutex.h" 
-#include "gucefMT_CScopeMutex.h"
-
 #include "MemoryManager.h"    
+
+#ifndef GUCEF_MT_MUTEX_H
+#include "gucefMT_mutex.h"
+#define GUCEF_MT_MUTEX_H
+#endif /* GUCEF_MT_MUTEX_H ? */
+
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h" 
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
+#ifndef GUCEF_CALLSTACK_H
+#include "callstack.h"
+#define GUCEF_CALLSTACK_H
+#endif /* GUCEF_CALLSTACK_H ? */ 
 
 // Turn off the defined macros to avoid confusion.  We want to avoid circular definition, 
 // it is also not desired to track memory allocations within the memory manager module.
 #include "gucef_dynnewoff.h"
 
-using namespace GUCEF;
+#undef GUCEF_USE_CALLSTACK_TRACING
+#undef GUCEF_USE_CALLSTACK_PLATFORM_TRACING
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,6 +137,7 @@ struct MemoryNode                   // This struct defines the primary container
   char           options;           // flexibility and information holding as possible.
     long           predefinedBody;
   ALLOC_TYPE     allocationType;
+  TCallStack*    allocCallstack;
   MemoryNode    *next, *prev;
 
     void InitializeMemory( long body = BODY ) ; // Initailize the nodes memory for interrogation.
@@ -372,6 +391,13 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
     memory->allocationType    = type;
     strncpy( memory->sourceFile, sourceFileStripper( file ), 30 );
     memory->sourceFile[29]=0;
+    
+    if ( GUCEF_NULL != memory->allocCallstack )
+    {
+        MEMMAN_FreeCallstackCopy( memory->allocCallstack );
+        memory->allocCallstack = GUCEF_NULL;
+    }
+    MEMMAN_GetCallstackCopyForCurrentThread( &memory->allocCallstack, 1 );
 
     if ( g_manager.m_logAlways ) 
     {
@@ -666,7 +692,8 @@ void MemoryManager::insertMemoryNode( MemoryNode *node )
     node->next = m_hashTable[hashIndex];
     node->prev = NULL;
 
-    if (m_hashTable[hashIndex]) m_hashTable[hashIndex]->prev = node;
+    if (m_hashTable[hashIndex]) 
+        m_hashTable[hashIndex]->prev = node;
 
     m_hashTable[hashIndex] = node;
     
@@ -675,8 +702,10 @@ void MemoryManager::insertMemoryNode( MemoryNode *node )
 
     m_allocatedMemory += (UInt32)node->reportedSize;
 
-    if (m_allocatedMemory > m_peakMemoryAllocation)   m_peakMemoryAllocation    = m_allocatedMemory;
-    if (m_numAllocations > m_peakTotalNumAllocations) m_peakTotalNumAllocations = m_numAllocations;
+    if (m_allocatedMemory > m_peakMemoryAllocation)   
+        m_peakMemoryAllocation    = m_allocatedMemory;
+    if (m_numAllocations > m_peakTotalNumAllocations) 
+        m_peakTotalNumAllocations = m_numAllocations;
 
     m_totalMemoryAllocated += (UInt32)node->reportedSize;
     m_totalMemoryAllocations++;
@@ -834,6 +863,13 @@ MemoryManager::ValidateMemory( void )
 void MemoryManager::deallocateMemory( MemoryNode *node )
 {
     m_overheadMemoryCost -= (node->paddingSize * 2 * sizeof(long));
+
+    if ( GUCEF_NULL != node->allocCallstack )
+    {
+        MEMMAN_FreeCallstackCopy( node->allocCallstack );
+        node->allocCallstack = GUCEF_NULL;
+    }
+
     node->next = m_memoryCache;
     m_memoryCache = node;
 }
@@ -851,7 +887,8 @@ void MemoryManager::deallocateMemory( MemoryNode *node )
  */
 MemoryNode* MemoryManager::allocateMemory( void )
 {
-    if (!m_memoryCache) {
+    if (!m_memoryCache) 
+    {
         int overhead = m_paddingSize * 2 * sizeof(long) + sizeof( MemoryNode );
         m_overheadMemoryCost += overhead;
         m_totalOverHeadMemoryCost += overhead;
@@ -860,9 +897,13 @@ MemoryNode* MemoryManager::allocateMemory( void )
             m_peakOverHeadMemoryCost =  m_overheadMemoryCost;
         }
 
-        return (MemoryNode*)malloc( sizeof(MemoryNode) );
+        MemoryNode* newNode = (MemoryNode*) malloc( sizeof(MemoryNode) );
+        if ( GUCEF_NULL != newNode )
+            newNode->allocCallstack = GUCEF_NULL;
+        return newNode; 
     }
-    else {
+    else 
+    {
         int overhead = m_paddingSize * 2 * sizeof(long);
         m_overheadMemoryCost += overhead;
         m_totalOverHeadMemoryCost += overhead;
@@ -980,13 +1021,23 @@ void MemoryManager::dumpMemoryAllocations( void )
     fprintf( fp, "              C U R R E N T L Y  A L L O C A T E D  M E M O R Y                 \r\n" );
     fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
 
-    for (int ii = 0, cnt = 1; ii < HASH_SIZE; ++ii) {
-        for (MemoryNode *ptr = m_hashTable[ii]; ptr; ptr = ptr->next) {
+    for (int ii = 0, cnt = 1; ii < HASH_SIZE; ++ii) 
+    {
+        for (MemoryNode *ptr = m_hashTable[ii]; ptr; ptr = ptr->next) 
+        {
             fprintf( fp, "** Allocation # %2d\r\n", cnt++ );
             fprintf( fp, "Total Memory Size : %s\r\n", memorySizeString( (UInt32)ptr->reportedSize, false ) );
             fprintf( fp, "Source File       : %s\r\n", ptr->sourceFile );
             fprintf( fp, "Source Line       : %d\r\n", ptr->sourceLine );
             fprintf( fp, "Allocation Type   : %s\r\n", s_allocationTypes[ptr->allocationType] );
+            if ( GUCEF_NULL != ptr->allocCallstack )
+            {
+                fprintf( fp, "Allocation Call Stack   :\r\n" );
+                for ( UInt32 s=0; s<ptr->allocCallstack->items; ++s )
+                {
+                    fprintf( fp, "  %s:%d\r\n", ptr->allocCallstack->file[ s ], ptr->allocCallstack->linenr[ s ] );
+                }
+            }
             fprintf( fp, "\r\n");
         }
     }

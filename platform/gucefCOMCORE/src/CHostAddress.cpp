@@ -22,11 +22,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_COMCORE_SOCKETUTILS_H
 #include "socketutils.h"
 #define GUCEF_COMCORE_SOCKETUTILS_H

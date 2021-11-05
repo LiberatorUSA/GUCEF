@@ -112,7 +112,6 @@ set( HEADER_FILES
   include/CTStringStreamable.h
   include/CTThreadSafeExpansion.h
   include/CTimer.h
-  include/CTracer.h
   include/CTransactionEventControl.h
   include/CURL.h
   include/CURLDataRetriever.h
@@ -133,7 +132,6 @@ set( HEADER_FILES
   include/MemorySegment.h
   include/NumericIDs.h
   include/PAFILE.h
-  include/callstack.h
   include/cloneables.h
   include/dvcppfileutils.h
   include/dvcppstringutils.h
@@ -316,7 +314,6 @@ set( SOURCE_FILES
   src/CTSharedPtr.cpp
   src/CTSingleton.cpp
   src/CTimer.cpp
-  src/CTracer.cpp
   src/CTransactionEventControl.cpp
   src/CURL.cpp
   src/CURLDataRetriever.cpp
@@ -330,7 +327,6 @@ set( SOURCE_FILES
   src/MemoryPool.cpp
   src/MemorySegment.cpp
   src/PAFILE.c
-  src/callstack.c
   src/cloneables.cpp
   src/dvcppfileutils.cpp
   src/dvcppstringutils.cpp

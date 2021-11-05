@@ -99,6 +99,7 @@ namespace CORE {
 
 const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
 const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+const CEvent CGUCEFApplication::AppShutdownCompleteEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownCompleteEvent";
 const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplication::FirstCycleEvent";
 
 /*-------------------------------------------------------------------------//
@@ -129,24 +130,41 @@ CGUCEFApplication::CGUCEFApplication( void )
      *      Register some functionality at the system console
      */
     CSysConsole* sysconsole = &CORE::CCoreGlobal::Instance()->GetSysConsole();
-    std::vector< CString > args;
-    sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
-                             "Stop"                           ,
-                             args                             ,
-                             this                             );
-    sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
-                             "GetApplicationDir"              ,
-                             args                             ,
-                             this                             );
-    sysconsole->RegisterAlias( "exit"                           ,
-                               "GUCEF\\CORE\\CGUCEFApplication" ,
-                               "Stop"                           );
+    if ( GUCEF_NULL != sysconsole )
+    {
+        std::vector< CString > args;
+        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                                 "Stop"                           ,
+                                 args                             ,
+                                 this                             );
+        sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
+                                 "GetApplicationDir"              ,
+                                 args                             ,
+                                 this                             );
+        sysconsole->RegisterAlias( "exit"                           ,
+                                   "GUCEF\\CORE\\CGUCEFApplication" ,
+                                   "Stop"                           );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::~CGUCEFApplication()
 {GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    if ( GUCEF_NULL != pulseGenerator )
+    {
+        CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
+        if ( &m_busyWaitPulseDriver == pulseDriver )
+        {
+            // decouple the pulse driver since we dont want to get tripped up with
+            // order of destruction
+            pulseGenerator->SetPulseGeneratorDriver( GUCEF_NULL );
+        }
+    }
 
     UnsubscribeAllFromObserver();
 }
@@ -390,6 +408,7 @@ CGUCEFApplication::RegisterEvents( void )
 
     AppInitEvent.Initialize();
     AppShutdownEvent.Initialize();
+    AppShutdownCompleteEvent.Initialize();
     FirstCycleEvent.Initialize();
 }
 
@@ -416,19 +435,34 @@ CGUCEFApplication::Stop( bool wait )
 
         if ( !m_shutdownRequested )
         {
-            m_shutdownRequested = true;
             if ( !NotifyObservers( AppShutdownEvent ) ) return;
        
             CPulseGenerator* pulseGenerator = GetPulseGenerator();
             if ( GUCEF_NULL != pulseGenerator )
             {
                 pulseGenerator->ForceStopOfPeriodicPulses();
+                
+                // Once last round for pumped observers
                 pulseGenerator->ForceDirectPulse();
             }
         }
     }
 
     CCoreGlobal::Instance()->GetTaskManager().RequestAllThreadsToStop( wait, false );
+
+    if ( !m_shutdownRequested )
+    {
+        m_shutdownRequested = true;
+        if ( !NotifyObservers( AppShutdownCompleteEvent ) ) return;
+
+        CPulseGenerator* pulseGenerator = GetPulseGenerator();
+        if ( GUCEF_NULL != pulseGenerator )
+        {
+            // Once last round for pumped observers
+            pulseGenerator->ForceDirectPulse();
+        }
+    }
+    
     CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 }
 

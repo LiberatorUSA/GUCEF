@@ -75,6 +75,8 @@ class CHTTPURLHandler : public CORE::CURLHandler
     virtual CORE::CICloneable* Clone( void ) const;
     
     static void Register( void );
+
+    static void Unregister( void );
     
     virtual const CString& GetClassTypeName( void ) const;
     

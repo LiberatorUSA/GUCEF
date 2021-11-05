@@ -8,8 +8,9 @@
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_MLF_BUILD_MODULE" />
-			<Define String="GUCEF_MEMCHECK_OLEAPI" />
+			<Define String="GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" />
 			<Define String="GUCEF_DYNNEWON_DISABLED" />
+			<Define String="GUCEF_CALLSTACK_TRACING_DISABLED" />
 			<Define String="GUCEF_MT_EMBED_CODE" />
 			<Define String="GUCEF_CORE_EMBED_CODE" />
         </Preprocessor>

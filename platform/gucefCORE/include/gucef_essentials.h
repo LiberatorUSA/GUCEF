@@ -36,11 +36,6 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CALLSTACK_H 
-#include "callstack.h"
-#define GUCEF_CORE_CALLSTACK_H
-#endif /* GUCEF_CORE_CALLSTACK_H ? */
-
 #ifdef __cplusplus
 
 #ifndef GUCEF_CORE_LOGGING_H

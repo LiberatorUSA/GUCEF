@@ -65,14 +65,15 @@ CMailboxForCloneables::CMailboxForCloneables( void )
     : MT::CILockable()
     , m_mailStack()
     , m_datalock()
-{
+{GUCEF_TRACE;
 
 }
 
 /*--------------------------------------------------------------------------*/
 
 CMailboxForCloneables::~CMailboxForCloneables()
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     typename TMailList::iterator i( m_mailStack.begin() );
@@ -88,7 +89,8 @@ CMailboxForCloneables::~CMailboxForCloneables()
 
 void
 CMailboxForCloneables::AddMail( const CICloneable* mail /* = GUCEF_NULL */ )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != mail )
     {
         CObjectScopeLock lock( this );
@@ -100,7 +102,8 @@ CMailboxForCloneables::AddMail( const CICloneable* mail /* = GUCEF_NULL */ )
 
 bool
 CMailboxForCloneables::PopMail( void )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     if ( !m_mailStack.empty() )
@@ -117,7 +120,8 @@ CMailboxForCloneables::PopMail( void )
 
 void
 CMailboxForCloneables::Clear( void )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     typename TMailList::iterator i( m_mailStack.begin() );
@@ -133,7 +137,8 @@ CMailboxForCloneables::Clear( void )
 
 void
 CMailboxForCloneables::Delete( const CICloneable* mail )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     typename TMailList::iterator i( m_mailStack.begin() );
@@ -154,7 +159,8 @@ CMailboxForCloneables::Delete( const CICloneable* mail )
 
 bool
 CMailboxForCloneables::HasMail( void ) const
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
     return !m_mailStack.empty();
 }
@@ -163,7 +169,8 @@ CMailboxForCloneables::HasMail( void ) const
 
 UInt32
 CMailboxForCloneables::AmountOfMail( void ) const
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
     return (UInt32) m_mailStack.size();
 }
@@ -172,7 +179,8 @@ CMailboxForCloneables::AmountOfMail( void ) const
 
 const MT::CILockable* 
 CMailboxForCloneables::AsLockable( void ) const
-{
+{GUCEF_TRACE;
+
     return this;
 }
 
@@ -180,7 +188,8 @@ CMailboxForCloneables::AsLockable( void ) const
 
 bool
 CMailboxForCloneables::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Lock( lockWaitTimeoutInMs );
 }
 
@@ -188,7 +197,8 @@ CMailboxForCloneables::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CMailboxForCloneables::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Unlock();
 }
 
@@ -196,7 +206,8 @@ CMailboxForCloneables::Unlock( void ) const
 
 bool
 CMailboxForCloneables::DoLock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return Lock( lockWaitTimeoutInMs );
 }
 
@@ -204,7 +215,8 @@ CMailboxForCloneables::DoLock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CMailboxForCloneables::DoUnlock( void ) const
-{
+{GUCEF_TRACE;
+
     return Unlock();
 }
 

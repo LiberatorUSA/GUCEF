@@ -73,17 +73,20 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     CORE::CStdCodecPluginManager& codecPluginMngr = CORE::CCoreGlobal::Instance()->GetStdCodecPluginManager();
 
-    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
-    SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback );
+    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnAppShutdown );
+    SubscribeTo( &app, CORE::CGUCEFApplication::AppShutdownEvent, callback );
 
     TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
-    SubscribeTo( &app, app.FirstCycleEvent, callback2 );
+    SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback2 );
 
-    TEventCallback callback3( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
-    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecRegisteredEvent, callback3 );
+    TEventCallback callback3( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
+    SubscribeTo( &app, app.FirstCycleEvent, callback3 );
 
     TEventCallback callback4( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
-    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback4 );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecRegisteredEvent, callback4 );
+
+    TEventCallback callback5( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback5 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,6 +128,18 @@ CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs( CORE::CNotifier* notif
 
     InitMimeCodecLinks();
     InitEncodingCodecLinks();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGlobalHttpCodecLinks::OnAppShutdown( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    RemoveEncodingCodecLinks();
+    RemoveMimeCodecLinks(); 
 }
 
 /*-------------------------------------------------------------------------*/

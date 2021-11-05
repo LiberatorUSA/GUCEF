@@ -44,7 +44,8 @@ namespace MT {
 CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable* lockableObject )
     : m_lockableObject( lockableObject )
     , m_isLocked( false )
-{
+{GUCEF_TRACE;
+
     assert( 0 != m_lockableObject );
         
     m_isLocked = m_lockableObject->ReadOnlyLock();
@@ -55,7 +56,8 @@ CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable* lockableOb
 CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable& lockableObject )
     : m_lockableObject( &lockableObject )
     , m_isLocked( false )
-{
+{GUCEF_TRACE;
+
     assert( 0 != m_lockableObject );
         
     m_isLocked = m_lockableObject->ReadOnlyLock();
@@ -64,7 +66,8 @@ CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable& lockableOb
 /*--------------------------------------------------------------------------*/
 
 CObjectScopeReadOnlyLock::~CObjectScopeReadOnlyLock()
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
     {
         m_isLocked = !m_lockableObject->ReadOnlyUnlock();
@@ -75,7 +78,8 @@ CObjectScopeReadOnlyLock::~CObjectScopeReadOnlyLock()
 
 bool 
 CObjectScopeReadOnlyLock::IsLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_isLocked;
 }
 
@@ -83,7 +87,8 @@ CObjectScopeReadOnlyLock::IsLocked( void ) const
 
 bool 
 CObjectScopeReadOnlyLock::EarlyReaderUnlock( void )
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
     {
         m_isLocked = !m_lockableObject->ReadOnlyUnlock();

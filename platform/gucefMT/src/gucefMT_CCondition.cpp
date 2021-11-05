@@ -52,7 +52,8 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CCondition::CCondition( void )
-{
+{GUCEF_TRACE;
+
         assert( 0 );
         //cond = SDL_CreateCond();
 }
@@ -60,7 +61,8 @@ CCondition::CCondition( void )
 /*--------------------------------------------------------------------------*/
 
 CCondition::~CCondition()
-{
+{GUCEF_TRACE;
+
        /// SDL_DestroyCond( cond );
 }
 
@@ -72,7 +74,8 @@ CCondition::~CCondition()
  */
 bool
 CCondition::Signal( void )
-{
+{GUCEF_TRACE;
+
         return false;//SDL_CondSignal( cond ) >= 0;
 }
 
@@ -84,7 +87,8 @@ CCondition::Signal( void )
  */
 bool
 CCondition::Broadcast( void )
-{
+{GUCEF_TRACE;
+
         return false; //SDL_CondBroadcast( cond ) >= 0;
 }
 
@@ -97,7 +101,8 @@ CCondition::Broadcast( void )
  */
 bool
 CCondition::WaitAndUnlock( CMutex& mutex )
-{
+{GUCEF_TRACE;
+
       //  return SDL_CondWait( cond        ,
       //                       mutex.mutex ) >= 0;
       return false;
@@ -115,7 +120,8 @@ CCondition::WaitAndUnlock( CMutex& mutex )
 Int32
 CCondition::WaitAndUnlockOrTimeout( CMutex& mutex ,
                                     UInt32 ms     )
-{
+{GUCEF_TRACE;
+
    /*     return SDL_CondWaitTimeout( cond        ,
                                     mutex.mutex ,
                                     ms          ); */

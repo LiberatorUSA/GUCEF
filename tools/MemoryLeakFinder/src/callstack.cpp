@@ -1,20 +1,19 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefMT: GUCEF module providing multithreading solutions
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -27,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "callstack.h"
+
 #ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"
 #define GUCEF_MT_DVMTOSWRAP_H
@@ -37,16 +38,26 @@
 #define GUCEF_MT_MUTEX_H
 #endif /* GUCEF_MT_MUTEX_H ? */
 
-#include "callstack.h"
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h" 
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
 
 /*
  *  We specifically do NOT want to redirect memory management here
- *  stack tracing can work toghether with memory tracing
  */
 #ifndef GUCEF_DYNNEWOFF_H
 #include "gucef_dynnewoff.h"
 #define GUCEF_DYNNEWOFF_H
 #endif /* GUCEF_DYNNEWOFF_H ? */
+
+#undef GUCEF_USE_CALLSTACK_TRACING
+#undef GUCEF_USE_CALLSTACK_PLATFORM_TRACING
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +67,7 @@
 
 #ifdef __cplusplus
 namespace GUCEF {
-namespace CORE {
+namespace MLF {
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
@@ -75,37 +86,22 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-struct SCallStack
-{
-        const char** file;
-        int* linenr;
-        UInt64* entryTickCount;
-        UInt32 items;
-        UInt32 stacksize;
-        UInt32 threadid;
-};
-typedef struct SCallStack TCallStack;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+static MT::CMutex g_stackTraceMutex;
 static TCallStack* _stacks = NULL;
 static UInt32 stackcount = 0;
 static char* logFilename = NULL;
 static FILE* logFile = NULL;
-static struct SMutex* mutex = NULL;
 static UInt32 logStack = 0;
 static UInt32 isInitialized = 0;
 static UInt32 logInCvsFormatBool = 1;
 static TStackPushCallback pushCallback = NULL;
 static TStackPopCallback popCallback = NULL;
+
+static MT::SMutex* mutex = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,7 +114,7 @@ Log( const char* logtype ,
      UInt32 threadID     ,
      Int32 stackheight   ,
      const char* file    ,
-     int line            ,
+     Int32 line          ,
      UInt32 ticksSpent   )
 {
     if ( logStack != 1 )
@@ -169,24 +165,25 @@ Log( const char* logtype ,
 static void
 Push( TCallStack* stack ,
       const char* file  ,
-      int line          )
+      Int32 line        )
 {
     /* if the stack heap is full we will enlarge it */
-    if ( stack->items == stack->stacksize )
+    if ( stack->items == stack->reservedStacksize )
     {
-        stack->stacksize += STACK_RESIZE_AMOUNT;
-        stack->file = (const char**)realloc( (char**)stack->file, stack->stacksize*sizeof(const char*) );
-        stack->linenr = (int*)realloc( stack->linenr, stack->stacksize*sizeof(int) );
-        stack->entryTickCount = (UInt64*)realloc( stack->entryTickCount, stack->stacksize*sizeof(UInt64) );
+        stack->reservedStacksize += STACK_RESIZE_AMOUNT;
+        stack->file = (const char**)realloc( (char**)stack->file, stack->reservedStacksize*sizeof(const char*) );
+        stack->linenr = (int*)realloc( stack->linenr, stack->reservedStacksize*sizeof(Int32) );
+        stack->entryTickCount = (UInt64*)realloc( stack->entryTickCount, stack->reservedStacksize*sizeof(UInt64) );
+        stack->staticsAreCopied = 0;
     }
 
     /* record the new call on the stack */
     stack->file[ stack->items ] = file;
     stack->linenr[ stack->items ] = line;
-    stack->entryTickCount[ stack->items ] = PrecisionTickCount();
+    stack->entryTickCount[ stack->items ] = MT::PrecisionTickCount();
     ++stack->items;
 
-    Log( "PUSH", stack->threadid, stack->items, file, line, 0 );
+    //Log( "PUSH", stack->threadid, stack->items, file, line, 0 );
 
     if ( pushCallback != NULL )
     {
@@ -209,9 +206,9 @@ Pop( TCallStack* stack )
 
         --stack->items;
         itemCount = stack->items;
-        ticksSpent = (UInt32) (PrecisionTickCount() - stack->entryTickCount[ itemCount ]);
+        ticksSpent = (UInt32) (MT::PrecisionTickCount() - stack->entryTickCount[ itemCount ]);
 
-        Log( " POP", stack->threadid, itemCount+1, stack->file[ itemCount ], stack->linenr[ itemCount ], ticksSpent );
+        //Log( " POP", stack->threadid, itemCount+1, stack->file[ itemCount ], stack->linenr[ itemCount ], ticksSpent );
 
         if ( popCallback != NULL )
         {
@@ -227,68 +224,203 @@ Pop( TCallStack* stack )
 /*-------------------------------------------------------------------------*/
 
 void
-GUCEF_UtilityCodeBegin( const char* file ,
-                        int line         )
+MEMMAN_CallstackScopeBegin( const char* file ,
+                            Int32 line       )
 {
-    if ( isInitialized == 1 )
+    UInt32 i=0, threadid=0;
+
+    MT::CScopeMutex lock( g_stackTraceMutex );
+
+    /* try to find a stack for the caller thread */
+    threadid = MT::GetCurrentTaskID();
+    for ( i=0; i<stackcount; ++i )
     {
-        UInt32 i, threadid;
+            if ( _stacks[ i ].threadid == threadid )
+            {
+                    Push( &_stacks[ i ] ,
+                            file          ,
+                            line          );
+                    return;
+            }
+    }
 
-        MutexLock( mutex );
-
-        /* try to find a stack for the caller thread */
-        threadid = GetCurrentTaskID();
-        for ( i=0; i<stackcount; ++i )
-        {
-                if ( _stacks[ i ].threadid == threadid )
-                {
-                        Push( &_stacks[ i ] ,
-                              file          ,
-                              line          );
-                        MutexUnlock( mutex );
-                        return;
-                }
-        }
-
-        /* no stack found for the caller thread,.. make one */
-        _stacks = (TCallStack*) realloc( _stacks, (stackcount+1)*sizeof(TCallStack) );
+    /* no stack found for the caller thread,.. make one */
+    TCallStack* newStacks = (TCallStack*) realloc( _stacks, (stackcount+1)*sizeof(TCallStack) );
+    if ( GUCEF_NULL != newStacks )
+    {
+        _stacks = newStacks; 
         _stacks[ stackcount ].threadid = threadid;
         _stacks[ stackcount ].items = 0;
-        _stacks[ stackcount ].stacksize = 0;
-        _stacks[ stackcount ].file = NULL;
-        _stacks[ stackcount ].linenr = NULL;
-        _stacks[ stackcount ].entryTickCount = NULL;
+        _stacks[ stackcount ].reservedStacksize = 0;
+        _stacks[ stackcount ].file = GUCEF_NULL;
+        _stacks[ stackcount ].linenr = GUCEF_NULL;
+        _stacks[ stackcount ].entryTickCount = GUCEF_NULL;
         Push( &_stacks[ stackcount ] ,
-              file                   ,
-              line                   );
+                file                   ,
+                line                   );
         stackcount++;
-
-        MutexUnlock( mutex );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-GUCEF_UtilityCodeEnd( void )
+MEMMAN_CallstackScopeEnd( void )
 {
-    if ( isInitialized == 1 )
+    UInt32 i=0, threadid=0;
+
+    MT::CScopeMutex lock( g_stackTraceMutex );
+
+    threadid = MT::GetCurrentTaskID();
+    for ( i=0; i<stackcount; ++i )
     {
-        UInt32 i, threadid;
-
-        MutexLock( mutex );
-
-        threadid = GetCurrentTaskID();
-        for ( i=0; i<stackcount; ++i )
+        if ( _stacks[ i ].threadid == threadid )
         {
-            if ( _stacks[ i ].threadid == threadid )
+            Pop( &_stacks[ i ] );
+            break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+MEMMAN_GetCallstackForCurrentThread( TCallStack** outStack )
+{
+    UInt32 i=0, threadid=0;
+
+    if ( GUCEF_NULL == outStack )
+        return -1;
+
+    MT::CScopeMutex lock( g_stackTraceMutex );
+
+    threadid = MT::GetCurrentTaskID();
+    for ( i=0; i<stackcount; ++i )
+    {
+        if ( _stacks[ i ].threadid == threadid )
+        {
+            *outStack = &_stacks[ i ];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+MEMMAN_GetCallstackCopyForCurrentThread( TCallStack** outStack  ,
+                                         UInt32 alsoCopyStatics )
+{
+    MT::CScopeMutex lock( g_stackTraceMutex );
+    
+    TCallStack* scopeStack = GUCEF_NULL;
+    Int32 result = MEMMAN_GetCallstackForCurrentThread( &scopeStack );
+    if ( 1 == result )
+    {
+        TCallStack* stackCopy = (TCallStack*) malloc( sizeof( TCallStack ) );
+        if ( GUCEF_NULL != stackCopy )
+        {
+            stackCopy->threadid = scopeStack->threadid;
+            stackCopy->items = scopeStack->items;
+            stackCopy->reservedStacksize = stackCopy->items;
+
+            UInt64 blockSize = stackCopy->items * sizeof(UInt64);
+            stackCopy->entryTickCount = (UInt64*) malloc( blockSize );
+            if ( GUCEF_NULL == stackCopy->entryTickCount )
             {
-                Pop( &_stacks[ i ] );
-                break;
+                free( stackCopy );
+                *outStack = GUCEF_NULL;
+                return -2;
+            }
+            memcpy( stackCopy->entryTickCount, scopeStack->entryTickCount, blockSize );
+            
+            blockSize = stackCopy->items * sizeof( const char*);
+            stackCopy->file = (const char**) malloc( blockSize );
+            if ( GUCEF_NULL == stackCopy->file )
+            {
+                free( stackCopy->entryTickCount );
+                free( stackCopy );
+                *outStack = GUCEF_NULL;
+                return -2;
+            }
+            if ( 0 == alsoCopyStatics )
+            {
+                memcpy( stackCopy->file, scopeStack->file, blockSize );
+                stackCopy->staticsAreCopied = 0;
+            }
+            else
+            {
+                /* there are cases where we also have to copy statics like the __FILE__ referenced strings
+                 * this is because if we are unloading modules the pointers would be invalided even though they are
+                 * hardcoded. This is an additional performance penalty so dont use if you dont need module unload protection
+                 */
+
+                memset( stackCopy->file, 0, blockSize );
+                for ( UInt32 s=0; s<stackCopy->items; ++s )
+                {
+                    size_t filePathLength = strlen( scopeStack->file[ s ] );
+                    char* newFilePathBuffer = (char*) malloc( filePathLength+1 );
+                    if ( GUCEF_NULL != newFilePathBuffer )
+                    {
+                        stackCopy->file[ s ] = newFilePathBuffer;
+                        memcpy( (void*)stackCopy->file[ s ], scopeStack->file[ s ], filePathLength+1 );
+                    }
+                    else
+                    {
+                        for ( UInt32 s2=0; s2<s; ++s2 )
+                        {
+                            free( (void*) stackCopy->file[ s ] );
+                        }
+
+                        free( stackCopy->entryTickCount );
+                        free( stackCopy );
+                        *outStack = GUCEF_NULL;
+                        return -2;
+                    }
+                }
+                stackCopy->staticsAreCopied = 1;
+            }
+
+            blockSize = stackCopy->items * sizeof(Int32);
+            stackCopy->linenr = (Int32*) malloc( blockSize );
+            if ( GUCEF_NULL == stackCopy->linenr )
+            {
+                free( stackCopy->entryTickCount );
+                free( stackCopy->file );
+                free( stackCopy );
+                *outStack = GUCEF_NULL;
+                return -2;
+            }
+            memcpy( stackCopy->linenr, scopeStack->linenr, blockSize );
+
+            *outStack = stackCopy;
+            return 1;
+        }
+        *outStack = GUCEF_NULL;
+        return -2;
+    }
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MEMMAN_FreeCallstackCopy( TCallStack* stackCopy )
+{
+    if ( GUCEF_NULL != stackCopy )
+    {
+        if ( 0 != stackCopy->staticsAreCopied )
+        {
+            for ( UInt32 s=0; s<stackCopy->items; ++s )
+            {
+                free( (void*) stackCopy->file[ s ] );
             }
         }
-
-        MutexUnlock( mutex );
+        free( stackCopy->file );
+        free( stackCopy->linenr );
+        free( stackCopy->entryTickCount );
+        free( stackCopy );
     }
 }
 
@@ -327,11 +459,11 @@ GUCEF_PrintCallstack( void )
 {
     if ( isInitialized == 1 )
     {
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
 
         PrintCallstack( stdout );
 
-        MutexUnlock( mutex );
+        MT::MutexUnlock( mutex );
     }
 }
 
@@ -344,7 +476,7 @@ GUCEF_DumpCallstack( const char* filename )
     {
         FILE* fptr = NULL;
 
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
 
         fptr = fopen( filename, "wb" );
         if ( fptr )
@@ -353,19 +485,7 @@ GUCEF_DumpCallstack( const char* filename )
                 fclose( fptr );
         }
 
-        MutexUnlock( mutex );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-GUCEF_InitCallstackUtility( void )
-{
-    if ( isInitialized == 0 )
-    {
-        mutex = MutexCreate();
-        isInitialized = 1;
+        MT::MutexUnlock( mutex );
     }
 }
 
@@ -376,7 +496,7 @@ GUCEF_ShutdowntCallstackUtility( void )
 {
     if ( isInitialized == 1 )
     {
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
         if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
             fclose( logFile );
@@ -385,7 +505,7 @@ GUCEF_ShutdowntCallstackUtility( void )
         logFilename = NULL;
 
         isInitialized = 0;
-        MutexDestroy( mutex );
+        MT::MutexDestroy( mutex );
     }
 }
 
@@ -396,7 +516,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
 {
     if ( isInitialized == 1 )
     {
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
         logStack = logStackBool;
         if ( logStack == 1 )
         {
@@ -407,7 +527,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
             }
             else
             {
-                MutexUnlock( mutex );
+                MT::MutexUnlock( mutex );
                 GUCEF_LogStackToStdOut();
                 return;
             }
@@ -421,7 +541,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
                 logFile = NULL;
             }
         }
-        MutexUnlock( mutex );
+        MT::MutexUnlock( mutex );
     }
 }
 
@@ -432,7 +552,7 @@ GUCEF_LogStackToStdOut( void )
 {
     if ( isInitialized == 1 )
     {
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
         if ( ( logFile != NULL )  &&
              ( logFile != stdout ) )
         {
@@ -441,7 +561,7 @@ GUCEF_LogStackToStdOut( void )
         logFile = stdout;
         free( logFilename );
         logFilename = NULL;
-        MutexUnlock( mutex );
+        MT::MutexUnlock( mutex );
     }
 }
 
@@ -450,9 +570,9 @@ GUCEF_LogStackToStdOut( void )
 void
 GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool )
 {
-    MutexLock( mutex );
+    MT::MutexLock( mutex );
     logInCvsFormatBool = logAsCvsBool;
-    MutexUnlock( mutex );
+    MT::MutexUnlock( mutex );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -460,9 +580,9 @@ GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool )
 void
 GUCEF_SetStackPushCallback( TStackPushCallback cBack )
 {
-    MutexLock( mutex );
+    MT::MutexLock( mutex );
     pushCallback = cBack;
-    MutexUnlock( mutex );
+    MT::MutexUnlock( mutex );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -470,9 +590,9 @@ GUCEF_SetStackPushCallback( TStackPushCallback cBack )
 void
 GUCEF_SetStackPopCallback( TStackPopCallback cBack )
 {
-    MutexLock( mutex );
+    MT::MutexLock( mutex );
     popCallback = cBack;
-    MutexUnlock( mutex );
+    MT::MutexUnlock( mutex );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -484,7 +604,7 @@ GUCEF_LogStackTo( const char* filename )
     {
         UInt32 strLen;
 
-        MutexLock( mutex );
+        MT::MutexLock( mutex );
         if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
             fclose( logFile );
@@ -497,7 +617,7 @@ GUCEF_LogStackTo( const char* filename )
         memcpy( logFilename, filename, strLen );
         logFile = fopen( logFilename, "ab" );
 
-        MutexUnlock( mutex );
+        MT::MutexUnlock( mutex );
     }
 }
 
@@ -508,7 +628,7 @@ GUCEF_LogStackTo( const char* filename )
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-}; /* namespace CORE */
+}; /* namespace MLF */
 }; /* namespace GUCEF */
 #endif /* __cplusplus ? */
 

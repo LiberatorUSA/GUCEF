@@ -80,6 +80,10 @@ class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks
     virtual void OnEventThatMightHaveChangedCodecs( CORE::CNotifier* notifier                 ,
                                                     const CORE::CEvent& eventid               ,
                                                     CORE::CICloneable* eventdata = GUCEF_NULL );
+
+    virtual void OnAppShutdown( CORE::CNotifier* notifier                 ,
+                                const CORE::CEvent& eventid               ,
+                                CORE::CICloneable* eventdata = GUCEF_NULL );
 };
 
 /*-------------------------------------------------------------------------//

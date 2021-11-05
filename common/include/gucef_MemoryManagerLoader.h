@@ -37,6 +37,8 @@
 #define GUCEF_DYNNEWOFF_H
 #endif /* GUCEF_DYNNEWOFF_H ? */
 
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+
 #ifndef GUCEF_PLATFORM_H
 #include "gucef_platform.h"      /* GUCEF platform build configuration */
 #define GUCEF_PLATFORM_H
@@ -57,6 +59,8 @@
 //      CONSTANTS                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
 
 /*
  *      Posible allocation/deallocation types.
@@ -88,6 +92,8 @@
 #define MM_OLE_ALLOC      9
 #define MM_OLE_FREE       10
 
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+
 #define MEMMAN_Int32      __int32
 
 /*-------------------------------------------------------------------------//
@@ -97,21 +103,32 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      User API, these functions can be used to set parameters within the Memory
- *      Manager to control the type and extent of the memory tests that are performed.
- *      Note that it is not necessary to call any of these methods, you will get the default
- *      Memory Manager automatically.
+ *  General functions to control the behavior of the external module
  */
+
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) )
 
 typedef MEMMAN_Int32 ( *TFP_MEMMAN_Initialize )( void );
 typedef MEMMAN_Int32 ( *TFP_MEMMAN_Shutdown )( void );
 typedef void ( *TFP_MEMMAN_DumpLogReport )( void );
-typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
 typedef void ( *TFP_MEMMAN_SetLogFile )( const char *file );
-typedef void ( *TFP_MEMMAN_SetExhaustiveTesting )( unsigned __int32 test );
-typedef void ( *TFP_MEMMAN_SetLogAlways )( unsigned __int32 log );
-typedef void ( *TFP_MEMMAN_SetPaddingSize )( unsigned __int32 clean );
 typedef void ( *TFP_MEMMAN_CleanLogFile )( unsigned __int32 test );
+typedef void ( *TFP_MEMMAN_SetLogAlways )( unsigned __int32 log );
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ) ? */
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  Memory allocation and memory validity related functionality
+ */
+
+typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
+typedef void ( *TFP_MEMMAN_SetExhaustiveTesting )( unsigned __int32 test );
+typedef void ( *TFP_MEMMAN_SetPaddingSize )( unsigned __int32 clean );
 typedef void ( *TFP_MEMMAN_BreakOnAllocation )( int alloccount );
 typedef void ( *TFP_MEMMAN_BreakOnDeallocation )( void *address );
 typedef void ( *TFP_MEMMAN_BreakOnReallocation )( void *address );
@@ -130,10 +147,12 @@ typedef void ( *TFP_MEMMAN_DeAllocateMemory )( void *address, char type );
 typedef void ( *TFP_MEMMAN_DeAllocateMemoryEx )( const char *file, int line, void *address, char type );
 typedef MEMMAN_Int32 ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
 
-
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MEMCHECK_OLEAPI
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) )
+
+/*-------------------------------------------------------------------------*/
 
 /*
  *  OLE Memory tracking functions which are invoked by the OLE memory allocation overrides
@@ -146,7 +165,17 @@ typedef void ( *TFP_MEMMAN_SysFreeString )( const char *file, int line, wchar_t*
 typedef int ( *TFP_MEMMAN_SysReAllocString )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz );
 typedef int ( *TFP_MEMMAN_SysReAllocStringLen )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len );
 
-#endif /* GUCEF_MEMCHECK_OLEAPI ? */
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) ) ? */
+#if defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING )
+
+/*-------------------------------------------------------------------------*/
+
+typedef void ( *TFP_MEMMAN_CallstackScopeBegin )( const char *file, int line );
+typedef void ( *TFP_MEMMAN_CallstackScopeEnd )( void );
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -154,15 +183,25 @@ typedef int ( *TFP_MEMMAN_SysReAllocStringLen )( const char *file, int line, wch
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) )
+
 static TFP_MEMMAN_Initialize fp_MEMMAN_Initialize = 0;
 static TFP_MEMMAN_Shutdown fp_MEMMAN_Shutdown = 0;
 static TFP_MEMMAN_DumpLogReport fp_MEMMAN_DumpLogReport = 0;
-static TFP_MEMMAN_DumpMemoryAllocations fp_MEMMAN_DumpMemoryAllocations = 0;
 static TFP_MEMMAN_SetLogFile fp_MEMMAN_SetLogFile = 0;
-static TFP_MEMMAN_SetExhaustiveTesting fp_MEMMAN_SetExhaustiveTesting = 0;
 static TFP_MEMMAN_SetLogAlways fp_MEMMAN_SetLogAlways = 0;
-static TFP_MEMMAN_SetPaddingSize fp_MEMMAN_SetPaddingSize = 0;
 static TFP_MEMMAN_CleanLogFile fp_MEMMAN_CleanLogFile = 0;
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ) ? */
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
+
+/*-------------------------------------------------------------------------*/
+
+static TFP_MEMMAN_DumpMemoryAllocations fp_MEMMAN_DumpMemoryAllocations = 0;
+static TFP_MEMMAN_SetExhaustiveTesting fp_MEMMAN_SetExhaustiveTesting = 0;
+static TFP_MEMMAN_SetPaddingSize fp_MEMMAN_SetPaddingSize = 0;
 static TFP_MEMMAN_BreakOnAllocation fp_MEMMAN_BreakOnAllocation = 0;
 static TFP_MEMMAN_BreakOnDeallocation fp_MEMMAN_BreakOnDeallocation = 0;
 static TFP_MEMMAN_BreakOnReallocation fp_MEMMAN_BreakOnReallocation = 0;
@@ -177,10 +216,12 @@ static TFP_MEMMAN_DeAllocateMemory fp_MEMMAN_DeAllocateMemory = 0;
 static TFP_MEMMAN_DeAllocateMemoryEx fp_MEMMAN_DeAllocateMemoryEx = 0;
 static TFP_MEMMAN_SetOwner fp_MEMMAN_SetOwner = 0;
 
-
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MEMCHECK_OLEAPI
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) )
+
+/*-------------------------------------------------------------------------*/
 
 static TFP_MEMMAN_SysAllocString fp_MEMMAN_SysAllocString = 0;
 static TFP_MEMMAN_SysAllocStringByteLen fp_MEMMAN_SysAllocStringByteLen = 0;
@@ -189,7 +230,20 @@ static TFP_MEMMAN_SysFreeString fp_MEMMAN_SysFreeString = 0;
 static TFP_MEMMAN_SysReAllocString fp_MEMMAN_SysReAllocString = 0;
 static TFP_MEMMAN_SysReAllocStringLen fp_MEMMAN_SysReAllocStringLen = 0;
 
-#endif /* GUCEF_MEMCHECK_OLEAPI ? */
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) ) ? */
+#if defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING )
+
+/*-------------------------------------------------------------------------*/
+
+static TFP_MEMMAN_CallstackScopeBegin fp_MEMMAN_CallstackScopeBegin = 0;
+static TFP_MEMMAN_CallstackScopeEnd fp_MEMMAN_CallstackScopeEnd = 0;
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) )
 
 /*-------------------------------------------------------------------------*/
 
@@ -197,11 +251,17 @@ static void* g_memoryManagerModulePtr = NULL;
 static void* g_dynLoadMutex = NULL;
 static const char* MemoryLeakFinderLib = "MemoryLeakFinder_d.dll";
 
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ) ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) )
 
 static MEMMAN_Int32 GUCEF_HIDDEN
 MEMMAN_UnloadMemoryManager( void )
@@ -280,12 +340,27 @@ MEMMAN_LazyLoadMemoryManager( void )
     fp_MEMMAN_Initialize = (TFP_MEMMAN_Initialize) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_Initialize" );
     fp_MEMMAN_Shutdown = (TFP_MEMMAN_Shutdown) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_Shutdown" );
     fp_MEMMAN_DumpLogReport = (TFP_MEMMAN_DumpLogReport) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DumpLogReport" );
-    fp_MEMMAN_DumpMemoryAllocations = (TFP_MEMMAN_DumpMemoryAllocations) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DumpMemoryAllocations" );
     fp_MEMMAN_SetLogFile = (TFP_MEMMAN_SetLogFile) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetLogFile" );
-    fp_MEMMAN_SetExhaustiveTesting = (TFP_MEMMAN_SetExhaustiveTesting) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetExhaustiveTesting" );
     fp_MEMMAN_SetLogAlways = (TFP_MEMMAN_SetLogAlways) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetLogAlways" );
-    fp_MEMMAN_SetPaddingSize = (TFP_MEMMAN_SetPaddingSize) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetPaddingSize" );
     fp_MEMMAN_CleanLogFile = (TFP_MEMMAN_CleanLogFile) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_CleanLogFile" );
+
+    if ( 0 == fp_MEMMAN_Initialize    ||
+         0 == fp_MEMMAN_Shutdown      ||
+         0 == fp_MEMMAN_DumpLogReport ||
+         0 == fp_MEMMAN_SetLogFile    ||
+         0 == fp_MEMMAN_SetLogAlways  ||
+         0 == fp_MEMMAN_CleanLogFile   ) 
+    {
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+        return 0;
+    }
+
+    #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
+    
+    fp_MEMMAN_DumpMemoryAllocations = (TFP_MEMMAN_DumpMemoryAllocations) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DumpMemoryAllocations" );    
+    fp_MEMMAN_SetExhaustiveTesting = (TFP_MEMMAN_SetExhaustiveTesting) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetExhaustiveTesting" );    
+    fp_MEMMAN_SetPaddingSize = (TFP_MEMMAN_SetPaddingSize) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetPaddingSize" );    
     fp_MEMMAN_BreakOnAllocation = (TFP_MEMMAN_BreakOnAllocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnAllocation" );
     fp_MEMMAN_BreakOnDeallocation = (TFP_MEMMAN_BreakOnDeallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnDeallocation" );
     fp_MEMMAN_BreakOnReallocation = (TFP_MEMMAN_BreakOnReallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnReallocation" );
@@ -297,31 +372,26 @@ MEMMAN_LazyLoadMemoryManager( void )
     fp_MEMMAN_DeAllocateMemoryEx = (TFP_MEMMAN_DeAllocateMemoryEx) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemoryEx" );
     fp_MEMMAN_SetOwner = (TFP_MEMMAN_SetOwner) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetOwner" );
 
-    if ( 0 == fp_MEMMAN_Initialize ||
-         0 == fp_MEMMAN_Shutdown ||
-         0 == fp_MEMMAN_DumpLogReport ||
-         0 == fp_MEMMAN_DumpMemoryAllocations ||
-         0 == fp_MEMMAN_SetLogFile ||
-         0 == fp_MEMMAN_SetExhaustiveTesting ||
-         0 == fp_MEMMAN_SetLogAlways ||
-         0 == fp_MEMMAN_SetPaddingSize || 
-         0 == fp_MEMMAN_CleanLogFile ||
-         0 == fp_MEMMAN_BreakOnAllocation ||
-         0 == fp_MEMMAN_BreakOnDeallocation ||
-         0 == fp_MEMMAN_BreakOnReallocation ||
+    if ( 0 == fp_MEMMAN_DumpMemoryAllocations ||
+         0 == fp_MEMMAN_SetExhaustiveTesting  ||
+         0 == fp_MEMMAN_SetPaddingSize        || 
+         0 == fp_MEMMAN_BreakOnAllocation     ||
+         0 == fp_MEMMAN_BreakOnDeallocation   ||
+         0 == fp_MEMMAN_BreakOnReallocation   ||
          0 == fp_MEMMAN_ValidateKnownAllocPtr ||
-         0 == fp_MEMMAN_Validate ||
-         0 == fp_MEMMAN_ValidateChunk ||
-         0 == fp_MEMMAN_AllocateMemory ||
-         0 == fp_MEMMAN_DeAllocateMemory ||
-         0 == fp_MEMMAN_SetOwner ) 
+         0 == fp_MEMMAN_Validate              ||
+         0 == fp_MEMMAN_ValidateChunk         ||
+         0 == fp_MEMMAN_AllocateMemory        ||
+         0 == fp_MEMMAN_DeAllocateMemory      ||
+         0 == fp_MEMMAN_SetOwner              ) 
     {
         FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
         g_memoryManagerModulePtr = 0;
         return 0;
     }
 
-    #ifdef GUCEF_MEMCHECK_OLEAPI
+    #endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+    #if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) )
 
     fp_MEMMAN_SysAllocString = (TFP_MEMMAN_SysAllocString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocString" );
     fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_SysAllocStringByteLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
@@ -342,7 +412,21 @@ MEMMAN_LazyLoadMemoryManager( void )
         return 0;
     }
 
-    #endif /* GUCEF_MEMCHECK_OLEAPI ? */
+    #endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) ) ? */
+    #if defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING )
+
+    fp_MEMMAN_CallstackScopeBegin = (TFP_MEMMAN_CallstackScopeBegin) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_CallstackScopeBegin" );
+    fp_MEMMAN_CallstackScopeEnd = (TFP_MEMMAN_CallstackScopeEnd) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_CallstackScopeEnd" );
+
+    if ( 0 == fp_MEMMAN_CallstackScopeBegin ||
+         0 == fp_MEMMAN_CallstackScopeEnd )
+    {
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+        return 0;
+    }
+
+    #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
 
     if ( 1 == fp_MEMMAN_Initialize() )
     {        
@@ -350,36 +434,6 @@ MEMMAN_LazyLoadMemoryManager( void )
     }
     MEMMAN_UnloadMemoryManager();
     return 0;
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void
-MEMMAN_SetLogFile( const char *file )
-{
-    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
-        fp_MEMMAN_SetLogFile( file );    
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void
-MEMMAN_SetExhaustiveTesting( unsigned __int32 test )
-{
-    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
-        fp_MEMMAN_SetExhaustiveTesting( test );   
-}
-
-/*-------------------------------------------------------------------------*/
-
-inline
-void
-MEMMAN_SetPaddingSize( unsigned __int32 clean )
-{
-    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
-        fp_MEMMAN_SetPaddingSize( clean );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -408,6 +462,41 @@ MEMMAN_DumpLogReport( void )
 {
     if ( NULL != fp_MEMMAN_DumpLogReport )
         fp_MEMMAN_DumpLogReport();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_SetLogFile( const char *file )
+{
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_SetLogFile( file );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ) ? */
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_SetExhaustiveTesting( unsigned __int32 test )
+{
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_SetExhaustiveTesting( test );   
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_SetPaddingSize( unsigned __int32 clean )
+{
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_SetPaddingSize( clean );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -459,7 +548,10 @@ MEMMAN_free( const char *file, int line, void* ptr )
 
 /*-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_MEMCHECK_OLEAPI
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
+#if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) )
+
+/*-------------------------------------------------------------------------*/
 
 inline
 wchar_t* 
@@ -524,7 +616,35 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
     return result;
 }
 
-#endif /* GUCEF_MEMCHECK_OLEAPI ? */
+/*-------------------------------------------------------------------------*/
+
+#endif /* ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && defined( GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI ) ) ? */
+#if defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING )
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_CallstackScopeBegin( const char *file, int line )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_CallstackScopeBegin( file, line ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_CallstackScopeEnd( void )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_CallstackScopeEnd();
+}
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
 
 /*-------------------------------------------------------------------------*/
 
@@ -532,7 +652,7 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_USE_MEMORY_LEAK_CHECKER && GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER? */
+#endif /* defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ? */
 
 /*-------------------------------------------------------------------------*/
 

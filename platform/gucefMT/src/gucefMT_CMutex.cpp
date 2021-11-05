@@ -64,7 +64,7 @@ struct SMutexData
     SMutexData( void )
         : threadOwningLock( 0 )
         , id( 0 )
-    {
+    {GUCEF_TRACE;
     }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -74,7 +74,7 @@ struct SMutexData
     SMutexData( void )
         : threadOwningLock( 0 )
         , id()
-    {
+    {GUCEF_TRACE;
     }
 
     #else
@@ -88,7 +88,8 @@ typedef struct SMutexData TMutexData;
 
 CMutex::CMutex( void )
     : _mutexdata( new TMutexData )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     _mutexdata->id = CreateMutex( NULL, FALSE, NULL );
@@ -121,7 +122,8 @@ CMutex::CMutex( void )
 /*--------------------------------------------------------------------------*/
 
 CMutex::~CMutex()
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     CloseHandle( ((TMutexData*)_mutexdata)->id );
@@ -141,7 +143,8 @@ CMutex::~CMutex()
 
 bool
 CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == _mutexdata )
         return false;
 
@@ -166,7 +169,8 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CMutex::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == _mutexdata )
         return false;
 
@@ -190,7 +194,8 @@ CMutex::Unlock( void ) const
 
 const CILockable*
 CMutex::AsLockable( void ) const
-{
+{GUCEF_TRACE;
+
     return this;
 }
 
@@ -198,7 +203,8 @@ CMutex::AsLockable( void ) const
 
 UInt32
 CMutex::GetThreadIdOfThreadLastHoldingTheLock( void ) const
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == _mutexdata )
         return 0;
 
@@ -209,7 +215,8 @@ CMutex::GetThreadIdOfThreadLastHoldingTheLock( void ) const
 
 bool
 CMutex::IsLocked( void ) const
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == _mutexdata )
         return false;
 

@@ -98,4 +98,49 @@
 
 /*-------------------------------------------------------------------------*/
 
+#if defined( GUCEF_USE_CALLSTACK_TRACING ) && !defined( GUCEF_CALLSTACK_TRACING_DISABLED )
+    #ifdef GUCEF_USE_PLATFORM_CALLSTACK_TRACING
+
+        #ifndef GUCEF_MEMORYMANAGERLOADER_H
+        #include "gucef_MemoryManagerLoader.h"       /* header that includes the header-only functionality to load the external memory manager */
+        #define GUCEF_MEMORYMANAGERLOADER_H
+        #endif /* GUCEF_MEMORYMANAGERLOADER_H ? */
+
+        #ifdef __cplusplus
+
+            #ifndef GUCEF_SCOPESTACKTRACER_H    
+            #include "gucef_ScopeStackTracer.h"
+            #define GUCEF_SCOPESTACKTRACER_H
+            #endif /* GUCEF_SCOPESTACKTRACER_H ? */
+
+        #endif
+        
+        /* macros for C code usage of callstack tracking. Please use ScopeStackTracer via the GUCEF_TRACE macro for C++ code */
+        #define GUCEF_BEGIN { MEMMAN_CallstackScopeBegin( __FILE__, __LINE__ ); }
+        #define GUCEF_END { MEMMAN_CallstackScopeEnd(); }
+        #define GUCEF_END_RET( retvaltype, retval ) { retvaltype var( retval ); MEMMAN_CallstackScopeEnd(); return var; }
+
+    #else
+
+        /*
+         *  No non-GUCEF platform stack tracing facility available at this time
+         */
+        #define GUCEF_BEGIN
+        #define GUCEF_END
+        #define GUCEF_END_RET( retvaltype, retval ) return (retval);
+        #define GUCEF_TRACE
+    
+    #endif /* GUCEF_USE_PLATFORM_CALLSTACK_TRACING ? */
+
+#else /* defined( GUCEF_USE_CALLSTACK_TRACING ) && !defined( GUCEF_CALLSTACK_TRACING_DISABLED ) ? */
+
+  #define GUCEF_BEGIN
+  #define GUCEF_END
+  #define GUCEF_END_RET( retvaltype, retval ) return (retval);
+  #define GUCEF_TRACE
+
+#endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && !defined( GUCEF_CALLSTACK_TRACING_DISABLED ) ? */
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_MEMORY_H ? */

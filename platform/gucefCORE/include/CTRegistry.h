@@ -117,6 +117,8 @@ class CTRegistry : public MT::CILockable
 
     virtual void Unregister( const CString& name );
 
+    virtual bool TryUnregister( const CString& name );
+
     virtual void UnregisterAll( void );
 
     virtual UInt32 GetCount( void ) const;
@@ -283,6 +285,7 @@ CTRegistry< T, LockType >::Register( const CString& name                ,
     if ( i == m_list.end() )
     {
         m_list[ name ] = new TRegisteredObjPtr( sharedPtr );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Registered \"" + name + "\"" );
         return;
     }
 
@@ -304,6 +307,7 @@ CTRegistry< T, LockType >::TryRegister( const CString& name                ,
     if ( i == m_list.end() )
     {
         m_list[ name ] = new TRegisteredObjPtr( sharedPtr );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Registered \"" + name + "\"" );
         return true;
     }
 
@@ -324,10 +328,32 @@ CTRegistry< T, LockType >::Unregister( const CString& name )
     {
         delete (*i).second;
         m_list.erase( i );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistered \"" + name + "\"" );
         return;
     }
 
     GUCEF_EMSGTHROW( EUnregisteredName, "gucefCORE::CTRegistry::Unregister(): unregistered name given" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T, class LockType >
+bool
+CTRegistry< T, LockType >::TryUnregister( const CString& name )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    typename TRegisteredObjList::iterator i = m_list.find( name );
+    if ( i != m_list.end() )
+    {
+        delete (*i).second;
+        m_list.erase( i );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistered \"" + name + "\"" );
+        return true;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -338,6 +364,7 @@ CTRegistry< T, LockType >::UnregisterAll( void )
 {GUCEF_TRACE;
     
     MT::CObjectScopeLock lock( this );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistering All" );
 
     typename TRegisteredObjList::iterator i = m_list.begin();
     while ( i != m_list.end() )

@@ -40,14 +40,14 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CNoLock::CNoLock( void )
-{
+{GUCEF_TRACE;
 
 }
 
 /*--------------------------------------------------------------------------*/
 
 CNoLock::~CNoLock()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -55,7 +55,8 @@ CNoLock::~CNoLock()
 
 bool
 CNoLock::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return false;
 }
 
@@ -63,7 +64,8 @@ CNoLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CNoLock::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     return false;
 }
 
@@ -71,7 +73,8 @@ CNoLock::Unlock( void ) const
 
 const CILockable* 
 CNoLock::AsLockable( void ) const
-{
+{GUCEF_TRACE;
+
     return this;
 }
 

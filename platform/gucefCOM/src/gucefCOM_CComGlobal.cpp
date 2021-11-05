@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -99,7 +104,7 @@ CComGlobal::Initialize( void )
     CPHUDPSocket::RegisterEvents();
 
     CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
-    CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( statsDClient );
+    CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( CStatsDClient::Type, statsDClient );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -108,6 +113,8 @@ CComGlobal::~CComGlobal()
 {GUCEF_TRACE;
   
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOM Global systems shutting down" );
+
+    CORE::CCoreGlobal::Instance()->GetMetricsClientManager().RemoveMetricsClient( CStatsDClient::Type );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -118,13 +125,16 @@ CComGlobal::Instance()
 
     if ( GUCEF_NULL == g_instance )
     {
-        g_dataLock.Lock();
+        MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CComGlobal();
-            g_instance->Initialize();
+            if ( GUCEF_NULL != g_instance )
+            {
+                g_instance->Initialize();
+                atexit( CComGlobal::Deinstance );
+            }
         }
-        g_dataLock.Unlock();
     }
     return g_instance;
 }
@@ -135,6 +145,7 @@ void
 CComGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( g_dataLock );
     delete g_instance;
     g_instance = GUCEF_NULL;
 }

@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CINAMEDINSTANCE_H
+#include "CINamedInstance.h"
+#define GUCEF_CORE_CINAMEDINSTANCE_H
+#endif /* GUCEF_CORE_CINAMEDINSTANCE_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -56,7 +61,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable  ,
+                                                    public CINamedInstance
 {
     public:
 

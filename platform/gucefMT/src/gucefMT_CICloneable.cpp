@@ -40,26 +40,30 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CICloneable::CICloneable( void )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CICloneable::CICloneable( const CICloneable& src )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CICloneable::~CICloneable()
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CICloneable&
 CICloneable::operator=( const CICloneable& src )
-{
+{GUCEF_TRACE;
+
     if ( this != &src )
     {
     }

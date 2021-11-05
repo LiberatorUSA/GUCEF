@@ -118,7 +118,7 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CComCoreGlobal::g_dataLock;
-CComCoreGlobal* CComCoreGlobal::g_instance = NULL;
+CComCoreGlobal* CComCoreGlobal::g_instance = GUCEF_NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -174,10 +174,15 @@ CComCoreGlobal::~CComCoreGlobal()
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Global systems shutting down" );
 
-    delete m_com;
-    m_com = NULL;
-
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
+    
+    delete m_pubsubClientFactory;
+    m_pubsubClientFactory = GUCEF_NULL;
+    delete m_discoveryManager;
+    m_discoveryManager = GUCEF_NULL;
+    delete m_com;
+    m_com = GUCEF_NULL;
+
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     ShutdownWinsock();
@@ -196,7 +201,11 @@ CComCoreGlobal::Instance()
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CComCoreGlobal();
-            g_instance->Initialize();
+            if ( GUCEF_NULL != g_instance )
+            {
+                g_instance->Initialize();
+                atexit( CComCoreGlobal::Deinstance );
+            }
         }
     }
     return g_instance;
@@ -208,6 +217,7 @@ void
 CComCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( g_dataLock );
     delete g_instance;
     g_instance = NULL;
 }

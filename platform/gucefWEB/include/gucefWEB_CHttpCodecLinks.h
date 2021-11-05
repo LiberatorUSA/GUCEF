@@ -85,6 +85,10 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
     virtual bool InitEncodingCodecLinks( void );
 
+    virtual bool RemoveMimeCodecLinks( void );
+
+    virtual bool RemoveEncodingCodecLinks( void );
+
     virtual TMimeTypeCodecPtr GetSerializationCodec( const CORE::CString& mimeType ) const;
 
     virtual TMimeTypeCodecPtr GetDeserializationCodec( const CORE::CString& mimeType ) const;

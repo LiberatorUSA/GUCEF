@@ -49,6 +49,14 @@ namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CString CStatsDClient::Type = "StatsDClient";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -352,6 +360,15 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
         m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CStatsDClient::GetName( void ) const
+{GUCEF_TRACE;
+
+    return Type;
 }
 
 /*-------------------------------------------------------------------------*/

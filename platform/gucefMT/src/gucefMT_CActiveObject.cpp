@@ -59,7 +59,7 @@ CActiveObject::CActiveObject( void )
     , _td( ThreadDataReserve() )                          
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -75,7 +75,8 @@ CActiveObject::CActiveObject( const CActiveObject& src )
     , _td( ThreadDataReserve() )                           
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
-{
+{GUCEF_TRACE;
+
     if ( src.IsActive() )
     {
         Activate();
@@ -85,7 +86,8 @@ CActiveObject::CActiveObject( const CActiveObject& src )
 /*-------------------------------------------------------------------------*/
 
 CActiveObject::~CActiveObject()
-{
+{GUCEF_TRACE;
+
     Deactivate( true, true );
     
     ThreadDataCleanup( _td );
@@ -96,7 +98,8 @@ CActiveObject::~CActiveObject()
 
 bool
 CActiveObject::IsDeactivationRequested( void ) const
-{
+{GUCEF_TRACE;
+
     return m_isDeactivationRequested;
 }
 
@@ -104,7 +107,8 @@ CActiveObject::IsDeactivationRequested( void ) const
 
 bool
 CActiveObject::IsActive( void ) const
-{
+{GUCEF_TRACE;
+
     return _active;
 }
 
@@ -112,7 +116,8 @@ CActiveObject::IsActive( void ) const
 
 UInt32
 CActiveObject::OnActivate( void* thisobject )
-{
+{GUCEF_TRACE;
+
     CActiveObject* tao = (CActiveObject*) thisobject;
     void* taskdata = tao->GetThreadData();
 
@@ -171,7 +176,8 @@ bool
 CActiveObject::Activate( void* threadData /* = NULL */                 ,
                          const UInt32 cycleDelay /* = 25 */            ,
                          const UInt32 minimalCycleDeltaInMs /* = 10 */ )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );    
 
     if ( _active ) 
@@ -194,7 +200,8 @@ CActiveObject::Activate( void* threadData /* = NULL */                 ,
 
 void
 CActiveObject::OnThreadPausedForcibly( void* taskdata )
-{
+{GUCEF_TRACE;
+
     // Dummy to avoid mandatory implementation in decending classes
 }
 
@@ -202,7 +209,8 @@ CActiveObject::OnThreadPausedForcibly( void* taskdata )
 
 void
 CActiveObject::OnThreadResumed( void* taskdata )
-{
+{GUCEF_TRACE;
+
     // Dummy to avoid mandatory implementation in decending classes
 }
 
@@ -211,7 +219,8 @@ CActiveObject::OnThreadResumed( void* taskdata )
 void
 CActiveObject::OnThreadEnded( void* taskdata ,
                               bool forced    )
-{
+{GUCEF_TRACE;
+
     // Dummy to avoid mandatory implementation in decending classes
 }
 
@@ -220,7 +229,8 @@ CActiveObject::OnThreadEnded( void* taskdata ,
 void
 CActiveObject::OnThreadEnding( void* taskdata    ,
                                bool willBeForced )
-{
+{GUCEF_TRACE;
+
     // Dummy to avoid mandatory implementation in decending classes
 }
 
@@ -228,7 +238,8 @@ CActiveObject::OnThreadEnding( void* taskdata    ,
     
 void
 CActiveObject::OnThreadStarted( void* taskdata )
-{
+{GUCEF_TRACE;
+
     // Dummy to avoid mandatory implementation in decending classes
 }
 
@@ -236,7 +247,8 @@ CActiveObject::OnThreadStarted( void* taskdata )
 
 void
 CActiveObject::Deactivate( bool force, bool callerShouldWait )
-{
+{GUCEF_TRACE;
+
     if ( force )
     {
         Lock();
@@ -290,7 +302,8 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
 
 bool
 CActiveObject::IsPauseRequested( void ) const
-{
+{GUCEF_TRACE;
+
     return _suspend;
 }
 
@@ -298,7 +311,8 @@ CActiveObject::IsPauseRequested( void ) const
 
 void
 CActiveObject::Pause( bool force )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
     
     if ( force )
@@ -318,7 +332,8 @@ CActiveObject::Pause( bool force )
 
 void
 CActiveObject::Resume( void )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     if ( GUCEF_NULL != _td && _suspend )
@@ -333,7 +348,8 @@ CActiveObject::Resume( void )
 
 void*
 CActiveObject::GetThreadData( void ) const
-{
+{GUCEF_TRACE;
+
     return m_threadData;
 }
 
@@ -341,7 +357,8 @@ CActiveObject::GetThreadData( void ) const
 
 CActiveObject&
 CActiveObject::operator=( const CActiveObject& src )
-{
+{GUCEF_TRACE;
+
     if ( this != &src )  
     {
         CObjectScopeLock lock( this );
@@ -364,7 +381,8 @@ CActiveObject::operator=( const CActiveObject& src )
 
 UInt32
 CActiveObject::GetThreadID( void ) const
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     if ( GUCEF_NULL != _td )
@@ -379,7 +397,8 @@ CActiveObject::GetThreadID( void ) const
 bool 
 CActiveObject::SetCpuAffinityMask( UInt32 affinityMaskSize ,
                                    void* affinityMask      )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     if ( GUCEF_NULL != _td )
@@ -393,7 +412,8 @@ CActiveObject::SetCpuAffinityMask( UInt32 affinityMaskSize ,
 
 bool 
 CActiveObject::SetCpuAffinityByCpuId( UInt32 cpuId )
-{
+{GUCEF_TRACE;
+
     if ( cpuId >= 64 )
         return false;
 
@@ -407,7 +427,8 @@ CActiveObject::SetCpuAffinityByCpuId( UInt32 cpuId )
 
 bool
 CActiveObject::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Lock( lockWaitTimeoutInMs );
 }
 
@@ -415,7 +436,8 @@ CActiveObject::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CActiveObject::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Unlock();
 }
 
@@ -423,7 +445,8 @@ CActiveObject::Unlock( void ) const
 
 void 
 CActiveObject::WaitForThreadToFinish( Int32 timeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     ThreadWait( _td, timeoutInMs );
 }
 

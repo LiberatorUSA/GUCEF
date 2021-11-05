@@ -224,6 +224,19 @@ CHTTPURLHandler::Register( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CHTTPURLHandler::Unregister( void )
+{GUCEF_TRACE;
+
+    CORE::CURLHandlerRegistry* registry = &CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry();
+    if ( registry->IsRegistered( "http" ) )
+    {
+        registry->Unregister( "http" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CString&
 CHTTPURLHandler::GetClassTypeName( void ) const
 {GUCEF_TRACE;

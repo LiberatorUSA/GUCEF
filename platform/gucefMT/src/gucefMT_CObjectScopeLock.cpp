@@ -44,7 +44,8 @@ namespace MT {
 CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject )
     : m_lockableObject( lockableObject )
     , m_isLocked( false )
-{
+{GUCEF_TRACE;
+
     assert( 0 != m_lockableObject );
         
     m_isLocked = m_lockableObject->Lock();
@@ -55,7 +56,8 @@ CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject )
 CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
     : m_lockableObject( &lockableObject )
     , m_isLocked( false )
-{
+{GUCEF_TRACE;
+
     assert( 0 != m_lockableObject );
         
     m_isLocked = m_lockableObject->Lock();
@@ -64,7 +66,8 @@ CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
 /*--------------------------------------------------------------------------*/
 
 CObjectScopeLock::~CObjectScopeLock()
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
     {
         m_isLocked = !m_lockableObject->Unlock();
@@ -75,7 +78,8 @@ CObjectScopeLock::~CObjectScopeLock()
 
 bool 
 CObjectScopeLock::IsLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_isLocked;
 }
 
@@ -83,7 +87,8 @@ CObjectScopeLock::IsLocked( void ) const
 
 bool 
 CObjectScopeLock::EarlyUnlock( void )
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
     {
         m_isLocked = !m_lockableObject->Unlock();

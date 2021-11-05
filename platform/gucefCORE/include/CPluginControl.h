@@ -81,6 +81,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
 {
     public:
 
+    typedef CString::StringSet  TStringSet;
+
     static const CEvent PluginLoadedEvent;
     static const CEvent PluginUnloadedEvent;
 
@@ -106,7 +108,15 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
 
     bool UnloadPluginGroup( const CString& groupName );
 
+    bool UnloadPlugin( const CString& groupName  ,
+                       const CString& moduleName );
+
     bool UnloadAll( void );
+
+    void GetAvailablePluginGroups( TStringSet& groupNames ) const;
+
+    void GetAvailablePluginsForGroup( const CString& groupName , 
+                                      TStringSet& modules      ) const;
 
     void ClearMetaDataFromGroup( const CString& groupName );
 
@@ -206,6 +216,12 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
 
     virtual const CString& GetClassTypeName( void ) const;
 
+    protected:
+
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
     friend class CPluginManager;
 
@@ -224,8 +240,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
 
     typedef std::map< CString, CIPluginLoadLogic* > TPluginLoadLogicMap;
     typedef std::map< CString, CPluginGroup > TPluginGroupMap;
-    typedef std::set< CPluginManager* > TPluginManagerSet;
-    typedef std::set< CString > TStringSet;
+    typedef std::set< CPluginManager* > TPluginManagerSet;    
 
     CPluginControl( const CPluginControl& src );
 

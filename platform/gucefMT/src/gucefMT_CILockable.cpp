@@ -40,26 +40,30 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CILockable::CILockable( void )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CILockable::CILockable( const CILockable& src )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CILockable::~CILockable()
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CILockable&
 CILockable::operator=( const CILockable& src )
-{
+{GUCEF_TRACE;
+
     if ( this != &src )
     {
     }

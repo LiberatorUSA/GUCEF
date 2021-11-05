@@ -87,6 +87,8 @@ CHttpCodecLinks::CHttpCodecLinks( const CHttpCodecLinks& src )
 CHttpCodecLinks::~CHttpCodecLinks()
 {GUCEF_TRACE;
 
+    RemoveEncodingCodecLinks();
+    RemoveMimeCodecLinks();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -177,7 +179,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeIniProper ] = codec;
         m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeIniProper ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up INI codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up INI codec to MIME types" );
     }
     if ( codecRegistry.TryLookup( "XML", codec, false ) )
     {
@@ -191,7 +193,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeText ] = codec;
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeOctet ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up XML codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up XML codec to MIME types" );
     }
     if ( codecRegistry.TryLookup( "JSON", codec, false ) )
     {
@@ -205,7 +207,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeText ] = codec;
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeOctet ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up JSON codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up JSON codec to MIME types" );
     }
 
     // Now based on what we can actually do codec wise set our preferences
@@ -295,27 +297,52 @@ CHttpCodecLinks::InitEncodingCodecLinks( void )
             m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeGZip ] = codec;
             m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeGZipAlt ] = codec;
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitEncodingCodecLinks: Hooked up GZIP encoding codec" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitEncodingCodecLinks: Hooked up GZIP encoding codec" );
         }
         if ( codecFamilyRegistry->TryLookup( CHttpEncodingTypes::EncodingTypeDeflate, codec, false ) && codec )
         {
             m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeDeflate ] = codec;
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitEncodingCodecLinks: Hooked up Deflate encoding codec" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitEncodingCodecLinks: Hooked up Deflate encoding codec" );
         }
         if ( codecFamilyRegistry->TryLookup( CHttpEncodingTypes::EncodingTypeCompress, codec, false ) && codec )
         {
             m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeCompress ] = codec;
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitEncodingCodecLinks: Hooked up Compress encoding codec" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitEncodingCodecLinks: Hooked up Compress encoding codec" );
         }
         if ( codecFamilyRegistry->TryLookup( CHttpEncodingTypes::EncodingTypeBrotli, codec, false ) && codec )
         {
             m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeBrotli ] = codec;
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitEncodingCodecLinks: Hooked up Brotli encoding codec" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitEncodingCodecLinks: Hooked up Brotli encoding codec" );
         }
     }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHttpCodecLinks::RemoveMimeCodecLinks( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+    m_serializeRepToCodecMap.clear();
+    m_deserializeRepToCodecMap.clear();
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):RemoveMimeCodecLinks: Cleared all codec references" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHttpCodecLinks::RemoveEncodingCodecLinks( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+    m_encodingRepToCodecMap.clear();
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):RemoveEncodingCodecLinks: Cleared all codec references" );
     return true;
 }
 

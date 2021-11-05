@@ -49,7 +49,8 @@ namespace MT {
 CScopeMutex::CScopeMutex( const CMutex& mutex )
     : m_mutex( &mutex )
     , m_isLocked( false )
-{
+{GUCEF_TRACE;
+
     assert( m_mutex );
         
     m_isLocked = m_mutex->Lock();
@@ -58,7 +59,8 @@ CScopeMutex::CScopeMutex( const CMutex& mutex )
 /*--------------------------------------------------------------------------*/
 
 CScopeMutex::~CScopeMutex()
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
         m_isLocked = !m_mutex->Unlock();
 }
@@ -67,7 +69,8 @@ CScopeMutex::~CScopeMutex()
 
 bool 
 CScopeMutex::IsLocked( void ) const
-{
+{GUCEF_TRACE;
+
     return m_isLocked;
 }
 
@@ -75,7 +78,8 @@ CScopeMutex::IsLocked( void ) const
 
 bool
 CScopeMutex::EarlyUnlock( void )
-{
+{GUCEF_TRACE;
+
     if ( m_isLocked )
     {
         m_isLocked = !m_mutex->Unlock();

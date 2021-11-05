@@ -46,21 +46,24 @@ namespace MT {
 
 CReadWriteLock::CReadWriteLock( bool writers_overrule )
     : _rwlock( GUCEF_NULL )
-{
+{GUCEF_TRACE;
+
     _rwlock = rwl_create( writers_overrule ? 1 : 0 );
 }
 
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::CReadWriteLock( const CReadWriteLock& src )
-{
+{GUCEF_TRACE;
+
     _rwlock = rwl_create( rwl_writer_overrules( src._rwlock ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::~CReadWriteLock()
-{
+{GUCEF_TRACE;
+
     rwl_destroy( _rwlock );
     _rwlock = GUCEF_NULL;
 }
@@ -69,7 +72,8 @@ CReadWriteLock::~CReadWriteLock()
 
 bool
 CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return rwl_writer_start( _rwlock ) != 0;
 }
 
@@ -77,7 +81,8 @@ CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CReadWriteLock::WriterStop( void ) const
-{
+{GUCEF_TRACE;
+
     rwl_writer_stop( _rwlock );
     return true;
 }
@@ -86,7 +91,8 @@ CReadWriteLock::WriterStop( void ) const
 
 UInt32
 CReadWriteLock::WriterCount( void ) const
-{
+{GUCEF_TRACE;
+
     return rwl_writers( _rwlock );
 }
 
@@ -94,7 +100,8 @@ CReadWriteLock::WriterCount( void ) const
 
 bool
 CReadWriteLock::ReaderStart( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return rwl_reader_start( _rwlock ) != 0;
 }
 
@@ -102,7 +109,8 @@ CReadWriteLock::ReaderStart( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CReadWriteLock::ReaderStop( void ) const
-{
+{GUCEF_TRACE;
+
     rwl_reader_stop( _rwlock );
     return true;
 }
@@ -111,7 +119,8 @@ CReadWriteLock::ReaderStop( void ) const
 
 UInt32
 CReadWriteLock::ReaderCount( void ) const
-{
+{GUCEF_TRACE;
+
     return rwl_readers( _rwlock );
 }
 
@@ -119,7 +128,8 @@ CReadWriteLock::ReaderCount( void ) const
 
 bool
 CReadWriteLock::DoWritersOverrule( void ) const
-{
+{GUCEF_TRACE;
+
     return rwl_writer_overrules( _rwlock ) != 0;
 }
 
@@ -127,7 +137,8 @@ CReadWriteLock::DoWritersOverrule( void ) const
 
 const CILockable* 
 CReadWriteLock::AsLockable( void ) const
-{
+{GUCEF_TRACE;
+
     return this;
 }
 
@@ -135,7 +146,8 @@ CReadWriteLock::AsLockable( void ) const
 
 bool 
 CReadWriteLock::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return WriterStart();
 }
 
@@ -143,7 +155,8 @@ CReadWriteLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CReadWriteLock::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     return WriterStop();
 }
 
@@ -151,7 +164,8 @@ CReadWriteLock::Unlock( void ) const
 
 bool 
 CReadWriteLock::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return ReaderStart();
 }
 
@@ -159,7 +173,8 @@ CReadWriteLock::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 
 bool
 CReadWriteLock::ReadOnlyUnlock( void ) const
-{
+{GUCEF_TRACE;
+
     return ReaderStop();
 }
 
