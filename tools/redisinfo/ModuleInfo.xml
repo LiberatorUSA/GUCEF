@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <ModuleInfoEntry>
-	<Module Name="redisinfo" Platform="All" Type="Executable" >
+	<Module Name="redisinfo" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
 			<Dependency Name="gucefMT" />
 			<Dependency Name="gucefCORE" />			

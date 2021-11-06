@@ -477,10 +477,10 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
     
     try
     {
-        const COMCORE::CPubSubClientTopic::CMsgsRecieveActionData& receiveAction = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
-        if ( !receiveAction.msgs.empty() )
+        const COMCORE::CPubSubClientTopic::TMsgsRecievedEventData& receiveAction = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
+        if ( !receiveAction.empty() )
         {                            
-            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = receiveAction.msgs.begin();
+            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = receiveAction.begin();
             const CORE::CDateTime& firstMsgDt = (*i)->GetMsgDateTime();
 
             bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
@@ -503,7 +503,7 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             }
             CORE::UInt32 bufferOffset = m_msgReceiveBuffer->GetDataSize();
 
-            while ( i != receiveAction.msgs.end() )    
+            while ( i != receiveAction.end() )    
             {
                 CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
                 CORE::UInt32 msgBytesWritten = 0;

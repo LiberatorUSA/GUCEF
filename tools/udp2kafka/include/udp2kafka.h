@@ -72,6 +72,11 @@
 #define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
 #include "rdkafkacpp.h"
 
 /*-------------------------------------------------------------------------//

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <ModuleInfoEntry>
-	<Module Name="udp2kafka" Platform="All" Type="Executable" >
+	<Module Name="udp2kafka" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
 			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />

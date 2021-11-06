@@ -13,10 +13,12 @@
 option( TAGGED_BUILD_OPTION_obsolete "build option based on tag obsolete" ON)
 option( TAGGED_BUILD_OPTION_platform "build option based on tag platform" ON)
 option( TAGGED_BUILD_OPTION_plugin "build option based on tag plugin" ON)
+option( TAGGED_BUILD_OPTION_services "build option based on tag services" ON)
 option( TAGGED_BUILD_OPTION_test "build option based on tag test" ON)
 
 
 message( STATUS "TAGGED_BUILD_OPTION_obsolete: ${TAGGED_BUILD_OPTION_obsolete} )
 message( STATUS "TAGGED_BUILD_OPTION_platform: ${TAGGED_BUILD_OPTION_platform} )
 message( STATUS "TAGGED_BUILD_OPTION_plugin: ${TAGGED_BUILD_OPTION_plugin} )
+message( STATUS "TAGGED_BUILD_OPTION_services: ${TAGGED_BUILD_OPTION_services} )
 message( STATUS "TAGGED_BUILD_OPTION_test: ${TAGGED_BUILD_OPTION_test} )

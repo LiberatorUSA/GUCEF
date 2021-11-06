@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
 <ModuleInfoEntry>
-    <Module Name="gucefCORE_TestApp" Type="Executable" Platform="mswin;linux" Tags="test">
+    <Module Name="gucefCORE_TestApp" Platform="All" Type="Executable" Tags="test" >
         <Dependencies>
             <Dependency Name="gucefMT" />
 			<Dependency Name="gucefCORE" />
@@ -15,4 +16,9 @@
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 		</RuntimeDependencies>
     </Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="MemoryLeakFinder" />
+		</RuntimeDependencies>
+	</Module>	
 </ModuleInfoEntry>

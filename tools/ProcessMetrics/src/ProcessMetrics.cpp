@@ -439,7 +439,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
     if ( !m_pubSubFeatures.supportsKeyValueSetPerMsg || !m_pubSubFeatures.supportsAbsentPrimaryPayloadPerMsg )
     {
         // @TODO: It would be better if we could source this from the codec itself
-        int payloadVarType = GUCEF_DATATYPE_BINARY;  
+        int payloadVarType = GUCEF_DATATYPE_BINARY_BLOB;  
         if ( "json" == m_thresholdNotificationPrimaryPayloadCodecType ||
              "xml" == m_thresholdNotificationPrimaryPayloadCodecType   )
         {
@@ -453,7 +453,8 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
         }
     }
     
-    if ( m_thresholdNotificationPublishTopic->Publish( msg ) )
+    CORE::UInt64 publishActionId = 0;
+    if ( m_thresholdNotificationPublishTopic->Publish( publishActionId, msg, true ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Published metric threshold exceeded event message" );
     }

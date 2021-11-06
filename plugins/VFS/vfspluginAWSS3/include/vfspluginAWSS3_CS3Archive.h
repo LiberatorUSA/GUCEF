@@ -27,6 +27,11 @@
 
 #include <map>
 
+#ifndef GUCEF_DYNNEWOFF_H
+#include "gucef_dynnewoff.h"
+#define GUCEF_DYNNEWOFF_H
+#endif /* GUCEF_DYNNEWOFF_H ? */
+
 #undef GetObject
 #include <aws/core/Aws.h>
 #include <aws/s3/model/Object.h>

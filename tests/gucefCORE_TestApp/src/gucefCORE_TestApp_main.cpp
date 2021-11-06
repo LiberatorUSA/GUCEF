@@ -70,11 +70,6 @@ int
 main( int argc, char** argv )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_CORE_DEBUG_MODE
-    //GUCEF::CORE::GUCEF_LogStackToStdOut();
-    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCE_CORE_DEBUG_MODE ? */
-
     try
     {
         GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
@@ -91,11 +86,11 @@ main( int argc, char** argv )
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
         
-        PerformStringTests();
+        //PerformStringTests();
 
-        PerformIniParserTests();
+        //PerformIniParserTests();
         
-        //PerformSharedPtrTests();
+        PerformSharedPtrTests();
 
         //PerformCyclicDynamicBufferTests();
 
@@ -105,11 +100,6 @@ main( int argc, char** argv )
     }
     catch ( ... )
     {
-        #ifdef GUCEF_CORE_DEBUG_MODE
-        GUCEF::CORE::GUCEF_PrintCallstack();
-        GUCEF::CORE::GUCEF_DumpCallstack( "gucefCORE_TestApp_callstack.txt" );
-        #endif /* GUCEF_CORE_DEBUG_MODE ? */
-
         GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
                                        "Unhandled exception during program execution, the application will now terminate"  );
     }
