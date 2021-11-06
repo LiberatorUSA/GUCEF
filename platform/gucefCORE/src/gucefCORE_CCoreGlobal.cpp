@@ -371,14 +371,14 @@ CCoreGlobal::~CCoreGlobal()
     m_dstoreCodecPluginManager = GUCEF_NULL;
     delete m_genericPluginManager;
     m_genericPluginManager = GUCEF_NULL;
+    delete m_stdCodecPluginManager;
+    m_stdCodecPluginManager = GUCEF_NULL;
     delete m_pluginControl;
     m_pluginControl = GUCEF_NULL;
     delete m_sysConsole;
     m_sysConsole = GUCEF_NULL;
     delete m_notificationIdRegistry;
     m_notificationIdRegistry = GUCEF_NULL;
-    delete m_stdCodecPluginManager;
-    m_stdCodecPluginManager = GUCEF_NULL;
     delete m_configStore;
     m_configStore = GUCEF_NULL;
     delete m_codecRegistry;

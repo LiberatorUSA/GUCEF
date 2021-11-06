@@ -1605,7 +1605,7 @@ MEMMAN_ValidateKnownAllocPtr( const void* address ,
 {
     MT::CScopeMutex scopeLock( g_manager.m_mutex );
 
-    if ( !g_manager.m_initialized || !address ) 
+    if ( !g_manager.m_initialized || GUCEF_NULL == address ) 
         return;
         
     if ( g_manager.extremetest )
@@ -1619,7 +1619,7 @@ MEMMAN_ValidateKnownAllocPtr( const void* address ,
     }
         
     MemoryNode *node = g_manager.getMemoryNode( address );
-    if ( node )
+    if ( GUCEF_NULL != node )
     {
         if ( !g_manager.validateMemoryUnit( node ) )
         {

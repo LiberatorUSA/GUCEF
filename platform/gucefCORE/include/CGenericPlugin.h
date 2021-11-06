@@ -133,6 +133,10 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
     TPluginMetaDataStoragePtr m_metaData;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CGenericPlugin, MT::CMutex >  CGenericPluginPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -146,13 +150,3 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
 
 #endif /* GUCEF_CORE_CGENERICPLUGIN_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

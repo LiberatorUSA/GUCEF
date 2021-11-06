@@ -565,6 +565,13 @@ class PubSub2PubSub : public CORE::CObserver ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnAppShutdown( CORE::CNotifier* notifier    ,
+                   const CORE::CEvent& eventId  ,
+                   CORE::CICloneable* eventData );
+
+    void RegisterEventHandlers( void );
+    
     private:
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;

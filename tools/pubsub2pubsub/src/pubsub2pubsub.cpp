@@ -34,6 +34,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
@@ -2349,10 +2354,7 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_transmitMetrics( true )
 {GUCEF_TRACE;
 
-    TEventCallback callback1( this, &PubSub2PubSub::OnMetricsTimerCycle );
-    SubscribeTo( &m_metricsTimer                ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback1                      );
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2361,6 +2363,23 @@ PubSub2PubSub::~PubSub2PubSub()
 {GUCEF_TRACE;
 
     m_httpServer.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PubSub2PubSub::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &PubSub2PubSub::OnAppShutdown );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() ,
+                 CORE::CGUCEFApplication::AppShutdownEvent        ,
+                 callback                                         );
+
+    TEventCallback callback2( this, &PubSub2PubSub::OnMetricsTimerCycle );
+    SubscribeTo( &m_metricsTimer                ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2782,6 +2801,24 @@ PubSub2PubSub::GetClassTypeName( void ) const
 
     static const CORE::CString classTypeName = "PubSub2PubSub";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PubSub2PubSub::OnAppShutdown( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // First stop all the work gracefully
+    SetStandbyMode( true );
+
+    // Since we are shutting down the app gracefully close the C&C API now
+    m_httpServer.Close();
+
+    // Now get rid of all the channels we created based on the settings
+    m_channels.clear();
 }
 
 /*-------------------------------------------------------------------------*/

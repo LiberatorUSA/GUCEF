@@ -701,6 +701,18 @@ CDataNode::FindChild( const CString& name         ,
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode*
+CDataNode::FindOrAddChild( const CString& name )
+{GUCEF_TRACE;
+
+    CDataNode* child = FindChild( name );
+    if ( GUCEF_NULL != child )
+        return child;
+    return AddChild( name );    
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CDataNode::Compare( const CDataNode& other        ,
                     const TStringSet& excludeList ) const
@@ -1413,6 +1425,19 @@ CDataNode::DelSubTree( void )
         delete child;
     } 
 }        
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDataNode::DelSubTree( const CString& path, char seperator )
+{GUCEF_TRACE;
+    
+    CDataNode* pathLeafNode = Search( path, seperator, true, true, false, '*' );
+    if ( GUCEF_NULL != pathLeafNode )
+    {
+        pathLeafNode->DelSubTree();
+    }
+}
 
 /*-------------------------------------------------------------------------*/
       

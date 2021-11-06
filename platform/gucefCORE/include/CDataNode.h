@@ -262,6 +262,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     CDataNode* FindChild( const CString& name ) const;
 
+    CDataNode* FindOrAddChild( const CString& name );
+
     TConstDataNodeSet FindChildrenOfType( const CString& name          ,
                                           const bool recursive = false ) const;
 
@@ -435,6 +437,12 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  are deleted.
      */
     void DelSubTree( void );
+
+    /**
+     *  Deletes the entire sub-tree for after the given path
+     *  with the path root equaling the node where this member function is invoked.
+     */
+    void DelSubTree( const CString& path, char seperator );
 
     /**
      *  Counts all the child nodes for the node the 

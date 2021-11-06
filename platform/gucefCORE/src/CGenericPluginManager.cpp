@@ -107,6 +107,14 @@ void
 CGenericPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
+    if ( !plugin.IsNULL() )
+    {
+        CGenericPluginPtr ourPlugin = plugin.StaticCast< CGenericPlugin >();
+        if ( !ourPlugin.IsNULL() )
+        {
+            ourPlugin->Unlink();
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

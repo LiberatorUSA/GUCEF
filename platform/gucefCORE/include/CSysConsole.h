@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
 #include "CISysConsoleCmdHandler.h"
 #define GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
@@ -108,7 +113,7 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
      *      @param tree the data tree you wish to store
      *      @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CDataNode& tree ) const;
+    virtual bool SaveConfig( CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to load data from the given file to the
@@ -118,9 +123,9 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
      */
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     public:
 
@@ -156,7 +161,7 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
 
     CSysConsole( void );
 
-    ~CSysConsole();
+    virtual ~CSysConsole();
 
     private:
 
@@ -192,11 +197,11 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
     bool OnSysConsoleCommand( const CString& path                ,
                               const CString& command             ,
                               const std::vector< CString >& args ,
-                              std::vector< CString >& resultdata );
+                              std::vector< CString >& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    struct SCmdChannel* _root;
-    TAliasList _aliases;
-    MT::CMutex _datalock;
+    CDataNode m_root;
+    TAliasList m_aliases;
+    MT::CMutex m_datalock;
 };
 
 /*-------------------------------------------------------------------------//

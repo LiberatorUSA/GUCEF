@@ -531,8 +531,14 @@ CPluginControl::UnloadPlugin( const CString& groupName  ,
     {
         CPluginGroup& pluginGroup = (*i).second;
         TPluginPtr& plugin = pluginGroup.FindPluginWithModuleName( moduleName );
-
-        return UnloadPlugin( plugin, pluginGroup, groupName );
+        
+        // Is the plugin even loaded in the first place?
+        if ( !plugin.IsNULL() )
+        {
+            // It is, proceed with unload
+            return UnloadPlugin( plugin, pluginGroup, groupName );
+        }
+        return true;
     }
     return false;
 }

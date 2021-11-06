@@ -108,7 +108,6 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsoleClient
     private:
     friend class CSysConsole;
 
-    void* channel;
     CString _path;
 
     private:
