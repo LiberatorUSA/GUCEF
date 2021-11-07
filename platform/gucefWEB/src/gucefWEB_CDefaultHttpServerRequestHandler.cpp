@@ -73,12 +73,14 @@ namespace WEB {
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServerRouterController* routerController /* = GUCEF_NULL */ )
     : CIHttpServerRequestHandler()
     , m_routerController( routerController )
+    , m_ownsRouterController( false )
     , m_applyTransferEncodingWhenAble( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == routerController )
     {
         m_routerController = new CDefaultHTTPServerRouterController();
+        m_ownsRouterController = true;
     }
 }
 
@@ -87,6 +89,7 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServer
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( const CDefaultHttpServerRequestHandler& src )
     : CIHttpServerRequestHandler( src )
     , m_routerController( src.m_routerController )
+    , m_ownsRouterController( false )
     , m_applyTransferEncodingWhenAble( false )
 {GUCEF_TRACE;
 
@@ -97,6 +100,7 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( const CDefau
 CDefaultHttpServerRequestHandler::~CDefaultHttpServerRequestHandler()
 {GUCEF_TRACE;
 
+    SetRouterController( GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -713,7 +717,14 @@ bool
 CDefaultHttpServerRequestHandler::SetRouterController( CIHTTPServerRouterController* routerController )
 {GUCEF_TRACE;
 
+    if ( m_ownsRouterController )
+    {
+        delete m_routerController;
+        m_routerController = GUCEF_NULL;
+    }
+
     m_routerController = routerController;
+    m_ownsRouterController = false;
     return true;
 }
 

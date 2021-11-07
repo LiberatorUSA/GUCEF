@@ -165,7 +165,6 @@ CActiveObject::OnActivate( void* thisobject )
 
         tao->OnThreadEnded( taskdata, false );
     }
-    tao->_td = NULL;
     tao->_active = false;
     return 1;
 }

@@ -201,10 +201,6 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
     private:
     friend class CTaskDelegator;
 
-    void RegisterTaskDelegator( CTaskDelegator& delegator );
-
-    void UnregisterTaskDelegator( CTaskDelegator& delegator );
-
     bool GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
                         CICloneable** taskData         );
 
@@ -249,16 +245,18 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
 
     void RemoveConsumer( const UInt32 taskID );
 
-    CThreadPool( const CThreadPool& src );
+    void RemoveDelegator( CNotifier* notifier );
 
-    CThreadPool& operator=( const CThreadPool& src );
+    CThreadPool( const CThreadPool& src );                   /**< not supported */
+    CThreadPool& operator=( const CThreadPool& src );        /**< not supported */
 
     private:
 
     typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
     typedef MT::CTMailBox< CString > TTaskMailbox;
     typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
-    typedef std::set< CTaskDelegator* > TTaskDelegatorSet;
+    typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
+    typedef std::set< TTaskDelegatorBasicPtr > TTaskDelegatorSet;
 
     TAbstractTaskConsumerFactory m_consumerFactory;
     UInt32 m_desiredNrOfThreads;

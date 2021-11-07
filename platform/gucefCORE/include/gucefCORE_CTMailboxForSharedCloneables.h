@@ -135,10 +135,10 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetMailSPtr( TMailSP
     mail.Unlink();
     MT::CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        mail = TMailSPtr( static_cast< CloneableType* >( m_mailStack[ m_mailStack.size()-1 ] ) );
-        m_mailStack.pop_back();
+        mail = TMailSPtr( static_cast< CloneableType* >( m_mailQueue.front() ) );
+        m_mailQueue.pop_front();
         return true;
     }    
     return false;
@@ -157,10 +157,21 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
-        if ( !m_mailStack.empty() )
+        if ( !m_mailQueue.empty() )
         {
-            mailList.push_back( TMailSPtr( static_cast< CloneableType* >( m_mailStack[ m_mailStack.size()-1 ] ) ) );
-            m_mailStack.pop_back();
+            #ifdef GUCEF_DEBUG_MODE
+
+            TMailSPtr objPtr( static_cast< CloneableType* >( m_mailQueue.front() ) );
+            mailList.push_back( objPtr );            
+            GUCEF_ASSERT( objPtr.GetPointerAlways() == static_cast< CloneableType* >( m_mailQueue.front() ) );
+            m_mailQueue.pop_front();
+
+            #else
+            
+            mailList.push_back( TMailSPtr( static_cast< CloneableType* >( m_mailQueue.front() ) ) );            
+            m_mailQueue.pop_front();
+            
+            #endif
 
             ++mailItemsRead;
         }

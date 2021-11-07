@@ -25,6 +25,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <deque>
 #include <vector>
 
 #ifndef GUCEF_MT_CMUTEX_H
@@ -78,9 +79,10 @@ class CTMailBox : public virtual MT::CILockable
     };
     typedef struct SMailElement TMailElement;
 
-    typedef std::vector< TMailElement > TMailList;
-    typedef typename std::vector< TMailElement >::iterator iterator;
-    typedef typename std::vector< TMailElement >::const_iterator const_iterator;
+    typedef std::vector< TMailElement > TMailVector;
+    typedef std::deque< TMailElement >  TMailQueue;
+    typedef typename std::deque< TMailElement >::iterator iterator;
+    typedef typename std::deque< TMailElement >::const_iterator const_iterator;
 
     CTMailBox( void );
 
@@ -140,7 +142,7 @@ class CTMailBox : public virtual MT::CILockable
      *  @param maxMailItems the number of mail items that can be placed in the mail list
      *  @return whether mail was successfully retrieved from the mailbox.
      */
-    bool GetMailList( TMailList& mailList     ,
+    bool GetMailList( TMailVector& mailList   ,
                       Int32 maxMailItems = -1 );
 
     void Clear( void );
@@ -157,15 +159,15 @@ class CTMailBox : public virtual MT::CILockable
 
     bool DoUnlock( void ) const;
 
-    typename TMailList::iterator begin( void );
+    typename TMailQueue::iterator begin( void );
 
-    typename TMailList::iterator end( void );
+    typename TMailQueue::iterator end( void );
 
-    void erase( typename TMailList::iterator& index );
+    void erase( typename TMailQueue::iterator& index );
 
-    typename TMailList::const_iterator begin( void ) const;
+    typename TMailQueue::const_iterator begin( void ) const;
 
-    typename TMailList::const_iterator end( void ) const;
+    typename TMailQueue::const_iterator end( void ) const;
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -177,13 +179,12 @@ class CTMailBox : public virtual MT::CILockable
 
     private:
 
-    CTMailBox( const CTMailBox& src );
-
-    CTMailBox& operator=( const CTMailBox& src );
+    CTMailBox( const CTMailBox& src ) {}                             /**< not supported */
+    CTMailBox& operator=( const CTMailBox& src ) { return *this }    /**< not supported */
 
     private:
 
-    TMailList m_mailStack;
+    TMailQueue m_mailQueue;
     CMutex m_datalock;
 };
 
@@ -196,27 +197,19 @@ class CTMailBox : public virtual MT::CILockable
 template< typename T >
 CTMailBox< T >::CTMailBox( void )
     : MT::CILockable()
-    , m_mailStack()
+    , m_mailQueue()
     , m_datalock()
-{
+{GUCEF_TRACE;
+
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
 CTMailBox< T >::~CTMailBox()
-{
-    CObjectScopeLock lock( this );
+{GUCEF_TRACE;
 
-    TMailElement* entry;
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
-    {
-        entry = &(*i);
-        delete entry->data;
-        m_mailStack.erase( i );
-        i = m_mailStack.begin();
-    }
+    Clear();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -225,7 +218,8 @@ template< typename T >
 void
 CTMailBox< T >::AddMail( const T& eventid                     ,
                          const CICloneable* data /* = NULL */ )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     TMailElement entry;
@@ -236,9 +230,9 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
     }
     else
     {
-        entry.data = NULL;
+        entry.data = GUCEF_NULL;
     }
-    m_mailStack.insert( m_mailStack.begin(), entry );
+    m_mailQueue.push_back( entry );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -247,12 +241,13 @@ template< typename T >
 bool
 CTMailBox< T >::GetMail( T& eventid         ,
                          CICloneable** data )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
+        TMailElement& entry = m_mailQueue.front();
         eventid = entry.eventid;
 
         if ( GUCEF_NULL != data )
@@ -260,7 +255,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
         else
             delete entry.data;
 
-        m_mailStack.pop_back();
+        m_mailQueue.pop_front();
         return true;
     }
     
@@ -275,12 +270,13 @@ template< typename T >
 bool
 CTMailBox< T >::PeekMail( T& eventid         ,
                           CICloneable** data )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
+        TMailElement& entry = m_mailQueue.front();
         eventid = entry.eventid;
         *data = entry.data;
 
@@ -295,14 +291,15 @@ CTMailBox< T >::PeekMail( T& eventid         ,
 template< typename T >
 bool
 CTMailBox< T >::PopMail( void )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
+        TMailElement& entry = m_mailQueue.front();
         delete entry.data;
-        m_mailStack.pop_back();
+        m_mailQueue.pop_front();
         return true;
     }
     return false;
@@ -312,18 +309,19 @@ CTMailBox< T >::PopMail( void )
 
 template< typename T >
 bool
-CTMailBox< T >::GetMailList( TMailList& mailList ,
-                             Int32 maxMailItems  )
-{
+CTMailBox< T >::GetMailList( TMailVector& mailList ,
+                             Int32 maxMailItems    )
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
-        if ( !m_mailStack.empty() )
+        if ( !m_mailQueue.empty() )
         {
-            mailList.push_back( m_mailStack[ m_mailStack.size()-1 ] );
-            m_mailStack.pop_back();
+            mailList.push_back( m_mailQueue.front() );
+            m_mailQueue.pop_front();
 
             ++mailItemsRead;
         }
@@ -341,16 +339,17 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
 template< typename T >
 void
 CTMailBox< T >::Clear( void )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
+    typename TMailQueue::iterator i( m_mailQueue.begin() );
+    while ( i != m_mailQueue.end() )
     {
         delete (*i).data;
         ++i;
     }
-    m_mailStack.clear();
+    m_mailQueue.clear();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -358,23 +357,39 @@ CTMailBox< T >::Clear( void )
 template< typename T >
 void
 CTMailBox< T >::ClearAllExcept( const T& eventid )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    TMailElement* entry;
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
+    #if __cplusplus >= 201103L
+
+    // C++11 added the erase()
+    typename TMailQueue::iterator i( m_mailQueue.begin() );
+    while ( i != m_mailQueue.end() )
     {
-        entry = &(*i);
-        if ( entry->eventid != eventid )
+        if ( (*i).eventid != eventid )
         {
-            delete entry->data;
-            m_mailStack.erase( i );
-            i = m_mailStack.begin();
+            delete (*i).data;
+            i = m_mailQueue.erase( i );
             continue;
         }
         ++i;
     }
+
+    #else
+
+    TMailQueue copyQueue;
+    while ( !m_mailQueue.empty() )
+    {
+        if ( m_mailQueue.front().eventid == eventid )
+            copyQueue.push_back( m_mailQueue.front() ); 
+        else
+            delete m_mailQueue.front().data;  
+        m_mailQueue.pop_front();
+    }
+    m_mailQueue = copyQueue;
+
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -382,23 +397,39 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
 template< typename T >
 void
 CTMailBox< T >::Delete( const T& eventid )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
-    TMailElement* entry;
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
+    #if __cplusplus >= 201103L
+
+    // C++11 added the erase()
+    typename TMailQueue::iterator i( m_mailQueue.begin() );
+    while ( i != m_mailQueue.end() )
     {
-        entry = &(*i);
-        if ( entry->eventid == eventid )
+        if ( (*i).eventid == eventid )
         {
-            delete entry->data;
-            m_mailStack.erase( i );
-            i = m_mailStack.begin();
+            delete (*i).data;
+            i = m_mailQueue.erase( i );
             continue;
         }
         ++i;
     }
+
+    #else
+
+    TMailQueue copyQueue;
+    while ( !m_mailQueue.empty() )
+    {
+        if ( m_mailQueue.front().eventid != eventid )
+            copyQueue.push_back( m_mailQueue.front() ); 
+        else
+            delete m_mailQueue.front().data;  
+        m_mailQueue.pop_front();
+    }
+    m_mailQueue = copyQueue;
+
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -406,9 +437,10 @@ CTMailBox< T >::Delete( const T& eventid )
 template< typename T >
 bool
 CTMailBox< T >::HasMail( void ) const
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
-    return m_mailStack.size() > 0;
+    return m_mailQueue.size() > 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -416,9 +448,10 @@ CTMailBox< T >::HasMail( void ) const
 template< typename T >
 UInt32
 CTMailBox< T >::AmountOfMail( void ) const
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
-    return (UInt32) m_mailStack.size();
+    return (UInt32) m_mailQueue.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -426,7 +459,8 @@ CTMailBox< T >::AmountOfMail( void ) const
 template< typename T >
 const MT::CILockable* 
 CTMailBox< T >::AsLockable( void ) const
-{
+{GUCEF_TRACE;
+
     return this;
 }
 
@@ -435,7 +469,8 @@ CTMailBox< T >::AsLockable( void ) const
 template< typename T >
 bool
 CTMailBox< T >::Lock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Lock( lockWaitTimeoutInMs );
 }
 
@@ -444,7 +479,8 @@ CTMailBox< T >::Lock( UInt32 lockWaitTimeoutInMs ) const
 template< typename T >
 bool
 CTMailBox< T >::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     return m_datalock.Unlock();
 }
 
@@ -453,7 +489,8 @@ CTMailBox< T >::Unlock( void ) const
 template< typename T >
 bool
 CTMailBox< T >::DoLock( UInt32 lockWaitTimeoutInMs ) const
-{
+{GUCEF_TRACE;
+
     return Lock( lockWaitTimeoutInMs );
 }
 
@@ -462,7 +499,8 @@ CTMailBox< T >::DoLock( UInt32 lockWaitTimeoutInMs ) const
 template< typename T >
 bool
 CTMailBox< T >::DoUnlock( void ) const
-{
+{GUCEF_TRACE;
+
     return Unlock();
 }
 
@@ -470,45 +508,50 @@ CTMailBox< T >::DoUnlock( void ) const
 
 template< typename T >
 void
-CTMailBox< T >::erase( typename TMailList::iterator& index )
-{
-    m_mailStack.erase( index );
+CTMailBox< T >::erase( typename TMailQueue::iterator& index )
+{GUCEF_TRACE;
+
+    m_mailQueue.erase( index );
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-typename CTMailBox< T >::TMailList::iterator
+typename CTMailBox< T >::TMailQueue::iterator
 CTMailBox< T >::begin( void )
-{
-    return m_mailStack.begin();
+{GUCEF_TRACE;
+
+    return m_mailQueue.begin();
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-typename CTMailBox< T >::TMailList::iterator
+typename CTMailBox< T >::TMailQueue::iterator
 CTMailBox< T >::end( void )
-{
-    return m_mailStack.end();
+{GUCEF_TRACE;
+
+    return m_mailQueue.end();
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-typename CTMailBox< T >::TMailList::const_iterator
+typename CTMailBox< T >::TMailQueue::const_iterator
 CTMailBox< T >::begin( void ) const
-{
-    return m_mailStack.begin();
+{GUCEF_TRACE;
+
+    return m_mailQueue.begin();
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-typename CTMailBox< T >::TMailList::const_iterator
+typename CTMailBox< T >::TMailQueue::const_iterator
 CTMailBox< T >::end( void ) const
-{
-    return m_mailStack.end();
+{GUCEF_TRACE;
+
+    return m_mailQueue.end();
 }
 
 /*-------------------------------------------------------------------------//

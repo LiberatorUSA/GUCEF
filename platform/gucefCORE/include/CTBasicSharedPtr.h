@@ -454,7 +454,9 @@ CTBasicSharedPtr< T, LockType >::GetReferenceCount( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    return m_shared->m_refCounter;
+    if ( GUCEF_NULL != m_shared )
+        return m_shared->m_refCounter;
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

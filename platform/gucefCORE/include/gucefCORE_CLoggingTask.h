@@ -159,7 +159,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     };
     typedef enum EMailType TMailType;
     typedef MT::CTMailBox< TMailType > TLoggingMailBox;
-    typedef MT::CTMailBox< TMailType >::TMailList TMailList;
+    typedef MT::CTMailBox< TMailType >::TMailVector TMailVector;
 
     class CLoggingMail : public CICloneable
     {
@@ -183,7 +183,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     
     CILogger* m_loggerBackend;
     TLoggingMailBox m_mailbox;
-    TMailList m_mailList;
+    TMailVector m_mailList;
     Int32 m_minLogLevel;
 };
 

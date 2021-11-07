@@ -92,6 +92,7 @@
 
 /*-------------------------------------------------------------------------*/
 
+#define GUCEF_ASSERT( condition )   assert( condition );
 #define GUCEF_ASSERT_ALWAYS    assert( 0 );
 #define GUCEF_UNREACHABLE      GUCEF_ASSERT_ALWAYS;
 

@@ -51,89 +51,83 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CIConfigurable::CIConfigurable( void )
-        : _useglobal( false ) ,
-          _configid( 0 )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+    : _useglobal( false )
+    , _configid( 0 )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIConfigurable::CIConfigurable( const CIConfigurable& src )
-        : _useglobal( false ) ,
-          _configid( 0 )
-{
-        GUCEF_BEGIN;
-        SetUseGlobalConfig( src._useglobal );
-        GUCEF_END;
+    : _useglobal( false )
+    , _configid( 0 )
+{GUCEF_TRACE;
+
+    SetUseGlobalConfig( src._useglobal );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIConfigurable::CIConfigurable( bool useglobalconfig )
-        : _useglobal( false ) ,
-          _configid( 0 )
-{
-        GUCEF_BEGIN;
-        SetUseGlobalConfig( useglobalconfig );
-        GUCEF_END;
+    : _useglobal( false ) 
+   ,  _configid( 0 )
+{GUCEF_TRACE;
+
+    SetUseGlobalConfig( useglobalconfig );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIConfigurable::~CIConfigurable()
-{
-        GUCEF_BEGIN;
-        if ( _useglobal )
-        {
-                CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
-        }
-        GUCEF_END;
+{GUCEF_TRACE;
+
+    if ( _useglobal )
+    {
+        CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIConfigurable&
 CIConfigurable::operator=( const CIConfigurable& src )
-{
-        GUCEF_BEGIN;
-        if ( this != &src )
-        {
-                SetUseGlobalConfig( src._useglobal );
-        }
-        GUCEF_END;
-        return *this;
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        SetUseGlobalConfig( src._useglobal );
+    }
+
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CIConfigurable::SetUseGlobalConfig( bool use )
-{
-        GUCEF_BEGIN;
-        if ( use == _useglobal ) return;
+{GUCEF_TRACE;
 
-        if ( use )
-        {
-                CORE::CCoreGlobal::Instance()->GetConfigStore().Register( this );
-                _useglobal = true;
-                GUCEF_END;
-                return;
-        }
-        CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
-        _useglobal = false;
-        GUCEF_END;
+    if ( use == _useglobal ) 
+        return;
+
+    if ( use )
+    {
+        CORE::CCoreGlobal::Instance()->GetConfigStore().Register( this );
+        _useglobal = true;
+        return;
+    }
+    CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
+    _useglobal = false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CIConfigurable::GetUseGlobalConfig( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _useglobal;
+{GUCEF_TRACE;
+
+    return _useglobal;
 }
 
 /*-------------------------------------------------------------------------*/

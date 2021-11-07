@@ -66,6 +66,11 @@
 #define GUCEF_CORE_CTASKCONSUMER_H
 #endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -106,10 +111,19 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     static const CEvent ThreadPausedEvent;
     static const CEvent ThreadResumedEvent;
     static const CEvent ThreadFinishedEvent;
+
+    typedef TCloneableUInt32    ThreadKilledEventData;       /**< thread ID of the thread in question */
+    typedef TCloneableUInt32    ThreadStartedEventData;      /**< thread ID of the thread in question */
+    typedef TCloneableUInt32    ThreadPausedEventData;       /**< thread ID of the thread in question */
+    typedef TCloneableUInt32    ThreadResumedEventData;      /**< thread ID of the thread in question */
+    typedef TCloneableUInt32    ThreadFinishedEventData;     /**< thread ID of the thread in question */
+
     
     static void RegisterEvents( void );
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual ~CTaskDelegator() GUCEF_VIRTUAL_OVERRIDE;
     
     public:
 
@@ -124,8 +138,6 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     friend class CTaskConsumer;
 
     CTaskDelegator( CThreadPool* threadPool );
-
-    virtual ~CTaskDelegator();
 
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence

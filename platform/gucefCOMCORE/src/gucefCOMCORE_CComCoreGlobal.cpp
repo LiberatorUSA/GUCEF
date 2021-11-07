@@ -119,6 +119,7 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 
 MT::CMutex CComCoreGlobal::g_dataLock;
 CComCoreGlobal* CComCoreGlobal::g_instance = GUCEF_NULL;
+TPingTaskConsumerFactory g_pingTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -160,7 +161,7 @@ CComCoreGlobal::Initialize( void )
 
     // Make the task manager capable of handling ping tasks
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
-                                                                                 new TPingTaskConsumerFactory()     );
+                                                                                 &g_pingTaskConsumerFactory         );
 
     m_com = new CCom();
     m_discoveryManager = new CDiscoveryManager();

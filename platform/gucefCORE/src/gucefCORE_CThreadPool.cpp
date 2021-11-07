@@ -226,7 +226,8 @@ CThreadPool::~CThreadPool( void )
     while ( i != m_taskDelegators.end() )
     {
         // Kill the task
-        (*i)->Deactivate( true, true );
+        TTaskDelegatorBasicPtr delegator = (*i);
+        delegator->Deactivate( true, true );
         ++i;
     }
     m_taskDelegators.clear();
@@ -288,6 +289,24 @@ CThreadPool::CarryOutQueuedTasksIfAny( UInt32 maxTasks )
 /*-------------------------------------------------------------------------*/
 
 void
+CThreadPool::RemoveDelegator( CNotifier* notifier )
+{GUCEF_TRACE;
+
+    TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
+    while ( i != m_taskDelegators.end() )
+    {
+        if ( static_cast< const CNotifier* >( (*i).GetPointerAlways() ) == notifier )
+        {
+            m_taskDelegators.erase( i );
+            return;
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CThreadPool::OnPumpedNotify( CNotifier* notifier    ,
                              const CEvent& eventid  ,
                              CICloneable* eventdata )
@@ -313,32 +332,34 @@ CThreadPool::OnPumpedNotify( CNotifier* notifier    ,
     else
     if ( CTaskDelegator::ThreadKilledEvent == eventid )
     {
-        NotifyObservers( ThreadKilledEvent );
+        NotifyObservers( ThreadKilledEvent, eventdata );
+        RemoveDelegator( notifier );
     }
     else
     if ( CTaskDelegator::ThreadStartedEvent == eventid )
     {
-        NotifyObservers( ThreadStartedEvent );
+        NotifyObservers( ThreadStartedEvent, eventdata );
     }
     else
     if ( CTaskDelegator::ThreadPausedEvent == eventid )
     {
-        NotifyObservers( ThreadPausedEvent );
+        NotifyObservers( ThreadPausedEvent, eventdata );
     }
     else
     if ( CTaskDelegator::ThreadResumedEvent == eventid )
     {
-        NotifyObservers( ThreadResumedEvent );
+        NotifyObservers( ThreadResumedEvent, eventdata );
     }
     else
     if ( CTaskDelegator::ThreadFinishedEvent == eventid )
     {
-        NotifyObservers( ThreadFinishedEvent );
+        NotifyObservers( ThreadFinishedEvent, eventdata );
+        RemoveDelegator( notifier );
     }
     else
     if ( CTaskConsumer::TaskKilledEvent == eventid )
     {
-        NotifyObservers( TaskKilledEvent );
+        NotifyObservers( TaskKilledEvent, eventdata );
     }
     else
     if ( CTaskConsumer::TaskStartedEvent == eventid )
@@ -431,14 +452,17 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         for ( UInt32 i=0; i<addCount; ++i )
         {
             // Just spawn a task delegator
-            CTaskDelegator* delegator = new CTaskDelegator( this );
+            CTaskDelegatorPtr delegator( new CTaskDelegator( this ) );
+            SubscribeTo( delegator.GetPointerAlways() );
+            m_taskDelegators.insert( delegator );
+
             if ( delegator->Activate() )
             {
-                RegisterTaskDelegator( *delegator );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Created thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
             }
             else
             {
-                delete delegator;
+                m_taskDelegators.erase( delegator );
                 GUCEF_ERROR_LOG( LOGLEVEL_CRITICAL, "ThreadPool: Failed to create thread" ); 
             }
         }
@@ -481,7 +505,8 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                     if ( !(*i)->IsDeactivationRequested() )
                     {
                         // Ask thread to deactivate
-                        (*i)->Deactivate( gracefullEnforcement, false );
+                        TTaskDelegatorBasicPtr delegator = (*i);
+                        delegator->Deactivate( gracefullEnforcement, false );
                     }
                 }
                 ++i;
@@ -665,7 +690,10 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
 
     // Just spawn a task delegator, it will auto register as an active task
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-    CTaskDelegator* delegator = new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
+    CTaskDelegatorPtr delegator( new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) );
+    SubscribeTo( delegator.GetPointerAlways() );
+    m_taskDelegators.insert( delegator );
+
     if ( delegator->Activate() )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Successfully activated delegator for task type \"" + taskConsumer->GetType() + 
@@ -674,9 +702,10 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
     }
     else
     {
+        m_taskDelegators.erase( delegator );
+        
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to activate delegator for task type \"" + taskConsumer->GetType() + 
             "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() )  + " and thread ID " + ToString( delegator->GetThreadID() )  );
-        delete delegator;
         return false;
     }
 }
@@ -712,12 +741,24 @@ CThreadPool::StartTask( const CString& taskType ,
             *task = taskConsumer;
         }
         SubscribeTo( taskConsumer.GetPointerAlways() );
-        CTaskDelegator* delegator = new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
+        
+        CTaskDelegatorPtr delegator( new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) );
+        SubscribeTo( delegator.GetPointerAlways() );
+        m_taskDelegators.insert( delegator );
 
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Started task immediatly of type \"" + taskType + "\" with ID " +
-                                            UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+        if ( delegator->Activate() )
+        {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Started task immediatly of type \"" + taskType + "\" with ID " +
+                                                UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to task immediatly of type \"" + taskType + "\" with ID " +
+                                                UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
 
-        return delegator->Activate();
+            m_taskDelegators.erase( delegator );
+        }
     }
 
     return false;
@@ -987,28 +1028,6 @@ CThreadPool::KillTask( const UInt32 taskID )
         }
     }
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CThreadPool::RegisterTaskDelegator( CTaskDelegator& delegator )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-    m_taskDelegators.insert( &delegator );
-    ++m_activeNrOfThreads;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CThreadPool::UnregisterTaskDelegator( CTaskDelegator& delegator )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-    m_taskDelegators.erase( &delegator );
-    -- m_activeNrOfThreads;
 }
 
 /*-------------------------------------------------------------------------//

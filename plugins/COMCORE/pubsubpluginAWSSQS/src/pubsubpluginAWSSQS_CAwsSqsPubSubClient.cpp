@@ -110,6 +110,15 @@ CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        delete (*i).second;
+        (*i).second = GUCEF_NULL;
+        ++i;
+    }
+    m_topicMap.clear();
 }
 
 /*-------------------------------------------------------------------------*/

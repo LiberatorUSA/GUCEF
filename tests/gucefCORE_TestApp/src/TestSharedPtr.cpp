@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
+#include "gucefCORE_CTMailboxForSharedCloneables.h"
+#define GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H
+#endif /* GUCEF_CORE_CTMAILBOXFORSHAREDCLONEABLES_H ? */
+
 #include "TestSharedPtr.h"
 
 /*-------------------------------------------------------------------------//
@@ -128,23 +133,24 @@ class Unrelated
     int z;
 };
 
-typedef GUCEF::CORE::CTSharedPtr< IBase, GUCEF::MT::CMutex > TIBasePtr;
-typedef GUCEF::CORE::CTSharedPtr< Base, GUCEF::MT::CMutex > TBasePtr;
-typedef GUCEF::CORE::CTSharedPtr< AltBase, GUCEF::MT::CMutex > TAltBasePtr;
-typedef GUCEF::CORE::CTSharedPtr< Derived, GUCEF::MT::CMutex > TDerivedPtr;
-typedef GUCEF::CORE::CTSharedPtr< Unrelated, GUCEF::MT::CMutex > TUnrelatedPtr;
-
-typedef GUCEF::CORE::CTBasicSharedPtr< IBase, GUCEF::MT::CMutex > TIBasicBasePtr;
-typedef GUCEF::CORE::CTBasicSharedPtr< Base, GUCEF::MT::CMutex > TBasicBasePtr;
-typedef GUCEF::CORE::CTBasicSharedPtr< AltBase, GUCEF::MT::CMutex > TBasicAltBasePtr;
-typedef GUCEF::CORE::CTBasicSharedPtr< Derived, GUCEF::MT::CMutex > TBasicDerivedPtr;
-typedef GUCEF::CORE::CTBasicSharedPtr< Unrelated, GUCEF::MT::CMutex > TBasicUnrelatedPtr;
-
+/*-------------------------------------------------------------------------*/
 
 void
-PerformSharedPtrTests( void )
+PerformBasicSharedPtrSanityTests( void )
 {
-    std::cout << "\n\n**** COMMENCING SHARED PTR TESTS ****\n";
+    std::cout << "\n\n**** COMMENCING BASIC SHARED PTR SANITY TESTS ****\n";
+
+    typedef GUCEF::CORE::CTSharedPtr< IBase, GUCEF::MT::CMutex > TIBasePtr;
+    typedef GUCEF::CORE::CTSharedPtr< Base, GUCEF::MT::CMutex > TBasePtr;
+    typedef GUCEF::CORE::CTSharedPtr< AltBase, GUCEF::MT::CMutex > TAltBasePtr;
+    typedef GUCEF::CORE::CTSharedPtr< Derived, GUCEF::MT::CMutex > TDerivedPtr;
+    typedef GUCEF::CORE::CTSharedPtr< Unrelated, GUCEF::MT::CMutex > TUnrelatedPtr;
+
+    typedef GUCEF::CORE::CTBasicSharedPtr< IBase, GUCEF::MT::CMutex > TIBasicBasePtr;
+    typedef GUCEF::CORE::CTBasicSharedPtr< Base, GUCEF::MT::CMutex > TBasicBasePtr;
+    typedef GUCEF::CORE::CTBasicSharedPtr< AltBase, GUCEF::MT::CMutex > TBasicAltBasePtr;
+    typedef GUCEF::CORE::CTBasicSharedPtr< Derived, GUCEF::MT::CMutex > TBasicDerivedPtr;
+    typedef GUCEF::CORE::CTBasicSharedPtr< Unrelated, GUCEF::MT::CMutex > TBasicUnrelatedPtr;
     
     try
     {
@@ -327,6 +333,19 @@ PerformSharedPtrTests( void )
     {
         ERRORHERE;
     }
+
+    std::cout << "\n\n**** COMMENCING BASIC SHARED PTR SANITY TESTS ****\n";
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PerformSharedPtrTests( void )
+{GUCEF_TRACE;
+
+    std::cout << "\n\n**** COMMENCING SHARED PTR TESTS ****\n";
+
+    PerformBasicSharedPtrSanityTests();
 
     std::cout << "\n\n**** FINISHED SHAREDPTR TESTS ****\n";
 }

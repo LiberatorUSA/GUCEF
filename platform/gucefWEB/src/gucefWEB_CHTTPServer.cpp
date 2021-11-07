@@ -123,6 +123,9 @@ CHTTPServer::~CHTTPServer()
 {GUCEF_TRACE;
 
     UnsubscribeAllFromObserver();
+
+    if ( GUCEF_NULL != m_requestHandlerFactory )
+        m_requestHandlerFactory->Destroy( m_requestHandler );
 }
 
 /*-------------------------------------------------------------------------*/

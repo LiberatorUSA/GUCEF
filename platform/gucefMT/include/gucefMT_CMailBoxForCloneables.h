@@ -25,6 +25,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <deque>
 #include <vector>
 
 #ifndef GUCEF_MT_CMUTEX_H
@@ -65,7 +66,8 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
 {
     public:
 
-    typedef std::vector< CICloneable* > TMailList;
+    typedef std::vector< CICloneable* >     TMailVector;
+    typedef std::deque< CICloneable* >      TMailQueue;
 
     CMailboxForCloneables( void );
 
@@ -126,7 +128,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
      */
     template< typename TContainer >
     bool GetPtrBulkMail( TContainer& mailList    ,
-                        Int32 maxMailItems = -1 );
+                         Int32 maxMailItems = -1 );
 
     /**
      *  Attempts to retrieve mail from the mailbox.
@@ -189,7 +191,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
 
     protected:
 
-    TMailList m_mailStack;
+    TMailQueue m_mailQueue;
     CMutex m_datalock;
 };
 
@@ -202,16 +204,17 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
 template< typename T >
 bool
 CMailboxForCloneables::GetMail( T** mail )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == mail )
         return false;
 
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        *mail = static_cast< T >( m_mailStack[ m_mailStack.size()-1 ] );
-        m_mailStack.pop_back();
+        *mail = static_cast< T >( m_mailQueue.front() );
+        m_mailQueue.pop_front();
         return true;
     }
     *mail = GUCEF_NULL;
@@ -223,7 +226,8 @@ CMailboxForCloneables::GetMail( T** mail )
 template< typename T >
 bool
 CMailboxForCloneables::PeekMail( T** mail )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == mail )
         return false;
     
@@ -231,7 +235,7 @@ CMailboxForCloneables::PeekMail( T** mail )
 
     if ( !m_mailStack.empty() )
     {
-        *mail = static_cast< T* >( m_mailStack[ m_mailStack.size()-1 ] );
+        *mail = static_cast< T* >( m_mailQueue.front() );
         return true;
     }
     *mail = GUCEF_NULL;
@@ -244,16 +248,17 @@ template< typename TContainer >
 bool
 CMailboxForCloneables::GetPtrBulkMail( TContainer& mailList ,
                                        Int32 maxMailItems   )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
-        if ( !m_mailStack.empty() )
+        if ( !m_mailQueue.empty() )
         {
-            mailList.push_back( static_cast< TContainer::value_type >( m_mailStack[ m_mailStack.size()-1 ] ) );
-            m_mailStack.pop_back();
+            mailList.push_back( static_cast< TContainer::value_type >( m_mailQueue.front() ) );
+            m_mailQueue.pop_front();
 
             ++mailItemsRead;
         }
@@ -272,19 +277,20 @@ template< typename TContainer >
 bool
 CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
                                        Int32 maxMailItems   )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
 
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
-        if ( !m_mailStack.empty() )
+        if ( !m_mailQueue.empty() )
         {
             // We know we are dealing with clonables so fetching by value means we need to guard against memory leaks
-            TContainer::value_type* mail = static_cast< TContainer::value_type* >( m_mailStack[ m_mailStack.size()-1 ] );
+            TContainer::value_type* mail = static_cast< TContainer::value_type* >( m_mailQueue.front() );
             mailList.push_back( *mail );
             delete mail;
-            m_mailStack.pop_back();
+            m_mailQueue.pop_front();
 
             ++mailItemsRead;
         }
@@ -302,10 +308,9 @@ CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
 template< typename TContainer >
 bool
 CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
-    
-    m_mailStack.reserve( m_mailStack.size() + mailList.size() );
     
     TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
@@ -313,7 +318,7 @@ CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList )
         const CICloneable* origMail = static_cast< const CICloneable* >( (*i) );
         if ( GUCEF_NULL != origMail )
         {
-            m_mailStack.push_back( origMail->Clone() );
+            m_mailQueue.push_back( origMail->Clone() );
         }
         ++i;
     }
@@ -325,16 +330,15 @@ CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList )
 template< typename TContainer >
 bool
 CMailboxForCloneables::AddValBulkMail( const TContainer& mailList )
-{
+{GUCEF_TRACE;
+
     CObjectScopeLock lock( this );
-    
-    m_mailStack.reserve( m_mailStack.size() + mailList.size() );
-    
+   
     TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
         const CICloneable& origMail = static_cast< const CICloneable& >( (*i) );
-        m_mailStack.push_back( origMail.Clone() );
+        m_mailQueue.push_back( origMail.Clone() );
         ++i;
     }
     return true;

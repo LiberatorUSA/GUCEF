@@ -271,9 +271,10 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
         if ( m_mailbox.GetMailList( m_mailList           ,
                                     MAXMAILITEMSPERCYCLE ) )
         {
-            while ( !m_mailList.empty() )
+            TMailVector::iterator i = m_mailList.begin();
+            while ( i != m_mailList.end() )
             {
-                TLoggingMailBox::TMailElement& mailEntry = m_mailList[ m_mailList.size()-1 ];
+                TLoggingMailBox::TMailElement& mailEntry = (*i);
                 loggingMail = static_cast< CLoggingMail* >( mailEntry.data );
 
                 switch ( mailEntry.eventid )
@@ -299,14 +300,15 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
                 }
 
                 delete loggingMail;
-                loggingMail = NULL;
+                mailEntry.data = loggingMail = GUCEF_NULL;
 
-                m_mailList.pop_back();
+                ++i;
             }
+            m_mailList.clear();
         }
     }
 
-    // This is an infinate task so we always return false
+    // This is an infinite task so we always return false
     //  which indicates we are not done.
     return false;
 }
@@ -336,15 +338,15 @@ CLoggingTask::OnTaskEnded( CICloneable* taskdata ,
                            bool wasForced        )
 {GUCEF_TRACE;
 
-    TLoggingMailBox::TMailElement* entry;
-    TMailList::iterator i( m_mailList.begin() );
+    TLoggingMailBox::TMailElement* entry = GUCEF_NULL;
+    TMailVector::iterator i( m_mailList.begin() );
     while ( i != m_mailList.end() )
     {
         entry = &(*i);
         delete entry->data;
-        m_mailList.erase( i );
-        i = m_mailList.begin();
+        ++i;
     }
+    m_mailList.clear();
 }
 
 /*-------------------------------------------------------------------------*/

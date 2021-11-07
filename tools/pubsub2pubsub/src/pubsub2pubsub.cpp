@@ -495,6 +495,14 @@ CPubSubClientSide::CPubSubClientSide( char side )
 CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
+    delete m_timedOutInFlightMessagesCheckTimer;
+    m_timedOutInFlightMessagesCheckTimer = GUCEF_NULL;
+
+    delete m_pubsubClientReconnectTimer;
+    m_pubsubClientReconnectTimer = GUCEF_NULL;
+
+    delete m_metricsTimer;
+    m_metricsTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

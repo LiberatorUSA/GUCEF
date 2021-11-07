@@ -204,6 +204,9 @@ CTCPServerSocket::~CTCPServerSocket()
     _connections.clear();
     m_inactiveConnections.clear();
     m_activeConnections.clear();
+
+    delete _data;
+    _data = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

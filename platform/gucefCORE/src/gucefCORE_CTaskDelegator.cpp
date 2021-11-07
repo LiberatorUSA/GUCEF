@@ -120,8 +120,6 @@ CTaskDelegator::CTaskDelegator( CThreadPool* threadPool       ,
 CTaskDelegator::~CTaskDelegator()
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_threadPool )
-        m_threadPool->UnregisterTaskDelegator( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,7 +205,8 @@ bool
 CTaskDelegator::OnThreadStart( void* taskdata )
 {GUCEF_TRACE;
 
-    NotifyObservers( ThreadStartedEvent );
+    ThreadStartedEventData id( GetThreadID() );
+    NotifyObservers( ThreadStartedEvent, &id );
     return true;
 }
 
@@ -232,7 +231,7 @@ CTaskDelegator::TaskCleanup( CTaskConsumerPtr taskConsumer ,
                                    taskData     );
     }
 
-    m_taskConsumer = GUCEF_NULL;
+    m_taskConsumer.Unlink();
     taskConsumer->SetTaskDelegator( GUCEF_NULL );
 }
 
@@ -255,7 +254,7 @@ CTaskDelegator::OnThreadCycle( void* taskdata )
         TaskCleanup( taskConsumer ,
                      m_taskData   );
 
-        taskConsumer = GUCEF_NULL;
+        taskConsumer.Unlink();
         m_taskData = GUCEF_NULL;
     }
 
@@ -325,6 +324,9 @@ void
 CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 {GUCEF_TRACE;
 
+    ThreadPausedEventData id( GetThreadID() );
+    if ( !NotifyObservers( ThreadPausedEvent, &id ) ) return;
+    
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
@@ -338,6 +340,9 @@ void
 CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
+    ThreadResumedEventData id( GetThreadID() ); 
+    if ( !NotifyObservers( ThreadResumedEvent, &id ) ) return;
+    
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
@@ -377,6 +382,17 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
         
         m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         taskConsumer->SetTaskDelegator( GUCEF_NULL );
+    }
+
+    if ( forced )
+    {
+        ThreadFinishedEventData id( GetThreadID() );
+        NotifyObservers( ThreadKilledEvent, &id );
+    }
+    else
+    {
+        ThreadFinishedEventData id( GetThreadID() );
+        NotifyObservers( ThreadFinishedEvent, &id );
     }
 }
 

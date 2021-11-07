@@ -122,8 +122,9 @@ CDataNode::Clear( void )
     m_nodeType = GUCEF_DATATYPE_OBJECT;
     _name.Clear();
     m_value.Clear();
-    DelSubTree();
     ClearAttributes();
+
+    DelSubTree();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1413,9 +1414,8 @@ CDataNode::DelSubTree( void )
     {
         CDataNode* child = m_children.front();
         m_children.pop_front();
-        child->DelSubTree();
         
-        // Don't bother fixing the parent administration if the parent if being destroyed
+        // Don't bother fixing the parent administration if the parent is being destroyed
         // This is an optimization since this can be an expensive operation if there are a lot
         // of child nodes since the list would have to be traversed for every single child.
         // This prevents Detach() in the child destructor from reaching out to this parent again
@@ -1446,8 +1446,8 @@ CDataNode::AddChild( const CDataNode& newnode )
 {GUCEF_TRACE;
 
     CDataNode* n = new CDataNode( newnode );
-    n->_pprev = nullptr;
-    n->_pnext = nullptr;
+    n->_pprev = GUCEF_NULL;
+    n->_pnext = GUCEF_NULL;
     n->_pparent = this;        
 
     if ( !m_children.empty() )
@@ -1611,17 +1611,15 @@ CDataNode::SetAssociatedData( CICloneable* associatedData )
         
 bool 
 CDataNode::DelChild( const CString& name )
-{
-        GUCEF_BEGIN;
-        CDataNode* n = FindChild( name );
-        if ( n )
-        {       
-                delete n;
-                GUCEF_END;
-                return true;
-        }
-        GUCEF_END;
-        return false;
+{GUCEF_TRACE;
+
+    CDataNode* n = FindChild( name );
+    if ( n )
+    {       
+        delete n;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

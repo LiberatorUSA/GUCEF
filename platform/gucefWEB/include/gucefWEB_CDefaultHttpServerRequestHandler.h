@@ -111,6 +111,7 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
     private:
 
     CIHTTPServerRouterController* m_routerController;
+    bool m_ownsRouterController;
     bool m_applyTransferEncodingWhenAble;
 };
 

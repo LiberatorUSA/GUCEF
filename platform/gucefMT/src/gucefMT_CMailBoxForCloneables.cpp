@@ -63,7 +63,7 @@ namespace MT {
 
 CMailboxForCloneables::CMailboxForCloneables( void )
     : MT::CILockable()
-    , m_mailStack()
+    , m_mailQueue()
     , m_datalock()
 {GUCEF_TRACE;
 
@@ -75,14 +75,7 @@ CMailboxForCloneables::~CMailboxForCloneables()
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
-    {
-        delete (*i);
-        m_mailStack.erase( i );
-        i = m_mailStack.begin();
-    }
+    Clear();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -94,7 +87,7 @@ CMailboxForCloneables::AddMail( const CICloneable* mail /* = GUCEF_NULL */ )
     if ( GUCEF_NULL != mail )
     {
         CObjectScopeLock lock( this );
-        m_mailStack.push_back( mail->Clone() );
+        m_mailQueue.push_back( mail->Clone() );
     }
 }
 
@@ -106,11 +99,11 @@ CMailboxForCloneables::PopMail( void )
 
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
-        CICloneable* obj = m_mailStack[ m_mailStack.size()-1 ];
+        CICloneable* obj = m_mailQueue.front();
         delete obj;
-        m_mailStack.pop_back();
+        m_mailQueue.pop_front();
         return true;
     }
     return false;
@@ -123,14 +116,11 @@ CMailboxForCloneables::Clear( void )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
+    while ( !m_mailQueue.empty() )
     {
-        delete (*i);
-        ++i;
+        delete m_mailQueue.front();
+        m_mailQueue.pop_front();
     }
-    m_mailStack.clear();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -141,18 +131,35 @@ CMailboxForCloneables::Delete( const CICloneable* mail )
 
     CObjectScopeLock lock( this );
 
-    typename TMailList::iterator i( m_mailStack.begin() );
-    while ( i != m_mailStack.end() )
+    #if __cplusplus >= 201103L
+
+    // C++11 added the erase()
+    typename TMailQueue::iterator i( m_mailQueue.begin() );
+    while ( i != m_mailQueue.end() )
     {
         if ( (*i) == mail )
         {
             delete mail;
-            m_mailStack.erase( i );
-            i = m_mailStack.begin();
+            i = m_mailQueue.erase( i );
             continue;
         }
         ++i;
     }
+
+    #else
+
+    TMailQueue copyQueue;
+    while ( !m_mailQueue.empty() )
+    {
+        if ( m_mailQueue.front() == mail )
+            delete mail;
+        else
+            copyQueue.push_back( m_mailQueue.front() );  
+        m_mailQueue.pop_front();
+    }
+    m_mailQueue = copyQueue;
+
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -162,7 +169,7 @@ CMailboxForCloneables::HasMail( void ) const
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-    return !m_mailStack.empty();
+    return !m_mailQueue.empty();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -172,7 +179,7 @@ CMailboxForCloneables::AmountOfMail( void ) const
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-    return (UInt32) m_mailStack.size();
+    return (UInt32) m_mailQueue.size();
 }
 
 /*-------------------------------------------------------------------------*/

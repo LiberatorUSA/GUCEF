@@ -75,7 +75,6 @@ CKafkaPubSubClient::CKafkaPubSubClient( const COMCORE::CPubSubClientConfig& conf
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
-    , m_threadPool()
 {GUCEF_TRACE;
 
     SetupBasedOnConfig();
@@ -95,11 +94,17 @@ void
 CKafkaPubSubClient::Clear( void )
 {GUCEF_TRACE;
 
-    if ( !m_threadPool.IsNULL() )
-        m_threadPool->RequestAllThreadsToStop( true, false );
-    
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        delete (*i).second;
+        (*i).second = GUCEF_NULL;
+        ++i;
+    }
+    m_topicMap.clear();
 }
 
 /*-------------------------------------------------------------------------*/
