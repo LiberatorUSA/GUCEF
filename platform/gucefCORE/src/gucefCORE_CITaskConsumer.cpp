@@ -80,8 +80,8 @@ CTaskConsumer::RegisterEvents( void )
 CTaskConsumer::CTaskConsumer( void )
     : CObservingNotifier()           
     , m_taskId()          
-    , m_threadPool( GUCEF_NULL )          
-    , m_delegator( GUCEF_NULL )          
+    , m_threadPool()          
+    , m_delegator()          
     , m_ownedByThreadPool( false )
 {GUCEF_TRACE;
 
@@ -117,7 +117,7 @@ CTaskConsumer::IsOwnedByThreadPool( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTaskDelegator*
+CTaskConsumer::TTaskDelegatorBasicPtr
 CTaskConsumer::GetTaskDelegator( void )
 {GUCEF_TRACE;
 
@@ -130,7 +130,7 @@ CPulseGenerator*
 CTaskConsumer::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return m_delegator != GUCEF_NULL ? &m_delegator->GetPulseGenerator() : GUCEF_NULL;
+    return !m_delegator.IsNULL() ? &m_delegator->GetPulseGenerator() : GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,7 +139,7 @@ UInt32
 CTaskConsumer::GetDelegatorThreadId( void ) const
 {GUCEF_TRACE;
 
-    return m_delegator != GUCEF_NULL ? m_delegator->GetThreadID() : 0;
+    return !m_delegator.IsNULL() ? m_delegator->GetThreadID() : 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ bool
 CTaskConsumer::WaitForTaskToFinish( Int32 timeoutInMs )
 {GUCEF_TRACE;
 
-    return m_threadPool != GUCEF_NULL ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false; 
+    return !m_threadPool.IsNULL() ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ CTaskConsumer::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
+CTaskConsumer::SetTaskDelegator( TTaskDelegatorBasicPtr& delegator )
 {GUCEF_TRACE;
 
     m_delegator = delegator;
@@ -182,7 +182,7 @@ CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
 /*-------------------------------------------------------------------------*/
 
 void 
-CTaskConsumer::SetThreadPool( CThreadPool* threadPool )
+CTaskConsumer::SetThreadPool( TThreadPoolBasicPtr& threadPool )
 {GUCEF_TRACE;
 
     m_threadPool = threadPool;

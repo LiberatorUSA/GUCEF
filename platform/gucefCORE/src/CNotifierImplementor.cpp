@@ -127,6 +127,8 @@ CNotifierImplementor::~CNotifierImplementor()
      *  If you hit this assert then you have found a bug in the logic of this class
      */
     assert( !m_isBusy );
+
+    UnsubscribeAllFromNotifier();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,8 +246,21 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
             (*i).first->UnlinkFrom( m_ownerNotifier );
             ++i;
         }
-
         m_observers.clear();
+
+        TNotificationList::iterator n = m_eventobservers.begin();
+        while ( n != m_eventobservers.end() )
+        {
+            TEventNotificationMap& eventMap = (*n).second;
+            TEventNotificationMap::iterator m = eventMap.begin();
+            while ( m != eventMap.end() )
+            {
+                (*m).first->UnlinkFrom( m_ownerNotifier );
+                delete (*m).second;
+                ++m;
+            }
+            ++n;
+        }
         m_eventobservers.clear();
     }
     else
@@ -316,11 +331,15 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
         /*
          *  We filter subscription requests for standard events because there is
          *  no need to store them. All observers are subscribed to these events at all times anyway.
+         * 
+         *  The exception being if a specific callback is provided in which case we do record it since
+         *  there is no way to divine that information later
          */
-        if ( ( eventid != CNotifier::DestructionEvent ) &&
+        if ( ( GUCEF_NULL != callback               ) || (
+             ( eventid != CNotifier::DestructionEvent ) &&
              ( eventid != CNotifier::ModifyEvent )      &&
              ( eventid != CNotifier::SubscribeEvent )   &&
-             ( eventid != CNotifier::UnsubscribeEvent )  )
+             ( eventid != CNotifier::UnsubscribeEvent )  ) )
         {
             // Get a list of all observers that listen to this specific event
             TNotificationList::iterator n( m_eventobservers.find( eventid ) );

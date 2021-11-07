@@ -79,17 +79,49 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 template< class LockType >
-class TBasicSharedPtrSharedData
+class TBasicSharedPtrSharedData : public MT::CILockable
 {
     public:
 
     Int32 m_refCounter;              /**< shared reference counter */
     LockType m_lock;                 /**< shared lock, if any */
+    bool m_hasIndependentLifeCycle;  /**< depending on if the shared data is part of a larger object it may not have an independent lifecycle */
 
-    TBasicSharedPtrSharedData( void )
+    TBasicSharedPtrSharedData( bool hasIndependentLifeCycle )
         : m_refCounter( 0 )
         , m_lock()
-    {
+        , m_hasIndependentLifeCycle( hasIndependentLifeCycle )
+    {GUCEF_TRACE;
+
+    }
+
+    virtual ~TBasicSharedPtrSharedData()
+    {GUCEF_TRACE;
+
+    }
+
+    /**
+     *  Actual locking behaviour depends on the LockType passed to the template
+     */
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return m_lock.Lock( lockWaitTimeoutInMs );
+    }
+
+    /**
+     *  Actual locking behaviour depends on the LockType passed to the template
+     */
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return m_lock.Unlock();
+    }
+
+    virtual const CILockable* AsLockable( void ) const
+    {GUCEF_TRACE;
+        
+        return this;
     }
 };
 
@@ -156,6 +188,10 @@ class CTBasicSharedPtr : public MT::CILockable ,
     }
 
     CTBasicSharedPtr( const CTBasicSharedPtr& src );
+
+    CTBasicSharedPtr( TBasicSharedPtrSharedData< LockType >* shared ,
+                      T* ptr                                        ,
+                      TDestructor* objectDestructor                 );
 
     virtual ~CTBasicSharedPtr() GUCEF_VIRTUAL_OVERRIDE;
 
@@ -320,9 +356,37 @@ class CTBasicSharedPtr : public MT::CILockable ,
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+class CTBasicSharedPtrCreator
+{
+    public:
+
+    CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void );
+
+    CTBasicSharedPtrCreator( T* derived );
+    virtual ~CTBasicSharedPtrCreator();
+
+    protected:
+    
+    typename CTBasicSharedPtr< T, LockType >::TDestructor* m_objectDestructor;
+    
+    private:
+
+    CTBasicSharedPtrCreator( void  );                                           /**< dont use */
+    CTBasicSharedPtrCreator( const CTBasicSharedPtrCreator& src );              /**< dont use */
+    CTBasicSharedPtrCreator& operator=( const CTBasicSharedPtrCreator& src );   /**< dont use */
+
+    private:
+    TBasicSharedPtrSharedData< LockType > m_shared;
+    T* m_this;
+};
+
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -340,6 +404,27 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( TBasicSharedPtrSharedData< LockType >* shared ,
+                                                   T* ptr                                        ,
+                                                   TDestructor* objectDestructor                 )
+    : m_shared( GUCEF_NULL )
+    , m_ptr( GUCEF_NULL )
+    , m_objectDestructor( GUCEF_NULL )
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != shared )
+    {
+        MT::CObjectScopeLock lock( shared );
+        m_shared = shared;
+        ++m_shared->m_refCounter;
+        m_objectDestructor = objectDestructor;
+        m_ptr = ptr;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
 CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( T* ptr                        ,
                                                    TDestructor* objectDestructor )
     : m_shared( GUCEF_NULL )
@@ -349,7 +434,7 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( T* ptr                       
 
     if ( GUCEF_NULL != ptr )
     {
-        m_shared = new TBasicSharedPtrSharedData< LockType >();
+        m_shared = new TBasicSharedPtrSharedData< LockType >( true );
         m_shared->m_refCounter = 1UL;
         m_objectDestructor = objectDestructor;
         m_ptr = ptr;
@@ -408,7 +493,7 @@ CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
 
     if ( GUCEF_NULL != ptr )
     {
-        m_shared = new TBasicSharedPtrSharedData< LockType >();
+        m_shared = new TBasicSharedPtrSharedData< LockType >( true );
         m_ptr = ptr;
         m_shared->m_refCounter = 1UL;
         m_objectDestructor = objectDestructor;
@@ -874,13 +959,14 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
     if ( GUCEF_NULL != m_shared )
     {
         m_shared->m_lock.Lock(); // We cannot use CObjectScopeLock here because we may have to delete the lock itself
-        GUCEF_CHECKALLOCPTR( m_shared );
         if ( GUCEF_NULL != m_ptr )
         {
             --m_shared->m_refCounter;
             assert( m_shared->m_refCounter >= 0 );
             if ( 0 >= m_shared->m_refCounter )
             {
+                bool sharedDataIsIndependent = m_shared->m_hasIndependentLifeCycle;
+                
                 // We should check if the destructor pointer is not-NULL
                 // A descending class may NULL it for its own purposes.
                 if ( GUCEF_NULL != m_objectDestructor )
@@ -891,10 +977,17 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                 }
                 m_ptr = GUCEF_NULL;
 
-                TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;                
-                m_shared = GUCEF_NULL;
-                localSharedRef->m_lock.Unlock();                
-                delete localSharedRef;
+                if ( sharedDataIsIndependent )
+                {
+                    TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;                
+                    m_shared = GUCEF_NULL;
+                    localSharedRef->m_lock.Unlock();                
+                    delete localSharedRef;
+                }
+                else
+                {
+                    m_shared = GUCEF_NULL;
+                }
             }
             else
             {
@@ -939,7 +1032,6 @@ CTBasicSharedPtr< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
                                                  
     if ( GUCEF_NULL != m_shared )
     {
-        GUCEF_CHECKALLOCPTR( m_shared );
         return m_shared->m_lock.Lock( lockWaitTimeoutInMs );
     }
     return false;
@@ -954,7 +1046,6 @@ CTBasicSharedPtr< T, LockType >::Unlock( void ) const
 
     if ( GUCEF_NULL != m_shared )
     {
-        GUCEF_CHECKALLOCPTR( m_shared );
         return m_shared->m_lock.Unlock();
     }
     return false;
@@ -968,6 +1059,37 @@ CTBasicSharedPtr< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CTBasicSharedPtr< T, LockType >( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType > 
+CTBasicSharedPtrCreator< T, LockType >::CreateBasicSharedPtr( void )
+{GUCEF_TRACE;
+    
+    CTBasicSharedPtr< T, LockType > retVal( &m_shared, m_this, m_objectDestructor );
+    return retVal;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTBasicSharedPtrCreator< T, LockType >::CTBasicSharedPtrCreator( T* derived )
+    : m_shared( false )
+    , m_this( derived )
+    , m_objectDestructor( GUCEF_NULL )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTBasicSharedPtrCreator< T, LockType >::~CTBasicSharedPtrCreator( void )
+{GUCEF_TRACE;
+
+    GUCEF_ASSERT( 0 == m_shared.m_refCounter );
 }
 
 /*-------------------------------------------------------------------------//

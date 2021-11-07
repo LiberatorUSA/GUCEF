@@ -58,7 +58,7 @@ const CEvent CTaskDelegator::ThreadFinishedEvent = "GUCEF::CORE::CTaskDelegator:
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -75,9 +75,10 @@ CTaskDelegator::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CTaskDelegator::CTaskDelegator( CThreadPool* threadPool )
+CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool )
     : MT::CActiveObject()
     , CNotifier()
+    , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
     , CIPulseGeneratorDriver()
     , m_threadPool( threadPool )
     , m_pulseGenerator()
@@ -96,11 +97,12 @@ CTaskDelegator::CTaskDelegator( CThreadPool* threadPool )
 
 /*-------------------------------------------------------------------------*/
 
-CTaskDelegator::CTaskDelegator( CThreadPool* threadPool       ,
-                                CTaskConsumerPtr taskConsumer ,
-                                CICloneable* taskData         )
+CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool ,
+                                CTaskConsumerPtr& taskConsumer  ,
+                                CICloneable* taskData           )
     : MT::CActiveObject()
     , CNotifier()
+    , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
     , CIPulseGeneratorDriver()
     , m_threadPool( threadPool )
     , m_pulseGenerator()
@@ -120,6 +122,11 @@ CTaskDelegator::CTaskDelegator( CThreadPool* threadPool       ,
 CTaskDelegator::~CTaskDelegator()
 {GUCEF_TRACE;
 
+    if ( !NotifyObservers( DestructionEvent ) ) return;
+    UnsubscribeAllFromNotifier();
+    m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );    
+    m_threadPool.Unlink();
+    m_taskConsumer.Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -232,7 +239,7 @@ CTaskDelegator::TaskCleanup( CTaskConsumerPtr taskConsumer ,
     }
 
     m_taskConsumer.Unlink();
-    taskConsumer->SetTaskDelegator( GUCEF_NULL );
+    taskConsumer->SetTaskDelegator( CTaskDelegatorPtr() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -274,7 +281,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
     // This means the task is now assigned to the thread which is represented by this delegator
-    taskConsumer->SetTaskDelegator( this );
+    taskConsumer->SetTaskDelegator( CreateBasicSharedPtr() );
 
     // Now we go through the execution sequence within a cycle as if this
     // where a thread sequence
@@ -381,7 +388,7 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
         
         m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
-        taskConsumer->SetTaskDelegator( GUCEF_NULL );
+        taskConsumer->SetTaskDelegator( CTaskDelegatorPtr() );
     }
 
     if ( forced )

@@ -102,6 +102,7 @@ class CThreadPool;
  */
 class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
                                               public CNotifier              ,
+                                              public CTSharedPtrCreator< CTaskDelegator, MT::CMutex > ,    
                                               private CIPulseGeneratorDriver
 {
     public:
@@ -137,7 +138,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     friend class CThreadPool;
     friend class CTaskConsumer;
 
-    CTaskDelegator( CThreadPool* threadPool );
+    typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >     TBasicThreadPoolPtr;
+
+    CTaskDelegator( TBasicThreadPoolPtr& threadPool );
 
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
@@ -213,16 +216,16 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     protected:
 
-    CTaskDelegator( CThreadPool* threadPool       ,
-                    CTaskConsumerPtr taskConsumer ,
-                    CICloneable* taskData         );
+    CTaskDelegator( TBasicThreadPoolPtr& threadPool ,
+                    CTaskConsumerPtr& taskConsumer  ,
+                    CICloneable* taskData           );
 
     CTaskConsumerPtr m_taskConsumer;
     CICloneable* m_taskData;
 
     private:
 
-    CThreadPool* m_threadPool;
+    TBasicThreadPoolPtr m_threadPool;
     bool m_consumerBusy;
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;

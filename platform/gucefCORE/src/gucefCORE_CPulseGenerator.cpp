@@ -98,7 +98,8 @@ CPulseGenerator::CPulseGenerator( void )
 
 CPulseGenerator::~CPulseGenerator()
 {GUCEF_TRACE;
-
+    
+    NotifyObservers( DestructionEvent );
 }
 
 /*--------------------------------------------------------------------------*/

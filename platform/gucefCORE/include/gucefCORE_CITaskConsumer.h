@@ -90,8 +90,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     public:
 
-    typedef CTNumericIDGenerator< UInt32 > TTaskIdGenerator;
-    typedef TTaskIdGenerator::TNumericID TTaskId;
+    typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr;
+    typedef CTNumericIDGenerator< UInt32 >                  TTaskIdGenerator;
+    typedef TTaskIdGenerator::TNumericID                    TTaskId;
 
     CTaskConsumer( void );
 
@@ -99,9 +100,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     virtual CString GetType( void ) const = 0;
 
-    void SetTaskDelegator( CTaskDelegator* delegator );
+    void SetTaskDelegator( TTaskDelegatorBasicPtr& delegator );
 
-    CTaskDelegator* GetTaskDelegator( void );
+    TTaskDelegatorBasicPtr GetTaskDelegator( void );
 
     CPulseGenerator* GetPulseGenerator( void );
 
@@ -192,9 +193,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     private:
     friend class CThreadPool;
 
+    typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >     TThreadPoolBasicPtr;
+
     void SetIsOwnedByThreadPool( bool ownedByThreadPool );
 
-    void SetThreadPool( CThreadPool* threadPool );
+    void SetThreadPool( TThreadPoolBasicPtr& threadPool );
 
     private:
 
@@ -204,8 +207,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     private:
 
     TTaskId m_taskId;
-    CThreadPool* m_threadPool;
-    CTaskDelegator* m_delegator;
+    TThreadPoolBasicPtr m_threadPool;
+    TTaskDelegatorBasicPtr m_delegator;
     bool m_ownedByThreadPool;
 };
 

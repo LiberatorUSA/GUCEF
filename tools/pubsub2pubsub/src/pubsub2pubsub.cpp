@@ -1812,6 +1812,9 @@ CPubSubClientSide::OnTaskEnded( CORE::CICloneable* taskData ,
     delete m_pubsubClientReconnectTimer;
     m_pubsubClientReconnectTimer = GUCEF_NULL;
 
+    delete m_timedOutInFlightMessagesCheckTimer;
+    m_timedOutInFlightMessagesCheckTimer = GUCEF_NULL;
+
     CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
 

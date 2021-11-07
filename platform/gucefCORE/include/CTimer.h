@@ -116,7 +116,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
     UInt32 GetInterval( void ) const;
 
-    void SetEnabled( const bool enabled );
+    bool SetEnabled( const bool enabled );
 
     bool GetEnabled( void ) const;
 

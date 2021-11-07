@@ -47,9 +47,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSingleTaskDelegator::CSingleTaskDelegator( CThreadPool* threadPool       ,
-                                            CTaskConsumerPtr taskConsumer ,
-                                            CICloneable* taskData         )
+CSingleTaskDelegator::CSingleTaskDelegator( TBasicThreadPoolPtr& threadPool ,
+                                            CTaskConsumerPtr& taskConsumer  ,
+                                            CICloneable* taskData           )
     : CTaskDelegator( threadPool, taskConsumer, taskData )
 {GUCEF_TRACE;
 
@@ -61,6 +61,8 @@ CSingleTaskDelegator::CSingleTaskDelegator( CThreadPool* threadPool       ,
 CSingleTaskDelegator::~CSingleTaskDelegator()
 {GUCEF_TRACE;
 
+    if ( !NotifyObservers( DestructionEvent ) ) return;
+    UnsubscribeAllFromNotifier();
 }
 
 /*-------------------------------------------------------------------------*/

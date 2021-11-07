@@ -78,7 +78,8 @@ class CTaskDelegator;
  *  within your process which is what the task manager does. To enforce this only the 
  *  task manager is allowed to make thread pools
  */
-class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
+class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
+                                          public CTSharedPtrCreator< CThreadPool, MT::CMutex >
 {
     public:
 

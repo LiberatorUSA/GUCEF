@@ -205,9 +205,28 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
+{
+    public:
+
+    CTSharedPtr< T, LockType > CreateSharedPtr( void );
+
+    CTSharedPtrCreator( T* derived );
+    virtual ~CTSharedPtrCreator();
+
+    private:
+    
+    CTSharedPtrCreator( void );                                       /**< dont use */
+    CTSharedPtrCreator( const CTSharedPtrCreator& src );              /**< dont use */
+    CTSharedPtrCreator& operator=( const CTSharedPtrCreator& src );   /**< dont use */
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -505,6 +524,35 @@ CTSharedPtr< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CTSharedPtr< T, LockType >( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedPtr< T, LockType > 
+CTSharedPtrCreator< T, LockType >::CreateSharedPtr( void )
+{GUCEF_TRACE;
+    
+    CTSharedPtr< T, LockType > retVal( CreateBasicSharedPtr() );
+    return retVal;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
+    : CTBasicSharedPtrCreator< T, LockType >( derived )
+{GUCEF_TRACE;
+
+    m_objectDestructor = new CTDynamicDestructor< T >( true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedPtrCreator< T, LockType >::~CTSharedPtrCreator( void )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------//

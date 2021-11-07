@@ -198,7 +198,8 @@ CThreadPool::CTaskQueueItem::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 CThreadPool::CThreadPool( void )
-    : CTSGNotifier()      
+    : CTSGNotifier() 
+    , CTSharedPtrCreator< CThreadPool, MT::CMutex >( this )
     , m_consumerFactory()       
     , m_desiredNrOfThreads( 0 ) 
     , m_activeNrOfThreads( 0 )  
@@ -219,6 +220,8 @@ CThreadPool::CThreadPool( void )
 CThreadPool::~CThreadPool( void )
 {GUCEF_TRACE;
 
+    NotifyObservers( DestructionEvent );
+    
     MT::CObjectScopeLock lock( this );
 
     // Cleanup tasks
@@ -275,7 +278,7 @@ CThreadPool::CarryOutQueuedTasksIfAny( UInt32 maxTasks )
         if ( GetQueuedTask( taskConsumer    ,
                             &taskData       ) )
         {
-            CSingleTaskDelegator singleTaskExecutor( this, taskConsumer, taskData );
+            CSingleTaskDelegator singleTaskExecutor( CreateSharedPtr(), taskConsumer, taskData );
             singleTaskExecutor.ExecuteTaskFromCallingThread();
         }
         else 
@@ -292,11 +295,13 @@ void
 CThreadPool::RemoveDelegator( CNotifier* notifier )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
     while ( i != m_taskDelegators.end() )
     {
         if ( static_cast< const CNotifier* >( (*i).GetPointerAlways() ) == notifier )
         {
+            TTaskDelegatorBasicPtr delegator = (*i);
             m_taskDelegators.erase( i );
             return;
         }
@@ -452,7 +457,7 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         for ( UInt32 i=0; i<addCount; ++i )
         {
             // Just spawn a task delegator
-            CTaskDelegatorPtr delegator( new CTaskDelegator( this ) );
+            CTaskDelegatorPtr delegator( ( new CTaskDelegator( CreateSharedPtr() ) )->CreateSharedPtr() );
             SubscribeTo( delegator.GetPointerAlways() );
             m_taskDelegators.insert( delegator );
 
@@ -547,7 +552,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
                 *outTaskConsumer = taskConsumer;
             }
             taskConsumer->SetIsOwnedByThreadPool( true );
-            taskConsumer->SetThreadPool( this );
+            taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
 
             if ( GUCEF_NULL != taskObserver )
             {
@@ -679,7 +684,7 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
     // externalized consumers which have an independent life cycle. As such we need to keep track of which is
     // which so we don't assume life cycle ownership when in fact we have none
     taskConsumer->SetIsOwnedByThreadPool( false );
-    taskConsumer->SetThreadPool( this );
+    taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
 
     // We proxy event messages
     SubscribeTo( taskConsumer.GetPointerAlways() );
@@ -690,7 +695,7 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
 
     // Just spawn a task delegator, it will auto register as an active task
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-    CTaskDelegatorPtr delegator( new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) );
+    CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
     m_taskDelegators.insert( delegator );
 
@@ -735,14 +740,14 @@ CThreadPool::StartTask( const CString& taskType ,
     {
         // Just spawn a task delegator, it will auto register as an active task
         taskConsumer->SetIsOwnedByThreadPool( true );
-        taskConsumer->SetThreadPool( this );
+        taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
         if ( GUCEF_NULL != task )
         {
             *task = taskConsumer;
         }
         SubscribeTo( taskConsumer.GetPointerAlways() );
         
-        CTaskDelegatorPtr delegator( new CSingleTaskDelegator( this, taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) );
+        CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
         SubscribeTo( delegator.GetPointerAlways() );
         m_taskDelegators.insert( delegator );
 
@@ -790,8 +795,8 @@ CThreadPool::PauseTask( const UInt32 taskID          ,
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 delegator->Pause( force );
                 Unlock();
@@ -835,8 +840,8 @@ CThreadPool::ResumeTask( const UInt32 taskID          ,
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 delegator->Resume();
 
@@ -870,8 +875,8 @@ CThreadPool::RequestTaskToStop( const UInt32 taskID    ,
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 delegator->Deactivate( false, callerShouldWait );
 
@@ -920,12 +925,12 @@ CThreadPool::WaitForTaskToFinish( const UInt32 taskId ,
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( GUCEF_NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool:WaitForTaskToFinish: Waiting for task with ID " + UInt32ToString( taskId ) + " to finish" );
 
-                lock.EarlyUnlock();          // @TODO: Delegator should be a threadsafe shared ptr
+                lock.EarlyUnlock();     
                 delegator->WaitForThreadToFinish( timeoutInMs ); 
                 return true;
             }
@@ -972,8 +977,8 @@ CThreadPool::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork )
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 UInt32 taskId = taskConsumer->GetTaskId();
                 delegator->Deactivate( false, waitOnStop );                                
@@ -1012,8 +1017,8 @@ CThreadPool::KillTask( const UInt32 taskID )
         CTaskConsumerPtr taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() )
         {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
+            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
+            if ( !delegator.IsNULL() )
             {
                 delegator->Deactivate( true, true );
 
@@ -1023,6 +1028,7 @@ CThreadPool::KillTask( const UInt32 taskID )
             else
             {
                 // If a consumer does not have a delegator then it hasnt started yet
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool: Request to kill task with ID " + UInt32ToString( taskID ) + ". It does not have a thread assigned" );
                 return true;
             }
         }

@@ -267,10 +267,13 @@ CTimer::GetInterval( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTimer::SetEnabled( const bool enabled )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_pulseGenerator )
+        return false;
+    
     if ( m_enabled != enabled )
     {
         m_enabled = enabled;
@@ -284,10 +287,9 @@ CTimer::SetEnabled( const bool enabled )
             m_tickCount = 0;
 
             // Make sure we get an update and tell the pump about our update requirement
-            assert( NULL != m_pulseGenerator );
             m_pulseGenerator->RequestPeriodicPulses( this, m_updateDeltaInMilliSecs );
-
             NotifyObservers( TimerStartedEvent );
+            
         }
         else
         {
@@ -297,6 +299,7 @@ CTimer::SetEnabled( const bool enabled )
             NotifyObservers( TimerStoppedEvent );
         }
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -317,7 +320,7 @@ CTimer::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
 
 {GUCEF_TRACE;
 
-    if ( notifier == m_pulseGenerator )
+    if ( static_cast< CPulseGenerator* >( notifier ) == m_pulseGenerator )
     {
         m_pulseGenerator = GUCEF_NULL;
     }

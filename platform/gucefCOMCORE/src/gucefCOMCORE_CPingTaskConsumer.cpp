@@ -492,7 +492,7 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
     }
     
     // Now we have to stick around untill all pings are done or this task is cancelled
-    CORE::CTaskDelegator* delegator = GetTaskDelegator();
+    TTaskDelegatorBasicPtr delegator = GetTaskDelegator();
     while ( m_notDone && delegator->IsActive() )
     {
         m_notDone = false;
