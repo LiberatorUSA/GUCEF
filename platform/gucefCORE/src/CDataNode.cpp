@@ -987,12 +987,14 @@ CDataNode::Search( const CString& query     ,
             if ( remnant.Length() > 0 )
             {            
                 CString leftover;
-                TDataNodeVector results = WalkTree( remnant   ,
-                                                    seperator ,
-                                                    leftover  );
+                TDataNodeVector results = WalkTree( remnant            ,
+                                                    seperator          ,
+                                                    leftover           ,
+                                                    doWildcardMatching ,
+                                                    wildcardChar       );
                 if ( 0 == leftover.Length() && !results.empty() )
                 {       
-                    return *results.begin();
+                    return (*results.begin());
                 }                                 
             }
             else
@@ -1007,28 +1009,32 @@ CDataNode::Search( const CString& query     ,
             TDataNodeList::const_iterator i = m_children.begin();
             while ( i != m_children.end()  )
             {
-                CDataNode* result = (*i)->Search( query       ,
-                                                  seperator   ,
-                                                  fromcurrent ,
-                                                  false       );                
-                if ( nullptr != result )
+                CDataNode* result = (*i)->Search( query              ,
+                                                  seperator          ,
+                                                  fromcurrent        ,
+                                                  false              ,
+                                                  doWildcardMatching ,
+                                                  wildcardChar       );                
+                if ( GUCEF_NULL != result )
                     return result;
                 ++i;
             }
         }
-        return nullptr;                                            
+        return GUCEF_NULL;                                            
     }
     else
     {
         CString leftover;
-        TDataNodeVector results = WalkTree( query     ,
-                                            seperator ,
-                                            leftover  );
+        TDataNodeVector results = WalkTree( query              ,
+                                            seperator          ,
+                                            leftover           ,
+                                            doWildcardMatching ,
+                                            wildcardChar       );
         if ( 0 == leftover.Length() && !results.empty() )
         {       
             return *results.begin();
         }
-        return nullptr;
+        return GUCEF_NULL;
     }                
 }
 

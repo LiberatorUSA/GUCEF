@@ -201,8 +201,8 @@ GucefAppSignalHandler( int signal )
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
 {GUCEF_TRACE;
 
     int returnValue = -100;

@@ -2283,8 +2283,14 @@ RestApiPubSubClientChannelConfigResource::Serialize( const CORE::CString& resour
                                                      const CORE::CString& representation ,
                                                      const CORE::CString& params         )
 {GUCEF_TRACE;
+    
+    CORE::Int32 channelsOffset = resourcePath.HasSubstr( "channels/" );
+    if ( channelsOffset < 0 )
+        return false;
+    channelsOffset += 9;
 
-    CORE::Int32 channelId = -1;      // @TODO: parse channel id
+    CORE::Int32 channelId = CORE::StringToInt32( resourcePath.SubstrToIndex( channelsOffset, false ) );
+
     CPubSubClientChannelPtr channel = m_app->GetChannelByChannelId( channelId );
     if ( !channel.IsNULL() )
         return channel->GetChannelSettings().SaveConfig( output );

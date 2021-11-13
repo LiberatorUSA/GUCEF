@@ -166,7 +166,7 @@
 
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )                                                   \
                                                                                                        \
-    static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS;               \
+    static unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS;                     \
                                                                                                        \
     typedef void ( __cdecl *gucef_installed_signal_handler_ptr)( int );                                \
     static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
@@ -222,6 +222,7 @@
                 argc = 1;                                                                              \
                 if ( NULL != strstr( lpcmdline, "--console" ) )                                        \
                 {                                                                                      \
+                    GUCEF_APP_TYPE = GUCEF_APP_TYPE_CONSOLE;                                           \
                     return Win32ServiceInitializer( argc, argv );                                      \
                 }                                                                                      \
             }                                                                                          \

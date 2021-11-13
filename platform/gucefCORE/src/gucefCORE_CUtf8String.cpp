@@ -254,6 +254,10 @@ CUtf8String::operator!=( const Int32 NULLvalueOrUtf32 ) const
     {
         return m_length > 0;
     }
+    if ( GUCEF_NULL == m_string )
+    {
+        return false;
+    }
 
     // Treat as UTF32 code point, compress as needed for compatibility with UTF8 followed by
     // the actual compare
@@ -271,6 +275,10 @@ CUtf8String::operator==( const Int32 NULLvalueOrUtf32 ) const
     if ( NULLvalueOrUtf32 == 0 )
     {
         return m_length == 0;
+    }
+    if ( GUCEF_NULL == m_string )
+    {
+        return false;
     }
 
     // Treat as UTF32 code point, compress as needed for compatibility with UTF8 followed by
