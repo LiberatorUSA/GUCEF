@@ -109,7 +109,9 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const COMCORE::CPubSubClie
             m_redisReconnectTimer = new CORE::CTimer( config.reconnectDelayInMs );
         }
     }
-    
+
+    m_config.metricsPrefix += "credis.";
+
     if ( config.desiredFeatures.supportsSubscribing )
         m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", true );
 

@@ -212,6 +212,24 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
     typedef std::vector< CPubSubClientSide* >                TPubSubClientSideVector;
+    
+    class CPubSubClientSideMetrics
+    {
+        public:
+
+        CORE::UInt64 publishedMsgsInFlight;
+        CORE::UInt64 publishOrAckFailedMsgs;
+        CORE::UInt64 lastPublishBatchSize;
+        CORE::UInt32 queuedReceiveSuccessAcks;
+
+        bool hasSupportForPublishing;
+        bool hasSupportForSubscribing;
+
+        CPubSubClientSideMetrics( void );
+        CPubSubClientSideMetrics( const CPubSubClientSideMetrics& src );
+        ~CPubSubClientSideMetrics();        
+    };
+    typedef std::map< CORE::CString, CPubSubClientSideMetrics > StringToPubSubClientSideMetricsMap;
 
     CPubSubClientSide( char side );
     
@@ -234,6 +252,8 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     const ChannelSettings& GetChannelSettings( void ) const;
 
     PubSubSideChannelSettings* GetSideSettings( void );
+
+    const StringToPubSubClientSideMetricsMap& GetSideMetrics( void ) const;
 
     bool ConnectPubSubClient( void );
 
@@ -344,6 +364,7 @@ class CPubSubClientSide : public CORE::CTaskConsumer
         TUInt64Set publishFailedMsgs;
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
         CORE::CString metricFriendlyTopicName;
+        CPubSubClientSideMetrics* metrics;
 
         TopicLink( void );
         TopicLink( COMCORE::CPubSubClientTopic* t );
@@ -359,12 +380,15 @@ class CPubSubClientSide : public CORE::CTaskConsumer
         void AddInFlightMsg( CORE::UInt64 publishActionId                ,
                              COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
     };
+
+    void UpdateTopicMetrics( TopicLink& topicLink );
     
     typedef std::map< COMCORE::CPubSubClientTopic*, TopicLink > TopicMap;
     typedef CORE::CTMailboxForSharedCloneables< COMCORE::CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     COMCORE::CPubSubClientPtr m_pubsubClient;
     TopicMap m_topics;
+    StringToPubSubClientSideMetricsMap m_metricsMap;
     ChannelSettings m_channelSettings;
     PubSubSideChannelSettings* m_sideSettings;
     TPubSubMsgMailbox m_mailbox;
@@ -441,11 +465,13 @@ class CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
                                             CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
-
     
     bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId                ,
                                         COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
                                         CPubSubClientSide* msgReceiverSide          );
+    
+    void PublishChannelMetrics( void ) const;
+
     private:
 
     CPubSubClientOtherSidePtr m_sideBPubSub;

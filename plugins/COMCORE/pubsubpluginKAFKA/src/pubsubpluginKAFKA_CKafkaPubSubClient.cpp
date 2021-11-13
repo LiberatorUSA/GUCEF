@@ -275,10 +275,10 @@ CKafkaPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CKafkaPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
+CKafkaPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
-    return false;
+    return m_config.SaveConfig( cfgNode );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -300,9 +300,6 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
         m_metricsTimer = new CORE::CTimer( m_config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( m_config.desiredFeatures.supportsMetrics );
     }
-    
-    //if ( m_config.desiredFeatures.supportsSubscribing )
-    //    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "KafkaPubSubClient(" + CORE::ToString( this ) + ")", true );
 
     RegisterEventHandlers();
 
@@ -311,6 +308,8 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:SetupBasedOnConfig: No remote addresses have been provided" );
         return false;
     }
+
+    m_config.metricsPrefix += "kafka.";
 
     return true;
 }

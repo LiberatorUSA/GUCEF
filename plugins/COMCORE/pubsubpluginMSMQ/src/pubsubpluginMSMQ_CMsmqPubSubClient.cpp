@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginMSMQ_CMsmqPubSubClientConfig.h"
+#define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTCONFIG_H ? */
+
 #include "pubsubpluginMSMQ_CMsmqPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -94,6 +99,8 @@ CMsmqPubSubClient::CMsmqPubSubClient( const COMCORE::CPubSubClientConfig& config
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
+
+    m_config.metricsPrefix += "msmq.";
 
     RegisterEventHandlers();
 }
@@ -280,18 +287,25 @@ CMsmqPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
+CMsmqPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
-    return false;
+    return m_config.SaveConfig( cfgNode );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& treeroot )
+CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 {GUCEF_TRACE;
 
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CMsmqPubSubClientConfig cfg;
+    if ( cfg.LoadConfig( cfgRoot ) )
+    {
+        m_config = cfg;
+    }
     return false;
 }
 

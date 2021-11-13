@@ -100,6 +100,8 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& co
         }
     }
 
+    m_config.metricsPrefix += "sqs.";
+
     RegisterEventHandlers();
 }
 

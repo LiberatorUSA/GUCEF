@@ -476,6 +476,7 @@ CPubSubClientSide::CPubSubClientSide( char side )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
     , m_topics()
+    , m_metricsMap()
     , m_channelSettings()
     , m_sideSettings( GUCEF_NULL )
     , m_mailbox()
@@ -495,6 +496,8 @@ CPubSubClientSide::CPubSubClientSide( char side )
 CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
+    DisconnectPubSubClient( true );
+
     delete m_timedOutInFlightMessagesCheckTimer;
     m_timedOutInFlightMessagesCheckTimer = GUCEF_NULL;
 
@@ -511,8 +514,10 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     : topic( GUCEF_NULL )
     , currentPublishActionIds()
     , inFlightMsgs()
-    , publishAckdMsgsMailbox()
     , publishFailedMsgs()
+    , publishAckdMsgsMailbox()
+    , metricFriendlyTopicName()
+    , metrics( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -523,8 +528,10 @@ CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
-    , publishAckdMsgsMailbox()
     , publishFailedMsgs()
+    , publishAckdMsgsMailbox()
+    , metricFriendlyTopicName()
+    , metrics( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -721,6 +728,69 @@ CPubSubClientSide::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientSide::CPubSubClientSideMetrics::CPubSubClientSideMetrics( void )
+    : publishedMsgsInFlight( 0 )
+    , publishOrAckFailedMsgs( 0 )
+    , lastPublishBatchSize( 0 )
+    , queuedReceiveSuccessAcks( 0 )
+    , hasSupportForPublishing( false )
+    , hasSupportForSubscribing( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientSide::CPubSubClientSideMetrics::CPubSubClientSideMetrics( const CPubSubClientSideMetrics& src )
+    : publishedMsgsInFlight( src.publishedMsgsInFlight )
+    , publishOrAckFailedMsgs( src.publishOrAckFailedMsgs )
+    , lastPublishBatchSize( src.lastPublishBatchSize )
+    , queuedReceiveSuccessAcks( src.queuedReceiveSuccessAcks )
+    , hasSupportForPublishing( src.hasSupportForPublishing )
+    , hasSupportForSubscribing( src.hasSupportForSubscribing )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientSide::CPubSubClientSideMetrics::~CPubSubClientSideMetrics()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const 
+CPubSubClientSide::StringToPubSubClientSideMetricsMap& 
+CPubSubClientSide::GetSideMetrics( void ) const
+{
+    return m_metricsMap;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::UpdateTopicMetrics( TopicLink& topicLink )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topicLink.metrics )
+    {
+        if ( topicLink.metrics->hasSupportForPublishing )
+        {
+            topicLink.metrics->publishOrAckFailedMsgs = topicLink.publishFailedMsgs.size();
+            topicLink.metrics->lastPublishBatchSize = topicLink.currentPublishActionIds.size();
+            topicLink.metrics->publishedMsgsInFlight = topicLink.inFlightMsgs.size();
+        }
+        if ( topicLink.metrics->hasSupportForSubscribing )
+        {
+            topicLink.metrics->queuedReceiveSuccessAcks = topicLink.publishAckdMsgsMailbox.AmountOfMail();
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                         const CORE::CEvent& eventId  ,
@@ -730,22 +800,13 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     TopicMap::iterator i = m_topics.begin();
     while ( i != m_topics.end() )
     {
+        // We update topic metric numbers both on a timer cycle AND at various points
+        // in the processing pipeline. The reasoning is that processing under certain load profiles
+        // can cause the totality of thread cycle operations to exceed the timer cycle time
+        // this would unintentionally reduce the number of metric updates obtained
         TopicLink& topicLink = (*i).second;
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
-        
-        if ( GUCEF_NULL != topic )
-        {
-            if ( topic->IsPublishingSupported() )
-            {
-                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "publishedMsgsInFlight", topicLink.inFlightMsgs.size(), 1.0f );
-                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "publishOrAckFailedMsgs", topicLink.publishFailedMsgs.size(), 1.0f );
-                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "lastPublishBatchSize", topicLink.currentPublishActionIds.size(), 1.0f );
-            }
-            if ( topic->IsSubscribingSupported() )
-            {
-                GUCEF_METRIC_GAUGE( topicLink.metricFriendlyTopicName + "queuedReceiveSuccessAcks", topicLink.publishAckdMsgsMailbox.AmountOfMail(), 1.0f );
-            }
-        }
+        UpdateTopicMetrics( topicLink );
+
         ++i;
     }
 }
@@ -822,6 +883,8 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
             
             totalMsgsInFlight += topicLink.inFlightMsgs.size();
         }
+
+        UpdateTopicMetrics( topicLink );
         ++i;
     }
 
@@ -977,6 +1040,8 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                     " messages due to exceeding the max in-flight time allowed which is configured as " + CORE::ToString( m_sideSettings->maxPublishedMsgInFlightTimeInMs ) );
             }
         }
+
+        UpdateTopicMetrics( topicLink );
         ++i;
     }
 
@@ -1195,6 +1260,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                 }
             }
         }
+        UpdateTopicMetrics( topicLink );
         ++i;
     }
     
@@ -1237,6 +1303,10 @@ CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier
     
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
         "):OnPubSubTopicLocalPublishQueueFull: Topic=" + topic->GetTopicName() );
+
+    TopicMap::iterator i = m_topics.find( topic );
+    if ( i != m_topics.end() )
+        UpdateTopicMetrics( (*i).second );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1307,6 +1377,8 @@ CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
         {
             AcknowledgeReceiptSync( msg );
         }
+
+        UpdateTopicMetrics( topicLink );
         ++i;
     }
 }
@@ -1411,6 +1483,8 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
             }
             ++n;
         }
+
+        UpdateTopicMetrics( topicLink );
     }
 }
 
@@ -1463,6 +1537,8 @@ CPubSubClientSide::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier   
             }
             ++n;
         }
+
+        UpdateTopicMetrics( topicLink );
     }
 
     m_awaitingFailureReport = false;
@@ -1535,6 +1611,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     {
         // Create and configure the pub-sub client        
         pubSubConfig.pulseGenerator = GetPulseGenerator();
+        pubSubConfig.metricsPrefix = pubSubSideSettings->metricsPrefix; 
         m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )
@@ -1596,9 +1673,14 @@ CPubSubClientSide::ConnectPubSubClient( void )
         {
             RegisterTopicEventHandlers( *topic );
 
-            TopicLink& topicLink = m_topics[ topic ];
-            topicLink.metricFriendlyTopicName = pubSubSideSettings->metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
+            TopicLink& topicLink = m_topics[ topic ];            
             topicLink.topic = topic;
+            topicLink.metricFriendlyTopicName = pubSubSideSettings->metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
+            topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
+            topicLink.metrics->hasSupportForPublishing = topic->IsPublishingSupported();
+            topicLink.metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
+
+            UpdateTopicMetrics( topicLink );
         }
         ++i;
     }
@@ -1952,6 +2034,38 @@ CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
     
     sides = &m_sides;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientChannel::PublishChannelMetrics( void ) const
+{GUCEF_TRACE;
+    
+    TPubSubClientSideVector::const_iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        const StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
+        StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
+        while ( n != sideMetrics.end() )
+        {
+            const CORE::CString& metricFriendlyTopicName = (*n).first;
+            const CPubSubClientSideMetrics& metrics = (*n).second;
+
+            if ( metrics.hasSupportForPublishing )
+            {
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishedMsgsInFlight", metrics.publishedMsgsInFlight, 1.0f );
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishOrAckFailedMsgs", metrics.publishOrAckFailedMsgs, 1.0f );
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "lastPublishBatchSize", metrics.lastPublishBatchSize, 1.0f );
+            }
+            if ( metrics.hasSupportForSubscribing )
+            {
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "queuedReceiveSuccessAcks", metrics.queuedReceiveSuccessAcks, 1.0f );
+            }
+            ++n;
+        }        
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2428,7 +2542,7 @@ PubSub2PubSub::Start( void )
 
     if ( !errorOccured )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API" );
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
         return m_httpServer.Listen();
     }
     return !errorOccured;
@@ -2840,22 +2954,14 @@ PubSub2PubSub::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    CORE::Int32 channelId = m_pubSub2PubSubStartChannelID;
+    // We invoke the channel's 'publish metrics' from the thread the main app
+    // runs in which is a different thread vs the channels. reason being that if
+    // the channels are bogged down busy they may not get to send stats in time
     PubSubClientChannelMap::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        //const CPubSubClientChannel::ChannelMetrics& metrics = (*i).second->GetMetrics();
-        //CORE::CString metricPrefix = "pubsub2pubsub.ch" + CORE::Int32ToString( channelId ) + ".";
-
-        //GUCEF_METRIC_TIMING( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
-        //GUCEF_METRIC_TIMING( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
-        //GUCEF_METRIC_TIMING( metricPrefix + "redisPacketsInMessagesTransmitted", metrics.redisPacketsInMsgsTransmitted, 1.0f );
-        //GUCEF_METRIC_GAUGE( metricPrefix + "redisPacketsInMessagesRatio", metrics.redisPacketsInMsgsRatio, 1.0f );
-        //GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitQueueSize", metrics.redisTransmitQueueSize, 1.0f );
-        //GUCEF_METRIC_TIMING( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        //GUCEF_METRIC_TIMING( metricPrefix + "udpPacketsReceived", metrics.udpPacketsReceived, 1.0f );
-
-        ++i; ++channelId;
+        (*i).second->PublishChannelMetrics();
+        ++i;
     }
 }
 
