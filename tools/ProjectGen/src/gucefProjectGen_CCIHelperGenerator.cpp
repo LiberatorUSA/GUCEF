@@ -345,6 +345,10 @@ GenerateGithubActionsWorkflowTargetsYml( const TProjectInfo& projectInfo        
                 "        description: 'Archive Build Artifacts?'\n"
                 "        required: false\n"
                 "        default: 'false'\n"
+                "      targetPlatform:\n"
+                "        description: 'Target platform to build?'\n"
+                "        required: false\n"
+                "        default: 'all'\n"
                 "\n"                           
                 "jobs:\n"                      
                 "\n";

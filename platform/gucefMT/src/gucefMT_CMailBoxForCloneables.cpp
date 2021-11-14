@@ -44,7 +44,7 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
-#include "gucefMT_CMailboxForCloneables.h"
+#include "gucefMT_CMailBoxForCloneables.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
