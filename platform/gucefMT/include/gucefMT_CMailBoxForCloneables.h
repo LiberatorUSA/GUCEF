@@ -179,7 +179,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
-    
+
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -230,10 +230,10 @@ CMailboxForCloneables::PeekMail( T** mail )
 
     if ( GUCEF_NULL == mail )
         return false;
-    
+
     CObjectScopeLock lock( this );
 
-    if ( !m_mailStack.empty() )
+    if ( !m_mailQueue.empty() )
     {
         *mail = static_cast< T* >( m_mailQueue.front() );
         return true;
@@ -257,7 +257,7 @@ CMailboxForCloneables::GetPtrBulkMail( TContainer& mailList ,
     {
         if ( !m_mailQueue.empty() )
         {
-            mailList.push_back( static_cast< TContainer::value_type >( m_mailQueue.front() ) );
+            mailList.push_back( static_cast< typename TContainer::value_type >( m_mailQueue.front() ) );
             m_mailQueue.pop_front();
 
             ++mailItemsRead;
@@ -287,7 +287,7 @@ CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
         if ( !m_mailQueue.empty() )
         {
             // We know we are dealing with clonables so fetching by value means we need to guard against memory leaks
-            TContainer::value_type* mail = static_cast< TContainer::value_type* >( m_mailQueue.front() );
+            typename TContainer::value_type* mail = static_cast< typename TContainer::value_type* >( m_mailQueue.front() );
             mailList.push_back( *mail );
             delete mail;
             m_mailQueue.pop_front();
@@ -311,8 +311,8 @@ CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-    
-    TContainer::const_iterator i = mailList.begin();
+
+    typename TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
         const CICloneable* origMail = static_cast< const CICloneable* >( (*i) );
@@ -333,8 +333,8 @@ CMailboxForCloneables::AddValBulkMail( const TContainer& mailList )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-   
-    TContainer::const_iterator i = mailList.begin();
+
+    typename TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
         const CICloneable& origMail = static_cast< const CICloneable& >( (*i) );

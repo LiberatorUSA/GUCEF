@@ -100,7 +100,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     virtual CString GetType( void ) const = 0;
 
-    void SetTaskDelegator( TTaskDelegatorBasicPtr& delegator );
+    void SetTaskDelegator( const TTaskDelegatorBasicPtr& delegator );
 
     TTaskDelegatorBasicPtr GetTaskDelegator( void );
 
@@ -156,8 +156,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     /**
      *  Last chance notification to decended classes of impending end of the task
-     *  If the 'willBeForced' flag is true the thread hosting the task will be killed next 
-     *  Since this would be used in cases where the thread and thus this task is misbehaving 
+     *  If the 'willBeForced' flag is true the thread hosting the task will be killed next
+     *  Since this would be used in cases where the thread and thus this task is misbehaving
      *  one should keep that in mind in the implementation of this callback
      */
     virtual void OnTaskEnding( CICloneable* taskdata ,
@@ -176,14 +176,14 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
      */
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           ) = 0;
-    
-    
+
+
     /**
      *  Blocks the calling thread up to "timeoutInMs" milliseconds waiting for the task to be finished
-     *  This should never be called from the implementation based on this class 
+     *  This should never be called from the implementation based on this class
      */
     virtual bool WaitForTaskToFinish( Int32 timeoutInMs );
-    
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -197,7 +197,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     void SetIsOwnedByThreadPool( bool ownedByThreadPool );
 
-    void SetThreadPool( TThreadPoolBasicPtr& threadPool );
+    void SetThreadPool( const TThreadPoolBasicPtr& threadPool );
 
     private:
 

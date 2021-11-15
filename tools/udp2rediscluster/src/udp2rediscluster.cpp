@@ -200,7 +200,7 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     applyThreadCpuAffinity = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ), applyThreadCpuAffinity );
     cpuAffinityForDedicatedRedisWriterThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedRedisWriterThread", CORE::UInt32ToString( cpuAffinityForDedicatedRedisWriterThread ) ) );
     cpuAffinityForMainChannelThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread", CORE::UInt32ToString( cpuAffinityForMainChannelThread ) ) );
-    redisXAddMaxLen = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen ); 
+    redisXAddMaxLen = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen );
     redisXAddMaxLenIsApproximate = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
     redisReconnectDelayInMs = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "redisReconnectDelayInMs", CORE::UInt32ToString( redisReconnectDelayInMs ) ) );
     return true;
@@ -371,9 +371,9 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
         GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
-        
+
         // Default smallest pulse delta at 10ms
-        GetPulseGenerator()->RequestPeriodicPulses( this, 10 ); 
+        GetPulseGenerator()->RequestPeriodicPulses( this, 10 );
 
         if ( m_channelSettings.applyThreadCpuAffinity )
         {
@@ -413,7 +413,7 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
         // We are never 'done' so return false
         return false;
     }
-    
+
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
         if ( m_redisMsgQueueOverflowQueue.empty() )
@@ -424,7 +424,7 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
                 m_bulkPackets.clear();
                 m_bulkPacketCounts.clear();
 
-                TBufferMailbox::TMailList::iterator i = m_bulkMail.begin();
+                TBufferMailbox::TMailVector::iterator i = m_bulkMail.begin();
                 while ( !IsDeactivationRequested() && i != m_bulkMail.end() )
                 {
                     CORE::UInt32 packetCount = (*i).eventid;
@@ -454,7 +454,7 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
         }
 
         // If we have the mailbox filling up we should burst for more speed
-        if ( m_channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead > 0                        &&  
+        if ( m_channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead > 0                        &&
              m_mailbox.AmountOfMail() > m_channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead  )
         {
             GetPulseGenerator()->RequestImmediatePulse();
@@ -629,7 +629,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             if ( packetCount > udpPacketSet.size() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Invalid packet count of " +
-                    CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet.size() ) + 
+                    CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet.size() ) +
                     ". This should never happen or be possible. Will clamp to smaller nr." );
                 packetCount = (CORE::UInt32) udpPacketSet.size();
             }
@@ -804,7 +804,7 @@ ClusterChannelRedisWriter::AddToOverflowQueue( const TPacketEntryVectorPtrVector
         if ( packetCount > udpPacketSet->size() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):AddToOverflowQueue: Invalid packet count of " +
-                CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet->size() ) + 
+                CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet->size() ) +
                 ". This should never happen or be possible. Will clamp to smaller nr." );
             packetCount = (CORE::UInt32) udpPacketSet->size();
         }
@@ -955,7 +955,7 @@ ClusterChannelRedisWriter::RedisDisconnect( void )
 
         delete m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
-        
+
         delete m_redisContext;
         m_redisContext = GUCEF_NULL;
 
@@ -989,7 +989,7 @@ ClusterChannelRedisWriter::RedisConnect( void )
 {GUCEF_TRACE;
 
     RedisDisconnect();
-    
+
     try
     {
         sw::redis::ConnectionOptions rppConnectionOptions;
@@ -1351,7 +1351,7 @@ Udp2RedisClusterChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
         if ( packetsReceived > data.packets.size() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Invalid packet count of " +
-                CORE::UInt32ToString( packetsReceived ) + " which exceeds storage size of " + CORE::UInt64ToString( data.packets.size() ) + 
+                CORE::UInt32ToString( packetsReceived ) + " which exceeds storage size of " + CORE::UInt64ToString( data.packets.size() ) +
                 ". This should never happen or be possible. Will clamp to smaller nr." );
             packetsReceived = (CORE::UInt32) data.packets.size();
         }
@@ -1415,9 +1415,9 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
     // In such a case the thread will run at max speed for a least the below set nr of cycles.
     GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
-    
+
     // Default smallest pulse delta at 10ms
-    GetPulseGenerator()->RequestPeriodicPulses( this, 10 ); 
+    GetPulseGenerator()->RequestPeriodicPulses( this, 10 );
 
     if ( m_channelSettings.applyThreadCpuAffinity )
     {
@@ -1543,7 +1543,7 @@ RestApiUdp2RedisInfoResource::Serialize( const CORE::CString& resourcePath   ,
 {GUCEF_TRACE;
 
     static const CORE::CDateTime compileDt = CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ );
-    
+
     output.SetName( "info" );
     output.SetAttribute( "application", "udp2rediscluster" );
     output.SetAttribute( "buildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
@@ -1909,17 +1909,17 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
 
     m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-       
+
     m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID" ) ), 1 );
     CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : channelIDStrs.size() );    
+    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : channelIDStrs.size() );
 
     m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort" ) ), 20000 );
     CORE::Int32 udpPortChannelIdOffset = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpPortChannelIdOffset" ) ), 20000 );
     bool useUdpPortChannelIdOffset = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "UseUdpPortChannelIdOffset" ) ), false );
     if ( useUdpPortChannelIdOffset )
         m_udpStartPort = (CORE::UInt16) ( m_redisStreamStartChannelID + udpPortChannelIdOffset );
-         
+
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
@@ -1933,7 +1933,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
     CORE::Int32 redisXAddMaxLenDefault = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLen" ) ), -1 );
     bool redisXAddMaxLenIsApproxDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLenIsApproximate" ) ), true );
-    
+
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     // We will assume we are always given a full not a partial config so we clear the existing channel settings
@@ -1950,7 +1950,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         {
             CORE::Int32 startId = GUCEF_MT_INT32MIN;
             CORE::Int32 endId = GUCEF_MT_INT32MIN;
-            
+
             CORE::CString::StringVector rangeStrs = str.ParseElements( '-', false );
             if ( rangeStrs.size() > 0 )
                 startId = CORE::StringToInt32( rangeStrs[ 0 ], GUCEF_MT_INT32MIN );
@@ -1967,7 +1967,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
                 }
 
                 for ( CORE::Int32 i=startId; i<=endId; i++ )
-                    channelIDs.insert( i );    
+                    channelIDs.insert( i );
             }
             else
             {
@@ -1988,7 +1988,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
         return false;
     }
-    
+
     // Make sure we have enough channel IDs specified to cover the channel count
     if ( channelIDs.size() < m_channelCount )
     {
@@ -2007,13 +2007,13 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     else
     if ( m_channelCount < channelIDs.size() )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were provided but a total channel count of " + 
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were provided but a total channel count of " +
             CORE::ToString( m_channelCount ) + " was configured. Channel count will be increased to match the nr of IDs" );
         m_channelCount = (CORE::UInt16) channelIDs.size();
     }
-    
+
     CORE::UInt32 currentCpu = 0;
-    CORE::UInt16 udpPort = m_udpStartPort;  
+    CORE::UInt16 udpPort = m_udpStartPort;
     Int32Set::iterator idListIttr = channelIDs.begin();
     for ( CORE::Int32 i=0; i<m_channelCount; ++i )
     {

@@ -75,7 +75,7 @@ CTaskDelegator::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool )
+CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool )
     : MT::CActiveObject()
     , CNotifier()
     , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
@@ -88,7 +88,7 @@ CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool )
     , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
 
-    assert( GUCEF_NULL != m_threadPool );
+    assert( !m_threadPool.IsNULL() );
 
     RegisterEvents();
 
@@ -97,9 +97,9 @@ CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool )
 
 /*-------------------------------------------------------------------------*/
 
-CTaskDelegator::CTaskDelegator( TBasicThreadPoolPtr& threadPool ,
-                                CTaskConsumerPtr& taskConsumer  ,
-                                CICloneable* taskData           )
+CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
+                                const CTaskConsumerPtr& taskConsumer  ,
+                                CICloneable* taskData                 )
     : MT::CActiveObject()
     , CNotifier()
     , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
@@ -124,7 +124,7 @@ CTaskDelegator::~CTaskDelegator()
 
     if ( !NotifyObservers( DestructionEvent ) ) return;
     UnsubscribeAllFromNotifier();
-    m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );    
+    m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );
     m_threadPool.Unlink();
     m_taskConsumer.Unlink();
 }
@@ -232,7 +232,7 @@ CTaskDelegator::TaskCleanup( CTaskConsumerPtr taskConsumer ,
                              CICloneable* taskData         )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_threadPool )
+    if ( !m_threadPool.IsNULL() )
     {
         m_threadPool->TaskCleanup( taskConsumer ,
                                    taskData     );
@@ -249,7 +249,7 @@ CTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
     CTaskConsumerPtr taskConsumer;
-    if ( ( GUCEF_NULL != m_threadPool ) &&
+    if ( ( !m_threadPool.IsNULL() ) &&
          ( m_threadPool->GetQueuedTask( taskConsumer    ,
                                         &m_taskData     ) ) )
     {
@@ -333,7 +333,7 @@ CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 
     ThreadPausedEventData id( GetThreadID() );
     if ( !NotifyObservers( ThreadPausedEvent, &id ) ) return;
-    
+
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
@@ -347,9 +347,9 @@ void
 CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
-    ThreadResumedEventData id( GetThreadID() ); 
+    ThreadResumedEventData id( GetThreadID() );
     if ( !NotifyObservers( ThreadResumedEvent, &id ) ) return;
-    
+
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
@@ -386,7 +386,7 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
     if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
-        
+
         m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         taskConsumer->SetTaskDelegator( CTaskDelegatorPtr() );
     }

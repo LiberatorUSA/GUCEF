@@ -47,9 +47,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSingleTaskDelegator::CSingleTaskDelegator( TBasicThreadPoolPtr& threadPool ,
-                                            CTaskConsumerPtr& taskConsumer  ,
-                                            CICloneable* taskData           )
+CSingleTaskDelegator::CSingleTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
+                                            const CTaskConsumerPtr& taskConsumer  ,
+                                            CICloneable* taskData                 )
     : CTaskDelegator( threadPool, taskConsumer, taskData )
 {GUCEF_TRACE;
 
@@ -84,7 +84,7 @@ CSingleTaskDelegator::OnThreadCycle( void* taskdata )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSingleTaskDelegator::ExecuteTaskFromCallingThread( void )
 {GUCEF_TRACE;
 

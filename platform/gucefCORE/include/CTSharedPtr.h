@@ -218,7 +218,7 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
     virtual ~CTSharedPtrCreator();
 
     private:
-    
+
     CTSharedPtrCreator( void );                                       /**< dont use */
     CTSharedPtrCreator( const CTSharedPtrCreator& src );              /**< dont use */
     CTSharedPtrCreator& operator=( const CTSharedPtrCreator& src );   /**< dont use */
@@ -529,11 +529,11 @@ CTSharedPtr< T, LockType >::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-CTSharedPtr< T, LockType > 
+CTSharedPtr< T, LockType >
 CTSharedPtrCreator< T, LockType >::CreateSharedPtr( void )
 {GUCEF_TRACE;
-    
-    CTSharedPtr< T, LockType > retVal( CreateBasicSharedPtr() );
+
+    CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( this )->CreateBasicSharedPtr() );
     return retVal;
 }
 
@@ -544,7 +544,7 @@ CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
     : CTBasicSharedPtrCreator< T, LockType >( derived )
 {GUCEF_TRACE;
 
-    m_objectDestructor = new CTDynamicDestructor< T >( true );
+    CTBasicSharedPtrCreator< T, LockType >::m_objectDestructor = new CTDynamicDestructor< T >( true );
 }
 
 /*-------------------------------------------------------------------------*/

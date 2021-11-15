@@ -78,10 +78,10 @@ CTaskConsumer::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskConsumer::CTaskConsumer( void )
-    : CObservingNotifier()           
-    , m_taskId()          
-    , m_threadPool()          
-    , m_delegator()          
+    : CObservingNotifier()
+    , m_taskId()
+    , m_threadPool()
+    , m_delegator()
     , m_ownedByThreadPool( false )
 {GUCEF_TRACE;
 
@@ -153,11 +153,11 @@ CTaskConsumer::GetTaskId( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTaskConsumer::WaitForTaskToFinish( Int32 timeoutInMs )
 {GUCEF_TRACE;
 
-    return !m_threadPool.IsNULL() ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false; 
+    return !m_threadPool.IsNULL() ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ CTaskConsumer::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskConsumer::SetTaskDelegator( TTaskDelegatorBasicPtr& delegator )
+CTaskConsumer::SetTaskDelegator( const TTaskDelegatorBasicPtr& delegator )
 {GUCEF_TRACE;
 
     m_delegator = delegator;
@@ -181,8 +181,8 @@ CTaskConsumer::SetTaskDelegator( TTaskDelegatorBasicPtr& delegator )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CTaskConsumer::SetThreadPool( TThreadPoolBasicPtr& threadPool )
+void
+CTaskConsumer::SetThreadPool( const TThreadPoolBasicPtr& threadPool )
 {GUCEF_TRACE;
 
     m_threadPool = threadPool;
@@ -237,7 +237,7 @@ CTaskConsumer::OnTaskEnded( CICloneable* taskdata ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTaskConsumer::OnTaskEnding( CICloneable* taskdata ,
                              bool willBeForced     )
 {GUCEF_TRACE;
@@ -250,9 +250,9 @@ bool
 CTaskConsumer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_delegator )
+    if ( !m_delegator.IsNULL() )
     {
-        return m_delegator->Lock( lockWaitTimeoutInMs );    
+        return m_delegator->Lock( lockWaitTimeoutInMs );
     }
     return false;
 }
@@ -263,49 +263,49 @@ bool
 CTaskConsumer::Unlock( void ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_delegator )
+    if ( !m_delegator.IsNULL() )
     {
-        return m_delegator->Unlock();    
+        return m_delegator->Unlock();
     }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTaskConsumer::SetCpuAffinityMask( UInt32 affinityMaskSize ,
                                    void* affinityMask      )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_delegator )
+    if ( !m_delegator.IsNULL() )
     {
-        return m_delegator->SetCpuAffinityMask( affinityMaskSize, affinityMask );    
+        return m_delegator->SetCpuAffinityMask( affinityMaskSize, affinityMask );
     }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTaskConsumer::SetCpuAffinityByCpuId( UInt32 cpuId )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_delegator )
+    if ( !m_delegator.IsNULL() )
     {
-        return m_delegator->SetCpuAffinityByCpuId( cpuId );    
+        return m_delegator->SetCpuAffinityByCpuId( cpuId );
     }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTaskConsumer::IsDeactivationRequested( void ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_delegator )
+    if ( !m_delegator.IsNULL() )
     {
-        return m_delegator->IsDeactivationRequested();    
+        return m_delegator->IsDeactivationRequested();
     }
     return true;
 }

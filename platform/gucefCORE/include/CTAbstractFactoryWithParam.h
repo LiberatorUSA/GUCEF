@@ -174,7 +174,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
     MT::CObjectScopeLock lock( this );
     if ( m_assumeFactoryOwnership )
     {
-        TFactoryList::iterator i = m_concreteFactoryList.begin();
+        typename TFactoryList::iterator i = m_concreteFactoryList.begin();
         while ( i != m_concreteFactoryList.end() )
         {
             delete (*i).second;
@@ -207,7 +207,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
     typename TFactoryList::iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
-        TProductPtr product( (*i).second->Create( param ), this );        
+        TProductPtr product( (*i).second->Create( param ), this );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, !product.IsNULL() ? "TAbstractFactoryWithParam<>: Created concrete type \"" + ToString( selectedType ) + "\"" : "TAbstractFactoryWithParam<>: Failed to create concrete type \"" + ToString( selectedType ) + "\"" );
         return product;
     }
@@ -296,7 +296,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
         m_concreteFactoryList.erase( i );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "TAbstractFactoryWithParam<>: Unregistered concrete factory for type \"" + ToString( selectedType ) + "\"" );
-        
+
         if ( m_useEventing )
         {
             TKeyContainer keyContainer( selectedType );

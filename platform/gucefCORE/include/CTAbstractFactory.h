@@ -123,13 +123,13 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
      *  @param factoryProduct pointer to the base class of the constructed factory product
      */
     virtual void DestroyObject( BaseClassType* factoryProduct ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     private:
     typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
 
@@ -176,7 +176,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::~CTAbstract
     MT::CObjectScopeLock lock( this );
     if ( m_assumeFactoryOwnership )
     {
-        TFactoryList::iterator i = m_concreteFactoryList.begin();
+        typename TFactoryList::iterator i = m_concreteFactoryList.begin();
         while ( i != m_concreteFactoryList.end() )
         {
             delete (*i).second;
@@ -296,7 +296,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterC
         m_concreteFactoryList.erase( i );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "TAbstractFactory<>: Unregistered concrete factory for type \"" + ToString( selectedType ) + "\"" );
-        
+
         if ( m_useEventing )
         {
             TKeyContainer keyContainer( selectedType );

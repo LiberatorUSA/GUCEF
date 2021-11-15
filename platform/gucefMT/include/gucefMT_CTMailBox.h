@@ -179,8 +179,8 @@ class CTMailBox : public virtual MT::CILockable
 
     private:
 
-    CTMailBox( const CTMailBox& src ) {}                             /**< not supported */
-    CTMailBox& operator=( const CTMailBox& src ) { return *this }    /**< not supported */
+    CTMailBox( const CTMailBox& src ) {}                              /**< not supported */
+    CTMailBox& operator=( const CTMailBox& src ) { return *this; }    /**< not supported */
 
     private:
 
@@ -258,7 +258,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
         m_mailQueue.pop_front();
         return true;
     }
-    
+
     if ( GUCEF_NULL != data )
         *data = GUCEF_NULL;
     return false;
@@ -382,9 +382,9 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
     while ( !m_mailQueue.empty() )
     {
         if ( m_mailQueue.front().eventid == eventid )
-            copyQueue.push_back( m_mailQueue.front() ); 
+            copyQueue.push_back( m_mailQueue.front() );
         else
-            delete m_mailQueue.front().data;  
+            delete m_mailQueue.front().data;
         m_mailQueue.pop_front();
     }
     m_mailQueue = copyQueue;
@@ -422,9 +422,9 @@ CTMailBox< T >::Delete( const T& eventid )
     while ( !m_mailQueue.empty() )
     {
         if ( m_mailQueue.front().eventid != eventid )
-            copyQueue.push_back( m_mailQueue.front() ); 
+            copyQueue.push_back( m_mailQueue.front() );
         else
-            delete m_mailQueue.front().data;  
+            delete m_mailQueue.front().data;
         m_mailQueue.pop_front();
     }
     m_mailQueue = copyQueue;
@@ -457,7 +457,7 @@ CTMailBox< T >::AmountOfMail( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-const MT::CILockable* 
+const MT::CILockable*
 CTMailBox< T >::AsLockable( void ) const
 {GUCEF_TRACE;
 

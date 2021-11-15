@@ -121,9 +121,9 @@ CPluginControl::~CPluginControl()
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     UnloadAll();
-    
+
     // Unregister the load logic implementations available by default
     UnregisterPluginLoadLogic( loaderDelegatedPluginLoadLogic.GetLoaderLogicTypeName() );
     UnregisterPluginLoadLogic( simplisticPluginLoadLogic.GetLoaderLogicTypeName() );
@@ -132,12 +132,12 @@ CPluginControl::~CPluginControl()
 /*-------------------------------------------------------------------------*/
 
 CPluginControl::CPluginControl( void )
-    : CTSGNotifier()                                 
-    , CIConfigurable( true )                       
-    , m_pluginLoadLogicProviders()                 
-    , m_defaultPluginLoadLogicType( "Simplistic" ) 
-    , m_pluginGroups()                             
-    , m_rootDirs()                                 
+    : CTSGNotifier()
+    , CIConfigurable( true )
+    , m_pluginLoadLogicProviders()
+    , m_defaultPluginLoadLogicType( "Simplistic" )
+    , m_pluginGroups()
+    , m_rootDirs()
     , m_pluginManagers()
 {GUCEF_TRACE;
 
@@ -152,13 +152,13 @@ CPluginControl::CPluginControl( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPluginControl::OnPumpedNotify( CNotifier* notifier    ,
                                 const CEvent& eventid  ,
                                 CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    if ( CGUCEFApplication::AppShutdownCompleteEvent == eventid ) 
+    if ( CGUCEFApplication::AppShutdownCompleteEvent == eventid )
     {
         UnloadAll();
     }
@@ -339,12 +339,12 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             while ( i != m_rootDirs.end() && modulePtr == NULL )
             {
                 CString filename = pluginMetaData->GetModuleFilename();
-                
+
                 modulePtr = (*m).second->LoadPlugin( RelativePath( (*i) ) ,
                                                      filename             ,
                                                      groupName            ,
                                                      &versionInfo         );
-                
+
                 if ( NULL == modulePtr )
                 {
                     filename = pluginMetaData->GetAltModuleFilename();
@@ -364,7 +364,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
-                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() + 
+                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() +
                                         "\", and group \"" + groupName + "\" and version " +
                                         VersionToString( pluginMetaData->GetVersion() ) );
                 return false;
@@ -378,7 +378,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                  pluginMetaData->GetModuleFilename()                 ,
                                                  groupName                                           ,
                                                  &versionInfo                                        );
-            
+
             if ( NULL == modulePtr )
             {
                 CString filename = pluginMetaData->GetAltModuleFilename();
@@ -395,7 +395,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
-                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() + 
+                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() +
                                         "\", and group \"" + groupName + "\" and version " +
                                         VersionToString( pluginMetaData->GetVersion() ) + " using provided path " + pluginMetaData->GetFullModulePath() );
                 return false;
@@ -505,7 +505,7 @@ CPluginControl::GetPluginManagerForType( const CString& pluginType )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     TPluginManagerSet::iterator w = m_pluginManagers.begin();
     while ( w != m_pluginManagers.end() )
     {
@@ -530,8 +530,8 @@ CPluginControl::UnloadPlugin( const CString& groupName  ,
     if ( i != m_pluginGroups.end() )
     {
         CPluginGroup& pluginGroup = (*i).second;
-        TPluginPtr& plugin = pluginGroup.FindPluginWithModuleName( moduleName );
-        
+        TPluginPtr plugin = pluginGroup.FindPluginWithModuleName( moduleName );
+
         // Is the plugin even loaded in the first place?
         if ( !plugin.IsNULL() )
         {
@@ -550,7 +550,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
                               CPluginGroup& pluginGroup ,
                               const CString& groupName  )
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeLock lock( this );
 
     TPluginMetaDataPtr pluginMetaData = pluginPtr->GetMetaData();
@@ -737,7 +737,7 @@ CPluginControl::UnloadPluginGroup( const CString& groupName )
 void
 CPluginControl::GetAvailablePluginGroups( TStringSet& groupNames ) const
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeLock lock( this );
     TPluginGroupMap::const_iterator i = m_pluginGroups.begin();
     while ( i != m_pluginGroups.end() )
@@ -750,16 +750,16 @@ CPluginControl::GetAvailablePluginGroups( TStringSet& groupNames ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CPluginControl::GetAvailablePluginsForGroup( const CString& groupName , 
+CPluginControl::GetAvailablePluginsForGroup( const CString& groupName ,
                                              TStringSet& modules      ) const
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeLock lock( this );
     TPluginGroupMap::const_iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
     {
         const CPluginGroup& pluginGroup = (*i).second;
-        
+
         // Get modules not loaded yet
         const CPluginGroup::TPluginMetaDataSet& metaData = pluginGroup.GetPluginMetaData();
         CPluginGroup::TPluginMetaDataSet::const_iterator n = metaData.begin();
@@ -937,7 +937,7 @@ CPluginControl::RemovePluginDir( const CString& path )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Removing path as plugin dir: " + path );
-    
+
     MT::CObjectScopeLock lock( this );
     m_rootDirs.erase( RelativePath( path ) );
 }
@@ -1035,7 +1035,7 @@ CPluginControl::SearchForPluginInPluginDirs( const CString& pluginFileName ,
         fileName += ".dynlib";
         #endif
     }
-    
+
     MT::CObjectScopeLock lock( this );
     TStringSet::iterator i = m_rootDirs.begin();
     while ( i != m_rootDirs.end() )
@@ -1096,14 +1096,14 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     bool errorOccured = false;
     CDataNode::TConstDataNodeSet pluginGroupNodes( treeroot.FindChildrenOfType( "PluginGroup", true ) );
     CDataNode::TConstDataNodeSet::iterator i = pluginGroupNodes.begin();
-    while ( i != pluginGroupNodes.end() ) 
+    while ( i != pluginGroupNodes.end() )
     {
         const CDataNode* groupNode = (*i);
-        
+
         bool loadPlugins = false;
         CString loadImBoolStr = groupNode->GetChildValueByName( "LoadImmediately" );
         if ( !loadImBoolStr.IsNULLOrEmpty() )
@@ -1114,24 +1114,24 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
 
         CDataNode::TConstDataNodeSet pluginMetaDataNodes( groupNode->FindChildrenOfType( "PluginMetaData", true ) );
         CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
-        while ( n != pluginMetaDataNodes.end() ) 
+        while ( n != pluginMetaDataNodes.end() )
         {
             // Check for per-plugin override of load settings, overriding group default
             bool loadImmediately = loadPlugins;
             loadImBoolStr = (*n )->GetAttributeValueOrChildValueByName( "LoadImmediately" );
-            if ( !loadImBoolStr.IsNULLOrEmpty() ) 
+            if ( !loadImBoolStr.IsNULLOrEmpty() )
                 loadImmediately = StringToBool( loadImBoolStr );
 
             // Since we have to report whether loading the config settings went ok
             // Check to see if allow the loading of this plugin to fail and still report success
             bool loadFailAllowed = false;
             CString loadFailAllowedSetting = (*n )->GetAttributeValueOrChildValueByName( "LoadFailAllowed" );
-            if ( !loadFailAllowedSetting.IsNULLOrEmpty() ) 
+            if ( !loadFailAllowedSetting.IsNULLOrEmpty() )
                 loadFailAllowed = StringToBool( loadFailAllowedSetting );
 
             CPluginMetaData metaData;
             if ( metaData.LoadConfig( *(*n ) ) )
-            {                
+            {
                 if ( !AddPluginMetaData( metaData, groupName, loadImmediately ) )
                 {
                     if ( !loadFailAllowed )
@@ -1147,7 +1147,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
             }
             else
             {
-                if ( !loadFailAllowed ) 
+                if ( !loadFailAllowed )
                 {
                     errorOccured = true;
                     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: LoadConfig failed for the given plugin meta data" );
@@ -1168,12 +1168,12 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CPluginControl::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString classTypeName = "GUCEF::CORE::CPluginControl";
-    return classTypeName; 
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

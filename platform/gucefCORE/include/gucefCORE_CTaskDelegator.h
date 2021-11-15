@@ -91,10 +91,10 @@ class CThreadPool;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  This is an internally used class and is tightly coupled with the 
+ *  This is an internally used class and is tightly coupled with the
  *  CTaskManager class. It should not be used directly.
  *
- *  This class implements an active object that delegates the actual logic to 
+ *  This class implements an active object that delegates the actual logic to
  *  be threaded to a task consumer implementor. Thus seperating thread lifecycle
  *  management from task lifecycle management. A delegator can execute as many
  *  tasks by invoking as many consumers as desired without having to (re)create
@@ -102,11 +102,11 @@ class CThreadPool;
  */
 class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
                                               public CNotifier              ,
-                                              public CTSharedPtrCreator< CTaskDelegator, MT::CMutex > ,    
+                                              public CTSharedPtrCreator< CTaskDelegator, MT::CMutex > ,
                                               private CIPulseGeneratorDriver
 {
     public:
-    
+
     static const CEvent ThreadKilledEvent;
     static const CEvent ThreadStartedEvent;
     static const CEvent ThreadPausedEvent;
@@ -119,13 +119,13 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     typedef TCloneableUInt32    ThreadResumedEventData;      /**< thread ID of the thread in question */
     typedef TCloneableUInt32    ThreadFinishedEventData;     /**< thread ID of the thread in question */
 
-    
+
     static void RegisterEvents( void );
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual ~CTaskDelegator() GUCEF_VIRTUAL_OVERRIDE;
-    
+
     public:
 
     bool SetTaskConsumer( CTaskConsumerPtr taskConsumer );
@@ -140,14 +140,14 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >     TBasicThreadPoolPtr;
 
-    CTaskDelegator( TBasicThreadPoolPtr& threadPool );
+    CTaskDelegator( const TBasicThreadPoolPtr& threadPool );
 
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */
     virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     /**
      *  Called after a successfull call to OnTaskStart
      */
@@ -162,7 +162,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     /**
      *  Last chance notification to decended classes of impending end of the tread
-     *  If the 'willBeForced' flag is true the thread will be killed next 
+     *  If the 'willBeForced' flag is true the thread will be killed next
      *  Since this would be used in cases where the thread is misbehaving one should
      *  keep that in mind in the implementation of this callback
      */
@@ -170,9 +170,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
                                  bool willBeForced ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnThreadPausedForcibly( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual void OnThreadResumed( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     /**
      *  This is where all the cleanup should be done for task data
      *  Note that this member function will be called from within the spawned thread when ending gracefully
@@ -184,10 +184,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     virtual bool ProcessTask( CTaskConsumerPtr taskConsumer ,
                               CICloneable* taskData         );
-                              
+
     virtual void TaskCleanup( CTaskConsumerPtr taskConsumer ,
                               CICloneable* taskData         );
-    
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -195,7 +195,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CPulseGenerator m_pulseGenerator;
-    
+
     private:
 
     CTaskDelegator( const CTaskDelegator& src );
@@ -216,9 +216,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     protected:
 
-    CTaskDelegator( TBasicThreadPoolPtr& threadPool ,
-                    CTaskConsumerPtr& taskConsumer  ,
-                    CICloneable* taskData           );
+    CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
+                    const CTaskConsumerPtr& taskConsumer  ,
+                    CICloneable* taskData                 );
 
     CTaskConsumerPtr m_taskConsumer;
     CICloneable* m_taskData;

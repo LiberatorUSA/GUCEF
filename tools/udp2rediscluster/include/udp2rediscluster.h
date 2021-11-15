@@ -256,7 +256,7 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     CORE::CString m_redisShardNodeId;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
-    TBufferMailbox::TMailList m_bulkMail;
+    TBufferMailbox::TMailVector m_bulkMail;
     TPacketEntryVectorPtrVector m_bulkPackets;
     TUInt32Vector m_bulkPacketCounts;
     TRedisArgs m_redisPacketArgs;

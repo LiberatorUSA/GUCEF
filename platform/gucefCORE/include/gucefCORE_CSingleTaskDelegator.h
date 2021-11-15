@@ -60,14 +60,14 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
     private:
     friend class CThreadPool;
 
-    CSingleTaskDelegator( TBasicThreadPoolPtr& threadPool ,
-                          CTaskConsumerPtr& taskConsumer  ,
-                          CICloneable* taskData          );
+    CSingleTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
+                          const CTaskConsumerPtr& taskConsumer  ,
+                          CICloneable* taskData                 );
 
     virtual ~CSingleTaskDelegator();
 
     bool ExecuteTaskFromCallingThread( void );
-    
+
     protected:
 
     /**

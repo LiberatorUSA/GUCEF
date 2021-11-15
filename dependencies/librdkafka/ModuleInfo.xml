@@ -11,4 +11,15 @@
             <Dependency Name="zlib" />
         </Linker>		
     </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+            <Define String="WITH_LIBDL" />
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="dl" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="dl" />
+        </Linker>		
+    </Module>
 </ModuleInfoEntry>
