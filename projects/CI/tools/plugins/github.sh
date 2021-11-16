@@ -97,7 +97,7 @@ function post {
     if [[ ! -z $DATA ]]; then
         DATA="-H 'Content-Type: application/json' -d '$DATA'"
     fi
-	#echo "Executing curl as: curl -XPOST -s -g -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token redacted_GITHUB_TOKEN' ${DATA} ${GITHUB_URL}/${URL}"
+	log "Executing curl as: curl -XPOST -s -g -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token redacted_GITHUB_TOKEN' ${DATA} ${GITHUB_URL}/${URL}"
     eval "curl -XPOST -s -g -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${GITHUB_TOKEN}' ${DATA} ${GITHUB_URL}/${URL}"
 }
 
@@ -109,7 +109,7 @@ function post {
 ##
 function get {
     local URL=$1
-	#echo "Executing curl as: curl -s -g -H \"Accept: application/vnd.github.v3+json\" -H \"Authorization: token redacted_GITHUB_TOKEN\" ${GITHUB_URL}/${URL}"
+	log "Executing curl as: curl -s -g -H \"Accept: application/vnd.github.v3+json\" -H \"Authorization: token redacted_GITHUB_TOKEN\" ${GITHUB_URL}/${URL}"
     curl -s -g -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GITHUB_TOKEN}" ${GITHUB_URL}/${URL}
 }
 
@@ -156,7 +156,8 @@ function trigger_build {
     }
 EOM
     )"
-    post "actions/workflows/${GITHUB_WORKFLOW_FILE_PREFIX}${WORKFLOW_NAME}.yml/dispatches" "${BODY}"
+    local post_result = post "actions/workflows/${GITHUB_WORKFLOW_FILE_PREFIX}${WORKFLOW_NAME}.yml/dispatches" "${BODY}"
+	log "result from post: ${post_result}"
     for (( WAIT_SECONDS=0; WAIT_SECONDS<=5; WAIT_SECONDS+=1 )); do
         WFS=$(get 'actions/runs?event=workflow_dispatch' | jq '[ .workflow_runs[] | select(.created_at > "'${NOW}'" and .head_branch == "'${BRANCH}'") ]')
         ID='null'
