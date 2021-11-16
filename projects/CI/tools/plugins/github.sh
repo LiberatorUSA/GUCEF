@@ -29,6 +29,7 @@ EOM
 set -e
 
 GITHUB_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+GITHUB_WORKFLOW_FILE_PREFIX="projectgen.autogen."
 
 # Functions
 
@@ -96,6 +97,7 @@ function post {
     if [[ ! -z $DATA ]]; then
         DATA="-H 'Content-Type: application/json' -d '$DATA'"
     fi
+	#echo "Executing curl as: curl -XPOST -s -g -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token redacted_GITHUB_TOKEN' ${DATA} ${GITHUB_URL}/${URL}"
     eval "curl -XPOST -s -g -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${GITHUB_TOKEN}' ${DATA} ${GITHUB_URL}/${URL}"
 }
 
@@ -107,6 +109,7 @@ function post {
 ##
 function get {
     local URL=$1
+	#echo "Executing curl as: curl -s -g -H \"Accept: application/vnd.github.v3+json\" -H \"Authorization: token redacted_GITHUB_TOKEN\" ${GITHUB_URL}/${URL}"
     curl -s -g -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GITHUB_TOKEN}" ${GITHUB_URL}/${URL}
 }
 
@@ -143,20 +146,19 @@ function get_branch {
 function trigger_build {
     local PROJECT_NAME=$1
     require_not_null "Project name not speficied" ${PROJECT_NAME} 
+	local WORKFLOW_NAME=${PROJECT_NAME%-*}
     BRANCH=$(get_branch required)
     NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     BODY="$(cat <<-EOM
     {
-        "event_type": "build-${PROJECT_NAME}",
-        "client_payload": {
-            "job": "${PROJECT_NAME}"
-        }
+        "ref": "${BRANCH}",
+		"inputs": { "archiveBuildArtifacts": "true" }
     }
 EOM
     )"
-    post dispatches "${BODY}"
+    post "actions/workflows/${GITHUB_WORKFLOW_FILE_PREFIX}${WORKFLOW_NAME}.yml/dispatches" "${BODY}"
     for (( WAIT_SECONDS=0; WAIT_SECONDS<=5; WAIT_SECONDS+=1 )); do
-        WFS=$(get 'actions/runs?event=repository_dispatch' | jq '[ .workflow_runs[] | select(.created_at > "'${NOW}'" and .head_branch == "'${BRANCH}'") ]')
+        WFS=$(get 'actions/runs?event=workflow_dispatch' | jq '[ .workflow_runs[] | select(.created_at > "'${NOW}'" and .head_branch == "'${BRANCH}'") ]')
         ID='null'
         for JOBS_URL in $(echo "$WFS" | jq -r 'map(.jobs_url) | .[]'); do 
             JOBS_URL=${JOBS_URL/$GITHUB_URL/}
