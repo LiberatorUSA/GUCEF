@@ -156,7 +156,7 @@ function trigger_build {
     }
 EOM
     )"
-    local post_result = post "actions/workflows/${GITHUB_WORKFLOW_FILE_PREFIX}${WORKFLOW_NAME}.yml/dispatches" "${BODY}"
+    local post_result=$(post "actions/workflows/${GITHUB_WORKFLOW_FILE_PREFIX}${WORKFLOW_NAME}.yml/dispatches" "${BODY}")
 	log "result from post: ${post_result}"
     for (( WAIT_SECONDS=0; WAIT_SECONDS<=5; WAIT_SECONDS+=1 )); do
         WFS=$(get 'actions/runs?event=workflow_dispatch' | jq '[ .workflow_runs[] | select(.created_at > "'${NOW}'" and .head_branch == "'${BRANCH}'") ]')
