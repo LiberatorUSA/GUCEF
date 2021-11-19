@@ -359,6 +359,10 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
         m_transmit = node->GetAttributeValueOrChildValueByName( "Transmit" ).AsBool( m_transmit, true );
         m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
     }
+
+    // (Re?)Open to make settings effective
+    Open();
+
     return true;
 }
 
