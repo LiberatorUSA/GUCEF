@@ -1529,12 +1529,32 @@ CMsmqPubSubClientTopic::SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UIn
 
 /*-------------------------------------------------------------------------*/
 
+CORE::Int32
+CMsmqPubSubClientTopic::GetIndexOfProperty( PROPID propertyId, TMsmqMsg& msgData )
+{GUCEF_TRACE;
+    
+    for ( DWORD i=0; i<msgData.msgprops.cProp; ++i )
+    {
+        if ( propertyId == msgData.msgprops.aPropID[ i ] )
+        {
+            return (CORE::Int32) i;
+        }
+    }
+
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData, bool relinkBufferOnly )
 {GUCEF_TRACE;
     
     try
     {
+        if ( !relinkBufferOnly )
+            memset( &msmqVariant, 0, sizeof(MQPROPVARIANT) );
+
         msmqVariant.vt = GetMsmqVariantTypeForMsmqProperty( propertyId );
 
         switch ( msmqVariant.vt )
@@ -1613,6 +1633,19 @@ CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQ
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, TMsmqMsg& msgData, bool relinkBufferOnly )
+{GUCEF_TRACE;
+
+    CORE::Int32 propIndex = GetIndexOfProperty( propertyId, msgData );
+    if ( propIndex < 0 )
+        return false;
+
+    return PrepMsmqVariantStorageForProperty( propertyId, msgData.aMsgPropVar[ propIndex ], msgData, relinkBufferOnly );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
 {GUCEF_TRACE;
@@ -1651,7 +1684,7 @@ CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
                     
                     // Resize the buffer and be sure to update the pointers and meta-data for said buffer
                     buffer.SetDataSize( suggestedSize );
-                    PrepMsmqVariantStorageForProperty( relatedPayloadProperty, msgsData.msgprops.aPropVar[ relatedPayloadProperty ], msgsData, true );
+                    PrepMsmqVariantStorageForProperty( relatedPayloadProperty, msgsData, true );
                     SetUInt32OnPropertyVariant( propId, suggestedSize, msgsData );
 
                     ++foundIssues;
@@ -1722,6 +1755,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmq
             while ( p != msmqPropIdsToUse.end() )
             {
                 msg.aMsgPropId[ propIndex ] = (*p);
+
                 if ( !PrepMsmqVariantStorageForProperty( (*p), msg.msgprops.aPropVar[ propIndex ], msg, false ) )
                     return false;
                 ++p; ++propIndex;
