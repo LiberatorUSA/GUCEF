@@ -1133,11 +1133,13 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
 
     switch ( msmqSourceVariant.vt )
     {
+        case VT_I1:                     { targetVariant = (CORE::Int8) msmqSourceVariant.cVal; return true; }
         case VT_UI1:                    { targetVariant = (CORE::UInt8) msmqSourceVariant.bVal; return true; }
         case VT_I2:                     { targetVariant = (CORE::Int16) msmqSourceVariant.iVal; return true; }
         case VT_UI2:                    { targetVariant = (CORE::UInt16) msmqSourceVariant.uiVal; return true; }
         case VT_I4:                     { targetVariant = (CORE::Int32) msmqSourceVariant.lVal; return true; }
         case VT_UI4:                    { targetVariant = (CORE::UInt32) msmqSourceVariant.ulVal; return true; }
+        case VT_I8:                     { targetVariant = (CORE::Int64) msmqSourceVariant.hVal.QuadPart; return true; }
         case VT_UI8:                    { targetVariant = (CORE::UInt64) msmqSourceVariant.uhVal.QuadPart; return true; }
         case VT_ERROR:                  { targetVariant = (CORE::Int32) msmqSourceVariant.scode; return true; }        
         case VT_BOOL:                   { targetVariant = ( VARIANT_FALSE != msmqSourceVariant.boolVal ); return true; } // Actually stored as a short
@@ -1194,11 +1196,15 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         
         // We dont have support for a special type for more complex data arrangements like vectors
         // until (if ever) we do, just note these as BINARY data
+        case VT_VECTOR | VT_I1:
         case VT_VECTOR | VT_UI1:
         case VT_VECTOR | VT_I2:
         case VT_VECTOR | VT_UI2:
         case VT_VECTOR | VT_BOOL:
         case VT_VECTOR | VT_I4:
+        case VT_VECTOR | VT_UI4:
+        case VT_VECTOR | VT_I8:
+        case VT_VECTOR | VT_UI8:
         case VT_VECTOR | VT_CLSID:
         case VT_VECTOR | VT_BSTR:
         case VT_VECTOR | VT_LPWSTR:
@@ -1235,11 +1241,13 @@ CMsmqPubSubClientTopic::VariantToMsmqProperty( MSGPROPID propId, const CORE::CVa
 
     switch ( targetVarType )
     {
+        case VT_I1:                     { msmqTargetVariant.cVal = (CHAR) sourceVariant.AsInt8(); return true; }
         case VT_UI1:                    { msmqTargetVariant.bVal = (UCHAR) sourceVariant.AsUInt8(); return true; }
         case VT_I2:                     { msmqTargetVariant.iVal = (SHORT) sourceVariant.AsInt16(); return true; }
         case VT_UI2:                    { msmqTargetVariant.uiVal = (USHORT) sourceVariant.AsUInt16(); return true; }
         case VT_I4:                     { msmqTargetVariant.lVal = (LONG) sourceVariant.AsInt32(); return true; }
         case VT_UI4:                    { msmqTargetVariant.ulVal = (ULONG) sourceVariant.AsUInt32(); return true; } 
+        case VT_I8:                     { msmqTargetVariant.hVal.QuadPart = (LONGLONG) sourceVariant.AsInt64(); return true; }
         case VT_UI8:                    { msmqTargetVariant.uhVal.QuadPart = (ULONGLONG) sourceVariant.AsUInt64(); return true; }
         case VT_ERROR:                  { msmqTargetVariant.scode = (LONG) sourceVariant.AsInt32(); return true; }  
         case VT_BOOL:                   { msmqTargetVariant.boolVal = (VARIANT_BOOL) sourceVariant.AsBool() ? VARIANT_TRUE : VARIANT_FALSE; return true; } // Actually stored as a short
@@ -1282,11 +1290,15 @@ CMsmqPubSubClientTopic::VariantToMsmqProperty( MSGPROPID propId, const CORE::CVa
         
         // We dont have support for a special type for more complex data arrangements like vectors
         // until (if ever) we do, just note these as BINARY data
-        case VT_VECTOR | VT_UI1:        
+        case VT_VECTOR | VT_I1:
+        case VT_VECTOR | VT_UI1:
         case VT_VECTOR | VT_I2:
         case VT_VECTOR | VT_UI2:
         case VT_VECTOR | VT_BOOL:
         case VT_VECTOR | VT_I4:
+        case VT_VECTOR | VT_UI4:
+        case VT_VECTOR | VT_I8:
+        case VT_VECTOR | VT_UI8:
         case VT_VECTOR | VT_CLSID:
         case VT_VECTOR | VT_BSTR:
         case VT_VECTOR | VT_LPWSTR:
@@ -1518,7 +1530,7 @@ CMsmqPubSubClientTopic::SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UIn
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData )
+CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData, bool relinkBufferOnly )
 {GUCEF_TRACE;
     
     try
@@ -1534,7 +1546,8 @@ CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQ
                 // Queue names are the most common usage for VT_LPWSTR
 
                 CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
-                buffer.SetDataSize( 64*sizeof(WCHAR) ); 
+                if ( !relinkBufferOnly )
+                    buffer.SetDataSize( 64*sizeof(WCHAR) ); 
                 msmqVariant.pwszVal = buffer.AsTypePtr<WCHAR>();
                 SetUInt32OnPropertyVariant( GetPayloadSizePropertyForPayloadProperty( propertyId ), buffer.GetBufferSize(), msgData );
                 break;
@@ -1543,7 +1556,8 @@ CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQ
             { 
                 // Why 64: Since we picked 64 for unicode as the max, seems like a good default for this one as well
                 CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
-                buffer.SetDataSize( 64*sizeof(CHAR) ); 
+                if ( !relinkBufferOnly )
+                    buffer.SetDataSize( 64*sizeof(CHAR) ); 
                 msmqVariant.pszVal = buffer.AsTypePtr<CHAR>();
                 SetUInt32OnPropertyVariant( GetPayloadSizePropertyForPayloadProperty( propertyId ), buffer.GetBufferSize(), msgData );  
                 break;
@@ -1555,26 +1569,33 @@ CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQ
                 msmqVariant.puuid = buffer.AsTypePtr<CLSID>();  
                 break;
             }
+            case VT_VECTOR | VT_I1:
             case VT_VECTOR | VT_UI1:
+            case VT_VECTOR | VT_I2:
             case VT_VECTOR | VT_UI2:
+            case VT_VECTOR | VT_I4:
             case VT_VECTOR | VT_UI4:
+            case VT_VECTOR | VT_I8:
+            case VT_VECTOR | VT_UI8:
             {
                 CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
-
-                switch ( propertyId )
+                if ( !relinkBufferOnly )
                 {
-                    // BODY is by far the largest field in allowing up to 4MB per msg so we handle that as a special case
-                    // We use a config setting for this with a large default. This prevents what would likely be common resizes.
-                    case PROPID_M_BODY: { buffer.SetDataSize( m_config.defaultMsmqBodyBufferSizeInBytes ); break; }
+                    switch ( propertyId )
+                    {
+                        // BODY is by far the largest field in allowing up to 4MB per msg so we handle that as a special case
+                        // We use a config setting for this with a large default. This prevents what would likely be common resizes.
+                        case PROPID_M_BODY: { buffer.SetDataSize( m_config.defaultMsmqBodyBufferSizeInBytes ); break; }
 
-                    // Fields containing a MSGID MUST be exactly PROPID_M_MSGID_SIZE (20 bytes)
-                    // MSDN notes: "The buffer must consist of exactly 20 unsigned characters. Specifying either a smaller or larger buffer will result in an error."
-                    case PROPID_M_CORRELATIONID:
-                    case PROPID_M_MSGID: { buffer.SetDataSize( PROPID_M_MSGID_SIZE ); break; }
+                        // Fields containing a MSGID MUST be exactly PROPID_M_MSGID_SIZE (20 bytes)
+                        // MSDN notes: "The buffer must consist of exactly 20 unsigned characters. Specifying either a smaller or larger buffer will result in an error."
+                        case PROPID_M_CORRELATIONID:
+                        case PROPID_M_MSGID: { buffer.SetDataSize( PROPID_M_MSGID_SIZE ); break; }
 
-                    default: { buffer.SetDataSize( m_config.defaultMsmqMiscBufferSizeInBytes ); break; }
-                }          
-             
+                        default: { buffer.SetDataSize( m_config.defaultMsmqMiscBufferSizeInBytes ); break; }
+                    }          
+                }
+                
                 msmqVariant.caub.cElems = (ULONG) buffer.GetBufferSize();
                 msmqVariant.caub.pElems = buffer.AsTypePtr<UCHAR>();  
                 break;
@@ -1602,34 +1623,43 @@ CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
     // size/length of the property as relayed vs the buffer of the associated paired property
     CORE::UInt32 foundIssues = 0;
     for ( DWORD i=0; i<msgsData.msgprops.cProp; ++i )
-    {
-        TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msgsData.msgprops.aStatus[ i ] );
-        if ( TMsmqHresultSeverityCode::Success != sevCode )
-        {        
-            CORE::UInt32 requiredSize = msgsData.msgprops.aPropVar[ i ].ulVal; 
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " possibly has insufficient storage. Needs " + CORE::ToString( requiredSize ) + " bytes. Will attempt to adjust" );
+    {     
+        MSGPROPID propId = msgsData.msgprops.aPropID[ i ];
+        
+        // Check to see if this property has a related payload size or stands on its own
+        PROPID relatedPayloadProperty = GetPayloadPropertyForPayloadSizeProperty( propId );
+        if ( relatedPayloadProperty != PROPID_M_BASE )
+        { 
+            // We have a related payload property
             
-            PROPID relatedPayloadProperty = GetPayloadPropertyForPayloadSizeProperty( msgsData.msgprops.aPropID[ i ] );
-            if ( relatedPayloadProperty != PROPID_M_BASE )
-            { 
-                CORE::CDynamicBuffer& buffer = msgsData.propBuffers[ relatedPayloadProperty ];
+            CORE::CDynamicBuffer& buffer = msgsData.propBuffers[ relatedPayloadProperty ];
+            CORE::UInt32 currentSize = buffer.GetBufferSize();
+            CORE::UInt32 requiredSize = msgsData.msgprops.aPropVar[ i ].ulVal; 
 
-                if ( buffer.GetBufferSize() < requiredSize )
+            if ( currentSize < requiredSize )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: Buffer size for payload property " + CORE::ToString( (CORE::UInt32) relatedPayloadProperty ) + " as specified by property " + 
+                    CORE::ToString( (CORE::UInt32) propId ) + " is insufficient at " + CORE::ToString( currentSize ) + " bytes. It needs " + CORE::ToString( requiredSize ) + " bytes per the MSMQ response"  );
+
+                // First reset the message
+                if ( PrepMsmqMsgStorage( msgsData, m_config.msmqPropIdsToReceive, true ) )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Buffer size for payload property " + CORE::ToString( (CORE::UInt32) relatedPayloadProperty ) + " as specified by property " + 
-                        CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " is insufficient at " + CORE::ToString( buffer.GetBufferSize() ) + " bytes. It needs " + CORE::ToString( requiredSize ) + " bytes"  );
+                    // We use a suggested size to limit the nr of times we resize vs just taking the required size directly
+                    CORE::UInt32 suggestedSize = currentSize + (CORE::UInt32) ( ( currentSize / 100.0 ) * m_config.minPayloadFieldGrowthPercOnBufferTooSmall );
+                    if ( suggestedSize < requiredSize )
+                        suggestedSize = requiredSize;
+                    
+                    // Resize the buffer and be sure to update the pointers and meta-data for said buffer
+                    buffer.SetDataSize( suggestedSize );
+                    PrepMsmqVariantStorageForProperty( relatedPayloadProperty, msgsData.msgprops.aPropVar[ relatedPayloadProperty ], msgsData, true );
+                    SetUInt32OnPropertyVariant( propId, suggestedSize, msgsData );
 
-                    msgsData.propBuffers[ relatedPayloadProperty ].SetDataSize( requiredSize );
                     ++foundIssues;
                 }
-            }
-            else
-            {
-                // Since we could not find the actual payload property lets make sure we dont accidentally pass to MSMQ the altered buffer size
-                // this could potentially cause MSMQ to access invalid memory
-                msgsData.msgprops.aPropVar[ i ].ulVal = 0;
-
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Property with ID " + CORE::ToString( (CORE::UInt32) msgsData.msgprops.aPropID[ i ] ) + " does not have a mapping to a payload property. Some other issue?" );
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: Failed to reset MSMQ message storage in prep for buffer resize"  );
+                }
             }
         }
     }
@@ -1668,7 +1698,7 @@ CMsmqPubSubClientTopic::PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& prop
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse )
+CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse, bool force )
 {GUCEF_TRACE;
 
     // @TODO: Note that property storage could be made more efficient by pre-allocating a large buffer for all dynamic length /
@@ -1676,7 +1706,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmq
     
     try
     {
-        if ( msg.aMsgPropId.size() != msmqPropIdsToUse.size() )
+        if ( force || msg.aMsgPropId.size() != msmqPropIdsToUse.size() )
         {       
             msg.aMsgPropId.resize( msmqPropIdsToUse.size() );
             msg.aMsgPropVar.resize( msmqPropIdsToUse.size() );
@@ -1692,7 +1722,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmq
             while ( p != msmqPropIdsToUse.end() )
             {
                 msg.aMsgPropId[ propIndex ] = (*p);
-                if ( !PrepMsmqVariantStorageForProperty( (*p), msg.msgprops.aPropVar[ propIndex ], msg ) )
+                if ( !PrepMsmqVariantStorageForProperty( (*p), msg.msgprops.aPropVar[ propIndex ], msg, false ) )
                     return false;
                 ++p; ++propIndex;
             }
@@ -1726,7 +1756,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgsStorage( void )
             while ( i != m_msmqReceiveMsgs.end() )
             {
                 TMsmqMsg& msg = (*i);
-                if ( !PrepMsmqMsgStorage( msg, m_config.msmqPropIdsToReceive ) )
+                if ( !PrepMsmqMsgStorage( msg, m_config.msmqPropIdsToReceive, false ) )
                     return false;
                 ++i;
             }
@@ -1736,7 +1766,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgsStorage( void )
         {        
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:PrepMsmqMsgsStorage: Allocating storage for publishing related activity" );
         
-            if ( !PrepMsmqMsgStorage( m_msgSendMsg, m_config.msmqPropIdsToSend ) )
+            if ( !PrepMsmqMsgStorage( m_msgSendMsg, m_config.msmqPropIdsToSend, false ) )
                 return false;
             if ( !PrepMsmqPropIdToPropIndexMap( m_msgSendPropMap, m_config.msmqPropIdsToSend ) )
                 return false;
@@ -1766,6 +1796,27 @@ CMsmqPubSubClientTopic::GetTopicConfig( void ) const
 {GUCEF_TRACE;
 
     return m_config;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CVariant
+CMsmqPubSubClientTopic::GetMsmqPropertyValue( const MQMSGPROPS& msg, MSGPROPID propertyId )
+{GUCEF_TRACE;
+
+    for ( CORE::UInt32 i=0; i<msg.cProp; ++i )
+    {                
+        MSGPROPID currentPropertyId = msg.aPropID[ i ]; 
+        if ( currentPropertyId == propertyId )
+        {
+            CORE::CVariant ValueVar;
+            if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, false ) )
+            {
+                return ValueVar;
+            }
+        }
+    }
+    return CORE::CVariant::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1800,7 +1851,20 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
         switch ( propertyId )
         {
             
-            case PROPID_M_BODY_TYPE: { MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ); bodyType = ValueVar.AsUInt32( bodyType ); break; }
+            case PROPID_M_BODY_TYPE: 
+            { 
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    bodyType = ValueVar.AsUInt32( bodyType ); 
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                }
+                break; 
+            }
             case PROPID_M_BODY_SIZE: { MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ); bodySize = ValueVar.AsUInt32( bodySize ); break; }
             case PROPID_M_BODY:
             {
@@ -1813,8 +1877,7 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 }
                 else
                 {
-                    // ID should always be available since its MSMQ generated
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_BODY. Translated message won't have a body" );
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_BODY. Translated message won't have a body" );
                     translatedMsg.GetPrimaryPayload().Clear();
                 }
                 break;
@@ -1830,11 +1893,17 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                     // IMPORTANT: For the peek cycle to work we need to obtain the lookup id and retain it as state so that
                     //            we can use it to iterate to the next message
                     m_msmqLastLookupId = ValueVar.AsUInt64();
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
                 }
                 else
                 {
                     // PROPID_M_LOOKUPID should always be available since its MSMQ generated in MSMQ 3.0 and above
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to obtain MSMQ PROPID_M_LOOKUPID. Translated message won't have a message index value" );
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to obtain MSMQ PROPID_M_LOOKUPID. Translated message won't have a message index value" );
                 }
                 break;
             }
@@ -1848,11 +1917,20 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                     // It is stored as a UInt32 but we use a UInt64 because we need the headroom to convert to milliseconds
                     sentTimeUnixEpocInSecs = ValueVar.AsUInt64();
                     translatedMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( sentTimeUnixEpocInSecs * 1000 );
+
+                    if ( m_config.retainMsmqSentTimeAsMetaData )
+                    {
+                        // Retain as meta-data as well
+                        if ( linkIfPossible )
+                            translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                        else
+                            translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                    }
                 }
                 else
                 {
                     // PROPID_M_SENTTIME should always be available since its MSMQ generated
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_SENTTIME. Translated message won't have a DateTime timestamp originating from MSMQ, falling back to 'now' dt" );
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_SENTTIME. Translated message won't have a DateTime timestamp originating from MSMQ, falling back to 'now' dt" );
                     translatedMsg.GetMsgDateTime() = CORE::CDateTime::NowUTCDateTime();
                 }
                 break;
@@ -1863,15 +1941,19 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
                 {
                     // Time is Unix epoch based in second resolution
                     arriveTimeUnixEpocInSecs = ValueVar.AsUInt64();
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
                 }
                 else
                 {
                     // PROPID_M_SENTTIME should always be available since its MSMQ generated
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_ARRIVEDTIME" );
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_ARRIVEDTIME" );
                 }
-                
-                // We intentionally dont break here, we also want the default case code below
-                // break;
+                break;
             }
             
             default:
@@ -1939,8 +2021,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
     bool supportLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
 
-    CORE::UInt32 msgsRead = 0;
-    for ( CORE::UInt32 i=0; i<m_config.maxMsmqMsgsToReadPerSyncCycle; ++i )
+    CORE::UInt32 msgsRead = 0; bool isRetry = false;
+    for ( CORE::Int32 i=0; i<(CORE::Int32)m_config.maxMsmqMsgsToReadPerSyncCycle; ++i )
     {
         // For MSMQ 3.0 and above:
         #if ( _WIN32_WINNT >= 0x0501 )
@@ -1961,12 +2043,15 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
         {
             receiveHResult = MQReceiveMessageByLookupId( m_receiveQueueHandle ,                 // Handle to the queue 
                                                          m_msmqLastLookupId   ,                 // The lookup identifier  
-                                                         0 == m_msmqLastLookupId ? MQ_LOOKUP_PEEK_FIRST  : MQ_LOOKUP_PEEK_NEXT,   // Access mode  
+                                                         0 == m_msmqLastLookupId ? MQ_LOOKUP_PEEK_FIRST : ( isRetry ? MQ_LOOKUP_PEEK_CURRENT : MQ_LOOKUP_PEEK_NEXT ),   // Access mode  
                                                          &m_msmqReceiveMsgs[ i ].msgprops ,     // Pointer to the MQMSGPROPS structure
                                                          NULL                 ,                 // No OVERLAPPED structure  
                                                          NULL                 ,                 // No callback function  
                                                          pTransaction         );                // Not in a transaction  
         }
+        
+        // reset the retry flag (MQ_LOOKUP_PEEK_CURRENT)
+        isRetry = false;
 
         #else
 
@@ -1996,27 +2081,28 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle. receiveActionId=" + CORE::ToString( m_pubsubMsgs[ i ].GetReceiveActionId() ) );
                 break;
             }
+            case (CORE::UInt64) MQ_ERROR_PROPERTY:         // this means: "One or more message properties specified in m_msmqReceiveMsgs[ i ].msgprops resulted in an error."
             case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
             {
                 const MQMSGPROPS& msg = m_msmqReceiveMsgs[ i ].msgprops;
-                for ( CORE::UInt32 i=0; i<msg.cProp; ++i )
+                for ( CORE::UInt32 s=0; s<msg.cProp; ++s )
                 {
-                    TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msg.aStatus[ i ] );
+                    TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msg.aStatus[ s ] );
                     switch ( sevCode )
                     {
                         case TMsmqHresultSeverityCode::Error:
                         {
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having an error status" );
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having an error status" );
                             break;
                         }
                         case TMsmqHresultSeverityCode::Warning:
                         {
-                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having a warning status" );
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having a warning status" );
                             break;
                         }
                         case TMsmqHresultSeverityCode::Informational:
                         {
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ i ] ) + " was flagged as having an informational status" );
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having an informational status" );
                             break;
                         }
                         case TMsmqHresultSeverityCode::Success:
@@ -2055,13 +2141,38 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
 
             case (CORE::UInt64) MQ_ERROR_BUFFER_OVERFLOW:
             case (CORE::UInt64) MQ_ERROR_FORMATNAME_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_LABEL_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_PROV_NAME_BUFFER_TOO_SMALL: 
+            case (CORE::UInt64) MQ_ERROR_SENDER_CERT_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SENDERID_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SIGNATURE_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SYMM_KEY_BUFFER_TOO_SMALL:
             {
                 ++m_msmqErrorsOnReceive;
 
                 // Use the length/size given to resize buffers as needed
                 // When this error happens the msg is not removed so we can resize and try again
-                if ( OnMsmqMsgBufferTooSmall( m_msmqReceiveMsgs[ i ] ) )
-                    --i; // retry the same message slot, hopefully this time obtaining all the payloads properly
+                OnMsmqMsgBufferTooSmall( m_msmqReceiveMsgs[ i ] );
+                
+                // For MSMQ 3.0 and above:
+                #if ( _WIN32_WINNT >= 0x0501 )
+
+                if ( supportLookup )
+                {
+                    isRetry = true;
+                    if ( 0 == m_msmqLastLookupId )
+                    {
+                        // IMPORTANT: For the peek cycle to work we need to obtain the lookup id and retain it as state so that
+                        //            we can use it to again look at the same message.
+                        CORE::CVariant propValue = GetMsmqPropertyValue( m_msmqReceiveMsgs[ i ].msgprops, PROPID_M_LOOKUPID );
+                        if ( propValue.IsInitialized() )
+                            m_msmqLastLookupId = propValue.AsUInt64();
+                    }
+                }
+
+                #endif
+
+                --i; // retry the same message slot, hopefully this time obtaining all the payloads properly
                 break;
             }
 

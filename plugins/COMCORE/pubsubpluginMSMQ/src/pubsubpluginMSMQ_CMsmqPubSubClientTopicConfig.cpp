@@ -54,7 +54,9 @@ namespace MSMQ {
 // If you have a very busy queue you do not want to spend all your time sending detailed
 // per message MSMQ latency metrics. As such we provide a max nr of samples to take per 
 // measuring cycle as dictated by the metrics interval.
-#define DEFAULT_MAX_MSMQ_TRANSIT_TIME_ON_RECEIVE_DATA_POINTS    50
+#define DEFAULT_MAX_MSMQ_TRANSIT_TIME_ON_RECEIVE_DATA_POINTS            50
+
+#define DEFAULT_MINIMAL_BUFFER_GROWTH_ON_PAYLOAD_BUFFER_TOO_SMALL       50
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,6 +79,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
+    , minPayloadFieldGrowthPercOnBufferTooSmall( DEFAULT_MINIMAL_BUFFER_GROWTH_ON_PAYLOAD_BUFFER_TOO_SMALL )
+    , retainMsmqSentTimeAsMetaData( false )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -101,6 +105,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const COMCORE::CPubS
     , msmqMsgPropIdToMapToMsgIdOnReceive( PROPID_M_MSGID )
     , defaultMsmqBodyBufferSizeInBytes( DEFAULT_MSMQ_BODY_BUFFER_SIZE_IN_BYTES )
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
+    , minPayloadFieldGrowthPercOnBufferTooSmall( DEFAULT_MINIMAL_BUFFER_GROWTH_ON_PAYLOAD_BUFFER_TOO_SMALL )
+    , retainMsmqSentTimeAsMetaData( false )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -140,6 +146,8 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     gatherMsmqTransitTimeOnReceiveMetric = config.GetAttributeValueOrChildValueByName( "gatherMsmqTransitTimeOnReceiveMetric" ).AsBool( gatherMsmqTransitTimeOnReceiveMetric, true ); 
     maxMsmqTransitTimeOnReceiveMetricDataPoints = config.GetAttributeValueOrChildValueByName( "maxMsmqTransitTimeOnReceiveMetricDataPoints" ).AsUInt32( maxMsmqTransitTimeOnReceiveMetricDataPoints, true ); 
     msmqMsgPropIdToMapToMsgIdOnReceive = config.GetAttributeValueOrChildValueByName( "msmqMsgPropIdToMapToMsgIdOnReceive" ).AsUInt64( msmqMsgPropIdToMapToMsgIdOnReceive, true );
+    minPayloadFieldGrowthPercOnBufferTooSmall = config.GetAttributeValueOrChildValueByName( "minPayloadFieldGrowthPercOnBufferTooSmall" ).AsUInt16( minPayloadFieldGrowthPercOnBufferTooSmall, true );
+    retainMsmqSentTimeAsMetaData = config.GetAttributeValueOrChildValueByName( "retainMsmqSentTimeAsMetaData" ).AsBool( retainMsmqSentTimeAsMetaData, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
     msmqPropIdsToReceive.clear();
@@ -216,6 +224,8 @@ CMsmqPubSubClientTopicConfig::operator=( const CMsmqPubSubClientTopicConfig& src
         msmqMsgPropIdToMapToMsgIdOnReceive = src.msmqMsgPropIdToMapToMsgIdOnReceive;
         defaultMsmqBodyBufferSizeInBytes = src.defaultMsmqBodyBufferSizeInBytes;
         defaultMsmqMiscBufferSizeInBytes = src.defaultMsmqMiscBufferSizeInBytes;
+        minPayloadFieldGrowthPercOnBufferTooSmall = src.minPayloadFieldGrowthPercOnBufferTooSmall;
+        retainMsmqSentTimeAsMetaData = src.retainMsmqSentTimeAsMetaData;
     }
     return *this;
 }
@@ -338,9 +348,11 @@ CMsmqPubSubClientTopicConfig::PopulateDefaultPairedPropIds( void )
     msmqPairedPropIds[ PROPID_M_XACT_STATUS_QUEUE ].push_back( PROPID_M_XACT_STATUS_QUEUE_LEN );
 
     // Introduced in MSMQ 3.0
+    #if ( _WIN32_WINNT >= 0x0501 )
     msmqPairedPropIds[ PROPID_M_COMPOUND_MESSAGE ].push_back( PROPID_M_COMPOUND_MESSAGE_SIZE );
     msmqPairedPropIds[ PROPID_M_DEST_FORMAT_NAME ].push_back( PROPID_M_DEST_FORMAT_NAME_LEN );
     msmqPairedPropIds[ PROPID_M_SOAP_ENVELOPE ].push_back( PROPID_M_SOAP_ENVELOPE_LEN );    
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

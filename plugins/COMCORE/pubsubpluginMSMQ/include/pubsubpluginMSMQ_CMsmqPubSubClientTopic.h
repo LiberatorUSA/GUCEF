@@ -250,8 +250,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
     bool PrepMsmqMsgsStorage( void );
-    bool PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse );
-    bool PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData );
+    bool PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse, bool force );
+    bool PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData, bool relinkBufferOnly );
     bool PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& propIndexMapToBuild, const MSGPROPIDVector& msmqPropIdsToUse );
 
     bool SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UInt32 valueToSet, TMsmqMsg& msgData );
@@ -260,6 +260,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     static PROPID GetPayloadPropertyForPayloadSizeProperty( PROPID payloadSizePropId );
     static PROPID GetPayloadSizePropertyForPayloadProperty( PROPID payloadPropId );
     static TMsmqHresultSeverityCode ExtractSeverityCode( HRESULT code );
+    CORE::CVariant GetMsmqPropertyValue( const MQMSGPROPS& msg, MSGPROPID propertyId );
+
 
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 

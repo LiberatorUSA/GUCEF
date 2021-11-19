@@ -105,6 +105,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     CORE::UInt64 msmqMsgPropIdToMapToMsgIdOnReceive;
     CORE::UInt32 defaultMsmqBodyBufferSizeInBytes;
     CORE::UInt32 defaultMsmqMiscBufferSizeInBytes;
+    CORE::UInt16 minPayloadFieldGrowthPercOnBufferTooSmall;
+    bool retainMsmqSentTimeAsMetaData;
 };
 
 /*--------------------------------------------------------------------------*/
