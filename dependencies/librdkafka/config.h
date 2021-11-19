@@ -1,6 +1,9 @@
 #ifndef LIBRDKAFKA_CONFIG_H
 #define LIBRDKAFKA_CONFIG_H
 
+/* this file is for Linux builds, not Windows which has its own config file */
+#if ( !defined _WIN32 )  
+
 #define WITH_SSL 0
 #define WITH_ZLIB 1
 #define WITH_SNAPPY 0
@@ -18,5 +21,7 @@
 
 /* Notice: Keep up to date */
 #define BUILT_WITH "SSL ZLIB SNAPPY SASL_SCRAM PLUGINS HDRHISTOGRAM"
+
+#endif
 
 #endif /* LIBRDKAFKA_CONFIG_H ? */
