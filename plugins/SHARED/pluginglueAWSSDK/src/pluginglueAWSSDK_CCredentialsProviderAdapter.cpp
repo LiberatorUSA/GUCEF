@@ -59,7 +59,7 @@ namespace AWSSDK {
 
 CCredentialsProviderAdapter::CCredentialsProviderAdapter( void )
     : Aws::Auth::AWSCredentialsProviderChain()
-    , CORE::CIConfigurable( false )
+    , CORE::CIConfigurable()
     , m_awsAccessKeyId()
     , m_awsSecretAccessKey()
     , m_awsSessionToken()

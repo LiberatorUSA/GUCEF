@@ -1021,6 +1021,20 @@ StripFilename( const CString& pathPlusFilename )
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
+StripFileExtention( const CString& path )
+{GUCEF_TRACE;
+
+    Int32 dotIndex = path.HasChar( '.', false );
+    if ( dotIndex >= 0 )
+    {
+        return path.SubstrToIndex( dotIndex, true );
+    }
+    return path;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
 ExtractFilename( const CString& pathPlusFilename )
 {GUCEF_TRACE;
 

@@ -348,6 +348,11 @@ ExtractFileExtention( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP CString
+StripFileExtention( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Checks whether the file path points to a file in the exact given dir path
  */

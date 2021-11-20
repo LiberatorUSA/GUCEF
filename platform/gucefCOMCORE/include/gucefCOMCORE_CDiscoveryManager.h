@@ -27,10 +27,10 @@
 
 #include <set>
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_COMCORE_CIDISCOVERYENTRY_H
 #include "gucefCOMCORE_CIDiscoveryEntry.h"
@@ -70,7 +70,7 @@ namespace COMCORE {
 /**
  *  Interface class which serves as the base class for all discovery clients
  */
-class GUCEF_COMCORE_EXPORT_CPP CDiscoveryManager : public virtual CORE::CIConfigurable ,
+class GUCEF_COMCORE_EXPORT_CPP CDiscoveryManager : public virtual CORE::CGloballyConfigurable ,
                                                    public virtual CIDiscovery
 {
     public:

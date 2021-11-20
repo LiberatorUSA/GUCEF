@@ -23,17 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CCONFIGSTORE_H
-#include "CConfigStore.h"       /* central configuration control */
-#define GUCEF_CORE_CCONFIGSTORE_H
-#endif /* GUCEF_CORE_CCONFIGSTORE_H ? */
-
-#include "CIConfigurable.h"     /* definition of the class implemented here */
-
-#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
-#include "gucef_essentials.h"
-#define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+#include "gucefCORE_CGlobalConfigValueList.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,97 +36,69 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIConfigurable::CIConfigurable( void )
-    : _useglobal( false )
-    , _configid( 0 )
+CGlobalConfigValueList::CGlobalConfigValueList( void )
+    : CValueList()
+    , CGloballyConfigurable( false )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIConfigurable::CIConfigurable( const CIConfigurable& src )
-    : _useglobal( false )
-    , _configid( 0 )
+CGlobalConfigValueList::CGlobalConfigValueList( const CValueList& src )
+    : CValueList( src )
+    , CGloballyConfigurable( false )
 {GUCEF_TRACE;
 
-    SetUseGlobalConfig( src._useglobal );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIConfigurable::CIConfigurable( bool useglobalconfig )
-    : _useglobal( false ) 
-   ,  _configid( 0 )
+CGlobalConfigValueList::~CGlobalConfigValueList( void )
 {GUCEF_TRACE;
 
-    SetUseGlobalConfig( useglobalconfig );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIConfigurable::~CIConfigurable()
+CGlobalConfigValueList& 
+CGlobalConfigValueList::operator=( const CValueList& src )
 {GUCEF_TRACE;
 
-    if ( _useglobal )
-    {
-        CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CIConfigurable&
-CIConfigurable::operator=( const CIConfigurable& src )
-{GUCEF_TRACE;
-
-    if ( this != &src )
-    {
-        SetUseGlobalConfig( src._useglobal );
-    }
-
+    CValueList::operator=( src );
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CIConfigurable::SetUseGlobalConfig( bool use )
+const CString& 
+CGlobalConfigValueList::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    if ( use == _useglobal ) 
-        return;
-
-    if ( use )
-    {
-        CORE::CCoreGlobal::Instance()->GetConfigStore().Register( this );
-        _useglobal = true;
-        return;
-    }
-    CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
-    _useglobal = false;
+    static const CString classTypeName = "GUCEF::CORE::CGlobalConfigValueList";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CIConfigurable::GetUseGlobalConfig( void ) const
+CGlobalConfigValueList::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    return _useglobal;
+    return CValueList::SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CIConfigurable::IsGlobalConfigLoadInProgress( void )
+bool 
+CGlobalConfigValueList::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    return CORE::CCoreGlobal::Instance()->GetConfigStore().IsGlobalConfigLoadInProgress();
+    return CValueList::LoadConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------//

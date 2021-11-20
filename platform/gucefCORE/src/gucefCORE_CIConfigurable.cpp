@@ -1,5 +1,5 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-#ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
-#define GUCEF_VFS_CASYNCVFSOPERATION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,37 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <deque>
-
-#ifndef GUCEF_CORE_CITASKCONSUMER_H
-#include "gucefCORE_CITaskConsumer.h"
-#define GUCEF_CORE_CITASKCONSUMER_H
-#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CTCLONEABLEEXPANSION_H
-#include "CTCloneableExpansion.h"
-#define GUCEF_CORE_CTCLONEABLEEXPANSION_H
-#endif /* GUCEF_CORE_CTCLONEABLEEXPANSION_H ? */
-
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h" 
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
-
-#ifndef GUCEF_VFS_ASYNCVFSTASKDATA_H
-#include "gucefVFS_AsyncVfsTaskData.h"
-#define GUCEF_VFS_ASYNCVFSTASKDATA_H
-#endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
-
-#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
-#include "gucefVFS_CArchiveSettings.h"
-#define GUCEF_VFS_CARCHIVESETTINGS_H
-#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+#include "gucefCORE_CIConfigurable.h"   
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,43 +32,43 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFS {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_HIDDEN CAsyncVfsOperation : public CORE::CTaskConsumer
-{
-    public:
+CIConfigurable::CIConfigurable( void )
+    : CITypeNamed()
+{GUCEF_TRACE;
 
-    static const CORE::CEvent AsyncVfsOperationCompletedEvent;
-    static const CORE::CString TaskType;
-    
-    static void RegisterEvents( void );
-
-    CAsyncVfsOperation();
-    CAsyncVfsOperation( const CAsyncVfsOperation& src );
-    virtual ~CAsyncVfsOperation();
-
-    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual void OnTaskEnded( CORE::CICloneable* taskData ,
-                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-
-};
+}
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOperationTaskFactory;
+CIConfigurable::CIConfigurable( const CIConfigurable& src )
+    : CITypeNamed( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIConfigurable::~CIConfigurable()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIConfigurable&
+CIConfigurable::operator=( const CIConfigurable& src )
+{GUCEF_TRACE;
+
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,9 +76,7 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOper
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VFS */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_VFS_CASYNCVFSOPERATION_H ? */

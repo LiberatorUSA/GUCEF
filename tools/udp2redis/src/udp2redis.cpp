@@ -578,7 +578,7 @@ Udp2RedisChannel::SendQueuedPackagesIfAny( void )
 
     if ( !packetBundle.empty() )
     {
-        if ( RedisSend( packetBundle, packetBundle.size() ) )
+        if ( RedisSend( packetBundle, (CORE::UInt32) packetBundle.size() ) )
         {
             m_redisMsgQueueOverflowQueue.erase( b, e );
             return true;

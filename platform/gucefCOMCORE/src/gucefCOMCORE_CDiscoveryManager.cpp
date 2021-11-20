@@ -35,12 +35,12 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CDiscoveryManager::CDiscoveryManager( void )
-    : CORE::CIConfigurable()
+    : CORE::CGloballyConfigurable( false )
     , CIDiscovery()
     , m_clients()
 {GUCEF_TRACE;

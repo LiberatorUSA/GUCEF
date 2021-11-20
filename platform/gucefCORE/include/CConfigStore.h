@@ -57,18 +57,29 @@ namespace CORE {
  *      Forward declaration of the abstract base for configurable items.
  */
 class CIConfigurable;
+class CGloballyConfigurable;
 class CDataNode;
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Centralized configuration control.
- *      Allows you load and save the config of all configureable items that
- *      have global config usage enabled.
+ *  Centralized configuration control.
+ *  Allows you load and save the config of all configureable items that
+ *  have global config usage enabled.
+ * 
+ *  Note that you can specify multiple config files which will all get overlayed into a singlular
+ *  document and loaded as a consolidated global config.
+ *  Distinct from that is the concept of the bootstrap config which is explicitly a distinct load and application
+ *  of config before the main config is loaded. Main use-case is loading plugins and the like which are in turn
+ *  needed to load and or apply the global config
  */
 class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
 {
     public:
+
+    static const CEvent GlobalBootstrapConfigLoadStartingEvent;
+    static const CEvent GlobalBootstrapConfigLoadCompletedEvent;
+    static const CEvent GlobalBootstrapConfigLoadFailedEvent;
 
     static const CEvent GlobalConfigLoadStartingEvent;
     static const CEvent GlobalConfigLoadCompletedEvent;
@@ -76,28 +87,46 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
 
     static void RegisterEvents( void );
 
-    void SetConfigFile( const CString& filepath );
+    void SetBootstrapConfigFile( const CString& filepath );
+
+    CString GetBootstrapConfigFile( void ) const;
+
+    void SetConfigFile( const CString& filepath ,
+                        bool isAddative = false );
 
     CString GetConfigFile( void ) const;
 
-    bool SaveConfig( const CString& name  ,
-                     bool preserve = true );
+    void SetConfigFiles( const CString::StringVector& filepaths ,
+                         bool isAddative = false                );
+
+    CString::StringVector GetConfigFiles( void ) const;
+
+    bool SaveConsolidatedConfig( const CString& name  ,
+                                 bool preserve = true );
+
+    bool SaveConsolidatedConfig( const CDataNode& newCfg );
 
     bool LoadConfig( CDataNode* loadedConfig = GUCEF_NULL );
+
+    CString GetConsolidatedConfigFile( void ) const;
+
+    CString GetConsolidatedConfigFileCodecType( void ) const;
 
     void SetCodec( const CString& codectype );
 
     CString GetCodec( void ) const;
 
+    bool IsGlobalBootstrapConfigLoadInProgress( void ) const;
+    
     bool IsGlobalConfigLoadInProgress( void ) const;
 
     private:
 
-    friend class CIConfigurable;
+    friend class CGloballyConfigurable;
 
-    void Register( CIConfigurable* configobj );
+    void Register( CGloballyConfigurable* configobj );
 
-    bool Unregister( CIConfigurable* configobj );
+    bool Unregister( CGloballyConfigurable* configobj );
 
     private:
     friend class CCoreGlobal;
@@ -108,15 +137,24 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
 
     private:
 
+    bool LoadConfigData( const CString& cfgFilepath , 
+                         CDataNode& loadedConfig    );
+
+    bool ApplyConfigData( const CDataNode& loadedConfig ,
+                          bool isBootstrap              ,
+                          bool hasBootstrap             );
+
     CConfigStore( const CConfigStore& src );             /**< not implemented */
     CConfigStore& operator=( const CConfigStore& src );  /**< not implemented */
 
     private:
 
-    typedef std::set< CIConfigurable* > TConfigurableSet;
+    typedef std::set< CGloballyConfigurable* > TConfigurableSet;
 
     CString _codectype;
-    CString _configfile;
+    CString m_bootstrapConfigFile;
+    CString m_consolidatedConfigFile;
+    CString::StringVector m_configfiles;
     TConfigurableSet m_configureables;
     TConfigurableSet m_newConfigureables;
     bool m_isBusyLoadingConfig;

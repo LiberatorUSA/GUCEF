@@ -30,7 +30,7 @@
 #include <set>
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"          /* abstract base class interface for configurable objects */
+#include "gucefCORE_CIConfigurable.h"          /* abstract base class interface for configurable objects */
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 

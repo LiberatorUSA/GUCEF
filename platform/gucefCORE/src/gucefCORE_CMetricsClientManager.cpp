@@ -92,7 +92,7 @@ CMetricsClientManager::ClearMetricsClients( void )
 /*-------------------------------------------------------------------------*/
 
 CMetricsClientManager::CMetricsClientManager( void )
-    : CIMetricsSystemClient( true )
+    : CIMetricsSystemClient()
     , m_clients()
     , m_dataLock()
 {GUCEF_TRACE;

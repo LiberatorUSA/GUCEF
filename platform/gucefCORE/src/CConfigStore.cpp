@@ -48,10 +48,10 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"             /* abstract base for configurable objects */
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
 #include "CDStoreCodecRegistry.h"       /* DStore codec registry */
@@ -85,6 +85,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CEvent CConfigStore::GlobalBootstrapConfigLoadStartingEvent = "GUCEF::CORE::CConfigStore::GlobalBootstrapConfigLoadStartingEvent";
+const CEvent CConfigStore::GlobalBootstrapConfigLoadCompletedEvent = "GUCEF::CORE::CConfigStore::GlobalBootstrapConfigLoadCompletedEvent";
+const CEvent CConfigStore::GlobalBootstrapConfigLoadFailedEvent = "GUCEF::CORE::CConfigStore::GlobalBootstrapConfigLoadFailedEvent";
 const CEvent CConfigStore::GlobalConfigLoadStartingEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadStartingEvent";
 const CEvent CConfigStore::GlobalConfigLoadCompletedEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadCompletedEvent";
 const CEvent CConfigStore::GlobalConfigLoadFailedEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadFailedEvent";
@@ -99,6 +102,9 @@ void
 CConfigStore::RegisterEvents( void )
 {GUCEF_TRACE;
 
+    GlobalBootstrapConfigLoadStartingEvent.Initialize();
+    GlobalBootstrapConfigLoadCompletedEvent.Initialize();
+    GlobalBootstrapConfigLoadFailedEvent.Initialize();
     GlobalConfigLoadStartingEvent.Initialize();
     GlobalConfigLoadCompletedEvent.Initialize();
     GlobalConfigLoadFailedEvent.Initialize();
@@ -109,7 +115,9 @@ CConfigStore::RegisterEvents( void )
 CConfigStore::CConfigStore( void )
     : CTSGNotifier()
     , _codectype()
-    , _configfile()
+    , m_bootstrapConfigFile()
+    , m_consolidatedConfigFile()
+    , m_configfiles()
     , m_configureables()
     , m_newConfigureables()
     , m_isBusyLoadingConfig( false )
@@ -127,11 +135,35 @@ CConfigStore::~CConfigStore()
 /*-------------------------------------------------------------------------*/
 
 void
-CConfigStore::SetConfigFile( const CString& filepath )
+CConfigStore::SetBootstrapConfigFile( const CString& filepath )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    _configfile = RelativePath( filepath );
+    m_bootstrapConfigFile = filepath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetBootstrapConfigFile( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_bootstrapConfigFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CConfigStore::SetConfigFile( const CString& filepath ,
+                             bool isAddative         )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_consolidatedConfigFile = filepath;
+    if ( !isAddative )
+        m_configfiles.clear();
+    m_configfiles.push_back( RelativePath( filepath ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,13 +173,76 @@ CConfigStore::GetConfigFile( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    return _configfile;
+    if ( !m_consolidatedConfigFile.IsNULLOrEmpty() )
+        return m_consolidatedConfigFile;
+    if ( m_configfiles.empty() )
+        return CString::Empty;
+    return m_configfiles.back();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetConsolidatedConfigFile( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_consolidatedConfigFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetConsolidatedConfigFileCodecType( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    CString codecType = ExtractFileExtention( m_consolidatedConfigFile );
+    if ( codecType.IsNULLOrEmpty() )
+        codecType = _codectype;
+    return codecType;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CConfigStore::Register( CIConfigurable* configobj )
+CConfigStore::SetConfigFiles( const CString::StringVector& filepaths ,
+                              bool isAddative                        )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    if ( !isAddative )
+        m_configfiles.clear();
+
+    CString::StringVector::const_iterator i = filepaths.begin();
+    while ( i != filepaths.end() )
+    {
+        m_configfiles.push_back( RelativePath( (*i) ) );
+        ++i;
+    }
+    
+    if ( m_consolidatedConfigFile.IsNULLOrEmpty() && !m_configfiles.empty() )
+    {       
+        // Generated a default consolidated config file name
+        CString firstCfg = (*m_configfiles.begin());
+        m_consolidatedConfigFile = StripFileExtention( firstCfg ) + "_consolidated." + ExtractFileExtention( firstCfg );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString::StringVector
+CConfigStore::GetConfigFiles( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_configfiles;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CConfigStore::Register( CGloballyConfigurable* configobj )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -161,7 +256,7 @@ CConfigStore::Register( CIConfigurable* configobj )
 /*-------------------------------------------------------------------------*/
 
 bool
-CConfigStore::Unregister( CIConfigurable* configobj )
+CConfigStore::Unregister( CGloballyConfigurable* configobj )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -176,63 +271,102 @@ CConfigStore::Unregister( CIConfigurable* configobj )
 /*-------------------------------------------------------------------------*/
 
 bool
-CConfigStore::SaveConfig( const CString& name ,
-                          bool preserve       )
+CConfigStore::SaveConsolidatedConfig( const CString& name ,
+                                      bool preserve       )
 {GUCEF_TRACE;
         
-        MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this );
 
-        /*
-         *      If the preserve flag is set then the old data tree
-         *      will be loaded first to prevent any data loss.
-         *      This basically allows you to add and/or modify data
-         *      but not remove items from the tree unless you do so on purpose.
-         */
-        CDataNode rootnode( name );
-        CDataNode oldtree;
-        if ( preserve )
-        {
-                try
-                {
-                        CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
-                        if ( codec->BuildDataTree( &oldtree    ,
-                                                   _configfile ) )
-                        {
-                                rootnode.CopySubTree( oldtree );
-                        }
-                }
-                catch ( CDStoreCodecRegistry::EUnregisteredName& )
-                {
-                        return false;
-                }
-        }
-
-        TConfigurableSet::iterator i = m_configureables.begin();
-        while ( i != m_configureables.end() )
-        {
-            if ( !(*i)->SaveConfig( rootnode ) )
-            {
-                return false;
-            }
-            ++i;
-        }
-
+    CString codecType = GetConsolidatedConfigFileCodecType();
+    
+    /*
+        *      If the preserve flag is set then the old data tree
+        *      will be loaded first to prevent any data loss.
+        *      This basically allows you to add and/or modify data
+        *      but not remove items from the tree unless you do so on purpose.
+        */
+    CDataNode rootnode( name );
+    CDataNode oldtree;
+    if ( preserve )
+    {
         try
         {
-                CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
-                if ( codec->BuildDataTree( &rootnode    ,
-                                           _configfile  ) )
-                {
-                        rootnode.CopySubTree( oldtree );
-                        return true;
-                }
+            CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( codecType );
+            if ( codec->BuildDataTree( &oldtree                  ,
+                                       m_consolidatedConfigFile  ) )
+            {
+                    rootnode.CopySubTree( oldtree );
+            }
         }
         catch ( CDStoreCodecRegistry::EUnregisteredName& )
         {
-                return false;
+            return false;
         }
+    }
 
+    TConfigurableSet::iterator i = m_configureables.begin();
+    while ( i != m_configureables.end() )
+    {
+        if ( !(*i)->SaveConfig( rootnode ) )
+        {
+            return false;
+        }
+        ++i;
+    }
+
+    try
+    {
+        CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( codecType );
+        if ( codec->BuildDataTree( &rootnode                 ,
+                                   m_consolidatedConfigFile  ) )
+        {
+            rootnode.CopySubTree( oldtree );
+            return true;
+        }
+    }
+    catch ( CDStoreCodecRegistry::EUnregisteredName& )
+    {
         return false;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::SaveConsolidatedConfig( const CDataNode& newCfg )
+{GUCEF_TRACE;
+
+    try
+    {
+        CString codecType = GetConsolidatedConfigFileCodecType();
+        CString consolidatedConfigFilePath = GetConsolidatedConfigFile();
+        
+        CDStoreCodecRegistry::TDStoreCodecPtr codec;
+        if ( CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecType, codec, false ) && !codec.IsNULL() )
+        {
+            if ( codec->StoreDataTree( &newCfg                     ,
+                                       consolidatedConfigFilePath  ) )
+            {
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: Wrote consolidated config using codec \"" + codecType + "\" to: " + consolidatedConfigFilePath );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: Failed to write consolidated config using codec \"" + codecType + "\" to: " + consolidatedConfigFilePath );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: Failed obtain codec \"" + codecType + "\"" );
+        }
+    }
+    catch ( std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "ConfigStore:SaveConsolidatedConfig: Exception occured: " ) + e.what() );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -241,102 +375,186 @@ bool
 CConfigStore::LoadConfig( CDataNode* loadedConfig )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
+    CDataNode configTmp;
+    CDataNode& config = GUCEF_NULL == loadedConfig ? configTmp : *loadedConfig; 
+    bool totalSuccess = true;
 
-    if ( !FileExists( _configfile ) )
     {
-        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config because the config file does not exist: " + _configfile );
+        MT::CObjectScopeLock lock( this );
+        
+        // Do we have a bootstrap log? If so apply that first
+        if ( !m_bootstrapConfigFile.IsNULLOrEmpty() )
+        {
+            if ( !NotifyObservers( GlobalBootstrapConfigLoadStartingEvent ) ) return false;
+
+            totalSuccess = LoadConfigData( m_bootstrapConfigFile, config );
+    
+            // If we have a bootstrap config it MUST load successfully
+            if ( !totalSuccess )
+            {
+                NotifyObservers( GlobalBootstrapConfigLoadFailedEvent );
+                return false;
+            }
+
+            totalSuccess = ApplyConfigData( config, true, true );
+
+            if ( totalSuccess )
+                NotifyObservers( GlobalBootstrapConfigLoadCompletedEvent );
+            else
+                NotifyObservers( GlobalBootstrapConfigLoadFailedEvent );
+        }
+    }
+    {
+        MT::CObjectScopeLock lock( this );
+    
+        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+
+        // Load and overlay configs in the order given
+        CString::StringVector::const_iterator i = m_configfiles.begin();
+        while ( i != m_configfiles.end() )
+        {
+            totalSuccess = LoadConfigData( (*i), config ) && totalSuccess;
+            ++i;
+        }
+    
+        // If multiple config files are given they MUST all load successfully
+        if ( !totalSuccess )
+        {
+            NotifyObservers( GlobalConfigLoadFailedEvent );
+            return false;
+        }
+
+        // Now we actually apply the config to globally linked configurables
+        totalSuccess = ApplyConfigData( config, false, !m_bootstrapConfigFile.IsNULLOrEmpty() );
+
+        if ( totalSuccess )
+            NotifyObservers( GlobalConfigLoadCompletedEvent );
+        else
+            NotifyObservers( GlobalConfigLoadFailedEvent );
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::LoadConfigData( const CString& cfgFilepath , 
+                              CDataNode& loadedConfig    )
+{GUCEF_TRACE;
+                          
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore:LoadConfigData: Will attempt to load all config from file: " + cfgFilepath );
+
+    if ( !FileExists( cfgFilepath ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:LoadConfigData: Failed to load config because the config file does not exist: " + cfgFilepath );
         return false;
     }
 
-    if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+    CORE::CString codectype = Extract_File_Ext( cfgFilepath.C_String() );
+    if ( codectype.IsNULLOrEmpty() )
+    {
+        codectype = _codectype;
+    }
+    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "ConfigStore:LoadConfigData: Will try to use codec \"" + codectype + "\" for the config information in file " + cfgFilepath );
 
-    MT::CObjectScopeLock lock( this );
-
-        if ( _codectype.Length() == 0 )
+    try
+    {
+        CDStoreCodecRegistry::TDStoreCodecPtr codec;
+        if ( CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codectype, codec, false ) && !codec.IsNULL() )
         {
-            _codectype = Extract_File_Ext( _configfile.C_String() );
-        }
-        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Will try to use codec \"" + _codectype + "\" for the config information in file " + _configfile );
-
-        try
-        {
-            CDStoreCodecRegistry::TDStoreCodecPtr codec;
-            if ( CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( _codectype, codec, false ) && !codec.IsNULL() )
+            if ( codec->BuildDataTree( &loadedConfig ,
+                                       cfgFilepath   ) )
             {
-                CDataNode rootnode;
-                if ( loadedConfig == GUCEF_NULL )
-                    loadedConfig = &rootnode;
-                if ( codec->BuildDataTree( loadedConfig ,
-                                            _configfile ) )
-                {
-                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
-
-                        m_isBusyLoadingConfig = true;
-                        
-                        bool errorOccured = false;
-                        TConfigurableSet::iterator i = m_configureables.begin();
-                        while ( i != m_configureables.end() )
-                        {
-                            if ( !(*i)->LoadConfig( *loadedConfig ) )
-                            {
-                                errorOccured = true;
-                                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
-                            }
-                            ++i;
-                        }
-
-                        // Loading of config can cause more configurables to register
-                        // We handle those after dealing with the initial set
-                        while ( !m_newConfigureables.empty() )
-                        {
-                            TConfigurableSet setCopy( m_newConfigureables );
-                            i = setCopy.begin();
-                            while ( i != setCopy.end() )
-                            {
-                                if ( !(*i)->LoadConfig( *loadedConfig ) )
-                                {
-                                    errorOccured = true;
-                                    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a late-addition configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
-                                }
-                                m_configureables.insert( (*i) );
-                                m_newConfigureables.erase( (*i) );
-                                ++i;
-                            }
-                        }
-
-                        m_isBusyLoadingConfig = false;
-                        
-                        if ( !errorOccured )
-                        {
-                            GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config. Used codec \"" + _codectype + "\" to successfully build a config data tree from file " + _configfile );
-                            lock.EarlyUnlock();
-                            if ( !NotifyObservers( GlobalConfigLoadCompletedEvent ) ) return true;
-                            return true;
-                        }
-                        else
-                        {
-                            GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Failed loading all config using codec \"" + _codectype + "\" and config file " + _configfile );
-                        }
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to build a config data tree using codec " + _codectype + " from file " + _configfile );
-                }
+                    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "ConfigStore:LoadConfigData: Used codec " + codectype + " to successfully build a config data tree from file " + cfgFilepath );
+                    return true;
             }
             else
             {
-                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config since no codec is available for representation \"" + _codectype + "\" in file " + _configfile );
+                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:LoadConfigData: Failed to build a config data tree using codec " + codectype + " from file " + cfgFilepath );
             }
         }
-        catch ( CDStoreCodecRegistry::EUnregisteredName& )
+        else
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to retrieve codec " + _codectype + " for the config information" );
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:LoadConfigData: Failed to load config since no codec is available for representation \"" + codectype + "\" in file " + cfgFilepath );
         }
-
-    lock.EarlyUnlock();
-    if ( !NotifyObservers( GlobalConfigLoadFailedEvent ) ) return false;
+    }
+    catch ( CDStoreCodecRegistry::EUnregisteredName& )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:LoadConfigData: Failed to retrieve codec " + codectype + " for the config information" );
+    }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::ApplyConfigData( const CDataNode& loadedConfig , 
+                               bool isBootstrap              ,
+                               bool hasBootstrap             )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    m_isBusyLoadingConfig = true;
+                        
+    bool errorOccured = false;
+    TConfigurableSet::iterator i = m_configureables.begin();
+    while ( i != m_configureables.end() )
+    {
+        if ( !hasBootstrap || ( isBootstrap == (*i)->IsIncludedInGlobalBootstrapConfigLoad() ) )
+        {
+            if ( !(*i)->LoadConfig( loadedConfig ) )
+            {
+                errorOccured = true;
+                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:ApplyConfigData: Loading of config failed for a configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
+            }
+        }
+        ++i;
+    }
+
+    // Loading of config can cause more configurables to register
+    // We handle those after dealing with the initial set
+    while ( !m_newConfigureables.empty() )
+    {
+        TConfigurableSet setCopy( m_newConfigureables );
+        i = setCopy.begin();
+        while ( i != setCopy.end() )
+        {
+            if ( !hasBootstrap || ( isBootstrap == (*i)->IsIncludedInGlobalBootstrapConfigLoad() ) )
+            {
+                if ( !(*i)->LoadConfig( loadedConfig ) )
+                {
+                    errorOccured = true;
+                    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:ApplyConfigData: Loading of config failed for a late-addition configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
+                }            
+                m_configureables.insert( (*i) );
+                m_newConfigureables.erase( (*i) );
+            }
+            ++i;
+        }
+    }
+
+    m_isBusyLoadingConfig = false;
+                        
+    if ( !errorOccured )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "ConfigStore:ApplyConfigData: Successfully loaded all config for all globally registered configurables" );
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ConfigStore:ApplyConfigData: Failed loading config for all globally registered configurables" );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CConfigStore::IsGlobalBootstrapConfigLoadInProgress( void ) const
+{GUCEF_TRACE;
+
+    return m_isBusyLoadingConfig;
 }
 
 /*-------------------------------------------------------------------------*/

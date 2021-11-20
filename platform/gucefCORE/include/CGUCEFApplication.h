@@ -53,10 +53,10 @@
 #define GUCEF_CORE_CISYSCONSOLECMDHANDLER_H
 #endif /* GUCEF_CORE_CISYSCONSOLECMDHANDLER_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"             /* abstract base class interface for configurable objects */
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
 #include "CTCloneableObj.h"
@@ -100,7 +100,7 @@ namespace CORE {
  *              GUCEF level. All higher level code should shutdown as well
  */
 class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier                   ,
-                                                public virtual CIConfigurable         ,
+                                                public CGloballyConfigurable          ,
                                                 public virtual CISysConsoleCmdHandler
 {
     public:

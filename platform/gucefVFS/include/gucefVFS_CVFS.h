@@ -31,10 +31,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"          /* abstract base class interface for configurable objects */
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
@@ -108,9 +108,10 @@ namespace VFS {
  *  The VFS can also be used to make your application use cloud storage without all its specific complexity as if it is a local filesystem
  *  As such using the VFS would be recommended for any application that uses a fair amount of "files"
  */
-class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier       ,
-                                  public CORE::CIDirectoryWatcher ,
-                                  public CORE::CIConfigurable
+class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
+                                  public CORE::CGloballyConfigurable ,
+                                  public CORE::CIDirectoryWatcher    
+                                  
 {
     public:
     

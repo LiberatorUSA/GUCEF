@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#define GUCEF_CORE_CICONFIGURABLE_H
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h" /* macros that are GUCEF specific and generic macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
-
-#ifndef GUCEF_CORE_ETYPES_H
-#include "ETypes.h"           /* simple types used */
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,55 +51,51 @@ class CDataNode;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Abstract base class for adding a configuration API to decending classes.
- *      Defines a uniform interface for loading and saving configuration data.
- *      Optionally the global CConfigStore can be used to load/unload the config of
- *      all configurable classes that have the 'use global config' switch set.
+ *  Base class for anything that wishes to be invoked as part of global config loading
+ *  Allows for centralized config management without having to code explicit invocations from
+ *  the central config management standpoint. Also makes it clear in the class hierarchy which
+ *  classes are intended to partake in a globalized context
  */
-class GUCEF_CORE_PUBLIC_CPP CIConfigurable : public virtual CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CGloballyConfigurable : public CIConfigurable
 {
     public:
 
-    CIConfigurable( void );
+    CGloballyConfigurable( bool includeInBootstrapPhase = false );
 
-    CIConfigurable( const CIConfigurable& src );
+    CGloballyConfigurable( const CGloballyConfigurable& src );
 
-    CIConfigurable( bool useglobalconfig );
+    virtual ~CGloballyConfigurable() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual ~CIConfigurable();
-
-    CIConfigurable& operator=( const CIConfigurable& src );
+    CGloballyConfigurable& operator=( const CGloballyConfigurable& src );
 
     /**
      *      Attempts to store the given tree in the file
      *      given according to the method of the codec metadata
      *
-     *      @param tree the data tree you wish to store
-     *      @return wheter storing the tree was successfull
+     *      @param cfg the data tree you wish to store the config
+     *      @return wheter storing all the config information to the provided tree was successfull
      */
-    virtual bool SaveConfig( CDataNode& tree ) const = 0;
+    virtual bool SaveConfig( CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to load data from the given file to the
      *      root node given. The root data will be replaced
      *      and any children the node may already have will be deleted.
      *
-     *      @param treeroot pointer to the node that is to act as root of the data tree
-     *      @return whether building the tree from the given file was successfull.
+     *      @param cfg node that is to act as root of the config data tree
+     *      @return whether loading required/mandatory settings from the given config was successfull
      */
-    virtual bool LoadConfig( const CDataNode& treeroot ) = 0;
+    virtual bool LoadConfig( const CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
-    void SetUseGlobalConfig( bool use );
+    bool IsIncludedInGlobalBootstrapConfigLoad( void ) const;
 
-    bool GetUseGlobalConfig( void ) const;
+    static bool IsGlobalBootstrapConfigLoadInProgress( void );
 
     static bool IsGlobalConfigLoadInProgress( void );
-
+    
     private:
-    friend class CConfigStore;
 
-    UInt32 _configid;       /**< used by the CConfigStore class to speed up lookup ops */
-    bool _useglobal;        /**< wheter this configurable object reacts to global config events */
+    bool m_includeInBootstrapPhase;  /**< wheter this configurable object should also be invoked for the bootstrap config if any */
 };
 
 /*-------------------------------------------------------------------------//
@@ -123,17 +109,4 @@ class GUCEF_CORE_PUBLIC_CPP CIConfigurable : public virtual CITypeNamed
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 08-04-2005 :
-        - Modified to use the new CDataNode class
-- 08-02-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */

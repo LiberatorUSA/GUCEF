@@ -756,6 +756,7 @@ CUtf8String::Reserve( const UInt32 byteSize, Int32 newLength )
     {
         m_byteSize = 0;
         m_length = 0;
+        m_string = GUCEF_NULL;
     }
     return newBuffer;
 }
@@ -1880,6 +1881,10 @@ CUtf8String::WildcardEquals( const CUtf8String& strWithWildcards    ,
 
     if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
+
+    // If the string does not actually have wildcards treat it like a regular string compare
+    if ( -1 == strWithWildcards.HasChar( wildCardToken ) )
+        return Equals( strWithWildcards, caseSensitive );
 
     std::vector< CUtf8String > segs = strWithWildcards.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;

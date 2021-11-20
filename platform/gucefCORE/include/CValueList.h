@@ -40,7 +40,7 @@
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
+#include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 

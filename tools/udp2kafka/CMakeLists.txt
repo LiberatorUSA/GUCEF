@@ -38,7 +38,7 @@ endif()
 add_dependencies( ${MODULE_NAME} RdKafka gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
 target_link_libraries( ${MODULE_NAME} RdKafka gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
 
-include_directories( ../../common/include ../../dependencies/librdkafka/src ../../dependencies/librdkafka/src-cpp ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../dependencies/librdkafka ../../dependencies/librdkafka/src ../../dependencies/librdkafka/src-cpp ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

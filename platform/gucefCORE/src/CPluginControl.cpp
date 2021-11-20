@@ -133,7 +133,7 @@ CPluginControl::~CPluginControl()
 
 CPluginControl::CPluginControl( void )
     : CTSGNotifier()
-    , CIConfigurable( true )
+    , CGloballyConfigurable( true )
     , m_pluginLoadLogicProviders()
     , m_defaultPluginLoadLogicType( "Simplistic" )
     , m_pluginGroups()

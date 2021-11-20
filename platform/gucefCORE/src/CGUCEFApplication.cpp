@@ -109,7 +109,7 @@ const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplicatio
 //-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
-    : CIConfigurable( true )
+    : CGloballyConfigurable( false )
     , CTSGNotifier()
     , _initialized( false )                                  
     , m_shutdownRequested( false )                                                            

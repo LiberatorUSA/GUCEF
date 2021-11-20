@@ -1,5 +1,5 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
-#define GUCEF_VFS_CASYNCVFSOPERATION_H
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#define GUCEF_CORE_CICONFIGURABLE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,37 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <deque>
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h" /* macros that are GUCEF specific and generic macros */
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CITASKCONSUMER_H
-#include "gucefCORE_CITaskConsumer.h"
-#define GUCEF_CORE_CITASKCONSUMER_H
-#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
+#ifndef GUCEF_CORE_ETYPES_H
+#include "ETypes.h"           /* simple types used */
+#define GUCEF_CORE_ETYPES_H
+#endif /* GUCEF_CORE_ETYPES_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CTCLONEABLEEXPANSION_H
-#include "CTCloneableExpansion.h"
-#define GUCEF_CORE_CTCLONEABLEEXPANSION_H
-#endif /* GUCEF_CORE_CTCLONEABLEEXPANSION_H ? */
-
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h" 
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
-
-#ifndef GUCEF_VFS_ASYNCVFSTASKDATA_H
-#include "gucefVFS_AsyncVfsTaskData.h"
-#define GUCEF_VFS_ASYNCVFSTASKDATA_H
-#endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
-
-#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
-#include "gucefVFS_CArchiveSettings.h"
-#define GUCEF_VFS_CARCHIVESETTINGS_H
-#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFS {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,35 +56,46 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_HIDDEN CAsyncVfsOperation : public CORE::CTaskConsumer
-{
-    public:
-
-    static const CORE::CEvent AsyncVfsOperationCompletedEvent;
-    static const CORE::CString TaskType;
-    
-    static void RegisterEvents( void );
-
-    CAsyncVfsOperation();
-    CAsyncVfsOperation( const CAsyncVfsOperation& src );
-    virtual ~CAsyncVfsOperation();
-
-    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual void OnTaskEnded( CORE::CICloneable* taskData ,
-                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-
-};
+class CDataNode;
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOperationTaskFactory;
+/**
+ *      Abstract base class for adding a configuration API to decending classes.
+ *      Defines a uniform interface for loading and saving configuration data.
+ */
+class GUCEF_CORE_PUBLIC_CPP CIConfigurable : public virtual CITypeNamed
+{
+    public:
+
+    CIConfigurable( void );
+
+    CIConfigurable( const CIConfigurable& src );
+
+    virtual ~CIConfigurable();
+
+    CIConfigurable& operator=( const CIConfigurable& src );
+
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CDataNode& tree ) const = 0;
+
+    /**
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CDataNode& treeroot ) = 0;
+
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,9 +103,9 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOper
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VFS */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_VFS_CASYNCVFSOPERATION_H ? */
+
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */

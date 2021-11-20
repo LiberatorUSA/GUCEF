@@ -58,7 +58,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-    : CIConfigurable( false )
+    : CIConfigurable()
     , m_list()
     , m_allowDuplicates( false )
     , m_allowMultipleValues( true )
@@ -70,7 +70,7 @@ CValueList::CValueList( void )
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-    : CIConfigurable( false )
+    : CIConfigurable()
     , m_list( src.m_list )
     , m_allowDuplicates( src.m_allowDuplicates )
     , m_allowMultipleValues( src.m_allowMultipleValues )

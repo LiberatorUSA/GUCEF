@@ -29,6 +29,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -1628,30 +1633,51 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath  
                 loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );
                 loadedAppConfig.SetAllowDuplicates( m_app->GetAppConfig().GetAllowDuplicates() );
             }
-
-            // First put the app in standby mode before we mess with the settings
-            if ( !m_app->SetStandbyMode( true ) )
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-
-            const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
-            if ( m_app->LoadConfig( loadedAppConfig, globalConfig ) )
+            
+            // Write the simplified app config to the global config
+            CORE::CDataNode newGlobalConfig = m_app->GetGlobalConfig();
+            if ( loadedAppConfig.SaveConfig( newGlobalConfig ) )
             {
-                if ( !m_app->IsGlobalStandbyEnabled() )
+                // First put the app in standby mode before we mess with the settings
+                if ( !m_app->SetStandbyMode( true ) )
+                    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+
+                if ( m_app->LoadConfig( loadedAppConfig, newGlobalConfig ) )
                 {
-                    if ( m_app->SetStandbyMode( false ) )
-                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                    bool allowRestApiAppConfigToPersist = CORE::StringToBool( loadedAppConfig.GetValueAlways( "allowRestApiAppConfigToPersist" ), false );
+                    if ( allowRestApiAppConfigToPersist )
+                    {
+                        if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( newGlobalConfig ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Successfully saved new global config" );
+                        }
+                        else
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to save new global config" );    
+                        }
+                    }
+                    
+                    if ( !m_app->IsGlobalStandbyEnabled() )
+                    {
+                        if ( m_app->SetStandbyMode( false ) )
+                            return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                        else
+                            return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                    }
                     else
-                        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                    }
                 }
                 else
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
-                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
                 }
             }
             else
             {
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to write app config into new global config" );
             }
         }
 
@@ -1680,10 +1706,39 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath  
         }
         else
         {
-            const CORE::CValueList& loadedAppConfig = m_app->GetAppConfig();
+            CORE::CValueList loadedAppConfig = m_app->GetAppConfig();
+
+            // First put the app in standby mode before we mess with the settings
+            if ( !m_app->SetStandbyMode( true ) )
+                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+
             if ( m_app->LoadConfig( loadedAppConfig, input ) )
             {
-                return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                bool allowRestApiAppGlobalConfigToPersist = CORE::StringToBool( loadedAppConfig.GetValueAlways( "allowRestApiGlobalConfigToPersist" ), false );
+                if ( allowRestApiAppGlobalConfigToPersist )
+                {
+                    if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( input ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Successfully saved new global config" );
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to save new global config" );    
+                    }
+                }
+
+                if ( !m_app->IsGlobalStandbyEnabled() )
+                {
+                    if ( m_app->SetStandbyMode( false ) )
+                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                    else
+                        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                }
             }
             else
             {

@@ -30,10 +30,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
@@ -78,8 +78,8 @@ namespace AWSSDK {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObservingNotifier ,
-                                                         public virtual CORE::CIConfigurable
+class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObservingNotifier    ,
+                                                         public CORE::CGloballyConfigurable
 {
     public:
 

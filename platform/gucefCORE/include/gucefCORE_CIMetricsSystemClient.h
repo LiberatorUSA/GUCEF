@@ -42,7 +42,7 @@
 #endif /* GUCEF_CORE_CINAMEDINSTANCE_H ? */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
+#include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
@@ -67,8 +67,6 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable  ,
     public:
 
     CIMetricsSystemClient( void );
-
-    CIMetricsSystemClient( bool useGlobalConfig );
 
     CIMetricsSystemClient( const CIMetricsSystemClient& src );
 

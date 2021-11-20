@@ -39,7 +39,6 @@ set( HEADER_FILES
   include/CICloneable.h
   include/CICodec.h
   include/CICodecPlugin.h
-  include/CIConfigurable.h
   include/CILogger.h
   include/CINamedInstance.h
   include/CINumericIDGeneratorBase.h
@@ -152,6 +151,9 @@ set( HEADER_FILES
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CForwardingNotifier.h
+  include/gucefCORE_CGlobalConfigValueList.h
+  include/gucefCORE_CGloballyConfigurable.h
+  include/gucefCORE_CIConfigurable.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIDate.h
   include/gucefCORE_CIDirectoryWatcher.h
@@ -249,7 +251,6 @@ set( SOURCE_FILES
   src/CICloneable.cpp
   src/CICodec.cpp
   src/CICodecPlugin.cpp
-  src/CIConfigurable.cpp
   src/CILogger.cpp
   src/CINamedInstance.cpp
   src/CINumericIDGeneratorBase.cpp
@@ -346,6 +347,9 @@ set( SOURCE_FILES
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
+  src/gucefCORE_CGlobalConfigValueList.cpp
+  src/gucefCORE_CGloballyConfigurable.cpp
+  src/gucefCORE_CIConfigurable.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIDirectoryWatcher.cpp

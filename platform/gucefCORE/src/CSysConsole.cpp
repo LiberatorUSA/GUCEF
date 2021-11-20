@@ -102,7 +102,7 @@ typedef struct CSysConsole::SCmdChannel TCmdChannel;
 //-------------------------------------------------------------------------*/
 
 CSysConsole::CSysConsole( void )
-    : CIConfigurable( true )  
+    : CGloballyConfigurable( false )  
     , CISysConsoleCmdHandler()
     , m_root( "root" )
     , m_aliases()

@@ -275,7 +275,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     TopicVector m_topics;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
-    TBufferMailbox::TMailList m_bulkMail;
+    TBufferMailbox::TMailVector m_bulkMail;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;
     CORE::CDynamicBufferSwap m_buffers;

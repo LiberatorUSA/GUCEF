@@ -33,10 +33,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
@@ -85,7 +85,7 @@ class CSysConsoleClient;
  *      Think of it as a DOS-console/Bash but instead of a storage
  *      medium you can move trough a tree of system commands.
  */
-class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
+class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CGloballyConfigurable  ,
                                           public CISysConsoleCmdHandler
 {
     public:

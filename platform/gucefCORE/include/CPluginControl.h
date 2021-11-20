@@ -26,6 +26,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_CIPLUGINLOADLOGIC_H
 #include "gucefCORE_CIPluginLoadLogic.h"
 #define GUCEF_CORE_CIPLUGINLOADLOGIC_H
@@ -35,11 +45,6 @@
 #include "gucefCORE_CPluginGroup.h"
 #define GUCEF_CORE_CPLUGINGROUP_H
 #endif /* GUCEF_CORE_CPLUGINGROUP_H ? */
-
-#ifndef GUCEF_CORE_CTSGNOTIFIER_H
-#include "CTSGNotifier.h"
-#define GUCEF_CORE_CTSGNOTIFIER_H
-#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CPLUGINMETADATA_H
 #include "gucefCORE_CPluginMetaData.h"
@@ -76,8 +81,8 @@ class CPluginManager;
  *  we can support any plugin interface as long as a plugin manager is registered capable
  *  of handling the given plugin's interface.
  */
-class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
-                                             public CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
+                                             public CGloballyConfigurable
 {
     public:
 

@@ -12,6 +12,7 @@
 # Configuration for module: RdKafka
 
 set( HEADER_FILES 
+  config.h
   src/crc32c.h
   src/lz4.h
   src/lz4frame.h
@@ -202,27 +203,21 @@ set( MODULE_NAME "RdKafka" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} zlib )
 target_link_libraries( ${MODULE_NAME} zlib )
-
-# DV Manual edit: for some reason Windows build included WITH_LIBDL. ProjectGen bug?
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS" )
 
 if ( LINUX32 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS;WITH_LIBDL" )
+  add_dependencies( ${MODULE_NAME} dl )
+  target_link_libraries( ${MODULE_NAME} dl )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "WITH_LIBDL" )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS;WITH_LIBDL" )
+  add_dependencies( ${MODULE_NAME} dl )
+  target_link_libraries( ${MODULE_NAME} dl )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "WITH_LIBDL" )
 endif( LINUX64 )
 
-if ( WIN32 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS" )
-endif( WIN32 )
-
-if ( WIN64 )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS" )
-endif( WIN64 )
-
-
-include_directories( src src-cpp )
+include_directories( ../librdkafka src src-cpp )
 
 if ( LINUX32 )
   include_directories( ../zlib )
