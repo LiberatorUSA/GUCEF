@@ -1551,7 +1551,8 @@ RestApiUdp2RedisInfoResource::Serialize( const CORE::CString& resourcePath   ,
 
     output.SetName( "info" );
     output.SetAttribute( "application", "udp2rediscluster" );
-    output.SetAttribute( "buildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
+    output.SetAttribute( "appBuildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
+    output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
     #else
@@ -1590,15 +1591,98 @@ RestApiUdp2RedisConfigResource::Serialize( const CORE::CString& resourcePath   ,
 
     if ( m_appConfig )
     {
-        const CORE::CValueList& loadedConfig = m_app->GetAppConfig();
-        return loadedConfig.SaveConfig( output );
+        const CORE::CDataNode* appConfigData = m_app->GetAppConfig();
+        if ( GUCEF_NULL != appConfigData )
+        {
+            output.Copy( *appConfigData );
+            return true;
+        }
+        return false;
     }
     else
     {
-        const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
-        output.Copy( globalConfig );
+        const CORE::CDataNode& globalConfigData = m_app->GetGlobalConfig();
+        output.Copy( globalConfigData );
         return true;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiUdp2RedisConfigResource::TDeserializeState
+RestApiUdp2RedisConfigResource::UpdateGlobalConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    // First put the app in standby mode before we mess with the settings
+    if ( !m_app->SetStandbyMode( true ) )
+        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+
+    // Grab a copy of the current global config for rollback if needed
+    CORE::CDataNode oldGlobalConfig = m_app->GetGlobalConfig();
+    const CORE::CDataNode* oldAppConfigData = m_app->GetAppConfig( oldGlobalConfig );
+
+    if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( cfg ) )
+    {
+        const CORE::CDataNode* appConfigData = m_app->GetAppConfig();
+        if ( GUCEF_NULL == appConfigData )
+        {
+            // We should not lose access to the app config section, this indicates a serious issue
+            // Attempt to roll back so we are not entirely broken
+            if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( oldGlobalConfig ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to obtain access to app config after applying new consolidated global config. Successfully rolled back to previous global config" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RestApiUdp2RedisConfigResource: Failed to obtain access to app config after applying new consolidated global config and subsequently also failed to roll back to previous global config" );
+            }
+
+            return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+        }
+
+        if ( GUCEF_NULL != oldAppConfigData )
+        {
+            bool allowRestApiAppGlobalConfigToPersist = appConfigData->GetAttributeValueOrChildValueByName( "allowPeristanceOfNewGlobalConfigViaRestApi" ).AsBool( false, true );
+            if ( allowRestApiAppGlobalConfigToPersist )
+            {
+                if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( cfg ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Successfully saved new consolidated global config" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to save new consolidated global config" );    
+                }
+            }
+        }
+
+        if ( !m_app->IsGlobalStandbyEnabled() )
+        {
+            if ( m_app->SetStandbyMode( false ) )
+                return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+            else
+                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+            return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+        }
+    }
+    else
+    {
+        // We ran into an issue applying the config
+        // Attempt to roll back so we are not entirely broken
+        if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( oldGlobalConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to apply new global config. Successfully rolled back to previous global config" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RestApiUdp2RedisConfigResource: Failed to apply new global config and subsequently also failed to roll back to previous global config" );
+        }                
+        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+    }        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1612,138 +1696,36 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath  
 
     if ( m_appConfig )
     {
-        CORE::CValueList loadedAppConfig;
+        // Make a copy of the entire global cfg
+        CORE::CDataNode globalCfg = m_app->GetGlobalConfig();
+        CORE::CDataNode* appConfigData = m_app->GetAppConfig( globalCfg );
 
         if ( isDeltaUpdateOnly )
         {
-            // Grab a copy of the current app config
-            loadedAppConfig = m_app->GetAppConfig();
-            loadedAppConfig.SetAllowMultipleValues( false );
-            loadedAppConfig.SetAllowDuplicates( false );
+            // Not supported yet. @TODO
+            // requires proper tree merging support
+
+            return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
         }
         else
         {
-            loadedAppConfig.CopySettingsFrom( m_app->GetAppConfig() );
+            // Provided input content replaces the entire app config segment
+            *appConfigData = input;
         }
-
-        if ( loadedAppConfig.LoadConfig( input ) )
-        {
-            if ( isDeltaUpdateOnly )
-            {
-                loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );
-                loadedAppConfig.SetAllowDuplicates( m_app->GetAppConfig().GetAllowDuplicates() );
-            }
-            
-            // Write the simplified app config to the global config
-            CORE::CDataNode newGlobalConfig = m_app->GetGlobalConfig();
-            if ( loadedAppConfig.SaveConfig( newGlobalConfig ) )
-            {
-                // First put the app in standby mode before we mess with the settings
-                if ( !m_app->SetStandbyMode( true ) )
-                    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-
-                if ( m_app->LoadConfig( loadedAppConfig, newGlobalConfig ) )
-                {
-                    bool allowRestApiAppConfigToPersist = CORE::StringToBool( loadedAppConfig.GetValueAlways( "allowRestApiAppConfigToPersist" ), false );
-                    if ( allowRestApiAppConfigToPersist )
-                    {
-                        if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( newGlobalConfig ) )
-                        {
-                            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Successfully saved new global config" );
-                        }
-                        else
-                        {
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to save new global config" );    
-                        }
-                    }
-                    
-                    if ( !m_app->IsGlobalStandbyEnabled() )
-                    {
-                        if ( m_app->SetStandbyMode( false ) )
-                            return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                        else
-                            return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
-                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                    }
-                }
-                else
-                {
-                    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-                }
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to write app config into new global config" );
-            }
-        }
-
-        return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+        return UpdateGlobalConfig( globalCfg );
     }
     else
     {
         if ( isDeltaUpdateOnly )
         {
-            //// Grab a copy of the current global config
-            //CORE::CDataNode globalConfigCopy = m_app->GetGlobalConfig();
-            //if ( globalConfigCopy.Merge( input ) )
-            //{
-            //    const CORE::CValueList& loadedAppConfig = m_app->GetAppConfig();
-            //    if ( m_app->LoadConfig( loadedAppConfig, globalConfigCopy ) )
-            //    {
-            //        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-            //    }
-            //    else
-            //    {
-            //        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-            //    }
-            //}
+            // Not supported yet. @TODO
+            // requires proper tree merging support
 
-            return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+            return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
         }
         else
         {
-            CORE::CValueList loadedAppConfig = m_app->GetAppConfig();
-
-            // First put the app in standby mode before we mess with the settings
-            if ( !m_app->SetStandbyMode( true ) )
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-
-            if ( m_app->LoadConfig( loadedAppConfig, input ) )
-            {
-                bool allowRestApiAppGlobalConfigToPersist = CORE::StringToBool( loadedAppConfig.GetValueAlways( "allowRestApiGlobalConfigToPersist" ), false );
-                if ( allowRestApiAppGlobalConfigToPersist )
-                {
-                    if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( input ) )
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Successfully saved new global config" );
-                    }
-                    else
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: Failed to save new global config" );    
-                    }
-                }
-
-                if ( !m_app->IsGlobalStandbyEnabled() )
-                {
-                    if ( m_app->SetStandbyMode( false ) )
-                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                    else
-                        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-                }
-                else
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
-                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                }
-            }
-            else
-            {
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-            }
+            return UpdateGlobalConfig( input );
         }
     }
 }
@@ -1752,19 +1734,19 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath  
 
 Udp2RedisCluster::Udp2RedisCluster( void )
     : CORE::CObserver()
+    , CORE::CGloballyConfigurable()
     , m_isInStandby( false )
     , m_globalStandbyEnabled( false )
-    , m_udpStartPort()
-    , m_channelCount()
-    , m_redisStreamStartChannelID()
-    , m_redisStreamName()
-    , m_redisHost()
-    , m_redisPort()
+    , m_udpStartPort( 20000 )
+    , m_channelCount( 0 )
+    , m_redisStreamStartChannelID( 1 )
+    , m_redisStreamName( "udp-ingress-ch{channelID}" )
+    , m_redisHost( "127.0.0.1" )
+    , m_redisPort( 6379 )
     , m_channels()
     , m_channelSettings()
     , m_httpServer()
     , m_httpRouter()
-    , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
     , m_transmitMetrics( true )
@@ -1958,36 +1940,43 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
 /*-------------------------------------------------------------------------*/
 
 bool
-Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
-                              const CORE::CDataNode& globalConfig )
+Udp2RedisCluster::LoadConfig( const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
-    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
+    const CORE::CDataNode* appConfig = GetAppConfig( globalConfig );
+    if ( GUCEF_NULL == appConfig )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Unable to locate app config in global config" );
+        return false;
+    }
+    
+    m_transmitMetrics = appConfig->GetAttributeValueOrChildValueByName( "TransmitMetrics" ).AsBool( m_transmitMetrics, true );
+    m_globalStandbyEnabled = appConfig->GetAttributeValueOrChildValueByName( "GlobalStandbyEnabled" ).AsBool( m_globalStandbyEnabled, true );
 
-    m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID" ) ), 1 );
-    CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : channelIDStrs.size() );
+    m_redisStreamStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "RedisStreamStartChannelID" ).AsInt32( m_redisStreamStartChannelID, true );
 
-    m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort" ) ), 20000 );
-    CORE::Int32 udpPortChannelIdOffset = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpPortChannelIdOffset" ) ), 20000 );
-    bool useUdpPortChannelIdOffset = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "UseUdpPortChannelIdOffset" ) ), false );
+    CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "ChannelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
+    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "ChannelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : channelIDStrs.size(), true );
+
+    m_udpStartPort = appConfig->GetAttributeValueOrChildValueByName( "UdpStartPort" ).AsUInt16( m_udpStartPort, true ); 
+    CORE::Int32 udpPortChannelIdOffset = appConfig->GetAttributeValueOrChildValueByName( "UdpPortChannelIdOffset" ).AsInt32( 20000, true );
+    bool useUdpPortChannelIdOffset = appConfig->GetAttributeValueOrChildValueByName( "UseUdpPortChannelIdOffset" ).AsBool( false, true ); 
     if ( useUdpPortChannelIdOffset )
         m_udpStartPort = (CORE::UInt16) ( m_redisStreamStartChannelID + udpPortChannelIdOffset );
 
-    m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
-    m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
-    m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
+    m_redisStreamName = appConfig->GetAttributeValueOrChildValueByName( "RedisStreamName" ).AsString( m_redisStreamName, true );
+    m_redisHost = appConfig->GetAttributeValueOrChildValueByName( "RedisHost" ).AsString( m_redisHost, true );
+    m_redisPort = appConfig->GetAttributeValueOrChildValueByName( "RedisPort" ).AsUInt16( m_redisPort, true );
 
-    CORE::UInt32 ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "TicketRefillOnBusyCycle" ) ), GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE );
-    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "NrOfUdpReceiveBuffersPerSocket" ) ), GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS );
-    CORE::UInt32 udpSocketOsReceiveBufferSize = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpSocketOsReceiveBufferSize" ) ), GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE );
-    CORE::UInt32 udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxUdpSocketUpdateCyclesPerPulse" ) ), GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE );
-    bool performRedisWritesInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "PerformRedisWritesInDedicatedThread" ) ), true );
-    CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
-    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
-    CORE::Int32 redisXAddMaxLenDefault = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLen" ) ), -1 );
-    bool redisXAddMaxLenIsApproxDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLenIsApproximate" ) ), true );
+    CORE::UInt32 ticketRefillOnBusyCycle = appConfig->GetAttributeValueOrChildValueByName( "TicketRefillOnBusyCycle" ).AsUInt32( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE, true );
+    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket = appConfig->GetAttributeValueOrChildValueByName( "NrOfUdpReceiveBuffersPerSocket" ).AsUInt32( GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS, true );
+    CORE::UInt32 udpSocketOsReceiveBufferSize = appConfig->GetAttributeValueOrChildValueByName( "UdpSocketOsReceiveBufferSize" ).AsUInt32( GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE, true );
+    CORE::UInt32 udpSocketUpdateCyclesPerPulse = appConfig->GetAttributeValueOrChildValueByName( "MaxUdpSocketUpdateCyclesPerPulse" ).AsUInt32( GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE, true );
+    bool performRedisWritesInDedicatedThread = appConfig->GetAttributeValueOrChildValueByName( "PerformRedisWritesInDedicatedThread" ).AsBool( true, true );
+    CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead = appConfig->GetAttributeValueOrChildValueByName( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ).AsInt32( GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ, true );
+    bool applyCpuThreadAffinityByDefault = appConfig->GetAttributeValueOrChildValueByName( "ApplyCpuThreadAffinityByDefault" ).AsBool( false, true );
+    CORE::Int32 redisXAddMaxLenDefault = appConfig->GetAttributeValueOrChildValueByName( "RedisXAddMaxLen" ).AsInt32( -1, true );
+    bool redisXAddMaxLenIsApproxDefault = appConfig->GetAttributeValueOrChildValueByName( "RedisXAddMaxLenIsApproximate" ).AsBool( true, true );
 
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
@@ -2092,7 +2081,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.redisXAddMaxLenIsApproximate = redisXAddMaxLenIsApproxDefault;
 
         CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".RedisStreamName";
-        CORE::CString settingValue = appConfig.GetValueAlways( settingName );
+        CORE::CString settingValue = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsString( CORE::CString::Empty, true );
         if ( !settingValue.IsNULLOrEmpty() )
         {
             channelSettings.channelStreamName = CORE::ResolveVars( settingValue.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
@@ -2104,7 +2093,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".ApplyCpuThreadAffinity";
-        settingValue = appConfig.GetValueAlways( settingName );
+        settingValue = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsString( CORE::CString::Empty, true );
         if ( !settingValue.IsNULLOrEmpty() )
         {
             channelSettings.applyThreadCpuAffinity = CORE::StringToBool( CORE::ResolveVars( settingValue ), applyCpuThreadAffinityByDefault );
@@ -2117,7 +2106,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         if ( channelSettings.applyThreadCpuAffinity )
         {
             settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForMainChannelThread";
-            settingValue = appConfig.GetValueAlways( settingName );
+            settingValue = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsString( CORE::CString::Empty, true );
             if ( !settingValue.IsNULLOrEmpty() )
             {
                 channelSettings.cpuAffinityForMainChannelThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
@@ -2134,7 +2123,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
             if ( channelSettings.performRedisWritesInDedicatedThread )
             {
                 settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForDedicatedRedisWriterThread";
-                settingValue = appConfig.GetValueAlways( settingName );
+                settingValue = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsString( CORE::CString::Empty, true );
                 if ( !settingValue.IsNULLOrEmpty() )
                 {
                     channelSettings.cpuAffinityForDedicatedRedisWriterThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
@@ -2151,7 +2140,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".UdpInterface";
-        settingValue = appConfig.GetValueAlways( settingName );
+        settingValue = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsString( CORE::CString::Empty, true );
         if ( !settingValue.IsNULLOrEmpty() )
         {
             channelSettings.udpInterface.SetHostnameAndPort( settingValue );
@@ -2164,11 +2153,11 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".WantsTestPackage";
-        channelSettings.wantsTestPackage = CORE::StringToBool( appConfig.GetValueAlways( settingName, "false" ) );
+        channelSettings.wantsTestPackage = appConfig->GetAttributeValueOrChildValueByName( settingName ).AsBool( false, true );  
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".Multicast.Join";
-        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );
-        CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+        CORE::CString::StringVector settingValues = CORE::ToStringVector( appConfig->GetAttributeValueOrChildValuesByName( settingName ) );
+        CORE::CString::StringVector::iterator n = settingValues.begin();
         while ( n != settingValues.end() )
         {
             const CORE::CString& settingValue = (*n);
@@ -2181,20 +2170,19 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         ++idListIttr;
     }
 
-    m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
 
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
+    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "RestApiPort" ).AsUInt16( 10000, true ) );
 
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) ) );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "RestBasicHealthUri" ).AsString( "/health/basic", true ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
-    m_testPacketTransmitTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TestPacketTransmissionIntervalInMs", "1000" ) ) );
-    m_transmitTestPackets = CORE::StringToBool( appConfig.GetValueAlways( "TransmitTestPackets" ), false );
+    m_testPacketTransmitTimer.SetInterval( appConfig->GetAttributeValueOrChildValueByName( "TestPacketTransmissionIntervalInMs" ).AsUInt32( 1000, true ) );
+    m_transmitTestPackets = appConfig->GetAttributeValueOrChildValueByName( "TransmitTestPackets" ).AsBool( m_transmitTestPackets, true );
     return true;
 }
 
@@ -2250,17 +2238,49 @@ Udp2RedisCluster::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CValueList&
+const CORE::CString& 
+Udp2RedisCluster::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "Udp2RedisCluster";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDataNode* 
+Udp2RedisCluster::GetAppConfig( const CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* appConfig = globalConfig.Search( "Main/AppArgs", '/', true, true );
+    return appConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CDataNode* 
+Udp2RedisCluster::GetAppConfig( CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
+
+    CORE::CDataNode* appConfig = globalConfig.Structure( "Main/AppArgs", '/' );
+    return appConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDataNode* 
 Udp2RedisCluster::GetAppConfig( void ) const
-{
-    return m_appConfig;
+{GUCEF_TRACE;
+
+    return GetAppConfig( m_globalConfig );
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CORE::CDataNode&
 Udp2RedisCluster::GetGlobalConfig( void ) const
-{
+{GUCEF_TRACE;
+
     return m_globalConfig;
 }
 

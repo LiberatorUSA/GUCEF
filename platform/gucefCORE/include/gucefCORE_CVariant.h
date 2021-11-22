@@ -293,6 +293,7 @@ inline CString ToString( const CVariant& var ) { return var.AsString(); }
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString::StringVector ToStringVector( const CVariant::VariantVector& var );
+GUCEF_CORE_PUBLIC_CPP CString::StringVector ToStringVector( const CVariant::VariantSet& var );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

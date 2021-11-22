@@ -49,10 +49,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -524,6 +524,8 @@ class RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerReso
                                            const CORE::CString& representation ,
                                            bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
 
+    TDeserializeState UpdateGlobalConfig( const CORE::CDataNode& cfg );
+    
     private:
 
     PubSub2PubSub* m_app;
@@ -552,8 +554,8 @@ class RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServ
 
 /*-------------------------------------------------------------------------*/
 
-class PubSub2PubSub : public CORE::CObserver ,
-                      public CORE::CIConfigurable
+class PubSub2PubSub : public CORE::CObserver             ,
+                      public CORE::CGloballyConfigurable
 {
     public:
 
@@ -568,9 +570,13 @@ class PubSub2PubSub : public CORE::CObserver ,
 
     bool LoadConfig( const CORE::CValueList& appConfig );
 
-    const CORE::CValueList& GetAppConfig( void ) const;
-
     const CORE::CDataNode& GetGlobalConfig( void ) const;
+
+    static const CORE::CDataNode* GetAppConfig( const CORE::CDataNode& globalConfig );
+
+    static CORE::CDataNode* GetAppConfig( CORE::CDataNode& globalConfig );
+
+    const CORE::CDataNode* GetAppConfig( void ) const;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -615,7 +621,6 @@ class PubSub2PubSub : public CORE::CObserver ,
     ChannelSettings m_templateChannelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
-    CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;

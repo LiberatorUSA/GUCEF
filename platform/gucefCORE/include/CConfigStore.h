@@ -104,7 +104,17 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
     bool SaveConsolidatedConfig( const CString& name  ,
                                  bool preserve = true );
 
+    /**
+     *  Persists the given config as the new consolidated config
+     *  Does NOT apply the config. Caller can do that independently using ApplyConsolidatedConfig()
+     */ 
     bool SaveConsolidatedConfig( const CDataNode& newCfg );
+
+    /**
+     *  Applies the given config to all non-bootstrap global configurables
+     *  Does NOT persist the consolidated config. Caller can do that independently using SaveConsolidatedConfig()
+     */ 
+    bool ApplyConsolidatedConfig( const CDataNode& newCfg );
 
     bool LoadConfig( CDataNode* loadedConfig = GUCEF_NULL );
 

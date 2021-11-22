@@ -1839,6 +1839,22 @@ ToStringVector( const CVariant::VariantVector& var )
     return result;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString::StringVector 
+ToStringVector( const CVariant::VariantSet& var )
+{GUCEF_TRACE;
+
+    CString::StringVector result;
+    CVariant::VariantSet::const_iterator i = var.begin();
+    while ( i != var.end() )
+    {
+        result.push_back( (*i).AsString() );
+        ++i;
+    }
+    return result;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

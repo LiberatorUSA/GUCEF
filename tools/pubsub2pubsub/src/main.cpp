@@ -147,10 +147,8 @@ LookForConfigFile( const CORE::CString& configFile )
 /*-------------------------------------------------------------------------*/
 
 bool
-LoadConfig( const CORE::CString& bootstrapConfigPath   ,
-            const CORE::CString& configPath            ,
-            CORE::CValueList& keyValueList             ,
-            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+LoadConfig( const CORE::CString& bootstrapConfigPath ,
+            const CORE::CString& configPath          )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
@@ -181,14 +179,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
     }
 
-    CORE::CGlobalConfigValueList globalCfg;
-    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
-    globalCfg.SetAllowDuplicates( false );
-    globalCfg.SetAllowMultipleValues( true );
-
-    bool loadSuccess = configStore.LoadConfig( loadedConfig );
-
-    keyValueList = globalCfg;
+    bool loadSuccess = configStore.LoadConfig();
     return loadSuccess;
 }
 
@@ -249,6 +240,12 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     VFS::CVfsGlobal::Instance();
     WEB::CWebGlobal::Instance();
 
+    CORE::CPlatformNativeConsoleLogger console;
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+
+    PubSub2PubSub pubSub2PubSub;
+
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
@@ -256,24 +253,25 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
     keyValueList.Clear();
 
-    // Load settings from a config file (if any) and then override with params (if any)
-    CORE::CDataNode* globalConfig = new CORE::CDataNode();
-    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, globalConfig );
-    ParseParams( argc, argv, keyValueList );
-
-    CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
-    if ( !valueStr.IsNULLOrEmpty() )
+    // Load settings from a config file
+    if ( !LoadConfig( bootstrapConfigPathParam, configPathParam ) )
     {
-        minLogLevel = CORE::StringToInt32( valueStr );
-        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because LoadConfig failed" );
+        return -1;
+    }
+    
+    // After load get access to the app config
+    const CORE::CDataNode* appConfig = pubSub2PubSub.GetAppConfig();
+    if ( GUCEF_NULL == appConfig )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because no app config is available" );
+        return -1;
     }
 
-    CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
-    if ( outputDir.IsNULLOrEmpty() )
-    {
-        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
-    }
+    CORE::Int32 minLogLevel = appConfig->GetAttributeValueOrChildValueByName( "MinimalLogLevel" ).AsInt32( CORE::LOGLEVEL_BELOW_NORMAL, true );
+    CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+
+    CORE::CString outputDir = appConfig->GetAttributeValueOrChildValueByName( "outputDir" ).AsString( "$CURWORKDIR$", true );
     CORE::CreateDirs( outputDir );
 
     CORE::CString logFilename = CORE::CombinePath( outputDir, "pubsub2pubsub_log.txt" );
@@ -284,32 +282,12 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
-
-    CORE::CPlatformNativeConsoleLogger console;
-    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
            
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
-    PubSub2PubSub pubSub2PubSub;
-    if ( !pubSub2PubSub.LoadConfig( *globalConfig ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig of global config failed" );
-        delete globalConfig;
-        return -1;
-    }
-    delete globalConfig;
-    globalConfig = GUCEF_NULL;
-    
-    if ( !pubSub2PubSub.LoadConfig( keyValueList ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig failed" );
-        return -1;
-    }
-    
     if ( !pubSub2PubSub.Start() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Failed to Start()" );

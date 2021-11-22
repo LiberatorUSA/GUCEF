@@ -372,6 +372,35 @@ CConfigStore::SaveConsolidatedConfig( const CDataNode& newCfg )
 /*-------------------------------------------------------------------------*/
 
 bool
+CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
+{GUCEF_TRACE;
+
+    bool success = true;
+    try
+    {
+        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+        
+        {
+            MT::CObjectScopeLock lock( this );        
+            success = ApplyConfigData( newCfg, false, !m_bootstrapConfigFile.IsNULLOrEmpty() );
+        }
+
+        if ( success )
+            NotifyObservers( GlobalConfigLoadCompletedEvent );
+        else
+            NotifyObservers( GlobalConfigLoadFailedEvent );
+    }
+    catch ( std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "ConfigStore:SaveConsolidatedConfig: Exception occured: " ) + e.what() );
+        success = false;
+    }
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CConfigStore::LoadConfig( CDataNode* loadedConfig )
 {GUCEF_TRACE;
 
@@ -492,8 +521,6 @@ CConfigStore::ApplyConfigData( const CDataNode& loadedConfig ,
                                bool isBootstrap              ,
                                bool hasBootstrap             )
 {GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
 
     m_isBusyLoadingConfig = true;
                         

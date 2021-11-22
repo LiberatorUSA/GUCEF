@@ -29,6 +29,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -2356,15 +2361,98 @@ RestApiPubSub2PubSubConfigResource::Serialize( const CORE::CString& resourcePath
 
     if ( m_appConfig )
     {
-        const CORE::CValueList& loadedConfig = m_app->GetAppConfig();
-        return loadedConfig.SaveConfig( output );
+        const CORE::CDataNode* appConfigData = m_app->GetAppConfig();
+        if ( GUCEF_NULL != appConfigData )
+        {
+            output.Copy( *appConfigData );
+            return true;
+        }
+        return false;
     }
     else
     {
-        const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
-        output.Copy( globalConfig );
+        const CORE::CDataNode& globalConfigData = m_app->GetGlobalConfig();
+        output.Copy( globalConfigData );
         return true;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPubSub2PubSubConfigResource::TDeserializeState
+RestApiPubSub2PubSubConfigResource::UpdateGlobalConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    // First put the app in standby mode before we mess with the settings
+    if ( !m_app->SetStandbyMode( true ) )
+        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+
+    // Grab a copy of the current global config for rollback if needed
+    CORE::CDataNode oldGlobalConfig = m_app->GetGlobalConfig();
+    const CORE::CDataNode* oldAppConfigData = m_app->GetAppConfig( oldGlobalConfig );
+
+    if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( cfg ) )
+    {
+        const CORE::CDataNode* appConfigData = m_app->GetAppConfig();
+        if ( GUCEF_NULL == appConfigData )
+        {
+            // We should not lose access to the app config section, this indicates a serious issue
+            // Attempt to roll back so we are not entirely broken
+            if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( oldGlobalConfig ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: Failed to obtain access to app config after applying new consolidated global config. Successfully rolled back to previous global config" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RestApiPubSub2PubSubConfigResource: Failed to obtain access to app config after applying new consolidated global config and subsequently also failed to roll back to previous global config" );
+            }
+
+            return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+        }
+
+        if ( GUCEF_NULL != oldAppConfigData )
+        {
+            bool allowRestApiAppGlobalConfigToPersist = oldAppConfigData->GetAttributeValueOrChildValueByName( "allowPeristanceOfNewGlobalConfigViaRestApi" ).AsBool( false, true );
+            if ( allowRestApiAppGlobalConfigToPersist )
+            {
+                if ( CORE::CCoreGlobal::Instance()->GetConfigStore().SaveConsolidatedConfig( cfg ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: Successfully saved new consolidated global config" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: Failed to save new consolidated global config" );    
+                }
+            }
+        }
+
+        if ( !m_app->IsGlobalStandbyEnabled() )
+        {
+            if ( m_app->SetStandbyMode( false ) )
+                return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+            else
+                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+            return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+        }
+    }
+    else
+    {
+        // We ran into an issue applying the config
+        // Attempt to roll back so we are not entirely broken
+        if ( CORE::CCoreGlobal::Instance()->GetConfigStore().ApplyConsolidatedConfig( oldGlobalConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: Failed to apply new global config. Successfully rolled back to previous global config" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RestApiUdp2RedisConfigResource: Failed to apply new global config and subsequently also failed to roll back to previous global config" );
+        }                
+        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+    }        
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2378,88 +2466,36 @@ RestApiPubSub2PubSubConfigResource::Deserialize( const CORE::CString& resourcePa
 
     if ( m_appConfig )
     {
-        CORE::CValueList loadedAppConfig;
+        // Make a copy of the entire global cfg
+        CORE::CDataNode globalCfg = m_app->GetGlobalConfig();
+        CORE::CDataNode* appConfigData = m_app->GetAppConfig( globalCfg );
 
         if ( isDeltaUpdateOnly )
         {
-            // Grab a copy of the current app config
-            loadedAppConfig = m_app->GetAppConfig();
-            loadedAppConfig.SetAllowMultipleValues( false );
-            loadedAppConfig.SetAllowDuplicates( false );
+            // Not supported yet. @TODO
+            // requires proper tree merging support
+
+            return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
         }
         else
         {
-            loadedAppConfig.CopySettingsFrom( m_app->GetAppConfig() );
+            // Provided input content replaces the entire app config segment
+            *appConfigData = input;
         }
-
-        if ( loadedAppConfig.LoadConfig( input ) )
-        {
-            if ( isDeltaUpdateOnly )
-            {
-                loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );
-                loadedAppConfig.SetAllowDuplicates( m_app->GetAppConfig().GetAllowDuplicates() );
-            }
-
-            // First put the app in standby mode before we mess with the settings
-            if ( !m_app->SetStandbyMode( true ) )
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-
-            const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
-            if ( m_app->LoadConfig( loadedAppConfig ) )
-            {
-                if ( !m_app->IsGlobalStandbyEnabled() )
-                {
-                    if ( m_app->SetStandbyMode( false ) )
-                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                    else
-                        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-                }
-                else
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiPubSub2PubSubConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
-                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-                }
-            }
-            else
-            {
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-            }
-        }
-
-        return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+        return UpdateGlobalConfig( globalCfg );
     }
     else
     {
         if ( isDeltaUpdateOnly )
         {
-            //// Grab a copy of the current global config
-            //CORE::CDataNode globalConfigCopy = m_app->GetGlobalConfig();
-            //if ( globalConfigCopy.Merge( input ) )
-            //{
-            //    const CORE::CValueList& loadedAppConfig = m_app->GetAppConfig();
-            //    if ( m_app->LoadConfig( loadedAppConfig, globalConfigCopy ) )
-            //    {
-            //        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-            //    }
-            //    else
-            //    {
-            //        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-            //    }
-            //}
+            // Not supported yet. @TODO
+            // requires proper tree merging support
 
-            return TDeserializeState::DESERIALIZESTATE_CORRUPTEDINPUT;
+            return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
         }
         else
         {
-            const CORE::CValueList& loadedAppConfig = m_app->GetAppConfig();
-            if ( m_app->LoadConfig( input ) )
-            {
-                return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
-            }
-            else
-            {
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
-            }
+            return UpdateGlobalConfig( input );
         }
     }
 }
@@ -2468,18 +2504,17 @@ RestApiPubSub2PubSubConfigResource::Deserialize( const CORE::CString& resourcePa
 
 PubSub2PubSub::PubSub2PubSub( void )
     : CORE::CObserver()
-    , CORE::CIConfigurable()
+    , CORE::CGloballyConfigurable( false )
     , m_isInStandby( false )
     , m_globalStandbyEnabled( false )
     , m_udpStartPort()
     , m_channelCount()
-    , m_pubSub2PubSubStartChannelID( 0 )
+    , m_pubSub2PubSubStartChannelID( 1 )
     , m_channels()
     , m_channelSettings()
     , m_templateChannelSettings()
     , m_httpServer()
     , m_httpRouter()
-    , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
     , m_transmitMetrics( true )
@@ -2691,16 +2726,35 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
+PubSub2PubSub::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
+    // not fully supported right now
 
-    m_pubSub2PubSubStartChannelID = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "PubSub2PubSubStartChannelID", "1" ) ) );
-    CORE::CString::StringSet channelIDStrs = CORE::ResolveVars( appConfig.GetValueAlways( "ChannelIDs" ) ).ParseUniqueElements( ',', false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount" ) ), channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size() );
+    tree.Copy( m_globalConfig );
+    return true;
+}
 
-    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* appConfig = GetAppConfig( globalConfig );
+    if ( GUCEF_NULL == appConfig )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Unable to locate app config in global config" );
+        return false;
+    }
+
+    m_globalStandbyEnabled = appConfig->GetAttributeValueOrChildValueByName( "GlobalStandbyEnabled" ).AsBool( m_globalStandbyEnabled, true );
+
+    m_pubSub2PubSubStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "PubSub2PubSubStartChannelID" ).AsInt32( m_pubSub2PubSubStartChannelID, true );
+    CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "ChannelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
+    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "ChannelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size(), true );
+
+    bool applyCpuThreadAffinityByDefault = appConfig->GetAttributeValueOrChildValueByName( "ApplyCpuThreadAffinityByDefault" ).AsBool( false, true );
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     // We will assume we are always given a full not a partial config so we clear the existing channel settings
@@ -2821,41 +2875,23 @@ PubSub2PubSub::LoadConfig( const CORE::CValueList& appConfig )
         channelSettings->UpdateDerivedSettings();
     }
 
-    m_appConfig = appConfig;
+    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "RestApiPort" ).AsUInt16( 10000, true ) );
 
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
     m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2PubSubInfoResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) ) );
     m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping( "/config/channels/*", RestApiPubSubClientChannelConfigResource::THTTPServerResourcePtr( new RestApiPubSubClientChannelConfigResource( this ) )  );
-    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "RestBasicHealthUri" ).AsString( "/health/basic", true ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
+    
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
-    return true;
-}
 
-/*-------------------------------------------------------------------------*/
-
-bool
-PubSub2PubSub::SaveConfig( CORE::CDataNode& tree ) const
-{GUCEF_TRACE;
-
-    // not fully supported right now
-
-    tree.Copy( m_globalConfig );
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-PubSub2PubSub::LoadConfig( const CORE::CDataNode& cfg )
-{GUCEF_TRACE;
+    // Now on to the channel configs...
 
     // First store the per channel configs in a more conveniently accessable manner
     // splitting them out from the global config document
     TChannelCfgMap channelMap;
-    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = cfg.FindChildrenOfType( "Channels", true );
+    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = globalConfig.FindChildrenOfType( "Channels", true );
     CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
     while ( i != channelParentCfgs.end() )
     {
@@ -2910,7 +2946,7 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& cfg )
         ++m;
     }
 
-    m_globalConfig.Copy( cfg );
+    m_globalConfig.Copy( globalConfig );
     return true;
 }
 
@@ -2973,17 +3009,39 @@ PubSub2PubSub::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CValueList&
+const CORE::CDataNode* 
+PubSub2PubSub::GetAppConfig( const CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* appConfig = globalConfig.Search( "Main/AppArgs", '/', true, false );
+    return appConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CDataNode* 
+PubSub2PubSub::GetAppConfig( CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
+
+    CORE::CDataNode* appConfig = globalConfig.Structure( "Main/AppArgs", '/' );
+    return appConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDataNode* 
 PubSub2PubSub::GetAppConfig( void ) const
-{
-    return m_appConfig;
+{GUCEF_TRACE;
+
+    return GetAppConfig( m_globalConfig );
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CORE::CDataNode&
 PubSub2PubSub::GetGlobalConfig( void ) const
-{
+{GUCEF_TRACE;
+
     return m_globalConfig;
 }
 

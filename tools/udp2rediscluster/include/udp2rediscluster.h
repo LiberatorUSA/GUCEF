@@ -44,10 +44,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -409,6 +409,8 @@ class RestApiUdp2RedisConfigResource : public WEB::CCodecBasedHTTPServerResource
                                            const CORE::CString& representation ,
                                            bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
 
+    TDeserializeState UpdateGlobalConfig( const CORE::CDataNode& cfg );
+    
     private:
 
     Udp2RedisCluster* m_app;
@@ -417,11 +419,8 @@ class RestApiUdp2RedisConfigResource : public WEB::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-//COM::CTConfigurableMapHttpServerResource<
-
-/*-------------------------------------------------------------------------*/
-
-class Udp2RedisCluster : public CORE::CObserver
+class Udp2RedisCluster : public CORE::CObserver             ,
+                         public CORE::CGloballyConfigurable
 {
     public:
 
@@ -434,12 +433,17 @@ class Udp2RedisCluster : public CORE::CObserver
 
     bool IsGlobalStandbyEnabled( void ) const;
 
-    bool LoadConfig( const CORE::CValueList& appConfig   ,
-                     const CORE::CDataNode& globalConfig );
-
-    const CORE::CValueList& GetAppConfig( void ) const;
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
     const CORE::CDataNode& GetGlobalConfig( void ) const;
+
+    static const CORE::CDataNode* GetAppConfig( const CORE::CDataNode& globalConfig );
+
+    static CORE::CDataNode* GetAppConfig( CORE::CDataNode& globalConfig );
+
+    const CORE::CDataNode* GetAppConfig( void ) const;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -473,7 +477,6 @@ class Udp2RedisCluster : public CORE::CObserver
     ChannelSettingsMap m_channelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
-    CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
