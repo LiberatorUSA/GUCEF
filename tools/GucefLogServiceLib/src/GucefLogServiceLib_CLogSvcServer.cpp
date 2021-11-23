@@ -264,6 +264,10 @@ CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                  
                 offset += 4;
                 CORE::UInt32 threadId = messageBuffer.AsConstType< CORE::UInt32 >( offset );
                 offset += 4;
+                CORE::UInt64 unixEpochDt = messageBuffer.AsConstType< CORE::UInt64 >( offset );
+                offset += 8;
+                CORE::CDateTime dt;
+                dt.FromUnixEpochBasedTicksInMillisecs( unixEpochDt );
                 CORE::CString logMessage;
                 CORE::UInt32 strLength = messageBuffer.GetDataSize() - offset;
                 logMessage.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
@@ -272,7 +276,7 @@ CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                  
                 TLoggerList::iterator i = m_loggers.begin();
                 while ( i != m_loggers.end() )
                 {
-                    (*i)->Log( clientInfo, logMsgTypeValue, logLevel, logMessage, threadId );
+                    (*i)->Log( clientInfo, logMsgTypeValue, logLevel, logMessage, threadId, dt );
                     ++i;
                 }
                 break;

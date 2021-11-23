@@ -51,10 +51,10 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
-#ifndef GUCEF_CORE_CDIRECTORYWATCHER_H
-#include "gucefCORE_CDirectoryWatcher.h"
-#define GUCEF_CORE_CDIRECTORYWATCHER_H
-#endif /* GUCEF_CORE_CDIRECTORYWATCHER_H ? */
+#ifndef GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
+#include "gucefCORE_CFileSystemDirectoryWatcher.h"
+#define GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
+#endif /* GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H ? */
 
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
@@ -346,7 +346,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
     WEB::CHTTPClient m_httpClient;
-    CORE::CDirectoryWatcher m_dirWatcher;
+    CORE::CFileSystemDirectoryWatcher m_dirWatcher;
     CORE::CTimer m_allFilesDirScanTimer;        
     CORE::CTimer m_newFileRestPeriodTimer;
     TStringTimeMap m_newFileRestQueue;

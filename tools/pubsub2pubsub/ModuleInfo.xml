@@ -21,6 +21,8 @@
 			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
 			<RuntimeDependency Name="pubsubpluginKAFKA" />
+			<RuntimeDependency Name="pubsubpluginUDP" />
+			<RuntimeDependency Name="pubsubpluginSTORAGE" />
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >

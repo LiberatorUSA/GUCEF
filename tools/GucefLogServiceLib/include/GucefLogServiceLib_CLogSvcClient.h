@@ -77,7 +77,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CLoggingTask
     
     CLogSvcClient( CORE::CPulseGenerator& pulseGenerator ); 
     
-    virtual ~CLogSvcClient();
+    virtual ~CLogSvcClient() GUCEF_VIRTUAL_OVERRIDE;
     
     bool ConnectTo( const CORE::CString& address , 
                     CORE::UInt16 port            ,
@@ -111,27 +111,29 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CLoggingTask
      */
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );
+                           CORE::CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool OnTaskCycleLog( const TLogMsgType logMsgType    ,
-                                 const CORE::Int32 logLevel      ,
-                                 const CORE::CString& logMessage ,
-                                 const CORE::UInt32 threadId     );
+    virtual bool OnTaskCycleLog( const CORE::TLogMsgType logMsgType ,
+                                 const CORE::Int32 logLevel         ,
+                                 const CORE::CString& logMessage    ,
+                                 const CORE::UInt32 threadId        ,
+                                 const CORE::CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType    ,
-                                                  const CORE::Int32 logLevel      ,
-                                                  const CORE::CString& logMessage ,
-                                                  const CORE::UInt32 threadId     );
+    virtual bool OnTaskCycleLogWithoutFormatting( const CORE::TLogMsgType logMsgType ,
+                                                  const CORE::Int32 logLevel         ,
+                                                  const CORE::CString& logMessage    ,
+                                                  const CORE::UInt32 threadId        ,
+                                                  const CORE::CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool OnTaskCycleLogFlush( void );
+    virtual bool OnTaskCycleLogFlush( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsReadyToProcessCycle( void ) const;
+    virtual bool IsReadyToProcessCycle( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     
     struct SLogMessage
     {
-        CORE::Int8 msgHeader[ 16 ];
+        CORE::Int8 msgHeader[ 24 ];
         CORE::CString logMsg;
     };
     typedef struct SLogMessage TLogMessage;

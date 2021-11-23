@@ -25,6 +25,16 @@
 
 #include <string.h>
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
+
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -133,7 +143,7 @@ CLogSvcClient::ConnectTo( const CORE::CString& address ,
     m_connectionInitialized = false;
     if ( m_tcpClient.ConnectTo( address, port, blocking ) )
     {
-        return StartTask();
+        return true;
     }
     return false;
 }
@@ -150,7 +160,7 @@ CLogSvcClient::ConnectTo( const COMCORE::CHostAddress& address ,
     m_connectionInitialized = false;
     if ( m_tcpClient.ConnectTo( address, blocking ) )
     {
-        return StartTask();
+        return true;
     }
     return false;
 }
@@ -166,7 +176,7 @@ CLogSvcClient::Reconnect( bool blocking )
     m_connectionInitialized = false;
     if ( m_tcpClient.Reconnect( blocking ) )
     {
-        return StartTask();
+        return true;
     }
     return false;
 }
@@ -179,7 +189,6 @@ CLogSvcClient::Close( void )
 
     if ( m_tcpClient.IsActive() )
     {
-        StopTask();
         m_connectionInitialized = false;
         m_tcpClient.Close();
     }
@@ -196,30 +205,34 @@ CLogSvcClient::IsReadyToProcessCycle( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogSvcClient::OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType    ,
-                                                const CORE::Int32 logLevel      ,
-                                                const CORE::CString& logMessage ,
-                                                const CORE::UInt32 threadId     )
+CLogSvcClient::OnTaskCycleLogWithoutFormatting( const CORE::TLogMsgType logMsgType ,
+                                                const CORE::Int32 logLevel         ,
+                                                const CORE::CString& logMessage    ,
+                                                const CORE::UInt32 threadId        ,
+                                                const CORE::CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     return OnTaskCycleLog( logMsgType ,
                            logLevel   ,
                            logMessage ,
-                           threadId   );
+                           threadId   ,
+                           timestamp  );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogSvcClient::OnTaskCycleLog( const TLogMsgType logMsgType    ,
-                               const CORE::Int32 logLevel      ,
-                               const CORE::CString& logMessage ,
-                               const CORE::UInt32 threadId     )
+CLogSvcClient::OnTaskCycleLog( const CORE::TLogMsgType logMsgType ,
+                               const CORE::Int32 logLevel         ,
+                               const CORE::CString& logMessage    ,
+                               const CORE::UInt32 threadId        ,
+                               const CORE::CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     CORE::Int16 logMsgTypeValue = logMsgType;
-    CORE::Int8 msgHeader[ 16 ];  // 16 = 1+4+1+2+4+4
+    CORE::Int8 msgHeader[ 24 ];  // 24 = 1+4+1+2+4+4+8
     CORE::UInt32 logMsgLength = logMessage.Length() + 11;
+    CORE::UInt64 unixEpochDt = timestamp.ToUnixEpochBasedTicksInMillisecs(); 
 
     msgHeader[ 0 ] = (CORE::Int8) LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
     memcpy( msgHeader+1, &logMsgLength, 4 );                 // set the total message length : 4 bytes
@@ -227,11 +240,12 @@ CLogSvcClient::OnTaskCycleLog( const TLogMsgType logMsgType    ,
     memcpy( msgHeader+6, &logMsgTypeValue, 2 );              // set log msg type: 2 bytes
     memcpy( msgHeader+8, &logLevel, 4 );                     // set log level: 4 bytes
     memcpy( msgHeader+12, &threadId, 4 );                    // set thread id: 4 bytes
+    memcpy( msgHeader+16, &unixEpochDt, 8 );                 // set datetime as unix epoc offset in ms: 8 bytes
 
     if ( m_connectionInitialized )
     {
         // Send the logging msg header
-        if ( m_tcpClient.Send( msgHeader, 16 ) )
+        if ( m_tcpClient.Send( msgHeader, 24 ) )
         {
             // Now send the logging text
             m_tcpClient.Send( logMessage.C_String() ,
@@ -244,7 +258,7 @@ CLogSvcClient::OnTaskCycleLog( const TLogMsgType logMsgType    ,
         // queue the msg until the connection is initialized
 
         TLogMessage queueItem;
-        memcpy( queueItem.msgHeader, msgHeader, 16 );
+        memcpy( queueItem.msgHeader, msgHeader, 24 );
         queueItem.logMsg = logMessage;
 
         m_logQueue.push_back( queueItem );
@@ -276,9 +290,8 @@ void
 CLogSvcClient::SetApplicationName( const CORE::CString& applicationName )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     m_appName = applicationName;
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -296,13 +309,11 @@ void
 CLogSvcClient::SendAllQueuedItems( void )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     
     // We will copy the queue because the actual sending of the log
     // messages can cause more items to be queued
     TLogMsgStack logQueueCopy = m_logQueue;
-
-    UnlockData();
 
     // Go through queue and send all items
     TLogMsgStack::reverse_iterator i = logQueueCopy.rbegin();
@@ -320,13 +331,9 @@ CLogSvcClient::SendAllQueuedItems( void )
         ++i;
     }
 
-    LockData();
-
     // Clear the queue.
     // Any log messages that where added while sending will be dropped
     m_logQueue.clear();
-
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/

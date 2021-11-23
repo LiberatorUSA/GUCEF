@@ -1,10 +1,11 @@
 <ModuleInfoEntry>
-    <Module Name="GucefLogServiceApp" Type="Executable" Platform="All">
+    <Module Name="GucefLogServiceApp" Type="Executable" Platform="All" Tags="services">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefWEB" />			
             <Dependency Name="GucefLogServiceLib" />
         </Dependencies>
@@ -13,11 +14,18 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefWEB" />			
             <Dependency Name="GucefLogServiceLib" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEFLOGSERVICE_BUILD_MODULE" />
         </Preprocessor>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="codecspluginZLIB" />			
+			<RuntimeDependency Name="GucefLogServiceClientPlugin" />	
+		</RuntimeDependencies>		
     </Module>
 </ModuleInfoEntry>

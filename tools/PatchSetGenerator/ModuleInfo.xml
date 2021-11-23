@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="PatchSetGenerator" Type="Executable" Platform="mswin">
+    <Module Name="PatchSetGenerator" Type="Executable" Platform="mswin" Tags="tools">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

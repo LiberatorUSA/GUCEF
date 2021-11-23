@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="ArchiveDiff" Type="Executable" Platform="mswin;linux">
+    <Module Name="ArchiveDiff" Type="Executable" Platform="mswin;linux" Tags="tools">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

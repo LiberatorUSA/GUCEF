@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
 #include "GucefLogServiceLib_CILogSvcServerLogger.h"
 #define GUCEF_LOGSERVICELIB_CILOGSVCSERVERLOGGER_H
@@ -64,35 +69,36 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcSe
     
     CLogSvcServerFileLogger( const CORE::CString& outputDir );
                                             
-    virtual ~CLogSvcServerFileLogger();
+    virtual ~CLogSvcServerFileLogger() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void StartOfLoggingForClient( const TClientInfo& clientInfo );
+    virtual void StartOfLoggingForClient( const TClientInfo& clientInfo ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void EndOfLoggingForClient( const TClientInfo& clientInfo );
+    virtual void EndOfLoggingForClient( const TClientInfo& clientInfo ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual void Log( const CLogSvcServer::TClientInfo& clientInfo ,
                       const TLogMsgType logMsgType                 ,
                       const CORE::Int32 logLevel                   ,
                       const CORE::CString& logMessage              ,
-                      const CORE::UInt32 threadId                  );
+                      const CORE::UInt32 threadId                  ,
+                      const CORE::CDateTime& timestamp             ) GUCEF_VIRTUAL_OVERRIDE;
                       
-    virtual void FlushLog( const TClientInfo& clientInfo );
+    virtual void FlushLog( const TClientInfo& clientInfo ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel );
+    virtual void SetMinimalLogLevel( const CORE::Int32 minimalLogLevel ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::Int32 GetMinimalLogLevel( void ) const;
+    virtual CORE::Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void SetWhetherAppNameIsLogged( bool logAppName );
+    virtual void SetWhetherAppNameIsLogged( bool logAppName ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool GetWhetherAppNameIsLogged( void ) const;
+    virtual bool GetWhetherAppNameIsLogged( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void SetWhetherProcessNameIsLogged( bool logProcessName );
+    virtual void SetWhetherProcessNameIsLogged( bool logProcessName ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool GetWhetherProcessNameIsLogged( void ) const;
+    virtual bool GetWhetherProcessNameIsLogged( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void SetWhetherProcessIdIsLogged( bool logProcessId );
+    virtual void SetWhetherProcessIdIsLogged( bool logProcessId ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool GetWhetherProcessIdIsLogged( void ) const;
+    virtual bool GetWhetherProcessIdIsLogged( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     void SetOutputDir( const CORE::CString& logOutputDir );
     
@@ -110,7 +116,8 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcSe
     
     private:
                                          
-    typedef CORE::CTSharedPtr< CORE::CFileAccess > TFileAccessPtr;
+    typedef CORE::CTSharedPtr< CORE::CFileAccess, MT::CMutex >      TFileAccessPtr;
+    typedef CORE::CLogManager::TLoggingFormatterPtr                 TLoggingFormatterPtr;
     
     CLogSvcServerFileLogger( const CLogSvcServerFileLogger& src );             /** <- not implemented */
     CLogSvcServerFileLogger& operator=( const CLogSvcServerFileLogger& src );  /** <- not implemented */
@@ -127,6 +134,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServerFileLogger : public CILogSvcSe
     
     CORE::CString m_outputDir;
     CORE::Int32 m_minimalLogLevel;
+    TLoggingFormatterPtr m_logFormatter;
     bool m_logAppName;
     bool m_logProcessName;
     bool m_logProcessId;

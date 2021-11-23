@@ -69,39 +69,39 @@ CILogSvcServerLogger::operator=( const CILogSvcServerLogger& src )
 }
 
 /*-------------------------------------------------------------------------*/
-
-CORE::CString
-CILogSvcServerLogger::FormatStdLogMessage( const bool logAppName                        ,
-                                           const bool logProcessName                    ,
-                                           const bool logProcessId                      ,
-                                           const CLogSvcServer::TClientInfo& clientInfo ,
-                                           const TLogMsgType logMsgType                 ,
-                                           const CORE::Int32 logLevel                   ,
-                                           const CORE::CString& logMessage              ,
-                                           const CORE::UInt32 threadId                  )
-{GUCEF_TRACE;
-
-    CORE::CString actualLogMsg;
-    if ( logAppName )
-    {
-        actualLogMsg += "[APPNAME=" + clientInfo.appName + "]";
-    }
-    if ( logProcessName )
-    {
-        actualLogMsg += "[PROCESSNAME=" + clientInfo.processName + "]";
-    }
-    if ( logProcessId )
-    {
-        actualLogMsg += "[PROCESSID=" + clientInfo.processId + "]";
-    }
-                        
-    actualLogMsg += CORE::CILogger::FormatStdLogMessage( logMsgType ,
-                                                         logLevel   ,
-                                                         logMessage ,
-                                                         threadId   );
-         
-    return actualLogMsg;
-}
+//
+//CORE::CString
+//CILogSvcServerLogger::FormatStdLogMessage( const bool logAppName                        ,
+//                                           const bool logProcessName                    ,
+//                                           const bool logProcessId                      ,
+//                                           const CLogSvcServer::TClientInfo& clientInfo ,
+//                                           const TLogMsgType logMsgType                 ,
+//                                           const CORE::Int32 logLevel                   ,
+//                                           const CORE::CString& logMessage              ,
+//                                           const CORE::UInt32 threadId                  )
+//{GUCEF_TRACE;
+//
+//    CORE::CString actualLogMsg;
+//    if ( logAppName )
+//    {
+//        actualLogMsg += "[APPNAME=" + clientInfo.appName + "]";
+//    }
+//    if ( logProcessName )
+//    {
+//        actualLogMsg += "[PROCESSNAME=" + clientInfo.processName + "]";
+//    }
+//    if ( logProcessId )
+//    {
+//        actualLogMsg += "[PROCESSID=" + clientInfo.processId + "]";
+//    }
+//                        
+//    actualLogMsg += CORE::CILogger::FormatStdLogMessage( logMsgType ,
+//                                                         logLevel   ,
+//                                                         logMessage ,
+//                                                         threadId   );
+//         
+//    return actualLogMsg;
+//}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

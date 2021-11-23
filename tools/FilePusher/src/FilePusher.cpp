@@ -473,9 +473,9 @@ FilePushDestination::RegisterEventHandlers( void )
                  callback                       );
 
     TEventCallback callback2( this, &FilePushDestination::OnWatchedLocalDirFileCreation );
-    SubscribeTo( &m_dirWatcher                             ,
-                 CORE::CDirectoryWatcher::FileCreatedEvent ,
-                 callback2                                 );
+    SubscribeTo( &m_dirWatcher                                       ,
+                 CORE::CFileSystemDirectoryWatcher::FileCreatedEvent ,
+                 callback2                                           );
 
     TEventCallback callback3( this, &FilePushDestination::OnNewFileRestPeriodTimerCycle );
     SubscribeTo( &m_newFileRestPeriodTimer      ,
@@ -601,7 +601,7 @@ FilePushDestination::Start( void )
     CORE::CString::StringVector rolloverPatterns = GetFilePatternsForPushType( TPushStyle::PUSHSTYLE_ROLLED_OVER_FILES );
     CORE::CString::StringVector allFilesPatterns = GetFilePatternsForPushType( TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD );
 
-    CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
+    CORE::CFileSystemDirectoryWatcher::CDirWatchOptions watchOptions;
     watchOptions.watchSubTree = m_settings.watchSubDirsOfDirsToWatch;
     watchOptions.watchForFileCreation = true;
     watchOptions.watchForFileDeletion = false;
@@ -1486,7 +1486,7 @@ FilePushDestination::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier   
 {GUCEF_TRACE;
 
     // Which file is new?
-    CORE::CDirectoryWatcher::TFileCreatedEventData* fileCreatedEventData = static_cast< CORE::CDirectoryWatcher::TFileCreatedEventData* >( eventData );
+    CORE::CFileSystemDirectoryWatcher::TFileCreatedEventData* fileCreatedEventData = static_cast< CORE::CFileSystemDirectoryWatcher::TFileCreatedEventData* >( eventData );
     const CORE::CString& newFilePath = fileCreatedEventData->GetData();
 
     // Filter potentially unrelated files

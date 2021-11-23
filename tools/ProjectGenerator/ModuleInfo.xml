@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="ProjectGenerator" Type="Executable" Platform="All">
+    <Module Name="ProjectGenerator" Type="Executable" Platform="All" Tags="tools">
         <Dependencies>
             <Dependency Name="gucefHeaders" />
             <Dependency Name="gucefMT" />

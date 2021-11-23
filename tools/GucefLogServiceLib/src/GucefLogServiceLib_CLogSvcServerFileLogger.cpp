@@ -51,15 +51,16 @@ namespace LOGSERVICELIB {
 //-------------------------------------------------------------------------*/
 
 CLogSvcServerFileLogger::CLogSvcServerFileLogger( void )
-    : CILogSvcServerLogger()                           ,
-      m_outputDir( "$CURWORKDIR$" )                    ,
-      m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) ,
-      m_logAppName( true )                             ,
-      m_logProcessName( true )                         ,
-      m_logProcessId( true )                           ,
-      m_seperateLogPerProcessName( true )              ,
-      m_clientMap()                                    ,
-      m_outputMap()
+    : CILogSvcServerLogger()                           
+    , m_outputDir( "$CURWORKDIR$" )                    
+    , m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) 
+    , m_logFormatter()
+    , m_logAppName( true )                             
+    , m_logProcessName( true )                         
+    , m_logProcessId( true )                           
+    , m_seperateLogPerProcessName( true )              
+    , m_clientMap()                                    
+    , m_outputMap()
 {GUCEF_TRACE;
 
 }
@@ -67,16 +68,17 @@ CLogSvcServerFileLogger::CLogSvcServerFileLogger( void )
 /*-------------------------------------------------------------------------*/
 
 CLogSvcServerFileLogger::CLogSvcServerFileLogger( const CORE::CString& outputDir )
-    : CILogSvcServerLogger()                           ,
-      m_outputDir( outputDir )                         ,
-      m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) ,
-      m_logAppName( false )                            ,
-      m_logProcessName( true )                         ,
-      m_logProcessId( true )                           ,
-      m_seperateLogPerApp( true )                      ,
-      m_seperateLogPerProcessName( true )              ,
-      m_clientMap()                                    ,
-      m_outputMap()
+    : CILogSvcServerLogger()                           
+    , m_outputDir( outputDir )                         
+    , m_minimalLogLevel( CORE::LOGLEVEL_BELOW_NORMAL ) 
+    , m_logFormatter()
+    , m_logAppName( false )                            
+    , m_logProcessName( true )                         
+    , m_logProcessId( true )                           
+    , m_seperateLogPerApp( true )                      
+    , m_seperateLogPerProcessName( true )              
+    , m_clientMap()                                    
+    , m_outputMap()
 {GUCEF_TRACE;
 
 }
@@ -283,7 +285,7 @@ CLogSvcServerFileLogger::GetFileAccess( const TClientInfo& clientInfo )
     {
         //CORE::CString filename = CORE::ExtractFilename( absOutputPath );
     
-        TFileAccessPtr filePtr = new CORE::CFileAccess( absOutputPath, "w" );
+        TFileAccessPtr filePtr = TFileAccessPtr( new CORE::CFileAccess( absOutputPath, "w" ) );
         m_outputMap[ relOutputPath ] = filePtr;
     
         // Now also make a client entry for this new log file
@@ -298,23 +300,21 @@ CLogSvcServerFileLogger::GetFileAccess( const TClientInfo& clientInfo )
 /*-------------------------------------------------------------------------*/
 
 void
-CLogSvcServerFileLogger::Log( const TClientInfo& clientInfo   ,
-                              const TLogMsgType logMsgType    ,
-                              const CORE::Int32 logLevel      ,
-                              const CORE::CString& logMessage ,
-                              const CORE::UInt32 threadId     )
+CLogSvcServerFileLogger::Log( const TClientInfo& clientInfo    ,
+                              const TLogMsgType logMsgType     ,
+                              const CORE::Int32 logLevel       ,
+                              const CORE::CString& logMessage  ,
+                              const CORE::UInt32 threadId      ,
+                              const CORE::CDateTime& timestamp )
 {GUCEF_TRACE;
 
     if ( logLevel >= m_minimalLogLevel )
     {
-        CORE::CString actualLogMsg = FormatStdLogMessage( m_logAppName     ,
-                                                          m_logProcessName ,
-                                                          m_logProcessId   ,
-                                                          clientInfo       ,
-                                                          logMsgType       ,
-                                                          logLevel         ,
-                                                          logMessage       ,
-                                                          threadId         ) + '\n';
+        CORE::CString actualLogMsg = m_logFormatter->FormatLogMessage( logMsgType       ,
+                                                                       logLevel         ,
+                                                                       logMessage       ,
+                                                                       threadId         ,
+                                                                       timestamp        ) + '\n';
 
         TFileAccessPtr fileAccess = GetFileAccess( clientInfo );        
         if ( 0 != fileAccess )

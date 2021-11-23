@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginUDP" Type="SharedLibrary" Platform="all" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+		</Linker>
+        <Preprocessor>
+            <Define String="PUBSUBPLUGIN_UDP_BUILD_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

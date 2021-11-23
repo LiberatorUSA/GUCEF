@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="itvExporter" Type="Executable" Platform="All">
+    <Module Name="itvExporter" Type="Executable" Platform="All" Tags="tools">
         <Dependencies>
             <Dependency Name="gucefHeaders" />
             <Dependency Name="gucefMT" />
