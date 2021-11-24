@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginAWSSQS: Generic GUCEF COMCORE plugin for providing pubsub via AWS's SQS
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,14 +16,17 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
-#define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
+#ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENT_H
+#define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <aws/core/Aws.h>
+#include <aws/sqs/SQSClient.h>
 
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
@@ -45,15 +48,10 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#include "pubsubpluginUDP_CUdpPubSubClientTopic.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#endif /* PUBSUBPLUGIN_UDP_CMSMQPUBSUBCLIENTTOPIC_H ? */
-
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H
+#include "pubsubpluginAWSSQS_CAwsSqsPubSubClientTopic.h"
+#define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H
+#endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,7 +61,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace AWSSQS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -71,19 +69,15 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  'Client' for approximation of pub-sub using UDP
- *  Acts as an aggregator of UDP sockets through aggregation of UDP 'topics'
- */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPubSubClient
+class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public COMCORE::CPubSubClient
 {
     public:
 
     static const CORE::CString TypeName; 
 
-    CUdpPubSubClient( const COMCORE::CPubSubClientConfig& config );
+    CAwsSqsPubSubClient( const COMCORE::CPubSubClientConfig& config );
 
-    virtual ~CUdpPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CAwsSqsPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -111,8 +105,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    CUdpPubSubClientConfig& GetConfig( void );
+    COMCORE::CPubSubClientConfig& GetConfig( void );
 
+    Aws::SQS::SQSClient& GetSqsClient( void );
+    
     private:
 
     void
@@ -120,25 +116,19 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
-    void
-    OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventId  ,
-                                    CORE::CICloneable* eventData );
-
     void RegisterEventHandlers( void );
     
-    CUdpPubSubClient( void ); /**< not implemented */
+    CAwsSqsPubSubClient( void ); /**< not implemented */
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< CUdpPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CUdpPubSubClientTopic* > TTopicMap;
+    typedef CORE::CTEventHandlerFunctor< CAwsSqsPubSubClient > TEventCallback;
+    typedef std::map< CORE::CString, CAwsSqsPubSubClientTopic* > TTopicMap;
 
-    CUdpPubSubClientConfig m_config;
+    COMCORE::CPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
-    COMCORE::CUDPSocket* m_testUdpSocket;
-    CORE::CTimer* m_testPacketTransmitTimer;
+    Aws::SQS::SQSClient m_sqsClient;    
 };
 
 /*-------------------------------------------------------------------------//
@@ -147,10 +137,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace AWSSQS */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H ? */
+#endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENT_H ? */

@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -27,7 +27,7 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
+#include "pubsubpluginWEB_CWebPubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,20 +45,18 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( void )
+CWebPubSubClientConfig::CWebPubSubClientConfig( void )
     : COMCORE::CPubSubClientConfig()
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+    , simulateReceiveAckFeatureViaLookupId( true )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
+CWebPubSubClientConfig::CWebPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
     : COMCORE::CPubSubClientConfig( genericConfig )
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+    , simulateReceiveAckFeatureViaLookupId( true )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -66,7 +64,7 @@ CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConf
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
+CWebPubSubClientConfig::~CWebPubSubClientConfig()
 {GUCEF_TRACE;
 
 }
@@ -74,19 +72,18 @@ CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
+CWebPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    testPacketTransmissionIntervalInMs = config.GetAttributeValueOrChildValueByName( "testPacketTransmissionIntervalInMs" ).AsUInt32( testPacketTransmissionIntervalInMs, true );
-    transmitTestPackets = config.GetAttributeValueOrChildValueByName( "transmitTestPackets" ).AsBool( transmitTestPackets, true );
+    simulateReceiveAckFeatureViaLookupId = config.GetAttributeValueOrChildValueByName( "simulateReceiveAckFeatureViaLookupId" ).AsBool( simulateReceiveAckFeatureViaLookupId, true );    
 
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
+CWebPubSubClientConfig& 
+CWebPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
@@ -99,15 +96,14 @@ CUdpPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
+CWebPubSubClientConfig& 
+CWebPubSubClientConfig::operator=( const CWebPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
         COMCORE::CPubSubClientConfig::operator=( src );
-        transmitTestPackets = src.transmitTestPackets;
-        testPacketTransmissionIntervalInMs = src.testPacketTransmissionIntervalInMs;
+        simulateReceiveAckFeatureViaLookupId = src.simulateReceiveAckFeatureViaLookupId;
     }
     return *this;
 }
@@ -118,7 +114,7 @@ CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace KAFKA */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 

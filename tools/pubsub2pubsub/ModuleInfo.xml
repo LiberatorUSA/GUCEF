@@ -23,6 +23,7 @@
 			<RuntimeDependency Name="pubsubpluginKAFKA" />
 			<RuntimeDependency Name="pubsubpluginUDP" />
 			<RuntimeDependency Name="pubsubpluginSTORAGE" />
+			<RuntimeDependency Name="pubsubpluginWEB" />
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >

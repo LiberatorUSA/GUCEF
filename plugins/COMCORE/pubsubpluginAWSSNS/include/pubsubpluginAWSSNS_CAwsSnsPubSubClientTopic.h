@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginAWSSQS: Generic GUCEF COMCORE plugin for providing pubsub via AWS's SQS
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
+#ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H
+#define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,11 +30,6 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
 #include "CHostAddress.h"
 #define GUCEF_COMCORE_CHOSTADDRESS_H
@@ -45,10 +40,10 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#include "pubsubpluginUDP_CUdpPubSubClientTopicConfig.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
+#include "pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.h"
+#define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
+#endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,7 +53,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace AWSSQS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,17 +61,18 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CUdpPubSubClient;
+class CAwsSqsPubSubClient;
 
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE::CPubSubClientTopic
+/**
+ *  MS Windows AWSSQS implementation of the conceptual pub-sub "topic"
+ */
+class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
     public:
 
-    typedef std::vector< CORE::UInt32 > UInt32Vector;
+    CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client );
 
-    CUdpPubSubClientTopic( CUdpPubSubClient* client );
-
-    virtual ~CUdpPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CAwsSqsPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual COMCORE::CPubSubClient* GetClient( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -98,8 +94,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    const CORE::CString& GetMetricFriendlyTopicName( void ) const;
-
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
@@ -108,22 +104,6 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
-    
-    class TopicMetrics
-    {
-        public:
-
-        TopicMetrics( void );
-
-        CORE::UInt32 udpBytesReceived;
-        CORE::UInt32 udpPacketsReceived;
-        CORE::UInt32 udpBytesSent;
-        CORE::UInt32 udpPacketsSent;
-    };
-
-    const TopicMetrics& GetMetrics( void ) const;
-
-    const CUdpPubSubClientTopicConfig& GetTopicConfig( void ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -131,29 +111,9 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
                          CORE::CICloneable* eventData );
 
     void
-    OnUDPSocketError( CORE::CNotifier* notifier   ,
-                      const CORE::CEvent& eventID ,
-                      CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosing( CORE::CNotifier* notifier   ,
-                        const CORE::CEvent& eventID ,
-                        CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
-                          const CORE::CEvent& eventID ,
-                          CORE::CICloneable* evenData );
+    OnPulseCycle( CORE::CNotifier* notifier    ,
+                  const CORE::CEvent& eventId  ,
+                  CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -165,43 +125,41 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< CUdpPubSubClientTopic > TEventCallback;
-
-    // Types to implement/hook-up topic interface
-    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;    
-
-    private:
-
     void RegisterEventHandlers( void );
 
     void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
-    bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
+    Aws::String GetSqsQueueUrlForQueueName( const CORE::CString& queueName );
 
-    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
-    
-    void
-    OnPulseCycle( CORE::CNotifier* notifier    ,
-                  const CORE::CEvent& eventId  ,
-                  CORE::CICloneable* eventData );
-    
+    template< class T >
+    bool
+    TranslateToSqsMsg( T& sqsMsg, const COMCORE::CIPubSubMsg* msg, CORE::UInt32& msgByteSize );
+
     private:
 
-    CUdpPubSubClient* m_client;
+    typedef CORE::CTEventHandlerFunctor< CAwsSqsPubSubClientTopic > TEventCallback;
+   
+
+    // Types to implement/hook-up topic interface
+    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
+    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
+    typedef std::vector< TBufferPair > TBufferVector;
+
+    CAwsSqsPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
-    CUdpPubSubClientTopicConfig m_config;  
+    TBufferVector m_pubsubMsgAttribs;
+    COMCORE::CHostAddress m_redisShardHost;
+    CAwsSqsPubSubClientTopicConfig m_config;
     MT::CMutex m_lock;
+    Aws::String m_queueUrl;
+    COMCORE::CIPubSubMsg::TIPubSubMsgConstRawPtrVector m_publishBulkMsgRemapStorage;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;
     TPublishActionIdVector m_publishSuccessActionIds;
     TMsgsPublishedEventData m_publishSuccessActionEventData;
     TPublishActionIdVector m_publishFailureActionIds;
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
-    TopicMetrics m_metrics;
-    CORE::CString m_metricFriendlyTopicName;
-    COMCORE::CUDPSocket m_udpSocket;
-
 };
 
 /*-------------------------------------------------------------------------//
@@ -210,10 +168,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace AWSSQS */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H ? */
+#endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H ? */

@@ -87,6 +87,8 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     bool ListenOnPort( const UInt16 port );
     
     bool Listen( void );
+
+    bool IsActive( void ) const;
     
     /**
      *  stop listening for clients, close server socket 

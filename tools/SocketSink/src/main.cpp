@@ -47,20 +47,15 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
 #include "gucefCORE_CPlatformNativeConsoleWindow.h"
 #define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
 #endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
 
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#include "gucefCORE_CGlobalConfigValueList.h"
+#define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
 
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
@@ -158,62 +153,65 @@ class SocketSink : public CORE::CObserver
     }
 
     void
-    OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData )
+    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                          const CORE::CEvent& eventID ,
+                          CORE::CICloneable* evenData )
     {GUCEF_TRACE;
 
-        COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
-        if ( NULL != udpPacketData )
+        COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( evenData );
+        if ( GUCEF_NULL != udpPacketData )
         {
-            const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-            const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+            const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
 
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
-
-            bool writeToFile = true;
-            if ( m_flushThreshold > 0 ) 
+            for ( CORE::UInt32 i=0; i<data.packetsReceived; ++i )
             {
-                if ( m_udpFileBuffer.GetDataSize() < m_flushThreshold ) 
+                const CORE::CDynamicBuffer& udpPacketBuffer = data.packets[ i ].dataBuffer.GetData();
+
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket received a packet from " + data.packets[ i ].sourceAddress.AddressAndPortAsString() );
+
+                bool writeToFile = true;
+                if ( m_flushThreshold > 0 ) 
                 {
-                    // add to in-memory buffer
-                    m_udpFileBuffer.Append( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), true );
+                    if ( m_udpFileBuffer.GetDataSize() < m_flushThreshold ) 
+                    {
+                        // add to in-memory buffer
+                        m_udpFileBuffer.Append( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), true );
+                        if ( m_udpAddNewLine )
+                        {
+                            static const char newLine = '\n';
+                            m_udpFileBuffer.Append( &newLine, 1, true );
+                        }
+                        writeToFile = false;
+                    }
+                    else
+                    {
+                        // flush memory buffer
+                        FlushUdpBuffer();
+                    }
+                }
+
+                if ( writeToFile && m_udpSinkFile.IsValid() )
+                {
+                    m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 );
                     if ( m_udpAddNewLine )
                     {
                         static const char newLine = '\n';
-                        m_udpFileBuffer.Append( &newLine, 1, true );
+                        m_udpSinkFile.Write( &newLine, 1, 1 );
                     }
-                    writeToFile = false;
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) + " bytes in payload" );
                 }
-                else
-                {
-                    // flush memory buffer
-                    FlushUdpBuffer();
-                }
-            }
 
-            if ( writeToFile && m_udpSinkFile.IsValid() )
-            {
-                m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 );
-                if ( m_udpAddNewLine )
+                if ( m_doUdpForwarding )
                 {
-                    static const char newLine = '\n';
-                    m_udpSinkFile.Write( &newLine, 1, 1 );
+                    m_udpSocket.SendPacketTo( m_udpFwdAddr, udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize() );
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Forwarded UDP packet" );
                 }
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) + " bytes in payload" );
-            }
-
-            if ( m_doUdpForwarding )
-            {
-                m_udpSocket.SendPacketTo( m_udpFwdAddr, udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize() );
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Forwarded UDP packet" );
             }
         }
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has a data received event but no data was provided" );
         }
-
     }
 
     void
@@ -306,10 +304,10 @@ class SocketSink : public CORE::CObserver
         SubscribeTo( &m_udpSocket                              ,
                      COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                      callback3                                 );
-        TEventCallback callback4( this, &SocketSink::OnUDPPacketRecieved );
-        SubscribeTo( &m_udpSocket                              ,
-                     COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
-                     callback4                                 );
+        TEventCallback callback4( this, &SocketSink::OnUDPPacketsRecieved );
+        SubscribeTo( &m_udpSocket                                 ,
+                     COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
+                     callback4                                    );
 
         // Register TCP server socket event handlers
         TEventCallback callback5( this, &SocketSink::OnTCPServerSocketOpened );
@@ -513,39 +511,88 @@ class SocketSink : public CORE::CObserver
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+LookForConfigFile( const CORE::CString& configFile )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
+    if ( !CORE::FileExists( configFile ) )
+    {
+        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::RelativePath( configFilePath );
+
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+        if ( !CORE::FileExists( configFilePath ) )
+        {
+            configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+            configFilePath = CORE::RelativePath( configFilePath );
+
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+            if ( !FileExists( configFilePath ) )
+            {            
+                configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
+                configFilePath = CORE::RelativePath( configFilePath );
+
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                if ( !FileExists( configFilePath ) )
+                {                                        
+                    return CORE::CString::Empty;
+                }
+            }
+        }
+
+        return configFilePath; 
+    }
+
+    return configFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
-LoadConfig( CORE::CValueList& keyValueList )
+LoadConfig( const CORE::CString& bootstrapConfigPath   ,
+            const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString bootstrapConfigFile = "SocketSink_bootstrap_d.ini";
     const CORE::CString configFile = "SocketSink_d.ini";
     #else
+    const CORE::CString bootstrapConfigFile = "SocketSink_bootstrap.ini";
     const CORE::CString configFile = "SocketSink.ini";
     #endif
 
-    CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
-    configFilePath = CORE::RelativePath( configFilePath );
-
-    if ( !CORE::FileExists( configFilePath ) )
-    {
-        configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
-        configFilePath = CORE::RelativePath( configFilePath );
-
-        if ( !FileExists( configFilePath ) )
-        {
-            return false;
-        }
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
-
-    keyValueList.SetConfigNamespace( "Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
-    keyValueList.SetAllowDuplicates( false );
-    keyValueList.SetAllowMultipleValues( true );
-
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configFile );
+
+    if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located bootstrap config file @ " + bootstrapConfigFilePath );
+        configStore.SetBootstrapConfigFile( bootstrapConfigFilePath );
+    }
+    if ( !configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+        configStore.SetConfigFile( configFilePath );
+    }
+    if ( bootstrapConfigFilePath.IsNULLOrEmpty() && configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
+    }
+
+    CORE::CGlobalConfigValueList globalCfg;
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetAllowDuplicates( false );
+    globalCfg.SetAllowMultipleValues( true );
+
+    bool loadSuccess = configStore.LoadConfig( loadedConfig );
+
+    keyValueList = globalCfg;
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -587,9 +634,15 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
 
-    // Load settings from a config file (if any) and then override with params (if any)
+    // Check for config param first
     CORE::CValueList keyValueList;
-    LoadConfig( keyValueList );
+    ParseParams( argc, argv, keyValueList );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    keyValueList.Clear();
+
+    // Load settings from a config file (if any) and then override with params (if any)
+    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList );
     ParseParams( argc, argv, keyValueList );
 
     CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );

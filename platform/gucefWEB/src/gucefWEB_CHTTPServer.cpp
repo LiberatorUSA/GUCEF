@@ -152,6 +152,15 @@ CHTTPServer::GetRequestHandler( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CHTTPServer::IsActive( void ) const
+{GUCEF_TRACE;
+
+    return m_tcpServerSocket.IsActive();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CHTTPServer::ListenOnPort( const UInt16 port )
 {GUCEF_TRACE;

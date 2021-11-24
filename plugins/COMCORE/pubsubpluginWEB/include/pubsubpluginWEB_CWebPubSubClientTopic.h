@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
+#ifndef PUBSUBPLUGIN_UDP_CWEBPUBSUBCLIENTTOPIC_H
+#define PUBSUBPLUGIN_UDP_CWEBPUBSUBCLIENTTOPIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,11 +30,6 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
 #include "CHostAddress.h"
 #define GUCEF_COMCORE_CHOSTADDRESS_H
@@ -45,10 +40,30 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#include "pubsubpluginUDP_CUdpPubSubClientTopicConfig.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
+
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefWEB_CDefaultHTTPServerRouter.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
+
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTConfigurableMapHttpServerResource.h"
+#define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
+
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H
+#include "pubsubpluginWEB_CWebPubSubClientTopicConfig.h"
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,7 +73,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,17 +81,17 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CUdpPubSubClient;
+class CWebPubSubClient;
 
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE::CPubSubClientTopic
+class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
     public:
 
     typedef std::vector< CORE::UInt32 > UInt32Vector;
 
-    CUdpPubSubClientTopic( CUdpPubSubClient* client );
+    CWebPubSubClientTopic( CWebPubSubClient* client );
 
-    virtual ~CUdpPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CWebPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual COMCORE::CPubSubClient* GetClient( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -104,6 +119,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    bool AcknowledgeReceiptImpl( const COMCORE::CPubSubBookmark& bookmark, CORE::UInt64 receiveActionId );
 
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
@@ -115,45 +131,16 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
         TopicMetrics( void );
 
-        CORE::UInt32 udpBytesReceived;
-        CORE::UInt32 udpPacketsReceived;
-        CORE::UInt32 udpBytesSent;
-        CORE::UInt32 udpPacketsSent;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
 
-    const CUdpPubSubClientTopicConfig& GetTopicConfig( void ) const;
+    const CWebPubSubClientTopicConfig& GetTopicConfig( void ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
-
-    void
-    OnUDPSocketError( CORE::CNotifier* notifier   ,
-                      const CORE::CEvent& eventID ,
-                      CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosing( CORE::CNotifier* notifier   ,
-                        const CORE::CEvent& eventID ,
-                        CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
-                          const CORE::CEvent& eventID ,
-                          CORE::CICloneable* evenData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -165,7 +152,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< CUdpPubSubClientTopic > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< CWebPubSubClientTopic > TEventCallback;
 
     // Types to implement/hook-up topic interface
     typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;    
@@ -174,11 +161,14 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 
     void RegisterEventHandlers( void );
 
-    void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
-
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
+
+    void
+    OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -187,10 +177,11 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
     
     private:
 
-    CUdpPubSubClient* m_client;
+    CWebPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
-    CUdpPubSubClientTopicConfig m_config;  
+    CWebPubSubClientTopicConfig m_config;  
+    CORE::CTimer* m_reconnectTimer;
     MT::CMutex m_lock;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;
@@ -200,8 +191,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
-    COMCORE::CUDPSocket m_udpSocket;
-
+    GUCEF::WEB::CHTTPServer m_httpServer;
+    GUCEF::WEB::CDefaultHTTPServerRouter m_httpRouter;
 };
 
 /*-------------------------------------------------------------------------//
@@ -210,10 +201,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public COMCORE
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H ? */
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPIC_H ? */

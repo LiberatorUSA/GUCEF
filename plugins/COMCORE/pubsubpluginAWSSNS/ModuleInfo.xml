@@ -1,0 +1,22 @@
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginAWSSNS" Type="SharedLibrary" Platform="all" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="pluginglueAWSSDK" />
+			<Dependency Name="aws-cpp-sdk-sns" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="pluginglueAWSSDK" />
+			<Dependency Name="aws-cpp-sdk-sns" />
+		</Linker>
+        <Preprocessor>
+            <Define String="PUBSUBPLUGIN_AWSSQS_BUILD_PLUGIN_DLL" />
+			<Define String="USE_IMPORT_EXPORT" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

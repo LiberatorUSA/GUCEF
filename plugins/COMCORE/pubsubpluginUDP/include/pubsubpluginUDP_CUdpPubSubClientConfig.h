@@ -61,8 +61,6 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientConfig : public COMCOR
 {
     public:
 
-    bool simulateReceiveAckFeatureViaLookupId;
-    
     CUdpPubSubClientConfig( void );
     
     CUdpPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig );
@@ -74,6 +72,9 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientConfig : public COMCOR
     CUdpPubSubClientConfig& operator=( const CUdpPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool transmitTestPackets;
+    CORE::UInt32 testPacketTransmissionIntervalInMs;
 };
 
 /*-------------------------------------------------------------------------//

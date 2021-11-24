@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -22,12 +22,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "pubsubpluginWEB_CWebPubSubClientTopicConfig.h"
+
 #ifndef GUCEF_CORE_METRICSMACROS_H
 #include "gucefCORE_MetricsMacros.h"
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
-
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,13 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,28 +51,30 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( void )
-    : COMCORE::CPubSubClientConfig()
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( void )
+    : COMCORE::CPubSubClientTopicConfig()
+    , httpServerPort( 10001 )
+    , exposeBasicHealthEndpoint( true )
+    , basicHealthEndpointPath( "/health/basic" )
 {GUCEF_TRACE;
-
+    
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
-    : COMCORE::CPubSubClientConfig( genericConfig )
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
+    : COMCORE::CPubSubClientTopicConfig( genericConfig )
+    , httpServerPort( 10001 )
+    , exposeBasicHealthEndpoint( true )
+    , basicHealthEndpointPath( "/health/basic" )
 {GUCEF_TRACE;
-
+    
     LoadCustomConfig( genericConfig.customConfig );  
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
+CWebPubSubClientTopicConfig::~CWebPubSubClientTopicConfig()
 {GUCEF_TRACE;
 
 }
@@ -74,40 +82,43 @@ CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
+CWebPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    testPacketTransmissionIntervalInMs = config.GetAttributeValueOrChildValueByName( "testPacketTransmissionIntervalInMs" ).AsUInt32( testPacketTransmissionIntervalInMs, true );
-    transmitTestPackets = config.GetAttributeValueOrChildValueByName( "transmitTestPackets" ).AsBool( transmitTestPackets, true );
+    httpServerPort = config.GetAttributeValueOrChildValueByName( "httpServerPort" ).AsUInt16( httpServerPort, true );
+    exposeBasicHealthEndpoint = config.GetAttributeValueOrChildValueByName( "exposeBasicHealthEndpoint" ).AsBool( exposeBasicHealthEndpoint, true );
+    basicHealthEndpointPath = config.GetAttributeValueOrChildValueByName( "basicHealthEndpointPath" ).AsString( basicHealthEndpointPath, true );
 
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
+CWebPubSubClientTopicConfig& 
+CWebPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientConfig::operator=( src );
-        LoadCustomConfig( src.customConfig );    
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
+
+        LoadCustomConfig( src.customConfig );
     }
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
+CWebPubSubClientTopicConfig& 
+CWebPubSubClientTopicConfig::operator=( const CWebPubSubClientTopicConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientConfig::operator=( src );
-        transmitTestPackets = src.transmitTestPackets;
-        testPacketTransmissionIntervalInMs = src.testPacketTransmissionIntervalInMs;
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        httpServerPort = src.httpServerPort;
+        exposeBasicHealthEndpoint = src.exposeBasicHealthEndpoint;
+        basicHealthEndpointPath = src.basicHealthEndpointPath;
     }
     return *this;
 }
@@ -118,7 +129,7 @@ CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace KAFKA */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 

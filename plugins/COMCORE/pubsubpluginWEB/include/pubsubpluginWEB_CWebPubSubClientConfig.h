@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,22 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#include "gucefCOMCORE_CPubSubClientConfig.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H ? */
 
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#include "CHostAddress.h"
-#define GUCEF_COMCORE_CHOSTADDRESS_H
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
-
-#ifndef PUBSUBPLUGIN_UDP_MACROS_H
-#include "pubsubpluginUDP_macros.h"
-#define PUBSUBPLUGIN_UDP_MACROS_H
-#endif /* PUBSUBPLUGIN_UDP_MACROS_H ? */
+#ifndef PUBSUBPLUGIN_WEB_MACROS_H
+#include "pubsubpluginWEB_macros.h"
+#define PUBSUBPLUGIN_WEB_MACROS_H
+#endif /* PUBSUBPLUGIN_WEB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +43,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,41 +51,29 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CUdpPubSubClient;
+class CWebPubSubClient;
 
 /**
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientConfig : public COMCORE::CPubSubClientConfig
 {
     public:
 
-    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
-
-    CUdpPubSubClientTopicConfig( void );
+    bool simulateReceiveAckFeatureViaLookupId;
     
-    CUdpPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
+    CWebPubSubClientConfig( void );
+    
+    CWebPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig );
 
-    virtual ~CUdpPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CWebPubSubClientConfig() GUCEF_VIRTUAL_OVERRIDE;
 
-    CUdpPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
+    CWebPubSubClientConfig& operator=( const COMCORE::CPubSubClientConfig& src );
 
-    CUdpPubSubClientTopicConfig& operator=( const CUdpPubSubClientTopicConfig& src );
+    CWebPubSubClientConfig& operator=( const CWebPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
-
-    COMCORE::CHostAddress udpInterface;
-    HostAddressVector udpMulticastToJoin;
-    bool wantsTestPackage;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket;
-    CORE::UInt32 udpSocketOsReceiveBufferSize;
-    CORE::UInt32 udpSocketUpdateCyclesPerPulse;
-    bool addUdpSourceAddressAsMetaData;
-    bool translateUdpSourceAddressToString;
-    CORE::CString udpSourceAddressAsMetaDataKeyName;
-    CORE::UInt16 maxUdpPacketPayloadSizeInBytes;
 };
 
 /*-------------------------------------------------------------------------//
@@ -101,10 +82,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public C
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H ? */
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H ? */

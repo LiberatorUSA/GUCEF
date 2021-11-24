@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
-#define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENT_H
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,15 +45,15 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#include "pubsubpluginUDP_CUdpPubSubClientTopic.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
-#endif /* PUBSUBPLUGIN_UDP_CMSMQPUBSUBCLIENTTOPIC_H ? */
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPIC_H
+#include "pubsubpluginWEB_CWebPubSubClientTopic.h"
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPIC_H
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPIC_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginWEB_CWebPubSubClientConfig.h"
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,7 +63,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -71,19 +71,15 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  'Client' for approximation of pub-sub using UDP
- *  Acts as an aggregator of UDP sockets through aggregation of UDP 'topics'
- */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPubSubClient
+class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClient : public COMCORE::CPubSubClient
 {
     public:
 
     static const CORE::CString TypeName; 
 
-    CUdpPubSubClient( const COMCORE::CPubSubClientConfig& config );
+    CWebPubSubClient( const COMCORE::CPubSubClientConfig& config );
 
-    virtual ~CUdpPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CWebPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -111,7 +107,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    CUdpPubSubClientConfig& GetConfig( void );
+    CWebPubSubClientConfig& GetConfig( void );
 
     private:
 
@@ -120,25 +116,18 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
-    void
-    OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventId  ,
-                                    CORE::CICloneable* eventData );
-
     void RegisterEventHandlers( void );
     
-    CUdpPubSubClient( void ); /**< not implemented */
+    CWebPubSubClient( void ); /**< not implemented */
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< CUdpPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CUdpPubSubClientTopic* > TTopicMap;
+    typedef CORE::CTEventHandlerFunctor< CWebPubSubClient > TEventCallback;
+    typedef std::map< CORE::CString, CWebPubSubClientTopic* > TTopicMap;
 
-    CUdpPubSubClientConfig m_config;
+    CWebPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
-    COMCORE::CUDPSocket* m_testUdpSocket;
-    CORE::CTimer* m_testPacketTransmitTimer;
 };
 
 /*-------------------------------------------------------------------------//
@@ -147,10 +136,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public COMCORE::CPu
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H ? */
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENT_H ? */

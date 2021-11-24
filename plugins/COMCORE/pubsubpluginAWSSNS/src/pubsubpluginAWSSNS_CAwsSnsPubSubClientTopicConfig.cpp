@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginAWSSQS: Generic GUCEF COMCORE plugin for providing pubsub via AWS's SQS
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -27,7 +27,7 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
+#include "pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace AWSSQS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,20 +45,20 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( void )
-    : COMCORE::CPubSubClientConfig()
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
+    : COMCORE::CPubSubClientTopicConfig()
+    , topicNameIsQueueName( false )
+    , tryToUseSendMessageBatch( false )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
-    : COMCORE::CPubSubClientConfig( genericConfig )
-    , transmitTestPackets( false )
-    , testPacketTransmissionIntervalInMs( 1000 )
+CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
+    : COMCORE::CPubSubClientTopicConfig( genericConfig )
+    , topicNameIsQueueName( false )
+    , tryToUseSendMessageBatch( false )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -66,7 +66,7 @@ CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConf
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
+CAwsSqsPubSubClientTopicConfig::~CAwsSqsPubSubClientTopicConfig()
 {GUCEF_TRACE;
 
 }
@@ -74,24 +74,24 @@ CUdpPubSubClientConfig::~CUdpPubSubClientConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
+CAwsSqsPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
+        
+    topicNameIsQueueName = config.GetAttributeValueOrChildValueByName( "topicNameIsQueueName" ).AsBool( topicNameIsQueueName, true );
+    tryToUseSendMessageBatch = config.GetAttributeValueOrChildValueByName( "tryToUseSendMessageBatch" ).AsBool( tryToUseSendMessageBatch, true );
     
-    testPacketTransmissionIntervalInMs = config.GetAttributeValueOrChildValueByName( "testPacketTransmissionIntervalInMs" ).AsUInt32( testPacketTransmissionIntervalInMs, true );
-    transmitTestPackets = config.GetAttributeValueOrChildValueByName( "transmitTestPackets" ).AsBool( transmitTestPackets, true );
-
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
+CAwsSqsPubSubClientTopicConfig& 
+CAwsSqsPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientConfig::operator=( src );
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
         LoadCustomConfig( src.customConfig );    
     }
     return *this;
@@ -99,15 +99,15 @@ CUdpPubSubClientConfig::operator=( const COMCORE::CPubSubClientConfig& src )
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
+CAwsSqsPubSubClientTopicConfig& 
+CAwsSqsPubSubClientTopicConfig::operator=( const CAwsSqsPubSubClientTopicConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        COMCORE::CPubSubClientConfig::operator=( src );
-        transmitTestPackets = src.transmitTestPackets;
-        testPacketTransmissionIntervalInMs = src.testPacketTransmissionIntervalInMs;
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        topicNameIsQueueName = src.topicNameIsQueueName;
+        tryToUseSendMessageBatch = src.tryToUseSendMessageBatch;
     }
     return *this;
 }
@@ -118,7 +118,7 @@ CUdpPubSubClientConfig::operator=( const CUdpPubSubClientConfig& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace KAFKA */
+}; /* namespace AWSSQS */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 

@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -22,6 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <Objbase.h>
 #include <string.h>
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
@@ -44,12 +45,12 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#include "pubsubpluginUDP_CUdpPubSubClientConfig.h"
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginWEB_CWebPubSubClientConfig.h"
+#define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTCONFIG_H ? */
 
-#include "pubsubpluginUDP_CUdpPubSubClient.h"
+#include "pubsubpluginWEB_CWebPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +60,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,7 +68,7 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CUdpPubSubClient::TypeName = "UDP";
+const CORE::CString CWebPubSubClient::TypeName = "MSMQ";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,38 +76,38 @@ const CORE::CString CUdpPubSubClient::TypeName = "UDP";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUdpPubSubClient::CUdpPubSubClient( const COMCORE::CPubSubClientConfig& config )
+CWebPubSubClient::CWebPubSubClient( const COMCORE::CPubSubClientConfig& config )
     : COMCORE::CPubSubClient()
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
-    , m_testUdpSocket( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_config.pulseGenerator )
-        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-
-    if ( m_config.desiredFeatures.supportsMetrics )
+    if ( GUCEF_NULL != config.pulseGenerator )
     {
-        m_metricsTimer = new CORE::CTimer( m_config.pulseGenerator, 1000 );
-        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        if ( config.desiredFeatures.supportsMetrics )
+        {
+            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        }
+    }
+    else
+    {
+        if ( config.desiredFeatures.supportsMetrics )
+        {
+            m_metricsTimer = new CORE::CTimer( 1000 );        
+            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
+        }
     }
 
-    if ( m_config.transmitTestPackets )
-    {
-        m_testUdpSocket = new COMCORE::CUDPSocket( *m_config.pulseGenerator, false );
-        m_testPacketTransmitTimer = new CORE::CTimer( *m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
-        m_testPacketTransmitTimer->SetEnabled( m_config.transmitTestPackets );
-    }
-
-    m_config.metricsPrefix += "udp.";
+    m_config.metricsPrefix += "msmq.";
 
     RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClient::~CUdpPubSubClient()
+CWebPubSubClient::~CWebPubSubClient()
 {GUCEF_TRACE;
     
     Disconnect();
@@ -122,18 +123,12 @@ CUdpPubSubClient::~CUdpPubSubClient()
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
-
-    delete m_testPacketTransmitTimer;
-    m_testPacketTransmitTimer = GUCEF_NULL;
-
-    delete m_testUdpSocket;
-    m_testUdpSocket = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUdpPubSubClientConfig& 
-CUdpPubSubClient::GetConfig( void )
+CWebPubSubClientConfig& 
+CWebPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
     return m_config;
@@ -142,34 +137,52 @@ CUdpPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
+CWebPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;             // UDP supports a binary payload natively
-    features.supportsPerMsgIds = false;                 // UDP has no such concept
-    features.supportsPrimaryPayloadPerMsg = true;       // UDP only has the primary payload natively
-    features.supportsAbsentPrimaryPayloadPerMsg = true; // UDP datagram header only
-    features.supportsKeyValueSetPerMsg = false;         // UDP does not itself support structured data
-    features.supportsDuplicateKeysPerMsg = false;       // UDP does not itself support structured data
-    features.supportsMetaDataKeyValueSetPerMsg = false; // UDP does not itself support structured data
-    features.supportsMultiHostSharding = false;         // Volatile and oft point-to-point so we will say no on this one
-    features.supportsPublishing = true;                 // We support sending UDP packets
-    features.supportsSubscribing = true;                // We support receiving UDP packets
+    features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
+    features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
+    features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
+    features.supportsAbsentPrimaryPayloadPerMsg = true; // Its allowed to send tags without a BODY payload
+    features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
+    features.supportsDuplicateKeysPerMsg = false;       // TODO: Since arbitrary key-value app data is not native and we simulate this we will do so in a manner that supports duplicate keys
+    features.supportsMetaDataKeyValueSetPerMsg = true;  // This is native to MSMQ
+    features.supportsMultiHostSharding = false;         // MSMQ is tied to the Windows O/S and queues are not auto shared across such O/S instances
+    features.supportsPublishing = true;                 // We support being a MSQM queue publisher in this plugin
+    features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
     features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
-    features.supportsAutoReconnect = true;              // UDP socket class provides this option wrt auto-reopen-on-error and such
-    features.supportsAckUsingBookmark = false;          // UDP is fire-and-forget: not supported
-    features.supportsSubscriberMsgReceivedAck = false;  // UDP is fire-and-forget: not supported
-    features.supportsAutoMsgReceivedAck = false;        // UDP is fire-and-forget: not supported
-    features.supportsAbsentMsgReceivedAck = false;      // UDP is fire-and-forget: not supported
-    features.supportsAckUsingLastMsgInBatch = false;    // UDP is fire-and-forget: not supported
-    features.supportsBookmarkingConcept = false;        // UDP is fire-and-forget: not supported
-    features.supportsAutoBookmarking = false;           // UDP is fire-and-forget: not supported
-    features.supportsMsgIdBasedBookmark = false;        // UDP is fire-and-forget: not supported
-    features.supportsMsgIndexBasedBookmark = false;     // UDP is fire-and-forget: not supported
-    features.supportsMsgDateTimeBasedBookmark = false;  // UDP is fire-and-forget: not supported
-    features.supportsServerSideBookmarkPersistance = false; // UDP is fire-and-forget: not supported    
-    features.supportsSubscribingUsingBookmark = false;  // UDP is fire-and-forget: not supported
-    features.supportsTopicIndexBasedBookmark = false;   // UDP is fire-and-forget: not supported
+    features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"        
+    features.supportsAbsentMsgReceivedAck = false;      // Since MSMQ is a queue, by default you consume the message when you read it
+    features.supportsAckUsingLastMsgInBatch = false;    // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
+    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
+    features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
+    features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
+    features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    
+    bool supportLookup = m_config.simulateReceiveAckFeatureViaLookupId && m_config.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+    
+    features.supportsAutoMsgReceivedAck = !supportLookup;            // When simulating receive acks we never auto ack
+    features.supportsSubscriberMsgReceivedAck = supportLookup;       // The whole point is simulating the ability to ack that a message was handled
+    features.supportsAckUsingBookmark = supportLookup;               // Bookmark or message, either way we use the LookupID which we count as a topic index
+    features.supportsServerSideBookmarkPersistance = !supportLookup; // If we are using lookups the LookUp will need to be persisted externally from the app between runs
+    
+    features.supportsSubscribingUsingBookmark = true;             // we use the LookupID which we count as a topic index
+    features.supportsTopicIndexBasedBookmark = true;              // we use the LookupID which we count as a topic index
+    
+    #else
+
+    features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
+    features.supportsAutoMsgReceivedAck = true;            // Since MSMQ is a queue, by default you consume the message when you read it we can consider this an ack
+    features.supportsSubscriberMsgReceivedAck = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsAckUsingBookmark = false;             // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsSubscribingUsingBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    
+    #endif
 
     return true;
 }
@@ -177,10 +190,10 @@ CUdpPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features
 /*-------------------------------------------------------------------------*/
 
 COMCORE::CPubSubClientTopic*
-CUdpPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
+CWebPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CUdpPubSubClientTopic* rcTopic = new CUdpPubSubClientTopic( this );
+    CWebPubSubClientTopic* rcTopic = new CWebPubSubClientTopic( this );
     if ( rcTopic->LoadConfig( topicConfig ) )
     {
         m_topicMap[ topicConfig.topicName ] = rcTopic;
@@ -191,7 +204,7 @@ CUdpPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& to
 /*-------------------------------------------------------------------------*/
 
 COMCORE::CPubSubClientTopic* 
-CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
+CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.find( topicName );
@@ -205,7 +218,7 @@ CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
+CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.find( topicName );
@@ -219,7 +232,7 @@ CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 const COMCORE::CPubSubClientTopicConfig* 
-CUdpPubSubClient::GetTopicConfig( const CORE::CString& topicName )
+CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
@@ -237,7 +250,7 @@ CUdpPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+CWebPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
@@ -251,7 +264,7 @@ CUdpPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNam
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
+CWebPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -265,7 +278,7 @@ CUdpPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topic
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString& 
-CUdpPubSubClient::GetType( void ) const
+CWebPubSubClient::GetType( void ) const
 {GUCEF_TRACE;
 
     return TypeName;
@@ -274,7 +287,7 @@ CUdpPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CUdpPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+CWebPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
     return m_config.SaveConfig( cfgNode );
@@ -283,12 +296,12 @@ CUdpPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CUdpPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+CWebPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CUdpPubSubClientConfig cfg;
+    CWebPubSubClientConfig cfg;
     if ( cfg.LoadConfig( cfgRoot ) )
     {
         m_config = cfg;
@@ -299,7 +312,7 @@ CUdpPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::Disconnect( void )
+CWebPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -315,7 +328,7 @@ CUdpPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::Connect( void )
+CWebPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
     if ( !m_topicMap.empty() )
@@ -335,7 +348,7 @@ CUdpPubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::IsConnected( void )
+CWebPubSubClient::IsConnected( void )
 {GUCEF_TRACE;
 
     if ( !m_topicMap.empty() )
@@ -355,32 +368,24 @@ CUdpPubSubClient::IsConnected( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClient::RegisterEventHandlers( void )
+CWebPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_metricsTimer )
     {
-        TEventCallback callback( this, &CUdpPubSubClient::OnMetricsTimerCycle );
+        TEventCallback callback( this, &CWebPubSubClient::OnMetricsTimerCycle );
         SubscribeTo( m_metricsTimer                 ,
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
-
-    if ( GUCEF_NULL != m_testPacketTransmitTimer )
-    {
-        TEventCallback callback( this, &CUdpPubSubClient::OnTransmitTestPacketTimerCycle );
-        SubscribeTo( m_testPacketTransmitTimer      ,
-                     CORE::CTimer::TimerUpdateEvent ,
-                     callback                       );
-    }    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                       const CORE::CEvent& eventId  ,
-                                       CORE::CICloneable* eventData )
+CWebPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     // Quickly grab a snapshot of metric values for all topics 
@@ -398,44 +403,12 @@ CUdpPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CUdpPubSubClientTopic* topic = (*i).second;
-        const CUdpPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
+        CWebPubSubClientTopic* topic = (*i).second;
+        const CWebPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
-        const CUdpPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        const CWebPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
         CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
 
-        if ( topicConfig.needSubscribeSupport )
-        {
-            GUCEF_METRIC_TIMING( metricsPrefix + "udpBytesReceived", topicMetrics.udpBytesReceived, 1.0f );
-            GUCEF_METRIC_TIMING( metricsPrefix + "udpPacketsReceived", topicMetrics.udpPacketsReceived, 1.0f );
-        }
-        if ( topicConfig.needPublishSupport )
-        {
-            GUCEF_METRIC_TIMING( metricsPrefix + "udpBytesSent", topicMetrics.udpBytesSent, 1.0f );
-            GUCEF_METRIC_TIMING( metricsPrefix + "udpPacketsSent", topicMetrics.udpPacketsSent, 1.0f );
-        }
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
-                                                  const CORE::CEvent& eventId  ,
-                                                  CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    TTopicMap::iterator i = m_topicMap.begin();
-    while ( i != m_topicMap.end() )
-    {
-        CUdpPubSubClientTopic* topic = (*i).second;
-        const CUdpPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
-
-        if ( topicConfig.wantsTestPackage )
-        {
-            m_testUdpSocket->SendPacketTo( topicConfig.udpInterface, "TEST", 4 );
-        }
         ++i;
     }
 }
@@ -446,7 +419,7 @@ CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace WEB */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 

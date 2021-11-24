@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginAWSSQS: Generic GUCEF COMCORE plugin for providing pubsub via AWS's SQS
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
+#ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
+#define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,22 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#include "CHostAddress.h"
-#define GUCEF_COMCORE_CHOSTADDRESS_H
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
 #include "gucefCOMCORE_CPubSubClientTopicConfig.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
 
-#ifndef PUBSUBPLUGIN_UDP_MACROS_H
-#include "pubsubpluginUDP_macros.h"
-#define PUBSUBPLUGIN_UDP_MACROS_H
-#endif /* PUBSUBPLUGIN_UDP_MACROS_H ? */
+#ifndef PUBSUBPLUGIN_AWSSQS_MACROS_H
+#include "pubsubpluginAWSSQS_macros.h"
+#define PUBSUBPLUGIN_AWSSQS_MACROS_H
+#endif /* PUBSUBPLUGIN_AWSSQS_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +43,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace AWSSQS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,41 +51,31 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CUdpPubSubClient;
+class CAwsSqsPubSubClient;
 
 /**
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
 {
     public:
 
-    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
-
-    CUdpPubSubClientTopicConfig( void );
     
-    CUdpPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
+    CAwsSqsPubSubClientTopicConfig( void );
+    
+    CAwsSqsPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
 
-    virtual ~CUdpPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CAwsSqsPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
 
-    CUdpPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
+    CAwsSqsPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
 
-    CUdpPubSubClientTopicConfig& operator=( const CUdpPubSubClientTopicConfig& src );
+    CAwsSqsPubSubClientTopicConfig& operator=( const CAwsSqsPubSubClientTopicConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
-    COMCORE::CHostAddress udpInterface;
-    HostAddressVector udpMulticastToJoin;
-    bool wantsTestPackage;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket;
-    CORE::UInt32 udpSocketOsReceiveBufferSize;
-    CORE::UInt32 udpSocketUpdateCyclesPerPulse;
-    bool addUdpSourceAddressAsMetaData;
-    bool translateUdpSourceAddressToString;
-    CORE::CString udpSourceAddressAsMetaDataKeyName;
-    CORE::UInt16 maxUdpPacketPayloadSizeInBytes;
+    bool topicNameIsQueueName;
+    bool tryToUseSendMessageBatch;
 };
 
 /*-------------------------------------------------------------------------//
@@ -101,10 +84,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public C
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace UDP */
+}; /* namespace AWSSQS */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H ? */
+#endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H ? */

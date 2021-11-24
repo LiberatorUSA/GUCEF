@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginUDP: Generic GUCEF COMCORE plugin for providing pubsub approximation via UDP
+ *  pubsubpluginWEB: Generic GUCEF COMCORE plugin for providing pubsub approximation via the WEB
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
-#define PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
+#ifndef PUBSUBPLUGIN_WEB_H
+#define PUBSUBPLUGIN_WEB_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,22 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_ESTRUCTS_H
+#include "EStructs.h"
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#include "CHostAddress.h"
-#define GUCEF_COMCORE_CHOSTADDRESS_H
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
-
-#ifndef PUBSUBPLUGIN_UDP_MACROS_H
-#include "pubsubpluginUDP_macros.h"
-#define PUBSUBPLUGIN_UDP_MACROS_H
-#endif /* PUBSUBPLUGIN_UDP_MACROS_H ? */
+#ifndef PUBSUBPLUGIN_WEB_MACROS_H
+#include "pubsubpluginWEB_macros.h"
+#define PUBSUBPLUGIN_WEB_MACROS_H
+#endif /* PUBSUBPLUGIN_WEB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,63 +41,70 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace UDP {
+namespace WEB {
+#endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CUdpPubSubClient;
-
-/**
- *  Standard pub-sub client config with some custom specifcs added for this
- *  specific pub-sub backend
+/*
+ *      Prevent C++ name mangling
  */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
-{
-    public:
+#ifdef __cplusplus
+using namespace ::GUCEF;
+using namespace ::GUCEF::CORE;
+extern "C" {
+#endif
 
-    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
+/*---------------------------------------------------------------------------*/
 
-    CUdpPubSubClientTopicConfig( void );
-    
-    CUdpPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
-
-    virtual ~CUdpPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
-
-    CUdpPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
-
-    CUdpPubSubClientTopicConfig& operator=( const CUdpPubSubClientTopicConfig& src );
-
-    bool LoadCustomConfig( const CORE::CDataNode& config );
-
-    COMCORE::CHostAddress udpInterface;
-    HostAddressVector udpMulticastToJoin;
-    bool wantsTestPackage;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket;
-    CORE::UInt32 udpSocketOsReceiveBufferSize;
-    CORE::UInt32 udpSocketUpdateCyclesPerPulse;
-    bool addUdpSourceAddressAsMetaData;
-    bool translateUdpSourceAddressToString;
-    CORE::CString udpSourceAddressAsMetaDataKeyName;
-    CORE::UInt16 maxUdpPacketPayloadSizeInBytes;
-};
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace UDP */
-}; /* namespace PUBSUBPLUGIN */
-}; /* namespace GUCEF */
+PUBSUBPLUGIN_WEB_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H ? */
+PUBSUBPLUGIN_WEB_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+PUBSUBPLUGIN_WEB_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+PUBSUBPLUGIN_WEB_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*--------------------------------------------------------------------------*/
+
+PUBSUBPLUGIN_WEB_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*---------------------------------------------------------------------------*/                 
+
+#ifdef __cplusplus
+   }
+#endif /* __cplusplus */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace WEB */
+}; /* namespace PUBSUBPLUGIN */
+}; /* namespace GUCEF */
+#endif /* __cplusplus */
+
+/*--------------------------------------------------------------------------*/
+
+#endif /* PUBSUBPLUGIN_WEB_H ? */
