@@ -68,7 +68,7 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CWebPubSubClient::TypeName = "MSMQ";
+const CORE::CString CWebPubSubClient::TypeName = "WEB";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

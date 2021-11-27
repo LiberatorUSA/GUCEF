@@ -27,7 +27,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefCOMCORE_CIPubSubMsg.h"
+#include "gucefCOMCORE_CIMessage.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,23 +44,23 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIPubSubMsg::CIPubSubMsg( void )
-    : CIMessage()
+CIMessage::CIMessage( void )
+    : CORE::CICloneable()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIPubSubMsg::CIPubSubMsg( const CIPubSubMsg& src )
-    : CIMessage( src )
+CIMessage::CIMessage( const CIMessage& src )
+    : CORE::CICloneable( src )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIPubSubMsg::~CIPubSubMsg()
+CIMessage::~CIMessage()
 {GUCEF_TRACE;
 
 }

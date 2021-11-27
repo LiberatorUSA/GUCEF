@@ -2744,7 +2744,7 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
     const CORE::CDataNode* appConfig = GetAppConfig( globalConfig );
     if ( GUCEF_NULL == appConfig )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Unable to locate app config in global config" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:LoadConfig: Unable to locate app config in global config" );
         return false;
     }
 
@@ -2806,7 +2806,7 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
     }
     if ( channelIDs.size() < channelIDStrs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
         return false;
     }
 
@@ -3013,7 +3013,7 @@ const CORE::CDataNode*
 PubSub2PubSub::GetAppConfig( const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    const CORE::CDataNode* appConfig = globalConfig.Search( "Main/AppArgs", '/', true, false );
+    const CORE::CDataNode* appConfig = globalConfig.Search( "Main/AppArgs", '/', true, true );
     return appConfig;
 }
 

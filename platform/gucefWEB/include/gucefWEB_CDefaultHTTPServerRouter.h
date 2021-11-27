@@ -87,9 +87,11 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 
     bool RemoveResourceMapping( const CString& uriSegment );
 
-   void SetWildcardMatchUris( bool useWildcards );
+    bool RemoveAllResourceMappings( void );
 
-   bool GetWildcardMatchUris( void ) const;
+    void SetWildcardMatchUris( bool useWildcards );
+
+    bool GetWildcardMatchUris( void ) const;
 
     protected:
 

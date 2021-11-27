@@ -177,6 +177,10 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     
     private:
 
+    typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >                                     TUInt64dToTIPubSubMsgSPtrMap;
+    typedef std::map< const COMCORE::CPubSubClientTopic*, TUInt64dToTIPubSubMsgSPtrMap >                         TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap;
+    typedef std::map< const COMCORE::CPubSubClient*, TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap >       TPubSubClientToPubSubClientTopicMsgsMap;
+
     CWebPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
@@ -193,6 +197,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     CORE::CString m_metricFriendlyTopicName;
     GUCEF::WEB::CHTTPServer m_httpServer;
     GUCEF::WEB::CDefaultHTTPServerRouter m_httpRouter;
+    TPubSubClientToPubSubClientTopicMsgsMap m_publishedMsgs;
 };
 
 /*-------------------------------------------------------------------------//

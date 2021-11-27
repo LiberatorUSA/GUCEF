@@ -123,6 +123,15 @@ CPubSubClientTopic::RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPer
 
 /*-------------------------------------------------------------------------*/
 
+const CPubSubClient*
+CPubSubClientTopic::GetClient( void ) const
+{GUCEF_TRACE;
+
+    return const_cast< CPubSubClientTopic* >( this )->GetClient();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientTopic::DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;

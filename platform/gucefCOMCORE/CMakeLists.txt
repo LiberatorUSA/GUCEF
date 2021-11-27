@@ -36,8 +36,10 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryCapability.h
   include/gucefCOMCORE_CIDiscoveryClient.h
   include/gucefCOMCORE_CIDiscoveryEntry.h
+  include/gucefCOMCORE_CIMessage.h
   include/gucefCOMCORE_CINetworkInterface.h
   include/gucefCOMCORE_CIPubSubMsg.h
+  include/gucefCOMCORE_CMessageSerializer.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CPubSubBookmark.h
   include/gucefCOMCORE_CPubSubClient.h
@@ -48,6 +50,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CPubSubClientTopicConfig.h
   include/gucefCOMCORE_CPubSubMsgBinarySerializer.h
   include/gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h
+  include/gucefCOMCORE_CPubSubMsgSerializer.h
   include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
   include/gucefCOMCORE_config.h
@@ -81,8 +84,10 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CIDiscoveryCapability.cpp
   src/gucefCOMCORE_CIDiscoveryClient.cpp
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
+  src/gucefCOMCORE_CIMessage.cpp
   src/gucefCOMCORE_CINetworkInterface.cpp
   src/gucefCOMCORE_CIPubSubMsg.cpp
+  src/gucefCOMCORE_CMessageSerializer.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CPubSubBookmark.cpp
   src/gucefCOMCORE_CPubSubClient.cpp
@@ -93,6 +98,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CPubSubClientTopicConfig.cpp
   src/gucefCOMCORE_CPubSubMsgBinarySerializer.cpp
   src/gucefCOMCORE_CPubSubMsgContainerBinarySerializer.cpp
+  src/gucefCOMCORE_CPubSubMsgSerializer.cpp
   src/gucefCOMCORE_CSerialPort.cpp
   src/socketutils.cpp
 )

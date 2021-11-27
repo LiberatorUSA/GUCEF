@@ -88,6 +88,7 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     , m_metricFriendlyTopicName()
     , m_httpServer( *m_client->GetConfig().pulseGenerator )
     , m_httpRouter()
+    , m_publishedMsgs()
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -114,6 +115,7 @@ CWebPubSubClientTopic::~CWebPubSubClientTopic()
 {GUCEF_TRACE;
 
     Disconnect();
+    m_httpRouter.RemoveAllResourceMappings();
 
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
@@ -183,7 +185,26 @@ CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CI
 {GUCEF_TRACE;
     
     bool success = false;
-    // @TODO: Code the actual publish , not implemented yet
+    
+    const COMCORE::CPubSubClient* originClient = GUCEF_NULL;
+    const COMCORE::CPubSubClientTopic* originClientTopic = msg.GetOriginClientTopic();
+    if ( GUCEF_NULL != originClientTopic )
+    {       
+        originClient = originClientTopic->GetClient();
+    }
+    COMCORE::CIPubSubMsg::TNoLockSharedPtr msgClone( static_cast< COMCORE::CIPubSubMsg* >( msg.Clone() ) );
+        
+    MT::CScopeMutex lock( m_lock );
+
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId;
+        ++m_currentPublishActionId;
+    }
+
+    m_publishedMsgs[ originClient ][ originClientTopic ][ publishActionId ] = msgClone;
+
+    success = true;
 
     if ( notify )
     {

@@ -25,50 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CNOLOCK_H
-#include "gucefMT_CNoLock.h"
-#define GUCEF_MT_CNOLOCK_H
-#endif /* GUCEF_MT_CNOLOCK_H ? */
-
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
-#ifndef GUCEF_CORE_CVARIANT_H
-#include "gucefCORE_CVariant.h"
-#define GUCEF_CORE_CVARIANT_H
-#endif /* GUCEF_CORE_CVARIANT_H ? */
-
-#ifndef GUCEF_CORE_CDATETIME_H
-#include "gucefCORE_CDateTime.h"
-#define GUCEF_CORE_CDATETIME_H
-#endif /* GUCEF_CORE_CDATETIME_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
+#ifndef GUCEF_COMCORE_CIMESSAGE_H
+#include "gucefCOMCORE_CIMessage.h"
+#define GUCEF_COMCORE_CIMESSAGE_H
+#endif /* GUCEF_COMCORE_CIMESSAGE_H ? */
 
 #ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
 #include "gucefCOMCORE_CPubSubBookmark.h"
@@ -102,12 +62,10 @@ class CPubSubClientTopic;
  *  Based on the client used different capabilities will be available and 
  *  client will use beft effort to simulate others
  */
-class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
+class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CIMessage
 {
     public:
 
-    typedef std::pair< CORE::CVariant, CORE::CVariant >     TKeyValuePair;
-    typedef std::vector< TKeyValuePair >                    TKeyValuePairs;
     typedef std::vector< CIPubSubMsg* >                     TIPubSubMsgRawPtrVector;
     typedef std::vector< const CIPubSubMsg* >               TIPubSubMsgConstRawPtrVector;
     typedef CORE::CTSharedPtr< CIPubSubMsg, MT::CNoLock >   TNoLockSharedPtr;
@@ -117,40 +75,7 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 
     CIPubSubMsg( const CIPubSubMsg& src );
 
-    virtual ~CIPubSubMsg();
-    
-    /**
-     *  If supported this represents the identifier or key of the message
-     */
-    virtual CORE::CVariant& GetMsgId( void ) = 0;    
-    virtual const CORE::CVariant& GetMsgId( void ) const = 0;
-    
-    /**
-     *  If supported this represents the index identifier of the message
-     *  Something that has meaning to the pubsub backend as to message placement / storage
-     */
-    virtual CORE::CVariant& GetMsgIndex( void ) = 0;    
-    virtual const CORE::CVariant& GetMsgIndex( void ) const = 0;
-
-    virtual CORE::CDateTime& GetMsgDateTime( void ) = 0;    
-    virtual const CORE::CDateTime& GetMsgDateTime( void ) const = 0;
-
-    /**
-     *  If the pub-sub system does not itself support key-value attributes per
-     *  message this member function is intended to provide easy access to the 
-     *  payload.
-     *  If used in cases where only/specifically key-value attributes are supported the client
-     *  will attempt to provide the value of the first key-value pair in a best
-     *  effort manner.
-     */    
-    virtual CORE::CVariant& GetPrimaryPayload( void ) = 0;
-    virtual const CORE::CVariant& GetPrimaryPayload( void ) const = 0;
-
-    virtual TKeyValuePairs& GetKeyValuePairs( void ) = 0;
-    virtual const TKeyValuePairs& GetKeyValuePairs( void ) const = 0;
-
-    virtual TKeyValuePairs& GetMetaDataKeyValuePairs( void ) = 0;
-    virtual const TKeyValuePairs& GetMetaDataKeyValuePairs( void ) const = 0;
+    virtual ~CIPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  For a message that was received by a pub-sub topic this would provide

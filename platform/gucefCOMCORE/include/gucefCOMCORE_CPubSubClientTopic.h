@@ -170,6 +170,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual CPubSubClient* GetClient( void ) = 0;
 
+    virtual const CPubSubClient* GetClient( void ) const;
+
     /**
      *  Explicitly calls for initialization of connectivity if relevant for the given backend
      *  The intent is to allow the application to choose when to take the setup cost hit and also provide better error reporting

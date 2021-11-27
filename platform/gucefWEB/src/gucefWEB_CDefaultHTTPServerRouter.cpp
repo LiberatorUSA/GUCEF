@@ -209,6 +209,17 @@ CDefaultHTTPServerRouter::RemoveResourceMapping( const CString& uriSegment )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool 
+CDefaultHTTPServerRouter::RemoveAllResourceMappings( void )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock writeLock( m_rwLock );
+    m_resourceMap.Clear();
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
     
 void
 CDefaultHTTPServerRouter::SetServiceRoot( const CString& serviceRoot )
