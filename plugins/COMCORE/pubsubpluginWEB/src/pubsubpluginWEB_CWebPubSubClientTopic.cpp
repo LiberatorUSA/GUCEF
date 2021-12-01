@@ -49,6 +49,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_CORE_CURLENCODER_H
+#include "gucefCORE_CUrlEncoder.h"
+#define GUCEF_CORE_CURLENCODER_H
+#endif /* GUCEF_CORE_CURLENCODER_H */
+
 #ifndef PUBSUBPLUGIN_UDP_CWEBPUBSUBCLIENT_H
 #include "pubsubpluginWEB_CWebPubSubClient.h"
 #define PUBSUBPLUGIN_UDP_CWEBPUBSUBCLIENT_H
@@ -65,6 +70,14 @@
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace WEB {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CORE::CString CWebPubSubClientTopic::UnknownClientType = "unknown";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -88,7 +101,10 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     , m_metricFriendlyTopicName()
     , m_httpServer( *m_client->GetConfig().pulseGenerator )
     , m_httpRouter()
+    , m_publishedMsgPrunerTimer( GUCEF_NULL )
     , m_publishedMsgs()
+    , m_publishedClientTypes()
+    , m_publishedTopicNamesPerClientType()
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -98,15 +114,50 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     {
         m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
     }
+    if ( 0 != m_config.maxPublishedMsgCountToRetainForRest )
+    {
+        m_publishedMsgPrunerTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+    }
 
- //   m_httpRouter.SetResourceMapping( "/messages", RestApiPubSubClientChannelConfigResource::THTTPServerResourcePtr( new RestApiPubSubClientChannelConfigResource( this ) )  );
-    
- //   if ( m_config.exposeBasicHealthEndpoint )
- //       m_httpRouter.SetResourceMapping( m_config.basicHealthEndpointPath, RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
-    
-    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
-
+    RegisterRestApiEndpoints(); 
     RegisterEventHandlers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClientTopic::RegisterRestApiEndpoints( void )
+{GUCEF_TRACE;
+    
+    TClientIndexMap* clientIndexMap = GUCEF_NULL;
+    TDummyHttpServerResource* healthDummy = GUCEF_NULL;
+
+    try
+    {
+        if ( m_config.supportHttpServerBasedRestEndpoints )
+        {
+            m_httpRouter.SetWildcardMatchUris( false );
+            
+            clientIndexMap = new TClientIndexMap( "PubSubClients", "PubSubClient", "clientType", &m_publishedClientTypes, this );
+            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr clientIndexMapPtr( clientIndexMap->CreateSharedPtr() );
+            m_httpRouter.SetResourceMapping( "/clients", clientIndexMapPtr );          
+
+            if ( m_config.exposeBasicHealthEndpoint )
+            {
+                healthDummy = new TDummyHttpServerResource();
+                GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr healthDummyPtr( healthDummy->CreateSharedPtr() );
+                m_httpRouter.SetResourceMapping( m_config.basicHealthEndpointPath, healthDummyPtr );
+            }
+
+            m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
+            return m_httpServer.ListenOnPort( m_config.httpServerPort );
+        }
+        return true;
+    }
+    catch ( const std::exception& )
+    {
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,6 +170,9 @@ CWebPubSubClientTopic::~CWebPubSubClientTopic()
 
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
+
+    delete m_publishedMsgPrunerTimer;
+    m_publishedMsgPrunerTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -140,6 +194,14 @@ CWebPubSubClientTopic::RegisterEventHandlers( void )
     {
         TEventCallback callback( this, &CWebPubSubClientTopic::OnReconnectTimerCycle );
         SubscribeTo( m_reconnectTimer               ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
+    }
+
+    if ( GUCEF_NULL != m_publishedMsgPrunerTimer )
+    {
+        TEventCallback callback( this, &CWebPubSubClientTopic::OnPublishedMsgPrunerTimerCycle );
+        SubscribeTo( m_publishedMsgPrunerTimer      ,
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
@@ -181,10 +243,85 @@ CWebPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
+CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId                        , 
+                                         const COMCORE::CIPubSubMsg& msg                      , 
+                                         bool notify                                          ,
+                                         const COMCORE::CPubSubClient* originClient           ,
+                                         const CORE::CString& originClientType                ,
+                                         const COMCORE::CPubSubClientTopic* originClientTopic )
+{GUCEF_TRACE;
+    
+    // For the REST API we retain the messages for some period/count to allow for retrieval/viewing
+    // If the REST API is not to be used then maxPublishedMsgCountToRetainForRest should be set to 0 for better performance
+    if ( 0 != m_config.maxPublishedMsgCountToRetainForRest )
+    {
+        CORE::CAsciiString urlEncodedOriginClientType;
+        CORE::CUrlEncoder::EncodeToAscii( originClientType, urlEncodedOriginClientType );
+
+        CORE::CAsciiString urlEncodedOriginClientTopicName;
+        CORE::CUrlEncoder::EncodeToAscii( originClientTopic->GetTopicName(), urlEncodedOriginClientTopicName );
+
+        COMCORE::CIPubSubMsg::TNoLockSharedPtr msgClone( static_cast< COMCORE::CIPubSubMsg* >( msg.Clone() ) );
+        
+        // Access client storage
+        TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap* clientTopics = GUCEF_NULL;
+        TPubSubClientToPubSubClientTopicMsgsMap::iterator i = m_publishedMsgs.find( originClient );
+        if ( i != m_publishedMsgs.end() )
+        {
+            clientTopics = &(*i).second;
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "WebPubSubClientTopic(" + CORE::ToString( this ) + "):PublishToRestApi: discovered new client origin. Ptr=" + 
+                CORE::ToString( originClient ) + ". typeName=\"" + originClientType + "\" urlencodedTypeName=" + urlEncodedOriginClientType );
+            
+            // completely new msg origin, add storage plus reference links for it
+            m_publishedClientTypes[ urlEncodedOriginClientType ].push_back( originClient );            
+            clientTopics = &m_publishedMsgs[ originClient ];
+        }
+        
+        // Access client->topic storage
+        TUInt64dToTIPubSubMsgSPtrMap* topicMsgMap = GUCEF_NULL;
+        TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap::iterator n = clientTopics->find( originClientTopic );
+        if ( n != clientTopics->end() )
+        {
+            topicMsgMap = &(*n).second;
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "WebPubSubClientTopic(" + CORE::ToString( this ) + "):PublishToRestApi: discovered new client origin topic. Ptr=" + 
+                CORE::ToString( originClientTopic ) + ". topicName=\"" + originClientTopic->GetTopicName() + "\" urlencodedTopicName=" + urlEncodedOriginClientTopicName );
+            
+            // completely new msg origin, add storage plus reference links for it        
+            topicMsgMap = &(*clientTopics)[ originClientTopic ];
+            TStringToPubSubClientTopicPtrVectorMap& topicNameMap = m_publishedTopicNamesPerClientType[ urlEncodedOriginClientType ];
+            TPubSubClientTopicPtrVector& topics = topicNameMap[ urlEncodedOriginClientTopicName ];
+            topics.push_back( originClientTopic );
+
+            TClientTopicIndexMap* topicIndexMap = new TClientTopicIndexMap( "PubSubClientTopics", "PubSubClientTopic", "topicName", &topicNameMap, this );
+            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicIndexMapPtr( topicIndexMap->CreateSharedPtr() );
+            m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics", topicIndexMapPtr ); 
+        }
+
+        // Store message
+        // If this is a retry it wipes the previous message with the same ID
+        (*topicMsgMap)[ publishActionId ] = msgClone;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "WebPubSubClientTopic(" + CORE::ToString( this ) + "):PublishToRestApi: For origin \"" + 
+            originClientType + ':' + originClientTopic->GetTopicName() + "\": Retaining message with publishActionId=" + CORE::ToString( publishActionId ) +
+            " and origin receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
+    } 
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
     
-    bool success = false;
+    bool success = true;
     
     const COMCORE::CPubSubClient* originClient = GUCEF_NULL;
     const COMCORE::CPubSubClientTopic* originClientTopic = msg.GetOriginClientTopic();
@@ -192,7 +329,7 @@ CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CI
     {       
         originClient = originClientTopic->GetClient();
     }
-    COMCORE::CIPubSubMsg::TNoLockSharedPtr msgClone( static_cast< COMCORE::CIPubSubMsg* >( msg.Clone() ) );
+    const CORE::CString& originClientType = GUCEF_NULL != originClient ? originClient->GetType() : UnknownClientType;            
         
     MT::CScopeMutex lock( m_lock );
 
@@ -202,17 +339,20 @@ CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CI
         ++m_currentPublishActionId;
     }
 
-    m_publishedMsgs[ originClient ][ originClientTopic ][ publishActionId ] = msgClone;
+    success = PublishToRestApi( publishActionId   ,
+                                msg               ,
+                                notify            ,
+                                originClient      ,
+                                originClientType  ,
+                                originClientTopic ) && success;
 
-    success = true;
-
-    if ( notify )
-    {
-        if ( success )
-            m_publishSuccessActionIds.push_back( publishActionId );
-        else
-            m_publishFailureActionIds.push_back( publishActionId );
-    }
+    //if ( notify )
+    //{
+    //    if ( success )
+    //        m_publishSuccessActionIds.push_back( publishActionId );
+    //    else
+    //        m_publishFailureActionIds.push_back( publishActionId );
+    //}
     return success;
 }
 
@@ -394,6 +534,21 @@ CWebPubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
     m_reconnectTimer->SetEnabled( !totalSuccess );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CWebPubSubClientTopic::OnPublishedMsgPrunerTimerCycle( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    //// Check if we added max message count messages, or if such a limit should be applied at all
+    //if ( 0 < m_config.maxPublishedMsgCountToRetainForRest && m_config.maxPublishedMsgCountToRetainForRest < (CORE::Int32) topicMsgMap.size() ) 
+    //{
+    //    // Lets prune
+    //                    
+    //}
+}
 /*-------------------------------------------------------------------------*/
 
 void

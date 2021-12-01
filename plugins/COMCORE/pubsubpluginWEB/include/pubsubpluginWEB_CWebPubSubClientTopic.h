@@ -60,6 +60,16 @@
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTReadableMapIndexHttpServerResource.h"
+#define GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H ? */
+
 #ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginWEB_CWebPubSubClientTopicConfig.h"
 #define PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H
@@ -83,6 +93,16 @@ namespace WEB {
 
 class CWebPubSubClient;
 
+/**
+ *  
+ * About the REST API feature:
+ *  This topic can optionally expose a REST API that allows for checking messages via basic request-response over HTTP and posting new messages over HTTP
+ *  The basic endpoint structure is as follows: <httpServerRoot>/clients/<clientTypeName>/topics/<topicName>/messages/<publishActionId> 
+ *  For the read (get) use-case this allows one to perform spot checks and debugging for low flow-rate messages
+ *  In order to reliably view all messages (for a bit, until you run out of resources) you'd have to disable message retention limits which is not advised
+ *  As such its intended to be used as described for reads: for performing spot checks and debugging for low flow-rate messages
+ *  
+ */
 class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
     public:
@@ -161,14 +181,28 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
 
     void RegisterEventHandlers( void );
 
+    bool RegisterRestApiEndpoints( void );
+
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
+
+    bool PublishToRestApi( CORE::UInt64& publishActionId                        , 
+                           const COMCORE::CIPubSubMsg& msg                      , 
+                           bool notify                                          , 
+                           const COMCORE::CPubSubClient* originClient           ,
+                           const CORE::CString& originClientType                ,
+                           const COMCORE::CPubSubClientTopic* originClientTopic );
 
     void
     OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventId  ,
                            CORE::CICloneable* eventData );
+
+    void
+    OnPublishedMsgPrunerTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -177,9 +211,19 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     
     private:
 
-    typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >                                     TUInt64dToTIPubSubMsgSPtrMap;
-    typedef std::map< const COMCORE::CPubSubClientTopic*, TUInt64dToTIPubSubMsgSPtrMap >                         TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap;
-    typedef std::map< const COMCORE::CPubSubClient*, TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap >       TPubSubClientToPubSubClientTopicMsgsMap;
+    static CORE::CString UnknownClientType;
+
+    typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >                                            TUInt64dToTIPubSubMsgSPtrMap;
+    typedef std::map< const COMCORE::CPubSubClientTopic*, TUInt64dToTIPubSubMsgSPtrMap >                                TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap;
+    typedef std::map< const COMCORE::CPubSubClient*, TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap >              TPubSubClientToPubSubClientTopicMsgsMap;
+    typedef std::vector< const COMCORE::CPubSubClient* >                                                                TPubSubClientPtrVector;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientPtrVector >                   TClientIndexMap;
+    typedef std::map< CORE::CString, TPubSubClientPtrVector >                                                           TStringToPubSubClientPtrVectorMap;
+    typedef std::vector< const COMCORE::CPubSubClientTopic* >                                                           TPubSubClientTopicPtrVector;
+    typedef std::map< CORE::CString, TPubSubClientTopicPtrVector >                                                      TStringToPubSubClientTopicPtrVectorMap;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientTopicPtrVector >              TClientTopicIndexMap;
+    typedef std::map< CORE::CString, TStringToPubSubClientTopicPtrVectorMap >                                           TStringToStringToPubSubClientTopicPtrVectorMap;            
+    typedef GUCEF::WEB::CDummyHTTPServerResource                                                                        TDummyHttpServerResource;
 
     CWebPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
@@ -197,7 +241,10 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     CORE::CString m_metricFriendlyTopicName;
     GUCEF::WEB::CHTTPServer m_httpServer;
     GUCEF::WEB::CDefaultHTTPServerRouter m_httpRouter;
+    CORE::CTimer* m_publishedMsgPrunerTimer;
     TPubSubClientToPubSubClientTopicMsgsMap m_publishedMsgs;
+    TStringToPubSubClientPtrVectorMap m_publishedClientTypes;
+    TStringToStringToPubSubClientTopicPtrVectorMap m_publishedTopicNamesPerClientType;
 };
 
 /*-------------------------------------------------------------------------//

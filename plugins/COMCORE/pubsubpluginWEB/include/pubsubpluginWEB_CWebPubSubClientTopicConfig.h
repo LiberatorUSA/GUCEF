@@ -78,6 +78,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public C
     CORE::UInt16 httpServerPort;
     bool exposeBasicHealthEndpoint;
     CORE::CString basicHealthEndpointPath;
+    bool supportHttpServerBasedRestEndpoints;
+    CORE::Int32 maxPublishedMsgCountToRetainForRest;
 };
 
 /*-------------------------------------------------------------------------//

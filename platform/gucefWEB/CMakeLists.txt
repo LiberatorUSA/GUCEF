@@ -37,6 +37,7 @@ set( HEADER_FILES
   include/gucefWEB_CIHttpServerRequestHandler.h
   include/gucefWEB_CModule.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
+  include/gucefWEB_CTReadableMapIndexHttpServerResource.h
   include/gucefWEB_CVfsHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
   include/gucefWEB_ETypes.h

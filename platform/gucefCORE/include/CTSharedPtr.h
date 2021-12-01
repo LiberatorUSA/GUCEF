@@ -212,6 +212,11 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
 {
     public:
 
+    typedef CTBasicSharedPtrCreator< T, LockType >                      TBasicSharedPtrCreatorBase;
+    typedef TBasicSharedPtrCreatorBase::TBasicSharedPtrContainedType    TSharedPtrContainedType;
+    typedef TBasicSharedPtrCreatorBase::TBasicSharedPtrLockType         TSharedPtrLockType;
+    typedef CTSharedPtr< T, LockType >                                  TSharedPtrType;
+
     CTSharedPtr< T, LockType > CreateSharedPtr( void );
 
     CTSharedPtrCreator( T* derived );
@@ -222,6 +227,27 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
     CTSharedPtrCreator( void );                                       /**< dont use */
     CTSharedPtrCreator( const CTSharedPtrCreator& src );              /**< dont use */
     CTSharedPtrCreator& operator=( const CTSharedPtrCreator& src );   /**< dont use */
+};
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
+{
+    public:
+
+    typedef CTSharedPtrCreator< T, LockType >                           TSharedPtrCreatorBase;
+
+    static CTSharedPtr< T, LockType > CreateSharedObj( void );
+
+    CTSharedObjCreator( T* derived );
+    virtual ~CTSharedObjCreator();
+
+    private:
+
+    CTSharedObjCreator( void );                                       /**< dont use */
+    CTSharedObjCreator( const CTSharedObjCreator& src );              /**< dont use */
+    CTSharedObjCreator& operator=( const CTSharedObjCreator& src );   /**< dont use */
 };
 
 /*-------------------------------------------------------------------------//
@@ -551,6 +577,45 @@ CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
 
 template< typename T, class LockType >
 CTSharedPtrCreator< T, LockType >::~CTSharedPtrCreator( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >
+CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
+{GUCEF_TRACE;
+
+    T* obj = GUCEF_NULL;
+    try
+    {        
+        CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( new T() ) )->CreateBasicSharedPtr() );
+        return retVal;
+    }
+    catch ( const std::exception& e )
+    {
+        delete obj;
+        obj = GUCEF_NULL;
+
+        return CTSharedPtr< T, LockType >();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedObjCreator< T, LockType >::CTSharedObjCreator( T* derived )
+    : CTSharedPtrCreator< T, LockType >( derived )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CTSharedObjCreator< T, LockType >::~CTSharedObjCreator( void )
 {GUCEF_TRACE;
 
 }

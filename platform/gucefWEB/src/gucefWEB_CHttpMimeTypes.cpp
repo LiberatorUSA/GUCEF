@@ -49,6 +49,7 @@ const CORE::CString CHttpMimeTypes::MimeTypeIni = "application/ini";
 const CORE::CString CHttpMimeTypes::MimeTypeIniProper = "zz-application/zz-winassoc-ini";
 const CORE::CString CHttpMimeTypes::MimeTypeText = "text/plain";
 const CORE::CString CHttpMimeTypes::MimeTypeOctet = "application/octet-stream";
+const CORE::CString CHttpMimeTypes::MimeTypeWwwFormUrlencoded = "application/x-www-form-urlencoded";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

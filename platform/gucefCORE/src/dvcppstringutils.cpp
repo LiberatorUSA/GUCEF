@@ -148,14 +148,40 @@ DivisionRemainder( Int32 dividend   ,
 
 /*-------------------------------------------------------------------------*/
 
+static const char* g_hexDigits = "0123456789ABCDEF";
+
+void
+ConvertByteToHexChars( const Int8 byte ,
+                       char& hexCharA  ,
+                       char& hexCharB  )
+{GUCEF_TRACE;
+
+    Int32 digitIndex1 = 0;
+    Int32 digitIndex2 = 0;
+
+    DivisionRemainder( byte                ,
+                       16                  ,
+                       digitIndex1         ,
+                       digitIndex2         );
+
+    if ( digitIndex1 < 0 ) 
+        digitIndex1 *= -1;
+    if ( digitIndex2 < 0 ) 
+        digitIndex2 *= -1;
+
+    hexCharA = g_hexDigits[ digitIndex2 ];
+    hexCharB = g_hexDigits[ digitIndex1 ];
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 ConvertBytesToHexString( const void* byteBuffer ,
                          UInt32 bufferSize      ,
                          bool addSpaces         ,
                          bool addHexPrefix      )
 {GUCEF_TRACE;
-
-    static const char* g_hexDigits = "0123456789ABCDEF";
+    
     const char* charByteBuffer = (const char*) byteBuffer;
 
     // Each byte is expressed as a 2 char hex value

@@ -363,6 +363,10 @@ class CTBasicSharedPtrCreator
 {
     public:
 
+    typedef T                                   TBasicSharedPtrContainedType;
+    typedef LockType                            TBasicSharedPtrLockType;
+    typedef CTBasicSharedPtr< T, LockType >     TBasicSharedPtrType;
+
     CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void );
 
     CTBasicSharedPtrCreator( T* derived );

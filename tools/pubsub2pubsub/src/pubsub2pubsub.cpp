@@ -2741,6 +2741,69 @@ bool
 PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
+    // First we load the channel related info.
+    // We begin with that because we want to load especially the template definitions before we load the app settings as we might need the template
+    
+    // First store the per channel configs in a more conveniently accessable manner
+    // splitting them out from the global config document
+    TChannelCfgMap channelMap;
+    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = globalConfig.FindChildrenOfType( "Channels", true );
+    CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
+    while ( i != channelParentCfgs.end() )
+    {
+        CORE::CDataNode::const_iterator n = (*i)->ConstBegin();
+        while ( n != (*i)->ConstEnd() )
+        {
+            const CORE::CString& channelIndex = (*n)->GetName();
+            channelMap[ channelIndex ] = *(*n);
+            ++n;
+        }
+        ++i;
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for pubsub2pubsub channels" );
+
+    // load the template config if any
+    // This is especially important in conjunction with command line params that would rely on a template config
+    TChannelCfgMap::iterator m = channelMap.find( "*" );
+    if ( m != channelMap.end() )
+    {
+        if ( m_templateChannelSettings.LoadConfig( (*m).second ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for pubsub2pubsub channels" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for pubsub2pubsub channels" );
+            return false;
+        }
+    }
+
+    // load the specifically configured channels if any
+    // Such channels would not be defined via command line params but can possibly be influenced by such params with combined usage
+    m = channelMap.begin();
+    while ( m != channelMap.end() )
+    {
+        const CORE::CString& channelIndexStr = (*m).first;
+        if ( channelIndexStr != '*' )
+        {
+            CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
+            ChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
+
+            if ( channelSettings.LoadConfig( (*m).second ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for pubsub2pubsub channels " + channelIndexStr );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for pubsub2pubsub channels " + channelIndexStr );
+                return false;
+            }
+        }
+        ++m;
+    }
+
+    // Now on to the main application config ...
+
     const CORE::CDataNode* appConfig = GetAppConfig( globalConfig );
     if ( GUCEF_NULL == appConfig )
     {
@@ -2884,67 +2947,6 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
     m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "RestBasicHealthUri" ).AsString( "/health/basic", true ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
-
-
-    // Now on to the channel configs...
-
-    // First store the per channel configs in a more conveniently accessable manner
-    // splitting them out from the global config document
-    TChannelCfgMap channelMap;
-    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = globalConfig.FindChildrenOfType( "Channels", true );
-    CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
-    while ( i != channelParentCfgs.end() )
-    {
-        CORE::CDataNode::const_iterator n = (*i)->ConstBegin();
-        while ( n != (*i)->ConstEnd() )
-        {
-            const CORE::CString& channelIndex = (*n)->GetName();
-            channelMap[ channelIndex ] = *(*n);
-            ++n;
-        }
-        ++i;
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for pubsub2pubsub channels" );
-
-    // load the template config if any
-    // This is especially important in conjunction with command line params that would rely on a template config
-    TChannelCfgMap::iterator m = channelMap.find( "*" );
-    if ( m != channelMap.end() )
-    {
-        if ( m_templateChannelSettings.LoadConfig( (*m).second ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for pubsub2pubsub channels" );
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for pubsub2pubsub channels" );
-            return false;
-        }
-    }
-
-    // load the specifically configured channels if any
-    // Such channels would not be defined via command line params but can possibly be influenced by such params with combined usage
-    m = channelMap.begin();
-    while ( m != channelMap.end() )
-    {
-        const CORE::CString& channelIndexStr = (*m).first;
-        if ( channelIndexStr != '*' )
-        {
-            CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
-            ChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
-
-            if ( channelSettings.LoadConfig( (*m).second ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for pubsub2pubsub channels " + channelIndexStr );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for pubsub2pubsub channels " + channelIndexStr );
-                return false;
-            }
-        }
-        ++m;
-    }
 
     m_globalConfig.Copy( globalConfig );
     return true;

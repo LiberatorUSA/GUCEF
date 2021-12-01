@@ -41,21 +41,23 @@ namespace WEB {
 //-------------------------------------------------------------------------*/
 
 CIHTTPServerResource::CIHTTPServerResource( void )
-{
+    : CORE::CTSharedPtrCreator< CIHTTPServerResource, MT::CMutex >( this )
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
 CIHTTPServerResource::CIHTTPServerResource( const CIHTTPServerResource& src )
-{
+    : CORE::CTSharedPtrCreator< CIHTTPServerResource, MT::CMutex >( this )
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
 CIHTTPServerResource::~CIHTTPServerResource()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -63,7 +65,8 @@ CIHTTPServerResource::~CIHTTPServerResource()
     
 CIHTTPServerResource&
 CIHTTPServerResource::operator=( const CIHTTPServerResource& src )
-{
+{GUCEF_TRACE;
+
     return *this;
 }
 

@@ -63,12 +63,13 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource : public CORE::CTSharedPtrCreator< CIHTTPServerResource, MT::CMutex >
 {
     public:
     
-    typedef std::vector< CString > TStringVector;
-    typedef CORE::CTSharedPtr< CIHTTPServerResource, MT::CMutex > THTTPServerResourcePtr;
+    typedef CString::StringVector                                               TStringVector;
+    typedef CORE::CTSharedPtrCreator< CIHTTPServerResource, MT::CMutex >        TSharedPtrCreatorBase;    
+    typedef TSharedPtrCreatorBase::TSharedPtrType                               THTTPServerResourcePtr;
 
     /**
      *  Result of a CreateResource operation.

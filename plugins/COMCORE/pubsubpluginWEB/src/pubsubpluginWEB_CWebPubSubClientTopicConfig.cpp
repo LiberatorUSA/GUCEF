@@ -45,6 +45,8 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#define REST_API_DEFAULT_SERVER_PORT            50321                
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
@@ -53,9 +55,11 @@ namespace WEB {
 
 CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( void )
     : COMCORE::CPubSubClientTopicConfig()
-    , httpServerPort( 10001 )
+    , httpServerPort( REST_API_DEFAULT_SERVER_PORT )
     , exposeBasicHealthEndpoint( true )
     , basicHealthEndpointPath( "/health/basic" )
+    , supportHttpServerBasedRestEndpoints( true )
+    , maxPublishedMsgCountToRetainForRest( 100 )
 {GUCEF_TRACE;
     
 }
@@ -64,9 +68,11 @@ CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( void )
 
 CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
     : COMCORE::CPubSubClientTopicConfig( genericConfig )
-    , httpServerPort( 10001 )
+    , httpServerPort( REST_API_DEFAULT_SERVER_PORT )
     , exposeBasicHealthEndpoint( true )
     , basicHealthEndpointPath( "/health/basic" )
+    , supportHttpServerBasedRestEndpoints( true )
+    , maxPublishedMsgCountToRetainForRest( 100 )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -88,6 +94,8 @@ CWebPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     httpServerPort = config.GetAttributeValueOrChildValueByName( "httpServerPort" ).AsUInt16( httpServerPort, true );
     exposeBasicHealthEndpoint = config.GetAttributeValueOrChildValueByName( "exposeBasicHealthEndpoint" ).AsBool( exposeBasicHealthEndpoint, true );
     basicHealthEndpointPath = config.GetAttributeValueOrChildValueByName( "basicHealthEndpointPath" ).AsString( basicHealthEndpointPath, true );
+    supportHttpServerBasedRestEndpoints = config.GetAttributeValueOrChildValueByName( "supportHttpServerBasedRestEndpoints" ).AsBool( supportHttpServerBasedRestEndpoints, true );
+    maxPublishedMsgCountToRetainForRest = config.GetAttributeValueOrChildValueByName( "maxPublishedMsgCountToRetainForRest" ).AsInt32( maxPublishedMsgCountToRetainForRest, true );
 
     return true;
 }
@@ -119,6 +127,8 @@ CWebPubSubClientTopicConfig::operator=( const CWebPubSubClientTopicConfig& src )
         httpServerPort = src.httpServerPort;
         exposeBasicHealthEndpoint = src.exposeBasicHealthEndpoint;
         basicHealthEndpointPath = src.basicHealthEndpointPath;
+        supportHttpServerBasedRestEndpoints = src.supportHttpServerBasedRestEndpoints;
+        maxPublishedMsgCountToRetainForRest = src.maxPublishedMsgCountToRetainForRest;
     }
     return *this;
 }

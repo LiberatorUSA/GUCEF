@@ -64,6 +64,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpMimeTypes
     static const CORE::CString MimeTypeIniProper;
     static const CORE::CString MimeTypeText;
     static const CORE::CString MimeTypeOctet;
+    static const CORE::CString MimeTypeWwwFormUrlencoded;
 
 };
 

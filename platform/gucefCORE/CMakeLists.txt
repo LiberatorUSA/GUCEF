@@ -196,6 +196,7 @@ set( HEADER_FILES
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
+  include/gucefCORE_CUrlEncoder.h
   include/gucefCORE_CUtf8String.h
   include/gucefCORE_CVariant.h
   include/gucefCORE_CVariantBinarySerializer.h
@@ -389,6 +390,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTaskManager.cpp
   src/gucefCORE_CThreadPool.cpp
   src/gucefCORE_CTime.cpp
+  src/gucefCORE_CUrlEncoder.cpp
   src/gucefCORE_CUtf8String.cpp
   src/gucefCORE_CVariant.cpp
   src/gucefCORE_CVariantBinarySerializer.cpp
