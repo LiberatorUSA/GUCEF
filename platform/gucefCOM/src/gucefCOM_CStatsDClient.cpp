@@ -325,10 +325,10 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
             return false;
     }
 
-    node->SetAttribute( "StatsDestination", m_statsDestination.AddressAndPortAsString() );
-    node->SetAttribute( "StatsNamePrefix", m_statNamePrefix );
-    node->SetAttribute( "StatsInterface", m_statsInterface.AddressAndPortAsString() );
-    node->SetAttribute( "Transmit", m_transmit );
+    node->SetAttribute( "statsDestination", m_statsDestination.AddressAndPortAsString() );
+    node->SetAttribute( "statsNamePrefix", m_statNamePrefix );
+    node->SetAttribute( "statsInterface", m_statsInterface.AddressAndPortAsString() );
+    node->SetAttribute( "transmit", m_transmit );
     node->SetAttribute( "logStats", m_logStats );
     return true;
 }
@@ -344,7 +344,7 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
     {
         // First load the mandatory settings
         CORE::CVariant value;
-        value = node->GetAttributeValueOrChildValueByName( "StatsDestination" );
+        value = node->GetAttributeValueOrChildValueByName( "statsDestination" );
         if ( !value.IsNULLOrEmpty() )
         {
             value = CORE::ResolveVars( value.AsString() );
@@ -354,9 +354,9 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
             return false;
 
         // Load extra settings for which the default can also be good enough
-        m_statNamePrefix = node->GetAttributeValueOrChildValueByName( "StatsNamePrefix" ).AsString( m_statNamePrefix, true );
-        m_statsInterface.SetHostnameAndPort( node->GetAttributeValueOrChildValueByName( "StatsInterface" ).AsString( m_statsInterface.HostnameAndPortAsString(), true ) );
-        m_transmit = node->GetAttributeValueOrChildValueByName( "Transmit" ).AsBool( m_transmit, true );
+        m_statNamePrefix = node->GetAttributeValueOrChildValueByName( "statsNamePrefix" ).AsString( m_statNamePrefix, true );
+        m_statsInterface.SetHostnameAndPort( node->GetAttributeValueOrChildValueByName( "statsInterface" ).AsString( m_statsInterface.HostnameAndPortAsString(), true ) );
+        m_transmit = node->GetAttributeValueOrChildValueByName( "transmit" ).AsBool( m_transmit, true );
         m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
     }
 

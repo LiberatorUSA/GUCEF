@@ -200,7 +200,7 @@ CUDPSocket::CUDPSocket( bool blocking )
 CUDPSocket::~CUDPSocket()
 {GUCEF_TRACE;
 
-    Close( true );
+    Close( false );
 
     delete _data;
     _data = NULL;

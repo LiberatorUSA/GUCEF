@@ -1710,7 +1710,12 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath  
         else
         {
             // Provided input content replaces the entire app config segment
+            // We also protect against dropping the node name if only the values are provided in this subset
+            CORE::CString nodeName = appConfigData->GetName();
             *appConfigData = input;
+            if ( appConfigData->GetName().IsNULLOrEmpty() )
+                appConfigData->SetName( nodeName ); 
+
         }
         return UpdateGlobalConfig( globalCfg );
     }

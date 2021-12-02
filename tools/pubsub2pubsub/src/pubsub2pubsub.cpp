@@ -2324,9 +2324,9 @@ RestApiPubSub2PubSubInfoResource::Serialize( const CORE::CString& resourcePath  
     output.SetAttribute( "appBuildDateTime", PubSub2PubSub::GetAppCompileDateTime().ToIso8601DateTimeString( true, true ) );
     output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
-    output.SetAttribute( "isReleaseBuild", "false" );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( false ) );
     #else
-    output.SetAttribute( "isReleaseBuild", "true" );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( true ) );
     #endif
     return true;
 }
@@ -2480,7 +2480,11 @@ RestApiPubSub2PubSubConfigResource::Deserialize( const CORE::CString& resourcePa
         else
         {
             // Provided input content replaces the entire app config segment
+            // We also protect against dropping the node name if only the values are provided in this subset
+            CORE::CString nodeName = appConfigData->GetName();
             *appConfigData = input;
+            if ( appConfigData->GetName().IsNULLOrEmpty() )
+                appConfigData->SetName( nodeName ); 
         }
         return UpdateGlobalConfig( globalCfg );
     }
@@ -2811,13 +2815,13 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
         return false;
     }
 
-    m_globalStandbyEnabled = appConfig->GetAttributeValueOrChildValueByName( "GlobalStandbyEnabled" ).AsBool( m_globalStandbyEnabled, true );
+    m_globalStandbyEnabled = appConfig->GetAttributeValueOrChildValueByName( "globalStandbyEnabled" ).AsBool( m_globalStandbyEnabled, true );
 
-    m_pubSub2PubSubStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "PubSub2PubSubStartChannelID" ).AsInt32( m_pubSub2PubSubStartChannelID, true );
-    CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "ChannelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
-    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "ChannelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size(), true );
+    m_pubSub2PubSubStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "pubSub2PubSubStartChannelID" ).AsInt32( m_pubSub2PubSubStartChannelID, true );
+    CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "channelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
+    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "channelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size(), true );
 
-    bool applyCpuThreadAffinityByDefault = appConfig->GetAttributeValueOrChildValueByName( "ApplyCpuThreadAffinityByDefault" ).AsBool( false, true );
+    bool applyCpuThreadAffinityByDefault = appConfig->GetAttributeValueOrChildValueByName( "applyCpuThreadAffinityByDefault" ).AsBool( false, true );
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     // We will assume we are always given a full not a partial config so we clear the existing channel settings
@@ -2938,13 +2942,13 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
         channelSettings->UpdateDerivedSettings();
     }
 
-    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "RestApiPort" ).AsUInt16( 10000, true ) );
+    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
 
     m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2PubSubInfoResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) ) );
     m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping( "/config/channels/*", RestApiPubSubClientChannelConfigResource::THTTPServerResourcePtr( new RestApiPubSubClientChannelConfigResource( this ) )  );
-    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "RestBasicHealthUri" ).AsString( "/health/basic", true ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
+    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

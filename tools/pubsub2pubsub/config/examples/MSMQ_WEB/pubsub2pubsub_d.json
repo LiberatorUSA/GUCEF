@@ -5,12 +5,12 @@
 		"AWS_SECRET_ACCESS_KEY": "",
 		"AWS_SESSION_TOKEN": "",
 		"DefaultClientConfig.region": "us-east-2",
-		"LogLevel": "5"
+		"LogLevel": 5
 	},
 	"StatsDClient": {
-		"StatsDestination": "statsd.mynetwork.example:8125",
-		"StatsNamePrefix": "myenv.$HOSTNAME$.pubsub2pubsub.",
-		"Transmit": true,
+		"statsDestination": "statsd.mynetwork.example:8125",
+		"statsNamePrefix": "myenv.$HOSTNAME$.pubsub2pubsub.",
+		"transmit": true,
 		"logStats": false
 	},
 	"PubSub2PubSub": {
@@ -151,12 +151,12 @@
 	},
 	"Main": {
 		"AppArgs": {
-			"ChannelCount": 1,
-			"GlobalStandbyEnabled": false,
-			"PubSub2PubSubStartChannelID": 0,
-			"RestApiPort": 10000,
-			"RestBasicHealthUri": "/health/basic",
-			"TransmitMetrics": true,
+			"channelCount": 1,
+			"globalStandbyEnabled": false,
+			"pubSub2PubSubStartChannelID": 0,
+			"restApiPort": 10000,
+			"restBasicHealthUri": "/health/basic",
+			"transmitMetrics": true,
 			"outputDir": "$MODULEDIR$"
 		}
 	}
