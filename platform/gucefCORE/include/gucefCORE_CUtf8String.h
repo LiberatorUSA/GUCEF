@@ -178,12 +178,37 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     char* C_String( void );
 
     /** 
+     *  UTF8 class specific:
      *  Uses the concept of code point indeces to index into the string
      *  Note that this operation requires seeking and is expensive
      *
      *  @return UTF32 encoded singular code point at the code point index requested or 0 if index is invalid
      */
     Int32 CodepointAtIndex( const UInt32 index ) const;
+
+    /**
+     *  UTF8 class specific:
+     *  Scans the UTF8 variable length string to the memory offset of the desired codepoint index
+     *  Uses the concept of code point indeces to index into the string
+     *  Note that this operation requires seeking and is expensive
+     */ 
+    const char* CodepointPtrAtIndex( const UInt32 index, UInt32& bytesFromStart ) const;
+
+    /**
+     *  UTF8 class specific:
+     *  Advances the pointer given to the next code point position while also performing range checking
+     *  for this string.
+     *  @return pointer to the next utf8 code point, if none exists or in case of error GUCEF_NULL is returned
+     */ 
+    const char* NextCodepointPtr( const char* currentCpPos ) const;
+
+    /**
+     *  UTF8 class specific:
+     *  Advances the pointer given to the next code point position while also performing range checking
+     *  for this string.
+     *  @return pointer to the next utf8 code point, if none exists or in case of error GUCEF_NULL is returned
+     */ 
+    const char* NextCodepointPtr( const char* currentCpPos, Int32& currentUtf32Cp ) const;
 
     /**
      *  If you wish to manipulate characters in a char buffer
@@ -397,16 +422,32 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     bool IsFormattingValid( void ) const;
 
     /**
+     *  UTF8 class specific:
      *  Explicitly reduce the content down to ASCII.
      *  This is a lossy operation. Any non-ASCII UTF8 code point is replaced
      *  by the 'asciiReplacement' character.
      */
     CAsciiString ForceToAscii( char asciiReplacement = '*' ) const;
 
-    private:
+    /**
+     *  UTF8 class specific:
+     *  Provides external code the ability to leverage UTF translation
+     *  @return the number of bytes the UTF32 code point takes up when encoded as UTF8 inside the given buffer, -1 on error
+     */
+    static Int32 EncodeUtf32CodePointToUtf8( const Int32 utf32CodePoint ,
+                                             char* outUtf8Buffer        ,
+                                             UInt32 outUtf8BufferSize   );
+    
+    /**
+     *  UTF8 class specific:
+     *  Provides external code the ability to leverage UTF translation
+     *  @return the number of bytes the UTF8 code point takes up and thus how many bytes were read from 'utf8Buffer', -1 on error
+     */
+    static Int32 EncodeUtf8CodePointToUtf32( const char* utf8Buffer        ,
+                                             const UInt32 utf8BufferSize   ,
+                                             Int32& outUtf32CodePoint      );
 
-    // Scans the UTF8 variable length string to the memory offset of the desired codepoint index
-    char* CodepointPtrAtIndex( const UInt32 index, UInt32& bytesFromStart ) const;
+    private:
 
     //  Scans the UTF8 variable length string to the ptr address given to determine which code point index that is 
     // and the associated code point. Returns -1 if not a valid sub string pointer

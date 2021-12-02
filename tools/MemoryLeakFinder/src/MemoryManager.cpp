@@ -1095,7 +1095,7 @@ void MemoryManager::log( char *s, ... )
  */
 int MemoryManager::getHashIndex( const void *address )
 {
-    #if GUCEF_32BIT
+    #ifdef GUCEF_32BIT
     return ((Int32)address >> 4) & (HASH_SIZE -1);
     #else
     return ((Int64)address >> 4) & (HASH_SIZE -1);

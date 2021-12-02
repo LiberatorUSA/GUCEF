@@ -195,6 +195,42 @@ CUtf8String::~CUtf8String()
 
 /*-------------------------------------------------------------------------*/
 
+Int32 
+CUtf8String::EncodeUtf32CodePointToUtf8( const Int32 utf32CodePoint ,
+                                         char* outUtf8Buffer        ,
+                                         UInt32 outUtf8BufferSize   )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != outUtf8Buffer && outUtf8BufferSize > 0 )
+    {   
+        memset( outUtf8Buffer, 0, outUtf8BufferSize );
+        const char* newPos = (const char*) utf8catcodepoint( outUtf8Buffer, utf32CodePoint, outUtf8BufferSize );
+        if ( GUCEF_NULL != newPos )
+            return (Int32) ( newPos - outUtf8Buffer );
+    }        
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 
+CUtf8String::EncodeUtf8CodePointToUtf32( const char* utf8Buffer        ,
+                                         const UInt32 utf8BufferSize   ,
+                                         Int32& outUtf32CodePoint      )
+{GUCEF_TRACE;
+
+    outUtf32CodePoint = 0;
+    if ( GUCEF_NULL != utf8Buffer && utf8BufferSize > 0 )
+    {   
+        const char* newPos = (const char*) utf8codepoint( utf8Buffer, &outUtf32CodePoint );
+        if ( GUCEF_NULL != newPos )
+            return (Int32) ( newPos - utf8Buffer );
+    }        
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CUtf8String&
 CUtf8String::operator=( const CUtf8String &src )
 {GUCEF_TRACE;
@@ -262,8 +298,10 @@ CUtf8String::operator!=( const Int32 NULLvalueOrUtf32 ) const
     // Treat as UTF32 code point, compress as needed for compatibility with UTF8 followed by
     // the actual compare
     char utfTempBuffer[ 5 ] = { 0, 0, 0, 0, 0 };
-    utf8catcodepoint( utfTempBuffer, NULLvalueOrUtf32, 5 );
-    return 0 != utf8cmp( m_string, utfTempBuffer );
+    void* newPos = utf8catcodepoint( utfTempBuffer, NULLvalueOrUtf32, 5 );
+    if ( GUCEF_NULL != newPos )
+        return 0 != utf8cmp( m_string, utfTempBuffer );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -284,8 +322,10 @@ CUtf8String::operator==( const Int32 NULLvalueOrUtf32 ) const
     // Treat as UTF32 code point, compress as needed for compatibility with UTF8 followed by
     // the actual compare
     char utfTempBuffer[ 5 ] = { 0, 0, 0, 0, 0 };
-    utf8catcodepoint( utfTempBuffer, NULLvalueOrUtf32, 5 );
-    return 0 == utf8cmp( m_string, utfTempBuffer );
+    void* newPos = utf8catcodepoint( utfTempBuffer, NULLvalueOrUtf32, 5 );
+    if ( GUCEF_NULL != newPos )
+        return 0 == utf8cmp( m_string, utfTempBuffer );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,7 +431,7 @@ CUtf8String::CodepointAtIndex( const UInt32 index ) const
 
 /*-------------------------------------------------------------------------*/
 
-char*
+const char*
 CUtf8String::CodepointPtrAtIndex( const UInt32 index, UInt32& bytesFromStart ) const
 {GUCEF_TRACE;
 
@@ -410,8 +450,33 @@ CUtf8String::CodepointPtrAtIndex( const UInt32 index, UInt32& bytesFromStart ) c
         bytesFromStart += (UInt32) ( newCpPos - cpPos );
         cpPos = newCpPos;
     }
-    return (char*) cpPos;
+    return (const char*) cpPos;
 }
+
+/*-------------------------------------------------------------------------*/
+
+const char* 
+CUtf8String::NextCodepointPtr( const char* currentCpPos ,
+                               Int32& currentUtf32Cp    ) const
+{GUCEF_TRACE;
+
+    if ( currentCpPos < (m_string+m_byteSize) &&
+         currentCpPos >= m_string              )
+    {
+        return (const char*) utf8codepoint( currentCpPos, &currentUtf32Cp );
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char* 
+CUtf8String::NextCodepointPtr( const char* currentCpPos ) const
+{GUCEF_TRACE;
+
+    Int32 currentUtf32Cp = 0;
+    return NextCodepointPtr( currentCpPos, currentUtf32Cp );
+}                             
 
 /*-------------------------------------------------------------------------*/
 
@@ -1194,7 +1259,7 @@ CUtf8String::Trim( bool frontToBack ) const
         {
             UInt32 bytesFromStart = 0;
             UInt32 charsToCut = 0;
-            void* cpPos = CodepointPtrAtIndex( m_length-1, bytesFromStart );
+            void* cpPos = (void*) CodepointPtrAtIndex( m_length-1, bytesFromStart );
             Int32 cp = 0;
             Int32 i = (Int32) m_length-1;
             do
@@ -1485,7 +1550,7 @@ CUtf8String::HasChar( Int32 searchchar        ,
     {
         UInt32 bytesFromStart = 0;
         Int32 max = startIndex > m_length-1 ? m_length-1 : startIndex;
-        void* cpPos = CodepointPtrAtIndex( max, bytesFromStart );
+        void* cpPos = (void*) CodepointPtrAtIndex( max, bytesFromStart );
         Int32 cp = 0;
         Int32 i = (Int32) max;
         do
@@ -1782,7 +1847,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
             return -1;
 
         UInt32 bytesFromStart = 0;
-        char* cpPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
+        char* cpPos = (char*) CodepointPtrAtIndex( startIndex, bytesFromStart );
         UInt32 maxByteOffset = m_byteSize - substr.m_byteSize;
 
         for ( UInt32 i=bytesFromStart; i<=maxByteOffset; ++i )
@@ -1802,7 +1867,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
             return -1;
 
         UInt32 bytesFromStart = 0;
-        char* cpPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
+        char* cpPos = (char*) CodepointPtrAtIndex( startIndex, bytesFromStart );
         for ( Int32 i=bytesFromStart-(substr.m_byteSize-1); i>=0; --i )
         {
             if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize-1 ) )

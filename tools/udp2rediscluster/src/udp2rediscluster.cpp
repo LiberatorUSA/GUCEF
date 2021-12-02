@@ -1554,9 +1554,9 @@ RestApiUdp2RedisInfoResource::Serialize( const CORE::CString& resourcePath   ,
     output.SetAttribute( "appBuildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
     output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
-    output.SetAttribute( "isReleaseBuild", "false" );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( false ) );
     #else
-    output.SetAttribute( "isReleaseBuild", "true" );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( true ) );
     #endif
     return true;
 }

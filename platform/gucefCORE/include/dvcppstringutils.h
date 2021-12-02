@@ -285,7 +285,14 @@ MD5ToString( const UInt8 md5Digest[ 16 ] );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP void
-ConvertByteToHexChars( const Int8 byte ,
+ConvertHexCharsToByte( const char hexCharA  ,
+                       const char hexCharB  ,
+                       char& byte           );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP void
+ConvertByteToHexChars( const char byte ,
                        char& hexCharA  ,
                        char& hexCharB  );
 

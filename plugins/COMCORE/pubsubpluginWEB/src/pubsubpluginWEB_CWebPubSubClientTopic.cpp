@@ -301,6 +301,12 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
             TClientTopicIndexMap* topicIndexMap = new TClientTopicIndexMap( "PubSubClientTopics", "PubSubClientTopic", "topicName", &topicNameMap, this );
             GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicIndexMapPtr( topicIndexMap->CreateSharedPtr() );
             m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics", topicIndexMapPtr ); 
+
+            // This one is a bit problematic: If we have multiple clients we can have duplicate topics name wise which in turn would actually be distinct 'topicMsgMap' collections
+            // right now only the first instance would be accessable due to the overlap
+            TClientTopicMsgsIndexMap* topicMsgsIndexMap = new TClientTopicMsgsIndexMap( "PubSubMsgs", "PubSubMsg", "publishActionId", topicMsgMap, this );
+            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsIndexMap->CreateSharedPtr() );
+            m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
         }
 
         // Store message

@@ -224,6 +224,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientTopicPtrVector >              TClientTopicIndexMap;
     typedef std::map< CORE::CString, TStringToPubSubClientTopicPtrVectorMap >                                           TStringToStringToPubSubClientTopicPtrVectorMap;            
     typedef GUCEF::WEB::CDummyHTTPServerResource                                                                        TDummyHttpServerResource;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TClientTopicMsgsIndexMap;
 
     CWebPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;

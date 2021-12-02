@@ -50,46 +50,92 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void
+bool
 CUrlEncoder::EncodeToAscii( const CORE::CUtf8String& strToBeEncoded ,
                             CORE::CAsciiString& encodedStr          )
 {GUCEF_TRACE;
 
-    encodedStr.Clear(); // @TODO: optimize memory management
-    
+    // We know that every char in the to-be-encoded string could potentially 
+    // result in a url encoded set of 3 bytes. Hence we multiply by 3 for every char to cover the worst case scenario
+    // this seems rather wasteful but keep in mind you can keep the 'encodedStr' variable around for repeat processing
+    // as such you can end up with very few allocations.
+    char* encodedChars = encodedStr.Reserve( strToBeEncoded.ByteSize() * 3, 0 );
+    char* encodedCharPos = encodedChars;
+    if ( GUCEF_NULL == encodedChars )
+        return false;
+        
+    const char* utf8Cp = strToBeEncoded.C_String();
     for ( UInt32 i=0; i<strToBeEncoded.Length(); ++i )
-    {
-        // @TODO: Optimize: We need to check every code point and seeks are expensive. 
-        Int32 codePoint = strToBeEncoded.CodepointAtIndex( i );
-
-        if ( ( codePoint >= '0' && codePoint <= '9' ) || // digits 0-9 are allowed
-             ( codePoint >= 'A' && codePoint <= 'Z' ) || // letters A-Z are allowed
-             ( codePoint >= 'a' && codePoint <= 'z' ) || // letters a-z are allowed
-             ( codePoint == '-' || codePoint == '.' || codePoint == '_' || codePoint == '~' ) ) // a few special chars are allowed: "-", ".", "_", "~"
+    {              
+        Int32 codePoint = 0;
+        const char* newUtf8Cp = strToBeEncoded.NextCodepointPtr( utf8Cp, codePoint );
+        if ( GUCEF_NULL != newUtf8Cp )
         {
-            // Since we checked the ranges we can safely cast to a char
-            encodedStr += (char) codePoint;
+            if ( ( codePoint >= '0' && codePoint <= '9' ) || // digits 0-9 are allowed
+                 ( codePoint >= 'A' && codePoint <= 'Z' ) || // letters A-Z are allowed
+                 ( codePoint >= 'a' && codePoint <= 'z' ) || // letters a-z are allowed
+                 ( codePoint == '-' || codePoint == '.' || codePoint == '_' || codePoint == '~' ) ) // a few special chars are allowed: "-", ".", "_", "~"
+            {
+                // Since we checked the ranges we can safely cast to a char
+                // ASCII is a subset of UTF8 and this is a subset of ASCII
+                *encodedCharPos = (char) codePoint;
+                ++encodedCharPos;
+            }
+            else
+            {
+                while ( utf8Cp != newUtf8Cp )
+                {
+                    // Encode the current UTF8 byte
+                    char hexCharA = 0;
+                    char hexCharB = 0;
+                    ConvertByteToHexChars( *utf8Cp, hexCharA, hexCharB );
+ 
+                    *encodedCharPos = '%';
+                    ++encodedCharPos;
+                    *encodedCharPos = hexCharA;
+                    ++encodedCharPos;
+                    *encodedCharPos = hexCharB;
+                    ++encodedCharPos;
+                
+                    ++utf8Cp;
+                }
+            }
+
+            utf8Cp = newUtf8Cp;
         }
         else
         {
-            char hexCharA = 0;
-            char hexCharB = 0;
-            ConvertByteToHexChars( codePoint, hexCharA, hexCharB );
-        // @TODO: handle multiple bytes    
-            encodedStr += '%' + hexCharA + hexCharB;
+            // We already know we should have enough code points
+            // As such inability to read them suggests the string is malformed
+            return false;
         }
     }
+
+    //encodedStr.SetLength( (UInt32) (encodedCharPos-encodedChars) );
+
+    // @TODO: SetLength doesnt work well here due to pending rework of legacy AsciiString internals
+    *encodedCharPos = '\0';
+    encodedStr.DetermineLength();
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CUrlEncoder::EncodeToAscii( const CORE::CAsciiString& strToBeEncoded , 
                             CORE::CAsciiString& encodedStr           )
 {GUCEF_TRACE;
 
-    encodedStr.Clear(); // @TODO: optimize memory management
-    
+    // We know that every char in the to-be-encoded string could potentially 
+    // result in a url encoded set of 3 bytes. Hence we multiply by 3 for every char to cover the worst case scenario
+    // this seems rather wasteful but keep in mind you can keep the 'encodedStr' variable around for repeat processing
+    // as such you can end up with very few allocations.
+    char* encodedChars = encodedStr.Reserve( strToBeEncoded.ByteSize() * 3, 0 );
+    char* encodedCharPos = encodedChars;    
+    if ( GUCEF_NULL == encodedChars )
+        return false;
+
     // Since the input is just ASCII we only have to worry about a few cases and no variable length encoding
     for ( UInt32 i=0; i<strToBeEncoded.Length(); ++i )
     {
@@ -99,7 +145,8 @@ CUrlEncoder::EncodeToAscii( const CORE::CAsciiString& strToBeEncoded ,
              ( codePoint >= 'a' && codePoint <= 'z' ) || // letters a-z are allowed
              ( codePoint == '-' || codePoint == '.' || codePoint == '_' || codePoint == '~' ) ) // a few special chars are allowed: "-", ".", "_", "~"
         {
-            encodedStr += codePoint;
+            *encodedCharPos = codePoint;
+            ++encodedCharPos;
         }
         else
         {
@@ -107,48 +154,83 @@ CUrlEncoder::EncodeToAscii( const CORE::CAsciiString& strToBeEncoded ,
             char hexCharB = 0;
             ConvertByteToHexChars( codePoint, hexCharA, hexCharB );
             
-            encodedStr += '%' + hexCharA + hexCharB;
+            *encodedCharPos = '%';
+            ++encodedCharPos;
+            *encodedCharPos = hexCharA;
+            ++encodedCharPos;
+            *encodedCharPos = hexCharB;
+            ++encodedCharPos;
         }
     }
+
+    //encodedStr.SetLength( (UInt32) (encodedCharPos-encodedChars) );
+    
+    // @TODO: SetLength doesnt work well here due to pending rework of legacy AsciiString internals
+    *encodedCharPos = '\0';
+    encodedStr.DetermineLength();
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CUrlEncoder::DecodeFromAscii( const CORE::CAsciiString& strToBeDecoded , 
                               CORE::CUtf8String& decodedStr            )
 {GUCEF_TRACE;
 
-    decodedStr.Clear(); // @TODO: optimize memory management
-    
+    // since the hex encoding takes 3 bytes per utf8 byte we can count on the ascii string being >= the length of
+    // the utf8 decoded string. This helps avoid unneeded memory allocations
+    decodedStr.Reserve( strToBeDecoded.ByteSize(), 0 );
+         
     // Since the input is just ASCII we only have to worry about a few cases and no variable length encoding
+    UInt32 utf8BytesCollected = 0;    
+    char utf8TempBuffer[ 5 ] = { 0, 0, 0, 0, 0 };
     for ( UInt32 i=0; i<strToBeDecoded.Length(); ++i )
     {
         char codePoint = strToBeDecoded[ i ];
-        if ( codePoint == '%' )
+
+        while ( '%' == codePoint && utf8BytesCollected < 4 )
         {
             // Since we have found an encoding marker we need to check the next 2 chars
             if ( i+2<strToBeDecoded.Length() )
             {
                 char hexCharA = strToBeDecoded[ i+1 ];
                 char hexCharB = strToBeDecoded[ i+2 ];
-
-                // ConvertHexCharsToByte
-                
-                Int32 utfCodePoint = 0;
-                decodedStr += utfCodePoint;
+                ConvertHexCharsToByte( hexCharA, hexCharB, utf8TempBuffer[ utf8BytesCollected ] ); 
+                ++utf8BytesCollected; 
+                i+=2;
             }
             else
             {
-                return;
+                // We should not have run out of bytes at this point
+                return false;
+            }
+
+            // Did we gather enough bytes to generate a complete utf8 code point?
+            Int32 utf32CodePoint = 0;
+            Int32 bytesInCurrentUtf8CodePoint = CUtf8String::EncodeUtf8CodePointToUtf32( utf8TempBuffer, 5, utf32CodePoint ); 
+            if ( -1 != bytesInCurrentUtf8CodePoint )
+            {
+                decodedStr += utf32CodePoint;   // Add a previously URL encoded code point
+                memset( utf8TempBuffer, 0, 5 );
+                utf8BytesCollected = 0;
             }
         }
-        else
+
+        if ( 0 == utf8BytesCollected )
         {
             // ASCII fits within UTF8 so a cast will do
             decodedStr += (Int32) codePoint;
         }
+        else
+        {
+            // Malformed: We should not have any partial UTF8 code points that we could not complete
+            return false;
+        }
     }
+    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

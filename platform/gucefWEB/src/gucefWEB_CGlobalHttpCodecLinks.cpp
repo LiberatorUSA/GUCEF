@@ -77,16 +77,19 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
     SubscribeTo( &app, CORE::CGUCEFApplication::AppShutdownEvent, callback );
 
     TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
-    SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback2 );
+    SubscribeTo( &configStore, configStore.GlobalBootstrapConfigLoadCompletedEvent, callback2 );
 
     TEventCallback callback3( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
-    SubscribeTo( &app, app.FirstCycleEvent, callback3 );
+    SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback3 );
 
-    TEventCallback callback4( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
-    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecRegisteredEvent, callback4 );
+    TEventCallback callback4( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
+    SubscribeTo( &app, app.FirstCycleEvent, callback4 );
 
     TEventCallback callback5( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
-    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback5 );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecRegisteredEvent, callback5 );
+
+    TEventCallback callback6( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback6 );
 }
 
 /*-------------------------------------------------------------------------*/

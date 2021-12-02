@@ -140,49 +140,33 @@ bool
 CWebPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
-    features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
-    features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
-    features.supportsAbsentPrimaryPayloadPerMsg = true; // Its allowed to send tags without a BODY payload
-    features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
-    features.supportsDuplicateKeysPerMsg = false;       // TODO: Since arbitrary key-value app data is not native and we simulate this we will do so in a manner that supports duplicate keys
-    features.supportsMetaDataKeyValueSetPerMsg = true;  // This is native to MSMQ
-    features.supportsMultiHostSharding = false;         // MSMQ is tied to the Windows O/S and queues are not auto shared across such O/S instances
-    features.supportsPublishing = true;                 // We support being a MSQM queue publisher in this plugin
-    features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
-    features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
-    features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"        
-    features.supportsAbsentMsgReceivedAck = false;      // Since MSMQ is a queue, by default you consume the message when you read it
-    features.supportsAckUsingLastMsgInBatch = false;    // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
-    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
-    features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
-    features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
-    features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsBinaryPayloads = true;                // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsPerMsgIds = true;                     // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsPrimaryPayloadPerMsg = true;          // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsAbsentPrimaryPayloadPerMsg = true;    // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsKeyValueSetPerMsg = true;             // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsDuplicateKeysPerMsg = true;           // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsMetaDataKeyValueSetPerMsg = true;     // We can use our own serializer for the messages and as such we should be able to support all its fields
+    features.supportsMultiHostSharding = false;            // The backend directly opens the ports on the local machine, any sharding would have to be external
+    features.supportsPublishing = true;                    // We support Web clients consuming messages in a variaty of Webby ways
+    features.supportsSubscribing = true;                   // We support Web clients pushing messages in a variaty of Webby ways
+    features.supportsMetrics = true;                       // This plugin has support for reporting its own set of metrics
+    features.supportsAutoReconnect = true;                 // Server port can attempt to auto-re-open on error and such       
     
-    // For MSMQ 3.0 and above:
-    #if ( _WIN32_WINNT >= 0x0501 )
-    
-    bool supportLookup = m_config.simulateReceiveAckFeatureViaLookupId && m_config.desiredFeatures.supportsSubscriberMsgReceivedAck; 
-    
-    features.supportsAutoMsgReceivedAck = !supportLookup;            // When simulating receive acks we never auto ack
-    features.supportsSubscriberMsgReceivedAck = supportLookup;       // The whole point is simulating the ability to ack that a message was handled
-    features.supportsAckUsingBookmark = supportLookup;               // Bookmark or message, either way we use the LookupID which we count as a topic index
-    features.supportsServerSideBookmarkPersistance = !supportLookup; // If we are using lookups the LookUp will need to be persisted externally from the app between runs
-    
-    features.supportsSubscribingUsingBookmark = true;             // we use the LookupID which we count as a topic index
-    features.supportsTopicIndexBasedBookmark = true;              // we use the LookupID which we count as a topic index
-    
-    #else
-
+    // todo:
+    features.supportsAbsentMsgReceivedAck = false;         // Since MSMQ is a queue, by default you consume the message when you read it
+    features.supportsAckUsingLastMsgInBatch = false;       // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
+    features.supportsBookmarkingConcept = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
+    features.supportsAutoBookmarking = true;               // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
+    features.supportsMsgIdBasedBookmark = false;           // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
+    features.supportsMsgIndexBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsMsgDateTimeBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
     features.supportsAutoMsgReceivedAck = true;            // Since MSMQ is a queue, by default you consume the message when you read it we can consider this an ack
     features.supportsSubscriberMsgReceivedAck = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsAckUsingBookmark = false;             // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsSubscribingUsingBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    
-    #endif
 
     return true;
 }

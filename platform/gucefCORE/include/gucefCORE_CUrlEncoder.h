@@ -55,13 +55,13 @@ class GUCEF_CORE_PUBLIC_CPP CUrlEncoder
 {
     public:
 
-    static void EncodeToAscii( const CUtf8String& strToBeEncoded, CAsciiString& encodedStr );
-    static void EncodeToAscii( const CAsciiString& strToBeEncoded, CAsciiString& encodedStr );
+    static bool EncodeToAscii( const CUtf8String& strToBeEncoded, CAsciiString& encodedStr );
+    static bool EncodeToAscii( const CAsciiString& strToBeEncoded, CAsciiString& encodedStr );
 
     static void Encode( const CUtf8String& strToBeEncoded, CString& encodedStr );
     static void Encode( const CAsciiString& strToBeEncoded, CString& encodedStr );
 
-    static void DecodeFromAscii( const CAsciiString& strToBeDecoded, CUtf8String& decodedStr );
+    static bool DecodeFromAscii( const CAsciiString& strToBeDecoded, CUtf8String& decodedStr );
 
     static void Decode( const CUtf8String& strToBeDecoded, CUtf8String& decodedStr );
     static void Decode( const CAsciiString& strToBeDecoded, CUtf8String& decodedStr );

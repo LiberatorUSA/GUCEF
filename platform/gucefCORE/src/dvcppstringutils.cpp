@@ -150,8 +150,24 @@ DivisionRemainder( Int32 dividend   ,
 
 static const char* g_hexDigits = "0123456789ABCDEF";
 
+/*-------------------------------------------------------------------------*/
+
 void
-ConvertByteToHexChars( const Int8 byte ,
+ConvertHexCharsToByte( const char hexCharA  ,
+                       const char hexCharB  ,
+                       char& byte           )
+{GUCEF_TRACE;
+
+    char hexStr[ 3 ] = { hexCharA, hexCharB, 0 };
+    int result = sscanf( hexStr, "%2hhx", &byte );
+    if ( 1 != result )
+        byte = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ConvertByteToHexChars( const char byte ,
                        char& hexCharA  ,
                        char& hexCharB  )
 {GUCEF_TRACE;
