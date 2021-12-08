@@ -212,10 +212,10 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
 {
     public:
 
-    typedef CTBasicSharedPtrCreator< T, LockType >                      TBasicSharedPtrCreatorBase;
-    typedef TBasicSharedPtrCreatorBase::TBasicSharedPtrContainedType    TSharedPtrContainedType;
-    typedef TBasicSharedPtrCreatorBase::TBasicSharedPtrLockType         TSharedPtrLockType;
-    typedef CTSharedPtr< T, LockType >                                  TSharedPtrType;
+    typedef CTBasicSharedPtrCreator< T, LockType >                               TBasicSharedPtrCreatorBase;
+    typedef typename TBasicSharedPtrCreatorBase::TBasicSharedPtrContainedType    TSharedPtrContainedType;
+    typedef typename TBasicSharedPtrCreatorBase::TBasicSharedPtrLockType         TSharedPtrLockType;
+    typedef CTSharedPtr< T, LockType >                                           TSharedPtrType;
 
     CTSharedPtr< T, LockType > CreateSharedPtr( void );
 
@@ -590,7 +590,7 @@ CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
 
     T* obj = GUCEF_NULL;
     try
-    {        
+    {
         CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( new T() ) )->CreateBasicSharedPtr() );
         return retVal;
     }
