@@ -121,19 +121,19 @@ LookForConfigFile( const CORE::CString& configFile )
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {            
+            {
                 configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
                 configFilePath = CORE::RelativePath( configFilePath );
 
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
                 if ( !FileExists( configFilePath ) )
-                {                                        
+                {
                     return CORE::CString::Empty;
                 }
             }
         }
 
-        return configFilePath; 
+        return configFilePath;
     }
 
     return configFile;
@@ -155,7 +155,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath ,
     #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    
+
     CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
     CORE::CString configFilePath = LookForConfigFile( configFile );
 
@@ -209,9 +209,35 @@ ParseParams( const int argc                 ,
 void
 GucefAppSignalHandler( int signal )
 {GUCEF_TRACE;
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "GucefAppSignalHandler: Received signal " + CORE::ToString( signal ) );
     ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FallbackFlushBootstrapLog( void )
+{GUCEF_TRACE;
+
+    CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( CORE::LOGLEVEL_EVERYTHING );
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "FallbackFlushBootstrapLog: Flushing bootstrap log entries for diagnostics using hardcoded fallbacks" );
+
+    CORE::CString outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+    if ( !CORE::CreateDirs( outputDir ) )
+    {
+        outputDir = CORE::RelativePath( "$MODULEDIR$" );
+    }
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "Udp2RedisCluster_log.txt" );
+
+    CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+    logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to fallback bootstrap log @ " + logFilename );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -251,14 +277,16 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     if ( !LoadConfig( bootstrapConfigPathParam, configPathParam ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because LoadConfig failed" );
+        FallbackFlushBootstrapLog();
         return -1;
     }
-    
+
     // After load get access to the app config
     const CORE::CDataNode* appConfig = udp2RedisCluster.GetAppConfig();
     if ( GUCEF_NULL == appConfig )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because no app config is available" );
+        FallbackFlushBootstrapLog();
         return -1;
     }
 
@@ -276,7 +304,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
-           
+
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
@@ -291,7 +319,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     pulseGenerator.RequestPulseInterval( 25 );
     pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
-    
+
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     returnValue = app.main( argc, argv, true );
     udp2RedisCluster.SetStandbyMode( true );
