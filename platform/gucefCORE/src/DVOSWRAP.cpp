@@ -160,41 +160,52 @@ LoadModuleDynamicly( const char* filename )
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
-    if ( NULL == modulePtr )
+    if ( GUCEF_NULL == modulePtr )
     {
-        /*
-         *  It is possible the load failed due to missing "lib" prefix on linux/android.
-         *  Check for this and compensate as needed
-         */
-        char hasLibPrefix = 0;
-        const char* fileOnly = Extract_Filename( fName );
-        UInt32 sLength = strlen( fileOnly );
-        //if ( sLength >= 3 )
-        //{
-        //    if ( 0 == memcmp( "lib", fileOnly, 3 ) )
-        //    {
-        //        hasLibPrefix = 1;
-        //    }
-        //}
-
-        //if ( 0 == hasLibPrefix )
+        // It is possible the load failed due to missing "lib" prefix on linux/android.
+        // Check for this and compensate as needed
+        CString fileOnly = ExtractFilename( fName );
+        if ( 0 != fileOnly.HasSubstr( "lib" ) )
         {
-            /*
-             *  No previous "lib" prefix was found, we will add one and try to load again
-             */
-            UInt32 fNameLen = strlen( fName );
-            char* newFilePath = (char*) malloc( fNameLen+3+1 );
-            memcpy( newFilePath, fName, fNameLen-sLength );
-            memcpy( newFilePath+(fNameLen-sLength), "lib", 3 );
-            memcpy( newFilePath+(fNameLen-sLength)+3, fileOnly, sLength+1 );
+            // No module name previous "lib" prefix was found, we will add one and try to load again
+            fileOnly = "lib" + fileOnly;
+            CString newFilePath = CombinePath( StripFilename( fName ), fileOnly );
 
-            modulePtr = (void*) dlopen( newFilePath, RTLD_NOW );
-
-            free( newFilePath );
+            modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
         }
     }
 
-    if ( NULL == modulePtr )
+    // It is possible that per Linux fashion the module is actually in a /lib/ dir
+    // while the current dir is pointing at a /bin/ dir due to the pattern of allowing
+    // $MODULEDIR$ variable based loading. We check for that here as well.
+    if ( GUCEF_NULL == modulePtr )
+    {
+        CString pathOnly = StripFilename( fName );
+        if ( "bin" == LastSubDir( pathOnly ) )
+        {
+            pathOnly = CombinePath( StripLastSubDir( pathOnly ), "lib" );
+            CString fileOnly = ExtractFilename( fName );
+            CString newFilePath = CombinePath( pathOnly, fileOnly );
+
+            modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
+
+            if ( GUCEF_NULL == modulePtr )
+            {
+                // It is possible the load failed due to missing "lib" prefix on linux/android.
+                // Check for this and compensate as needed
+                if ( 0 != fileOnly.HasSubstr( "lib" ) )
+                {
+                    // No module name previous "lib" prefix was found, we will add one and try to load again
+                    fileOnly = "lib" + fileOnly;
+                    newFilePath = CombinePath( pathOnly, fileOnly );
+
+                    modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
+                }
+            }
+        }
+    }
+
+    if ( GUCEF_NULL == modulePtr )
     {
         GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "LoadModuleDynamicly() reports error: " + CString( dlerror() ) );
     }
@@ -1285,7 +1296,7 @@ CreateProcCpuDataPoint( TProcessId* pid )
         ::GetProcessTimes( dataPoint->hProcess, &dummy, &dummy, &dataPoint->procKernelTime, &dataPoint->procUserTime );
         ::GetSystemTimes( &dataPoint->globalIdleTime, &dataPoint->globalKernelTime, &dataPoint->globalUserTime );
     }
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     dataPoint->pid = pid->pid;
     GetGlobalJiffies( &dataPoint->globalJiffies );
@@ -1377,7 +1388,7 @@ GetProcessCpuUsage( TProcessId* pid                             ,
         Float64 procCpuUseDelta = (Float64) ( procCpuTotal - prevProcCpuTotal );
 
         cpuUseInfo->overallCpuConsumptionPercentage = procCpuUseDelta / ( globalCpuUseDelta / 100.0 );
-        
+
         // Overwrite the CPU data point making current the previous for next call to this function
         previousCpuDataDataPoint->globalIdleTime = globalIdleTime;
         previousCpuDataDataPoint->globalKernelTime = globalKernelTime;
