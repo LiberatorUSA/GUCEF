@@ -108,7 +108,7 @@
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-#if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC )
+#if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUCfoobar )
 
   #define GUCEF_DLL_INIT_FUNC( ns )                               \
                                                                   \
