@@ -43,6 +43,7 @@
   #undef  WIN32_LEAN_AND_MEAN
   #include <windows.h>                /* Windows API */
   #include <psapi.h>
+  #include <powerbase.h>              /* needed for CPU stats */
   #undef min
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
@@ -93,6 +94,38 @@ namespace CORE {
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+// Note that this structure definition was accidentally omitted from WinNT.h. 
+// This error will be corrected in the future. In the meantime, to compile your application, 
+// include the structure definition contained in this topic in your source code.
+// See: https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str
+typedef struct _PROCESSOR_POWER_INFORMATION {
+  ULONG Number;
+  ULONG MaxMhz;
+  ULONG CurrentMhz;
+  ULONG MhzLimit;
+  ULONG MaxIdleState;
+  ULONG CurrentIdleState;
+} PROCESSOR_POWER_INFORMATION, *PPROCESSOR_POWER_INFORMATION;
+
+#endif
+
+/*--------------------------------------------------------------------------*/
+
+struct SCpuDataPoint
+{
+    TCpuStats cpuStats;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    PPROCESSOR_POWER_INFORMATION cpuPowerInfo;
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    #else
+
+    #endif
+};
 
 struct SProcCpuDataPoint
 {
@@ -652,6 +685,10 @@ GetCPUCountPerPackage( void )
 
     /* Number of Logical Cores per Physical Processor */
     UInt32 coreCount = 1;
+
+
+//::GetLogicalProcessorInformationEx
+
 
     /* Initialize to 1 to support older processors. */
     #if ( ( GUCEF_COMPILER == GUCEF_COMPILER_MSVC ) && ( GUCEF_CPU_ARCHITECTURE == GUCEF_CPU_ARCHITECTURE_X86 ) )
@@ -1275,7 +1312,8 @@ GetGlobalJiffies( UInt64* totalJiffies )
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
 CreateProcCpuDataPoint( TProcessId* pid )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == pid || 0 == pid->pid )
         return GUCEF_NULL;
 
@@ -1310,7 +1348,8 @@ CreateProcCpuDataPoint( TProcessId* pid )
 
 void
 FreeProcCpuDataPoint( TProcCpuDataPoint* cpuDataDataPoint )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != cpuDataDataPoint )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -1442,6 +1481,94 @@ GetProcessCpuUsage( TProcessId* pid                             ,
     return OSWRAP_FALSE;
 
     #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C TCpuDataPoint*
+CreateCpuDataPoint( void )
+{GUCEF_TRACE;
+
+    TCpuDataPoint* dataPoint = (TCpuDataPoint*) malloc( sizeof( TCpuDataPoint ) );
+    if ( GUCEF_NULL == dataPoint )
+        return GUCEF_NULL;
+
+    memset( dataPoint, 0, sizeof( TCpuDataPoint ) );
+    
+    dataPoint->cpuStats.logicalCpuCount = GetLogicalCPUCount();
+
+    UInt32 cpuStatsDataSize = sizeof( TLogicalCpuStats ) * dataPoint->cpuStats.logicalCpuCount;
+    dataPoint->cpuStats.logicalCpuStats = (TLogicalCpuStats*) malloc( cpuStatsDataSize );
+    memset( dataPoint->cpuStats.logicalCpuStats, 0, cpuStatsDataSize );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    UInt32 cpuPowerInfoDataSize = sizeof( PROCESSOR_POWER_INFORMATION ) * dataPoint->cpuStats.logicalCpuCount;
+    dataPoint->cpuPowerInfo = (PPROCESSOR_POWER_INFORMATION) malloc( cpuPowerInfoDataSize );
+    memset( dataPoint->cpuPowerInfo, 0, cpuPowerInfoDataSize );
+    
+    #endif
+
+    return dataPoint;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+FreeCpuDataPoint( TCpuDataPoint* cpuDataPoint )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != cpuDataPoint )
+    {
+        if ( GUCEF_NULL != cpuDataPoint->cpuStats.logicalCpuStats )
+            free( cpuDataPoint->cpuStats.logicalCpuStats );
+        
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        if ( GUCEF_NULL != cpuDataPoint->cpuPowerInfo )
+            free( cpuDataPoint->cpuPowerInfo );
+        
+        #endif
+        
+        free( cpuDataPoint );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
+             TCpuStats** cpuStats                    )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == previousCpuDataDataPoint || GUCEF_NULL == cpuStats )
+        return OSWRAP_FALSE;
+    *cpuStats = GUCEF_NULL;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    LONG retVal = ::CallNtPowerInformation( ProcessorInformation, 
+                                            NULL, 
+                                            0, 
+                                            previousCpuDataDataPoint->cpuPowerInfo, 
+                                            sizeof(PROCESSOR_POWER_INFORMATION) * previousCpuDataDataPoint->cpuStats.logicalCpuCount );
+    if ( 0 == retVal )
+    {
+        for ( UInt32 i=0; i<previousCpuDataDataPoint->cpuStats.logicalCpuCount; ++i )
+        {
+            PROCESSOR_POWER_INFORMATION* powerInfo = &previousCpuDataDataPoint->cpuPowerInfo[ i ];
+            TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
+            memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+            lCpuStats->cpuClockCurrentMhz = (UInt32) powerInfo->CurrentMhz;
+            lCpuStats->cpuClockMaxMhz = (UInt32) powerInfo->MhzLimit;
+            lCpuStats->cpuClockSpecMaxMhz = (UInt32) powerInfo->MaxMhz;
+        }    
+    }
+     
+    #endif
+
+    *cpuStats = &previousCpuDataDataPoint->cpuStats;
+    return OSWRAP_TRUE; 
 }
 
 /*-------------------------------------------------------------------------//

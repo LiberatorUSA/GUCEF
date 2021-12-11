@@ -251,6 +251,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_exeMatchPidMatchThreshold( 0 )
     , m_metricsThresholds()
     , m_procMetricsThresholds()
+    , m_globalCpuDataPoint( GUCEF_NULL )
     , m_gatherProcPageFaultCountInBytes( true )
     , m_gatherProcPageFileUsageInBytes( true )
     , m_gatherProcPeakPageFileUsageInBytes( true )
@@ -267,6 +268,10 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalTotalVirtualMemoryInBytes( true )
     , m_gatherProcCpuUptime( true )
     , m_gatherProcCpuOverallPercentage( true )
+    , m_gatherGlobalCpuStats( true )
+    , m_gatherGlobalCpuCurrentFrequencyInMhz( true )
+    , m_gatherGlobalCpuSpecMaxFrequencyInMhz( false )
+    , m_gatherGlobalCpuMaxFrequencyInMhz( false )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -278,6 +283,9 @@ ProcessMetrics::~ProcessMetrics()
 {GUCEF_TRACE;
 
     SetStandbyMode( true );
+
+    CORE::FreeCpuDataPoint( m_globalCpuDataPoint );
+    m_globalCpuDataPoint = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -597,6 +605,38 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
     }
 
+    if ( m_gatherGlobalCpuStats )
+    {
+        CORE::TCpuStats* cpuStats = GUCEF_NULL;
+        if ( OSWRAP_TRUE == CORE::GetCpuStats( m_globalCpuDataPoint, &cpuStats ) && GUCEF_NULL != cpuStats )
+        {
+            for ( CORE::UInt32 i=0; i<cpuStats->logicalCpuCount; ++i )
+            {
+                CORE::CString lCpuMetricPrefix = "ProcessMetrics.Cpu." + CORE::ToString( i ) +  ".";
+                CORE::TLogicalCpuStats* lCpuStats = &cpuStats->logicalCpuStats[ i ];
+                
+                if ( m_gatherGlobalCpuCurrentFrequencyInMhz )
+                {
+                    static const CORE::CString metricName = "CurrentFrequencyInMhz";
+                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockCurrentMhz, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockCurrentMhz ), metricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalCpuSpecMaxFrequencyInMhz )
+                {
+                    static const CORE::CString metricName = "SpecMaxFrequencyInMhz";
+                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockSpecMaxMhz, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockSpecMaxMhz ), metricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalCpuMaxFrequencyInMhz )
+                {
+                    static const CORE::CString metricName = "MaxFrequencyInMhz";
+                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockMaxMhz, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockMaxMhz ), metricName, CORE::CString::Empty );
+                }
+            }
+        }
+    }
+
     if ( m_gatherCpuStats )
     {
         TStringSet failedProcs;
@@ -801,12 +841,22 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime" ), m_gatherProcCpuUptime );
     m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
 
+    m_gatherGlobalCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuStats" ), m_gatherGlobalCpuStats );
+    m_gatherGlobalCpuCurrentFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuCurrentFrequencyInMhz" ), m_gatherGlobalCpuCurrentFrequencyInMhz );
+    m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
+    m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
+
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )
     {
         m_exeProcsToWatch.insert( (*i) );
         ++i;
+    }
+
+    if ( m_gatherGlobalCpuStats )
+    {
+        m_globalCpuDataPoint = CORE::CreateCpuDataPoint();
     }
 
     if ( m_enableEventMsgPublishing )

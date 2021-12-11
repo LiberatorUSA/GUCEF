@@ -248,6 +248,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     CORE::UInt32 m_exeMatchPidMatchThreshold;
     TMetricsThresholdMap m_metricsThresholds;
     TMetricsThresholdMapMap m_procMetricsThresholds;
+    CORE::TCpuDataPoint* m_globalCpuDataPoint;
 
     bool m_gatherProcPageFaultCountInBytes;
     bool m_gatherProcPageFileUsageInBytes;
@@ -267,6 +268,11 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     bool m_gatherProcCpuUptime;
     bool m_gatherProcCpuOverallPercentage;
+
+    bool m_gatherGlobalCpuStats;
+    bool m_gatherGlobalCpuCurrentFrequencyInMhz;
+    bool m_gatherGlobalCpuSpecMaxFrequencyInMhz;
+    bool m_gatherGlobalCpuMaxFrequencyInMhz;
 };
 
 /*-------------------------------------------------------------------------*/

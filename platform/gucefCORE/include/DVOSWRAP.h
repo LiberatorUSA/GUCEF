@@ -162,6 +162,36 @@ typedef struct SProcessCpuUsageInfo TProcessCpuUsageInfo;
 struct SProcCpuDataPoint;
 typedef struct SProcCpuDataPoint TProcCpuDataPoint;
 
+/*-------------------------------------------------------------------------*/
+
+struct SLogicalCpuStats
+{
+    UInt32 cpuClockCurrentMhz;
+    UInt32 cpuClockSpecMaxMhz;
+    UInt32 cpuClockMaxMhz;
+    Float64 overallCpuConsumptionPercentage;
+};
+typedef struct SLogicalCpuStats TLogicalCpuStats;
+
+/**
+ *  Structure holding various bits of cpu usage related information
+ *  If for the current O/S a field cannot be determined it will be set to 0
+ */
+struct SCpuStats
+{
+    UInt32 logicalCpuCount;
+    TLogicalCpuStats* logicalCpuStats; 
+};
+typedef struct SCpuStats TCpuStats;
+
+/**
+ *  In order to perform CPU usage measurements typically multiple measurements
+ *  need to be taken, combining data points.
+ *  The following structure is the platform wrapper for such data point storage
+ */
+struct SCpuDataPoint;
+typedef struct SCpuDataPoint TCpuDataPoint;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -363,6 +393,22 @@ GetProcessCpuUsage( TProcessId* pid                             ,
 
 GUCEF_CORE_PUBLIC_C void
 FreeProcCpuDataPoint( TProcCpuDataPoint* cpuDataDataPoint );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C TCpuDataPoint*
+CreateCpuDataPoint( void );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
+             TCpuStats** cpuStats                    );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeCpuDataPoint( TCpuDataPoint* cpuDataDataPoint );
 
 /*--------------------------------------------------------------------------*/
 

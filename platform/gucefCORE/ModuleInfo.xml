@@ -14,6 +14,7 @@
     <Module Platform="mswin">
         <Linker>
             <Dependency Name="Ws2_32.lib" />
+			<Dependency Name="PowrProf.lib" />
         </Linker>
     </Module>  
     <Module Platform="Linux">
@@ -44,6 +45,7 @@
     <Module Platform="mswin">
         <Linker>
             <Dependency Name="Ws2_32.lib" />
+			<Dependency Name="PowrProf.lib" />
         </Linker>
     </Module>  
     <Module Platform="Linux">

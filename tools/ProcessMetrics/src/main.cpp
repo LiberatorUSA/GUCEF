@@ -1,5 +1,5 @@
 /*
- *  Udp2Redis: service which pushes UDP packets into kafka topics
+ *  ProcessMetrics: service which obtains and transmits metrics for procs
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -222,8 +222,8 @@ GucefAppSignalHandler( int signal )
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
 {GUCEF_TRACE;
 
     int returnValue = -100;

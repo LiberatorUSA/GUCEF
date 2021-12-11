@@ -542,11 +542,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PowrProf.lib Ws2_32.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PowrProf.lib Ws2_32.lib )
 endif( WIN64 )
 
 include_directories( ../../common/include ../gucefMT/include include )
