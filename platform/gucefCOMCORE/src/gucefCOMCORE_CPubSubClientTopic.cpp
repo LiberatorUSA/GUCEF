@@ -82,6 +82,7 @@ CPubSubClientTopic::RegisterEvents( void )
 
 CPubSubClientTopic::CPubSubClientTopic( void )
     : CORE::CObservingNotifier()
+    , CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >( this )
 {GUCEF_TRACE;
 
     RegisterEvents();

@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
+#include "gucefCORE_CDataNodeSerializableSettings.h"
+#define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
+#endif /* GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H ? */
 
 #ifndef GUCEF_COMCORE_CIMESSAGE_H
 #include "gucefCOMCORE_CIMessage.h"
@@ -63,11 +63,15 @@ namespace COMCORE {
 /**
  *  Options for the basic serializer for generalized messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CMessageSerializerOptions : public CORE::CIConfigurable
+class GUCEF_COMCORE_EXPORT_CPP CMessageSerializerOptions : public CORE::CDataNodeSerializableSettings
 {
     public:
+    
+    static const CString ClassTypeName;
 
     CMessageSerializerOptions( void );
+
+    CMessageSerializerOptions( const CORE::CDataNodeSerializableSettings& basicNodeOptions );
 
     virtual ~CMessageSerializerOptions();
 

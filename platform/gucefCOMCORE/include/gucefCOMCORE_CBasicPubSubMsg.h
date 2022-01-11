@@ -64,6 +64,23 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     CBasicPubSubMsg( const CBasicPubSubMsg& src );
 
     virtual ~CBasicPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     */
+    virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     *
+     *  @param domRootNode Node that acts as root of the DOM data tree from which to deserialize
+     *  @return whether deserializing the object data from the given DOM was successfull.
+     */
+    virtual bool Deserialize( const CORE::CDataNode& domRootNode                  ,
+                              const CORE::CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual CORE::CVariant& GetMsgId( void ) GUCEF_VIRTUAL_OVERRIDE;    
     virtual const CORE::CVariant& GetMsgId( void ) const GUCEF_VIRTUAL_OVERRIDE;

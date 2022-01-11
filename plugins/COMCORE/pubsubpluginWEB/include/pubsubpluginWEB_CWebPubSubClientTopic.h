@@ -91,6 +91,35 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CWebPubSubClientTopic;
+typedef CORE::CTBasicSharedPtr< CWebPubSubClientTopic, MT::CMutex > TBasicWebPubSubClientTopicPtr;
+
+class RestApiPublishedMessagesResource : public GUCEF::WEB::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiPublishedMessagesResource( TBasicWebPubSubClientTopicPtr& topic );
+
+    virtual ~RestApiPublishedMessagesResource();
+
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual TDeserializeState Deserialize( const CORE::CString& resourcePath   ,
+                                           const CORE::CDataNode& input        ,
+                                           const CORE::CString& representation ,
+                                           bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    TBasicWebPubSubClientTopicPtr m_topic;
+};
+
+/*-------------------------------------------------------------------------*/
+
+
 class CWebPubSubClient;
 
 /**

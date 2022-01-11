@@ -49,7 +49,7 @@ namespace UDP {
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE              (1024 * 1024 * 10)
 #define GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE               25
-#define GUCEF_DEFAULT_UDP_SOURCE_METADATA_KEY_NAME                  "udpSourceAddress"
+#define GUCEF_DEFAULT_UDP_SOURCE_METADATA_KEY_NAME                  "udpSourceAddressIP4"
 #define GUCEF_DEFAULT_UDP_MAX_PLAYLOAD_SIZE_IN_BYTES                1500
 
 /*-------------------------------------------------------------------------//
@@ -126,12 +126,12 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
             udpInterface = networkInterface;
     }
     // Now again load the NIC to bind from the custom settings which may override the generic setting above
-    udpInterface.SetAddress( config.GetAttributeValueOrChildValueByName( "udpInterface" ).AsString( udpInterface.AddressAsString(), true ) );
+    udpInterface.SetHostnameAndPort( config.GetAttributeValueOrChildValueByName( "udpInterface" ).AsString( udpInterface.AddressAndPortAsString(), true ) );
 
     wantsTestPackage = config.GetAttributeValueOrChildValueByName( "wantsTestPackage" ).AsBool( wantsTestPackage, true );
-    ticketRefillOnBusyCycle = config.GetAttributeValueOrChildValueByName( "wantsTestPackage" ).AsUInt32( ticketRefillOnBusyCycle, true );
+    ticketRefillOnBusyCycle = config.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
     nrOfUdpReceiveBuffersPerSocket = config.GetAttributeValueOrChildValueByName( "nrOfUdpReceiveBuffersPerSocket" ).AsUInt32( nrOfUdpReceiveBuffersPerSocket, true );
-    udpSocketOsReceiveBufferSize = config.GetAttributeValueOrChildValueByName( "nrOfUdpReceiveBuffersPerSocket" ).AsUInt32( nrOfUdpReceiveBuffersPerSocket, true );             
+    udpSocketOsReceiveBufferSize = config.GetAttributeValueOrChildValueByName( "udpSocketOsReceiveBufferSize" ).AsUInt32( udpSocketOsReceiveBufferSize, true );             
     udpSocketUpdateCyclesPerPulse = config.GetAttributeValueOrChildValueByName( "udpSocketUpdateCyclesPerPulse" ).AsUInt32( udpSocketUpdateCyclesPerPulse, true );
     addUdpSourceAddressAsMetaData = config.GetAttributeValueOrChildValueByName( "addUdpSourceAddressAsMetaData" ).AsBool( addUdpSourceAddressAsMetaData, true );
     translateUdpSourceAddressToString = config.GetAttributeValueOrChildValueByName( "translateUdpSourceAddressToString" ).AsBool( translateUdpSourceAddressToString, true );

@@ -85,6 +85,66 @@ CORE::CString CWebPubSubClientTopic::UnknownClientType = "unknown";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+RestApiPublishedMessagesResource::RestApiPublishedMessagesResource( TBasicWebPubSubClientTopicPtr& topic )
+    : GUCEF::WEB::CCodecBasedHTTPServerResource()
+    , m_topic( topic )
+{GUCEF_TRACE;
+
+    m_allowSerialize = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPublishedMessagesResource::~RestApiPublishedMessagesResource()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RestApiPublishedMessagesResource::Serialize( const CORE::CString& resourcePath   ,
+                                             CORE::CDataNode& output             ,
+                                             const CORE::CString& representation ,
+                                             const CORE::CString& params         )
+{GUCEF_TRACE;
+
+    //if ( m_appConfig )
+    //{
+    //    const CORE::CDataNode* appConfigData = m_app->GetAppConfig();
+    //    if ( GUCEF_NULL != appConfigData )
+    //    {
+    //        output.Copy( *appConfigData );
+    //        return true;
+    //    }
+    //    return false;
+    //}
+    //else
+    //{
+    //    const CORE::CDataNode& globalConfigData = m_app->GetGlobalConfig();
+    //    output.Copy( globalConfigData );
+    //    return true;
+    //}
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPublishedMessagesResource::TDeserializeState
+RestApiPublishedMessagesResource::Deserialize( const CORE::CString& resourcePath   ,
+                                                 const CORE::CDataNode& input        ,
+                                                 const CORE::CString& representation ,
+                                                 bool isDeltaUpdateOnly              )
+{GUCEF_TRACE;
+
+
+            return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     : COMCORE::CPubSubClientTopic()
     , m_client( client )

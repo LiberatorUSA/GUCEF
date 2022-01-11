@@ -42,6 +42,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgSerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+
 #include "gucefCOMCORE_CBasicPubSubMsg.h"
 
 /*-------------------------------------------------------------------------//
@@ -211,6 +216,36 @@ CBasicPubSubMsg::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CBasicPubSubMsg( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    return CPubSubMsgSerializer::Serialize( settings, *this, domRootNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::Deserialize( const CORE::CDataNode& domRootNode                  ,
+                              const CORE::CDataNodeSerializableSettings& settings ) 
+{GUCEF_TRACE;
+
+    return CPubSubMsgSerializer::Deserialize( settings, *this, domRootNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CBasicPubSubMsg::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString classTypeName = "GUCEF::COMCORE::CBasicPubSubMsg";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

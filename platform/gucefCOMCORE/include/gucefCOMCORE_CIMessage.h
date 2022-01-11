@@ -55,6 +55,11 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#include "gucefCORE_CIDataNodeSerializable.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -95,7 +100,9 @@ namespace COMCORE {
  *  Based on the client used different capabilities will be available and 
  *  client will use beft effort to simulate others
  */
-class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CICloneable
+class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CICloneable             ,
+                                           public CORE::CIDataNodeSerializable  ,
+                                           public CORE::CITypeNamed
 {
     public:
 

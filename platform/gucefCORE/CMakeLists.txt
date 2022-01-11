@@ -146,6 +146,7 @@ set( HEADER_FILES
   include/gucefCORE_CCoreGlobal.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
+  include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDirectoryWatcherEvents.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEventBasedTaskConsumer.h
@@ -155,6 +156,7 @@ set( HEADER_FILES
   include/gucefCORE_CGloballyConfigurable.h
   include/gucefCORE_CIConfigurable.h
   include/gucefCORE_CIConsoleLogger.h
+  include/gucefCORE_CIDataNodeSerializable.h
   include/gucefCORE_CIDate.h
   include/gucefCORE_CIDirectoryWatcher.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
@@ -344,6 +346,7 @@ set( SOURCE_FILES
   src/gucefCORE_CCoreGlobal.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
+  src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
@@ -352,6 +355,7 @@ set( SOURCE_FILES
   src/gucefCORE_CGloballyConfigurable.cpp
   src/gucefCORE_CIConfigurable.cpp
   src/gucefCORE_CIConsoleLogger.cpp
+  src/gucefCORE_CIDataNodeSerializable.cpp
   src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIDirectoryWatcher.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp

@@ -188,9 +188,18 @@ CCoreGlobal* CCoreGlobal::g_instance = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void GUCEF_HIDDEN
+AtExitApplicationStop( void )
+{GUCEF_TRACE;
+
+    CCoreGlobal::Instance()->GetApplication().Stop( true );
+}
+
+/*-------------------------------------------------------------------------*/
 
 CCoreGlobal*
 CCoreGlobal::Instance()
@@ -205,7 +214,12 @@ CCoreGlobal::Instance()
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
+                
+                // atexit() is FILO
+                // We want to make sure we properly stop the app before we destroy things 
+                // as such we hook up a shutdown via atexit() as well to help ordering
                 atexit( CCoreGlobal::Deinstance );
+                atexit( AtExitApplicationStop );
             }
         }
     }

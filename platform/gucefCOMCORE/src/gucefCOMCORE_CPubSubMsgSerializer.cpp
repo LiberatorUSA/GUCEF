@@ -80,12 +80,33 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CPubSubMsgSerializerOptions::ClassTypeName = "GUCEF::COMCORE::CPubSubMsgSerializerOptions";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CPubSubMsgSerializerOptions::CPubSubMsgSerializerOptions( void )
     : CMessageSerializerOptions()
+    , receiveActionIdIncluded( true )
+    , originTopicObjPointerIncluded( false )
+    , originTopicNameIncluded( false )
+    , originClientTypeNameIncluded( false )
+    , originClientObjPointerIncluded( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubMsgSerializerOptions::CPubSubMsgSerializerOptions( const CORE::CDataNodeSerializableSettings& basicNodeOptions )
+    : CMessageSerializerOptions( basicNodeOptions )
     , receiveActionIdIncluded( true )
     , originTopicObjPointerIncluded( false )
     , originTopicNameIncluded( false )
@@ -140,8 +161,7 @@ const CString&
 CPubSubMsgSerializerOptions::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::CORE::CPubSubMsgSerializerOptions";
-    return classTypeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,6 +292,27 @@ CPubSubMsgSerializer::Serialize( const CPubSubMsgSerializerOptions& options ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, CString( "PubSubMsgSerializer:Serialize: caught exception: " ) + e.what()  );        
     }
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgSerializer::Serialize( const CORE::CDataNodeSerializableSettings& basicNodeOptions ,
+                                 const CIPubSubMsg& msg                                      ,
+                                 CORE::CDataNode& output                                     )
+{GUCEF_TRACE;
+
+    // Perform cheap poor man's RTTI
+    if ( &CPubSubMsgSerializerOptions::ClassTypeName == &basicNodeOptions.GetClassTypeName() )
+    {
+        const CPubSubMsgSerializerOptions& pubSubOptions = static_cast< const CPubSubMsgSerializerOptions& >( basicNodeOptions );    
+        return Serialize( pubSubOptions, msg, output );
+    }
+    else
+    {
+        CPubSubMsgSerializerOptions pubSubOptions( basicNodeOptions );    
+        return Serialize( pubSubOptions, msg, output );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

@@ -65,12 +65,36 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CMessageSerializerOptions::ClassTypeName = "GUCEF::COMCORE::CMessageSerializerOptions";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CMessageSerializerOptions::CMessageSerializerOptions( void )
-    : msgIdIncluded( true )
+    : CDataNodeSerializableSettings()
+    , msgIdIncluded( true )
+    , msgIndexIncluded( true )
+    , msgDateTimeIncluded( true )
+    , msgDateTimeAsMsSinceUnixEpochInUtc( true )
+    , msgPrimaryPayloadIncluded( true )
+    , msgKeyValuePairsIncluded( true )
+    , msgMetaDataKeyValuePairsIncluded( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMessageSerializerOptions::CMessageSerializerOptions( const CORE::CDataNodeSerializableSettings& basicNodeOptions )
+    : CDataNodeSerializableSettings( basicNodeOptions )
+    , msgIdIncluded( true )
     , msgIndexIncluded( true )
     , msgDateTimeIncluded( true )
     , msgDateTimeAsMsSinceUnixEpochInUtc( true )
@@ -94,15 +118,20 @@ bool
 CMessageSerializerOptions::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
-    config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded );
-    config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc );
-    config.SetAttribute( "msgIdIncluded", msgIdIncluded );
-    config.SetAttribute( "msgIndexIncluded", msgIndexIncluded );
-    config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded );
-    config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded );
-    config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded );
+    bool success = true;
+
+    if ( CDataNodeSerializableSettings::SaveConfig( config ) )
+    {
+        success = config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded ) && success;
+        success = config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc ) && success;
+        success = config.SetAttribute( "msgIdIncluded", msgIdIncluded ) && success;
+        success = config.SetAttribute( "msgIndexIncluded", msgIndexIncluded ) && success;
+        success = config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded ) && success;
+        success = config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded ) && success;
+        success = config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded ) && success;
+    }
     
-    return true;
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,13 +140,17 @@ bool
 CMessageSerializerOptions::LoadConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
 
-    msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded, true );
-    msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc, true );
-    msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded, true );
-    msgIndexIncluded = config.GetAttributeValueOrChildValueByName( "msgIndexIncluded" ).AsBool( msgIndexIncluded, true );
-    msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded, true );
-    msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded, true );
-    msgMetaDataKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgMetaDataKeyValuePairsIncluded" ).AsBool( msgMetaDataKeyValuePairsIncluded, true );
+    if ( CDataNodeSerializableSettings::LoadConfig( config ) )
+    {
+        msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded, true );
+        msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc, true );
+        msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded, true );
+        msgIndexIncluded = config.GetAttributeValueOrChildValueByName( "msgIndexIncluded" ).AsBool( msgIndexIncluded, true );
+        msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded, true );
+        msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded, true );
+        msgMetaDataKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgMetaDataKeyValuePairsIncluded" ).AsBool( msgMetaDataKeyValuePairsIncluded, true );
+    }
+
     return true;
 }
 
@@ -127,8 +160,7 @@ const CString&
 CMessageSerializerOptions::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::CORE::CMessageSerializerOptions";
-    return classTypeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

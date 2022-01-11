@@ -257,6 +257,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     if ( !LoadConfig( bootstrapConfigPathParam, configPathParam ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because LoadConfig failed" );
+        ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         return -1;
     }
     
@@ -265,6 +266,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     if ( GUCEF_NULL == appConfig )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because no app config is available" );
+        ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         return -1;
     }
 
@@ -291,6 +293,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     if ( !pubSub2PubSub.Start() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Failed to Start()" );
+        ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         return -2;
     }
 

@@ -59,7 +59,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializerOptions : public CMessageSeri
 {
     public:
 
+    static const CString ClassTypeName;
+
     CPubSubMsgSerializerOptions( void );
+
+    CPubSubMsgSerializerOptions( const CORE::CDataNodeSerializableSettings& basicNodeOptions );
 
     virtual ~CPubSubMsgSerializerOptions();
 
@@ -94,6 +98,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializer : public CMessageSerializer
     static bool Serialize( const CPubSubMsgSerializerOptions& options ,
                            const CIPubSubMsg& msg                     ,
                            CORE::CDataNode& output                    );
+
+    static bool Serialize( const CORE::CDataNodeSerializableSettings& basicNodeOptions ,
+                           const CIPubSubMsg& msg                                      ,
+                           CORE::CDataNode& output                                     );
 
     static bool Serialize( const CPubSubMsgSerializerOptions& options ,
                            const CIPubSubMsg& msg                     ,
