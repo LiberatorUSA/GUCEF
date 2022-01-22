@@ -62,6 +62,7 @@ class GUCEF_CORE_PUBLIC_CPP CoreCodecTypes
     public:
     
     static const CORE::CString HashingCodec;
+    static const CORE::CString CryptographicHashCodec;
     static const CORE::CString ChecksumCodec;
     static const CORE::CString CompressionCodec;
 };

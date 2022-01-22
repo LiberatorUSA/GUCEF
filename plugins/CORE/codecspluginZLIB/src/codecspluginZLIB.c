@@ -507,7 +507,9 @@ CODECPLUGIN_GetCodecLink( void* plugdata               ,
         (*codecLink)->decode = CODECPLUGIN_Decode;
         return 1;
     }
+    
     /* There is no codec with the given index */
+    *codecLink = GUCEF_NULL;
     return 0;
 }
 

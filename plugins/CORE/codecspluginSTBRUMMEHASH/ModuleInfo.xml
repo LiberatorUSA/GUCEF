@@ -1,0 +1,15 @@
+<ModuleInfoEntry>
+    <Module Name="codecspluginSTBRUMMEHASH" Type="SharedLibrary" Platform="All" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="stbrumme-hash" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="stbrumme-hash" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_CODECPLUGIN_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

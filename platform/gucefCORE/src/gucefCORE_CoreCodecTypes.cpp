@@ -40,9 +40,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CoreCodecTypes::HashingCodec        = "HashingCodec";
-const CORE::CString CoreCodecTypes::ChecksumCodec       = "ChecksumCodec";
-const CORE::CString CoreCodecTypes::CompressionCodec    = "CompressionCodec";
+const CORE::CString CoreCodecTypes::HashingCodec            = "HashingCodec";
+const CORE::CString CoreCodecTypes::CryptographicHashCodec  = "CryptographicHashCodec";
+const CORE::CString CoreCodecTypes::ChecksumCodec           = "ChecksumCodec";
+const CORE::CString CoreCodecTypes::CompressionCodec        = "CompressionCodec";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

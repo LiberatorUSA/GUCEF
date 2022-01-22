@@ -1,0 +1,6 @@
+<ModuleInfoEntry>
+    <Module Name="stbrumme-hash" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
