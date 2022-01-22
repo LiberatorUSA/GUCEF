@@ -80,12 +80,16 @@ const CString CMessageSerializerOptions::ClassTypeName = "GUCEF::COMCORE::CMessa
 CMessageSerializerOptions::CMessageSerializerOptions( void )
     : CDataNodeSerializableSettings()
     , msgIdIncluded( true )
+    , msgIdTypeIncluded( true )
     , msgIndexIncluded( true )
+    , msgIndexTypeIncluded( true )
     , msgDateTimeIncluded( true )
     , msgDateTimeAsMsSinceUnixEpochInUtc( true )
     , msgPrimaryPayloadIncluded( true )
+    , msgPrimaryPayloadTypeIncluded( true )
     , msgKeyValuePairsIncluded( true )
     , msgMetaDataKeyValuePairsIncluded( true )
+    , includeUndefinedValues( false )
 {GUCEF_TRACE;
 
 }
@@ -95,12 +99,16 @@ CMessageSerializerOptions::CMessageSerializerOptions( void )
 CMessageSerializerOptions::CMessageSerializerOptions( const CORE::CDataNodeSerializableSettings& basicNodeOptions )
     : CDataNodeSerializableSettings( basicNodeOptions )
     , msgIdIncluded( true )
+    , msgIdTypeIncluded( true )
     , msgIndexIncluded( true )
+    , msgIndexTypeIncluded( true )
     , msgDateTimeIncluded( true )
     , msgDateTimeAsMsSinceUnixEpochInUtc( true )
     , msgPrimaryPayloadIncluded( true )
+    , msgPrimaryPayloadTypeIncluded( true )
     , msgKeyValuePairsIncluded( true )
     , msgMetaDataKeyValuePairsIncluded( true )
+    , includeUndefinedValues( false )
 {GUCEF_TRACE;
 
 }
@@ -125,10 +133,15 @@ CMessageSerializerOptions::SaveConfig( CORE::CDataNode& config ) const
         success = config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded ) && success;
         success = config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc ) && success;
         success = config.SetAttribute( "msgIdIncluded", msgIdIncluded ) && success;
+        success = config.SetAttribute( "msgIdTypeIncluded", msgIdTypeIncluded ) && success;
         success = config.SetAttribute( "msgIndexIncluded", msgIndexIncluded ) && success;
+        success = config.SetAttribute( "msgIndexTypeIncluded", msgIndexTypeIncluded ) && success;
         success = config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded ) && success;
+        success = config.SetAttribute( "msgPrimaryPayloadTypeIncluded", msgPrimaryPayloadTypeIncluded ) && success;
         success = config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded ) && success;
         success = config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded ) && success;
+
+        success = config.SetAttribute( "includeUndefinedValues", includeUndefinedValues ) && success;        
     }
     
     return success;
@@ -142,16 +155,72 @@ CMessageSerializerOptions::LoadConfig( const CORE::CDataNode& config )
 
     if ( CDataNodeSerializableSettings::LoadConfig( config ) )
     {
+        // We initialize initial settings based on the Level-Of-Detail (LOD) per the base class
+        // This negates the need to config all fields as desired. You only need to config those where you wish to differ from the LOD level defaults
+        if ( levelOfDetail >= DataNodeSerializableLod_MaximumDetails )
+        {
+            msgDateTimeIncluded = true;
+            msgDateTimeAsMsSinceUnixEpochInUtc = true;
+            msgIdIncluded = true;
+            msgIdTypeIncluded = true;
+            msgIndexIncluded = true;
+            msgIndexTypeIncluded = true;
+            msgPrimaryPayloadIncluded = true;
+            msgPrimaryPayloadTypeIncluded = true;
+            msgKeyValuePairsIncluded = true;
+            msgMetaDataKeyValuePairsIncluded = true;
+            includeUndefinedValues = true;
+        }
+        else
+        if ( levelOfDetail == DataNodeSerializableLod_KeyOnly )
+        {
+            msgDateTimeIncluded = false;
+            msgDateTimeAsMsSinceUnixEpochInUtc = false;
+            msgIdIncluded = true;
+            msgIdTypeIncluded = true;
+            msgIndexIncluded = true;
+            msgIndexTypeIncluded = true;
+            msgPrimaryPayloadIncluded = false;
+            msgPrimaryPayloadTypeIncluded = false;
+            msgKeyValuePairsIncluded = false;
+            msgMetaDataKeyValuePairsIncluded = false;
+            includeUndefinedValues = false;
+        }
+        else
+        {
+            // We only support 3 default levels here since the data is already pretty basic
+            // the only thing dropped is meta-data
+            
+            msgDateTimeIncluded = true;
+            msgDateTimeAsMsSinceUnixEpochInUtc = true;
+            msgIdIncluded = true;
+            msgIdTypeIncluded = true;
+            msgIndexIncluded = true;
+            msgIndexTypeIncluded = true;
+            msgPrimaryPayloadIncluded = true;
+            msgPrimaryPayloadTypeIncluded = true;
+            msgKeyValuePairsIncluded = true;
+            msgMetaDataKeyValuePairsIncluded = false;
+            includeUndefinedValues = false;
+        }
+
         msgDateTimeIncluded = config.GetAttributeValueOrChildValueByName( "msgDateTimeIncluded" ).AsBool( msgDateTimeIncluded, true );
         msgDateTimeAsMsSinceUnixEpochInUtc = config.GetAttributeValueOrChildValueByName( "msgDateTimeAsMsSinceUnixEpochInUtc" ).AsBool( msgDateTimeAsMsSinceUnixEpochInUtc, true );
         msgIdIncluded = config.GetAttributeValueOrChildValueByName( "msgIdIncluded" ).AsBool( msgIdIncluded, true );
+        msgIdTypeIncluded = config.GetAttributeValueOrChildValueByName( "msgIdTypeIncluded" ).AsBool( msgIdTypeIncluded, true );
         msgIndexIncluded = config.GetAttributeValueOrChildValueByName( "msgIndexIncluded" ).AsBool( msgIndexIncluded, true );
+        msgIndexTypeIncluded = config.GetAttributeValueOrChildValueByName( "msgIndexTypeIncluded" ).AsBool( msgIndexTypeIncluded, true );
         msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded, true );
+        msgPrimaryPayloadTypeIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadTypeIncluded" ).AsBool( msgPrimaryPayloadTypeIncluded, true );
         msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded, true );
         msgMetaDataKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgMetaDataKeyValuePairsIncluded" ).AsBool( msgMetaDataKeyValuePairsIncluded, true );
+
+        includeUndefinedValues = config.GetAttributeValueOrChildValueByName( "includeUndefinedValues" ).AsBool( includeUndefinedValues, true );
+    
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -165,18 +234,35 @@ CMessageSerializerOptions::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CICloneable* 
+CMessageSerializerOptions::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CMessageSerializerOptions( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32 
 CMessageSerializerOptions::ToOptionsBitMask( void ) const
 {GUCEF_TRACE;
 
+    // First set of flags we order the same as for the binary serializer
     UInt32 bitMask = 0;
     msgDateTimeIncluded ? GUCEF_SETBITXON( bitMask, 1 ) : GUCEF_SETBITXOFF( bitMask, 1 );
     msgDateTimeAsMsSinceUnixEpochInUtc ? GUCEF_SETBITXON( bitMask, 2 ) : GUCEF_SETBITXOFF( bitMask, 2 );
-    msgIdIncluded ? GUCEF_SETBITXON( bitMask, 3 ) : GUCEF_SETBITXOFF( bitMask, 3 );
-    msgIndexIncluded ? GUCEF_SETBITXON( bitMask, 4 ) : GUCEF_SETBITXOFF( bitMask, 4 );
+    msgIdIncluded ? GUCEF_SETBITXON( bitMask, 3 ) : GUCEF_SETBITXOFF( bitMask, 3 );    
+    msgIndexIncluded ? GUCEF_SETBITXON( bitMask, 4 ) : GUCEF_SETBITXOFF( bitMask, 4 );    
     msgPrimaryPayloadIncluded ? GUCEF_SETBITXON( bitMask, 5 ) : GUCEF_SETBITXOFF( bitMask, 5 );
     msgKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 6 ) : GUCEF_SETBITXOFF( bitMask, 6 );
     msgMetaDataKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 7 ) : GUCEF_SETBITXOFF( bitMask, 7 );
+    
+    // This serializer may also need to explicitly communicate type information which may be lost otherwise
+    // As such it has additional flags
+    includeUndefinedValues ? GUCEF_SETBITXON( bitMask, 8 ) : GUCEF_SETBITXOFF( bitMask, 8 );
+    msgIdTypeIncluded ? GUCEF_SETBITXON( bitMask, 9 ) : GUCEF_SETBITXOFF( bitMask, 9 );
+    msgIndexTypeIncluded ? GUCEF_SETBITXON( bitMask, 10 ) : GUCEF_SETBITXOFF( bitMask, 10 );
+    msgPrimaryPayloadTypeIncluded ? GUCEF_SETBITXON( bitMask, 11 ) : GUCEF_SETBITXOFF( bitMask, 11 );
     return bitMask;
 }
 
@@ -186,6 +272,7 @@ void
 CMessageSerializerOptions::FromOptionsBitMask( UInt32 bitMask )
 {GUCEF_TRACE;
 
+    // First set of flags we order the same as for the binary serializer
     msgDateTimeIncluded = ( 0 != GUCEF_GETBITX( bitMask, 1 ) );
     msgDateTimeAsMsSinceUnixEpochInUtc = ( 0 != GUCEF_GETBITX( bitMask, 2 ) );
     msgIdIncluded = ( 0 != GUCEF_GETBITX( bitMask, 3 ) );
@@ -193,6 +280,13 @@ CMessageSerializerOptions::FromOptionsBitMask( UInt32 bitMask )
     msgPrimaryPayloadIncluded = ( 0 != GUCEF_GETBITX( bitMask, 5 ) );
     msgKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 6 ) );
     msgMetaDataKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 7 ) );
+
+    // This serializer may also need to explicitly communicate type information which may be lost otherwise
+    // As such it has additional flags
+    includeUndefinedValues = ( 0 != GUCEF_GETBITX( bitMask, 8 ) );
+    msgIdTypeIncluded = ( 0 != GUCEF_GETBITX( bitMask, 9 ) );
+    msgIndexTypeIncluded = ( 0 != GUCEF_GETBITX( bitMask, 10 ) );
+    msgPrimaryPayloadTypeIncluded = ( 0 != GUCEF_GETBITX( bitMask, 11 ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -249,19 +343,40 @@ CMessageSerializer::Serialize( const CMessageSerializerOptions& options ,
             }
         }
 
-        if ( options.msgIdIncluded )
+        if ( GUCEF_DATATYPE_UNKNOWN != msg.GetMsgId().GetTypeId() || options.includeUndefinedValues )
         {
-            success = output.SetAttribute( "msgId", msg.GetMsgId() ) && success;
+            if ( options.msgIdIncluded )
+            {
+                success = output.SetAttribute( "msgId", msg.GetMsgId() ) && success;
+            }
+            if ( options.msgIdTypeIncluded )
+            {
+                success = output.SetAttribute( "msgIdType", msg.GetMsgId().GetTypeId() ) && success;
+            }
         }
 
-        if ( options.msgIndexIncluded )
+        if ( GUCEF_DATATYPE_UNKNOWN != msg.GetMsgIndex().GetTypeId() || options.includeUndefinedValues )
         {
-            success = output.SetAttribute( "msgIndex", msg.GetMsgIndex() ) && success;
+            if ( options.msgIndexIncluded )
+            {
+                success = output.SetAttribute( "msgIndex", msg.GetMsgIndex() ) && success;
+            }
+            if ( options.msgIndexTypeIncluded )
+            {
+                success = output.SetAttribute( "msgIndexType", msg.GetMsgIndex().GetTypeId() ) && success;
+            }
         }
 
-        if ( options.msgPrimaryPayloadIncluded )
+        if ( GUCEF_DATATYPE_UNKNOWN != msg.GetPrimaryPayload().GetTypeId() || options.includeUndefinedValues )
         {
-            success = output.AddChildWithValue( "primaryPayload", msg.GetPrimaryPayload() ) && success;
+            if ( options.msgPrimaryPayloadIncluded )
+            {
+                success = output.AddChildWithValue( "primaryPayload", msg.GetPrimaryPayload() ) && success;
+            }
+            if ( options.msgPrimaryPayloadTypeIncluded )
+            {
+                success = output.AddChildWithValue( "primaryPayloadType", CORE::CVariant( msg.GetPrimaryPayload().GetTypeId() ) ) && success;
+            }
         }
 
         if ( options.msgKeyValuePairsIncluded )

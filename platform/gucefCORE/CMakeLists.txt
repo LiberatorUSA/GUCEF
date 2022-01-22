@@ -144,9 +144,9 @@ set( HEADER_FILES
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
   include/gucefCORE_CCoreGlobal.h
+  include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
-  include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDirectoryWatcherEvents.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEventBasedTaskConsumer.h
@@ -344,9 +344,9 @@ set( SOURCE_FILES
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp
   src/gucefCORE_CCoreGlobal.cpp
+  src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
-  src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp

@@ -60,6 +60,14 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CBasicPubSubMsg::ClassTypeName = "GUCEF::COMCORE::CBasicPubSubMsg";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -244,8 +252,7 @@ const CString&
 CBasicPubSubMsg::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CString classTypeName = "GUCEF::COMCORE::CBasicPubSubMsg";
-    return classTypeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

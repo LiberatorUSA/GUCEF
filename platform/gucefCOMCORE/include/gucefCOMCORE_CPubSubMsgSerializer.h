@@ -73,6 +73,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializerOptions : public CMessageSeri
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     UInt32 ToOptionsBitMask( void ) const;
 
     void FromOptionsBitMask( UInt32 bitMask );

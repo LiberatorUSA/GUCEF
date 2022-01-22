@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -53,7 +58,8 @@ class CDataNode;
 /**
  *  Class to generically convey settings to a data node based serializer
  */
-class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurable ,
+                                                            public CICloneable
 {
     public:
 
@@ -61,9 +67,12 @@ class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurabl
 
     enum EDataNodeSerializableLod : UInt32
     {
-        DataNodeSerializableLod_Minimum = GUCEFCORE_UINT32MIN,
-        DataNodeSerializableLod_Average = GUCEFCORE_UINT32MAX / 2,
-        DataNodeSerializableLod_Maximum = GUCEFCORE_UINT32MAX,
+        DataNodeSerializableLod_Undefined = 0,
+        
+        DataNodeSerializableLod_KeyOnly = 1,
+        DataNodeSerializableLod_MinimumDetails = 2,
+        DataNodeSerializableLod_AverageDetails = GUCEFCORE_UINT32MAX / 2,
+        DataNodeSerializableLod_MaximumDetails = GUCEFCORE_UINT32MAX,
     };
 
     CDataNodeSerializableSettings( void );
@@ -80,6 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurabl
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     UInt32 levelOfDetail;
 };

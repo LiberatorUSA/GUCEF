@@ -55,7 +55,7 @@ const CString CDataNodeSerializableSettings::ClassTypeName = "GUCEF::CORE::CData
 
 CDataNodeSerializableSettings::CDataNodeSerializableSettings( void )
     : CIConfigurable()
-    , levelOfDetail( DataNodeSerializableLod_Maximum )
+    , levelOfDetail( DataNodeSerializableLod_MaximumDetails )
 {GUCEF_TRACE;
 
 }
@@ -115,6 +115,15 @@ CDataNodeSerializableSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     return ClassTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CDataNodeSerializableSettings::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CDataNodeSerializableSettings( *this );
 }
 
 /*-------------------------------------------------------------------------//

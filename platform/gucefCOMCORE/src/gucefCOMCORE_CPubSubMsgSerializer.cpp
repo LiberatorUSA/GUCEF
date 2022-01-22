@@ -146,13 +146,45 @@ bool
 CPubSubMsgSerializerOptions::LoadConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
 
-    receiveActionIdIncluded = config.GetAttributeValueOrChildValueByName( "receiveActionIdIncluded" ).AsBool( receiveActionIdIncluded, true );
-    originTopicObjPointerIncluded = config.GetAttributeValueOrChildValueByName( "originTopicObjPointerIncluded" ).AsBool( originTopicObjPointerIncluded, true );
-    originTopicNameIncluded = config.GetAttributeValueOrChildValueByName( "originTopicNameIncluded" ).AsBool( originTopicNameIncluded, true );
-    originClientTypeNameIncluded = config.GetAttributeValueOrChildValueByName( "originClientTypeNameIncluded" ).AsBool( originClientTypeNameIncluded, true );
-    originClientObjPointerIncluded = config.GetAttributeValueOrChildValueByName( "originClientObjPointerIncluded" ).AsBool( originClientObjPointerIncluded, true );
+    // We initialize initial settings based on the Level-Of-Detail (LOD) per the base class
+    // This negates the need to config all fields as desired. You only need to config those where you wish to differ from the LOD level defaults
+    if ( CMessageSerializerOptions::LoadConfig( config ) )
+    {
+        if ( levelOfDetail >= DataNodeSerializableLod_MaximumDetails )
+        {
+            receiveActionIdIncluded = true;
+            originTopicObjPointerIncluded = true;
+            originTopicNameIncluded = true;
+            originClientTypeNameIncluded = true;
+            originClientObjPointerIncluded = true;
+        }
+        else
+        if ( levelOfDetail >= DataNodeSerializableLod_AverageDetails )
+        {
+            receiveActionIdIncluded = true;
+            originTopicObjPointerIncluded = false;
+            originTopicNameIncluded = true;
+            originClientTypeNameIncluded = true;
+            originClientObjPointerIncluded = false;
+        }
+        else
+        {
+            receiveActionIdIncluded = false;
+            originTopicObjPointerIncluded = false;
+            originTopicNameIncluded = false;
+            originClientTypeNameIncluded = false;
+            originClientObjPointerIncluded = false;
+        }
 
-    return true;
+        receiveActionIdIncluded = config.GetAttributeValueOrChildValueByName( "receiveActionIdIncluded" ).AsBool( receiveActionIdIncluded, true );
+        originTopicObjPointerIncluded = config.GetAttributeValueOrChildValueByName( "originTopicObjPointerIncluded" ).AsBool( originTopicObjPointerIncluded, true );
+        originTopicNameIncluded = config.GetAttributeValueOrChildValueByName( "originTopicNameIncluded" ).AsBool( originTopicNameIncluded, true );
+        originClientTypeNameIncluded = config.GetAttributeValueOrChildValueByName( "originClientTypeNameIncluded" ).AsBool( originClientTypeNameIncluded, true );
+        originClientObjPointerIncluded = config.GetAttributeValueOrChildValueByName( "originClientObjPointerIncluded" ).AsBool( originClientObjPointerIncluded, true );
+
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,6 +194,15 @@ CPubSubMsgSerializerOptions::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     return ClassTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CPubSubMsgSerializerOptions::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CPubSubMsgSerializerOptions( *this );
 }
 
 /*-------------------------------------------------------------------------*/

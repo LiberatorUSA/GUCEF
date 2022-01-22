@@ -54,6 +54,20 @@
 #define VERSION_PATCH_FIELD     0
 #define VERSION_RELEASE_FIELD   0
 
+static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static const int base64_table[ 256 ] =
+{
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  62, 63, 62, 62, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0,  0,  0,  0,
+    0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0,  0,  0,  0,  63,
+    0,  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
@@ -66,6 +80,8 @@ struct SDestFileData
     json_value* jsonDoc;
     json_value* currentJsonNode;
     char activeNodeIsValueNode;
+    char* base64EncodeBuffer;
+    UInt32 base64EncodeBufferSize;
 };
 typedef struct SDestFileData TDestFileData;
 
@@ -100,6 +116,69 @@ typedef struct SSrcFileData TSrcFileData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+char*
+GetBase64EncodeBuffer( TDestFileData* fd, UInt32 spaceNeeded )
+{    
+    if ( fd->base64EncodeBufferSize < spaceNeeded )
+    {
+        char* newBuffer = (char*) realloc( fd->base64EncodeBuffer, spaceNeeded );
+        if ( NULL != newBuffer )
+        {
+            fd->base64EncodeBuffer = newBuffer;
+            fd->base64EncodeBufferSize = spaceNeeded;
+        }
+        return newBuffer;
+    }
+    return fd->base64EncodeBuffer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+Base64Encode( const void* inByteBuffer , 
+              UInt32 inBufferSize      ,
+              TDestFileData* fd        )
+{GUCEF_TRACE;
+
+    UInt32 base64StrLength = ( ( inBufferSize + 2 ) / 3 ) * 4;
+    char* str = GetBase64EncodeBuffer( fd, base64StrLength+1 );         
+    char* p = (char*) inByteBuffer;
+    UInt32 j = 0, pad = inBufferSize % 3;
+    const UInt32 last = inBufferSize - pad;
+
+    // Base64 encoding can really add up wrt size requirements
+    // We need to sanity check that we were able to allocate enough memory
+    if ( GUCEF_NULL == str )
+        return 0;
+
+    memset( str, '=', base64StrLength );    
+
+    for ( size_t i = 0; i < last; i+=3 )
+    {
+        int pi = (int) p[ i ];
+        int piNext = (int) p[ i +1 ];
+        int n = pi << 16 | piNext << 8 | p[ i + 2 ];
+        str[ j++ ] = base64_chars[ n >> 18 ];
+        str[ j++ ] = base64_chars[ n >> 12 & 0x3F ];
+        str[ j++ ] = base64_chars[ n >> 6 & 0x3F ];
+        str[ j++ ] = base64_chars[ n & 0x3F ];
+    }
+
+    if ( pad > 0 )
+    {
+        int pLast = (int) p[ last ];
+        int n = --pad ? pLast << 8 | p[ last + 1 ] : p[ last ];
+        str[ j++ ] = base64_chars[ pad ? n >> 10 & 0x3F : n >> 2 ];
+        str[ j++ ] = base64_chars[ pad ? n >> 4 & 0x03F : n << 4 & 0x3F ];
+        str[ j++ ] = pad ? base64_chars[ n << 2 & 0x3F ] : '=';
+    }
+
+    str[ base64StrLength ] = '\0';
+    return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Init( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
@@ -127,11 +206,16 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
     if ( outFile != GUCEF_NULL )
     {
         TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
-        memset( fd, 0, sizeof( TDestFileData ) );
-        fd->fptr = outFile;
-        fd->activeNodeIsValueNode = 0;
-        *filedata = fd;
-        return 1;
+        if ( NULL != fd )
+        {
+            memset( fd, 0, sizeof( TDestFileData ) );
+            fd->fptr = outFile;
+            fd->activeNodeIsValueNode = 0;
+            fd->base64EncodeBuffer = NULL;
+            fd->base64EncodeBufferSize = 0;
+            *filedata = fd;
+            return 1;
+        }
     }
     return 0;
 }
@@ -173,6 +257,11 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
         fd->fptr->close( fd->fptr );
     }
 
+    if ( NULL != fd->base64EncodeBuffer )
+    {
+        free( fd->base64EncodeBuffer );
+        fd->base64EncodeBuffer = NULL;
+    }
     free( *filedata );
     *filedata = GUCEF_NULL;
 }
@@ -234,7 +323,7 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
             {
                 TVariantData var;
                 memset( &var, 0, sizeof var );
-                var.containedType = GUCEF_DATATYPE_UTF8_STRING;
+                var.containedType = nodeType;
                 var.union_data.heap_data.union_data.char_heap_data = (char*) nodename;
                 var.union_data.heap_data.heap_data_size = (UInt32) strlen( nodename );
                 
@@ -386,6 +475,50 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
                     json_object_push( fd->currentJsonNode, attname, att );
                 else
                     json_object_push( fd->currentJsonNode, nodename, att );
+            break;
+        }
+        case GUCEF_DATATYPE_BINARY_BLOB:
+        {
+            if ( 0 != Base64Encode( attvalue->union_data.heap_data.union_data.void_heap_data , 
+                                    attvalue->union_data.heap_data.heap_data_size            ,
+                                    fd                                                       ) )
+            {
+                if ( GUCEF_NULL != fd->base64EncodeBuffer )
+                {
+                    json_value* att = json_string_new( fd->base64EncodeBuffer );
+                    if ( fd->currentJsonNode->type == json_array )
+                        json_array_push( fd->currentJsonNode, att );
+                    else
+                    if ( fd->currentJsonNode->type == json_object )
+                        if ( GUCEF_NULL != attname )
+                            json_object_push( fd->currentJsonNode, attname, att );
+                        else
+                            json_object_push( fd->currentJsonNode, nodename, att );
+                    break;            
+                }
+            }
+            break;
+        }
+        case GUCEF_DATATYPE_BINARY_BSOB:
+        {
+            if ( 0 != Base64Encode( &attvalue->union_data.bsob_data       , 
+                                    sizeof attvalue->union_data.bsob_data ,
+                                    fd                                    ) )
+            {
+                if ( GUCEF_NULL != fd->base64EncodeBuffer )
+                {
+                    json_value* att = json_string_new( fd->base64EncodeBuffer );
+                    if ( fd->currentJsonNode->type == json_array )
+                        json_array_push( fd->currentJsonNode, att );
+                    else
+                    if ( fd->currentJsonNode->type == json_object )
+                        if ( GUCEF_NULL != attname )
+                            json_object_push( fd->currentJsonNode, attname, att );
+                        else
+                            json_object_push( fd->currentJsonNode, nodename, att );
+                    break;            
+                }
+            }
             break;
         }
         case GUCEF_DATATYPE_UTF8_STRING:

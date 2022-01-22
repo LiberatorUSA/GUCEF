@@ -36,12 +36,15 @@ set( HEADER_FILES
   include/gucefWEB_CIHTTPServerRouterController.h
   include/gucefWEB_CIHttpServerRequestHandler.h
   include/gucefWEB_CModule.h
+  include/gucefWEB_CStdParamParser.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
+  include/gucefWEB_CTDataNodeSerializableMapHttpServerResource.h
   include/gucefWEB_CTReadableMapIndexHttpServerResource.h
   include/gucefWEB_CVfsHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
   include/gucefWEB_ETypes.h
   include/gucefWEB_HTTPCode.h
+  include/gucefWEB_ViewTypes.h
   include/gucefWEB_config.h
   include/gucefWEB_macros.h
 )
@@ -71,6 +74,9 @@ set( SOURCE_FILES
   src/gucefWEB_CIHTTPServerRouterController.cpp
   src/gucefWEB_CIHttpServerRequestHandler.cpp
   src/gucefWEB_CModule.cpp
+  src/gucefWEB_CStdParamParser.cpp
+  src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp
+  src/gucefWEB_CTReadableMapIndexHttpServerResource.cpp
   src/gucefWEB_CVfsHttpServerResource.cpp
   src/gucefWEB_CWebGlobal.cpp
 )

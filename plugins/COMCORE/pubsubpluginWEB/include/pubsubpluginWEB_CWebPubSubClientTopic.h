@@ -40,6 +40,11 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgSerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
 #define GUCEF_WEB_CHTTPSERVER_H
@@ -69,6 +74,11 @@
 #include "gucefWEB_CTReadableMapIndexHttpServerResource.h"
 #define GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTDataNodeSerializableMapHttpServerResource.h"
+#define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
 
 #ifndef PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginWEB_CWebPubSubClientTopicConfig.h"
@@ -254,6 +264,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     typedef std::map< CORE::CString, TStringToPubSubClientTopicPtrVectorMap >                                           TStringToStringToPubSubClientTopicPtrVectorMap;            
     typedef GUCEF::WEB::CDummyHTTPServerResource                                                                        TDummyHttpServerResource;
     typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TClientTopicMsgsIndexMap;
+    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr > TClientTopicMsgsMap;
 
     CWebPubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
@@ -275,6 +286,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public COMCORE
     TPubSubClientToPubSubClientTopicMsgsMap m_publishedMsgs;
     TStringToPubSubClientPtrVectorMap m_publishedClientTypes;
     TStringToStringToPubSubClientTopicPtrVectorMap m_publishedTopicNamesPerClientType;
+    COMCORE::CPubSubMsgSerializerOptions m_pubsubSerializerOptions;
 };
 
 /*-------------------------------------------------------------------------//

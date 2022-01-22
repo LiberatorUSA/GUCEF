@@ -180,6 +180,12 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     template < typename TemplateBsobType >
     TemplateBsobType* AsBsobPtr( void );
 
+    template < typename TemplateBsobType >
+    const TemplateBsobType* AsBsobPtr( void ) const;
+
+    template < typename T >
+    T AsTValue( const T defaultIfNeeded = T(), bool resolveVarsIfApplicable = false ) const;
+
     /**
      *  Returns the size of the storage used in bytes by the stored type
      */
@@ -285,6 +291,53 @@ CVariant::AsBsobPtr( void )
 
     return ( reinterpret_cast< TemplateBsobType* >( m_variantData.union_data.bsob_data ) );
 }
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TemplateBsobType >
+inline const TemplateBsobType*
+CVariant::AsBsobPtr( void ) const
+{
+    // Compile time check to ensure the type size does not exceed the size available for a BSOB
+    // Failure to check for this would result in runtime access violations
+    // If you get a compiler error here your type does not fit in a BSOD and you need to use 
+    // alternate storage such as the BLOB type which uses the heap
+    #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    #else
+    { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
+    #endif 
+
+    return ( reinterpret_cast< const TemplateBsobType* >( m_variantData.union_data.bsob_data ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T >
+inline T
+CVariant::AsTValue( const T defaultIfNeeded, bool resolveVarsIfApplicable ) const 
+{GUCEF_TRACE;
+
+    // All the explicit template specializations should take care of making sure you never actually
+    // end up here. If for some reason you do, the best we can offer is the 'defaultIfNeeded'
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template <> inline bool CVariant::AsTValue( const bool defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsBool( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Int8 CVariant::AsTValue( const Int8 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsInt8( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline UInt8 CVariant::AsTValue( const UInt8 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt8( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Int16 CVariant::AsTValue( const Int16 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsInt16( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline UInt16 CVariant::AsTValue( const UInt16 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt16( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Int32 CVariant::AsTValue( const Int32 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsInt32( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline UInt32 CVariant::AsTValue( const UInt32 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt32( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Int64 CVariant::AsTValue( const Int64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsInt64( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline UInt64 CVariant::AsTValue( const UInt64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt64( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Float32 CVariant::AsTValue( const Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsFloat32( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline Float64 CVariant::AsTValue( const Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsFloat64( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline CAsciiString CVariant::AsTValue( const CAsciiString defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsAsciiString( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline CUtf8String CVariant::AsTValue( const CUtf8String defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUtf8String( defaultIfNeeded, resolveVarsIfApplicable ); }
 
 /*-------------------------------------------------------------------------*/
 

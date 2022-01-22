@@ -165,8 +165,12 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     , m_publishedMsgs()
     , m_publishedClientTypes()
     , m_publishedTopicNamesPerClientType()
+    , m_pubsubSerializerOptions()
 {GUCEF_TRACE;
         
+    // For a web context we prefer an ISO datetime string over a numerical epoch based offset
+    m_pubsubSerializerOptions.msgDateTimeAsMsSinceUnixEpochInUtc = false;
+    
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
@@ -364,9 +368,14 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
 
             // This one is a bit problematic: If we have multiple clients we can have duplicate topics name wise which in turn would actually be distinct 'topicMsgMap' collections
             // right now only the first instance would be accessable due to the overlap
-            TClientTopicMsgsIndexMap* topicMsgsIndexMap = new TClientTopicMsgsIndexMap( "PubSubMsgs", "PubSubMsg", "publishActionId", topicMsgMap, this );
-            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsIndexMap->CreateSharedPtr() );
+            //TClientTopicMsgsIndexMap* topicMsgsIndexMap = new TClientTopicMsgsIndexMap( "PubSubMsgs", "PubSubMsg", "publishActionId", topicMsgMap, this );
+            //GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsIndexMap->CreateSharedPtr() );
+            //m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
+
+            TClientTopicMsgsMap* topicMsgsMap = new TClientTopicMsgsMap( "PubSubMsgs", "publishActionId", &m_pubsubSerializerOptions, topicMsgMap, this, false );
+            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsMap->CreateSharedPtr() );
             m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
+            
         }
 
         // Store message
@@ -412,13 +421,13 @@ CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const COMCORE::CI
                                 originClientType  ,
                                 originClientTopic ) && success;
 
-    //if ( notify )
-    //{
-    //    if ( success )
-    //        m_publishSuccessActionIds.push_back( publishActionId );
-    //    else
-    //        m_publishFailureActionIds.push_back( publishActionId );
-    //}
+    if ( notify )
+    {
+        if ( success )
+            m_publishSuccessActionIds.push_back( publishActionId );
+        else
+            m_publishFailureActionIds.push_back( publishActionId );
+    }
     return success;
 }
 
@@ -664,8 +673,8 @@ CWebPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 
 void
 CWebPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
 }

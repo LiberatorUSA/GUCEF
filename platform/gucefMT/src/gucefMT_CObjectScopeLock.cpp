@@ -46,9 +46,8 @@ CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    assert( 0 != m_lockableObject );
-        
-    m_isLocked = m_lockableObject->Lock();
+    if ( GUCEF_NULL != lockableObject )    
+        m_isLocked = m_lockableObject->Lock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -58,8 +57,7 @@ CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    assert( 0 != m_lockableObject );
-        
+    assert( 0 != m_lockableObject );        
     m_isLocked = m_lockableObject->Lock();
 }
 
@@ -68,7 +66,7 @@ CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
 CObjectScopeLock::~CObjectScopeLock()
 {GUCEF_TRACE;
 
-    if ( m_isLocked )
+    if ( GUCEF_NULL != m_lockableObject && m_isLocked )
     {
         m_isLocked = !m_lockableObject->Unlock();
     }
@@ -89,7 +87,7 @@ bool
 CObjectScopeLock::EarlyUnlock( void )
 {GUCEF_TRACE;
 
-    if ( m_isLocked )
+    if ( GUCEF_NULL != m_lockableObject && m_isLocked )
     {
         m_isLocked = !m_lockableObject->Unlock();
         return !m_isLocked;

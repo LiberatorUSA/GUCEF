@@ -692,7 +692,7 @@ CDateTime::CompileDateTime( const char* __date__Macro ,
     CORE::Int32 hour=0, minutes=0, seconds=0;
 
     sscanf( __date__Macro, "%s %d %d", month3Letter, &day, &year );
-    month = ( (CORE::Int32)( strstr( month_names, month3Letter ) - month_names ) ) / 3;
+    month = ( ( (CORE::Int32)( strstr( month_names, month3Letter ) - month_names ) ) / 3 ) + 1;
     sscanf( __time__Macro, "%d%*c%d%*c%d", &hour, &minutes, &seconds );
 
     dt.Set( (CORE::Int16) year    ,

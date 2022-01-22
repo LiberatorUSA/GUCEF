@@ -81,17 +81,24 @@ class GUCEF_COMCORE_EXPORT_CPP CMessageSerializerOptions : public CORE::CDataNod
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     UInt32 ToOptionsBitMask( void ) const;
 
     void FromOptionsBitMask( UInt32 bitMask );
 
     bool msgIdIncluded;
+    bool msgIdTypeIncluded;
     bool msgIndexIncluded;
+    bool msgIndexTypeIncluded;
     bool msgDateTimeIncluded;
     bool msgDateTimeAsMsSinceUnixEpochInUtc;
     bool msgPrimaryPayloadIncluded;
+    bool msgPrimaryPayloadTypeIncluded;
     bool msgKeyValuePairsIncluded;
     bool msgMetaDataKeyValuePairsIncluded;
+
+    bool includeUndefinedValues;
 };
 
 /*-------------------------------------------------------------------------*/

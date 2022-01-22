@@ -51,13 +51,15 @@ namespace COMCORE {
  *  Basic implementation of the IPubSubMsg interface
  *  It does not integrate with any backend internal data types and as such may not be
  *  as efficient compared to a dedicated backend specific implementations.
- *  You can however using memory linking whereever possible to avoid data copies
+ *  You can however use memory linking whereever possible to avoid data copies
  */
 class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 {
     public:
 
     typedef std::vector< CBasicPubSubMsg >  TBasicPubSubMsgVector;
+
+    static const CString ClassTypeName;
 
     CBasicPubSubMsg( void );
 
