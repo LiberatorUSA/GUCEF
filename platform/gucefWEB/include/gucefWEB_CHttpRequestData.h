@@ -72,7 +72,8 @@ class GUCEF_WEB_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
 {
     public:
 
-    typedef CORE::CString::StringVector TStringVector;
+    typedef CORE::CString::StringVector                TStringVector;
+    typedef std::map< CORE::CString, CORE::CString >   TStringMap;
 
     TStringVector resourceRepresentations;
     TStringVector encodingRepresentations;
@@ -86,6 +87,8 @@ class GUCEF_WEB_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
     CString contentRepresentation;
     CString transactionID;
     bool keepConnectionsAlive;
+    bool isWebSocketUpgrade;
+    TStringMap otherHeaders;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

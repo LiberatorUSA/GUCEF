@@ -59,6 +59,7 @@ CHttpRequestData::CHttpRequestData( void )
     , contentRepresentation()
     , transactionID()
     , keepConnectionsAlive( true )
+    , isWebSocketUpgrade( false )
     , m_requestUriWithAuthority()
 {GUCEF_TRACE;
 
@@ -80,6 +81,7 @@ CHttpRequestData::CHttpRequestData( const CHttpRequestData& src )
     , contentRepresentation( src.contentRepresentation )
     , transactionID( src.transactionID )
     , keepConnectionsAlive( src.keepConnectionsAlive )
+    , isWebSocketUpgrade( src.isWebSocketUpgrade )
     , m_requestUriWithAuthority( src.m_requestUriWithAuthority )
 {GUCEF_TRACE;
 

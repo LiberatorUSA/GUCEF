@@ -393,7 +393,7 @@ CDynamicBufferAccess::Write( const void* srcdata ,
                                                   esize*elements ,
                                                   srcdata        );
         m_carat += bytesWritten;
-        return bytesWritten;
+        return bytesWritten / esize;
     }
     return 0;
 }

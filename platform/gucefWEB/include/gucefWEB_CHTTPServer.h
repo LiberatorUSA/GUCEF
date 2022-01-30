@@ -38,6 +38,16 @@
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
 #include "CTCPServerSocket.h"
 #define GUCEF_COMCORE_CTCPSERVERSOCKET_H
@@ -68,18 +78,54 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class GUCEF_WEB_PUBLIC_CPP CHttpServerSettings : public CORE::CIConfigurable
+{
+    public:
+
+    static const CORE::CString ClassTypeName;
+
+    bool keepAliveConnections;
+    bool processRequestsAsync;
+    bool allowWebSocketUpgrades;
+
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CHttpServerSettings( void );
+    CHttpServerSettings( const CHttpServerSettings& src );
+    virtual ~CHttpServerSettings();
+    CHttpServerSettings& operator=( const CHttpServerSettings& src );
+};
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 {
     public:
+
+    static const CORE::CEvent WebSocketClientConnectedEvent;
+        
+    typedef CORE::CTLinkedCloneableObj< CHttpRequestData > TWebSocketClientConnectedEventData;
     
+    public:
+
     typedef std::vector< CString > TStringVector;
     
-    CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL );
+    CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
+                 const CHttpServerSettings* settings = GUCEF_NULL                     );
 
     CHTTPServer( CORE::CPulseGenerator& pulsGenerator                                 ,
-                 THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL );
+                 THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
+                 const CHttpServerSettings* settings = GUCEF_NULL                     );
     
     virtual ~CHTTPServer();
+
+    void SetSettings( const CHttpServerSettings& settings );
+
+    void GetSettings( CHttpServerSettings& settings );
     
     /** 
      *  listen on default NIC with port given 
@@ -157,6 +203,13 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
                             const CORE::CDynamicBuffer& response ,
                             const COMCORE::CIPAddress& remoteIP  );
 
+    void OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
+                             const CHttpRequestData& requestData       );
+    
+    bool InitSha1CodecLink( void );
+
+    CORE::CString GenerateWebSocketResponseKey( const CORE::CString& clientKey );
+    
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -171,8 +224,8 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     CIHttpServerRequestHandler* m_requestHandler;
     THttpServerRequestHandlerFactory* m_requestHandlerFactory;
-    bool m_keepAliveConnections;
-    bool m_processRequestsAsync;
+    CHttpServerSettings m_settings;
+    CORE::CCodecRegistry::TICodecPtr m_sha1Codec;
     MT::CMutex m_lock;
 };
 

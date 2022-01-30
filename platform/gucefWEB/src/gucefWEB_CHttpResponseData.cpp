@@ -164,10 +164,18 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
         response += "\r\n";
     }
 
+    // Add any other headers
+    TStringMap::const_iterator i = otherHeaders.begin();
+    while ( i != otherHeaders.end() )
+    {
+        response += (*i).first + ": " + (*i).second + "\r\n";
+        ++i;
+    }
+
     // Add the end of HTTP header delimiter
     response += "\r\n";
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpResponseData(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "HttpResponseData(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
 
     // Copy the HTTP header into the buffer
     outputBuffer.CopyFrom( response.Length(), response.C_String() );

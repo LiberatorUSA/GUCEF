@@ -67,7 +67,8 @@ class GUCEF_WEB_PUBLIC_CPP CHttpResponseData : public CORE::CICloneable
 {
     public:
 
-    typedef CORE::CString::StringVector TStringVector;
+    typedef CORE::CString::StringVector                TStringVector;
+    typedef std::map< CORE::CString, CORE::CString >   TStringMap;
 
     TStringVector allowedMethods;
     CString cacheability;
@@ -80,6 +81,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpResponseData : public CORE::CICloneable
     CString location;
     TStringVector acceptedTypes;
     bool keepConnectionsAlive;
+    TStringMap otherHeaders;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
