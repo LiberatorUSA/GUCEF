@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
 #endif /* GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H ? */
 
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
+
 #ifndef GUCEF_COMCORE_CUDPSOCKET_H
 #include "CUDPSocket.h"
 #define GUCEF_COMCORE_CUDPSOCKET_H
@@ -56,7 +61,8 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
+class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
+                                           public CORE::CIMetricsSystemClient
 {
     public:
 

@@ -62,7 +62,8 @@ const CORE::CString CStatsDClient::Type = "StatsDClient";
 //-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( void )
-    : CORE::CIMetricsSystemClient()
+    : CORE::CGloballyConfigurable()
+    , CORE::CIMetricsSystemClient()
     , m_udpSender( false )
     , m_statsDestination()
     , m_statsInterface()
@@ -77,7 +78,8 @@ CStatsDClient::CStatsDClient( void )
 /*-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
-    : CORE::CIMetricsSystemClient()
+    : CGloballyConfigurable()
+    , CORE::CIMetricsSystemClient()
     , m_udpSender( pulseGenerator, false )
     , m_statsDestination()
     , m_statsInterface()
@@ -347,17 +349,28 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
         value = node->GetAttributeValueOrChildValueByName( "statsDestination" );
         if ( !value.IsNULLOrEmpty() )
         {
-            value = CORE::ResolveVars( value.AsString() );
-            m_statsDestination.SetHostnameAndPort( value );
+            if ( !m_statsDestination.SetHostnameAndPort( value.AsString( CString::Empty, true ) ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:LoadConfig(): Failed set host and port to: " + value.AsString( CString::Empty, true ) );
+                return false;
+            }
         }
         else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:LoadConfig(): Could not find mandatory host and port info in StatsDClient config, StatsD functionality will not be available" );
             return false;
+        }
 
         // Load extra settings for which the default can also be good enough
         m_statNamePrefix = node->GetAttributeValueOrChildValueByName( "statsNamePrefix" ).AsString( m_statNamePrefix, true );
         m_statsInterface.SetHostnameAndPort( node->GetAttributeValueOrChildValueByName( "statsInterface" ).AsString( m_statsInterface.HostnameAndPortAsString(), true ) );
         m_transmit = node->GetAttributeValueOrChildValueByName( "transmit" ).AsBool( m_transmit, true );
         m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:LoadConfig(): Could not find StatsDClient config, StatsD functionality will not be available" );
+        return false;
     }
 
     // (Re?)Open to make settings effective
