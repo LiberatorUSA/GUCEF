@@ -94,7 +94,7 @@ RestApiProcessMetricsInfoResource::Serialize( const CORE::CString& resourcePath 
 {GUCEF_TRACE;
 
     static const CORE::CDateTime compileDt = CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ );
-    
+
     output.SetName( "info" );
     output.SetAttribute( "application", "ProcessMetrics" );
     output.SetAttribute( "buildDateTime", compileDt.ToIso8601DateTimeString( true, true ) );
@@ -171,7 +171,7 @@ MetricThreshold::SaveConfig( CORE::CDataNode& cfg ) const
     cfg.SetAttribute( "applyMaxThreshold", applyMaxThreshold );
     cfg.SetAttribute( "thresholdDescription", thresholdDescription );
     cfg.SetAttribute( "metricName", metricName );
-    
+
     CORE::CString procFilterStr;
     CORE::CString::StringSet::iterator i = procFilter.begin();
     while ( i != procFilter.end() )
@@ -193,7 +193,7 @@ MetricThreshold::SaveConfig( CORE::CDataNode& cfg ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 MetricThreshold::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
@@ -212,16 +212,16 @@ MetricThreshold::LoadConfig( const CORE::CDataNode& cfg )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 MetricThreshold::IsValid( void )
 {GUCEF_TRACE;
 
-    return ( applyMinThreshold || applyMaxThreshold ) && !metricName.IsNULLOrEmpty() && ( minThreshold.IsInitialized() || maxThreshold.IsInitialized() ); 
+    return ( applyMinThreshold || applyMaxThreshold ) && !metricName.IsNULLOrEmpty() && ( minThreshold.IsInitialized() || maxThreshold.IsInitialized() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 MetricThreshold::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -373,9 +373,9 @@ ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
             m_pubSubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubClientCfg.pubsubClientType, pubSubClientCfg );
             if ( !m_pubSubClient.IsNULL() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully instantiated pub-sub client of type: " + pubSubClientCfg.pubsubClientType );                                
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully instantiated pub-sub client of type: " + pubSubClientCfg.pubsubClientType );
                 m_pubSubClient->GetSupportedFeatures( m_pubSubFeatures );
-                
+
                 // This app really only has topics for one purpose which is sending event messages
                 // As such we just grab the first config'd topic as the topic to do that on vs having yet another config setting
                 CORE::CString::StringSet topicNameList;
@@ -447,7 +447,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
     if ( !m_pubSubFeatures.supportsKeyValueSetPerMsg || !m_pubSubFeatures.supportsAbsentPrimaryPayloadPerMsg )
     {
         // @TODO: It would be better if we could source this from the codec itself
-        int payloadVarType = GUCEF_DATATYPE_BINARY_BLOB;  
+        int payloadVarType = GUCEF_DATATYPE_BINARY_BLOB;
         if ( "json" == m_thresholdNotificationPrimaryPayloadCodecType ||
              "xml" == m_thresholdNotificationPrimaryPayloadCodecType   )
         {
@@ -460,7 +460,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
             return;
         }
     }
-    
+
     CORE::UInt64 publishActionId = 0;
     if ( m_thresholdNotificationPublishTopic->Publish( publishActionId, msg, true ) )
     {
@@ -469,7 +469,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
     else
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics:PublishMetricThresholdExceeded: Failed to publish event message" );
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -482,7 +482,7 @@ ProcessMetrics::ValidateMetricThresholds( const CORE::CVariant& metricValue ,
 
     if ( !m_enableEventMsgPublishing )
         return;
-    
+
     TMetricsThresholdMap::iterator i = m_metricsThresholds.find( metricName );
     if ( i != m_metricsThresholds.end() )
     {
@@ -507,7 +507,7 @@ ProcessMetrics::ValidateMetricThresholds( const CORE::CVariant& metricValue ,
     TMetricsThresholdMapMap::iterator n = m_procMetricsThresholds.find( procName );
     if ( n != m_procMetricsThresholds.end() )
     {
-        TMetricsThresholdMap& thresholdMapForProc = (*n).second; 
+        TMetricsThresholdMap& thresholdMapForProc = (*n).second;
         TMetricsThresholdMap::const_iterator m = thresholdMapForProc.find( metricName );
         if ( m != thresholdMapForProc.end() )
         {
@@ -614,24 +614,51 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             {
                 CORE::CString lCpuMetricPrefix = "ProcessMetrics.Cpu." + CORE::ToString( i ) +  ".";
                 CORE::TLogicalCpuStats* lCpuStats = &cpuStats->logicalCpuStats[ i ];
-                
+
                 if ( m_gatherGlobalCpuCurrentFrequencyInMhz )
                 {
-                    static const CORE::CString metricName = "CurrentFrequencyInMhz";
-                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockCurrentMhz, 1.0f );
-                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockCurrentMhz ), metricName, CORE::CString::Empty );
+                    // check if the O/S was able to provide this value.
+                    // If not disable the stat. Unsupported stats return 0
+                    if ( lCpuStats->cpuCurrentFrequencyInMhz > 0.5 )
+                    {
+                        static const CORE::CString metricName = "CpuCurrentFrequencyInMhz";
+                        GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuCurrentFrequencyInMhz, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuCurrentFrequencyInMhz ), metricName, CORE::CString::Empty );
+                    }
+                    else
+                    {
+                        m_gatherGlobalCpuCurrentFrequencyInMhz = false;
+                    }
                 }
                 if ( m_gatherGlobalCpuSpecMaxFrequencyInMhz )
                 {
-                    static const CORE::CString metricName = "SpecMaxFrequencyInMhz";
-                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockSpecMaxMhz, 1.0f );
-                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockSpecMaxMhz ), metricName, CORE::CString::Empty );
+                    // check if the O/S was able to provide this value.
+                    // If not disable the stat. Unsupported stats return 0
+                    if ( lCpuStats->cpuCurrentFrequencyInMhz > 0.5 )
+                    {
+                        static const CORE::CString metricName = "CpuSpecMaxFrequencyInMhz";
+                        GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuSpecMaxFrequencyInMhz, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuSpecMaxFrequencyInMhz ), metricName, CORE::CString::Empty );
+                    }
+                    else
+                    {
+                        m_gatherGlobalCpuSpecMaxFrequencyInMhz = false;
+                    }
                 }
                 if ( m_gatherGlobalCpuMaxFrequencyInMhz )
                 {
-                    static const CORE::CString metricName = "MaxFrequencyInMhz";
-                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuClockMaxMhz, 1.0f );
-                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuClockMaxMhz ), metricName, CORE::CString::Empty );
+                    // check if the O/S was able to provide this value.
+                    // If not disable the stat. Unsupported stats return 0
+                    if ( lCpuStats->cpuCurrentFrequencyInMhz > 0.5 )
+                    {
+                        static const CORE::CString metricName = "CpuMaxFrequencyInMhz";
+                        GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuMaxFrequencyInMhz, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuMaxFrequencyInMhz ), metricName, CORE::CString::Empty );
+                    }
+                    else
+                    {
+                        m_gatherGlobalCpuMaxFrequencyInMhz = false;
+                    }
                 }
             }
         }
@@ -787,11 +814,11 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetStandbyMode: Cleaning up process information" );
             TProcessIdMap::iterator m = m_exeProcIdMap.begin();
             while ( !m_exeProcIdMap.empty() )
-            {            
+            {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erasing info for \"" + (*m).first + "\"" );
 
                 CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
-                CORE::FreeProcessId( (*m).second.pid );            
+                CORE::FreeProcessId( (*m).second.pid );
                 m_exeProcIdMap.erase( m );
             }
         }
@@ -801,7 +828,7 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::IsGlobalStandbyEnabled( void ) const
 {GUCEF_TRACE;
 
@@ -860,13 +887,13 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     if ( m_enableEventMsgPublishing )
-    {        
+    {
         m_metricsThresholds.clear();
         m_procMetricsThresholds.clear();
-        
+
         CORE::CDataNode::TConstDataNodeSet metricsThresholdsCfgs = globalConfig.FindChildrenOfType( "MetricThreshold", true );
         CORE::CDataNode::TConstDataNodeSet::const_iterator c = metricsThresholdsCfgs.begin();
-        while ( c != metricsThresholdsCfgs.end() ) 
+        while ( c != metricsThresholdsCfgs.end() )
         {
             MetricThreshold threshold;
             if ( threshold.LoadConfig( *(*c) ) )
@@ -892,9 +919,9 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Metric threshold has invalid entry" );
                     // continue best effort, at least we'd have metrics
                 }
-            }        
+            }
             ++c;
-        }    
+        }
 
         m_thresholdNotificationPrimaryPayloadCodecType =  appConfig.GetValueAlways( "ThresholdNotificationPrimaryPayloadCodecType", "json" );
         if ( !m_thresholdNotificationPrimaryPayloadCodecType.IsNULLOrEmpty() )

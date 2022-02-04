@@ -53,6 +53,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
 #include "gucefCORE_CDataNodeSerializableSettings.h"
 #define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
@@ -98,7 +103,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
                                                  bool sourceObjKeyFromObj = false                                          );
 
     virtual ~CTDataNodeSerializableMapHttpServerResource();
-    
+
     void LinkTo( const CORE::CDataNodeSerializableSettings* serializerOptions ,
                  TSerializableCollectionMap* collection                       ,
                  MT::CILockable* collectionLock                               );
@@ -153,7 +158,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 //-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class SerializableDerivedClass >
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                          ,                                                                                                                                         
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                          ,
                                                                                                                                          const CORE::CString& keyPropertyName                         ,
                                                                                                                                          const CORE::CDataNodeSerializableSettings* serializerOptions ,
                                                                                                                                          TSerializableCollectionMap* collection                       ,
@@ -219,7 +224,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 template< typename CollectionKeyType, class SerializableDerivedClass >
 bool
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::Serialize( const CString& resourcePath         , 
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::Serialize( const CString& resourcePath         ,
                                                                                                        CORE::CDataNode& output             ,
                                                                                                        const CORE::CString& representation ,
                                                                                                        const CString& params               )
@@ -227,7 +232,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
     if ( GUCEF_NULL == m_collection )
         return false;
-    
+
     // Make sure we always have some degree of serializer options
     const CORE::CDataNodeSerializableSettings* serializerOptions = m_serializerOptions;
     if ( GUCEF_NULL == serializerOptions )
@@ -235,18 +240,18 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
         static const CORE::CDataNodeSerializableSettings defaultDummy;
         serializerOptions = &defaultDummy;
     }
-    
+
     bool foundSupportedParams = false;
-    CStdParams stdParams( *serializerOptions );       
+    CStdParams stdParams( *serializerOptions );
     CORE::CTSharedPtr< const CORE::CDataNodeSerializableSettings, MT::CNoLock > requestSpecificSerializerOptions;
-    if ( CStdParamParser::ParseStdParams( params, stdParams, foundSupportedParams ) && foundSupportedParams && stdParams.levelOfDetailWasProvided ) 
+    if ( CStdParamParser::ParseStdParams( params, stdParams, foundSupportedParams ) && foundSupportedParams && stdParams.levelOfDetailWasProvided )
     {
         // We place the clone in a shared ptr so that when we leave this scope the clone is properly disposed of
         requestSpecificSerializerOptions = CORE::CTSharedPtr< CORE::CDataNodeSerializableSettings, MT::CNoLock >( static_cast< CORE::CDataNodeSerializableSettings* >( serializerOptions->Clone() ) );
         const_cast< CORE::CDataNodeSerializableSettings* >( requestSpecificSerializerOptions.GetPointerAlways() )->levelOfDetail = stdParams.levelOfDetail;
         serializerOptions = requestSpecificSerializerOptions.GetPointerAlways();
     }
-    
+
     bool totalSuccess = true;
     output = CORE::CDataNode( m_collectionName, GUCEF_DATATYPE_ARRAY );
 
@@ -279,7 +284,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
             {
                 if ( (*i).second->Serialize( *childNode, *serializerOptions ) )
                 {
-            
+
                 }
                 else
                 {

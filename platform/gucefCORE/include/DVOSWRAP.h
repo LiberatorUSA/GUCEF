@@ -166,9 +166,9 @@ typedef struct SProcCpuDataPoint TProcCpuDataPoint;
 
 struct SLogicalCpuStats
 {
-    UInt32 cpuClockCurrentMhz;
-    UInt32 cpuClockSpecMaxMhz;
-    UInt32 cpuClockMaxMhz;
+    Float32 cpuCurrentFrequencyInMhz;
+    Float32 cpuSpecMaxFrequencyInMhz;
+    Float32 cpuMaxFrequencyInMhz;
     Float64 overallCpuConsumptionPercentage;
 };
 typedef struct SLogicalCpuStats TLogicalCpuStats;
@@ -180,7 +180,7 @@ typedef struct SLogicalCpuStats TLogicalCpuStats;
 struct SCpuStats
 {
     UInt32 logicalCpuCount;
-    TLogicalCpuStats* logicalCpuStats; 
+    TLogicalCpuStats* logicalCpuStats;
 };
 typedef struct SCpuStats TCpuStats;
 

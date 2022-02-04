@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 
 #ifndef GUCEF_CORE_MACROS_H
@@ -95,10 +96,272 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/*--------------------------------------------------------------------------*/
+
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+class GUCEF_HIDDEN LinuxLogicalCpuInfo
+{
+    public:
+
+    UInt16 processor;
+    CString vendor_id;
+    UInt32 cpuFamily;
+    UInt32 model;
+    CString modelName;
+    UInt32 stepping;
+    Float32 cpuMhz;             // per the docs this is just a snapshot, not a sampling over a time interval
+    UInt32 cacheSizeInBytes;
+    UInt16 physicalId;
+    UInt16 siblings;
+    UInt16 coreId;
+    UInt16 cpuCores;
+    UInt32 apicid;
+    UInt32 initialApicid;
+    bool fpu;
+    bool fpu_exception;
+    UInt32 cpuidLevel;
+    bool wp;
+    CString::StringSet flags;
+    CString::StringSet vmxFlags;
+    CString::StringSet bugs;
+    Float32 bogomips;
+    UInt16 clflushSize;
+    UInt16 cache_alignment;
+    CString addressSizes;
+
+    LinuxLogicalCpuInfo( void )
+        : processor( 0 )
+        , vendor_id()
+        , cpuFamily( 0 )
+        , model( 0 )
+        , modelName()
+        , stepping( 0 )
+        , cpuMhz( 0.0 )
+        , cacheSizeInBytes( 0 )
+        , physicalId( 0 )
+        , siblings( 0 )
+        , coreId( 0 )
+        , cpuCores( 0 )
+        , apicid( 0 )
+        , initialApicid( 0 )
+        , fpu( false )
+        , fpu_exception( false )
+        , cpuidLevel( 0 )
+        , wp( false )
+        , flags()
+        , vmxFlags()
+        , bugs()
+        , bogomips( 0.0 )
+        , clflushSize( 0 )
+        , cache_alignment( 0 )
+        , addressSizes()
+    {GUCEF_TRACE;
+
+    }
+};
+
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN AllLinuxProcCpuInfo
+{
+    public:
+
+    typedef std::vector< LinuxLogicalCpuInfo >     LinuxLogicalCpuInfoVector;
+
+    LinuxLogicalCpuInfoVector allCpuInfo;
+
+    bool InitFromOS( void )
+    {GUCEF_TRACE;
+
+        FILE* procCpuInfoFile = fopen( "/proc/cpuinfo", "r" );
+        if ( GUCEF_NULL != procCpuInfoFile )
+        {
+            allCpuInfo.clear();
+
+            LinuxLogicalCpuInfo cpuInfo;
+            char lineBuffer[ 2048 ];
+
+            while ( GUCEF_NULL != fgets( lineBuffer, 2048, procCpuInfoFile ) )
+            {
+                // Lines with content have the form <key name><\t><:><value><\n>
+                const char* tabChar = strchr( lineBuffer, '\t' );
+                if ( GUCEF_NULL != tabChar )
+                {
+                    const char* colonChar = strchr( tabChar, ':' );
+                    UInt32 keyStrLength = 0;
+                    if ( GUCEF_NULL != colonChar )
+                    {
+                        keyStrLength = (UInt32) ( tabChar - lineBuffer );
+
+                        if ( 0 == strncmp( "processor", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.processor = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "vendor_id", lineBuffer, keyStrLength ) )
+                        {
+                            const char* eolChar = strchr( colonChar+1, '\n' );
+                            if ( GUCEF_NULL != eolChar )
+                            {
+                                cpuInfo.vendor_id.Set( colonChar+1, eolChar-(colonChar+1) );
+                                cpuInfo.vendor_id.Trim( true );
+                            }
+                        }
+                        else
+                        if ( 0 == strncmp( "cpu family", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.cpuFamily = (UInt32) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "model", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.model = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "model name", lineBuffer, keyStrLength ) )
+                        {
+                            cpuInfo.modelName = colonChar+1;
+                        }
+                        else
+                        if ( 0 == strncmp( "stepping", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.stepping = (UInt32) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "cpu MHz", lineBuffer, keyStrLength ) )
+                        {
+                            sscanf( colonChar+1, "%f", &cpuInfo.cpuMhz );
+                        }
+                        else
+                        if ( 0 == strncmp( "cache size", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+
+                            // Use old convention of KB == 1024 not 1000
+                            cpuInfo.cacheSizeInBytes = (UInt32) value * 1024;
+                        }
+                        else
+                        if ( 0 == strncmp( "physical id", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.physicalId = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "core id", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.coreId = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "cpu cores", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.cpuCores = (UInt16) value;
+                        }
+                        if ( 0 == strncmp( "apicid", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.apicid = (UInt32) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "initial apicid", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.initialApicid = (UInt32) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "fpu", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 boolInt = String_To_Boolint( colonChar+1 );
+                            cpuInfo.fpu = boolInt > 0;
+                        }
+                        else
+                        if ( 0 == strncmp( "fpu_exception", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 boolInt = String_To_Boolint( colonChar+1 );
+                            cpuInfo.fpu_exception = boolInt > 0;
+                        }
+                        else
+                        if ( 0 == strncmp( "cpuid level", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.cpuidLevel = (UInt32) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "wp", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 boolInt = String_To_Boolint( colonChar+1 );
+                            cpuInfo.wp = boolInt > 0;
+                        }
+                        else
+                        if ( 0 == strncmp( "bogomips", lineBuffer, keyStrLength ) )
+                        {
+                            sscanf( colonChar+1, "%f", &cpuInfo.bogomips );
+                        }
+                        else
+                        if ( 0 == strncmp( "clflush size", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.clflushSize = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "cache_alignment", lineBuffer, keyStrLength ) )
+                        {
+                            Int32 value = 0;
+                            sscanf( colonChar+1, "%d", &value );
+                            cpuInfo.cache_alignment = (UInt16) value;
+                        }
+                        else
+                        if ( 0 == strncmp( "address sizes", lineBuffer, keyStrLength ) )
+                        {
+                            cpuInfo.addressSizes = colonChar+1;
+                        }
+                    }
+                }
+                else
+                {
+                    // Empty lines seperate the different sections
+                    allCpuInfo.push_back( cpuInfo );
+                }
+            }
+            fclose( procCpuInfoFile );
+            return true;
+        }
+        return false;
+    }
+
+    AllLinuxProcCpuInfo( void )
+        : allCpuInfo()
+    {GUCEF_TRACE;
+
+        InitFromOS();
+    }
+};
+
+#endif
+
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-// Note that this structure definition was accidentally omitted from WinNT.h. 
-// This error will be corrected in the future. In the meantime, to compile your application, 
+// Note that this structure definition was accidentally omitted from WinNT.h.
+// This error will be corrected in the future. In the meantime, to compile your application,
 // include the structure definition contained in this topic in your source code.
 // See: https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str
 typedef struct _PROCESSOR_POWER_INFORMATION {
@@ -121,7 +384,7 @@ struct SCpuDataPoint
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     PPROCESSOR_POWER_INFORMATION cpuPowerInfo;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
+    AllLinuxProcCpuInfo infoFromProcCpu;
     #else
 
     #endif
@@ -1494,7 +1757,7 @@ CreateCpuDataPoint( void )
         return GUCEF_NULL;
 
     memset( dataPoint, 0, sizeof( TCpuDataPoint ) );
-    
+
     dataPoint->cpuStats.logicalCpuCount = GetLogicalCPUCount();
 
     UInt32 cpuStatsDataSize = sizeof( TLogicalCpuStats ) * dataPoint->cpuStats.logicalCpuCount;
@@ -1506,7 +1769,7 @@ CreateCpuDataPoint( void )
     UInt32 cpuPowerInfoDataSize = sizeof( PROCESSOR_POWER_INFORMATION ) * dataPoint->cpuStats.logicalCpuCount;
     dataPoint->cpuPowerInfo = (PPROCESSOR_POWER_INFORMATION) malloc( cpuPowerInfoDataSize );
     memset( dataPoint->cpuPowerInfo, 0, cpuPowerInfoDataSize );
-    
+
     #endif
 
     return dataPoint;
@@ -1522,14 +1785,14 @@ FreeCpuDataPoint( TCpuDataPoint* cpuDataPoint )
     {
         if ( GUCEF_NULL != cpuDataPoint->cpuStats.logicalCpuStats )
             free( cpuDataPoint->cpuStats.logicalCpuStats );
-        
+
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         if ( GUCEF_NULL != cpuDataPoint->cpuPowerInfo )
             free( cpuDataPoint->cpuPowerInfo );
-        
+
         #endif
-        
+
         free( cpuDataPoint );
     }
 }
@@ -1544,13 +1807,13 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
     if ( GUCEF_NULL == previousCpuDataDataPoint || GUCEF_NULL == cpuStats )
         return OSWRAP_FALSE;
     *cpuStats = GUCEF_NULL;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    LONG retVal = ::CallNtPowerInformation( ProcessorInformation, 
-                                            NULL, 
-                                            0, 
-                                            previousCpuDataDataPoint->cpuPowerInfo, 
+    LONG retVal = ::CallNtPowerInformation( ProcessorInformation,
+                                            NULL,
+                                            0,
+                                            previousCpuDataDataPoint->cpuPowerInfo,
                                             sizeof(PROCESSOR_POWER_INFORMATION) * previousCpuDataDataPoint->cpuStats.logicalCpuCount );
     if ( 0 == retVal )
     {
@@ -1559,16 +1822,31 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
             PROCESSOR_POWER_INFORMATION* powerInfo = &previousCpuDataDataPoint->cpuPowerInfo[ i ];
             TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
             memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
-            lCpuStats->cpuClockCurrentMhz = (UInt32) powerInfo->CurrentMhz;
-            lCpuStats->cpuClockMaxMhz = (UInt32) powerInfo->MhzLimit;
-            lCpuStats->cpuClockSpecMaxMhz = (UInt32) powerInfo->MaxMhz;
-        }    
+            lCpuStats->cpuCurrentFrequencyInMhz = (Float32) powerInfo->CurrentMhz;
+            lCpuStats->cpuMaxFrequencyInMhz = (Float32) powerInfo->MhzLimit;
+            lCpuStats->cpuSpecMaxFrequencyInMhz = (Float32) powerInfo->MaxMhz;
+        }
     }
-     
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    //if ( previousCpuDataDataPoint->infoFromProcCpu.RefreshFromOS() )
+    {
+        for ( UInt32 i=0; i<previousCpuDataDataPoint->cpuStats.logicalCpuCount; ++i )
+        {
+            LinuxLogicalCpuInfo* linuxLCpuInfo = &previousCpuDataDataPoint->infoFromProcCpu.allCpuInfo[ i ];
+            TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
+            memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+            lCpuStats->cpuCurrentFrequencyInMhz = linuxLCpuInfo->cpuMhz;
+            lCpuStats->cpuMaxFrequencyInMhz = 0.0;
+            lCpuStats->cpuSpecMaxFrequencyInMhz = 0.0;
+        }
+    }
+
     #endif
 
     *cpuStats = &previousCpuDataDataPoint->cpuStats;
-    return OSWRAP_TRUE; 
+    return OSWRAP_TRUE;
 }
 
 /*-------------------------------------------------------------------------//
