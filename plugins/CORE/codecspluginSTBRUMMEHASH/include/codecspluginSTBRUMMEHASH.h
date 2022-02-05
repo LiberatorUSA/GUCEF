@@ -1,5 +1,5 @@
 /*
- *  codecspluginSTBRUMMEHASH: Codec plugin for RC32/MD5/SHA1/SHA3/SHA256/Keccak
+ *  codecspluginSTBRUMMEHASH: Codec plugin for CRC32/MD5/SHA1/SHA3/SHA256/Keccak
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
