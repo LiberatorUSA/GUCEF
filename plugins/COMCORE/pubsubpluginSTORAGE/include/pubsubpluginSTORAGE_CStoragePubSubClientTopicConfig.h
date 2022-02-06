@@ -27,6 +27,16 @@
 
 #include <vector>
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
 #include "gucefCOMCORE_CPubSubClientTopicConfig.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
@@ -63,7 +73,42 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
 {
     public:
 
+    typedef std::vector< COMCORE::CPubSubClientTopicConfig > TTopicConfigVector;
+    enum EChannelMode : CORE::Int32
+    {
+        CHANNELMODE_UNKNOWN = 0 ,
+
+        CHANNELMODE_PUBSUB_TO_STORAGE = 1,
+        CHANNELMODE_STORAGE_TO_PUBSUB = 2
+    };
+    typedef enum EChannelMode TChannelMode;
+
+    COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
+    CORE::UInt32 desiredMinimalSerializedBlockSize;
+    CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
+    CORE::CString vfsStorageRootPath;
+    CORE::CString vfsFileExtention;
+    CORE::CString encodeCodecFamily;
+    CORE::CString encodeCodecName;
+    CORE::CString decodeCodecFamily;
+    CORE::CString decodeCodecName;
+    CORE::Int32 channelId;
+    CORE::UInt32 ticketRefillOnBusyCycle;
+    bool performPubSubInDedicatedThread;
+    bool applyThreadCpuAffinity;
+    CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
+    CORE::UInt32 cpuAffinityForMainChannelThread;
+    bool collectMetrics;
+    TChannelMode mode;
+    bool subscribeWithoutBookmarkIfNoneIsPersisted;
+    bool autoPushAfterStartupIfStorageToPubSub;
+    CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
+    CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
+    CORE::Float32 defaultCodecDecodeGrowthRatioExpectation;
+
     CStoragePubSubClientTopicConfig( void );
+
+    CStoragePubSubClientTopicConfig( const CStoragePubSubClientTopicConfig& src );
     
     CStoragePubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
 
@@ -74,6 +119,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     CStoragePubSubClientTopicConfig& operator=( const CStoragePubSubClientTopicConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool SaveCustomConfig( CORE::CDataNode& config ) const;
 };
 
 /*-------------------------------------------------------------------------//

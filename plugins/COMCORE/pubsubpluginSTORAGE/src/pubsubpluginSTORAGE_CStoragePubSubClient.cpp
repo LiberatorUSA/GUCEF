@@ -99,7 +99,7 @@ CStoragePubSubClient::CStoragePubSubClient( const COMCORE::CPubSubClientConfig& 
         }
     }
 
-    m_config.metricsPrefix += "msmq.";
+    m_config.metricsPrefix += "storage.";
 
     RegisterEventHandlers();
 }
@@ -139,50 +139,38 @@ bool
 CStoragePubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
 
-    features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
-    features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
-    features.supportsPrimaryPayloadPerMsg = true;       // For MSMQ "BODY" is the primary payload which is also in of itself a key-value message propery
-    features.supportsAbsentPrimaryPayloadPerMsg = true; // Its allowed to send tags without a BODY payload
-    features.supportsKeyValueSetPerMsg = false;         // Arbitrary key-value app data is not natively supported by MSMQ
-    features.supportsDuplicateKeysPerMsg = false;       // TODO: Since arbitrary key-value app data is not native and we simulate this we will do so in a manner that supports duplicate keys
-    features.supportsMetaDataKeyValueSetPerMsg = true;  // This is native to MSMQ
-    features.supportsMultiHostSharding = false;         // MSMQ is tied to the Windows O/S and queues are not auto shared across such O/S instances
-    features.supportsPublishing = true;                 // We support being a MSQM queue publisher in this plugin
-    features.supportsSubscribing = true;                // We support being a MSMQ queue subscriber in this plugin
+    features.supportsBinaryPayloads = true;             // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsPerMsgIds = true;                  // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsPrimaryPayloadPerMsg = true;       // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsAbsentPrimaryPayloadPerMsg = true; // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsKeyValueSetPerMsg = true;          // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsDuplicateKeysPerMsg = true;        // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsMetaDataKeyValueSetPerMsg = true;  // The storage backend with the natively compatible pub-sub serializers can always support everything
+    features.supportsMultiHostSharding = false;         // Its possible the VFS storage is multi-host but we'd have no way of knowing. Afaik its 1 file system
+    features.supportsPublishing = true;                 // We support writing to VFS storage files
+    features.supportsSubscribing = true;                // We support reading from VFS storage files
     features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
-    features.supportsAutoReconnect = true;              // Not applicable to local queues and for remote queues MSMQ supports the concept of "offline mode"        
-    features.supportsAbsentMsgReceivedAck = false;      // Since MSMQ is a queue, by default you consume the message when you read it
-    features.supportsAckUsingLastMsgInBatch = false;    // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
-    features.supportsBookmarkingConcept = true;         // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
-    features.supportsAutoBookmarking = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
-    features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
-    features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsAutoReconnect = true;              // To the extent it even applies in this case, sure we 'reconnect' to storage
     
-    // For MSMQ 3.0 and above:
-    #if ( _WIN32_WINNT >= 0x0501 )
-    
-    bool supportLookup = m_config.simulateReceiveAckFeatureViaLookupId && m_config.desiredFeatures.supportsSubscriberMsgReceivedAck; 
-    
-    features.supportsAutoMsgReceivedAck = !supportLookup;            // When simulating receive acks we never auto ack
-    features.supportsSubscriberMsgReceivedAck = supportLookup;       // The whole point is simulating the ability to ack that a message was handled
-    features.supportsAckUsingBookmark = supportLookup;               // Bookmark or message, either way we use the LookupID which we count as a topic index
-    features.supportsServerSideBookmarkPersistance = !supportLookup; // If we are using lookups the LookUp will need to be persisted externally from the app between runs
-    
-    features.supportsSubscribingUsingBookmark = true;             // we use the LookupID which we count as a topic index
-    features.supportsTopicIndexBasedBookmark = true;              // we use the LookupID which we count as a topic index
-    
-    #else
+    // Ack functionality doesnt currently make sense for this backend
+    // However in theory we could implement a hard or logical delete of read messages and such functionality could go hand-in-hand with 'server-side' (read backend controlled) bookmark persistance
+    // Right now we dont have that though so lets get the basics working first
+    features.supportsAbsentMsgReceivedAck = false;      
+    features.supportsAckUsingLastMsgInBatch = false;    
+    features.supportsAutoMsgReceivedAck = false;         
+    features.supportsSubscriberMsgReceivedAck = false;     
+    features.supportsAckUsingBookmark = false;             
 
-    features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
-    features.supportsAutoMsgReceivedAck = true;            // Since MSMQ is a queue, by default you consume the message when you read it we can consider this an ack
-    features.supportsSubscriberMsgReceivedAck = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsAckUsingBookmark = false;             // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsSubscribingUsingBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsBookmarkingConcept = true;         // We can create a reference to the storage location plus offset        
+    features.supportsAutoBookmarking = false;           // Currently we do 'forget' where we are if the app crashes    
+    features.supportsMsgIdBasedBookmark = false;        // In this context we have no idea what the message ID is, as such we cannot use it as a bookmark since we cannot garantee anything    
+    features.supportsMsgIndexBasedBookmark = false;     // In this context we have no idea what the message Index is, as such we cannot use it as a bookmark since we cannot garantee anything    
+    features.supportsTopicIndexBasedBookmark = true;    // We can create a reference to the storage location plus offset
+    features.supportsMsgDateTimeBasedBookmark = false;      // In this context we have no idea what the message datetime is, as such we cannot use it as a bookmark since we cannot garantee anything    
+    features.supportsServerSideBookmarkPersistance = false; // Currently we do 'forget' where we are if the app crashes. @TODO? Maybe we can add storage backend opinionated bookmark storage    
+    features.supportsSubscribingUsingBookmark = true;       // We can create a reference to the storage location plus offset and then use that to resume the reading from that location
     
-    #endif
-
+    
     return true;
 }
 

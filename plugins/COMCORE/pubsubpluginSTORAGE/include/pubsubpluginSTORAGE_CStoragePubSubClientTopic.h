@@ -30,20 +30,36 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERSWAP_H
+#include "gucefCORE_CDynamicBufferSwap.h"
+#define GUCEF_CORE_CDYNAMICBUFFERSWAP_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERSWAP_H ? */
+
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
 #include "CHostAddress.h"
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#include "gucefCOMCORE_CPubSubBookmark.h"
+#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
 
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
 #include "gucefCOMCORE_CPubSubClientTopic.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+
 #ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h"
 #define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H
 #endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H ? */
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,7 +83,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 {
     public:
 
-    typedef std::vector< CORE::UInt32 > UInt32Vector;
+    typedef enum CStoragePubSubClientTopicConfig::EChannelMode  TChannelMode;
+    typedef std::vector< CORE::UInt32 >                         UInt32Vector;
 
     CStoragePubSubClientTopic( CStoragePubSubClient* client );
 
@@ -99,6 +116,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     const CORE::CString& GetMetricFriendlyTopicName( void ) const;
 
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgConstRawPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgRawPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TIPubSubMsgSPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;    
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const TPubSubMsgsRefVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
@@ -143,17 +165,87 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     private:
 
+    class StorageToPubSubRequest : public CORE::CIConfigurable
+    {
+        public:
+
+        CORE::CDateTime startDt;
+        CORE::CDateTime endDt;
+        CORE::CString::StringSet vfsPubSubMsgContainersToPush;
+
+        StorageToPubSubRequest( void );
+        StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt );
+        StorageToPubSubRequest( const StorageToPubSubRequest& src );
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+        virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+        virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+    };
+    typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
+
     void RegisterEventHandlers( void );
 
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
+    template < typename T >
+    bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds, const std::vector< T >& msgs, bool notify );
+
+    bool GetPersistedBookmark( CORE::Int32 channelId              , 
+                               const CORE::CString& topicName     , 
+                               COMCORE::CPubSubBookmark& bookmark );
+
+    bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
+                                        const CORE::CString& topicName , 
+                                        CORE::CVariant& msgId          , 
+                                        CORE::CDateTime& msgDt         );
+
+    bool GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
+                                                  const CORE::CString& topicName , 
+                                                  CORE::CVariant& msgId          , 
+                                                  CORE::CDateTime& msgDt         ,
+                                                  CORE::UInt32 lastFileOffset    ,
+                                                  bool& fileExistedButHasIssue   );
+
+    bool
+    GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
+                                  const CORE::CDateTime& endDt    ,
+                                  CORE::CString::StringSet& files ) const;
+
+    bool AddStorageToPubSubRequest( const StorageToPubSubRequest& request );
+
+    void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
+
+    CORE::CString GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const;
+
+    bool StoreNextReceivedPubSubBuffer( void );
+
+    bool ProcessNextStorageToPubSubRequest( void );
+
+    bool LoadStorageFile( const CORE::CString& vfsPath       ,
+                          CORE::CDynamicBuffer& targetBuffer );
+
+    bool GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
+                                              CORE::CDateTime& startDt      ,
+                                              CORE::CDateTime& endDt        ) const;
+
+    CORE::CDynamicBufferSwap& GetSerializedMsgBuffers( void );
+    
+    bool TransmitNextPubSubMsgBuffer( void );
+
+    void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
+
     void
     OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventId  ,
                            CORE::CICloneable* eventData );
     
+    void
+    OnStorageReadTimerCycle( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
                   const CORE::CEvent& eventId  ,
@@ -176,6 +268,29 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
+
+    CORE::CDynamicBuffer* m_msgReceiveBuffer;
+    CORE::CString m_vfsFilePostfix;
+    CORE::CVariant m_lastPersistedMsgId;
+    CORE::CDateTime m_lastPersistedMsgDt;
+    CORE::Float32 m_encodeSizeRatio;
+    StorageToPubSubRequestDeque m_storageToPubSubRequests;
+
+    typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
+    
+    struct SStorageBufferMetaData
+    {
+        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
+        TPublishActionIdVector publishActionIds; 
+    };
+    typedef struct SStorageBufferMetaData TStorageBufferMetaData;
+    typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
+   
+    TBufferMailbox m_mailbox;
+    TBufferMailbox::TMailVector m_bulkMail;
+    CORE::CDynamicBufferSwap m_buffers;
+    CORE::CDateTime m_lastWriteBlockCompletion;    
+    TStorageBufferMetaDataMap m_storageBufferMetaData;
 };
 
 /*-------------------------------------------------------------------------//

@@ -16,6 +16,25 @@ GU is still the abbreviation for "Galaxy Unlimited".
 At this time GUCEF and GUCE have merged together and some parts of GUC and GU have been incorporated as well.
 Instead of being client-side focused at lot of the new development has focused on supporting services and generally back end development.
 
+## A bit of history
+Throughout the years various codebases were created and lessons learned  by the author. Slowly but surely a common core of code emerged that started growing organically.
+The original common core code base was partially lost a couple times due to data rentention issues and youngster backup practices, further constrained by a lack of financial resources.
+Various repositories were merged together, combining various partial backups to create the first version of the GUCEF repo. This first version found its public home on SourceForce.
+Originally CVS was used as the version control system, followed by SVN and later followed by Git. When the move to Git was contemplated a new home for the open source repo was also considered.
+Due to growing open-source community popularity GitHub won the day as the new home for GUCEF and some related repos where it remains today.
+
+## About the author
+Aside from the dependencies almost all code in this repository was written by Dinand Vanvelzen. 
+Dinand started programming as child during the 1980s, writing assembly code for the MSX which was a Philips designed take on a PC concept.
+Later on during the 1990s RAD programming principles became the new love afair via Borland Delphi followed by Borland C++ Builder.
+At this juncture the author had embarked upon professsional education in the dark arts of software engineering. 
+A dual strategy was persued between application programming and back-end/lower-level programming which were distinct degrees at the time.
+During this time the codebase you find in this repository continued to grow and evolve as concepts blended and evolved.
+During the 2000s the author's main focus was on visualization, mostly 3D graphics both professsionally and as an intellectual curiosity making its way into this repository.
+Migration to the United States and starting a family slowed new development to a trickle for a good number of years before beginning to pick back up once the personal situation stabilized.
+It is during this phase that youthful idealism started to give way to pragmatism. Professionally the interventional heathcare domain gave way to enterprise healthcare which in turn later gave way to the financial sector.
+Subsequent new development has pragmatically focused on common needs in the author's professional life with the incidental oddball projects mixed in as a means to an end.
+
 ## mono-repo breakdown
 - /platform : this has the main platform modules having both concrete portable functionality and interfaces for utilizing additional functionality via plugins
 - /plugins : this has various plugins that can optionally be used to extend platform capabilities
@@ -43,7 +62,7 @@ As an example you have a script file like 'RunCMake_Shared_CodeBlocks_Unix_Debug
 - pubsub2pubsub.sh : This segment denotes the main target of the logical view on the entire mono-repo. In this case the service pubsub2pubsub.
 
 In other words the format is:
-'RunCMake_<Shared/Static>_<IDE to use>_<OS Target>_<Debug/Release>_<Target name>.<Executable script extension>' 
+'RunCMake_Shared/Static_IDE to use_OS Target_Debug/Release_Target name.Executable script extension' 
 
 On Windows when you run the above script and similar it will also trigger a run of the ProjectGenerator.
 This is merely intended to make the flow more fool-proof since usually the commited CMake files are already up-to-date and thus this step can usually be x-ed out and skipped.
@@ -93,6 +112,8 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - pubsubpluginSTORAGE: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend that allows easy interaction with the VFS and its capabilities
 - pubsubpluginUDP: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for basic UDP
 - pubsubpluginWEB: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for Web concepts like HTTP/REST/WebSockets
+- ProjectGenDependsFilter: ProjectGen plugin: Allows filtering of libraries in a repo based on a depends.exe tool output report
+- ProjectGenVSImporter: ProjectGen plugin: Imports Visual Studio project files to generate a ModuleInfo.xml starting point for a new repo
 
 ## Contained Services
 - UdpViaTCP: Bridge service which funnels UDP traffic over a TCP segment. Will be superseded by pubsub2pubsub.
@@ -105,6 +126,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - pubsub2pubsub: Adapter service which translates more generally between different messaging paradigms. Will supersede many of the other adapter services.
 - FilePusher: Agent service which monitors the file system for certain files and pushes them to a VFS destination for example AWS S3.
 - GucefLogService: Service which can accept GUCEF platform logs streamed via network connection. Aimed at situations where we cannot have/access local logs
+- ServerPortExtender: Service used to reverse inbound/outbound connection initiation for an application server port thus bypassing egress only restrictions
 
 ## Contained Tools
 - ProjectGenerator: Tool to auto generate various project/module files and different logical views of the same mono-repo
@@ -115,6 +137,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 
 ## Contained Misc Libraries
 - MemoryLeakFinder: Dynamically loaded platform helper library to track down memory leaks aided by GUCEF platform functionality
+- ProjectGen: Library that holds all the logic of the ProjectGenerator tool. Its supports plugins to expand functionality.
 
 ## TODO list
 - Short term: Add basic websocket support native to the platform
@@ -127,6 +150,8 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - Short term: Complete initial pass at pubsub2pubsub 'aws sqs' plugin
 - Short term: Refactor the way the /projects folder content is stuctured to allow the various outputs (CMake/Premake/Android) to be kept in sync more easily.
 - Short term: Split new gucefPUBSUB library from gucefCOMCORE
+- Short term: Add config driven CodecChain class
+- Mid term: Fix the GitHub CI integration. The auto build trigger link is broken.
 - Mid term: Add DataNode schema system
 - Mid term: Add DStore (DataNode) codec for YML format
 - Mid term: Add config driven message transform engine
@@ -139,7 +164,11 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - Mid term: Complete renaming platform source files to all have module prefix
 - Mid term: Remove dead code as part of a larger revitalization effort of projects contained within the mono-repo. Determine which other apps contained herein is worth saving.
 - Mid term: Add stream support to logging system using pre-allocated output buffers per thread as an optimization
+- Mid term: Recreate the platform console client functionality
+- Mid term: Add native secure socket support for the supported platforms
 - Long term: Add web assembly support
+- Long term: Add Jenkins CI support via ProjectGenerator
 - One day: Deprecate/undo the classic MFC style 'C' prefix for classes. This would be a huge change breaking everything which is why it has not occured yet. 
 - Ongoing: Evaluate need to update various dependencies considering plethora of constraints
 - Ongoing: Refine logging/metrics
+- Ongoing: Add more javadoc format documentation
