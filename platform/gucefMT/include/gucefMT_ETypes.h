@@ -158,6 +158,10 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #define GUCEF_DATATYPE_UNKNOWN      0
 
+/*
+ *  The following are C/C++ build-in data types
+ *  Enumerated here for dynamic type referencing at runtime
+ */
 #define GUCEF_DATATYPE_FLOAT32      1
 #define GUCEF_DATATYPE_FLOAT64      2
 #define GUCEF_DATATYPE_UINT8        3
@@ -169,20 +173,28 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_UINT64       9
 #define GUCEF_DATATYPE_INT64       10
 
-#define GUCEF_DATATYPE_BINARY_BLOB          20
-#define GUCEF_DATATYPE_BINARY_BSOB          21
-#define GUCEF_DATATYPE_NUMERIC              22
-#define GUCEF_DATATYPE_ASCII_STRING         23
-#define GUCEF_DATATYPE_UTF8_STRING          24
-#define GUCEF_DATATYPE_UTF16_STRING         25
-#define GUCEF_DATATYPE_UTF32_STRING         26
-#define GUCEF_DATATYPE_ARRAY                27
-#define GUCEF_DATATYPE_OBJECT               28
-#define GUCEF_DATATYPE_BOOLEAN_INT32        29
-#define GUCEF_DATATYPE_BOOLEAN_ASCII_STRING 30
-#define GUCEF_DATATYPE_BOOLEAN_UTF8_STRING  31
+/*
+ *  The following are higher level data types not build into  C/C++
+ *  Enumerated here for dynamic type referencing at runtime
+ */
+#define GUCEF_DATATYPE_BINARY_BLOB              20      /**< binary large object of dynamically determined size */
+#define GUCEF_DATATYPE_BINARY_BSOB              21      /**< binary small object of size not exceeding multi-purpose fixed storage */
+#define GUCEF_DATATYPE_NUMERIC                  22      /**< number of undefined range. Suggested to always interpret using the largest range signed storage available */
+#define GUCEF_DATATYPE_ASCII_STRING             23      /**< string utilizing the ASCII character set exclusively */
+#define GUCEF_DATATYPE_UTF8_STRING              24      /**< string utilizing the UTF8 character set exclusively */
+#define GUCEF_DATATYPE_UTF16_LE_STRING          25      /**< string utilizing the UTF16 character set exclusively. Little Endian variant of UTF16 */
+#define GUCEF_DATATYPE_UTF16_BE_STRING          26      /**< string utilizing the UTF16 character set exclusively. Big Endian variant of UTF16 */
+#define GUCEF_DATATYPE_UTF32_STRING             27      /**< string utilizing the UTF32 character set exclusively */
+#define GUCEF_DATATYPE_ARRAY                    28      /**< data type representing an array container concept */
+#define GUCEF_DATATYPE_OBJECT                   29      /**< data type representing an object container concept */
+#define GUCEF_DATATYPE_BOOLEAN_INT32            30      /**< integer value actually representing a boolean (zero or non-zero ) */
+#define GUCEF_DATATYPE_BOOLEAN_ASCII_STRING     31      /**< ASCII character set string value actually representing a boolean using reserved words or digits */
+#define GUCEF_DATATYPE_BOOLEAN_UTF8_STRING      32      /**< UTF8 character set string value actually representing a boolean using reserved words or digits */
+#define GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING  33      /**< UTF16 Little Endian character set string value actually representing a boolean using reserved words or digits */
+#define GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING  34      /**< UTF16 Big Endian character set string value actually representing a boolean using reserved words or digits */
+#define GUCEF_DATATYPE_BOOLEAN_UTF32_STRING     35      /**< UTF32 character set string value actually representing a boolean using reserved words or digits */
 
-#define GUCEF_DATATYPE_LAST_TYPE_ID         GUCEF_DATATYPE_BOOLEAN_UTF8_STRING
+#define GUCEF_DATATYPE_LAST_TYPE_ID         GUCEF_DATATYPE_BOOLEAN_UTF32_STRING
 
 #ifdef __cplusplus
 
@@ -208,16 +220,22 @@ typedef enum EBuildinDataType TBuildinDataType;
 
 enum EBasicDataType
 {
-    DATATYPE_BINARY_BLOB    = GUCEF_DATATYPE_BINARY_BLOB   ,
-    DATATYPE_BINARY_BSOB    = GUCEF_DATATYPE_BINARY_BSOB   ,
-    DATATYPE_NUMERIC        = GUCEF_DATATYPE_NUMERIC       ,
-    DATATYPE_ASCII_STRING   = GUCEF_DATATYPE_ASCII_STRING  ,
-    DATATYPE_UTF8_STRING    = GUCEF_DATATYPE_UTF8_STRING   ,
-    DATATYPE_UTF16_STRING   = GUCEF_DATATYPE_UTF16_STRING  ,
-    DATATYPE_UTF32_STRING   = GUCEF_DATATYPE_UTF32_STRING  ,
-    DATATYPE_ARRAY          = GUCEF_DATATYPE_ARRAY         ,
-    DATATYPE_OBJECT         = GUCEF_DATATYPE_OBJECT        ,
-    DATATYPE_BOOLEAN        = GUCEF_DATATYPE_BOOLEAN_INT32
+    DATATYPE_BINARY_BLOB                = GUCEF_DATATYPE_BINARY_BLOB                ,
+    DATATYPE_BINARY_BSOB                = GUCEF_DATATYPE_BINARY_BSOB                ,
+    DATATYPE_NUMERIC                    = GUCEF_DATATYPE_NUMERIC                    ,
+    DATATYPE_ASCII_STRING               = GUCEF_DATATYPE_ASCII_STRING               ,
+    DATATYPE_UTF8_STRING                = GUCEF_DATATYPE_UTF8_STRING                ,
+    DATATYPE_UTF16_LE_STRING            = GUCEF_DATATYPE_UTF16_LE_STRING            ,
+    DATATYPE_UTF16_BE_STRING            = GUCEF_DATATYPE_UTF16_BE_STRING            ,
+    DATATYPE_UTF32_STRING               = GUCEF_DATATYPE_UTF32_STRING               ,
+    DATATYPE_ARRAY                      = GUCEF_DATATYPE_ARRAY                      ,
+    DATATYPE_OBJECT                     = GUCEF_DATATYPE_OBJECT                     ,
+    DATATYPE_BOOLEAN_INT32              = GUCEF_DATATYPE_BOOLEAN_INT32              ,
+    DATATYPE_BOOLEAN_ASCII_STRING       = GUCEF_DATATYPE_BOOLEAN_ASCII_STRING       ,
+    DATATYPE_BOOLEAN_UTF8_STRING        = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING        ,
+    DATATYPE_BOOLEAN_UTF16_LE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING    ,
+    DATATYPE_BOOLEAN_UTF16_BE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING    ,
+    DATATYPE_BOOLEAN_UTF32_STRING       = GUCEF_DATATYPE_BOOLEAN_UTF32_STRING 
 };
 typedef enum EBasicDataType TBasicDataType;
 

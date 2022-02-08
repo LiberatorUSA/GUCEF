@@ -176,6 +176,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ReferenceUpdater
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SVNMagicMerge ${CMAKE_BINARY_DIR}/SVNMagicMerge )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ServerPortExtender ${CMAKE_BINARY_DIR}/ServerPortExtender )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SocketSink ${CMAKE_BINARY_DIR}/SocketSink )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/UdpTransformer ${CMAKE_BINARY_DIR}/UdpTransformer )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/UdpViaTcp ${CMAKE_BINARY_DIR}/UdpViaTcp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/awslambdahost ${CMAKE_BINARY_DIR}/awslambdahost )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/itvExporter ${CMAKE_BINARY_DIR}/itvExporter )

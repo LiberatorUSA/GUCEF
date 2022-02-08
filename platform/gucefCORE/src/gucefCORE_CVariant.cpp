@@ -339,7 +339,8 @@ CVariant::IsString( void ) const
     {
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
-        case GUCEF_DATATYPE_UTF16_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
         case GUCEF_DATATYPE_UTF32_STRING:
         {
             return true;
@@ -411,7 +412,8 @@ CVariant::UsesDynamicMemory( UInt8 typeId )
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
-        case GUCEF_DATATYPE_UTF16_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
         case GUCEF_DATATYPE_UTF32_STRING:
         case GUCEF_DATATYPE_BINARY_BLOB:
         {
@@ -485,7 +487,8 @@ CVariant::IsNULLOrEmpty( void ) const
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
                    ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );
         }
-        case GUCEF_DATATYPE_UTF16_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
         {
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
                    ( 2 == m_variantData.union_data.heap_data.heap_data_size && 0 == *( (const UInt16*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );
@@ -895,7 +898,8 @@ CVariant::ByteSize( bool includeNullTerm ) const
                 return m_variantData.union_data.heap_data.heap_data_size-1;
             return m_variantData.union_data.heap_data.heap_data_size;
         }
-        case GUCEF_DATATYPE_UTF16_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
         {
             if ( includeNullTerm || 1 > m_variantData.union_data.heap_data.heap_data_size )
                 return m_variantData.union_data.heap_data.heap_data_size;
@@ -1106,7 +1110,7 @@ CVariant&
 CVariant::operator=( const std::wstring& data )
 {GUCEF_TRACE;
 
-    Set( data.c_str(), (UInt32) data.size(), GUCEF_DATATYPE_UTF16_STRING, false );
+    Set( data.c_str(), (UInt32) data.size(), GUCEF_DATATYPE_UTF16_LE_STRING, false );
     return *this;
 }
 
@@ -1266,7 +1270,8 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         case GUCEF_DATATYPE_BINARY_BLOB:
         case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_UTF8_STRING:
-        case GUCEF_DATATYPE_UTF16_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
         case GUCEF_DATATYPE_UTF32_STRING:
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
@@ -1374,7 +1379,7 @@ CVariant&
 CVariant::LinkTo( const std::wstring& src )
 {GUCEF_TRACE;
 
-    Set( src.c_str(), (UInt32) src.size(), GUCEF_DATATYPE_UTF16_STRING, true );
+    Set( src.c_str(), (UInt32) src.size(), GUCEF_DATATYPE_UTF16_LE_STRING, true );
     return *this;
 }
 
