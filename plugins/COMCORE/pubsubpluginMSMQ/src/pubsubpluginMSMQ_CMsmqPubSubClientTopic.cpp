@@ -1175,7 +1175,7 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         case VT_BSTR:                   { return targetVariant.Set( msmqSourceVariant.pwszVal, SysStringLen( msmqSourceVariant.bstrVal ), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); } 
 
         case VT_LPSTR:                  { return targetVariant.Set( msmqSourceVariant.pszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF8_STRING, linkIfPossible ); } 
-        case VT_LPWSTR:                 { return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_STRING, linkIfPossible ); } 
+        case VT_LPWSTR:                 { return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_LE_STRING, linkIfPossible ); } 
         case VT_BLOB:                   { return targetVariant.Set( msmqSourceVariant.blob.pBlobData, msmqSourceVariant.blob.cbSize, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); }
         
         case VT_DATE:                   

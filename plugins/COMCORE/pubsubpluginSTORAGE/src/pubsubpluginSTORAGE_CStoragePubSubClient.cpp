@@ -80,6 +80,7 @@ CStoragePubSubClient::CStoragePubSubClient( const COMCORE::CPubSubClientConfig& 
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_threadPool()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -131,6 +132,15 @@ CStoragePubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
     return m_config;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::ThreadPoolPtr 
+CStoragePubSubClient::GetThreadPool( void )
+{GUCEF_TRACE;
+
+    return m_threadPool;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -395,6 +405,9 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CStoragePubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
         CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
+        
+        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".queuedReadyToReadBuffers", topicMetrics.queuedReadyToReadBuffers, 1.0f );
+        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
         
         ++i;
     }

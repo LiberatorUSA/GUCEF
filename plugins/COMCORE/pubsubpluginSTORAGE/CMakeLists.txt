@@ -17,6 +17,7 @@ set( HEADER_FILES
   include/pubsubpluginSTORAGE_CStoragePubSubClientConfig.h
   include/pubsubpluginSTORAGE_CStoragePubSubClientTopic.h
   include/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h
+  include/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h
   include/pubsubpluginSTORAGE_config.h
   include/pubsubpluginSTORAGE_macros.h
 )
@@ -27,6 +28,7 @@ set( SOURCE_FILES
   src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp
   src/pubsubpluginSTORAGE_CStoragePubSubClientTopic.cpp
   src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp
+  src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

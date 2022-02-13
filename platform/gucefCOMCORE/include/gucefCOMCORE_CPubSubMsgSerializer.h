@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#ifndef GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#define GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,4 +131,4 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializer : public CMessageSerializer
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#endif /* GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H ? */

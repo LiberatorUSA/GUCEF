@@ -152,7 +152,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     : COMCORE::CPubSubClientTopic()
     , m_client( client )
     , m_config()
-    , m_syncReadTimer( GUCEF_NULL )
+    , m_syncVfsOpsTimer( GUCEF_NULL )
     , m_reconnectTimer( GUCEF_NULL )
     , m_lock()
     , m_currentPublishActionId( 1 )
@@ -163,12 +163,13 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_metricFriendlyTopicName()
+    , m_vfsOpsThread()
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    m_syncReadTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
+    m_syncVfsOpsTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
@@ -185,8 +186,8 @@ CStoragePubSubClientTopic::~CStoragePubSubClientTopic()
 
     Disconnect();
 
-    delete m_syncReadTimer;
-    m_syncReadTimer = GUCEF_NULL;
+    delete m_syncVfsOpsTimer;
+    m_syncVfsOpsTimer = GUCEF_NULL;
 
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
@@ -214,6 +215,15 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+
+    if ( GUCEF_NULL != m_syncVfsOpsTimer )
+    {
+        TEventCallback callback( this, &CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle );
+        SubscribeTo( m_syncVfsOpsTimer              ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
+    }
+    
 
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnPulseCycle );
     SubscribeTo( m_client->GetConfig().pulseGenerator ,
@@ -537,7 +547,7 @@ CStoragePubSubClientTopic::Disconnect( void )
 
     MT::CScopeMutex lock( m_lock );
 
-    m_syncReadTimer->SetEnabled( false );
+    m_syncVfsOpsTimer->SetEnabled( false );
 
     m_buffers.SignalEndOfWriting();
 
@@ -547,14 +557,44 @@ CStoragePubSubClientTopic::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::Subscribe( void )
+CStoragePubSubClientTopic::BeginVfsOps( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Successfully 'subscribed to topic' for MSMQ queue. Topic Name: " + m_config.topicName );
+    if ( !m_config.performVfsOpsASync )
+    {
+        if ( GUCEF_NULL != m_syncVfsOpsTimer )
+            m_syncVfsOpsTimer->SetEnabled( true );
+    }
+    else
+    if ( m_config.performVfsOpsInDedicatedThread )
+    {
+        if ( m_vfsOpsThread.IsNULL() )
+        {
+            m_vfsOpsThread = CStoragePubSubClientTopicVfsTaskPtr( new CStoragePubSubClientTopicVfsTask( this ) );
+        }
+        if ( !m_vfsOpsThread.IsNULL() )
+        {
+            if ( !m_client->GetThreadPool()->StartTask( m_vfsOpsThread ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to start dedicated VFS thread for async operations" );
+                return false;
+            }
+        }
+    }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::Subscribe( void )
+{GUCEF_TRACE;
+
+    bool success = BeginVfsOps();
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:Subscribe: 'subscribe to topic' for Topic Name: " + m_config.topicName );
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -655,7 +695,12 @@ CStoragePubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
     m_buffers.SetMinimalBufferSize( m_config.desiredMinimalSerializedBlockSize );
-
+    
+    if ( m_config.performVfsOpsInDedicatedThread )
+    {
+        
+    }
+    
     return true;
 }
 
@@ -688,14 +733,46 @@ CStoragePubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClientTopic::OnStorageReadTimerCycle( CORE::CNotifier* notifier    ,
-                                                    const CORE::CEvent& eventId  ,
-                                                    CORE::CICloneable* eventData )
+CStoragePubSubClientTopic::PerformASyncVfsWork( void )
+{GUCEF_TRACE;
+    
+    switch ( m_config.mode )
+    {
+        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
+        {
+            ProcessNextStorageToPubSubRequest();
+            TransmitNextPubSubMsgBuffer();
+            return;
+        }
+        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
+        {
+            StoreNextReceivedPubSubBuffer();
+            return;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB )
+    switch ( m_config.mode )
     {
-        TransmitNextPubSubMsgBuffer();
+        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
+        {
+            ProcessNextStorageToPubSubRequest();
+            TransmitNextPubSubMsgBuffer();
+            return;
+        }
+        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
+        {
+            StoreNextReceivedPubSubBuffer();
+            return;
+        }
     }
 }
 
@@ -722,6 +799,8 @@ CStoragePubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 CStoragePubSubClientTopic::TopicMetrics::TopicMetrics( void )
+    : queuedReadyToReadBuffers( 0 )
+    , smallestBufferSizeInBytes( 0 )
 {GUCEF_TRACE;
 
 }
@@ -753,6 +832,9 @@ CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     const COMCORE::CPubSubClientConfig& clientConfig = m_client->GetConfig();
+    
+    m_metrics.queuedReadyToReadBuffers = m_buffers.GetBuffersQueuedToRead();
+    m_metrics.smallestBufferSizeInBytes = m_buffers.GetSmallestBufferSize();
     
     if ( clientConfig.desiredFeatures.supportsPublishing )
     {
@@ -940,12 +1022,6 @@ CStoragePubSubClientTopic::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 
 
     // @TODO: topic name segregation
     
-    if ( channelId != m_config.channelId )
-    {
-        fileExistedButHasIssue = false;
-        return false; // this should never happen
-    }
-
     if ( m_lastPersistedMsgId.IsNULLOrEmpty() && m_lastPersistedMsgDt == CORE::CDateTime::Empty )
     {
         CORE::CString lastWrittenFilePath = GetPathToLastWrittenPubSubStorageFile( lastFileOffset );

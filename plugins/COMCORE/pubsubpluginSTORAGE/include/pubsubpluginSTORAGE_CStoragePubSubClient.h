@@ -109,6 +109,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public COMC
 
     CStoragePubSubClientConfig& GetConfig( void );
 
+    CORE::ThreadPoolPtr GetThreadPool( void );
+
     private:
 
     void
@@ -128,6 +130,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public COMC
     CStoragePubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
+    CORE::ThreadPoolPtr m_threadPool;
 };
 
 /*-------------------------------------------------------------------------//

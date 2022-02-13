@@ -37,6 +37,11 @@
 #define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
 #endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgSerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
 #include "gucefCOMCORE_CPubSubClientTopicConfig.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
@@ -84,6 +89,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     typedef enum EChannelMode TChannelMode;
 
     COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
+    COMCORE::CPubSubMsgSerializerOptions pubsubSerializerOptions;
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
     CORE::CString vfsStorageRootPath;
@@ -92,12 +98,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     CORE::CString encodeCodecName;
     CORE::CString decodeCodecFamily;
     CORE::CString decodeCodecName;
-    CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
-    bool performPubSubInDedicatedThread;
-    bool applyThreadCpuAffinity;
-    CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
-    CORE::UInt32 cpuAffinityForMainChannelThread;
+    bool performVfsOpsASync;
+    bool performVfsOpsInDedicatedThread;
+    bool applyDedicatedVfsOpsThreadCpuAffinity;
+    CORE::UInt32 cpuAffinityForDedicatedVfsOpsThread;
     bool collectMetrics;
     TChannelMode mode;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;

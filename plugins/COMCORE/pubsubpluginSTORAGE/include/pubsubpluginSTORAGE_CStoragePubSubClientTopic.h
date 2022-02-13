@@ -25,6 +25,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <deque>
+
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -60,6 +62,10 @@
 #define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H
 #endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H ? */
 
+#ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTVFSTASK_H
+#include "pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h"
+#define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTVFSTASK_H
+#endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTVFSTASK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -137,6 +143,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
         TopicMetrics( void );
 
+        CORE::UInt32 queuedReadyToReadBuffers;
+        CORE::UInt32 smallestBufferSizeInBytes;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
@@ -242,10 +250,16 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                            CORE::CICloneable* eventData );
     
     void
-    OnStorageReadTimerCycle( CORE::CNotifier* notifier    ,
-                             const CORE::CEvent& eventId  ,
-                             CORE::CICloneable* eventData );
+    OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
 
+    
+    friend class CStoragePubSubClientTopicVfsTask;
+
+    void PerformASyncVfsWork( void );
+    bool BeginVfsOps( void );
+    
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
                   const CORE::CEvent& eventId  ,
@@ -257,7 +271,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     CStoragePubSubClientTopicConfig m_config;
-    CORE::CTimer* m_syncReadTimer;    
+    CORE::CTimer* m_syncVfsOpsTimer;    
     CORE::CTimer* m_reconnectTimer;
     MT::CMutex m_lock;
     CORE::UInt64 m_currentPublishActionId;
@@ -275,8 +289,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
     StorageToPubSubRequestDeque m_storageToPubSubRequests;
-
-    typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
     
     struct SStorageBufferMetaData
     {
@@ -286,11 +298,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     typedef struct SStorageBufferMetaData TStorageBufferMetaData;
     typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
    
-    TBufferMailbox m_mailbox;
-    TBufferMailbox::TMailVector m_bulkMail;
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDateTime m_lastWriteBlockCompletion;    
     TStorageBufferMetaDataMap m_storageBufferMetaData;
+    CStoragePubSubClientTopicVfsTaskPtr m_vfsOpsThread;
 };
 
 /*-------------------------------------------------------------------------//

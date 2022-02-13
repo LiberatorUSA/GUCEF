@@ -108,7 +108,17 @@ CDynamicBufferSwap::GetBuffersQueuedToRead( void ) const
 
     MT::CScopeMutex lock( m_lock );
     return m_buffersQueuedToRead;
-}             
+}                             
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CDynamicBufferSwap::GetNrOfBuffers( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return (UInt32) m_buffers.size();
+} 
 
 /*-------------------------------------------------------------------------*/
 
@@ -124,6 +134,26 @@ CDynamicBufferSwap::SetMinimalBufferSize( UInt32 minimalBufferSize )
         (*i).buffer.SetBufferSize( minimalBufferSize, false );
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CDynamicBufferSwap::GetSmallestBufferSize( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    UInt32 smallest = GUCEF_MT_UINT32MAX;
+    TBufferEntryVector::const_iterator i = m_buffers.begin();
+    while ( i != m_buffers.end() )
+    {
+        UInt32 bufferSize = (*i).buffer.GetBufferSize();
+        if ( smallest > bufferSize )
+            smallest = bufferSize;
+        ++i;
+    }
+    return smallest;
 }
 
 /*-------------------------------------------------------------------------*/
