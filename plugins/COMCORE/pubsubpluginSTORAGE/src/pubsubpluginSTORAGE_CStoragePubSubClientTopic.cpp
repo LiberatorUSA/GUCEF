@@ -93,7 +93,7 @@ namespace STORAGE {
 //-------------------------------------------------------------------------*/
 
 #define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
-#define GUCEF_DEFAULT_VFS_CONTAINER_FILE_EXTENSION                  ".vUNKNOWN.bin"
+#define GUCEF_DEFAULT_VFS_CONTAINER_FILE_EXTENSION                  ".pubsubmsgs"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -141,6 +141,15 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::GetClassTypeName( void ) cons
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CStoragePubSubClientTopic::GenerateDefaultVfsStorageContainerFileExt( void )
+{GUCEF_TRACE;
+    
+    return ".v" + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + GUCEF_DEFAULT_VFS_CONTAINER_FILE_EXTENSION;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool                                                
 CStoragePubSubClientTopic::StorageToPubSubRequest::SaveConfig( CORE::CDataNode & tree ) const
 {
@@ -176,7 +185,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_metricFriendlyTopicName()
     , m_currentReadBuffer( GUCEF_NULL )
     , m_currentWriteBuffer( GUCEF_NULL )
-    , m_vfsFilePostfix( GUCEF_DEFAULT_VFS_CONTAINER_FILE_EXTENSION )
+    , m_vfsFilePostfix( GenerateDefaultVfsStorageContainerFileExt() )
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
     , m_encodeSizeRatio( -1 )
@@ -928,9 +937,14 @@ CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     const COMCORE::CPubSubClientConfig& clientConfig = m_client->GetConfig();
+
+    CORE::UInt32 smallest = 0;
+    CORE::UInt32 largest = 0;
+    m_buffers.GetBufferSizeRange( smallest, largest );
     
     m_metrics.queuedReadyToReadBuffers = m_buffers.GetBuffersQueuedToRead();
-    m_metrics.smallestBufferSizeInBytes = m_buffers.GetSmallestBufferSize();
+    m_metrics.smallestBufferSizeInBytes = smallest;
+    m_metrics.largestBufferSizeInBytes = largest;
     
     if ( clientConfig.desiredFeatures.supportsPublishing )
     {

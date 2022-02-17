@@ -71,6 +71,7 @@ CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( void )
     , translateUdpSourceAddressToString( false )
     , udpSourceAddressAsMetaDataKeyName( GUCEF_DEFAULT_UDP_SOURCE_METADATA_KEY_NAME )
     , maxUdpPacketPayloadSizeInBytes( GUCEF_DEFAULT_UDP_MAX_PLAYLOAD_SIZE_IN_BYTES )
+    , addTimestampToReceivedPackages( true )
 {GUCEF_TRACE;
     
 }
@@ -90,6 +91,7 @@ CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( const COMCORE::CPubSub
     , translateUdpSourceAddressToString( false )
     , udpSourceAddressAsMetaDataKeyName( GUCEF_DEFAULT_UDP_SOURCE_METADATA_KEY_NAME )
     , maxUdpPacketPayloadSizeInBytes( GUCEF_DEFAULT_UDP_MAX_PLAYLOAD_SIZE_IN_BYTES )
+    , addTimestampToReceivedPackages( true )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -137,6 +139,7 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     translateUdpSourceAddressToString = config.GetAttributeValueOrChildValueByName( "translateUdpSourceAddressToString" ).AsBool( translateUdpSourceAddressToString, true );
     udpSourceAddressAsMetaDataKeyName = config.GetAttributeValueOrChildValueByName( "udpSourceAddressAsMetaDataKeyName" ).AsString( udpSourceAddressAsMetaDataKeyName, true );
     maxUdpPacketPayloadSizeInBytes = config.GetAttributeValueOrChildValueByName( "maxUdpPacketPayloadSizeInBytes" ).AsUInt16( maxUdpPacketPayloadSizeInBytes, true );
+    addTimestampToReceivedPackages = config.GetAttributeValueOrChildValueByName( "addTimestampToReceivedPackages" ).AsBool( addTimestampToReceivedPackages, true );
 
     return true;
 }
@@ -177,6 +180,7 @@ CUdpPubSubClientTopicConfig::operator=( const CUdpPubSubClientTopicConfig& src )
         translateUdpSourceAddressToString = src.translateUdpSourceAddressToString;
         udpSourceAddressAsMetaDataKeyName = src.udpSourceAddressAsMetaDataKeyName;
         maxUdpPacketPayloadSizeInBytes = src.maxUdpPacketPayloadSizeInBytes;
+        addTimestampToReceivedPackages = src.addTimestampToReceivedPackages;
     }
     return *this;
 }

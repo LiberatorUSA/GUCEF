@@ -138,22 +138,25 @@ CDynamicBufferSwap::SetMinimalBufferSize( UInt32 minimalBufferSize )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
-CDynamicBufferSwap::GetSmallestBufferSize( void ) const
+void 
+CDynamicBufferSwap::GetBufferSizeRange( UInt32& smallest, UInt32& largest ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    UInt32 smallest = GUCEF_MT_UINT32MAX;
+    largest = 0;
+    smallest = GUCEF_MT_UINT32MAX;
     TBufferEntryVector::const_iterator i = m_buffers.begin();
     while ( i != m_buffers.end() )
     {
         UInt32 bufferSize = (*i).buffer.GetBufferSize();
         if ( smallest > bufferSize )
             smallest = bufferSize;
+        if ( largest < bufferSize )
+            largest = bufferSize;
+
         ++i;
     }
-    return smallest;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -410,6 +410,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         
         GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".queuedReadyToReadBuffers", topicMetrics.queuedReadyToReadBuffers, 1.0f );
         GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
+        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + topicName + ".largestBufferSizeInBytes", topicMetrics.largestBufferSizeInBytes, 1.0f );
         
         ++i;
     }

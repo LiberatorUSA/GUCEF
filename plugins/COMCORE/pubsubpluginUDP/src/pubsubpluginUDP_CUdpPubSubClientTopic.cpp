@@ -569,6 +569,9 @@ CUdpPubSubClientTopic::OnUDPPacketsRecieved( CORE::CNotifier* notifier    ,
             msgWrapper.SetReceiveActionId( m_currentReceiveActionId );
             ++m_currentReceiveActionId;
 
+            if ( m_config.addTimestampToReceivedPackages )
+                msgWrapper.GetMsgDateTime() = CORE::CDateTime::NowLocalDateTime();
+
             msgWrapper.GetPrimaryPayload().LinkTo( packetEntry.dataBuffer.GetData() );
 
             if ( m_config.addUdpSourceAddressAsMetaData )

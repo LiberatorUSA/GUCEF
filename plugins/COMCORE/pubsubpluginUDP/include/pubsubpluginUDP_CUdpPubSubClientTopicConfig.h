@@ -93,6 +93,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public C
     bool translateUdpSourceAddressToString;
     CORE::CString udpSourceAddressAsMetaDataKeyName;
     CORE::UInt16 maxUdpPacketPayloadSizeInBytes;
+    bool addTimestampToReceivedPackages;
 };
 
 /*-------------------------------------------------------------------------//

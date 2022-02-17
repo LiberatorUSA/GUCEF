@@ -145,6 +145,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
         CORE::UInt32 queuedReadyToReadBuffers;
         CORE::UInt32 smallestBufferSizeInBytes;
+        CORE::UInt32 largestBufferSizeInBytes;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
@@ -204,6 +205,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool SetupToSubscribe( COMCORE::CPubSubClientTopicConfig& config );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
+    static CORE::CString GenerateDefaultVfsStorageContainerFileExt( void );
 
     template < typename T >
     bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds, const std::vector< T >& msgs, bool notify );
