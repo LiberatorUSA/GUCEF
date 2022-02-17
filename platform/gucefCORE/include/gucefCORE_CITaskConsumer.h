@@ -177,10 +177,19 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           ) = 0;
 
+    /**
+     *  If an active delegator is associated with the task consumer (and thus thread) this asks said delegator to stop
+     *
+     *  This should never be called from the implementation based on this class but rather intended as a convenience 
+     *  interface for associated code, especially in cases where dedicated externally owned TaskConsumer objects are used.
+     */
+    bool RequestTaskToStop( bool waitOnStop );
 
     /**
      *  Blocks the calling thread up to "timeoutInMs" milliseconds waiting for the task to be finished
-     *  This should never be called from the implementation based on this class
+     *
+     *  This should never be called from the implementation based on this class but rather intended as a convenience 
+     *  interface for associated code, especially in cases where dedicated externally owned TaskConsumer objects are used.
      */
     virtual bool WaitForTaskToFinish( Int32 timeoutInMs );
 

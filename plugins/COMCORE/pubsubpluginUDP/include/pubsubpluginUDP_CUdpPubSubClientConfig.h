@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
 #include "gucefCOMCORE_CPubSubClientConfig.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
@@ -75,6 +80,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientConfig : public COMCOR
 
     bool transmitTestPackets;
     CORE::UInt32 testPacketTransmissionIntervalInMs;
+    CORE::CDynamicBuffer testPacket;
 };
 
 /*-------------------------------------------------------------------------//

@@ -190,6 +190,14 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
     };
     typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
+    
+    struct SStorageBufferMetaData
+    {
+        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
+        TPublishActionIdVector publishActionIds; 
+    };
+    typedef struct SStorageBufferMetaData TStorageBufferMetaData;
+    typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
 
     void RegisterEventHandlers( void );
 
@@ -258,7 +266,13 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     friend class CStoragePubSubClientTopicVfsTask;
 
     void PerformASyncVfsWork( void );
+    void OnEndOfASyncVfsWork( void );
+
     bool BeginVfsOps( void );
+    bool StopVfsOps( void );
+
+    void FinalizeWriteBuffer( TStorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset );
+    void FinalizeWriteBuffer( void );
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -283,20 +297,13 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
 
-    CORE::CDynamicBuffer* m_msgReceiveBuffer;
+    CORE::CDynamicBuffer* m_currentReadBuffer;
+    CORE::CDynamicBuffer* m_currentWriteBuffer;
     CORE::CString m_vfsFilePostfix;
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
     StorageToPubSubRequestDeque m_storageToPubSubRequests;
-    
-    struct SStorageBufferMetaData
-    {
-        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
-        TPublishActionIdVector publishActionIds; 
-    };
-    typedef struct SStorageBufferMetaData TStorageBufferMetaData;
-    typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
    
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDateTime m_lastWriteBlockCompletion;    

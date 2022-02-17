@@ -100,6 +100,8 @@ CStoragePubSubClient::CStoragePubSubClient( const COMCORE::CPubSubClientConfig& 
         }
     }
 
+    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", true );
+
     m_config.metricsPrefix += "storage.";
 
     RegisterEventHandlers();

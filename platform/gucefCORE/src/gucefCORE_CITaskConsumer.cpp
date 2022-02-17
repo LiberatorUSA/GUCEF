@@ -277,9 +277,10 @@ CTaskConsumer::SetCpuAffinityMask( UInt32 affinityMaskSize ,
                                    void* affinityMask      )
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
     {
-        return m_delegator->SetCpuAffinityMask( affinityMaskSize, affinityMask );
+        return delegator->SetCpuAffinityMask( affinityMaskSize, affinityMask );
     }
     return false;
 }
@@ -290,9 +291,10 @@ bool
 CTaskConsumer::SetCpuAffinityByCpuId( UInt32 cpuId )
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
     {
-        return m_delegator->SetCpuAffinityByCpuId( cpuId );
+        return delegator->SetCpuAffinityByCpuId( cpuId );
     }
     return false;
 }
@@ -303,9 +305,28 @@ bool
 CTaskConsumer::IsDeactivationRequested( void ) const
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
     {
-        return m_delegator->IsDeactivationRequested();
+        return delegator->IsDeactivationRequested();
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::RequestTaskToStop( bool waitOnStop )
+{GUCEF_TRACE;
+
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
+    {
+        TBasicThreadPoolPtr threadPool = delegator->GetThreadPool();
+        if ( !threadPool.IsNULL() )
+        {
+            return threadPool->RequestTaskToStop( m_taskId, waitOnStop );
+        }
     }
     return true;
 }

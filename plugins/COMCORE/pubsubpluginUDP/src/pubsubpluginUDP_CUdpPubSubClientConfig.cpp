@@ -49,6 +49,7 @@ CUdpPubSubClientConfig::CUdpPubSubClientConfig( void )
     : COMCORE::CPubSubClientConfig()
     , transmitTestPackets( false )
     , testPacketTransmissionIntervalInMs( 1000 )
+    , testPacket()
 {GUCEF_TRACE;
 
 }
@@ -59,6 +60,7 @@ CUdpPubSubClientConfig::CUdpPubSubClientConfig( const COMCORE::CPubSubClientConf
     : COMCORE::CPubSubClientConfig( genericConfig )
     , transmitTestPackets( false )
     , testPacketTransmissionIntervalInMs( 1000 )
+    , testPacket()
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -79,6 +81,16 @@ CUdpPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
     
     testPacketTransmissionIntervalInMs = config.GetAttributeValueOrChildValueByName( "testPacketTransmissionIntervalInMs" ).AsUInt32( testPacketTransmissionIntervalInMs, true );
     transmitTestPackets = config.GetAttributeValueOrChildValueByName( "transmitTestPackets" ).AsBool( transmitTestPackets, true );
+    
+    CORE::CString testPacketAsBase64 = config.GetAttributeValueOrChildValueByName( "testPacketAsBase64" ).AsString( CORE::CString::Empty, true );
+    if ( !testPacketAsBase64.IsNULLOrEmpty() )
+    {
+        testPacket.CopyAndDecodeBase64From( testPacketAsBase64, 0 );
+    }
+    if ( 0 == testPacket.GetDataSize() )
+    {
+        testPacket.CopyFrom( 4, "TEST" );
+    }
 
     return true;
 }

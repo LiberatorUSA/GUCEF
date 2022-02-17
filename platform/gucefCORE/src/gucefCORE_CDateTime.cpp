@@ -1056,26 +1056,33 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     else
     if ( isoClampedYear < 0000 )
         isoClampedYear = 0000;
-
-    if ( includeDelimeters )
+    
+    if ( includeMilliseconds )
     {
-        if ( includeMilliseconds )
+        // ISO 8601 requires the miliseconds to be expressed as a fraction of a second
+        // a second has 1000 milliseconds thus we use 3 digits to denote the fraction at which point it directly translates as said fraction
+        // Note that ISO8601:2004 allows: "as many digits as necessary following the decimal sign. A decimal fraction shall have at least one digit" 
+        UInt16 milliSecs = m_milliseconds;
+        if ( milliSecs > 999 )
+            milliSecs = 0;
+
+        if ( includeDelimeters )
         {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 24 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
-            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 20 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds );
+            // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
     }
     else
     {
-        if ( includeMilliseconds )
+        if ( includeDelimeters )
         {
-            // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars
-            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u.%03uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
+            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 20 chars
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", isoClampedYear, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
         else
         {
@@ -1109,7 +1116,22 @@ CString
 CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
-    char dtBuffer[ 25 ];
+    // We cannot just assume our data structure holds values in a specific range
+    // The data storage in the class specifically is more tolerant
+    //
+    // Int16 year <- thus "-32768" thus 6 chars
+    // UInt8 month <- thus "256" thus 3 chars
+    // UInt8 day <- thus "256" thus 3 chars
+    // UInt8 hours <- thus "256" thus 3 chars
+    // UInt8 minutes <- thus "256" thus 3 chars
+    // UInt8 seconds <- thus "256" thus 3 chars
+    // UInt16 milliseconds <- this is reinterpreted and clamped to a precision of 0.xxx fraction thus 3 chars
+    // --------------------------------------  +
+    // Thus with assuming garbage input is a possibility we need space for 24 chars for just the digits
+    // Adding in the seperators for the ISO 8601 we get +7 chars
+    // This gives us a total max with garbage input of 31 chars plus null terminator thus 32 chars
+
+    char dtBuffer[ 32 ];
     if ( 0 < ToIso8601DateTimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters, includeMilliseconds ) )
         return dtBuffer;
     return CString::Empty;

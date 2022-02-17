@@ -131,6 +131,15 @@ CTaskDelegator::~CTaskDelegator()
 
 /*-------------------------------------------------------------------------*/
 
+TBasicThreadPoolPtr
+CTaskDelegator::GetThreadPool( void )
+{GUCEF_TRACE;
+
+    return m_threadPool;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPulseGenerator&
 CTaskDelegator::GetPulseGenerator( void )
 {GUCEF_TRACE;

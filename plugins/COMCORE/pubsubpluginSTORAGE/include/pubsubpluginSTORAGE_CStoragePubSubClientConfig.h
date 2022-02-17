@@ -60,8 +60,6 @@ class CStoragePubSubClient;
 class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientConfig : public COMCORE::CPubSubClientConfig
 {
     public:
-
-    bool simulateReceiveAckFeatureViaLookupId;
     
     CStoragePubSubClientConfig( void );
     

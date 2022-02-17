@@ -47,7 +47,6 @@ namespace STORAGE {
 
 CStoragePubSubClientConfig::CStoragePubSubClientConfig( void )
     : COMCORE::CPubSubClientConfig()
-    , simulateReceiveAckFeatureViaLookupId( true )
 {GUCEF_TRACE;
 
 }
@@ -56,7 +55,6 @@ CStoragePubSubClientConfig::CStoragePubSubClientConfig( void )
 
 CStoragePubSubClientConfig::CStoragePubSubClientConfig( const COMCORE::CPubSubClientConfig& genericConfig )
     : COMCORE::CPubSubClientConfig( genericConfig )
-    , simulateReceiveAckFeatureViaLookupId( true )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -75,7 +73,7 @@ bool
 CStoragePubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    simulateReceiveAckFeatureViaLookupId = config.GetAttributeValueOrChildValueByName( "simulateReceiveAckFeatureViaLookupId" ).AsBool( simulateReceiveAckFeatureViaLookupId, true );    
+    
 
     return true;
 }
@@ -103,7 +101,7 @@ CStoragePubSubClientConfig::operator=( const CStoragePubSubClientConfig& src )
     if ( &src != this )
     {
         COMCORE::CPubSubClientConfig::operator=( src );
-        simulateReceiveAckFeatureViaLookupId = src.simulateReceiveAckFeatureViaLookupId;
+
     }
     return *this;
 }

@@ -104,6 +104,7 @@ CStoragePubSubClientTopicVfsTask::OnTaskEnded( CORE::CICloneable* taskdata ,
                                                bool wasForced              )
 {GUCEF_TRACE;
 
+    m_ownerTopic->OnEndOfASyncVfsWork();
 }
 
 /*-------------------------------------------------------------------------*/

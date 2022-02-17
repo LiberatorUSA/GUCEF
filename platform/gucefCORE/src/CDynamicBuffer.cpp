@@ -596,6 +596,26 @@ CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CDynamicBuffer::CopyAndDecodeBase64From( const CString& source, UInt32 destinationOffset )
+{GUCEF_TRACE;
+
+    // Since the base 64 data does not get larger when decoded but will be equal size or smaller 
+    // we can use the source string size to pre-allocate the output buffer size
+    if ( SetBufferSize( source.ByteSize(), false ) )
+    {
+        UInt32 bytesUsed = 0;
+        if ( Base64Decode( source, GetBufferPtr(), GetBufferSize(), bytesUsed ) )
+        {
+            SetDataSize( bytesUsed );
+            return bytesUsed;
+        }
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      Copys size number of bytes from the buffer to src at the offset
  *      given.

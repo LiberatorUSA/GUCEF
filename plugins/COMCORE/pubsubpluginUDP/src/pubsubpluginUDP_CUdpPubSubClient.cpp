@@ -434,7 +434,9 @@ CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
 
         if ( topicConfig.wantsTestPackage )
         {
-            m_testUdpSocket->SendPacketTo( topicConfig.udpInterface, "TEST", 4 );
+            m_testUdpSocket->SendPacketTo( topicConfig.udpInterface, 
+                                           m_config.testPacket.GetBufferPtr(), 
+                                           (CORE::UInt16) m_config.testPacket.GetDataSize() );
         }
         ++i;
     }
