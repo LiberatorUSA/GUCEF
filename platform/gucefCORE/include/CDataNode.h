@@ -424,8 +424,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     CDataNode* AddChild( const CString& nodeName              , 
                          int nodeType = GUCEF_DATATYPE_OBJECT );
 
-    CDataNode* AddChildWithValue( const CString& nodeName   , 
-                                  const CVariant& nodeValue );
+    CDataNode* AddChildWithValue( const CString& nodeName              , 
+                                  const CVariant& nodeValue            ,
+                                  int nodeType = GUCEF_DATATYPE_OBJECT );
     
     bool DelChild( const CString& name );
 

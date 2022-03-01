@@ -14,6 +14,8 @@
 set( HEADER_FILES 
   include/crc16.h
   include/pubsubpluginREDISCLUSTER.h
+  include/pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h
+  include/pubsubpluginREDISCLUSTER_CRedisClusterKeyCacheUpdateTask.h
   include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.h
   include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.h
   include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.h
@@ -26,6 +28,8 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/crc16.cpp
   src/pubsubpluginREDISCLUSTER.cpp
+  src/pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.cpp
+  src/pubsubpluginREDISCLUSTER_CRedisClusterKeyCacheUpdateTask.cpp
   src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.cpp
   src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.cpp
   src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.cpp

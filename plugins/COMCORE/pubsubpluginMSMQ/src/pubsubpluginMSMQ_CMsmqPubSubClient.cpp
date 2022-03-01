@@ -159,6 +159,8 @@ CMsmqPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feature
     features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
     features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsDiscoveryOfAvailableTopics = false; // We could maybe support this via Active Directory or via scanning for local private queues but right now not supported
+    features.supportsGlobPatternTopicNames = false;
     
     // For MSMQ 3.0 and above:
     #if ( _WIN32_WINNT >= 0x0501 )
@@ -193,12 +195,29 @@ COMCORE::CPubSubClientTopic*
 CMsmqPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CMsmqPubSubClientTopic* rcTopic = new CMsmqPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CMsmqPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CMsmqPubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    return rcTopic;
+
+    if ( GUCEF_NULL != topicAccess )
+    {
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
+    }
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,11 +240,18 @@ void
 CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CMsmqPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 
@@ -245,6 +271,16 @@ CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                              const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

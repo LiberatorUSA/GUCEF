@@ -1502,10 +1502,12 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 /*-------------------------------------------------------------------------*/
 
 CDataNode*
-CDataNode::AddChildWithValue( const CString& nodeName, const CVariant& nodeValue )
+CDataNode::AddChildWithValue( const CString& nodeName   , 
+                              const CVariant& nodeValue ,
+                              int nodeType              )
 {GUCEF_TRACE;
 
-    CDataNode newNode( nodeName, GUCEF_DATATYPE_OBJECT );
+    CDataNode newNode( nodeName, nodeType );
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
@@ -1570,10 +1572,23 @@ CDataNode::GetChildrenValuesByName( const CString& name ) const
     TConstDataNodeSet::iterator i = childNodes.begin();
     while ( i != childNodes.end() )
     {
-        const CVariant& childValue = (*i)->GetValue();
-        if ( !childValue.IsNULLOrEmpty() )
+        switch ( (*i)->GetNodeType() )
         {
-            results.push_back( childValue );
+            case GUCEF_DATATYPE_OBJECT:
+            case GUCEF_DATATYPE_ARRAY:
+            {
+                // Complex types cannot be obtained this way, skip
+                break;
+            }
+            default:
+            {
+                const CVariant& childValue = (*i)->GetValue();
+                if ( !childValue.IsNULLOrEmpty() )
+                {
+                    results.push_back( childValue );
+                }
+                break;
+            }
         }
         ++i;
     }
@@ -1592,10 +1607,23 @@ CDataNode::GetChildrenValues( void ) const
     TDataNodeList::const_iterator i = m_children.begin();
     while ( i != m_children.end() )
     {
-        const CVariant& childValue = (*i)->GetValue();
-        if ( !childValue.IsNULLOrEmpty() )
+        switch ( (*i)->GetNodeType() )
         {
-            results.push_back( childValue );
+            case GUCEF_DATATYPE_OBJECT:
+            case GUCEF_DATATYPE_ARRAY:
+            {
+                // Complex types cannot be obtained this way, skip
+                break;
+            }
+            default:
+            {
+                const CVariant& childValue = (*i)->GetValue();
+                if ( !childValue.IsNULLOrEmpty() )
+                {
+                    results.push_back( childValue );
+                }
+                break;
+            }
         }
         ++i;
     }

@@ -282,6 +282,11 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                          CORE::CICloneable* eventData );
 
     void
+    OnTopicAccessAutoCreated( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+
+    void
     OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
                                                   const CORE::CEvent& eventId  ,
                                                   CORE::CICloneable* eventData );
@@ -312,6 +317,9 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                         CORE::CICloneable* eventData );
 
     bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+
+    bool ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSideSettings ,
+                             COMCORE::CPubSubClientTopic& topic                  );
     
     protected:
 

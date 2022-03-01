@@ -81,33 +81,26 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const COMCORE::CPubSubClie
     , m_redisErrorReplies( 0 )
     , m_metricsTimer( GUCEF_NULL )
     , m_redisReconnectTimer( GUCEF_NULL )
+    , m_streamIndexingTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != config.pulseGenerator )
+    if ( GUCEF_NULL == m_config.pulseGenerator )
+        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();    
+
+    if ( m_config.desiredFeatures.supportsMetrics )
     {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-        if ( config.desiredFeatures.supportsAutoReconnect )
-        {
-            m_redisReconnectTimer = new CORE::CTimer( *config.pulseGenerator, config.reconnectDelayInMs );
-        }
+        m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
-    else
+    if ( m_config.desiredFeatures.supportsAutoReconnect )
     {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-        if ( config.desiredFeatures.supportsAutoReconnect )
-        {
-            m_redisReconnectTimer = new CORE::CTimer( config.reconnectDelayInMs );
-        }
+        m_redisReconnectTimer = new CORE::CTimer( *config.pulseGenerator, config.reconnectDelayInMs );
+    }
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
+    {                                                                      // @TODO: interval
+        m_streamIndexingTimer = new CORE::CTimer( *config.pulseGenerator, 100000 );
     }
 
     m_config.metricsPrefix += "credis.";
@@ -131,6 +124,9 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 
     delete m_redisReconnectTimer;
     m_redisReconnectTimer = GUCEF_NULL;
+
+    delete m_streamIndexingTimer;
+    m_streamIndexingTimer = GUCEF_NULL;
 
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -191,6 +187,8 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsMsgIndexBasedBookmark = true;      // Same as supportsMsgIdBasedBookmark. This is the native Redis "bookmark" method and thus preferered
     features.supportsTopicIndexBasedBookmark = true;    // Same as supportsMsgIdBasedBookmark. This is the native Redis "bookmark" method and thus preferered
     features.supportsMsgDateTimeBasedBookmark = true;   // The auto-generated msgId is a timestamp so its essentially the same thing for Redis
+    features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
+    features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
     return true;
 }
 
@@ -200,17 +198,42 @@ COMCORE::CPubSubClientTopic*
 CRedisClusterPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CRedisClusterPubSubClientTopic* rcTopic = new CRedisClusterPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    // Check to see if this logical/conceptual 'topic' represents multiple pattern matched Redis Streams
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames && 
+         topicConfig.topicName.HasChar( '*' ) > -1               )
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        PubSubClientTopicSet allTopicAccess;
+        if ( CreateMultiTopicAccess( topicConfig, allTopicAccess ) && !allTopicAccess.empty() )
+        {
+            // Caller should really use the CreateMultiTopicAccess() variant
+            COMCORE::CPubSubClientTopic* tAccess = *(allTopicAccess.begin());
+            return tAccess;
+        }
+        return GUCEF_NULL;
     }
     else
     {
-        delete rcTopic;
-        rcTopic = GUCEF_NULL;
+        CRedisClusterPubSubClientTopic* topicAccess = GUCEF_NULL;
+        {
+            MT::CObjectScopeLock lock( this );
+
+            topicAccess = new CRedisClusterPubSubClientTopic( this );
+            if ( topicAccess->LoadConfig( topicConfig ) )
+            {
+                m_topicMap[ topicConfig.topicName ] = topicAccess;
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig.topicName + "\"" );
+
+                TopicAccessCreatedEventData eData( topicConfig.topicName );
+                NotifyObservers( TopicAccessCreatedEvent, &eData );
+            }
+            else
+            {
+                delete topicAccess;
+                topicAccess = GUCEF_NULL;
+            }
+        }
     }
-    return rcTopic;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -229,15 +252,133 @@ CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClient::GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                                PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    // Check to see if this logical/conceptual 'topic' name represents multiple pattern matched Redis Streams
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames && 
+         topicName.HasChar( '*' ) > -1                           )
+    {
+        // We create the actual topic objects from the wildcard glob pattern topic which is used
+        // as a template. As such we need to match the pattern again to find the various topics that could have been spawned
+        bool matchesFound = false;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            if ( (*i).first.WildcardEquals( topicName, '*', true ) )
+            {
+                topicAccess.insert( (*i).second );
+                matchesFound = true;
+            }
+            ++i;
+        }
+        return matchesFound;
+    }
+    else
+    {
+        TTopicMap::iterator i = m_topicMap.find( topicName );
+        if ( i != m_topicMap.end() )
+        {
+            topicAccess.insert( (*i).second );
+            return true;
+        }
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& templateTopicConfig ,
+                                                       const CORE::CString::StringSet& topicNameList                ,
+                                                       PubSubClientTopicSet& topicAccess                            )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CString::StringSet::const_iterator i = topicNameList.begin();
+    while ( i != topicNameList.end() )
+    {        
+        COMCORE::CPubSubClientTopicConfig topicConfig( templateTopicConfig );
+        topicConfig.topicName = (*i);
+
+        CRedisClusterPubSubClientTopic* tAccess = GUCEF_NULL;
+        {
+            MT::CObjectScopeLock lock( this );
+
+            tAccess = new CRedisClusterPubSubClientTopic( this );
+            if ( tAccess->LoadConfig( topicConfig ) )
+            {
+                m_topicMap[ topicConfig.topicName ] = tAccess;
+                topicAccess.insert( tAccess );
+
+                TopicAccessCreatedEventData eData( topicConfig.topicName );
+                NotifyObservers( TopicAccessAutoCreatedEvent, &eData );
+            }
+            else
+            {
+                delete tAccess;
+                tAccess = GUCEF_NULL;
+                totalSuccess = false;
+            }
+        }
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::CreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig ,
+                                                   PubSubClientTopicSet& topicAccess                    )
+{GUCEF_TRACE;
+
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames && 
+         topicConfig.topicName.HasChar( '*' ) > -1               )
+    {
+        CORE::CString::StringSet topicNameList;
+        if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNameList, "streams", topicConfig.topicName ) )
+        {
+            m_streamIndexingTimer->SetEnabled( true );
+
+            return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess );
+        }
+        return false;
+    }
+    else
+    {
+        COMCORE::CPubSubClientTopic* tAccess = CreateTopicAccess( topicConfig );
+        if ( GUCEF_NULL != tAccess )
+        {
+            topicAccess.insert( tAccess );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CRedisClusterPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):DestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+
+        delete topicAccess;        
     }
 }
 
@@ -257,6 +398,16 @@ CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRedisClusterPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                                      const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNameList, "stream", globPatternFilters );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -325,11 +476,27 @@ CRedisClusterPubSubClient::GetRedisNodeMap( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-sw::redis::RedisCluster* 
+RedisClusterPtr
 CRedisClusterPubSubClient::GetRedisContext( void ) const
 {GUCEF_TRACE;
 
     return m_redisContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClient::GetRedisClusterErrorRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisErrorReplies = m_redisErrorReplies;
+        m_redisErrorReplies = 0;
+        return redisErrorReplies;
+    }
+    else
+        return m_redisErrorReplies;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -461,8 +628,7 @@ CRedisClusterPubSubClient::Disconnect( void )
             ++i;
         }
 
-        delete m_redisContext;
-        m_redisContext = GUCEF_NULL;
+        m_redisContext.Unlink();
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
     }
@@ -518,8 +684,8 @@ CRedisClusterPubSubClient::Connect( void )
         rppConnectionOptions.keep_alive = true;
 
         // Connect to the Redis cluster
-        delete m_redisContext;
-        m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
+        m_redisContext.Unlink();
+        m_redisContext = RedisClusterPtr( new sw::redis::RedisCluster( rppConnectionOptions ) );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
 
@@ -588,7 +754,14 @@ CRedisClusterPubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
-}
+    if ( GUCEF_NULL != m_streamIndexingTimer )
+    {
+        TEventCallback callback( this, &CRedisClusterPubSubClient::OnStreamIndexingTimerCycle );
+        SubscribeTo( m_streamIndexingTimer          ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
+    }
+}           
 
 /*-------------------------------------------------------------------------*/
 
@@ -598,6 +771,9 @@ CRedisClusterPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                                 CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+
+    // Quickly grab a snapshot of metric values for all topics 
+    // we don't combine this with metrics publishing as it adds to metrics timeframe drift across topics
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
@@ -606,6 +782,23 @@ CRedisClusterPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                           eventData );
         ++i;
     }
+
+    // Now publish all the metrics to the metrics system
+    i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        CRedisClusterPubSubClientTopic* topic = (*i).second;
+        const CRedisClusterPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
+        const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
+        //const CRedisClusterPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
+        
+        GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".redisErrorReplies", topicMetrics.redisClusterErrorReplies, 1.0f );
+        
+        ++i;
+    }
+
+    GUCEF_METRIC_COUNT( m_config.metricsPrefix + ".redisErrorReplies", GetRedisClusterErrorRepliesCounter( true ), 1.0f );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -620,6 +813,157 @@ CRedisClusterPubSubClient::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier
     {
         m_redisReconnectTimer->SetEnabled( false );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::GetAllGlobPatternTopicNames( CORE::CString::StringSet& allGlobPatternTopicNames )
+{GUCEF_TRACE;
+
+    // Check config'd topic
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( (*i).topicName.HasChar( '*' ) > -1 )
+        {
+            allGlobPatternTopicNames.insert( (*i).topicName );
+        }
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::IsStreamIndexingNeeded( void )
+{GUCEF_TRACE;
+
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
+    {
+        // Check config'd topic
+        COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+        while ( i != m_config.topics.end() )
+        {
+            if ( (*i).topicName.HasChar( '*' ) > -1 )
+            {
+                return true;
+            }
+            ++i;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const COMCORE::CPubSubClientTopicConfig*
+CRedisClusterPubSubClient::FindTemplateConfigForTopicName( const CORE::CString& topicName ) const
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator i = m_config.topics.begin();
+    while ( i != m_config.topics.end() )
+    {
+        if ( (*i).topicName.HasChar( '*' ) > -1 )
+        {
+            if ( topicName.WildcardEquals( (*i).topicName, '*', true ) )
+            {
+                return &(*i);
+            }
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Checking for new streams matching glob pattterns" );
+    
+    // First get a new list of all glob patterns we need to match
+    CORE::CString::StringSet allGlobPatternTopicNames;
+    if( !GetAllGlobPatternTopicNames( allGlobPatternTopicNames ) )
+        return;
+    
+    // Next we will need to fetch all stream names in the cluster
+    CORE::CString::StringSet allMatchingStreamNames;
+    if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, allMatchingStreamNames, "stream", allGlobPatternTopicNames ) )
+    {
+        // Check created topics, filtering the ones we already created
+        TTopicMap::iterator t = m_topicMap.begin();
+        while ( t != m_topicMap.end() )
+        {
+            CORE::CString::StringSet::iterator i = allMatchingStreamNames.find( (*t).first );
+            if ( i != allMatchingStreamNames.end() )
+            {
+                allMatchingStreamNames.erase( i );
+            }
+            ++t;
+        }
+
+        // Now we automatically create topic access for all the remaining topics
+        // Note that in most cases event notifications from the cache should have caught the changes already so this is just a fallback for race conditions
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Found " + 
+            CORE::ToString( allMatchingStreamNames.size() ) + " new streams that match glob patterns. Will attempt to auto create topics for these" );        
+
+        CORE::CString::StringSet::iterator n = allMatchingStreamNames.begin();
+        while ( n != allMatchingStreamNames.end() )
+        {
+            const COMCORE::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
+            if ( GUCEF_NULL != templateConfig )
+            {
+                CORE::CString::StringSet topicNameList;
+                topicNameList.insert( (*n) );
+
+                PubSubClientTopicSet topicAccess;
+                
+                AutoCreateMultiTopicAccess( *templateConfig, topicNameList, topicAccess ); 
+            }
+            ++n;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventId  ,
+                                                  CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+        //CORE::CString::StringVector filteredStreamNames;
+        //CORE::CString::StringVector::iterator i = m_settings.streamsToGatherInfoFrom.begin();
+        //while ( i != m_settings.streamsToGatherInfoFrom.end() )
+        //{
+        //    if ( (*i).HasChar( '*' ) > -1 )
+        //    {
+        //        CORE::CString::StringSet::iterator n = allGlobPatternTopicNames.begin();
+        //        while ( n != allGlobPatternTopicNames.end() )
+        //        {
+        //            if ( (*n).WildcardEquals( (*i), '*', true ) )
+        //            {
+        //                filteredStreamNames.push_back( (*n) );
+        //            }
+        //            ++n;
+        //        }
+        //    }
+        //    ++i;
+        //}
+        //m_filteredStreamNames = filteredStreamNames;
+
+        //GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
+        //    CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
+        //    " streams which we will collect metric for"  );
 }
 
 /*-------------------------------------------------------------------------//

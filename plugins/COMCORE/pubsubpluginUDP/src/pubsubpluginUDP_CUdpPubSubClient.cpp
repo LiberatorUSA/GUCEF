@@ -170,6 +170,8 @@ CUdpPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features
     features.supportsServerSideBookmarkPersistance = false; // UDP is fire-and-forget: not supported    
     features.supportsSubscribingUsingBookmark = false;  // UDP is fire-and-forget: not supported
     features.supportsTopicIndexBasedBookmark = false;   // UDP is fire-and-forget: not supported
+    features.supportsDiscoveryOfAvailableTopics = false; // UDP has no such concept 
+    features.supportsGlobPatternTopicNames = false;
 
     return true;
 }
@@ -180,12 +182,29 @@ COMCORE::CPubSubClientTopic*
 CUdpPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CUdpPubSubClientTopic* rcTopic = new CUdpPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CUdpPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CUdpPubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    return rcTopic;
+
+    if ( GUCEF_NULL != topicAccess )
+    {
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
+    }
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,11 +227,18 @@ void
 CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CUdpPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 

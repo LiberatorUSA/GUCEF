@@ -163,6 +163,8 @@ CAwsSqsPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featu
     features.supportsMsgIndexBasedBookmark = false;      // Since SQS is a queue where you consume the messages: You cannot provide a msg index to resume from a given point
     features.supportsTopicIndexBasedBookmark = false;    // Since SQS is a queue where you consume the messages: You cannot provide a msg index to resume from a given point
     features.supportsMsgDateTimeBasedBookmark = false;   // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
+    features.supportsDiscoveryOfAvailableTopics = false; // @TODO: need to look into this
+    features.supportsGlobPatternTopicNames = false;
     return true;
 }
 
@@ -172,12 +174,29 @@ COMCORE::CPubSubClientTopic*
 CAwsSqsPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CAwsSqsPubSubClientTopic* rcTopic = new CAwsSqsPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CAwsSqsPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CAwsSqsPubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    return rcTopic;
+
+    if ( GUCEF_NULL != topicAccess )
+    {
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
+    }
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -186,6 +205,8 @@ COMCORE::CPubSubClientTopic*
 CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
         
+    MT::CObjectScopeLock lock( this );
+
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -200,11 +221,18 @@ void
 CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CAwsSqsPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 
@@ -224,6 +252,16 @@ CAwsSqsPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSqsPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                                const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

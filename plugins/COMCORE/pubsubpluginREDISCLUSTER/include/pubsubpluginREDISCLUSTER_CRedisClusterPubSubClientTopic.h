@@ -44,6 +44,11 @@
 #include "async.h"
 #include "redis++.h"
 
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
+#include "pubsubpluginREDISCLUSTER_RedisNode.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_REDISNODE_H ? */
+
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.h"
 #define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
@@ -53,6 +58,11 @@
 #include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.h"
 #define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICREADER_H
 #endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICREADER_H ? */
+
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,6 +116,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    const CORE::CString& GetMetricFriendlyTopicName( void ) const;
+
     virtual bool Publish( CORE::UInt64& publishActionId, const COMCORE::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
@@ -115,12 +127,25 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
+    class TopicMetrics
+    {
+        public:
+
+        TopicMetrics( void );
+
+        CORE::UInt32 redisClusterErrorReplies;
+    };
+
+    const TopicMetrics& GetMetrics( void ) const;
+
     bool RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs, bool notify );
 
     bool RedisRead( void );
 
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
+    bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
+    
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -152,6 +177,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     bool SubscribeImpl( const std::string& readOffset );
 
+    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClientTopic > TEventCallback;
@@ -171,7 +198,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     CRedisClusterPubSubClient* m_client;
     sw::redis::Pipeline* m_redisPipeline;
-    sw::redis::RedisCluster* m_redisContext;
+    RedisClusterPtr m_redisContext;
     CORE::UInt32 m_redisErrorReplies;
     CORE::UInt32 m_redisTransmitQueueSize;
     CORE::UInt32 m_redisMsgsTransmitted;
@@ -197,6 +224,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     TMsgsPublishedEventData m_publishSuccessActionEventData;
     TPublishActionIdVector m_publishFailureActionIds;
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
+    TopicMetrics m_metrics;
+    CORE::CString m_metricFriendlyTopicName;
     MT::CMutex m_lock;
 };
 

@@ -80,6 +80,18 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 {
     public:
 
+    static const CORE::CEvent TopicAccessCreatedEvent;                 /**< occurs when topic access is created programatically or via loading of config requesting the same */
+    static const CORE::CEvent TopicAccessDestroyedEvent;               /**< occurs when topic access is destroyed programatically */
+    static const CORE::CEvent TopicAccessAutoCreatedEvent;             /**< occurs when topic access is automatically created following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+    static const CORE::CEvent TopicAccessAutoDestroyedEvent;           /**< occurs when topic access is automatically destroyed following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+    static const CORE::CEvent TopicDiscoveryEvent;                     /**< occurs when available topic changes are detected. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+
+    typedef std::set< CPubSubClientTopic* >     PubSubClientTopicSet;
+    typedef CORE::TCloneableString              TopicAccessCreatedEventData;           /**< name of the topic is passed as event relevant data */
+    typedef CORE::TCloneableString              TopicAccessDestroyedEventData;         /**< name of the topic is passed as event relevant data */
+    typedef CORE::TCloneableString              TopicAccessAutoCreatedEventData;       /**< name of the topic is passed as event relevant data */
+    typedef CORE::TCloneableString              TopicAccessAutoDestroyedEventData;     /**< name of the topic is passed as event relevant data */
+
     CPubSubClient( void );
 
     CPubSubClient( const CPubSubClient& src );
@@ -103,8 +115,32 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual CPubSubClientTopic* GetOrCreateTopicAccess( const CString& topicName );
 
+    virtual bool GetMultiTopicAccess( const CString& topicName          ,
+                                      PubSubClientTopicSet& topicAccess );
+    
+    virtual bool GetOrCreateMultiTopicAccess( const CString& topicName          ,
+                                              PubSubClientTopicSet& topicAccess );
+
+    virtual bool CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                         PubSubClientTopicSet& topicAccess           );
+
+    /**
+     *  Same as the version that takes an entire config except the expectation here is that the topic      
+     *  is already configured via a CPubSubClientConfig but not yet instantiated
+     *  This would be the typical case when using global app config defined topics and not programatic topic access
+     */ 
+    virtual bool CreateMultiTopicAccess( const CString& topicName          ,
+                                         PubSubClientTopicSet& topicAccess );
+
     virtual const CPubSubClientTopicConfig* GetTopicConfig( const CString& topicName ) = 0;
 
+    /**
+     *  Attempts to get a list of topics available on the backend regardless of whichever topics are known
+     *  due to configuration. Thus for some backends this allows one to 'discover' new topics
+     */
+    virtual bool GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList                                            ,
+                                            const CORE::CString::StringSet& globPatternFilters = CORE::CString::EmptyStringSet );
+    
     virtual void GetConfiguredTopicNameList( CString::StringSet& topicNameList ) = 0;
 
     virtual void GetCreatedTopicAccessNameList( CString::StringSet& topicNameList ) = 0;
@@ -128,6 +164,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     
     void* GetOpaqueUserData( void ) const;
 
+    private:
+
+    static void RegisterEvents( void );
+    
     private:
 
     void* m_opaqueUserData;

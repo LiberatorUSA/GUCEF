@@ -90,6 +90,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
     bool supportsTopicIndexBasedBookmark;       /** whether the implementation can accept a Msg Index to setup pub-sub subscriber consumption */
     bool supportsMsgDateTimeBasedBookmark;      /** whether the implementation can accept a message DateTime to setup pub-sub subscriber consumption */
     
+    bool supportsDiscoveryOfAvailableTopics;    /**< whether 'discovering' available topic is supported by the implementation */
+    bool supportsGlobPatternTopicNames;         /** only relevant if 'supportsDiscoveryOfAvailableTopics'=true : whether topics can be specified with a glob pattern to be pattern matched and discovered against available topics */
     bool supportsMetrics;
 
 

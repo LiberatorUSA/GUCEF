@@ -161,7 +161,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
      *  Note that this retains the used pulse generator's thread as the thread within which the 
      *  TimerUpdateEvent is triggered. 
      *  When working with multi-threaded code you most likely want to use this variant instead of TriggerNow()
-     *  as it ties in wioth RequestImmediatePulse() on the pulse generator which allows for bypassing any thread yielding
+     *  as it ties in with RequestImmediatePulse() on the pulse generator which allows for bypassing any thread yielding
      */
     void RequestImmediateTrigger( void );
 

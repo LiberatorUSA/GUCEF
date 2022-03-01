@@ -226,8 +226,10 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #define GUCEF_DATATYPE_ARRAY                    50      /**< data type representing an array container concept */
 #define GUCEF_DATATYPE_OBJECT                   51      /**< data type representing an object container concept */
+#define GUCEF_DATATYPE_NIL                      52      /**< representing data that is zero or nought. The word nil started to be used in the mid 19th century as a contraction of nihil, a Latin word that means nothing */
+#define GUCEF_DATATYPE_NULL                     53      /**< representing data that is null and void */
 
-#define GUCEF_DATATYPE_LAST_TYPE_ID         GUCEF_DATATYPE_OBJECT
+#define GUCEF_DATATYPE_LAST_TYPE_ID         GUCEF_DATATYPE_NULL
 
 #if GUCEF_PLATFORM_BYTEORDER_ENDIAN == GUCEF_BYTEORDER_LITTLE_ENDIAN
     #define GUCEF_DATATYPE_UTF16_STRING             GUCEF_DATATYPE_UTF16_LE_STRING    

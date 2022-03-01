@@ -45,6 +45,18 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CPubSubClient::TopicAccessCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessCreatedEvent";
+const CORE::CEvent CPubSubClient::TopicAccessDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessDestroyedEvent";
+const CORE::CEvent CPubSubClient::TopicAccessAutoCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessAutoCreatedEvent";
+const CORE::CEvent CPubSubClient::TopicAccessAutoDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessAutoDestroyedEvent";
+const CORE::CEvent CPubSubClient::TopicDiscoveryEvent = "GUCEF::COMCORE::CPubSubClient::TopicDiscoveryEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -55,6 +67,7 @@ CPubSubClient::CPubSubClient( void )
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
+    RegisterEvents();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -72,6 +85,19 @@ CPubSubClient::CPubSubClient( const CPubSubClient& src )
 CPubSubClient::~CPubSubClient()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClient::RegisterEvents( void )
+{GUCEF_TRACE;
+    
+    TopicAccessCreatedEvent.Initialize();
+    TopicAccessDestroyedEvent.Initialize();
+    TopicAccessAutoCreatedEvent.Initialize();
+    TopicAccessAutoDestroyedEvent.Initialize();
+    TopicDiscoveryEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -129,6 +155,95 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
         return topicAccess;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
+                                    PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    // The default implementation here assumes no 1:N pattern matching access is supported
+    // As such it redirects to the basic GetTopicAccess()
+    // Backends should override this if they support pattern matching access
+
+    CPubSubClientTopic* tAccess = GetTopicAccess( topicName );
+    if ( GUCEF_NULL != tAccess )
+    {
+        topicAccess.insert( tAccess );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName          ,
+                                            PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    // In the multi-topic scenario we'd expect the topic name to be a pattern to match
+    // As such the config applies to everything matching the pattern
+    // This also means there is no way of knowing if we obtained the 'correct' nr of topics here, just something vs nothing.
+    if ( !GetMultiTopicAccess( topicName, topicAccess ) || topicAccess.empty()  )
+    {
+        return CreateMultiTopicAccess( topicName, topicAccess );
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                       PubSubClientTopicSet& topicAccess           )
+{GUCEF_TRACE;
+
+    // The default implementation here assumes no 1:N pattern matching access is supported
+    // As such it redirects to the basic CreateTopicAccess()
+    // Backends should override this if they support pattern matching access
+
+    CPubSubClientTopic* tAccess = CreateTopicAccess( topicConfig );
+    if ( GUCEF_NULL != tAccess )
+    {
+        topicAccess.insert( tAccess );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
+                                       PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    // In the multi-topic scenario we'd expect the topic name to be a pattern to match
+    // As such the config applies to everything matching the pattern
+    const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
+    if ( GUCEF_NULL != topicConfig )
+    {
+        return CreateMultiTopicAccess( *topicConfig, topicAccess );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList             ,
+                                          const CORE::CString::StringSet& globPatternFilters  )
+{GUCEF_TRACE;
+
+    // By default not supported
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

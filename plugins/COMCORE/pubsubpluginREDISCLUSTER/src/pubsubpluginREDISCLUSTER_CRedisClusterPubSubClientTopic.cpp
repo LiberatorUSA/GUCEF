@@ -97,6 +97,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_publishSuccessActionEventData()
     , m_publishFailureActionIds()
     , m_publishFailureActionEventData()
+    , m_metrics()
     , m_lock()
 {GUCEF_TRACE;
 
@@ -263,13 +264,24 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
     MT::CScopeMutex lock( m_lock );
     
     m_config = config;
-    m_redisHashSlot = CalculateRedisHashSlot( config.topicName );
+    m_redisHashSlot = CalculateRedisHashSlot( m_config.topicName );
     //m_readOffset = config.redisXReadDefaultOffset;
 
     m_redisXreadCount = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadCount" ).AsUInt32( m_redisXreadCount );
     m_redisXreadBlockTimeoutInMs = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadBlockTimeoutInMs" ).AsUInt32( m_redisXreadBlockTimeoutInMs );
 
+    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName ); 
+    
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CRedisClusterPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
+{GUCEF_TRACE;
+
+    return m_metricFriendlyTopicName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -801,6 +813,148 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
+}
+
+
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext )
+        return false;
+    
+    try
+    {
+        CORE::CString clusterCmd( "CLUSTER" );
+        CORE::CString nodesParam( "NODES" );
+
+        sw::redis::StringView clusterCmdSV( clusterCmd.C_String(), clusterCmd.Length() );
+        sw::redis::StringView nodesParamSV( nodesParam.C_String(), nodesParam.Length() );
+
+        sw::redis::ReplyUPtr reply = m_redisContext->command( clusterCmdSV, nodesParamSV );
+        if ( reply )
+        {
+            if ( REDIS_REPLY_STRING == reply->type )
+            {
+                CORE::CString allText = reply->str;
+                CORE::CString::StringVector lines = allText.ParseElements( '\n', false );
+                
+                // First add all the primary nodes
+                CORE::CString::StringVector::iterator i = lines.begin();
+                while ( i != lines.end() )
+                {
+                    CORE::CString::StringVector properties = (*i).ParseElements( ' ', true );
+                    if ( properties.size() >= 8 )
+                    {                  
+                        bool isReplica = properties[ 2 ].HasSubstr( "slave" ) > -1;
+                        if ( !isReplica )
+                        {
+                            CORE::CString& nodeId = properties[ 0 ];
+                            CORE::CString ipAndPort = properties[ 1 ].SubstrToChar( '@' );
+                            //CORE::CString& parentNodeId = properties[ 3 ];
+                            //bool isConnected = properties[ 7 ] == "connected";
+
+                            CORE::Int32 startSlot = -1;
+                            CORE::Int32 endSlot = -1;
+                            if ( properties.size() >= 9 )
+                            {
+                                startSlot = CORE::StringToInt32( properties[ 8 ].SubstrToChar( '-', true ), -1 );
+                                endSlot = CORE::StringToInt32( properties[ 8 ].SubstrToChar( '-', false ), -1 );
+                            }
+
+                            RedisNode& node = nodeMap[ startSlot ];
+                            node.nodeId = nodeId;
+                            node.host.SetHostnameAndPort( ipAndPort );
+                            node.startSlot = startSlot;
+                            node.endSlot = endSlot; 
+                        }
+                    }
+                    ++i;
+                }
+                
+            //    // Now add the replicas
+            //    i = lines.begin();
+            //    while ( i != lines.end() )
+            //    {
+            //        CORE::CString::StringVector properties = (*i).ParseElements( ' ', false );
+            //        if ( properties.size() >= 8 )
+            //        {
+            //            bool isReplica = properties[ 2 ].HasSubstr( "slave" ) > -1;
+            //            if ( isReplica )
+            //            {
+            //                CORE::CString& nodeId = properties[ 0 ];
+            //                CORE::CString ipAndPort = properties[ 1 ].SubstrToChar( '@' );                    
+            //                CORE::CString& parentNodeId = properties[ 3 ];
+            //                //bool isConnected = properties[ 7 ] == "connected";
+
+            //                RedisNodeMap::iterator n = nodeMap.begin();
+            //                while ( n != nodeMap.end() ) 
+            //                {
+            //                    RedisNode* replicaNode = (*n).second.FindReplica( nodeId, parentNodeId, true );
+            //                    if ( GUCEF_NULL != replicaNode )
+            //                    {
+            //                        replicaNode->host.SetHostnameAndPort( ipAndPort );
+            //                        break;
+            //                    }
+            //                    ++n;
+            //                }
+            //            }
+            //        }
+            //        ++i;
+            //    }
+            }
+        }
+        return true;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        ++m_metrics.redisClusterErrorReplies;
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopic::TopicMetrics::TopicMetrics( void )
+    : redisClusterErrorReplies( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CRedisClusterPubSubClientTopic::GenerateMetricsFriendlyTopicName( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    // Let's avoid non-ASCII stumbling blocks and force the down to ASCII
+    CORE::CAsciiString asciiMetricsFriendlyTopicName = topicName.ForceToAscii( '_' );
+    
+    // Replace special chars
+    static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
+    asciiMetricsFriendlyTopicName = asciiMetricsFriendlyTopicName.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
+
+    // Back to the platform wide string convention format
+    CORE::CString metricsFriendlyTopicName = CORE::ToString( asciiMetricsFriendlyTopicName );
+    return metricsFriendlyTopicName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CRedisClusterPubSubClientTopic::TopicMetrics&
+CRedisClusterPubSubClientTopic::GetMetrics( void ) const
+{GUCEF_TRACE;
+
+    return m_metrics;
 }
 
 /*-------------------------------------------------------------------------*/

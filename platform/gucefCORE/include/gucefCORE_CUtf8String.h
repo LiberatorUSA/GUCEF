@@ -89,6 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     static const CUtf8String    Empty;
     static const StringVector   EmptyStringVector;
+    static const StringSet      EmptyStringSet;
 
     CUtf8String( void );
 

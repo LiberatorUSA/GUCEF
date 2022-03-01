@@ -163,6 +163,8 @@ CStoragePubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& feat
     features.supportsSubscribing = true;                // We support reading from VFS storage files
     features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
     features.supportsAutoReconnect = true;              // To the extent it even applies in this case, sure we 'reconnect' to storage
+    features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
+    features.supportsGlobPatternTopicNames = false;
     
     // Ack functionality doesnt currently make sense for this backend
     // However in theory we could implement a hard or logical delete of read messages and such functionality could go hand-in-hand with 'server-side' (read backend controlled) bookmark persistance
@@ -192,12 +194,29 @@ COMCORE::CPubSubClientTopic*
 CStoragePubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CStoragePubSubClientTopic* rcTopic = new CStoragePubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CStoragePubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CStoragePubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    return rcTopic;
+
+    if ( GUCEF_NULL != topicAccess )
+    {
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
+    }
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -220,11 +239,18 @@ void
 CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CStoragePubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 
@@ -244,6 +270,16 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStoragePubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                                 const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

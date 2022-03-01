@@ -91,7 +91,7 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
     cfg.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs );
     cfg.SetAttribute( "metricsPrefix", metricsPrefix );
     
-    CORE::CDataNode* addressList = cfg.AddChild( "RemoteAddressess", GUCEF_DATATYPE_ARRAY );
+    CORE::CDataNode* addressList = cfg.AddChild( "RemoteAddresses", GUCEF_DATATYPE_ARRAY );
     if ( GUCEF_NULL != addressList )
     {
         THostAddressVector::const_iterator i = remoteAddresses.begin();
@@ -146,7 +146,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
     reconnectDelayInMs = cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ).AsUInt32( reconnectDelayInMs, true );
     metricsPrefix = cfg.GetAttributeValueOrChildValueByName( "metricsPrefix" ).AsString( metricsPrefix, true ); 
 
-    CORE::CDataNode* remoteAddressessCfg = cfg.FindChild( "RemoteAddressess" );
+    CORE::CDataNode* remoteAddressessCfg = cfg.FindChild( "RemoteAddresses" );
     if ( GUCEF_NULL != remoteAddressessCfg )
     {
         CORE::CDataNode::const_iterator i = remoteAddressessCfg->ConstBegin();

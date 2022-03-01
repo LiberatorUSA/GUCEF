@@ -37,6 +37,11 @@
 #define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
 #endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H ? */
 
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H ? */
+
 #include "pubsubpluginREDISCLUSTER.h"
 
 /*-------------------------------------------------------------------------//
@@ -92,6 +97,7 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on COMCORE pubsub plugin REDISCLUSTER" );
 
     COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CRedisClusterPubSubClient::TypeName );
+    CRedisClusterKeyCache::Deinstance();
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for COMCORE pubsub plugin REDISCLUSTER" );
 }

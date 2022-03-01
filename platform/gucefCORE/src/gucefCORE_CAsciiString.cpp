@@ -60,6 +60,7 @@ namespace CORE {
 
 const CAsciiString CAsciiString::Empty;
 const CAsciiString::StringVector CAsciiString::EmptyStringVector;
+const CAsciiString::StringSet CAsciiString::EmptyStringSet;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -167,6 +167,8 @@ CWebPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features
     features.supportsAckUsingBookmark = false;             // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsSubscribingUsingBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
+    features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
+    features.supportsGlobPatternTopicNames = false;
 
     return true;
 }
@@ -177,12 +179,29 @@ COMCORE::CPubSubClientTopic*
 CWebPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CWebPubSubClientTopic* rcTopic = new CWebPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CWebPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CWebPubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    return rcTopic;
+
+    if ( GUCEF_NULL != topicAccess )
+    {
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
+    }
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -205,11 +224,18 @@ void
 CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CWebPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 
@@ -229,6 +255,16 @@ CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CWebPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                             const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

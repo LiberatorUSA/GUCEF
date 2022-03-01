@@ -307,8 +307,9 @@ CVersionRange::FromString( const CString& rangeStr )
 
 
 
-
-
+// @TODO: this code is unfinished
+// dont use
+return false;
 
     //CString rangeStr.SubstrToChar( ',', true )
 }

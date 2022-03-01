@@ -498,6 +498,15 @@ CVariant::IsNULLOrEmpty( void ) const
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
                    ( 4 == m_variantData.union_data.heap_data.heap_data_size && 0 == *( (const UInt32*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );
         }
+        case GUCEF_DATATYPE_BINARY_BLOB:
+        {
+            return 0 == m_variantData.union_data.heap_data.heap_data_size;
+        }
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_NIL:
+        {
+            return true;
+        }
         case GUCEF_DATATYPE_UNKNOWN: return true;
         default: return false;
     }
@@ -920,6 +929,8 @@ CVariant::ByteSize( bool includeNullTerm ) const
             return m_variantData.union_data.heap_data.heap_data_size;
         }
 
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_NIL:
         default: return 0;
     }
 }
@@ -1295,6 +1306,11 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
                 return false;
             }
         }
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_NIL:
+        {
+            m_variantData.containedType = varType;
+        }
         default:
         {
             m_variantData.containedType = GUCEF_DATATYPE_UNKNOWN;
@@ -1527,11 +1543,12 @@ CVariant::operator==( const CVariant& other ) const
             // @todo: optimize
             return AsString() == other.AsString();
         }
-        case GUCEF_DATATYPE_UNKNOWN:
-        {
-            // Essentially allowing nill == nill for a variant
-            return GUCEF_DATATYPE_UNKNOWN == other.m_variantData.containedType;
-        }
+
+        // Essentially allowing nill == nill for a variant
+        case GUCEF_DATATYPE_NIL: { return GUCEF_DATATYPE_NIL == other.m_variantData.containedType; }
+        case GUCEF_DATATYPE_NULL: { return GUCEF_DATATYPE_NULL == other.m_variantData.containedType; }
+        case GUCEF_DATATYPE_UNKNOWN: { return GUCEF_DATATYPE_UNKNOWN == other.m_variantData.containedType; }
+
         default:
         {
             return false;

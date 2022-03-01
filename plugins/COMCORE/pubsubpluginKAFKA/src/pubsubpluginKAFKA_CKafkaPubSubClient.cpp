@@ -155,6 +155,8 @@ CKafkaPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& featur
     features.supportsMsgIndexBasedBookmark = true;        // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsTopicIndexBasedBookmark = true;      // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsMsgDateTimeBasedBookmark = true;     // We support this via code that converts the DateTime to offsets
+    features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
+    features.supportsGlobPatternTopicNames = false;
     return true;
 }
 
@@ -164,19 +166,29 @@ COMCORE::CPubSubClientTopic*
 CKafkaPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-    
-    CKafkaPubSubClientTopic* rcTopic = new CKafkaPubSubClientTopic( this );
-    if ( rcTopic->LoadConfig( topicConfig ) )
+    CKafkaPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        m_topicMap[ topicConfig.topicName ] = rcTopic;
+        MT::CObjectScopeLock lock( this );
+
+        topicAccess = new CKafkaPubSubClientTopic( this );
+        if ( topicAccess->LoadConfig( topicConfig ) )
+        {
+            m_topicMap[ topicConfig.topicName ] = topicAccess;
+        }
+        else
+        {
+            delete topicAccess;
+            topicAccess = GUCEF_NULL;
+        }
     }
-    else
+
+    if ( GUCEF_NULL != topicAccess )
     {
-        delete rcTopic;
-        rcTopic = GUCEF_NULL;
+        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        NotifyObservers( TopicAccessCreatedEvent, &eData );
     }
-    return rcTopic;
+
+    return topicAccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -206,8 +218,13 @@ CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        delete (*i).second;
+        CKafkaPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
+
+        TopicAccessDestroyedEventData eData( topicName );
+        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+        
+        delete topicAccess;        
     }
 }
 
@@ -229,6 +246,16 @@ CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         ++i;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKafkaPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
+                                               const CORE::CString::StringSet& globPatternFilters )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

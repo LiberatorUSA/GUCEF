@@ -685,7 +685,11 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent       ,
                  callback2                            );
 
-
+    TEventCallback callback3( this, &CPubSubClientSide::OnTopicAccessAutoCreated );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()                   ,
+                 COMCORE::CPubSubClient::TopicAccessAutoCreatedEvent ,
+                 callback3                                           );
+    
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
     {
         TEventCallback callback( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
@@ -813,6 +817,22 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         UpdateTopicMetrics( topicLink );
 
         ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnTopicAccessAutoCreated( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClient::TopicAccessAutoCreatedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicAccessAutoCreatedEventData* >( eventData );
+    if ( GUCEF_NULL != eventData )
+    {
+        COMCORE::CPubSubClientTopic* topicAccess = m_pubsubClient->GetTopicAccess( eData->GetData() );
+        ConfigureTopicLink( *m_sideSettings, *topicAccess ); 
     }
 }
 
@@ -1597,6 +1617,27 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSideSettings ,
+                                       COMCORE::CPubSubClientTopic& topic                  )
+{GUCEF_TRACE;
+
+    RegisterTopicEventHandlers( topic );
+
+    TopicLink& topicLink = m_topics[ &topic ];
+    topicLink.topic = &topic;
+    topicLink.metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic.GetTopicName() ) + ".";
+    topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
+    topicLink.metrics->hasSupportForPublishing = topic.IsPublishingSupported();
+    topicLink.metrics->hasSupportForSubscribing = topic.IsSubscribingSupported();
+
+    UpdateTopicMetrics( topicLink );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientSide::ConnectPubSubClient( void )
 {GUCEF_TRACE;
 
@@ -1659,33 +1700,33 @@ CPubSubClientSide::ConnectPubSubClient( void )
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
     while ( i != pubSubConfig.topics.end() )
     {
-        COMCORE::CPubSubClientTopic* topic = m_pubsubClient->CreateTopicAccess( (*i) );
-        if ( GUCEF_NULL == topic )
+        COMCORE::CPubSubClient::PubSubClientTopicSet topicAccess;
+        if ( m_pubsubClient->CreateMultiTopicAccess( (*i), topicAccess ) )
         {
-            if ( !(*i).isOptional )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
-                return false;
+            COMCORE::CPubSubClient::PubSubClientTopicSet::iterator a = topicAccess.begin();
+            while ( a != topicAccess.end() )
+            {            
+                COMCORE::CPubSubClientTopic* topic = (*a);
+                if ( GUCEF_NULL == topic )
+                {
+                    if ( !(*i).isOptional )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                        return false;
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+                    }
+                }
+                else
+                {
+                    ConfigureTopicLink( *m_sideSettings, *topic );
+                }
+                ++a;
             }
-            else
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
-            }
-        }
-        else
-        {
-            RegisterTopicEventHandlers( *topic );
-
-            TopicLink& topicLink = m_topics[ topic ];
-            topicLink.topic = topic;
-            topicLink.metricFriendlyTopicName = pubSubSideSettings->metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
-            topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
-            topicLink.metrics->hasSupportForPublishing = topic->IsPublishingSupported();
-            topicLink.metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
-
-            UpdateTopicMetrics( topicLink );
         }
         ++i;
     }

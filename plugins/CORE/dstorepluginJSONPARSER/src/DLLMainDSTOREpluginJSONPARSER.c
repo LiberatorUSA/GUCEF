@@ -382,6 +382,20 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
 
     switch ( attvalue->containedType )
     {
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_NIL:
+        {
+            json_value* att = json_null_new(); 
+            if ( fd->currentJsonNode->type == json_array )
+                json_array_push( fd->currentJsonNode, att );
+            else
+            if ( fd->currentJsonNode->type == json_object )
+                if ( GUCEF_NULL != attname )
+                    json_object_push( fd->currentJsonNode, attname, att );
+                else
+                    json_object_push( fd->currentJsonNode, nodename, att );
+            break;
+        }
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         {
@@ -667,6 +681,7 @@ json_type_to_gucef_type( json_type type )
         case json_boolean:
             return GUCEF_DATATYPE_BOOLEAN_STRING;
         case json_null:
+            return GUCEF_DATATYPE_NIL;
         case json_none:
         default: 
             return GUCEF_DATATYPE_UNKNOWN;
@@ -709,6 +724,11 @@ process_value( TSrcFileData* sd    ,
     {
         case json_none:
         {
+            break;
+        }
+        case json_null:
+        {
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, NULL, GUCEF_DATATYPE_NIL );
             break;
         }
         case json_object:

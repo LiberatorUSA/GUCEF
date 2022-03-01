@@ -93,7 +93,20 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual COMCORE::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                      PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig ,
+                                         PubSubClientTopicSet& topicAccess                    ) GUCEF_VIRTUAL_OVERRIDE;
+
+    bool AutoCreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& templateTopicConfig ,
+                                     const CORE::CString::StringSet& topicNameList                ,
+                                     PubSubClientTopicSet& topicAccess                            );
+
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList                                            ,
+                                            const CORE::CString::StringSet& globPatternFilters = CORE::CString::EmptyStringSet ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -117,11 +130,19 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     
     const RedisNodeMap& GetRedisNodeMap( void ) const;
 
-    sw::redis::RedisCluster* GetRedisContext( void ) const;
+    RedisClusterPtr GetRedisContext( void ) const;
 
     private:
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
+
+    bool GetAllGlobPatternTopicNames( CORE::CString::StringSet& allGlobPatternTopicNames );
+    
+    bool IsStreamIndexingNeeded( void );
+
+    CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
+
+    const COMCORE::CPubSubClientTopicConfig* FindTemplateConfigForTopicName( const CORE::CString& topicName ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -132,6 +153,16 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
+
+    void
+    OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
+
+    void
+    OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
 
     void RegisterEventHandlers( void );
     
@@ -144,10 +175,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     COMCORE::CPubSubClientConfig m_config;
     RedisNodeMap m_nodeMap;
-    sw::redis::RedisCluster* m_redisContext;
+    RedisClusterPtr m_redisContext;
     CORE::UInt32 m_redisErrorReplies;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_redisReconnectTimer;
+    CORE::CTimer* m_streamIndexingTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
 };

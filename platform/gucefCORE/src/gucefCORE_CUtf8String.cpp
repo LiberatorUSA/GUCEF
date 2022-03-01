@@ -62,6 +62,7 @@ namespace CORE {
 
 const CUtf8String CUtf8String::Empty;
 const CUtf8String::StringVector CUtf8String::EmptyStringVector;
+const CUtf8String::StringSet CUtf8String::EmptyStringSet;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -64,8 +64,9 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     typedef std::vector< CAsciiString >  StringVector;
     typedef std::set< CAsciiString >     StringSet;
 
-    static const CAsciiString Empty;
-    static const StringVector EmptyStringVector;
+    static const CAsciiString   Empty;
+    static const StringVector   EmptyStringVector;
+    static const StringSet      EmptyStringSet;
 
     CAsciiString( void );
 

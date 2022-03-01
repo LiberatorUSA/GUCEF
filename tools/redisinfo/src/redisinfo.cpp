@@ -412,16 +412,20 @@ RedisInfoService::DeserializeKeysForHashSlots( TUInt32ToStringSetMap& hashMap, c
     while ( i != doc.ConstEnd() )
     {        
         CORE::CString hashSlot = (*i)->GetAttributeValueOrChildValueByName( "id" );
-        CORE::CDataNode::TVariantVector hashOriginStrings = (*i)->GetChildrenValues();
+        CORE::CDataNode* hashOriginStringsNode = (*i)->FindChild( "hashOriginStrings" );
+        if ( GUCEF_NULL != hashOriginStringsNode )
+        {
+            CORE::CDataNode::TVariantVector hashOriginStrings = hashOriginStringsNode->GetChildrenValues();
 
-        if ( !hashSlot.IsNULLOrEmpty() && !hashOriginStrings.empty() )
-        {            
-            TStringSet& hashEntries = hashMap[ CORE::StringToUInt16( hashSlot ) ];
-            CORE::CDataNode::TVariantVector::iterator n = hashOriginStrings.begin();
-            while ( n != hashOriginStrings.end() )
-            {
-                hashEntries.insert( (*n) ); 
-                ++n;
+            if ( !hashSlot.IsNULLOrEmpty() && !hashOriginStrings.empty() )
+            {            
+                TStringSet& hashEntries = hashMap[ CORE::StringToUInt16( hashSlot ) ];
+                CORE::CDataNode::TVariantVector::iterator n = hashOriginStrings.begin();
+                while ( n != hashOriginStrings.end() )
+                {
+                    hashEntries.insert( (*n) ); 
+                    ++n;
+                }
             }
         }
         ++i;
@@ -1112,7 +1116,7 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
         sw::redis::StringView infoCmdSV( cmd.C_String(), cmd.Length() );
         sw::redis::StringView typeParamSV( type.C_String(), type.Length() );
 
-        if ( GUCEF_NULL != node )
+        if ( GUCEF_NULL != node && GUCEF_NULL != node->redisPipe )
         {
             node->redisPipe->command( infoCmdSV, typeParamSV );
             sw::redis::QueuedReplies redisReplies = node->redisPipe->exec();
@@ -1365,6 +1369,7 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
         CORE::CString itteratorParam( "0" );
         static const CORE::CString typeParam( "TYPE" );
 
+        CORE::UInt32 iterationCounter = 0;
         sw::redis::StringView scanCmdSV( scanCmd.C_String(), scanCmd.Length() );        
         do
         {
@@ -1375,13 +1380,13 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
             node.redisPipe->command( scanCmdSV, itteratorParamSV, typeParamSV, typeValueParamSV );
             sw::redis::QueuedReplies redisReplies = node.redisPipe->exec();
             size_t replyCount = redisReplies.size();
+
             for ( size_t r=0; r<replyCount; ++r )
             {
                 redisReply& reply = redisReplies.get( r );
                 if ( REDIS_REPLY_ARRAY == reply.type )
                 {
                     size_t ittCount = reply.elements;
-
                     if ( ittCount > 0 && REDIS_REPLY_STRING == reply.element[ 0 ]->type )
                         itteratorParam = reply.element[ 0 ]->str;
                     else
@@ -1390,6 +1395,8 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
                     if ( ittCount > 1 && REDIS_REPLY_ARRAY == reply.element[ 1 ]->type )
                     {
                         size_t keyCount = reply.element[ 1 ]->elements;
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeysForNode: Received " + CORE::ToString( keyCount ) + " keys in SCAN iteration nr " + CORE::ToString( iterationCounter ) );
+
                         struct redisReply** keyList = reply.element[ 1 ]->element;
                         for ( size_t n=0; n<keyCount; ++n )
                         {
@@ -1404,6 +1411,7 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
                         return false;
                 }
             }
+            ++iterationCounter;
         }
         while ( itteratorParam != "0" );
 

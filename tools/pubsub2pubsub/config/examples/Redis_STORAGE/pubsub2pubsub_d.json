@@ -47,12 +47,9 @@
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 							"PubSubClientConfig": {
-								"pubsubClientType": "UDP",
+								"pubsubClientType": "ClusteredRedis",
 								"reconnectDelayInMs": 1000,
 								"CustomConfig": {
-									"transmitTestPackets": true,
-									"testPacketTransmissionIntervalInMs": 1,
-									"testPacketAsBase64": "ewogICAiZUJvb2tzIjpbCiAgICAgIHsKICAgICAgICAgImxhbmd1YWdlIjoiUGFzY2FsIiwKICAgICAgICAgImVkaXRpb24iOiJ0aGlyZCIKICAgICAgfSwKICAgICAgewogICAgICAgICAibGFuZ3VhZ2UiOiJQeXRob24iLAogICAgICAgICAiZWRpdGlvbiI6ImZvdXIiCiAgICAgIH0sCiAgICAgIHsKICAgICAgICAgImxhbmd1YWdlIjoiU1FMIiwKICAgICAgICAgImVkaXRpb24iOiJzZWNvbmQiCiAgICAgIH0KICAgXQp9"
 								},
 								"Topics": {
 									"0": {
@@ -63,17 +60,10 @@
 											"preferDedicatedConnection": false,
 											"topicName": "udp",
 											"CustomConfig": {
-												"wantsTestPackage": true,
-												"udpInterface": "0.0.0.0:50333",
-												"ticketRefillOnBusyCycle": 1000,
-												"nrOfUdpReceiveBuffersPerSocket": 10,
-												"udpSocketOsReceiveBufferSize": 1024,
-												"udpSocketUpdateCyclesPerPulse": 10,
-												"addUdpSourceAddressAsMetaData": true,
-												"translateUdpSourceAddressToString": true,
-												"udpSourceAddressAsMetaDataKeyName": "udpsourceip4",
-												"maxUdpPacketPayloadSizeInBytes": 10000,
-												"addTimestampToReceivedPackages": true
+												"redisXAddMaxLen": -1,
+												"redisXAddMaxLenIsApproximate": true,
+												"redisXReadDefaultOffset": "0",
+												"redisXAddIgnoreMsgId": true
 											}
 										}
 									}
@@ -82,14 +72,14 @@
 									"supportsAbsentPrimaryPayloadPerMsg": false,
 									"supportsAutoBookmarking": false,
 									"supportsAutoReconnect": true,
-									"supportsBinaryPayloads": true,
+									"supportsBinaryPayloads": false,
 									"supportsBookmarkingConcept": false,
 									"supportsDuplicateKeysPerMsg": false,
-									"supportsKeyValueSetPerMsg": true,
+									"supportsKeyValueSetPerMsg": false,
 									"supportsMetaDataKeyValueSetPerMsg": false,
 									"supportsMetrics": true,
 									"supportsMsgDateTimeBasedBookmark": false,
-									"supportsMsgIdBasedBookmark": false,
+									"supportsMsgIdBasedBookmark": true,
 									"supportsMsgIndexBasedBookmark": false,
 									"supportsMultiHostSharding": false,
 									"supportsPerMsgIds": false,

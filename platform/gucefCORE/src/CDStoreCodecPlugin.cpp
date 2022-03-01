@@ -221,7 +221,10 @@ OnNodeAttHandler( void* privdata       ,
         else
         if ( 0 != attvalue )
         {
-            pd->curnode->SetValue( attvalue );
+            if ( GUCEF_DATATYPE_ARRAY == pd->curnode->GetNodeType() )
+                pd->curnode->AddChildWithValue( CString::Empty, attvalue, atttype );
+            else
+                pd->curnode->SetValue( attvalue );
         }
     }
 }
