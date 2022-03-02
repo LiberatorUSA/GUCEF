@@ -40,10 +40,10 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
-#include "pubsubpluginREDISCLUSTER_macros.h"
-#define PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_MACROS_H ? */
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H ? */
 
 #include "hiredis.h"
 #include "async.h"
@@ -69,7 +69,8 @@ namespace REDISCLUSTER {
  *  Provides a blocking thread to act as a dedicated reader from a Redis stream
  *  This allows simulation of push mechanics
  */
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCacheUpdateTask : public CORE::CTaskConsumer
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCacheUpdateTask : public CORE::CTaskConsumer ,
+                                                                                     public CORE::CTSharedPtrCreator< CRedisClusterKeyCacheUpdateTask, MT::CMutex >
 {
     public:
 
@@ -99,9 +100,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCacheUpdateTa
                           const CORE::CEvent& eventId  ,
                           CORE::CICloneable* eventData );
 
-    bool GetRedisKeys( RedisClusterPtr& clusterAccess ,
-                       CORE::CString::StringSet& keys ,
-                       const CORE::CString& keyType   );
+    bool GetRedisKeys( RedisClusterPtr& clusterAccess              ,
+                       const CORE::CString& keyType                ,
+                       const CORE::CString::StringSet& currentKeys ,
+                       CORE::CString::StringSet& newKeys           ,
+                       CORE::CString::StringSet& deletedKeys       );
 
     CRedisClusterKeyCacheUpdateTask( const CRedisClusterKeyCacheUpdateTask& src ); // not implemented
 

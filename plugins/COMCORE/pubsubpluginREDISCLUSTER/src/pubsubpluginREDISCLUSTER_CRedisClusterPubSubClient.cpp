@@ -233,6 +233,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( const COMCORE::CPubSubClientTopicC
                 topicAccess = GUCEF_NULL;
             }
         }
+        return topicAccess;
     }
 }
 
@@ -313,6 +314,9 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const COMCORE::CPubSubCli
                 m_topicMap[ topicConfig.topicName ] = tAccess;
                 topicAccess.insert( tAccess );
 
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" + 
+                        topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
+
                 TopicAccessCreatedEventData eData( topicConfig.topicName );
                 NotifyObservers( TopicAccessAutoCreatedEvent, &eData );
             }
@@ -321,6 +325,9 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const COMCORE::CPubSubCli
                 delete tAccess;
                 tAccess = GUCEF_NULL;
                 totalSuccess = false;
+
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" + 
+                        topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
             }
         }
         ++i;
@@ -759,7 +766,14 @@ CRedisClusterPubSubClient::RegisterEventHandlers( void )
         TEventCallback callback( this, &CRedisClusterPubSubClient::OnStreamIndexingTimerCycle );
         SubscribeTo( m_streamIndexingTimer          ,
                      CORE::CTimer::TimerUpdateEvent ,
-                     callback                       );
+                     callback                       );    
+    }
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
+    {
+        TEventCallback callback( this, &CRedisClusterPubSubClient::OnRedisKeyCacheUpdate );
+        SubscribeTo( CRedisClusterKeyCache::Instance()       ,
+                     CRedisClusterKeyCache::CacheUpdateEvent ,
+                     callback                                );
     }
 }           
 
@@ -911,9 +925,11 @@ CRedisClusterPubSubClient::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier
 
         // Now we automatically create topic access for all the remaining topics
         // Note that in most cases event notifications from the cache should have caught the changes already so this is just a fallback for race conditions
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Found " + 
-            CORE::ToString( allMatchingStreamNames.size() ) + " new streams that match glob patterns. Will attempt to auto create topics for these" );        
+        if ( !allMatchingStreamNames.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Found " + 
+                CORE::ToString( allMatchingStreamNames.size() ) + " new streams that match glob patterns. Will attempt to auto create topics for these" );        
+        }
 
         CORE::CString::StringSet::iterator n = allMatchingStreamNames.begin();
         while ( n != allMatchingStreamNames.end() )
@@ -941,29 +957,48 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
                                                   CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-        //CORE::CString::StringVector filteredStreamNames;
-        //CORE::CString::StringVector::iterator i = m_settings.streamsToGatherInfoFrom.begin();
-        //while ( i != m_settings.streamsToGatherInfoFrom.end() )
-        //{
-        //    if ( (*i).HasChar( '*' ) > -1 )
-        //    {
-        //        CORE::CString::StringSet::iterator n = allGlobPatternTopicNames.begin();
-        //        while ( n != allGlobPatternTopicNames.end() )
-        //        {
-        //            if ( (*n).WildcardEquals( (*i), '*', true ) )
-        //            {
-        //                filteredStreamNames.push_back( (*n) );
-        //            }
-        //            ++n;
-        //        }
-        //    }
-        //    ++i;
-        //}
-        //m_filteredStreamNames = filteredStreamNames;
+    // get event data and sanity check
+    CRedisClusterKeyCache::CacheUpdateEventData* updateInfo = static_cast< CRedisClusterKeyCache::CacheUpdateEventData* >( eventData );
+    if ( GUCEF_NULL == updateInfo )
+        return;
+    
+    // See if this update applies to us
+    if ( m_redisContext.GetPointerAlways() != updateInfo->redisCluster.GetPointerAlways() )
+        return;
+    if ( updateInfo->keyType != "stream" )
+        return;
 
-        //GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
-        //    CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
-        //    " streams which we will collect metric for"  );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnRedisKeyCacheUpdate: " + 
+        CORE::ToString( updateInfo->newKeys.size() ) + " new streams, " + CORE::ToString( updateInfo->deletedKeys.size() ) + " deleted streams" );
+
+    {
+        MT::CObjectScopeLock lock( this );
+    
+        // Auto generate topics for the new Redis keys
+        CORE::CString::StringSet::iterator n = updateInfo->newKeys.begin();
+        while ( n != updateInfo->newKeys.end() )
+        {
+            const COMCORE::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
+            if ( GUCEF_NULL != templateConfig )
+            {
+                CORE::CString::StringSet topicNameList;
+                topicNameList.insert( (*n) );
+
+                PubSubClientTopicSet topicAccess;
+                
+                AutoCreateMultiTopicAccess( *templateConfig, topicNameList, topicAccess ); 
+            }
+            ++n;
+        }
+    }
+
+    // Auto delete topics for deleted Redis keys
+    CORE::CString::StringSet::iterator n = updateInfo->deletedKeys.begin();
+    while ( n != updateInfo->deletedKeys.end() )
+    {
+        DestroyTopicAccess( (*n) );
+        ++n;
+    }
 }
 
 /*-------------------------------------------------------------------------//

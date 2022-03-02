@@ -27,6 +27,16 @@
 #define GUCEF_MT_CSCOPERWLOCK_H
 #endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H */
+
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHEUPDATETASK_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCacheUpdateTask.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHEUPDATETASK_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHEUPDATETASK_H */
+
 #include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
 
 /*-------------------------------------------------------------------------//
@@ -55,6 +65,79 @@ CRedisClusterKeyCache* CRedisClusterKeyCache::g_instance = GUCEF_NULL;
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CRedisClusterKeyCache::CacheUpdateInfo::CacheUpdateInfo( void )
+    : CORE::CICloneable()
+    , redisCluster()
+    , keyType()
+    , newKeys()
+    , deletedKeys()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterKeyCache::CacheUpdateInfo::CacheUpdateInfo( const CacheUpdateInfo& src )
+    : CORE::CICloneable( src )
+    , redisCluster( src.redisCluster )
+    , keyType( src.keyType )
+    , newKeys( src.newKeys )
+    , deletedKeys( src.deletedKeys )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterKeyCache::CacheUpdateInfo::~CacheUpdateInfo()
+{GUCEF_TRACE;
+
+    redisCluster.Unlink();
+    keyType.Clear();
+    newKeys.clear();
+    deletedKeys.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable*
+CRedisClusterKeyCache::CacheUpdateInfo::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CacheUpdateInfo( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterKeyCache::CRedisClusterKeyCache( void )
+    : CORE::CObservingNotifier()
+    , m_threadPool()
+    , m_cacheUpdateTask()
+    , m_cache()
+{GUCEF_TRACE;
+
+    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PUBSUBPLUGIN::REDISCLUSTER::RedisClusterKeyCache", true );
+    m_cacheUpdateTask = ( new CRedisClusterKeyCacheUpdateTask() )->CreateSharedPtr().StaticCast< CORE::CTaskConsumer >();
+}
+
+/*-------------------------------------------------------------------------*/
+
+ CRedisClusterKeyCache::~CRedisClusterKeyCache( void )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock lock( g_dataLock );
+    
+    if ( !m_threadPool.IsNULL() )
+        m_threadPool->RequestAllThreadsToStop( true, false );
+    m_threadPool.Unlink();
+
+    m_cacheUpdateTask.Unlink();
+
+    m_cache.clear();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CRedisClusterKeyCache*
 CRedisClusterKeyCache::Instance()
@@ -92,6 +175,24 @@ CRedisClusterKeyCache::RegisterEvents( void )
     CacheUpdateEvent.Initialize();
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterKeyCache::LazyStartCacheUpdateTask( void )
+{GUCEF_TRACE;
+
+    {
+        MT::CScopeReaderLock lock( g_dataLock );
+        if ( !m_cacheUpdateTask.IsNULL() && 0 != m_cacheUpdateTask->GetDelegatorThreadId() )
+            return true;
+    }
+    {
+        MT::CScopeWriterLock lock( g_dataLock );
+        return m_threadPool->StartTask( m_cacheUpdateTask );
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 bool
@@ -101,7 +202,7 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
                                      const CORE::CString::StringSet& globPatternsToMatch )
 {GUCEF_TRACE;
 
-    if ( redisCluster.IsNULL() )
+    if ( redisCluster.IsNULL() || !LazyStartCacheUpdateTask() )
         return false;
 
     MT::CScopeReaderLock lock( g_dataLock );
@@ -149,11 +250,12 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster            ,
 
     CORE::CString::StringSet globPatternsToMatch;
     globPatternsToMatch.insert( globPatternToMatch );
-    return GetRedisKeys( redisCluster, keys, keyType, globPatternToMatch );
+    return GetRedisKeys( redisCluster, keys, keyType, globPatternsToMatch );
 }
 
 /*-------------------------------------------------------------------------*/
 
+// Only intended to be used by the closely coupled task class
 bool 
 CRedisClusterKeyCache::GetRedisClusterAccess( RedisClusterPtrSet& set )
 {GUCEF_TRACE;
@@ -174,6 +276,73 @@ CRedisClusterKeyCache::GetRedisClusterAccess( RedisClusterPtrSet& set )
         return false;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+// Only intended to be used by the closely coupled task class
+bool 
+CRedisClusterKeyCache::GetRedisKeyCache( RedisClusterPtr& redisCluster    ,
+                                         const CORE::CString& keyType     ,
+                                         CORE::CString::StringSet** keys  )
+{GUCEF_TRACE;
+
+    if ( redisCluster.IsNULL() || keys == GUCEF_NULL )
+        return false;
+
+    TStringToStringSetMap& keyMap = m_cache[ redisCluster ];
+    CORE::CString::StringSet& cachedKeys = keyMap[ keyType ];
+    
+    *keys = &cachedKeys;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+// Only intended to be used by the closely coupled task class
+bool 
+CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
+{GUCEF_TRACE;
+
+    if ( updateInfo.redisCluster.IsNULL() )
+        return false;
+
+    try
+    {
+        // First we apply the updates to the actual cache
+        // We keep a write lock on the cache during this time
+        {
+            MT::CScopeWriterLock lock( g_dataLock );
+
+            TStringToStringSetMap& keyMap = m_cache[ updateInfo.redisCluster ];
+            CORE::CString::StringSet& cachedKeys = keyMap[ updateInfo.keyType ];    
+
+            // Add the new keys
+            CORE::CString::StringSet::iterator i = updateInfo.newKeys.begin();
+            while ( i != updateInfo.newKeys.end() )
+            {
+                cachedKeys.insert( (*i) );
+                ++i;
+            }
+
+            // delete the deleted keys
+            i = updateInfo.deletedKeys.begin();
+            while ( i != updateInfo.deletedKeys.end() )
+            {
+                cachedKeys.erase( (*i) );
+                ++i;
+            }
+        }
+
+        // Now that the changes have been applied and the write lock released we 
+        // notify of the changes
+        NotifyObservers( CacheUpdateEvent, &updateInfo );
+    }
+    catch ( const std::exception& e )
+    {
+        return false;
+    }
+    return true;    
 }
 
 /*-------------------------------------------------------------------------//

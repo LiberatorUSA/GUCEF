@@ -22,10 +22,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
-#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
-#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H ? */
+#ifndef GUCEF_MT_CSCOPERWLOCK_H
+#include "gucefMT_CScopeRwLock.h"
+#define GUCEF_MT_CSCOPERWLOCK_H
+#endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
 
 #include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCacheUpdateTask.h"
 
@@ -41,12 +41,21 @@ namespace REDISCLUSTER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL       ( 5 * 60 * 1000 ) // 5mins
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CRedisClusterKeyCacheUpdateTask::CRedisClusterKeyCacheUpdateTask( void )
     : CORE::CTaskConsumer()
+    , CORE::CTSharedPtrCreator< CRedisClusterKeyCacheUpdateTask, MT::CMutex >( this )
     , m_indexingTimer( GUCEF_NULL )
 {GUCEF_TRACE;
     
@@ -81,7 +90,12 @@ CRedisClusterKeyCacheUpdateTask::OnTaskStart( CORE::CICloneable* taskData )
     if ( GUCEF_NULL == pulseGenerator )
         return false;
 
-    m_indexingTimer = new CORE::CTimer( pulseGenerator, 100000 );
+    m_indexingTimer = new CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL );
+
+    RegisterEventHandlers();
+
+    m_indexingTimer->SetEnabled( true );
+    m_indexingTimer->TriggerNow();
     
     return true;
 }
@@ -92,6 +106,8 @@ bool
 CRedisClusterKeyCacheUpdateTask::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    // We are never done.
+    // Perpetual task running on a timer
     return false;
 }
 
@@ -107,14 +123,27 @@ CRedisClusterKeyCacheUpdateTask::OnIndexingTimerCycle( CORE::CNotifier* notifier
     if ( CRedisClusterKeyCache::Instance()->GetRedisClusterAccess( clusterAccessSet ) )
     {
         CRedisClusterKeyCache::RedisClusterPtrSet::iterator i = clusterAccessSet.begin();
-        while ( i != clusterAccessSet.end() )
+        while ( i != clusterAccessSet.end() && !IsDeactivationRequested() )
         {
-            RedisClusterPtr clusterAccess = (*i);
-            CORE::CString::StringSet allKeys;
+            CRedisClusterKeyCache::CacheUpdateInfo updateInfo;
+            updateInfo.redisCluster = (*i);
+            updateInfo.keyType = "stream";
 
-            if ( GetRedisKeys( clusterAccess, allKeys, "stream" ) )
+            // Get the existing cached keys
+            // Note we do so via pointer access to improve performance since this task and the cache itself are tightly coupled regardless
+            MT::CScopeReaderLock readerLock( CRedisClusterKeyCache::Instance()->g_dataLock );
+            CORE::CString::StringSet* allOldKeys = GUCEF_NULL;
+            if ( CRedisClusterKeyCache::Instance()->GetRedisKeyCache( updateInfo.redisCluster, updateInfo.keyType, &allOldKeys ) && !IsDeactivationRequested() )
             {
-                
+                // Get all keys from the cluster and determine the key delta on the fly
+                if ( GetRedisKeys( updateInfo.redisCluster, updateInfo.keyType, *allOldKeys, updateInfo.newKeys, updateInfo.deletedKeys ) && !IsDeactivationRequested() )
+                {
+                    // Now that we have determined the key delta we can release the reader lock
+                    readerLock.EarlyUnlock();
+
+                    // Now we perform the cache write action of applying the delta
+                    CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfo );
+                }
             }
             ++i;
         }
@@ -128,6 +157,7 @@ CRedisClusterKeyCacheUpdateTask::OnTaskEnding( CORE::CICloneable* taskdata ,
                                                bool willBeForced           )
 {GUCEF_TRACE;
 
+    CORE::CTaskConsumer::OnTaskEnding( taskdata, willBeForced );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,14 +184,17 @@ CRedisClusterKeyCacheUpdateTask::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterKeyCacheUpdateTask::GetRedisKeys( RedisClusterPtr& clusterAccess ,
-                                               CORE::CString::StringSet& keys ,
-                                               const CORE::CString& keyType   )
+CRedisClusterKeyCacheUpdateTask::GetRedisKeys( RedisClusterPtr& clusterAccess              ,
+                                               const CORE::CString& keyType                ,
+                                               const CORE::CString::StringSet& currentKeys ,
+                                               CORE::CString::StringSet& newKeys           ,
+                                               CORE::CString::StringSet& deletedKeys       )
 {GUCEF_TRACE;
 
     if ( clusterAccess.IsNULL() )
         return false;
 
+    CORE::CString::StringSet stillExistsKeys;
     CORE::UInt32 keysFound = 0;
     try
     {
@@ -202,7 +235,17 @@ CRedisClusterKeyCacheUpdateTask::GetRedisKeys( RedisClusterPtr& clusterAccess ,
                         {
                             if ( REDIS_REPLY_STRING == keyList[ n ]->type )
                             {
-                                keys.insert( keyList[ n ]->str );
+                                CORE::CString keyName( keyList[ n ]->str );
+                                if ( currentKeys.find( keyName ) == currentKeys.end() )
+                                {
+                                    newKeys.insert( keyName );
+                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisClusterKeyCacheUpdateTask(" + CORE::PointerToString( this ) + "):GetRedisKeys: New key found: " + keyName );
+                                }
+                                else
+                                {
+                                    stillExistsKeys.insert( keyName );
+                                }
+                                
                                 ++keysFound;
                             }
                         }
@@ -213,7 +256,7 @@ CRedisClusterKeyCacheUpdateTask::GetRedisKeys( RedisClusterPtr& clusterAccess ,
             }
             ++iterationCounter;
         }
-        while ( itteratorParam != "0" );
+        while ( itteratorParam != "0" && !IsDeactivationRequested() );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCacheUpdateTask(" + CORE::PointerToString( this ) + "):GetRedisKeys: Found " + CORE::ToString( keysFound ) + " keys in Redis cluster of type " + keyType );
     }
@@ -231,6 +274,22 @@ CRedisClusterKeyCacheUpdateTask::GetRedisKeys( RedisClusterPtr& clusterAccess ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):GetRedisKeys: exception: " + e.what() );
         return false;
     }
+
+    if ( !IsDeactivationRequested() )
+    {
+        // Now we determine the deleted keys
+        CORE::CString::StringSet::iterator o = currentKeys.begin();
+        while ( o != currentKeys.end() )
+        {
+            if ( stillExistsKeys.find( (*o) ) == stillExistsKeys.end() )                
+            {
+                deletedKeys.insert( (*o) );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisClusterKeyCacheUpdateTask(" + CORE::PointerToString( this ) + "):GetRedisKeys: Deleted key found: " + (*o) );
+            }
+            ++o;
+        }
+    }
+
     return true;
 }
 

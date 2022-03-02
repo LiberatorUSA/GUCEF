@@ -43,10 +43,11 @@ namespace MT {
 
 CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
+    , m_isReadLocked( false )
 {GUCEF_TRACE;
 
     assert( m_rwLock );
-    m_rwLock->ReaderStart();
+    m_isReadLocked = m_rwLock->ReaderStart();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -54,7 +55,10 @@ CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
 CScopeReaderLock::~CScopeReaderLock()
 {GUCEF_TRACE;
 
-    m_rwLock->ReaderStop();
+    if ( m_isReadLocked )
+    {
+        m_rwLock->ReaderStop();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -77,12 +81,28 @@ CScopeReaderLock::IsWriteLocked( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+bool 
+CScopeReaderLock::EarlyUnlock( void )
+{GUCEF_TRACE;
+
+    if ( m_isReadLocked )
+    {        
+        m_rwLock->ReaderStop();
+        m_isReadLocked = false;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
 CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
+    , m_isWriteLocked( false )
 {GUCEF_TRACE;
 
     assert( m_rwLock );
-    m_rwLock->WriterStart();
+    m_isWriteLocked = m_rwLock->WriterStart();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -90,7 +110,8 @@ CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
 CScopeWriterLock::~CScopeWriterLock()
 {GUCEF_TRACE;
 
-    m_rwLock->WriterStop();
+    if ( m_isWriteLocked )
+        m_rwLock->WriterStop();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -109,6 +130,21 @@ CScopeWriterLock::IsWriteLocked( void ) const
 {GUCEF_TRACE;
 
     return m_rwLock->WriterCount() > 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CScopeWriterLock::EarlyUnlock( void )
+{GUCEF_TRACE;
+
+    if ( m_isWriteLocked )
+    {        
+        m_rwLock->ReaderStop();
+        m_isWriteLocked = false;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

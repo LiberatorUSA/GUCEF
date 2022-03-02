@@ -62,8 +62,16 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
 
     bool IsWriteLocked( void ) const;
 
+    /**
+     *  Allows you to unlock before the scope lock triggers destruction of the CScopeMutex object
+     *  Useful for more complex code flows where in most code paths you want to retain the lock except for
+     *  a small subset of code path(s)
+     */
+    bool EarlyUnlock( void );
+
     private:
     const CReadWriteLock* m_rwLock;
+    bool m_isReadLocked;
 
     CScopeReaderLock( void );                                     /* can't use */
     CScopeReaderLock( const CScopeReaderLock& src );              /* Copying doesnt make sense */
@@ -84,8 +92,16 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
 
     bool IsWriteLocked( void ) const;
 
+    /**
+     *  Allows you to unlock before the scope lock triggers destruction of the CScopeMutex object
+     *  Useful for more complex code flows where in most code paths you want to retain the lock except for
+     *  a small subset of code path(s)
+     */
+    bool EarlyUnlock( void );
+
     private:
     const CReadWriteLock* m_rwLock;
+    bool m_isWriteLocked;
 
     CScopeWriterLock( void );                                     /* can't use */
     CScopeWriterLock( const CScopeWriterLock& src );              /* Copying doesnt make sense */

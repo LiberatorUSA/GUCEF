@@ -34,6 +34,11 @@
 #define GUCEF_MT_CREADWRITELOCK_H
 #endif /* GUCEF_MT_CREADWRITELOCK_H ? */
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -69,11 +74,28 @@ typedef CORE::CTSharedPtr< sw::redis::RedisCluster, MT::CMutex >    RedisCluster
 
 /*--------------------------------------------------------------------------*/
 
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCache
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCache : public CORE::CObservingNotifier
 {
     public:
 
     static const CORE::CEvent CacheUpdateEvent;
+
+    class CacheUpdateInfo : public CORE::CICloneable
+    {
+        public:
+
+        RedisClusterPtr redisCluster;
+        CORE::CString keyType;
+        CORE::CString::StringSet newKeys;
+        CORE::CString::StringSet deletedKeys;
+
+        virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        CacheUpdateInfo( void );
+        CacheUpdateInfo( const CacheUpdateInfo& src );
+        virtual ~CacheUpdateInfo();
+    };
+    typedef CacheUpdateInfo     CacheUpdateEventData;
 
     static CRedisClusterKeyCache* Instance( void );
     static void Deinstance( void );
@@ -95,6 +117,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCache
 
     bool GetRedisClusterAccess( RedisClusterPtrSet& set );
 
+    bool GetRedisKeyCache( RedisClusterPtr& redisCluster    ,
+                           const CORE::CString& keyType     ,
+                           CORE::CString::StringSet** keys  );
+
+    bool ApplyKeyDelta( CacheUpdateInfo& updateInfo );
     
     private:
 
@@ -103,7 +130,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCache
 
     static void RegisterEvents( void );
 
+    bool LazyStartCacheUpdateTask( void );
+
+    CRedisClusterKeyCache( void );
+    virtual ~CRedisClusterKeyCache();
+
     CORE::ThreadPoolPtr m_threadPool;
+    CORE::CTaskConsumerPtr m_cacheUpdateTask;
     TRedisClusterPtrToTypeKeysMap m_cache;
 
     static MT::CReadWriteLock g_dataLock;
