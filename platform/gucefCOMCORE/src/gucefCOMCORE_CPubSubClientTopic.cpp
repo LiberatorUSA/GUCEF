@@ -52,6 +52,7 @@ namespace COMCORE {
 const CORE::CEvent CPubSubClientTopic::ConnectedEvent = "GUCEF::COMCORE::CPubSubClientTopic::ConnectedEvent";
 const CORE::CEvent CPubSubClientTopic::DisconnectedEvent = "GUCEF::COMCORE::CPubSubClientTopic::DisconnectedEvent";
 const CORE::CEvent CPubSubClientTopic::ConnectionErrorEvent = "GUCEF::COMCORE::CPubSubClientTopic::ConnectionErrorEvent";
+const CORE::CEvent CPubSubClientTopic::InternalErrorEvent = "GUCEF::COMCORE::CPubSubClientTopic::InternalErrorEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsRecievedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsRecievedEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsPublishedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsPublishedEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsPublishFailureEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsPublishFailureEvent";
@@ -71,6 +72,7 @@ CPubSubClientTopic::RegisterEvents( void )
     ConnectedEvent.Initialize();
     DisconnectedEvent.Initialize();
     ConnectionErrorEvent.Initialize();
+    InternalErrorEvent.Initialize();
     MsgsRecievedEvent.Initialize();
     MsgsPublishedEvent.Initialize();
     MsgsPublishFailureEvent.Initialize();

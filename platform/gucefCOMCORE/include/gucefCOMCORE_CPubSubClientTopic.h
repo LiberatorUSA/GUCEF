@@ -153,6 +153,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
     static const CORE::CEvent ConnectionErrorEvent;
+    static const CORE::CEvent InternalErrorEvent;
     static const CORE::CEvent MsgsRecievedEvent;                /**< event msg sent when the backend has received 1-N messages from the pubsub system as a subscriber */
     static const CORE::CEvent MsgsPublishedEvent;               /**< event msg sent when the backend has successfully published messages */
     static const CORE::CEvent MsgsPublishFailureEvent;          /**< event msg sent when the backend has failed to successfully publish messages */

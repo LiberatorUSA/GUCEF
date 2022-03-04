@@ -132,6 +132,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    bool BeginReconnectSequence( const CORE::CEvent* eventMsg );
+
     virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
@@ -273,6 +275,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
+    void NotifyOfReceivedMsgs( void );
+    
     void
     OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                           const CORE::CEvent& eventId  ,

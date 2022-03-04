@@ -492,6 +492,37 @@ CMsmqPubSubClientTopic::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+CMsmqPubSubClientTopic::BeginReconnectSequence( const CORE::CEvent* eventMsg )
+{GUCEF_TRACE;
+
+    if ( Disconnect() )
+    {
+        {
+            MT::CScopeMutex lock( m_lock );
+            
+            // Make sure to notify of any messages received already
+            // If we are using the peek behavior you would not lose messages via reconnect but you would lost more time if it happens at a semi-regular interval
+            // If you are not using the peeks then you'd actually lose messages if we dont do this step since the new subscribe will reinitialize everything and thus wipe messages
+            NotifyOfReceivedMsgs();
+            
+            if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
+            {
+                m_reconnectTimer->SetEnabled( true );
+            }
+        }
+
+        if ( GUCEF_NULL != eventMsg )
+        {
+            NotifyObservers( *eventMsg );
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
                                                            std::wstring& queueFormatName  )
 {GUCEF_TRACE;
@@ -579,25 +610,14 @@ CMsmqPubSubClientTopic::Subscribe( void )
         CORE::UInt32 errorCode =  HRESULT_CODE( openQueueResult );
         std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( openQueueResult ) );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to 'subscribe' by opening a MSMQ queue for recieving. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
-
-        if ( !NotifyObservers( ConnectionErrorEvent ) ) return false;
-        
-        if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-        {
-            m_reconnectTimer->SetEnabled( true );
-        }
+        BeginReconnectSequence( &ConnectionErrorEvent );
         return false;
     }
 
     if ( !PrepStorageForReadMsgs( m_config.maxMsmqMsgsToReadPerSyncCycle ) )
-    {
-        Disconnect();
-                
+    {        
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to init memory storage for publishing. Topic Name: " + m_config.topicName );
-        if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-        {
-            m_reconnectTimer->SetEnabled( true );
-        }
+        BeginReconnectSequence( &InternalErrorEvent );
         return false;
     }
     
@@ -770,14 +790,9 @@ CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const COMCORE::CPubSubBookmark& 
                         ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
                         ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
 
-                    Disconnect();
-                    NotifyObservers( ConnectionErrorEvent );
-
-                    if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-                    {
-                        m_reconnectTimer->SetEnabled( true );
-                    }
-                    break;
+                    lock.EarlyUnlock();
+                    BeginReconnectSequence( &ConnectionErrorEvent );
+                    return false;
                 }
 
                 default:
@@ -788,7 +803,10 @@ CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const COMCORE::CPubSubBookmark& 
                         ". receiveActionId=" + CORE::ToString( receiveActionId ) +
                         ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
                         ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );          
-                    break;
+
+                    lock.EarlyUnlock();
+                    BeginReconnectSequence( &InternalErrorEvent );
+                    return false;
                 }
             }
         }
@@ -826,6 +844,7 @@ bool
 CMsmqPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     if ( m_config.needPublishSupport )
     {
         if ( GUCEF_NULL != m_sendQueueHandle )
@@ -852,23 +871,18 @@ CMsmqPubSubClientTopic::InitializeConnectivity( void )
             std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( openQueueResult ) );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitializeConnectivity: Failed to init queue access for publishing. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
             
-            if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-            {
-                m_reconnectTimer->SetEnabled( true );
-            }
+            lock.EarlyUnlock();
+            BeginReconnectSequence( &ConnectionErrorEvent );
             return false;
         }
         else
         {
             if ( !PrepMsmqMsgsStorage() )
             {
-                Disconnect();
-                
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitializeConnectivity: Failed to init memory storage for publishing. Topic Name: " + m_config.topicName );
-                if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-                {
-                    m_reconnectTimer->SetEnabled( true );
-                }
+
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &InternalErrorEvent );
                 return false;
             }
         }
@@ -2042,6 +2056,25 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
 /*-------------------------------------------------------------------------*/
 
 void
+CMsmqPubSubClientTopic::NotifyOfReceivedMsgs( void )
+{GUCEF_TRACE;
+
+    if ( !m_pubsubMsgsRefs.empty() )
+    {
+        // Communicate all the messages received via an event notification
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:NotifyOfReceivedMsgs: Received and mapped a total of " + CORE::ToString( m_pubsubMsgsRefs.size() ) + 
+            " messages. Poll cycle max =" + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
+
+        m_msmqMessagesReceived += m_pubsubMsgsRefs.size();
+        
+        if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return;
+        m_pubsubMsgsRefs.clear();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
                                               CORE::CICloneable* eventData )
@@ -2051,6 +2084,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     DWORD dwTimeout = 0;                                // We dont wait for messages during sync reads, we get what we can this cycle and thats it
     ITransaction* pTransaction = MQ_NO_TRANSACTION;     // could support transactions: isTransactional ? MQ_SINGLE_MESSAGE : MQ_NO_TRANSACTION;
 
+    MT::CScopeMutex lock( m_lock );
+    
     // For MSMQ 3.0 and above:
     const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
     bool supportLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
@@ -2226,17 +2261,13 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 ++m_msmqErrorsOnReceive;                
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle;
 
+                CORE::UInt32 win32ErrorCode = HRESULT_CODE( receiveHResult );
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Queue Access issue retrieving message " + CORE::ToString( i ) + 
-                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
-                    ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
+                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                    ". Win32 Error " + CORE::ToString( win32ErrorCode ) + " with message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );
 
-                Disconnect();
-                NotifyObservers( ConnectionErrorEvent );
-
-                if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
-                {
-                    m_reconnectTimer->SetEnabled( true );
-                }
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &ConnectionErrorEvent );
                 break;
             }
 
@@ -2245,30 +2276,36 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 ++m_msmqErrorsOnReceive;
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle;
 
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
-                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
-                    ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );                
+                CORE::UInt32 win32ErrorCode = HRESULT_CODE( receiveHResult );
+                if ( 11 == win32ErrorCode )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
+                        " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                        ". WIN32 ERROR CODE 11! Check system health! Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
+                        " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                        ". Win32 Error " + CORE::ToString( win32ErrorCode ) + " with message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );                
+                }
+
+                // Since this is some unhandled error during a message read we will call it a connection error
+                //  With unhandled errors we have no idea what the problem is and as such have no way of knowing if we can recover
+                //  As a result we have to 'reset' our MSMQ access as a safety precaution. Its always better if its something that can be coded for explcitly in one of
+                //  the above cases
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &ConnectionErrorEvent );  
                 break;
             }
         }
     }
 
-    if ( msgsRead > 0 )
+    NotifyOfReceivedMsgs();
+    if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
     {
-        // Communicate all the messages received via an event notification
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped a total of " + CORE::ToString( msgsRead ) + 
-            " messages out of a poll cycle max of " + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
-
-        if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return;
-        m_pubsubMsgsRefs.clear();
-
-        if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: max msgs per cycle reached, asking for immediate pulse cycle" );
-            m_syncReadTimer->RequestImmediateTrigger();
-        }
-
-        m_msmqMessagesReceived += msgsRead;        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: max msgs per cycle reached, asking for immediate pulse cycle" );
+        m_syncReadTimer->RequestImmediateTrigger();
     }
 }
 
