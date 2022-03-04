@@ -291,48 +291,98 @@ CRedisClusterPubSubClient::GetMultiTopicAccess( const CORE::CString& topicName  
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CRedisClusterPubSubClient::GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                                PubSubClientTopicSet& topicAccess          )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CString::StringSet::const_iterator i = topicNames.begin();
+    while ( i != topicNames.end() )
+    {
+        totalSuccess = GetMultiTopicAccess( (*i), topicAccess ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                                       PubSubClientTopicSet& topicAccess                   )
+{GUCEF_TRACE;
+
+    CORE::UInt32 newTopicAccessCount = 0;
+    bool totalSuccess = true;
+    {
+        MT::CObjectScopeLock lock( this );
+
+        TTopicConfigPtrToStringSetMap::const_iterator m = topicsToCreate.begin();
+        while ( m != topicsToCreate.end() )
+        {    
+            const COMCORE::CPubSubClientTopicConfig& templateTopicConfig = *((*m).first);
+            const CORE::CString::StringSet& topicNameList = (*m).second;
+
+            CORE::CString::StringSet::const_iterator i = topicNameList.begin();
+            while ( i != topicNameList.end() )
+            {        
+                COMCORE::CPubSubClientTopicConfig topicConfig( templateTopicConfig );
+                topicConfig.topicName = (*i);
+
+                CRedisClusterPubSubClientTopic* tAccess = GUCEF_NULL;
+                {
+                    MT::CObjectScopeLock lock( this );
+
+                    tAccess = new CRedisClusterPubSubClientTopic( this );
+                    if ( tAccess->LoadConfig( topicConfig ) )
+                    {
+                        m_topicMap[ topicConfig.topicName ] = tAccess;
+                        topicAccess.insert( tAccess );
+                        ++newTopicAccessCount;
+
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" + 
+                                topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
+                    }
+                    else
+                    {
+                        delete tAccess;
+                        tAccess = GUCEF_NULL;
+                        totalSuccess = false;
+
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" + 
+                                topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
+                    }
+                }
+                ++i;
+            }
+            ++m;
+        }
+    }
+
+    if ( newTopicAccessCount > 0 )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created " + 
+            CORE::ToString( newTopicAccessCount ) + " topics based on template configs" );
+
+        TopicsAccessAutoCreatedEventData eData( topicAccess );
+        NotifyObservers( TopicsAccessAutoCreatedEvent, &eData );
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& templateTopicConfig ,
                                                        const CORE::CString::StringSet& topicNameList                ,
                                                        PubSubClientTopicSet& topicAccess                            )
 {GUCEF_TRACE;
 
-    bool totalSuccess = true;
-    CORE::CString::StringSet::const_iterator i = topicNameList.begin();
-    while ( i != topicNameList.end() )
-    {        
-        COMCORE::CPubSubClientTopicConfig topicConfig( templateTopicConfig );
-        topicConfig.topicName = (*i);
-
-        CRedisClusterPubSubClientTopic* tAccess = GUCEF_NULL;
-        {
-            MT::CObjectScopeLock lock( this );
-
-            tAccess = new CRedisClusterPubSubClientTopic( this );
-            if ( tAccess->LoadConfig( topicConfig ) )
-            {
-                m_topicMap[ topicConfig.topicName ] = tAccess;
-                topicAccess.insert( tAccess );
-
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" + 
-                        topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
-
-                TopicAccessCreatedEventData eData( topicConfig.topicName );
-                NotifyObservers( TopicAccessAutoCreatedEvent, &eData );
-            }
-            else
-            {
-                delete tAccess;
-                tAccess = GUCEF_NULL;
-                totalSuccess = false;
-
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" + 
-                        topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
-            }
-        }
-        ++i;
-    }
-    return totalSuccess;
+    TTopicConfigPtrToStringSetMap topicToCreate;
+    topicToCreate[ &templateTopicConfig ] = topicNameList;
+    return AutoCreateMultiTopicAccess( topicToCreate, topicAccess );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -350,7 +400,9 @@ CRedisClusterPubSubClient::CreateMultiTopicAccess( const COMCORE::CPubSubClientT
         {
             m_streamIndexingTimer->SetEnabled( true );
 
-            return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess );
+            if ( !topicNameList.empty() )
+                return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess );
+            return true; // Since its pattern based potential creation at a later time also counts as success
         }
         return false;
     }
@@ -371,21 +423,77 @@ CRedisClusterPubSubClient::CreateMultiTopicAccess( const COMCORE::CPubSubClientT
 void
 CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
     
-    TTopicMap::iterator i = m_topicMap.find( topicName );
-    if ( i != m_topicMap.end() )
     {
-        CRedisClusterPubSubClientTopic* topicAccess = (*i).second;
-        m_topicMap.erase( i );
+        MT::CObjectScopeLock lock( this );
+    
+        TTopicMap::iterator i = m_topicMap.find( topicName );
+        if ( i != m_topicMap.end() )
+        {
+            CRedisClusterPubSubClientTopic* topicAccess = (*i).second;
+            m_topicMap.erase( i );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):DestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):DestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
 
-        TopicAccessDestroyedEventData eData( topicName );
-        NotifyObservers( TopicAccessDestroyedEvent, &eData );
+            delete topicAccess;        
+        }
+    }
 
-        delete topicAccess;        
+    TopicAccessDestroyedEventData eData( topicName );
+    NotifyObservers( TopicAccessDestroyedEvent, &eData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames )
+{GUCEF_TRACE;
+
+    PubSubClientTopicSet topicAccess;    
+    {
+        MT::CObjectScopeLock lock( this );
+
+        CORE::CString::StringSet::const_iterator t = topicNames.begin();
+        while ( t != topicNames.end() )
+        {
+            const CORE::CString& topicName = (*t);
+            TTopicMap::iterator i = m_topicMap.find( topicName );
+            if ( i != m_topicMap.end() )
+            {
+                CRedisClusterPubSubClientTopic* tAccess = (*i).second;                
+                topicAccess.insert( tAccess );                
+            }
+            ++t;
+        }
+    }
+
+    if ( !topicAccess.empty() )
+    {    
+        TopicsAccessAutoDestroyedEventData eData( topicAccess );
+        NotifyObservers( TopicsAccessAutoDestroyedEvent, &eData );
+
+        {
+            // Now that everyone has been duely warned we can proceed with the actual destruction
+            MT::CObjectScopeLock lock( this );    
+
+            CORE::UInt32 destroyedTopicAccessCount = 0;
+            PubSubClientTopicSet::iterator t = topicAccess.begin();
+            while ( t != topicAccess.end() )
+            {
+                CRedisClusterPubSubClientTopic* tAccess = static_cast< CRedisClusterPubSubClientTopic* >( (*t) );
+                CORE::CString topicName = tAccess->GetTopicName();
+                m_topicMap.erase( topicName );              
+                delete tAccess;
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
+
+                ++destroyedTopicAccessCount;                                
+                ++t;
+            }
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for " + 
+                CORE::ToString( destroyedTopicAccessCount ) + "topics" );
+        }
     }
 }
 
@@ -460,7 +568,7 @@ bool
 CRedisClusterPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -469,7 +577,7 @@ bool
 CRedisClusterPubSubClient::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -761,13 +869,13 @@ CRedisClusterPubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
-    if ( GUCEF_NULL != m_streamIndexingTimer )
-    {
-        TEventCallback callback( this, &CRedisClusterPubSubClient::OnStreamIndexingTimerCycle );
-        SubscribeTo( m_streamIndexingTimer          ,
-                     CORE::CTimer::TimerUpdateEvent ,
-                     callback                       );    
-    }
+    //if ( GUCEF_NULL != m_streamIndexingTimer )
+    //{
+    //    TEventCallback callback( this, &CRedisClusterPubSubClient::OnStreamIndexingTimerCycle );
+    //    SubscribeTo( m_streamIndexingTimer          ,
+    //                 CORE::CTimer::TimerUpdateEvent ,
+    //                 callback                       );    
+    //}
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
     {
         TEventCallback callback( this, &CRedisClusterPubSubClient::OnRedisKeyCacheUpdate );
@@ -877,6 +985,8 @@ const COMCORE::CPubSubClientTopicConfig*
 CRedisClusterPubSubClient::FindTemplateConfigForTopicName( const CORE::CString& topicName ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+
     COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -971,33 +1081,30 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnRedisKeyCacheUpdate: " + 
         CORE::ToString( updateInfo->newKeys.size() ) + " new streams, " + CORE::ToString( updateInfo->deletedKeys.size() ) + " deleted streams" );
 
+    // Build a bulk creation map linking template config to stream names
+    // This allows for better batch processing down the line, reducing overhead
+    TTopicConfigPtrToStringSetMap bulkCreationMap;
+    CORE::CString::StringSet::iterator n = updateInfo->newKeys.begin();
+    while ( n != updateInfo->newKeys.end() )
     {
-        MT::CObjectScopeLock lock( this );
-    
-        // Auto generate topics for the new Redis keys
-        CORE::CString::StringSet::iterator n = updateInfo->newKeys.begin();
-        while ( n != updateInfo->newKeys.end() )
+        const COMCORE::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
+        if ( GUCEF_NULL != templateConfig )
         {
-            const COMCORE::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
-            if ( GUCEF_NULL != templateConfig )
-            {
-                CORE::CString::StringSet topicNameList;
-                topicNameList.insert( (*n) );
-
-                PubSubClientTopicSet topicAccess;
-                
-                AutoCreateMultiTopicAccess( *templateConfig, topicNameList, topicAccess ); 
-            }
-            ++n;
+            bulkCreationMap[ templateConfig ].insert( (*n) );
         }
+        ++n;
     }
 
-    // Auto delete topics for deleted Redis keys
-    CORE::CString::StringSet::iterator n = updateInfo->deletedKeys.begin();
-    while ( n != updateInfo->deletedKeys.end() )
+    if ( !bulkCreationMap.empty() )
     {
-        DestroyTopicAccess( (*n) );
-        ++n;
+        // Bulk Auto generate topics for the new Redis keys
+        PubSubClientTopicSet topicAccess;                
+        AutoCreateMultiTopicAccess( bulkCreationMap, topicAccess ); 
+    }
+    if ( !updateInfo->deletedKeys.empty() )
+    {
+        // Bulk Auto delete topics for deleted Redis keys
+        AutoDestroyTopicAccess( updateInfo->deletedKeys );
     }
 }
 

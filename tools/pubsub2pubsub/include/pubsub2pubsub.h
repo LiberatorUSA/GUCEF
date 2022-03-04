@@ -282,9 +282,14 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                          CORE::CICloneable* eventData );
 
     void
-    OnTopicAccessAutoCreated( CORE::CNotifier* notifier    ,
-                              const CORE::CEvent& eventId  ,
-                              CORE::CICloneable* eventData );
+    OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+
+    void
+    OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
 
     void
     OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
@@ -320,6 +325,10 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     bool ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSideSettings ,
                              COMCORE::CPubSubClientTopic& topic                  );
+    
+    bool ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic                   ,
+                                   const COMCORE::CPubSubClientFeatures& clientFeatures ,
+                                   const PubSubSideChannelSettings& pubSubSideSettings  );
     
     protected:
 

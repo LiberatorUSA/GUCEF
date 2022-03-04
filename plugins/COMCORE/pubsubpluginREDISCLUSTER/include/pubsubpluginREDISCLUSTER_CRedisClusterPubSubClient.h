@@ -79,7 +79,9 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 {
     public:
 
-    static const CORE::CString TypeName; 
+    static const CORE::CString TypeName;
+    
+    typedef std::map< const COMCORE::CPubSubClientTopicConfig* , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
 
     CRedisClusterPubSubClient( const COMCORE::CPubSubClientConfig& config );
 
@@ -96,6 +98,9 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
                                       PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                      PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool CreateMultiTopicAccess( const COMCORE::CPubSubClientTopicConfig& topicConfig ,
                                          PubSubClientTopicSet& topicAccess                    ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -103,6 +108,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
                                      const CORE::CString::StringSet& topicNameList                ,
                                      PubSubClientTopicSet& topicAccess                            );
 
+    bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                     PubSubClientTopicSet& topicAccess                   );
+
+    void AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames );
+    
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList                                            ,

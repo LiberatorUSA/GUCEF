@@ -46,6 +46,7 @@ namespace REDISCLUSTER {
 //-------------------------------------------------------------------------*/
 
 #define GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL       ( 5 * 60 * 1000 ) // 5mins
+#define GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE             256
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -141,8 +142,60 @@ CRedisClusterKeyCacheUpdateTask::OnIndexingTimerCycle( CORE::CNotifier* notifier
                     // Now that we have determined the key delta we can release the reader lock
                     readerLock.EarlyUnlock();
 
-                    // Now we perform the cache write action of applying the delta
-                    CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfo );
+                    // Delta change lists can become rather large, especially on initial cache population runs
+                    // As such we check against a max delta update size so we can batch the updates into reasonable chunks
+                    size_t totalDeltaChangeSize = updateInfo.newKeys.size() + updateInfo.deletedKeys.size();
+                    if ( totalDeltaChangeSize <= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE )
+                    {
+                        // Now we perform the cache write action of applying the delta
+                        CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfo );
+                    }
+                    else
+                    {
+                        // Too much: We will need to cut the massive delta update into smaller chunks
+                        CRedisClusterKeyCache::CacheUpdateInfo updateInfoBatch;
+                        updateInfoBatch.redisCluster = updateInfo.redisCluster;
+                        updateInfoBatch.keyType = updateInfo.keyType;
+
+                        // Lets try draining deleted keys first so we can free up resources, if applicable
+                        size_t totalDeltaBatchChangeSize = 0;
+                        while ( !updateInfo.deletedKeys.empty() )
+                        {
+                            CORE::CString::StringSet::iterator dk = updateInfo.deletedKeys.begin();
+                            updateInfoBatch.deletedKeys.insert( (*dk) );
+                            updateInfo.deletedKeys.erase( dk );
+                            ++totalDeltaBatchChangeSize;
+
+                            if ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE )
+                            {
+                                // Now we perform the cache write action of applying the delta batch
+                                if ( CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfoBatch ) )
+                                {
+                                    updateInfoBatch.deletedKeys.clear();
+                                    totalDeltaBatchChangeSize = 0;                                
+                                }
+                            }
+                        }
+                        // Now drain the new keys in reasonable batches
+                        while ( !updateInfo.newKeys.empty() )
+                        {
+                            CORE::CString::StringSet::iterator nk = updateInfo.newKeys.begin();
+                            updateInfoBatch.newKeys.insert( (*nk) );
+                            updateInfo.newKeys.erase( nk );
+                            ++totalDeltaBatchChangeSize;
+
+                            if ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE )
+                            {
+                                // Now we perform the cache write action of applying the delta batch
+                                if ( CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfoBatch ) )
+                                {
+                                    updateInfoBatch.deletedKeys.clear();
+                                    updateInfoBatch.newKeys.clear();
+                                    totalDeltaBatchChangeSize = 0;                                
+                                }
+                            }
+                        }
+                    }
                 }
             }
             ++i;

@@ -685,10 +685,15 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent       ,
                  callback2                            );
 
-    TEventCallback callback3( this, &CPubSubClientSide::OnTopicAccessAutoCreated );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()                   ,
-                 COMCORE::CPubSubClient::TopicAccessAutoCreatedEvent ,
-                 callback3                                           );
+    TEventCallback callback3( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()                    ,
+                 COMCORE::CPubSubClient::TopicsAccessAutoCreatedEvent ,
+                 callback3                                            );
+
+    TEventCallback callback4( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()                      ,
+                 COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEvent ,
+                 callback4                                              );
     
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
     {
@@ -823,16 +828,57 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::OnTopicAccessAutoCreated( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClient::TopicAccessAutoCreatedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicAccessAutoCreatedEventData* >( eventData );
-    if ( GUCEF_NULL != eventData )
+    COMCORE::CPubSubClient::TopicsAccessAutoCreatedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
+    if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
     {
-        COMCORE::CPubSubClientTopic* topicAccess = m_pubsubClient->GetTopicAccess( eData->GetData() );
-        ConfigureTopicLink( *m_sideSettings, *topicAccess ); 
+        COMCORE::CPubSubClientFeatures clientFeatures;
+        m_pubsubClient->GetSupportedFeatures( clientFeatures );
+
+        COMCORE::CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
+        COMCORE::CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
+        while ( i != topicsAccess.end() )
+        {
+            COMCORE::CPubSubClientTopic* tAccess = (*i);
+            if ( GUCEF_NULL != tAccess )
+            {
+                if ( ConfigureTopicLink( *m_sideSettings, *tAccess ) )
+                {
+                    ConnectPubSubClientTopic( *tAccess, clientFeatures, *m_sideSettings );
+                }
+            }
+            ++i;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEventData* >( eventData );
+    if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
+    {
+        COMCORE::CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
+        COMCORE::CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
+        while ( i != topicsAccess.end() )
+        {
+            COMCORE::CPubSubClientTopic* tAccess = (*i);
+            if ( GUCEF_NULL != tAccess )
+            {
+                // @TODO: What to do about in-flight messages etc? Any special action?
+                m_topics.erase( tAccess );
+            }
+            ++i;
+        }
     }
 }
 
@@ -1638,26 +1684,110 @@ CPubSubClientSide::ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSi
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic                   ,
+                                             const COMCORE::CPubSubClientFeatures& clientFeatures ,
+                                             const PubSubSideChannelSettings& pubSubSideSettings  )
+{GUCEF_TRACE;
+    
+    if ( topic.InitializeConnectivity() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):ConnectPubSubClientTopic: Successfully requested connectivity initialization for topic \"" + topic.GetTopicName() + "\". Proceeding" );
+
+        // We use the 'desired' feature to also drive whether we actually subscribe at this point
+        // saves us an extra setting
+        const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
+        if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
+        {
+            // The method of subscription depends on the supported feature set
+            bool subscribeSuccess = false;
+            if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ConnectPubSubClientTopic: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
+
+                subscribeSuccess = topic.Subscribe();
+            }
+            else
+            if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ConnectPubSubClientTopic: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
+
+                subscribeSuccess = topic.Subscribe();
+            }
+            else
+            {
+                // bookmarks are supported but they rely on client-side persistance
+                // we will need to obtain said bookmark
+
+                COMCORE::CPubSubBookmark bookmark;
+                if ( GUCEF_NULL == m_persistance || !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic.GetTopicName(), bookmark ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
+
+                    if ( pubSubSideSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
+                    {
+                        subscribeSuccess = topic.Subscribe();
+                        if ( !subscribeSuccess )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                "):ConnectPubSubClientTopic: Also unable to subscribe using the default bookmark as a fallback" );
+                            return false;
+                        }
+                    }
+                    else
+                        return false;
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
+
+                    subscribeSuccess = topic.SubscribeStartingAtBookmark( bookmark );
+                }
+            }
+
+            if ( !subscribeSuccess )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ConnectPubSubClient: Failed to subscribe to topic: " + topic.GetTopicName() );
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientSide::ConnectPubSubClient( void )
 {GUCEF_TRACE;
 
     if ( !DisconnectPubSubClient() )
         return false;
 
-    PubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
-    if ( GUCEF_NULL == pubSubSideSettings )
+    if ( GUCEF_NULL == m_sideSettings )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):ConnectPubSubClient: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );
-        return false;
+        PubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
+        if ( GUCEF_NULL == pubSubSideSettings )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):ConnectPubSubClient: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );
+            return false;
+        }
+        m_sideSettings = pubSubSideSettings;
     }
-    COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
+    COMCORE::CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
 
     if ( m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
-        pubSubConfig.metricsPrefix = pubSubSideSettings->metricsPrefix;
+        pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
         m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )
@@ -1685,9 +1815,8 @@ CPubSubClientSide::ConnectPubSubClient( void )
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
     // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
-    pubSubSideSettings->needToTrackInFlightPublishedMsgsForAck = pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck && clientFeatures.supportsSubscriberMsgReceivedAck;
+    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck && clientFeatures.supportsSubscriberMsgReceivedAck;
 
-    SubscribeTo( m_pubsubClient.GetPointerAlways() );
     if ( !m_pubsubClient->Connect() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
@@ -1731,84 +1860,20 @@ CPubSubClientSide::ConnectPubSubClient( void )
         ++i;
     }
 
+    bool totalTopicConnectSuccess = true;
     TopicMap::iterator t = m_topics.begin();
     while ( t != m_topics.end() )
     {
         TopicLink& topicLink = (*t).second;
         COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        
+        totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
+                                                             clientFeatures   ,
+                                                             *m_sideSettings  ) && totalTopicConnectSuccess;
 
-        if ( topic->InitializeConnectivity() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + topic->GetTopicName() + "\". Proceeding" );
-
-            // We use the 'desired' feature to also drive whether we actually subscribe at this point
-            // saves us an extra setting
-            const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic->GetTopicName() );
-            if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
-            {
-                // The method of subscription depends on the supported feature set
-                bool subscribeSuccess = false;
-                if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
-
-                    subscribeSuccess = topic->Subscribe();
-                }
-                else
-                if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
-
-                    subscribeSuccess = topic->Subscribe();
-                }
-                else
-                {
-                    // bookmarks are supported but they rely on client-side persistance
-                    // we will need to obtain said bookmark
-
-                    COMCORE::CPubSubBookmark bookmark;
-                    if ( GUCEF_NULL == m_persistance || !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic->GetTopicName(), bookmark ) )
-                    {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
-
-                        if ( pubSubSideSettings->subscribeWithoutBookmarkIfNoneIsPersisted )
-                        {
-                            subscribeSuccess = topic->Subscribe();
-                            if ( !subscribeSuccess )
-                            {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                                    "):ConnectPubSubClient: Also unable to subscribe using the default bookmark as a fallback" );
-                                return false;
-                            }
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                    {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
-
-                        subscribeSuccess = topic->SubscribeStartingAtBookmark( bookmark );
-                    }
-                }
-
-                if ( !subscribeSuccess )
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClient: Failed to subscribe to topic: " + topic->GetTopicName() );
-                    return false;
-                }
-            }
-        }
         ++t;
     }
-
-    return true;
+    return totalTopicConnectSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -51,8 +51,8 @@ namespace COMCORE {
 
 const CORE::CEvent CPubSubClient::TopicAccessCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessCreatedEvent";
 const CORE::CEvent CPubSubClient::TopicAccessDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessDestroyedEvent";
-const CORE::CEvent CPubSubClient::TopicAccessAutoCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessAutoCreatedEvent";
-const CORE::CEvent CPubSubClient::TopicAccessAutoDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessAutoDestroyedEvent";
+const CORE::CEvent CPubSubClient::TopicsAccessAutoCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicsAccessAutoCreatedEvent";
+const CORE::CEvent CPubSubClient::TopicsAccessAutoDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEvent";
 const CORE::CEvent CPubSubClient::TopicDiscoveryEvent = "GUCEF::COMCORE::CPubSubClient::TopicDiscoveryEvent";
 
 /*-------------------------------------------------------------------------//
@@ -95,8 +95,8 @@ CPubSubClient::RegisterEvents( void )
     
     TopicAccessCreatedEvent.Initialize();
     TopicAccessDestroyedEvent.Initialize();
-    TopicAccessAutoCreatedEvent.Initialize();
-    TopicAccessAutoDestroyedEvent.Initialize();
+    TopicsAccessAutoCreatedEvent.Initialize();
+    TopicsAccessAutoDestroyedEvent.Initialize();
     TopicDiscoveryEvent.Initialize();
 }
 
@@ -175,6 +175,23 @@ CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::GetMultiTopicAccess( const CString::StringSet& topicNames ,
+                                    PubSubClientTopicSet& topicAccess    )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CString::StringSet::const_iterator i = topicNames.begin();
+    while ( i != topicNames.end() )
+    {
+        totalSuccess = GetMultiTopicAccess( (*i), topicAccess ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

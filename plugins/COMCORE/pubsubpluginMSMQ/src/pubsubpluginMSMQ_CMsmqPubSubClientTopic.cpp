@@ -2227,7 +2227,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle;
 
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Queue Access issue retrieving message " + CORE::ToString( i ) + 
-                    " of the current cycle. HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
                     ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
 
                 Disconnect();
@@ -2246,7 +2246,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle;
 
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
-                    " of the current cycle. HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
                     ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );                
                 break;
             }

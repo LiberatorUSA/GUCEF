@@ -287,6 +287,57 @@ Base16Encode( const void* byteBuffer, UInt32 bufferSize )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UInt32 bufferSize, UInt32& bytesUsed )
+{GUCEF_TRACE;
+    
+    char* charByteBuffer = static_cast< char* >( byteBuffer );
+    CAsciiString asciiBase16Str = CORE::ToAsciiString( base16Str );
+    if ( hasHexPrefix )
+        asciiBase16Str = asciiBase16Str.ReplaceSubstr( "0x", "" );  // @TODO: case sensitive
+    if ( asciiBase16Str.IsNULLOrEmpty() )
+    {
+        bytesUsed = 0;
+        return true;
+    }
+
+    UInt32 byteCount = asciiBase16Str.Length() / 2;
+    bool prefixZero = false;
+    if ( byteCount * 2 < asciiBase16Str.Length() )
+    {
+        prefixZero = true;
+        ++byteCount;
+    }
+
+    if ( bufferSize < byteCount )
+        return false; // not enough space
+
+    UInt32 base16Index = 0;
+    UInt32 byteIndex = 0;
+    if ( prefixZero )
+    {
+        char hexCharA = '0';
+        char hexCharB = asciiBase16Str[ base16Index ];
+        char byte = 0;
+        ConvertHexCharsToByte( hexCharA, hexCharB, byte );        
+        charByteBuffer[ byteIndex ] = byte;
+        ++base16Index; ++byteIndex;
+    }
+        
+    for ( base16Index; base16Index < asciiBase16Str.Length(); ++base16Index )
+    {
+        char byte = 0;
+        ConvertHexCharsToByte( asciiBase16Str[ base16Index ], asciiBase16Str[ base16Index+1 ], byte );        
+        charByteBuffer[ byteIndex ] = byte;
+        ++base16Index; ++byteIndex;
+    }
+
+    bytesUsed = byteIndex;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static const int base64_table[ 256 ] =

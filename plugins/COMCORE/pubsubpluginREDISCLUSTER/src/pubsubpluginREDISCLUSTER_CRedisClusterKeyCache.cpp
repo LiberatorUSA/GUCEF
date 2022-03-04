@@ -317,19 +317,19 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
             TStringToStringSetMap& keyMap = m_cache[ updateInfo.redisCluster ];
             CORE::CString::StringSet& cachedKeys = keyMap[ updateInfo.keyType ];    
 
-            // Add the new keys
-            CORE::CString::StringSet::iterator i = updateInfo.newKeys.begin();
-            while ( i != updateInfo.newKeys.end() )
-            {
-                cachedKeys.insert( (*i) );
-                ++i;
-            }
-
             // delete the deleted keys
-            i = updateInfo.deletedKeys.begin();
+            CORE::CString::StringSet::iterator i = updateInfo.deletedKeys.begin();
             while ( i != updateInfo.deletedKeys.end() )
             {
                 cachedKeys.erase( (*i) );
+                ++i;
+            }
+
+            // Add the new keys
+            i = updateInfo.newKeys.begin();
+            while ( i != updateInfo.newKeys.end() )
+            {
+                cachedKeys.insert( (*i) );
                 ++i;
             }
         }

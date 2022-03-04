@@ -82,15 +82,15 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     static const CORE::CEvent TopicAccessCreatedEvent;                 /**< occurs when topic access is created programatically or via loading of config requesting the same */
     static const CORE::CEvent TopicAccessDestroyedEvent;               /**< occurs when topic access is destroyed programatically */
-    static const CORE::CEvent TopicAccessAutoCreatedEvent;             /**< occurs when topic access is automatically created following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
-    static const CORE::CEvent TopicAccessAutoDestroyedEvent;           /**< occurs when topic access is automatically destroyed following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+    static const CORE::CEvent TopicsAccessAutoCreatedEvent;            /**< occurs when topic access is automatically created following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+    static const CORE::CEvent TopicsAccessAutoDestroyedEvent;          /**< occurs when topic access is automatically destroyed following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent TopicDiscoveryEvent;                     /**< occurs when available topic changes are detected. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
 
-    typedef std::set< CPubSubClientTopic* >     PubSubClientTopicSet;
-    typedef CORE::TCloneableString              TopicAccessCreatedEventData;           /**< name of the topic is passed as event relevant data */
-    typedef CORE::TCloneableString              TopicAccessDestroyedEventData;         /**< name of the topic is passed as event relevant data */
-    typedef CORE::TCloneableString              TopicAccessAutoCreatedEventData;       /**< name of the topic is passed as event relevant data */
-    typedef CORE::TCloneableString              TopicAccessAutoDestroyedEventData;     /**< name of the topic is passed as event relevant data */
+    typedef std::set< CPubSubClientTopic* >                PubSubClientTopicSet;
+    typedef CORE::TCloneableString                         TopicAccessCreatedEventData;            /**< name of the topic is passed as event relevant data */
+    typedef CORE::TCloneableString                         TopicAccessDestroyedEventData;          /**< name of the topic is passed as event relevant data */
+    typedef CORE::CTCloneableObj< PubSubClientTopicSet >   TopicsAccessAutoCreatedEventData;       /**< access to the topics is passed as event relevant data */
+    typedef CORE::CTCloneableObj< PubSubClientTopicSet >   TopicsAccessAutoDestroyedEventData;     /**< names of the topics are passed as event relevant data */
 
     CPubSubClient( void );
 
@@ -117,6 +117,9 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual bool GetMultiTopicAccess( const CString& topicName          ,
                                       PubSubClientTopicSet& topicAccess );
+
+    virtual bool GetMultiTopicAccess( const CString::StringSet& topicNames ,
+                                      PubSubClientTopicSet& topicAccess    );
     
     virtual bool GetOrCreateMultiTopicAccess( const CString& topicName          ,
                                               PubSubClientTopicSet& topicAccess );

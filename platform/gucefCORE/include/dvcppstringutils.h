@@ -311,6 +311,14 @@ Base16Encode( const void* byteBuffer, UInt32 bufferSize );
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Decodes a base16 encoded string into binary data
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UInt32 bufferSize, UInt32& bytesUsed );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP CString
 Base64Encode( const void* byteBuffer, UInt32 bufferSize );
 

@@ -91,31 +91,33 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CTCloneableObj< CDateTime >      TCloneableDateTime;
-typedef CTCloneableObj< CVariant >       TCloneableVariant;
-typedef CTCloneableObj< CDynamicBuffer > TCloneableBuffer;
-typedef CTCloneableObj< CString >        TCloneableString;
-typedef CTCloneableObj< char >           TCloneableChar;
-typedef CTCloneableObj< unsigned char >  TCloneableUChar;
-typedef CTCloneableObj< short >          TCloneableShort;
-typedef CTCloneableObj< unsigned short > TCloneableUShort;
-typedef CTCloneableObj< int >            TCloneableInt;
-typedef CTCloneableObj< unsigned int >   TCloneableUInt;
-typedef CTCloneableObj< long >           TCloneableLong;
-typedef CTCloneableObj< unsigned int >   TCloneableULong;
-typedef CTCloneableObj< float >          TCloneableFloat;
-typedef CTCloneableObj< double >         TCloneableDouble;
-typedef CTCloneableObj< bool >           TCloneableBool;
-typedef CTCloneableObj< double >         TCloneableDouble;
-typedef CTCloneableObj< float >          TCloneableFloat;
-typedef CTCloneableObj< UInt64 >         TCloneableUInt64;
-typedef CTCloneableObj< Int64 >          TCloneableInt64;
-typedef CTCloneableObj< UInt32 >         TCloneableUInt32;
-typedef CTCloneableObj< Int32 >          TCloneableInt32;
-typedef CTCloneableObj< UInt16 >         TCloneableUInt16;
-typedef CTCloneableObj< Int16 >          TCloneableInt16;
-typedef CTCloneableObj< UInt8 >          TCloneableUInt8;
-typedef CTCloneableObj< Int8 >           TCloneableInt8;
+typedef CTCloneableObj< CDateTime >                 TCloneableDateTime;
+typedef CTCloneableObj< CVariant >                  TCloneableVariant;
+typedef CTCloneableObj< CDynamicBuffer >            TCloneableBuffer;
+typedef CTCloneableObj< CString >                   TCloneableString;
+typedef CTCloneableObj< CString::StringSet >        TCloneableStringSet;
+typedef CTCloneableObj< CString::StringVector >     TCloneableStringVector;
+typedef CTCloneableObj< char >                      TCloneableChar;
+typedef CTCloneableObj< unsigned char >             TCloneableUChar;
+typedef CTCloneableObj< short >                     TCloneableShort;
+typedef CTCloneableObj< unsigned short >            TCloneableUShort;
+typedef CTCloneableObj< int >                       TCloneableInt;
+typedef CTCloneableObj< unsigned int >              TCloneableUInt;
+typedef CTCloneableObj< long >                      TCloneableLong;
+typedef CTCloneableObj< unsigned int >              TCloneableULong;
+typedef CTCloneableObj< float >                     TCloneableFloat;
+typedef CTCloneableObj< double >                    TCloneableDouble;
+typedef CTCloneableObj< bool >                      TCloneableBool;
+typedef CTCloneableObj< double >                    TCloneableDouble;
+typedef CTCloneableObj< float >                     TCloneableFloat;
+typedef CTCloneableObj< UInt64 >                    TCloneableUInt64;
+typedef CTCloneableObj< Int64 >                     TCloneableInt64;
+typedef CTCloneableObj< UInt32 >                    TCloneableUInt32;
+typedef CTCloneableObj< Int32 >                     TCloneableInt32;
+typedef CTCloneableObj< UInt16 >                    TCloneableUInt16;
+typedef CTCloneableObj< Int16 >                     TCloneableInt16;
+typedef CTCloneableObj< UInt8 >                     TCloneableUInt8;
+typedef CTCloneableObj< Int8 >                      TCloneableInt8;
 
 typedef CTLinkedCloneable< CDynamicBuffer >      TLinkedCloneableBuffer;
 typedef CTConstLinkedCloneable< CDynamicBuffer > TConstLinkedCloneableBuffer;
