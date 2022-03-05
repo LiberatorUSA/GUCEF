@@ -261,6 +261,13 @@ StringToStringVector( const CString& str                                        
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
+StringVectorToString( const CString::StringVector& strVector          , 
+                      const CString& defaultIfNeeded = CString::Empty ,
+                      char seperator = ','                            );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
 PointerToString( const void* value );
 
 /*-------------------------------------------------------------------------*/

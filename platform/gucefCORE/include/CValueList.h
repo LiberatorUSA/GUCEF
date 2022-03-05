@@ -68,7 +68,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 {
     public:
 
-    typedef std::vector< CString >              TStringVector;
+    typedef CString::StringVector               TStringVector;
     typedef std::map< CString, TStringVector >  TValueMap;
 
     CValueList( void );
@@ -94,6 +94,13 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     const CString& operator[]( const CString& key ) const;
+
+    /**
+     *  Sets key/value pairs based on the source valuelist
+     *  Like assignment in that new keys will be added and existing key will be overwritten if matched
+     *  However contrary to assignment keys that have no match will remain 
+     */
+    void SetMultiple( const CValueList& src );
 
     void SetMultiple( int argc    ,
                       char** argv );

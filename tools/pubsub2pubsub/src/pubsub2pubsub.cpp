@@ -2425,7 +2425,9 @@ RestApiPubSub2PubSubInfoResource::Serialize( const CORE::CString& resourcePath  
                                              const CORE::CString& params         )
 {GUCEF_TRACE;
 
+    output.Clear();
     output.SetName( "info" );
+    output.SetNodeType( GUCEF_DATATYPE_OBJECT );
     output.SetAttribute( "application", "pubsub2pubsub" );
     output.SetAttribute( "appBuildDateTime", PubSub2PubSub::GetAppCompileDateTime().ToIso8601DateTimeString( true, true ) );
     output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );

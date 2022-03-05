@@ -45,13 +45,15 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
     
-CConfigurableHttpServerResource::CConfigurableHttpServerResource( CORE::CIConfigurable* configurable /* = GUCEF_NULL */ )
+CConfigurableHttpServerResource::CConfigurableHttpServerResource( CORE::CIConfigurable* configurable /* = GUCEF_NULL */ ,
+                                                                  bool allowSerialize                /* = true */       ,
+                                                                  bool allowDeserialize              /* = true */       )
     : CCodecBasedHTTPServerResource()
     , m_configurable( configurable )
 {GUCEF_TRACE;
 
-    m_allowDeserialize = true;
-    m_allowSerialize = true;
+    m_allowDeserialize = allowDeserialize;
+    m_allowSerialize = allowSerialize;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -1,0 +1,288 @@
+{
+	"info": {
+		"_postman_id": "e33dea93-dae3-4fd1-ba1a-a9e58814f8b5",
+		"name": "redisinfo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get cluster index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/clusters",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"clusters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/cluster/info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/cluster/info",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"cluster",
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/commandstats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/commandstats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"commandstats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/memory",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/memory",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"memory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/replication",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/replication",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"replication"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/persistence",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/persistence",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"persistence"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/stats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"stats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/clients",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/clients",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/cpu",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/cpu",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"cpu"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/info/keyspace",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/info/keyspace",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"info",
+						"keyspace"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "command/xinfo/stream",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/xinfo/stream",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"api",
+						"command",
+						"xinfo",
+						"stream"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

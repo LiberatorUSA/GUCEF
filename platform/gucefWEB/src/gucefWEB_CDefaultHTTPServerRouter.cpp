@@ -211,6 +211,22 @@ CDefaultHTTPServerRouter::RemoveResourceMapping( const CString& uriSegment )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CDefaultHTTPServerRouter::RemoveResourceMapping( THTTPServerResourcePtr resource )
+{GUCEF_TRACE;
+
+    if ( resource.IsNULL() )
+        return false;
+    
+    CString uriSegment = resource->GetURL();
+    if ( !m_uriIsCaseSensitive )
+        uriSegment = uriSegment.Lowercase();
+
+    return RemoveResourceMapping( uriSegment );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CDefaultHTTPServerRouter::RemoveAllResourceMappings( void )
 {GUCEF_TRACE;
 

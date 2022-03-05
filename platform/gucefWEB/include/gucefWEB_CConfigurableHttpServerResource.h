@@ -55,7 +55,9 @@ class GUCEF_WEB_PUBLIC_CPP CConfigurableHttpServerResource : public CCodecBasedH
 {    
     public:
     
-    CConfigurableHttpServerResource( CORE::CIConfigurable* configurable = GUCEF_NULL );
+    CConfigurableHttpServerResource( CORE::CIConfigurable* configurable = GUCEF_NULL ,
+                                     bool allowSerialize = true                      ,
+                                     bool allowDeserialize = true                    );
 
     CConfigurableHttpServerResource( const CConfigurableHttpServerResource& src );
     

@@ -97,6 +97,7 @@ Settings::Settings( void )
     , gatherInfoKeyspace( true )
     , gatherClusterInfo( true )
     , gatherErrorReplyCount( true )
+    , retainRedisInfo( true )
 {GUCEF_TRACE;
 
 }
@@ -121,6 +122,7 @@ Settings::Settings( const Settings& src )
     , gatherInfoKeyspace( src.gatherInfoKeyspace )
     , gatherClusterInfo( src.gatherClusterInfo )
     , gatherErrorReplyCount( src.gatherErrorReplyCount )
+    , retainRedisInfo( src.retainRedisInfo )
 {GUCEF_TRACE;
 
 }
@@ -150,6 +152,7 @@ Settings::operator=( const Settings& src )
         gatherInfoKeyspace = src.gatherInfoKeyspace;
         gatherClusterInfo = src.gatherClusterInfo;
         gatherErrorReplyCount = src.gatherErrorReplyCount;
+        retainRedisInfo = src.retainRedisInfo;
     }
     return *this;
 }
@@ -157,52 +160,54 @@ Settings::operator=( const Settings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-Settings::SaveConfig( CORE::CDataNode& tree ) const
+Settings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    tree.SetAttribute( "clusterName", clusterName );
-    tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
-    tree.SetAttribute( "collectMetrics", collectMetrics );
-    tree.SetAttribute( "metricPrefix", metricPrefix );
-    tree.SetAttribute( "gatherInfoReplication", gatherInfoReplication );
-    tree.SetAttribute( "gatherInfoPersistence", gatherInfoPersistence );
-    tree.SetAttribute( "gatherInfoStats", gatherInfoStats );
-    tree.SetAttribute( "gatherInfoCommandStats", gatherInfoCommandStats );
-    tree.SetAttribute( "gatherInfoMemory", gatherInfoMemory );
-    tree.SetAttribute( "gatherStreamInfo", gatherStreamInfo );
-    tree.SetAttribute( "streamsToGatherInfoFrom", CORE::ToString( streamsToGatherInfoFrom ) ); 
-    tree.SetAttribute( "streamIndexingInterval", CORE::ToString( streamIndexingInterval ) );
-    tree.SetAttribute( "gatherInfoClients", gatherInfoClients );
-    tree.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
-    tree.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
-    tree.SetAttribute( "gatherClusterInfo", gatherClusterInfo );
-    tree.SetAttribute( "gatherErrorReplyCount", gatherErrorReplyCount );
+    cfg.SetAttribute( "clusterName", clusterName );
+    cfg.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
+    cfg.SetAttribute( "collectMetrics", collectMetrics );
+    cfg.SetAttribute( "metricPrefix", metricPrefix );
+    cfg.SetAttribute( "gatherInfoReplication", gatherInfoReplication );
+    cfg.SetAttribute( "gatherInfoPersistence", gatherInfoPersistence );
+    cfg.SetAttribute( "gatherInfoStats", gatherInfoStats );
+    cfg.SetAttribute( "gatherInfoCommandStats", gatherInfoCommandStats );
+    cfg.SetAttribute( "gatherInfoMemory", gatherInfoMemory );
+    cfg.SetAttribute( "gatherStreamInfo", gatherStreamInfo );
+    cfg.SetAttribute( "streamsToGatherInfoFrom", CORE::ToString( streamsToGatherInfoFrom ) ); 
+    cfg.SetAttribute( "streamIndexingInterval", CORE::ToString( streamIndexingInterval ) );
+    cfg.SetAttribute( "gatherInfoClients", gatherInfoClients );
+    cfg.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
+    cfg.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
+    cfg.SetAttribute( "gatherClusterInfo", gatherClusterInfo );
+    cfg.SetAttribute( "gatherErrorReplyCount", gatherErrorReplyCount );
+    cfg.SetAttribute( "retainRedisInfo", retainRedisInfo );    
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-Settings::LoadConfig( const CORE::CDataNode& tree )
+Settings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    clusterName = tree.GetAttributeValueOrChildValueByName( "clusterName", clusterName );
-    redisAddress.SetHostnameAndPort( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) ) );
-    collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics" ), collectMetrics );
-    metricPrefix = tree.GetAttributeValueOrChildValueByName( "metricPrefix", metricPrefix );
-    gatherInfoReplication = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoReplication" ), gatherInfoReplication );
-    gatherInfoPersistence = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoPersistence" ), gatherInfoPersistence );
-    gatherInfoStats = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoStats" ), gatherInfoStats );
-    gatherInfoCommandStats = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoCommandStats" ), gatherInfoCommandStats );
-    gatherInfoMemory = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoMemory" ), gatherInfoMemory );
-    gatherStreamInfo = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherStreamInfo" ), gatherStreamInfo );
-    streamsToGatherInfoFrom = CORE::StringToStringVector( tree.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ), streamsToGatherInfoFrom );
-    streamIndexingInterval = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "streamIndexingInterval" ), streamIndexingInterval );
-    gatherInfoClients = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoClients" ), gatherInfoClients );
-    gatherInfoCpu = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ), gatherInfoCpu );
-    gatherInfoKeyspace = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ), gatherInfoKeyspace );
-    gatherClusterInfo = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherClusterInfo" ), gatherClusterInfo );
-    gatherErrorReplyCount = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherErrorReplyCount" ), gatherErrorReplyCount );
+    clusterName = cfg.GetAttributeValueOrChildValueByName( "clusterName" ).AsString( clusterName, true );
+    redisAddress.SetHostnameAndPort( cfg.GetAttributeValueOrChildValueByName( "redisAddress" ).AsString( redisAddress.AddressAndPortAsString(), true ) );
+    collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
+    metricPrefix = cfg.GetAttributeValueOrChildValueByName( "metricPrefix" ).AsString( metricPrefix, true );
+    gatherInfoReplication = cfg.GetAttributeValueOrChildValueByName( "gatherInfoReplication" ).AsBool( gatherInfoReplication, true );
+    gatherInfoPersistence = cfg.GetAttributeValueOrChildValueByName( "gatherInfoPersistence" ).AsBool( gatherInfoPersistence, true );
+    gatherInfoStats = cfg.GetAttributeValueOrChildValueByName( "gatherInfoStats" ).AsBool( gatherInfoStats, true );
+    gatherInfoCommandStats = cfg.GetAttributeValueOrChildValueByName( "gatherInfoCommandStats" ).AsBool( gatherInfoCommandStats, true );
+    gatherInfoMemory = cfg.GetAttributeValueOrChildValueByName( "gatherInfoMemory" ).AsBool( gatherInfoMemory, true );
+    gatherStreamInfo = cfg.GetAttributeValueOrChildValueByName( "gatherStreamInfo" ).AsBool( gatherStreamInfo, true );
+    streamsToGatherInfoFrom = CORE::StringToStringVector( cfg.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ).AsString( CORE::StringVectorToString( streamsToGatherInfoFrom ), true ) );
+    streamIndexingInterval = cfg.GetAttributeValueOrChildValueByName( "streamIndexingInterval" ).AsInt32( streamIndexingInterval, true );
+    gatherInfoClients = cfg.GetAttributeValueOrChildValueByName( "gatherInfoClients" ).AsBool( gatherInfoClients, true );
+    gatherInfoCpu = cfg.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ).AsBool( gatherInfoCpu, true );
+    gatherInfoKeyspace = cfg.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ).AsBool( gatherInfoKeyspace, true );
+    gatherClusterInfo = cfg.GetAttributeValueOrChildValueByName( "gatherClusterInfo" ).AsBool( gatherClusterInfo, true );
+    gatherErrorReplyCount = cfg.GetAttributeValueOrChildValueByName( "gatherErrorReplyCount" ).AsBool( gatherErrorReplyCount, true );
+    retainRedisInfo = cfg.GetAttributeValueOrChildValueByName( "retainRedisInfo" ).AsBool( retainRedisInfo, true );
     return true;
 }
 
@@ -229,6 +234,17 @@ RedisInfoService::RedisInfoService()
     , m_redisNodesMap()
     , m_hashSlotOriginStrMap()
     , m_redisClusterErrorReplies( 0 )
+    , m_cmdClusterInfo()
+    , m_cmdInfoCommandstats()
+    , m_cmdInfoMemory()
+    , m_cmdInfoReplication()
+    , m_cmdInfoPersistence()
+    , m_cmdInfoStats()
+    , m_cmdInfoClients()
+    , m_cmdInfoCpu()
+    , m_cmdInfoKeyspace()
+    , m_cmdXinfoStreamMap()
+    , m_lock()
 {GUCEF_TRACE;
 
 }
@@ -286,6 +302,75 @@ RedisInfoService::GetSettings( void ) const
 {GUCEF_TRACE;
 
     return m_settings;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
+{GUCEF_TRACE;
+
+    if ( !m_settings.retainRedisInfo )
+        return true;
+                                                                                     
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdClusterInfoRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdClusterInfo, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/cluster/info", cmdClusterInfoRsc );
+    m_httpResources.push_back( cmdClusterInfoRsc );
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCommandStatsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCommandstats, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/commandstats", cmdInfoCommandStatsRsc );
+    m_httpResources.push_back( cmdInfoCommandStatsRsc );
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoMemoryRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoMemory, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/memory", cmdInfoMemoryRsc );
+    m_httpResources.push_back( cmdInfoMemoryRsc );
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoReplicationRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoReplication, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/replication", cmdInfoReplicationRsc );
+    m_httpResources.push_back( cmdInfoReplicationRsc );
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoPersistenceRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoPersistence, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/persistence", cmdInfoPersistenceRsc );
+    m_httpResources.push_back( cmdInfoPersistenceRsc );    
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoStatsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoStats, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/stats", cmdInfoStatsRsc );
+    m_httpResources.push_back( cmdInfoStatsRsc ); 
+    
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoClientsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoClients, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/clients", cmdInfoClientsRsc );
+    m_httpResources.push_back( cmdInfoClientsRsc ); 
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCpuRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCpu, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/cpu", cmdInfoCpuRsc );
+    m_httpResources.push_back( cmdInfoCpuRsc ); 
+
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoKeyspaceRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoKeyspace, true, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/keyspace", cmdInfoKeyspaceRsc );
+    m_httpResources.push_back( cmdInfoKeyspaceRsc ); 
+    
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdXinfoStreamIndexRsc( ( new TStringToValueListMapHttpResource( "Streams", "Stream", "streamName", &m_cmdXinfoStreamMap, &m_lock ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/xinfo/stream", cmdXinfoStreamIndexRsc ); 
+    m_httpResources.push_back( cmdXinfoStreamIndexRsc ); 
+                                     
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+RedisInfoService::DisconnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
+{GUCEF_TRACE;
+    
+    bool totalSuccess = true;
+    THttpResourceVector::iterator i = m_httpResources.begin();
+    while ( i != m_httpResources.end() )
+    {
+        totalSuccess = router.RemoveResourceMapping( (*i) ) && totalSuccess;
+        ++i;
+    }
+    m_httpResources.clear();
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1345,7 +1430,22 @@ RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
     while ( i != m_filteredStreamNames.end() )
     {
         CORE::CString keyPrefix = (*i).ReplaceChar( '.', '_' ).ReplaceChar( '{', '_' ).ReplaceChar( '}', '_' ) + '.';
-        totalSuccess = GetRedisStreamInfo( (*i), info, keyPrefix, statLikeValuesOnly, redisIdsAsFloat ) && totalSuccess;
+
+        if ( m_settings.retainRedisInfo )
+        {
+            CORE::CValueList& streamInfo = m_cmdXinfoStreamMap[ (*i) ];
+            streamInfo.Clear();
+            if ( GetRedisStreamInfo( (*i), streamInfo, keyPrefix, statLikeValuesOnly, redisIdsAsFloat ) )
+            {
+                info.SetMultiple( streamInfo );
+            }
+            else
+                totalSuccess = false;
+        }
+        else
+        {
+            totalSuccess = GetRedisStreamInfo( (*i), info, keyPrefix, statLikeValuesOnly, redisIdsAsFloat ) && totalSuccess;
+        }        
         ++i;
     }
     return totalSuccess;
@@ -1966,6 +2066,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             }
             CORE::CString metricPrefix = m_settings.metricPrefix + "ClusterInfo.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdClusterInfo = kv;
         }
     }
     if ( m_settings.gatherInfoCommandStats )
@@ -1975,6 +2078,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "CommandStats.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoCommandstats = kv;
         }
     }
     if ( m_settings.gatherInfoMemory )
@@ -1984,6 +2090,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Memory.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoMemory = kv;
         }
     }
     if ( m_settings.gatherInfoReplication )
@@ -1993,6 +2102,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Replication.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoReplication = kv;
         }
     }
     if ( m_settings.gatherInfoPersistence )
@@ -2002,15 +2114,21 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Persistence.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoPersistence = kv;
         }
     }
-    if ( m_settings.gatherInfoCommandStats )
+    if ( m_settings.gatherInfoStats )
     {
         CORE::CValueList kv;
         if ( GetRedisInfoStats( kv ) )
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Stats.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoStats = kv;
         }
     }
     if ( m_settings.gatherInfoClients )
@@ -2020,6 +2138,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Clients.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoClients = kv;
         }
     }
     if ( m_settings.gatherInfoCpu )
@@ -2029,6 +2150,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Cpu.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoCpu = kv;
         }
     }
     if ( m_settings.gatherInfoKeyspace )
@@ -2038,6 +2162,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Keyspace.";
             SendKeyValueStats( kv, metricPrefix );
+
+            if ( m_settings.retainRedisInfo )
+                m_cmdInfoKeyspace = kv;
         }
     }
     if ( m_settings.gatherStreamInfo )
@@ -2047,6 +2174,9 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );
+
+          //  if ( m_settings.retainRedisInfo )
+          //      m_cmdStreamInfo = kv;
         }
     }
     if ( m_settings.gatherErrorReplyCount )
@@ -2084,12 +2214,13 @@ RestApiRedisInfoInfoResource::Serialize( const CORE::CString& resourcePath   ,
     output.Clear();
     output.SetName( "info" );
     output.SetNodeType( GUCEF_DATATYPE_OBJECT );
-    output.SetAttribute( "application", "redisinfo", GUCEF_DATATYPE_STRING );
-    output.SetAttribute( "buildDateTime", __TIMESTAMP__ , GUCEF_DATATYPE_STRING );
+    output.SetAttribute( "application", "redisinfo", GUCEF_DATATYPE_ASCII_STRING );
+    output.SetAttribute( "appBuildDateTime", CORE::CDateTime::CompileDateTime( __DATE__, __TIME__ ).ToIso8601DateTimeString( true, true ) );
+    output.SetAttribute( "platformBuildDateTime", CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( true, true ) );
     #ifdef GUCEF_DEBUG_MODE
-    output.SetAttribute( "isReleaseBuild", "false", GUCEF_DATATYPE_BOOLEAN_STRING );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( false ) );
     #else
-    output.SetAttribute( "isReleaseBuild", "true", GUCEF_DATATYPE_BOOLEAN_STRING );
+    output.SetAttribute( "isReleaseBuild", CORE::CVariant( true ) );
     #endif
     return true;
 }
@@ -2246,6 +2377,7 @@ RedisInfo::RedisInfo( void )
     , m_globalConfig()
     , m_infoServices()
     , m_settings()
+    , m_appLock()
 {GUCEF_TRACE;
 
 }
@@ -2312,11 +2444,13 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
         CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         // Signal all threads to stop gracefully
-
+        // Since this standby operation is global not per cluster we signal all to stop before
+        // we start any waiting operation
         TStringToInfoServiceMap::iterator i = m_infoServices.begin();
         while ( i != m_infoServices.end() )
         {
-            if ( !threadPool->RequestTaskToStop( (*i).second.StaticCast< CORE::CTaskConsumer >(), true ) )
+            RedisInfoServicePtr clusterSvc = (*i).second;
+            if ( !threadPool->RequestTaskToStop( clusterSvc.StaticCast< CORE::CTaskConsumer >(), false ) )
             {
                 totalSuccess = false;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Failed to signal task for redis info target \"" + (*i).first + "\" to stop" );
@@ -2324,6 +2458,23 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
             else
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Requested task for redis info target \"" + (*i).first + "\" to stop" );
+            }
+            ++i;
+        }
+
+        // Now actually wait for the threads to be finished
+        i = m_infoServices.begin();
+        while ( i != m_infoServices.end() )
+        {
+            RedisInfoServicePtr clusterSvc = (*i).second;
+            if ( !clusterSvc->WaitForTaskToFinish( 30000 ) )
+            {
+                totalSuccess = false;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Failed to wait for task to finish for target \"" + (*i).first );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Finished wait for task to finish for target \"" + (*i).first );
             }
             ++i;
         }
@@ -2345,7 +2496,21 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
             {
                 if ( threadPool->StartTask( redisInfoTarget ) )
                 {
+                    // Check if we have a pre-existing cluster service for a cluster with the same name
+                    // If so clean up its links first
+                    TStringToInfoServiceMap::iterator s = m_infoServices.find( (*i).first );
+                    if ( s != m_infoServices.end() )
+                    {
+                        RedisInfoServicePtr oldRedisInfoTarget = (*s).second;
+                        if ( !oldRedisInfoTarget.IsNULL() )
+                        {
+                            oldRedisInfoTarget->DisconnectHttpRouting( m_httpRouter );
+                        }
+                    }
+                    
+                    // Hook up the new cluster info service
                     m_infoServices[ (*i).first ] = redisInfoTarget; 
+                    redisInfoTarget->ConnectHttpRouting( m_httpRouter );
 
                     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Successfully started task for redis info target \"" + (*i).second.clusterName + "\"" );
                 }
@@ -2375,7 +2540,7 @@ RedisInfo::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
+    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "globalStandbyEnabled" ), false );
     CORE::CDataNode::TDataNodeVector redisInfoTargets = globalConfig.SearchForAll( "RedisInfoTarget", '/', true, true );
     CORE::CDataNode::TDataNodeVector::iterator i = redisInfoTargets.begin();
     while ( i != redisInfoTargets.end() )
@@ -2391,11 +2556,13 @@ RedisInfo::LoadConfig( const CORE::CValueList& appConfig   ,
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
 
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
+    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "restApiPort" ) ), 10000 ) );
 
-    m_httpRouter.SetResourceMapping( "/info", RestApiRedisInfoInfoResource::THTTPServerResourcePtr( new RestApiRedisInfoInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiRedisInfoConfigResource::THTTPServerResourcePtr( new RestApiRedisInfoConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiRedisInfoConfigResource::THTTPServerResourcePtr( new RestApiRedisInfoConfigResource( this, false ) )  );
+    m_httpRouter.SetResourceMapping( "/info", ( new RestApiRedisInfoInfoResource( this ) )->CreateSharedPtr()  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", ( new RestApiRedisInfoConfigResource( this, true ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config", ( new RestApiRedisInfoConfigResource( this, false ) )->CreateSharedPtr()  );
+    m_httpRouter.SetResourceMapping( "/v1/clusters", ( new TStringToInfoServiceMapWebResource( "RedisClusters", "RedisCluster", "clusterName", &m_infoServices, &m_appLock ) )->CreateSharedPtr() ); 
+
     m_httpRouter.SetResourceMapping( CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiRedisInfoInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );

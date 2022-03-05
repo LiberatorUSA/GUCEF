@@ -84,6 +84,21 @@
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTReadableMapIndexHttpServerResource.h"
+#define GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTDataNodeSerializableMapHttpServerResource.h"
+#define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -128,6 +143,8 @@ class Settings : public CORE::CIConfigurable
     bool gatherInfoKeyspace;
     bool gatherClusterInfo;
     bool gatherErrorReplyCount;
+
+    bool retainRedisInfo;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -211,6 +228,9 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool LoadConfig( const Settings& settings );
 
     const Settings& GetSettings( void ) const;
+
+    bool ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& webRouter );
+    bool DisconnectHttpRouting( WEB::CDefaultHTTPServerRouter& webRouter );
 
     private:
 
@@ -335,7 +355,10 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     RedisInfoService( const RedisInfoService& src ); // not implemented
 
-    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
+    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > >    TRedisArgs;
+    typedef std::vector< GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr >       THttpResourceVector;
+    typedef std::map< CORE::CString, CORE::CValueList >                                 TStringToValueListMap;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, CORE::CValueList > TStringToValueListMapHttpResource;
 
     sw::redis::RedisCluster* m_redisContext;
     Settings m_settings;
@@ -347,6 +370,20 @@ class RedisInfoService : public CORE::CTaskConsumer
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;
     CORE::UInt32 m_redisClusterErrorReplies;
+    THttpResourceVector m_httpResources;
+    
+    CORE::CValueList m_cmdClusterInfo;
+    CORE::CValueList m_cmdInfoCommandstats;
+    CORE::CValueList m_cmdInfoMemory;
+    CORE::CValueList m_cmdInfoReplication;
+    CORE::CValueList m_cmdInfoPersistence;
+    CORE::CValueList m_cmdInfoStats;
+    CORE::CValueList m_cmdInfoClients;
+    CORE::CValueList m_cmdInfoCpu;
+    CORE::CValueList m_cmdInfoKeyspace;
+    TStringToValueListMap m_cmdXinfoStreamMap;
+
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -427,6 +464,7 @@ class RedisInfo : public CORE::CObserver
 
     typedef CORE::CTEventHandlerFunctor< RedisInfo > TEventCallback;
     typedef std::map< CORE::CString, RedisInfoServicePtr > TStringToInfoServiceMap;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, RedisInfoServicePtr > TStringToInfoServiceMapWebResource;
 
     private:
 
@@ -440,6 +478,7 @@ class RedisInfo : public CORE::CObserver
     CORE::CDataNode m_globalConfig;
     TStringToInfoServiceMap m_infoServices;
     TStringToSettingsMap m_settings;
+    MT::CMutex m_appLock;
 };
 
 /*-------------------------------------------------------------------------*/

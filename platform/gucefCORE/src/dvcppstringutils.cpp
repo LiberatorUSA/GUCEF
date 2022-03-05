@@ -1054,6 +1054,31 @@ StringToStringVector( const CString& str                           ,
 /*-------------------------------------------------------------------------*/
 
 CString
+StringVectorToString( const CString::StringVector& strVector , 
+                      const CString& defaultIfNeeded         ,
+                      char seperator                         )
+{GUCEF_TRACE;
+
+    if ( !strVector.empty() )
+    {
+        CString result;
+        CString::StringVector::const_iterator i = strVector.begin();
+        while ( i != strVector.end() )
+        {
+            if ( result.IsNULLOrEmpty() )
+                result = (*i);
+            else
+                result += seperator + (*i);
+            ++i;
+        }
+        return result;
+    }
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
 LastSubDir( const CString& path )
 {GUCEF_TRACE;
 
