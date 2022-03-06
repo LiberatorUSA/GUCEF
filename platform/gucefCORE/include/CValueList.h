@@ -89,7 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  Returns the first value associated with the
      *  given key.
      *
-     *  @exception EUnknownKey thrown if the given key is unknown
+     *  Will create a new key entry if no such key entry yet exists with an empty string value
+     *  thus allowing for valuelist[ "myKey" ] = "example"
      */
     CString& operator[]( const CString& key );
 
@@ -106,7 +107,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  Like assignment in that new keys will be added and existing key will be overwritten if matched
      *  However contrary to assignment keys that have no match will remain 
      */
-    void SetMultiple( const CValueList& src );
+    void SetMultiple( const CValueList& src                     ,
+                      const CString& keyPrefix = CString::Empty );
 
     void SetMultiple( int argc    ,
                       char** argv );

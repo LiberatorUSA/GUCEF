@@ -110,7 +110,12 @@ CString&
 CValueList::operator[]( const CString& key )
 {GUCEF_TRACE;
 
-    return GetValue( key );
+    TStringVector& values = m_list[ key ];
+    if ( values.empty() )
+    {
+        values.push_back( CString::Empty );
+    }
+    return (*values.begin());
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,7 +130,8 @@ CValueList::operator[]( const CString& key ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CValueList::SetMultiple( const CValueList& src )
+CValueList::SetMultiple( const CValueList& src    ,
+                         const CString& keyPrefix )
 {GUCEF_TRACE;
 
     TValueMap::const_iterator i = src.m_list.begin();
@@ -139,7 +145,7 @@ CValueList::SetMultiple( const CValueList& src )
         {
             // We will just use the 'set' function
             // the settings on this value list instance will ensure proper merge strategy
-            Set( key, (*n) );
+            Set( keyPrefix + key, (*n) );
             ++n;
         }
         ++i;

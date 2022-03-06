@@ -1435,9 +1435,10 @@ RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
         {
             CORE::CValueList& streamInfo = m_cmdXinfoStreamMap[ (*i) ];
             streamInfo.Clear();
-            if ( GetRedisStreamInfo( (*i), streamInfo, keyPrefix, statLikeValuesOnly, redisIdsAsFloat ) )
+            if ( GetRedisStreamInfo( (*i), streamInfo, CORE::CString::Empty, statLikeValuesOnly, redisIdsAsFloat ) )
             {
-                info.SetMultiple( streamInfo );
+                info.SetMultiple( streamInfo, keyPrefix );
+                streamInfo[ "streamName" ] = (*i);
             }
             else
                 totalSuccess = false;
@@ -2174,9 +2175,6 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );
-
-          //  if ( m_settings.retainRedisInfo )
-          //      m_cmdStreamInfo = kv;
         }
     }
     if ( m_settings.gatherErrorReplyCount )
