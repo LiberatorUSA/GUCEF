@@ -328,10 +328,10 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                 var.union_data.heap_data.heap_data_size = (UInt32) strlen( nodename );
                 
                 DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, &var, haschildren );
-                if ( nodeType != GUCEF_DATATYPE_ARRAY && nodeType != GUCEF_DATATYPE_OBJECT )
-                {
-                    fd->activeNodeIsValueNode = 1;
-                }
+            }
+            if ( nodeType != GUCEF_DATATYPE_ARRAY && nodeType != GUCEF_DATATYPE_OBJECT )
+            {
+                fd->activeNodeIsValueNode = 1;
             }
         }
     }

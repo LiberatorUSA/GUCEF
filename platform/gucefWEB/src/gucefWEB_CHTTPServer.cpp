@@ -822,7 +822,10 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
 
         // Parse the request URI
         request.requestUri = temp.SubstrToChar( ' ', true );
+        request.requestUriParams = request.requestUri.SubstrToChar( '?', false, true );
         temp = temp.CutChars( request.requestUri.Length()+1, true );
+        if ( !request.requestUriParams.IsNULLOrEmpty() )
+            request.requestUri = request.requestUri.CutChars( request.requestUriParams.Length()+1, false, 0 ); 
 
         // Parse the request protocol and its version
         request.requestProtocol = temp.SubstrToChar( '/', true );

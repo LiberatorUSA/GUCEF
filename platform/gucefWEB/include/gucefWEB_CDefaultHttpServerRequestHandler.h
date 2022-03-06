@@ -108,6 +108,9 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
     bool ProcessTransferEncoding( const CHttpRequestData& request ,
                                   CHttpResponseData& response     ) const;
     
+    void PolulateAllowedMethodsUsingResource( CIHTTPServerRouter::THTTPServerResourcePtr& resource ,
+                                              CHttpResponseData& response                          );
+    
     private:
 
     CIHTTPServerRouterController* m_routerController;

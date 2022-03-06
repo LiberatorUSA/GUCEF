@@ -325,8 +325,7 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
         if ( contentRequested )
         {
             // Set the serialized resource as the return data content
-            CString params = uriAfterBaseAddress.SubstrToChar( '?', 0, true, true );
-            if ( !resource->Serialize( uriAfterBaseAddress, response.content, response.contentType, params ) )
+            if ( !resource->Serialize( uriAfterBaseAddress, response.content, response.contentType, request.requestUriParams ) )
             {
                 // Something went wrong in the handler while serializing the resource
                 response.statusCode = 415;
@@ -460,6 +459,12 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
             response.statusCode = 304; // <- resource not modified
         }
         else
+        if ( CIHTTPServerResource::DESERIALIZESTATE_NOTSUPPORTED == deserializeState  )
+        {
+            response.statusCode = 405; 
+            PolulateAllowedMethodsUsingResource( resource, response );
+        }        
+        else
         {
             // Update to the existing entry was successfull
             response.statusCode = 200;
@@ -473,8 +478,7 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         response.location = m_routerController->MakeUriAbsolute( *resourceRouter, requestResourceUri, resource->GetURL() );
 
         // Send the serverside representation back to the client in the representation of the update
-        CString params = remainderUri.SubstrToChar( '?', 0, true, true );
-        if ( resource->Serialize( remainderUri, response.content, request.contentRepresentation , params ) )
+        if ( resource->Serialize( remainderUri, response.content, request.contentRepresentation , request.requestUriParams ) )
         {
             response.contentType = request.contentRepresentation;
             ProcessTransferEncoding( request, response );
@@ -539,12 +543,11 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
         CIHTTPServerRouter::THTTPServerResourcePtr resource;
         TStringVector supportedRepresentations;
 
-        CString params = containerUri.SubstrToChar( '?', 0, true, true );
         CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( containerUri                  ,
                                                                                             request.transactionID         ,
                                                                                             request.content               ,
                                                                                             request.contentRepresentation ,
-                                                                                            params                        ,
+                                                                                            request.requestUriParams      ,
                                                                                             resource                      ,
                                                                                             supportedRepresentations      );
 
@@ -554,6 +557,13 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             response.statusCode = 500;
             return true;
         }
+        if ( CIHTTPServerResource::CREATESTATE_NOTSUPPORTED == createState )
+        {
+            response.statusCode = 405;
+            PolulateAllowedMethodsUsingResource( resource, response );
+            return true;
+        }
+        
         // See if the handler was able to already provide access to the placeholder as a resource
         if ( CIHTTPServerResource::CREATESTATE_CONFLICTING == createState )
         {
@@ -583,7 +593,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            if ( resource->Serialize( response.location, response.content, request.contentRepresentation, params ) )
+            if ( resource->Serialize( response.location, response.content, request.contentRepresentation, request.requestUriParams ) )
             {
                 response.contentType = request.contentRepresentation;
                 ProcessTransferEncoding( request, response );
@@ -735,6 +745,25 @@ CDefaultHttpServerRequestHandler::GetRouterController( void ) const
 {GUCEF_TRACE;
 
     return m_routerController;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDefaultHttpServerRequestHandler::PolulateAllowedMethodsUsingResource( CIHTTPServerRouter::THTTPServerResourcePtr& resource ,
+                                                                       CHttpResponseData& response                          )
+{
+    if ( !resource.IsNULL() )
+    {
+        if ( resource->IsCreateSupported() )
+            response.allowedMethods.push_back( "POST" );
+        if ( resource->IsSerializeSupported() )
+            response.allowedMethods.push_back( "GET" );
+        if ( resource->IsDeserializeSupported( false ) )
+            response.allowedMethods.push_back( "PUT" );
+        if ( resource->IsDeserializeSupported( true ) )
+            response.allowedMethods.push_back( "PATCH" );
+    }
 }
 
 /*-------------------------------------------------------------------------//

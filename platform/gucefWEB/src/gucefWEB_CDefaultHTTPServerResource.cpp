@@ -312,6 +312,33 @@ CDefaultHTTPServerResource::IsCollection( const CORE::CString& resourcePath ) co
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDefaultHTTPServerResource::IsCreateSupported( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDefaultHTTPServerResource::IsSerializeSupported( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDefaultHTTPServerResource::IsDeserializeSupported( bool deltaOnly ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

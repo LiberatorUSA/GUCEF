@@ -83,6 +83,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
     CString requestType;
     CString requestHost;
     CString requestUri;
+    CString requestUriParams;
     CORE::CDynamicBuffer content;
     CString contentRepresentation;
     CString transactionID;

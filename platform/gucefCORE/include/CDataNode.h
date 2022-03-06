@@ -428,6 +428,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
                                   const CVariant& nodeValue            ,
                                   int nodeType = GUCEF_DATATYPE_OBJECT );
     
+    CDataNode* AddValueAsChild( const CVariant& nodeValue );
+    CDataNode* AddValueAsChild( const CString& nodeValue );
+    
     bool DelChild( const CString& name );
 
     void Copy( const CDataNode& root );

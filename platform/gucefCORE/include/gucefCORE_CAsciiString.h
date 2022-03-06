@@ -227,8 +227,9 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                                 UInt32 length            ,
                                 const CAsciiString& newSubstr ) const;
 
-    CAsciiString SubstrToChar( char searchchar         ,
-                               bool frontToBack = true ) const;
+    CAsciiString SubstrToChar( char searchchar                        ,
+                               bool frontToBack = true                ,
+                               bool returnEmptyIfCharNotFound = false ) const;
 
     CAsciiString SubstrToChar( char searchchar                        ,
                                UInt32 startIndex                      ,

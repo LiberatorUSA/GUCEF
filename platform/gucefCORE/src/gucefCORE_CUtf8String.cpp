@@ -1214,15 +1214,16 @@ CUtf8String::SubstrFromRange( UInt32 startIndex ,
 /*-------------------------------------------------------------------------*/
 
 CUtf8String
-CUtf8String::SubstrToChar( Int32 searchchar ,
-                           bool frontToBack ) const
+CUtf8String::SubstrToChar( Int32 searchchar               ,
+                           bool frontToBack               ,
+                           bool returnEmptyIfCharNotFound ) const
 {GUCEF_TRACE;
 
     if ( frontToBack )
     {
-        return SubstrToChar( searchchar, 0, frontToBack );
+        return SubstrToChar( searchchar, 0, frontToBack, returnEmptyIfCharNotFound );
     }
-    return SubstrToChar( searchchar, m_length-1, frontToBack );
+    return SubstrToChar( searchchar, m_length-1, frontToBack, returnEmptyIfCharNotFound );
 }
 
 /*-------------------------------------------------------------------------*/

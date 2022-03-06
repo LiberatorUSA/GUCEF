@@ -159,6 +159,10 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
      */
     virtual bool IsCollection( const CORE::CString& resourcePath ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsCreateSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSerializeSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsDeserializeSupported( bool deltaOnly ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     CString m_cacheabilityProperty;

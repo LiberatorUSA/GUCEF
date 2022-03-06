@@ -358,7 +358,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > >    TRedisArgs;
     typedef std::vector< GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr >       THttpResourceVector;
     typedef std::map< CORE::CString, CORE::CValueList >                                 TStringToValueListMap;
-    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, CORE::CValueList > TStringToValueListMapHttpResource;
+    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CValueList > TStringToValueListMapHttpResource;
 
     sw::redis::RedisCluster* m_redisContext;
     Settings m_settings;

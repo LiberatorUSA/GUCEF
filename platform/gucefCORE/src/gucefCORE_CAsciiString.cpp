@@ -923,11 +923,13 @@ CAsciiString::SubstrToIndex( UInt32 index     ,
 
     if ( !frontToBack )
     {
-         if ( index >= m_length ) return CAsciiString();
+         if ( index >= m_length ) 
+            return CAsciiString();
          return SubstrFromRange( index, m_length );
     }
 
-    if ( index >= m_length ) return CAsciiString( m_string, m_length );
+    if ( index >= m_length ) 
+        return CAsciiString( m_string, m_length );
     return SubstrFromRange( 0, index );
 }
 
@@ -967,15 +969,16 @@ CAsciiString::SubstrFromRange( UInt32 startIndex ,
 /*-------------------------------------------------------------------------*/
 
 CAsciiString
-CAsciiString::SubstrToChar( char searchchar  ,
-                            bool frontToBack ) const
+CAsciiString::SubstrToChar( char searchchar                ,
+                            bool frontToBack               ,
+                            bool returnEmptyIfCharNotFound ) const
 {GUCEF_TRACE;
 
     if ( frontToBack )
     {
-        return SubstrToChar( searchchar, 0, frontToBack );
+        return SubstrToChar( searchchar, 0, frontToBack, returnEmptyIfCharNotFound );
     }
-    return SubstrToChar( searchchar, m_length-1, frontToBack );
+    return SubstrToChar( searchchar, m_length-1, frontToBack, returnEmptyIfCharNotFound );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -320,8 +320,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                                UInt32 length            ,
                                const CUtf8String& newSubstr ) const;
 
-    CUtf8String SubstrToChar( Int32 searchchar        ,
-                              bool frontToBack = true ) const;
+    CUtf8String SubstrToChar( Int32 searchchar                       ,
+                              bool frontToBack = true                ,
+                              bool returnEmptyIfCharNotFound = false ) const;
 
     CUtf8String SubstrToChar( Int32 searchchar                       ,
                               UInt32 startIndex                      ,

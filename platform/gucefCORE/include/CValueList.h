@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#include "gucefCORE_CIDataNodeSerializable.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
 #define GUCEF_CORE_MACROS_H
@@ -64,7 +69,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
+                                         public CIDataNodeSerializable
 {
     public:
 
@@ -244,7 +250,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     /**
      *      Attempts to store the given tree in the value list
      */
-    virtual bool SaveConfig( CDataNode& tree ) const;
+    virtual bool SaveConfig( CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to load data
@@ -252,7 +258,22 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
      */
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     */
+    virtual bool Serialize( CDataNode& domRootNode                        ,
+                            const CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     *
+     *  @param domRootNode Node that acts as root of the DOM data tree from which to deserialize
+     *  @return whether deserializing the object data from the given DOM was successfull.
+     */
+    virtual bool Deserialize( const CDataNode& domRootNode                  ,
+                              const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  When loading from config data this will limit the scope

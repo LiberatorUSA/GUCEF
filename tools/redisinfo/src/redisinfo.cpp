@@ -349,7 +349,7 @@ RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/keyspace", cmdInfoKeyspaceRsc );
     m_httpResources.push_back( cmdInfoKeyspaceRsc ); 
     
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdXinfoStreamIndexRsc( ( new TStringToValueListMapHttpResource( "Streams", "Stream", "streamName", &m_cmdXinfoStreamMap, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdXinfoStreamIndexRsc( ( new TStringToValueListMapHttpResource( "Streams", "streamName", GUCEF_NULL, &m_cmdXinfoStreamMap, &m_lock, false ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/xinfo/stream", cmdXinfoStreamIndexRsc ); 
     m_httpResources.push_back( cmdXinfoStreamIndexRsc ); 
                                      

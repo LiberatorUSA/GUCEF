@@ -58,6 +58,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#include "gucefCORE_CIDataNodeSerializable.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+
 #ifndef GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
 #include "gucefCORE_CDataNodeSerializableSettings.h"
 #define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
@@ -145,6 +150,9 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
     bool m_sourceObjKeyFromObj;
 
     private:
+
+    SerializableDerivedClass* AsPtr( SerializableDerivedClass* ptr ) { return ptr; }
+    SerializableDerivedClass* AsPtr( SerializableDerivedClass& ptr ) { return &ptr; }
 
     CTDataNodeSerializableMapHttpServerResource( void );
     CTDataNodeSerializableMapHttpServerResource( const CTDataNodeSerializableMapHttpServerResource& src );
@@ -262,14 +270,8 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
         typename TSerializableCollectionMap::iterator i = m_collection->begin();
         while ( i != m_collection->end() )
         {
-            CORE::CDataNode* childNode = output.AddChild( m_keyPropertyName, GUCEF_DATATYPE_STRING );
-            if ( GUCEF_NULL != childNode )
-            {
-                CORE::CVariant keyValueVar( (*i).first );
-                childNode->SetValue( keyValueVar );
-                childNode->SetNodeType( keyValueVar.GetTypeId() );
-            }
-            else
+            CORE::CDataNode* childNode = output.AddValueAsChild( (*i).first );
+            if ( GUCEF_NULL == childNode )
                 totalSuccess = false;
             ++i;
         }
@@ -282,7 +284,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
             CORE::CDataNode* childNode = output.AddChild( CORE::ToString( (*i).first ) );
             if ( GUCEF_NULL != childNode )
             {
-                if ( (*i).second->Serialize( *childNode, *serializerOptions ) )
+                if ( AsPtr( (*i).second )->Serialize( *childNode, *serializerOptions ) )
                 {
 
                 }
@@ -342,7 +344,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
     SerializableDerivedClass& newEntry = (*m_collection)[ entryKey ];
     if ( GUCEF_NULL != m_serializerOptions )
     {
-        if ( !newEntry->Deserialize( input, *m_serializerOptions ) )
+        if ( !AsPtr( newEntry )->Deserialize( input, *m_serializerOptions ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
@@ -351,7 +353,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
     else
     {
         CORE::CDataNodeSerializableSettings defaultSerializableSettings;
-        if ( !newEntry->Deserialize( input, defaultSerializableSettings ) )
+        if ( !AsPtr( newEntry )->Deserialize( input, defaultSerializableSettings ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;

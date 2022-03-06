@@ -130,6 +130,10 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput );
 
+    virtual bool IsCreateSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSerializeSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsDeserializeSupported( bool deltaOnly ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     typedef std::map< CORE::CString, CORE::CDStoreCodecRegistry::TDStoreCodecPtr > TStringToCodecMap;

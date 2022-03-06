@@ -292,6 +292,43 @@ CValueList::LoadConfig( const CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CValueList::Serialize( CDataNode& domRootNode                        ,
+                       const CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    if ( CDataNodeSerializableSettings::DataNodeSerializableLod_KeyOnly == settings.levelOfDetail )
+    {
+        domRootNode.SetNodeType( GUCEF_DATATYPE_ARRAY );        
+        TValueMap::const_iterator i = m_list.begin();
+        while ( i != m_list.end() )
+        {
+            domRootNode.AddValueAsChild( (*i).first );
+            ++i;
+        }
+        return true;
+    }
+    else
+    {
+        // For now just use SaveConfig until we disentangle this
+        return SaveConfig( domRootNode );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::Deserialize( const CDataNode& domRootNode                  ,
+                         const CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+
+    // For now just use LoadConfig until we disentangle this
+    return LoadConfig( domRootNode );
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CString&
 CValueList::GetClassTypeName( void ) const
 {GUCEF_TRACE;
@@ -309,30 +346,12 @@ CValueList::SetMultiple( const CString& keyandvalue       ,
                          const CString* optionalKeyPrefix )
 {GUCEF_TRACE;
 
-    CString remnant = keyandvalue;
-    while ( remnant.Length() > 0 )
+    CString::StringVector kvPairs = keyandvalue.ParseElements( pairSeparator, false ); 
+    CString::StringVector::iterator i = kvPairs.begin();
+    while ( i != kvPairs.end() )
     {
-        CString tmp = remnant.SubstrToChar( pairSeparator, true );
-        if ( ( tmp.Length() > 0 )              ||
-             ( remnant[ 0 ] == pairSeparator )  )
-        {
-            remnant = remnant.CutChars( tmp.Length()+1, true );
-
-            CString keyValueStr = remnant.SubstrToChar( pairSeparator, true );
-            if ( keyValueStr.Length() > 0 )
-            {
-                Set( keyValueStr, kvSeperator, optionalKeyPrefix );
-                remnant = remnant.CutChars( keyValueStr.Length()+1, true );
-            }
-            else
-            {
-                return;
-            }
-        }
-        else
-        {
-            return;
-        }
+        Set( (*i), kvSeperator, optionalKeyPrefix );
+        ++i;
     }
 }
 

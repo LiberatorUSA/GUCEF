@@ -80,7 +80,8 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource : public CORE::CTSharedPtrCreato
         CREATESTATE_CONFLICTING               , /**< Unable to create due to a conflicted data state (think of conflicting unique ids inside the data etc with those in a collection) */
         CREATESTATE_DESERIALIZATIONFAILED     , /**< Failed to deserialize the resource with given representation. */
         CREATESTATE_UNSUPPORTEDREPRESENTATION , /**< Resource representation is not supported for deserialization. */
-        CREATESTATE_FAILED                      /**< Failed to create the resource */
+        CREATESTATE_FAILED                    , /**< Failed to create the resource */
+        CREATESTATE_NOTSUPPORTED
     };
     typedef enum ECreateState TCreateState; 
 
@@ -205,6 +206,10 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource : public CORE::CTSharedPtrCreato
      *  Signals whether the resource is a collection of other resources
      */
     virtual bool IsCollection( const CString& resourcePath ) const = 0;
+
+    virtual bool IsCreateSupported( void ) const = 0;
+    virtual bool IsSerializeSupported( void ) const = 0;
+    virtual bool IsDeserializeSupported( bool deltaOnly ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

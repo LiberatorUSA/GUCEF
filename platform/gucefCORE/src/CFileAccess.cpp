@@ -179,7 +179,9 @@ CFileAccess::Open( const CString& file ,
                     mode            );
 
     if ( m_file == NULL && 0 != errno )
+    {
         GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to open file \"" + file + "\". mode=" + CString(mode) + " error=" + GetErrorString( errno ) );
+    }
     
     return m_file != NULL;
 }

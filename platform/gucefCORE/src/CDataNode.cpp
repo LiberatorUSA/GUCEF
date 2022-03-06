@@ -1514,6 +1514,28 @@ CDataNode::AddChildWithValue( const CString& nodeName   ,
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode*
+CDataNode::AddValueAsChild( const CVariant& nodeValue )
+{GUCEF_TRACE;
+
+    CDataNode newNode( CString::Empty, nodeValue.GetTypeId() );
+    newNode.SetValue( nodeValue );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddValueAsChild( const CString& nodeValue )
+{GUCEF_TRACE;
+
+    CDataNode newNode( CString::Empty, GUCEF_DATATYPE_STRING );
+    newNode.SetValue( nodeValue );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CVariant&
 CDataNode::GetChildValueByName( const CString& name ) const
 {GUCEF_TRACE;

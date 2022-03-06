@@ -128,7 +128,7 @@ CCodecBasedHTTPServerResource::CreateResource( const CString& resourcePath      
 {GUCEF_TRACE;
 
     if ( !m_allowCreate )
-        return TCreateState::CREATESTATE_FAILED;
+        return TCreateState::CREATESTATE_NOTSUPPORTED;
 
     CHttpCodecLinks& codecLinks = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
     CHttpCodecLinks::TMimeTypeCodecPtr codec = codecLinks.GetDeserializationCodec( representation );
@@ -242,6 +242,33 @@ CCodecBasedHTTPServerResource::Deserialize( const CString& resourcePath   ,
                                             bool isDeltaUpdateOnly        )
 {
     return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCodecBasedHTTPServerResource::IsCreateSupported( void ) const
+{GUCEF_TRACE;
+
+    return m_allowCreate;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCodecBasedHTTPServerResource::IsSerializeSupported( void ) const
+{GUCEF_TRACE;
+
+    return m_allowSerialize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCodecBasedHTTPServerResource::IsDeserializeSupported( bool deltaOnly ) const
+{GUCEF_TRACE;
+
+    return m_allowDeserialize;
 }
 
 /*-------------------------------------------------------------------------//
