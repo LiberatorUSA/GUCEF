@@ -157,7 +157,7 @@ typedef std::map< CORE::CString, Settings > TStringToSettingsMap;
 
 /*-------------------------------------------------------------------------*/
 
-class RedisNode
+class RedisNode : public CORE::CIDataNodeSerializable
 {
     public:
 
@@ -172,6 +172,22 @@ class RedisNode
     RedisNode* FindReplica( const CORE::CString& replicaNodeId ,
                             const CORE::CString& parentNodeId  ,
                             bool createIfNotFound = false      );
+
+    virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ,
+                            CORE::CDataNode** targetNode                        ) const;
+
+    virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     *
+     *  @param domRootNode Node that acts as root of the DOM data tree from which to deserialize
+     *  @return whether deserializing the object data from the given DOM was successfull.
+     */
+    virtual bool Deserialize( const CORE::CDataNode& domRootNode                  ,
+                              const CORE::CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
 
     RedisNode& operator=( const RedisNode& other );
 
@@ -188,6 +204,9 @@ class RedisNodeWithPipe : public RedisNode
 
     sw::redis::Pipeline* redisPipe;
     CORE::UInt32 redisErrorReplies;
+
+    virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
 
     RedisNodeWithPipe& operator=( const RedisNode& other );
 
@@ -358,7 +377,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > >    TRedisArgs;
     typedef std::vector< GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr >       THttpResourceVector;
     typedef std::map< CORE::CString, CORE::CValueList >                                 TStringToValueListMap;
-    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CValueList > TStringToValueListMapHttpResource;
+    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CValueList >  TStringToValueListMapHttpResource;
+    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, RedisNodeWithPipe >  TUInt32ToRedisNodeMapHttpResource;    
 
     sw::redis::RedisCluster* m_redisContext;
     Settings m_settings;
@@ -383,7 +403,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     CORE::CValueList m_cmdInfoKeyspace;
     TStringToValueListMap m_cmdXinfoStreamMap;
 
-    MT::CMutex m_lock;
+    MT::CReadWriteLock m_lock;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -478,7 +498,7 @@ class RedisInfo : public CORE::CObserver
     CORE::CDataNode m_globalConfig;
     TStringToInfoServiceMap m_infoServices;
     TStringToSettingsMap m_settings;
-    MT::CMutex m_appLock;
+    MT::CReadWriteLock m_appLock;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -99,17 +99,17 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     
     ~CVariant(); 
     
-    explicit CVariant( bool    data );
-    explicit CVariant( Int8    data );
-    explicit CVariant( UInt8   data ); 
-    explicit CVariant( Int16   data );
-    explicit CVariant( UInt16  data );
-    explicit CVariant( Int32   data );
-    explicit CVariant( UInt32  data );
-    explicit CVariant( Int64   data );
-    explicit CVariant( UInt64  data );
-    explicit CVariant( Float32 data );
-    explicit CVariant( Float64 data );
+    CVariant( bool    data );
+    CVariant( Int8    data );
+    CVariant( UInt8   data ); 
+    CVariant( Int16   data );
+    CVariant( UInt16  data );
+    CVariant( Int32   data );
+    CVariant( UInt32  data );
+    CVariant( Int64   data );
+    CVariant( UInt64  data );
+    CVariant( Float32 data );
+    CVariant( Float64 data );
     
     /**
      *  Creates a private copy of the ASCII string data and sets the type as such

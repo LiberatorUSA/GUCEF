@@ -353,6 +353,10 @@ RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/xinfo/stream", cmdXinfoStreamIndexRsc ); 
     m_httpResources.push_back( cmdXinfoStreamIndexRsc ); 
                                      
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr redisClusterNodesIndexRsc( ( new TUInt32ToRedisNodeMapHttpResource( "RedisClusterNodes", "startSlot", GUCEF_NULL, &m_redisNodesMap, &m_lock, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/nodes", redisClusterNodesIndexRsc ); 
+    m_httpResources.push_back( redisClusterNodesIndexRsc );
+
     return true;
 }
 
@@ -794,7 +798,8 @@ RedisInfoService::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 RedisNode::RedisNode( void )
-    : host()
+    : CORE::CIDataNodeSerializable()
+    , host()
     , nodeId()
     , startSlot( 0 )
     , endSlot( 0 )
@@ -818,6 +823,62 @@ RedisNode::operator=( const RedisNode& other )
         replicas = other.replicas;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisNode::Serialize( CORE::CDataNode& domRootNode                        ,
+                      const CORE::CDataNodeSerializableSettings& settings ,
+                      CORE::CDataNode** targetNode                        ) const
+{GUCEF_TRACE;
+
+    CORE::CDataNode* redisNodeEntry = domRootNode.AddChild( "node", GUCEF_DATATYPE_OBJECT );
+    if ( GUCEF_NULL != redisNodeEntry )
+    {
+        if ( GUCEF_NULL != targetNode )
+            *targetNode = redisNodeEntry;
+        
+        bool totalSuccess = true;
+        totalSuccess = redisNodeEntry->SetAttribute( "id", nodeId ) && totalSuccess;
+        totalSuccess = redisNodeEntry->SetAttribute( "startSlot", startSlot ) && totalSuccess;
+        totalSuccess = redisNodeEntry->SetAttribute( "endSlot", endSlot ) && totalSuccess;
+        totalSuccess = redisNodeEntry->SetAttribute( "host", host.GetHostname() ) && totalSuccess;
+        totalSuccess = redisNodeEntry->SetAttribute( "port", host.GetPortInHostByteOrder() ) && totalSuccess;
+        return totalSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisNode::Serialize( CORE::CDataNode& domRootNode                        ,
+                      const CORE::CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    return Serialize( domRootNode, settings, GUCEF_NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisNode::Deserialize( const CORE::CDataNode& domRootNode                  ,
+                        const CORE::CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+    
+    const CORE::CDataNode* redisNodeEntry = domRootNode.Find( "node" );
+    if ( GUCEF_NULL != redisNodeEntry )
+    {
+        nodeId = redisNodeEntry->GetAttributeValueOrChildValueByName( "id" ).AsString();
+        startSlot = redisNodeEntry->GetAttributeValueOrChildValueByName( "startSlot" ).AsInt32();
+        endSlot = redisNodeEntry->GetAttributeValueOrChildValueByName( "endSlot" ).AsInt32();
+        CORE::CString hostname = redisNodeEntry->GetAttributeValueOrChildValueByName( "host" ).AsString();
+        CORE::UInt16 port = redisNodeEntry->GetAttributeValueOrChildValueByName( "port" ).AsUInt16();
+        if ( host.SetHostnameAndPort( hostname, port ) )
+            return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -884,6 +945,25 @@ RedisNodeWithPipe::operator=( const RedisNode& other )
         //redisPipe
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+RedisNodeWithPipe::Serialize( CORE::CDataNode& domRootNode                        ,
+                              const CORE::CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    CORE::CDataNode* targetNode = GUCEF_NULL;
+    if ( RedisNode::Serialize( domRootNode, settings, &targetNode ) && GUCEF_NULL != targetNode )
+    {
+        if ( CORE::CDataNodeSerializableSettings::DataNodeSerializableLod_MaximumDetails == settings.levelOfDetail )
+        {
+            targetNode->SetAttribute( "redisErrorReplies", redisErrorReplies );
+        }
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1773,21 +1853,20 @@ bool
 RedisInfoService::SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const
 {GUCEF_TRACE;
 
+    CORE::CDataNodeSerializableSettings settings;
+    settings.levelOfDetail = CORE::CDataNodeSerializableSettings::DataNodeSerializableLod_AverageDetails;
+    
     doc.Clear();
     doc.SetName( "RedisClusterNodes" );
     doc.SetNodeType( GUCEF_DATATYPE_ARRAY );
     RedisNodeMap::const_iterator i = nodeMap.begin();
+    bool totalSuccess = true;
     while ( i != nodeMap.end() )
     {        
-        CORE::CDataNode* redisNodeEntry = doc.AddChild( "node", GUCEF_DATATYPE_OBJECT );
-        redisNodeEntry->SetAttribute( "id", (*i).second.nodeId, GUCEF_DATATYPE_STRING );
-        redisNodeEntry->SetAttribute( "startSlot", CORE::ToString( (*i).second.startSlot ), GUCEF_DATATYPE_UINT32 );
-        redisNodeEntry->SetAttribute( "endSlot", CORE::ToString( (*i).second.endSlot ), GUCEF_DATATYPE_UINT32 );
-        redisNodeEntry->SetAttribute( "host", (*i).second.host.GetHostname(), GUCEF_DATATYPE_STRING );
-        redisNodeEntry->SetAttribute( "port", (*i).second.host.PortAsString(), GUCEF_DATATYPE_STRING );
+        totalSuccess = (*i).second.Serialize( doc, settings ) && totalSuccess;
         ++i;
     }
-    return true;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
