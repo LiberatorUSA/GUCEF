@@ -43,10 +43,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#include "gucefWEB_CConfigurableHttpServerResource.h"
-#define GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

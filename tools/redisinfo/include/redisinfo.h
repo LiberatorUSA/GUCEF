@@ -224,7 +224,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     public:
 
     typedef CORE::CTEventHandlerFunctor< RedisInfoService > TEventCallback;
-    typedef std::set< CORE::CString > TStringSet;
+    typedef CORE::CString::StringSet             TStringSet;
     typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
 
     static const CORE::CString HashSlotFileCodec;
@@ -379,6 +379,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::map< CORE::CString, CORE::CValueList >                                 TStringToValueListMap;
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CValueList >  TStringToValueListMapHttpResource;
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, RedisNodeWithPipe >  TUInt32ToRedisNodeMapHttpResource;    
+    typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, TStringSet >         TUInt32ToStringSetMapHttpResource;    
 
     sw::redis::RedisCluster* m_redisContext;
     Settings m_settings;

@@ -152,6 +152,7 @@ set( HEADER_FILES
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CForwardingNotifier.h
+  include/gucefCORE_CGenericValueToDataNodeSerializer.h
   include/gucefCORE_CGlobalConfigValueList.h
   include/gucefCORE_CGloballyConfigurable.h
   include/gucefCORE_CIConfigurable.h
@@ -170,6 +171,7 @@ set( HEADER_FILES
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
   include/gucefCORE_CITime.h
+  include/gucefCORE_CIValueToDataNodeSerializer.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
   include/gucefCORE_CJsonLoggingFormatter.h
@@ -191,6 +193,7 @@ set( HEADER_FILES
   include/gucefCORE_CSingleTaskDelegator.h
   include/gucefCORE_CString.h
   include/gucefCORE_CSubFileAccess.h
+  include/gucefCORE_CTDataNodeSerializableObj.h
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTMailboxForSharedCloneables.h
@@ -215,6 +218,7 @@ set( HEADER_FILES
   include/gucefCORE_VariantData.h
   include/gucefCORE_cinterface.h
   include/gucefCORE_config.h
+  include/gucefCORE_datanode_serializables.h
   include/gucefCORE_macros.h
   include/gucefCORE_utf8.h
   include/gucef_essentials.h
@@ -351,6 +355,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
+  src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
   src/gucefCORE_CGlobalConfigValueList.cpp
   src/gucefCORE_CGloballyConfigurable.cpp
   src/gucefCORE_CIConfigurable.cpp
@@ -369,6 +374,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
   src/gucefCORE_CITime.cpp
+  src/gucefCORE_CIValueToDataNodeSerializer.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
   src/gucefCORE_CJsonLoggingFormatter.cpp

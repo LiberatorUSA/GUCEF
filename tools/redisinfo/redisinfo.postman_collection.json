@@ -6,19 +6,156 @@
 	},
 	"item": [
 		{
-			"name": "get cluster index",
+			"name": "get info",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:10000/clusters",
+					"raw": "http://localhost:10000/info",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "10000",
 					"path": [
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get config",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/config",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"config"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get app config",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/config/appargs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"config",
+						"appargs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get basic health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/health/basic",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"health",
+						"basic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get cluster index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
 						"clusters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get cluster node index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/nodes?view=objmax",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"nodes"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "objmax"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get hash slot hash strings",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/hashslothashstrings?view=objmax",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"redis",
+						"hashslothashstrings"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "objmax"
+						}
 					]
 				}
 			},
@@ -264,7 +401,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/xinfo/stream",
+					"raw": "http://localhost:10000/v1/clusters/redisraw/redis/api/command/xinfo/stream?view=index",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -279,6 +416,12 @@
 						"command",
 						"xinfo",
 						"stream"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "index"
+						}
 					]
 				}
 			},

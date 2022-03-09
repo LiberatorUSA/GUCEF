@@ -244,7 +244,7 @@ RedisInfoService::RedisInfoService()
     , m_cmdInfoCpu()
     , m_cmdInfoKeyspace()
     , m_cmdXinfoStreamMap()
-    , m_lock()
+    , m_lock( true )
 {GUCEF_TRACE;
 
 }
@@ -356,6 +356,10 @@ RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
     GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr redisClusterNodesIndexRsc( ( new TUInt32ToRedisNodeMapHttpResource( "RedisClusterNodes", "startSlot", GUCEF_NULL, &m_redisNodesMap, &m_lock, false ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/nodes", redisClusterNodesIndexRsc ); 
     m_httpResources.push_back( redisClusterNodesIndexRsc );
+                                     
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr hashSlotHashStringIndexRsc( ( new TUInt32ToStringSetMapHttpResource( "HashSlotHashStrings", "hashSlot", GUCEF_NULL, &m_hashSlotOriginStrMap, &m_lock, false ) )->CreateSharedPtr() );
+    router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/hashslothashstrings", hashSlotHashStringIndexRsc ); 
+    m_httpResources.push_back( hashSlotHashStringIndexRsc );
 
     return true;
 }
@@ -2454,7 +2458,7 @@ RedisInfo::RedisInfo( void )
     , m_globalConfig()
     , m_infoServices()
     , m_settings()
-    , m_appLock()
+    , m_appLock( true )
 {GUCEF_TRACE;
 
 }

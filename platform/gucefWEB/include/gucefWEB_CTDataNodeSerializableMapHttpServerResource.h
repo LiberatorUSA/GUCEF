@@ -68,10 +68,25 @@
 #define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
 #endif /* GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H ? */
 
-#ifndef GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#include "gucefWEB_CConfigurableHttpServerResource.h"
-#define GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_CORE_CTDATANODESERIALIZABLEOBJ_H
+#include "gucefCORE_CTDataNodeSerializableObj.h"
+#define GUCEF_CORE_CTDATANODESERIALIZABLEOBJ_H
+#endif /* GUCEF_CORE_CTDATANODESERIALIZABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_DATANODE_SERIALIZABLES_H
+#include "gucefCORE_datanode_serializables.h"
+#define GUCEF_CORE_DATANODE_SERIALIZABLES_H
+#endif /* GUCEF_CORE_DATANODE_SERIALIZABLES_H ? */
+
+#ifndef GUCEF_CORE_CGENERICVALUETODATANODESERIALIZER_H
+#include "gucefCORE_CGenericValueToDataNodeSerializer.h"
+#define GUCEF_CORE_CGENERICVALUETODATANODESERIALIZER_H
+#endif /* GUCEF_CORE_CGENERICVALUETODATANODESERIALIZER_H ? */
+
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 #ifndef GUCEF_WEB_CSTDPARAMPARSER_H
 #include "gucefWEB_CStdParamParser.h"
@@ -93,19 +108,20 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServerResource
 {
     public:
 
-    typedef std::map< CollectionKeyType, SerializableDerivedClass > TSerializableCollectionMap;
+    typedef std::map< CollectionKeyType, SerializableObj > TSerializableCollectionMap;
 
-    CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                                       ,
-                                                 const CORE::CString& keyPropertyName                                      ,
-                                                 const CORE::CDataNodeSerializableSettings* serializerOptions = GUCEF_NULL ,
-                                                 TSerializableCollectionMap* collection = GUCEF_NULL                       ,
-                                                 MT::CILockable* collectionLock = GUCEF_NULL                               ,
-                                                 bool sourceObjKeyFromObj = false                                          );
+    CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                                                                      ,
+                                                 const CORE::CString& keyPropertyName                                                                     ,
+                                                 const CORE::CDataNodeSerializableSettings* serializerOptions = GUCEF_NULL                                ,
+                                                 TSerializableCollectionMap* collection = GUCEF_NULL                                                      ,
+                                                 MT::CILockable* collectionLock = GUCEF_NULL                                                              ,
+                                                 bool sourceObjKeyFromObj = false                                                                         ,
+                                                 CORE::CIValueToDataNodeSerializer* valueSerializer = CORE::CGenericValueToDataNodeSerializer::Instance() );
 
     virtual ~CTDataNodeSerializableMapHttpServerResource();
 
@@ -132,7 +148,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
                                          const CORE::CString& transactionID            ,
                                          const CORE::CDataNode& input                  ,
                                          const CORE::CString& representation           ,
-                                         const CORE::CString& query                    ,
+                                         const CORE::CString& params                   ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -148,11 +164,21 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
     CORE::CString m_collectionName;
     CORE::CString m_keyPropertyName;
     bool m_sourceObjKeyFromObj;
+    CORE::CIValueToDataNodeSerializer* m_valueSerializer;
 
     private:
+    
+    bool SerializeMappedType( const SerializableObj& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return m_valueSerializer->Serialize( mappedType, domRootNode, serializerOptions ); }
+    
+    bool SerializeMappedType( const SerializableObj* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return GUCEF_NULL != ptr ? m_valueSerializer->Serialize( mappedType, *mappedType, serializerOptions ) : false; }
 
-    SerializableDerivedClass* AsPtr( SerializableDerivedClass* ptr ) { return ptr; }
-    SerializableDerivedClass* AsPtr( SerializableDerivedClass& ptr ) { return &ptr; }
+    bool DeserializeMappedType( SerializableObj& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+       { return m_valueSerializer->Deserialize( mappedType, domRootNode, serializerOptions ); }
+    
+    bool DeserializeMappedType( SerializableObj* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return GUCEF_NULL != ptr ? m_valueSerializer->Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
 
     CTDataNodeSerializableMapHttpServerResource( void );
     CTDataNodeSerializableMapHttpServerResource( const CTDataNodeSerializableMapHttpServerResource& src );
@@ -165,13 +191,14 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                          ,
-                                                                                                                                         const CORE::CString& keyPropertyName                         ,
-                                                                                                                                         const CORE::CDataNodeSerializableSettings* serializerOptions ,
-                                                                                                                                         TSerializableCollectionMap* collection                       ,
-                                                                                                                                         MT::CILockable* collectionLock                               ,
-                                                                                                                                         bool sourceObjKeyFromObj                                     )
+template< typename CollectionKeyType, typename SerializableObj >
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                          ,
+                                                                                                                                const CORE::CString& keyPropertyName                         ,
+                                                                                                                                const CORE::CDataNodeSerializableSettings* serializerOptions ,
+                                                                                                                                TSerializableCollectionMap* collection                       ,
+                                                                                                                                MT::CILockable* collectionLock                               ,
+                                                                                                                                bool sourceObjKeyFromObj                                     ,
+                                                                                                                                CORE::CIValueToDataNodeSerializer* valueSerializer           )
     : CCodecBasedHTTPServerResource()
     , m_serializerOptions( serializerOptions )
     , m_collection( collection )
@@ -179,6 +206,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
     , m_collectionName( collectionName )
     , m_keyPropertyName( keyPropertyName )
     , m_sourceObjKeyFromObj( sourceObjKeyFromObj )
+    , m_valueSerializer( valueSerializer )
 {GUCEF_TRACE;
 
     m_allowSerialize = true;
@@ -188,19 +216,19 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::~CTDataNodeSerializableMapHttpServerResource()
+template< typename CollectionKeyType, typename SerializableObj >
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::~CTDataNodeSerializableMapHttpServerResource()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 void
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::LinkTo( const CORE::CDataNodeSerializableSettings* serializerOptions ,
-                                                                                                    TSerializableCollectionMap* collection                       ,
-                                                                                                    MT::CILockable* collectionLock                               )
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::LinkTo( const CORE::CDataNodeSerializableSettings* serializerOptions ,
+                                                                                           TSerializableCollectionMap* collection                       ,
+                                                                                           MT::CILockable* collectionLock                               )
 {GUCEF_TRACE;
 
     m_serializerOptions = serializerOptions;
@@ -210,9 +238,9 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 void
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::SetResourceKeyPropertyName( const CString& keyPropertyName )
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::SetResourceKeyPropertyName( const CString& keyPropertyName )
 {GUCEF_TRACE;
 
     m_keyPropertyName = keyPropertyName;
@@ -220,9 +248,9 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 const CString&
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::GetResourceKeyPropertyName( void ) const
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::GetResourceKeyPropertyName( void ) const
 {GUCEF_TRACE;
 
     return m_keyPropertyName;
@@ -230,12 +258,12 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 bool
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::Serialize( const CString& resourcePath         ,
-                                                                                                       CORE::CDataNode& output             ,
-                                                                                                       const CORE::CString& representation ,
-                                                                                                       const CString& params               )
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::Serialize( const CString& resourcePath         ,
+                                                                                              CORE::CDataNode& output             ,
+                                                                                              const CORE::CString& representation ,
+                                                                                              const CString& params               )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_collection )
@@ -284,7 +312,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
             CORE::CDataNode* childNode = output.AddChild( CORE::ToString( (*i).first ) );
             if ( GUCEF_NULL != childNode )
             {
-                if ( AsPtr( (*i).second )->Serialize( *childNode, *serializerOptions ) )
+                if ( SerializeMappedType( (*i).second, *childNode, *serializerOptions ) )
                 {
 
                 }
@@ -306,15 +334,15 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
 
 /*-------------------------------------------------------------------------*/
 
-template< typename CollectionKeyType, class SerializableDerivedClass >
+template< typename CollectionKeyType, typename SerializableObj >
 CCodecBasedHTTPServerResource::TCreateState
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDerivedClass >::CreateResource( const CString& resourcePath                   ,
-                                                                                                            const CString& transactionID                  ,
-                                                                                                            const CORE::CDataNode& input                  ,
-                                                                                                            const CString& representation                 ,
-                                                                                                            const CString& params                         ,
-                                                                                                            THTTPServerResourcePtr& resourceOutput        ,
-                                                                                                            TStringVector& supportedRepresentationsOutput )
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::CreateResource( const CString& resourcePath                   ,
+                                                                                                   const CString& transactionID                  ,
+                                                                                                   const CORE::CDataNode& input                  ,
+                                                                                                   const CString& representation                 ,
+                                                                                                   const CString& params                         ,
+                                                                                                   THTTPServerResourcePtr& resourceOutput        ,
+                                                                                                   TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
     if ( m_keyPropertyName.IsNULLOrEmpty() )
@@ -341,10 +369,10 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
         return ECreateState::CREATESTATE_CONFLICTING;
     }
 
-    SerializableDerivedClass& newEntry = (*m_collection)[ entryKey ];
+    SerializableObj& newEntry = (*m_collection)[ entryKey ];
     if ( GUCEF_NULL != m_serializerOptions )
     {
-        if ( !AsPtr( newEntry )->Deserialize( input, *m_serializerOptions ) )
+        if ( !DeserializeMappedType( newEntry, input, *m_serializerOptions ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
@@ -353,7 +381,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableDeri
     else
     {
         CORE::CDataNodeSerializableSettings defaultSerializableSettings;
-        if ( !AsPtr( newEntry )->Deserialize( input, defaultSerializableSettings ) )
+        if ( !DeserializeMappedType( newEntry, input, defaultSerializableSettings ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
