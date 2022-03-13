@@ -372,9 +372,9 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
             //GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsIndexMap->CreateSharedPtr() );
             //m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
 
-            TClientTopicMsgsMap* topicMsgsMap = new TClientTopicMsgsMap( "PubSubMsgs", "publishActionId", &m_pubsubSerializerOptions, topicMsgMap, this, false );
-            GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsMap->CreateSharedPtr() );
-            m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
+            //TClientTopicMsgsMap* topicMsgsMap = new TClientTopicMsgsMap( "PubSubMsgs", "publishActionId", &m_pubsubSerializerOptions, topicMsgMap, this, false );
+            //GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsMap->CreateSharedPtr() );
+            //m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
             
         }
 

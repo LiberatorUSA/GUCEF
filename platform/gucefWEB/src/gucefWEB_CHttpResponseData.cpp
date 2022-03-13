@@ -105,7 +105,7 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
 
     // @TODO: Optimize this
     
-    CString response = "HTTP/1.1 " + CORE::Int32ToString( statusCode ) + "\r\nServer: gucefCOM\r\n";
+    CString response = "HTTP/1.1 " + CORE::Int32ToString( statusCode ) + "\r\nServer: gucefWEB/" + CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( false, true ) + "\r\n";
     if ( keepConnectionsAlive )
         response += "Connection: keep-alive\r\n";
     else

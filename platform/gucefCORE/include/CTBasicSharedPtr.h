@@ -152,6 +152,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
 {
     public:
 
+    typedef T                              TContainedType;
     typedef CTDynamicDestructorBase< T >   TDestructor;
 
     protected:

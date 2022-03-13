@@ -403,6 +403,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     CORE::CValueList m_cmdInfoCpu;
     CORE::CValueList m_cmdInfoKeyspace;
     TStringToValueListMap m_cmdXinfoStreamMap;
+    CORE::CValueList m_status;
 
     MT::CReadWriteLock m_lock;
 };

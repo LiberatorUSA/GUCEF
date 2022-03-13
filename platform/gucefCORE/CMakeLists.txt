@@ -149,6 +149,7 @@ set( HEADER_FILES
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcherEvents.h
   include/gucefCORE_CDynamicBufferSwap.h
+  include/gucefCORE_CEnumerator.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CForwardingNotifier.h
@@ -160,6 +161,7 @@ set( HEADER_FILES
   include/gucefCORE_CIDataNodeSerializable.h
   include/gucefCORE_CIDate.h
   include/gucefCORE_CIDirectoryWatcher.h
+  include/gucefCORE_CIEnumerable.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
@@ -353,6 +355,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
+  src/gucefCORE_CEnumerator.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
@@ -363,6 +366,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIDataNodeSerializable.cpp
   src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIDirectoryWatcher.cpp
+  src/gucefCORE_CIEnumerable.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp

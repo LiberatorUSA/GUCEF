@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -45,11 +55,13 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
     
-CConfigurableHttpServerResource::CConfigurableHttpServerResource( CORE::CIConfigurable* configurable /* = GUCEF_NULL */ ,
-                                                                  bool allowSerialize                /* = true */       ,
-                                                                  bool allowDeserialize              /* = true */       )
+CConfigurableHttpServerResource::CConfigurableHttpServerResource( CORE::CIConfigurable* configurable  /* = GUCEF_NULL */ ,
+                                                                  bool allowSerialize                 /* = true */       ,
+                                                                  bool allowDeserialize               /* = true */       ,
+                                                                  MT::CILockable* lockForConfigurable /* = GUCEF_NULL */ )
     : CCodecBasedHTTPServerResource()
     , m_configurable( configurable )
+    , m_lockForConfigurable( lockForConfigurable )
 {GUCEF_TRACE;
 
     m_allowDeserialize = allowDeserialize;
@@ -61,6 +73,7 @@ CConfigurableHttpServerResource::CConfigurableHttpServerResource( CORE::CIConfig
 CConfigurableHttpServerResource::CConfigurableHttpServerResource( const CConfigurableHttpServerResource& src )
     : CCodecBasedHTTPServerResource( src )
     , m_configurable( src.m_configurable )
+    , m_lockForConfigurable( src.m_lockForConfigurable )
 {GUCEF_TRACE;
 
 }
@@ -82,6 +95,7 @@ CConfigurableHttpServerResource::operator=( const CConfigurableHttpServerResourc
     {
         CCodecBasedHTTPServerResource::operator=( src );
         m_configurable = src.m_configurable;
+        m_lockForConfigurable = src.m_lockForConfigurable;
     }
     return *this;
 }
@@ -97,6 +111,7 @@ CConfigurableHttpServerResource::Serialize( const CString& resourcePath         
 
     if ( GUCEF_NULL != m_configurable )
     {
+        MT::CObjectScopeReadOnlyLock lock( m_lockForConfigurable );
         return m_configurable->SaveConfig( output );
     }
     return false;
@@ -113,6 +128,7 @@ CConfigurableHttpServerResource::Deserialize( const CString& resourcePath   ,
 
     if ( GUCEF_NULL != m_configurable )
     {
+        MT::CObjectScopeLock lock( m_lockForConfigurable );
         if ( m_configurable->LoadConfig( input ) )
             return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
         else

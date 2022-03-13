@@ -265,7 +265,7 @@ CVariant::AsBsob( void ) const
     // If you get a compiler error here your type does not fit in a BSOD and you need to use 
     // alternate storage such as the BLOB type which uses the heap
     #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
-    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOB_SIZE, "Type size is invalid. Is not smaller or equal" );
     #else
     { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
     #endif 
@@ -284,7 +284,7 @@ CVariant::AsBsobPtr( void )
     // If you get a compiler error here your type does not fit in a BSOD and you need to use 
     // alternate storage such as the BLOB type which uses the heap
     #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
-    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOB_SIZE, "Type size is invalid. Is not smaller or equal" );
     #else
     { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
     #endif 
@@ -303,7 +303,7 @@ CVariant::AsBsobPtr( void ) const
     // If you get a compiler error here your type does not fit in a BSOD and you need to use 
     // alternate storage such as the BLOB type which uses the heap
     #if ( defined ( _MSC_VER ) && __cplusplus >= 199711L ) || ( __cplusplus >= 201103L )
-    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE, "Type size is invalid. Is not smaller or equal" );
+    static_assert( sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOB_SIZE, "Type size is invalid. Is not smaller or equal" );
     #else
     { char const CompileTimeTypeSizeSmallerEqualsCheck[ sizeof( TemplateBsobType ) <= GUCEF_VARIANT_BSOD_SIZE ? 1 : -1 ]; }
     #endif 

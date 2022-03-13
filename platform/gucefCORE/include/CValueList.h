@@ -39,6 +39,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -74,6 +79,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 {
     public:
 
+    typedef CVariant::VariantVector             TVariantVector;
     typedef CString::StringVector               TStringVector;
     typedef std::map< CString, TStringVector >  TValueMap;
 

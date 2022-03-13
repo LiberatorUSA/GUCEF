@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_VARIANTDATA_H
-#define GUCEF_CORE_VARIANTDATA_H
+#ifndef GUCEF_CORE_CENUMERABLE_H
+#define GUCEF_CORE_CENUMERABLE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,58 +31,54 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CENUMERATOR_H
+#include "gucefCORE_CEnumerator.h"
+#define GUCEF_CORE_CENUMERATOR_H
+#endif /* GUCEF_CORE_CENUMERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 namespace GUCEF {
 namespace CORE {
-#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-struct SHeapData
+/**
+ *  Interface class for runtime polymorphic access for enumeration
+ * 
+ *  While slower than STL iterators and the like, carrying a runtime penalty, this interface allows
+ *  for iteration across different data sets where regular C++ iterators struggle due to their
+ *  template based basis. That basis is problematic across different runtime environments / ABIs.
+ *  Especially when using plugin concepts with varying product life cycles and tool chains we 
+ *  cannot always assume the same level of compatibility.
+ */
+class GUCEF_CORE_PUBLIC_CPP CIEnumerable
 {
-    union HeapDataPtrUnionType
-    {
-        void* void_heap_data;                /**< pointer to the block of heap memory */
-        char* char_heap_data;                /**< pointer to the block of heap memory */
-    } union_data;
-    UInt32 heap_data_size;          /**< size of the referenced memory block in bytes */
-    UInt8 heap_data_is_linked;      /**< 1 or 0 flag to denote whether the heap data is owned by the variant and thus would need to be deleted or whether its merely linked as a reference */
-};
-typedef struct SHeapData THeapData;
+    public:
 
-/* Binary Small Object, something encoded to use the same variant blob space without using the heap. Size based on largest alternate union fields as to not grow size requirements */
-#define GUCEF_VARIANT_BSOB_SIZE     13
+    CIEnumerable( void );
 
-struct SVariantData
-{
-    UInt8 containedType;
-    union UnionType
-    {
-        Int8        int8_data;
-        UInt8       uint8_data; 
-        Int16       int16_data;
-        UInt16      uint16_data;
-        Int32       int32_data;
-        UInt32      uint32_data;
-        Int64       int64_data;
-        UInt64      uint64_data;
-        Float32     float32_data;
-        Float64     float64_data;
-        THeapData   heap_data;
-        UInt8       bsob_data[ GUCEF_VARIANT_BSOB_SIZE ];  /**< Binary Small Object, something encoded to use the same variant blob space without using the heap. Size based on largest alternate union fields as to not grow size requirements */
-    } union_data;
+    CIEnumerable( const CIEnumerable& src );
+
+    virtual ~CIEnumerable();
+
+    CIEnumerable& operator=( const CIEnumerable& src );
+
+    virtual bool GetEnumerator( CEnumerator& enumerator ) = 0;
+
+    virtual bool GetEnumerator( CConstEnumerator& enumerator ) const = 0;
+
+    bool GetConstEnumerator( CConstEnumerator& enumerator )
+        { return const_cast< const CIEnumerable* >( this )->GetEnumerator( enumerator ); }
 };
-typedef struct SVariantData TVariantData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,11 +86,9 @@ typedef struct SVariantData TVariantData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-#endif
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+#endif /* GUCEF_CORE_CENUMERABLE_H ? */

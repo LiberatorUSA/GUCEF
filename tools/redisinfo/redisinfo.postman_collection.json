@@ -104,6 +104,28 @@
 			"response": []
 		},
 		{
+			"name": "get cluster status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/v1/clusters/redisraw/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"v1",
+						"clusters",
+						"redisraw",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "get cluster node index",
 			"request": {
 				"method": "GET",

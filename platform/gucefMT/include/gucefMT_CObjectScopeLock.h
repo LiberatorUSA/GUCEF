@@ -61,8 +61,18 @@ class GUCEF_MT_PUBLIC_CPP CObjectScopeLock
 {
     public:
 
+    /**
+     *  Locks if a lockable object is provided
+     *  Otherwise ( lockableObject == GUCEF_NULL ) this object will act as a no-op
+     *  This allows you to use the same code in a thread-safe or non-threadsafe manner depending on context
+     *  Only taking the locking penalty when needed based on said context
+     */
     CObjectScopeLock( const CILockable* lockableObject );
 
+    /**
+     *  Locks the lockable object and retaints the lock for the lifespan of this object by default
+     *  You can unlock early via the EarlyUnlock() member function
+     */
     CObjectScopeLock( const CILockable& lockableObject );
 
     ~CObjectScopeLock();
@@ -97,17 +107,6 @@ class GUCEF_MT_PUBLIC_CPP CObjectScopeLock
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 21-08-2005 :
-       - Designed and implemented this class.
-
----------------------------------------------------------------------------*/
