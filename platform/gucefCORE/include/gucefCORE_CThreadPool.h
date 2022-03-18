@@ -271,8 +271,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CThreadPool, MT::CMutex >  ThreadPoolPtr;
-typedef ThreadPoolPtr::TBasicPtr                TBasicThreadPoolPtr;
+typedef CTSharedPtr< CThreadPool, MT::CMutex >          ThreadPoolPtr;
+typedef typename ThreadPoolPtr::TBasicSharedPtrBase     TBasicThreadPoolPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

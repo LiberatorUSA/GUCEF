@@ -88,8 +88,10 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 {
     public:
 
-    typedef CTDynamicDestructorBase< T >        TDestructor;
-    typedef CTBasicSharedPtr< T, LockType >     TBasicPtr;
+    typedef CTBasicSharedPtr< T, LockType >                     TBasicSharedPtrBase;
+    typedef typename TBasicSharedPtrBase::TDestructor           TDestructor;
+    typedef typename TBasicSharedPtrBase::TContainedType        TContainedType;
+    typedef typename TBasicSharedPtrBase::TLockType             TLockType;
 
     /**
      *  Constructor that allows you to create an 'uninitialized' pointer.
@@ -188,6 +190,10 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
      *  pointer being NULL as some people like to do versus an explicit NULL == check.
      */
     inline operator bool() const;
+
+    inline T* GetPointerAlways( void ) { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
+
+    inline const T* GetPointerAlways( void ) const { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
 
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions

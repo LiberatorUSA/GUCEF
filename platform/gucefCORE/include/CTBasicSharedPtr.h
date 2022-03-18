@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
 
+#ifndef GUCEF_CORE_SFINAE_UTILS_H
+#include "gucefCORE_SFINAE_utils.h"
+#define GUCEF_CORE_SFINAE_UTILS_H
+#endif /* GUCEF_CORE_SFINAE_UTILS_H ? */
+
 #ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
 #include "CTDynamicDestructorBase.h"
 #define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
@@ -82,6 +87,8 @@ template< class LockType >
 class TBasicSharedPtrSharedData : public MT::CILockable
 {
     public:
+
+    typedef LockType                       TLockType;
 
     Int32 m_refCounter;              /**< shared reference counter */
     LockType m_lock;                 /**< shared lock, if any */
@@ -153,6 +160,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
     public:
 
     typedef T                              TContainedType;
+    typedef LockType                       TLockType;
     typedef CTDynamicDestructorBase< T >   TDestructor;
 
     protected:

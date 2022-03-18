@@ -168,17 +168,29 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 
     private:
     
-    bool SerializeMappedType( const SerializableObj& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
-        { return m_valueSerializer->Serialize( mappedType, domRootNode, serializerOptions ); }
-    
-    bool SerializeMappedType( const SerializableObj* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
-        { return GUCEF_NULL != ptr ? m_valueSerializer->Serialize( mappedType, *mappedType, serializerOptions ) : false; }
+    template < typename S >    
+    bool SerializeMappedType( const S* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return GUCEF_NULL != ptr ? m_valueSerializer->Serialize( *mappedType, domRootNode, serializerOptions ) : false; }
 
-    bool DeserializeMappedType( SerializableObj& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
-       { return m_valueSerializer->Deserialize( mappedType, domRootNode, serializerOptions ); }
+    template < typename S >    
+    bool SerializeMappedType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Serialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
+
+    template < typename S >    
+    bool SerializeMappedType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions) 
+        { return m_valueSerializer->Serialize( mappedType, domRootNode, serializerOptions ); }
+
+    template < typename S >
+    bool DeserializeMappedType( S* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+        { return GUCEF_NULL != mappedType ? m_valueSerializer->Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
+
+    template < typename S >
+    bool DeserializeMappedType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+       { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Deserialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
     
-    bool DeserializeMappedType( SerializableObj* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
-        { return GUCEF_NULL != ptr ? m_valueSerializer->Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
+    template < typename S >
+    bool DeserializeMappedType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+       { return m_valueSerializer->Deserialize( mappedType, domRootNode, serializerOptions ); }
 
     CTDataNodeSerializableMapHttpServerResource( void );
     CTDataNodeSerializableMapHttpServerResource( const CTDataNodeSerializableMapHttpServerResource& src );
@@ -312,7 +324,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
             CORE::CDataNode* childNode = output.AddChild( CORE::ToString( (*i).first ) );
             if ( GUCEF_NULL != childNode )
             {
-                if ( SerializeMappedType( (*i).second, *childNode, *serializerOptions ) )
+                if ( SerializeMappedType< SerializableObj >( (*i).second, *childNode, *serializerOptions ) )
                 {
 
                 }
@@ -372,7 +384,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     SerializableObj& newEntry = (*m_collection)[ entryKey ];
     if ( GUCEF_NULL != m_serializerOptions )
     {
-        if ( !DeserializeMappedType( newEntry, input, *m_serializerOptions ) )
+        if ( !DeserializeMappedType< SerializableObj >( newEntry, input, *m_serializerOptions ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
@@ -381,7 +393,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     else
     {
         CORE::CDataNodeSerializableSettings defaultSerializableSettings;
-        if ( !DeserializeMappedType( newEntry, input, defaultSerializableSettings ) )
+        if ( !DeserializeMappedType< SerializableObj >( newEntry, input, defaultSerializableSettings ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;

@@ -217,6 +217,7 @@ set( HEADER_FILES
   include/gucefCORE_Logging.h
   include/gucefCORE_LoggingMacros.h
   include/gucefCORE_MetricsMacros.h
+  include/gucefCORE_SFINAE_utils.h
   include/gucefCORE_VariantData.h
   include/gucefCORE_cinterface.h
   include/gucefCORE_config.h

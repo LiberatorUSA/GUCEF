@@ -2696,7 +2696,11 @@ PubSub2PubSub::Start( void )
     if ( !errorOccured )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
-        return m_httpServer.Listen();
+        if ( !m_httpServer.Listen() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Failed to open REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
+            return false;
+        }
     }
     return !errorOccured;
 }
