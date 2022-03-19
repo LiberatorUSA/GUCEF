@@ -535,15 +535,77 @@ CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( const std::wstring& p
     if ( !FAILED( formatConversionResult ) )
     {
         queueFormatName = queueFormatNameTmp;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPathNameToMsmqQueueFormatName: Converted pathName \"" + 
+            CORE::ToString( pathName ) + "\" to \"" + CORE::ToString( queueFormatName ) + "\"" ) ; 
         return true;
     }
     else
     {
         CORE::UInt32 errorCode =  HRESULT_CODE( formatConversionResult );
-        std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( formatConversionResult ) );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPathNameToMsmqQueueFormatName: Failed to convert path to MSMQ format name. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPathNameToMsmqQueueFormatName: Failed to convert path \"" + 
+            CORE::ToString( pathName ) + "\" to MSMQ format name. HRESULT=" + CORE::ToString( formatConversionResult ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
         return false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid          ,
+                                                            std::wstring& queueFormatName  )
+{GUCEF_TRACE;
+
+    DWORD maxFormatNameSize = 512;
+    WCHAR queueFormatNameTmp[ 512 ]; 
+    HRESULT formatConversionResult = ::MQInstanceToFormatName( const_cast< GUID* >( &queueGuid ) ,    
+                                                               queueFormatNameTmp                ,    
+                                                               &maxFormatNameSize                );
+    if ( !FAILED( formatConversionResult ) )
+    {
+        queueFormatName = queueFormatNameTmp;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Converted GUID structure to \"" + 
+            CORE::ToString( queueFormatName ) + "\"" ) ; 
+        return true;
+    }
+    else
+    {
+        CORE::UInt32 errorCode =  HRESULT_CODE( formatConversionResult );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Failed to convert GUID to MSMQ format name. HRESULT=" + 
+            CORE::ToString( formatConversionResult ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        return false;
+    }
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                            std::wstring& queueFormatName  )
+{GUCEF_TRACE;
+
+    CORE::CAsciiString asciiGuidStr = queueGuid.ForceToAscii( 0 );
+    if ( asciiGuidStr.DetermineLength() != queueGuid.Length() )
+    {
+        CORE::CAsciiString asciiGuidStrLogExample = queueGuid.ForceToAscii( '*' );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Code point count difference while converting queueGuid \"" + 
+            queueGuid + "\" to ASCII representation. Replacing non-ASCII with '*' yields: " + asciiGuidStrLogExample ) ; 
+    }
+
+    GUID queueGuidStruct;
+    if ( StringToMsmqGUID( asciiGuidStr, queueGuidStruct ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Converted queueGuid string \"" + 
+            queueGuid + "\" to a GUID structure successfully" ); 
+
+        return MsmqQueueGUIDToMsmqQueueFormatName( queueGuidStruct, queueFormatName );
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Failed to convert queueGuid string \"" + 
+        queueGuid + "\" to a GUID structure" ); 
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -554,20 +616,36 @@ CMsmqPubSubClientTopic::GetMsmqQueueFormatName( void ) const
     if ( !m_msmqQueueFormatName.empty() )
         return m_msmqQueueFormatName;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: MSMQ queue 'format name' is not yet set, attempting to obtain it. Topic=" + m_config.topicName ) ; 
+
     std::wstring wQueueName;
     CORE::Utf8toUtf16( m_config.topicName, wQueueName );
 
-    if ( !m_config.topicNameIsMsmqFormatName )
+    // Should we try and take the string as given and not do anything fancy?
+    if ( !m_config.topicNameIsMsmqFormatName )  
     {
-        std::wstring wQueueFormatName;
-        if ( MsmqPathNameToMsmqQueueFormatName( wQueueName, wQueueFormatName ) )
+        bool isSuspectedPathName = ( 0 == m_config.topicName.HasSubstr( "DIRECT=" ) );
+        if ( !isSuspectedPathName )
         {
-            m_msmqQueueFormatName = wQueueFormatName;
+            std::wstring wQueueFormatName;
+            if ( MsmqQueueGUIDToMsmqQueueFormatName( m_config.topicName, wQueueFormatName ) )
+            {
+                m_msmqQueueFormatName = wQueueFormatName;
+            }
+        }
+        else
+        {
+            std::wstring wQueueFormatName;
+            if ( MsmqPathNameToMsmqQueueFormatName( wQueueName, wQueueFormatName ) )
+            {
+                m_msmqQueueFormatName = wQueueFormatName;
+            }
         }
     }
     else
     {
         m_msmqQueueFormatName = wQueueName;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: Since the topic name is flagged as a format name we will use it as-is. format name = Topic =" + m_config.topicName );
     }
 
     return m_msmqQueueFormatName; 
@@ -608,8 +686,9 @@ CMsmqPubSubClientTopic::Subscribe( void )
     if ( FAILED( openQueueResult ) )
     {
         CORE::UInt32 errorCode =  HRESULT_CODE( openQueueResult );
-        std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( openQueueResult ) );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to 'subscribe' by opening a MSMQ queue for recieving. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to 'subscribe' by opening a MSMQ queue for recieving. Topic Name: " + 
+            m_config.topicName + ". HRESULT= " + CORE::ToString( openQueueResult ) + ". Code segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
         BeginReconnectSequence( &ConnectionErrorEvent );
         return false;
     }
@@ -1142,6 +1221,42 @@ CMsmqPubSubClientTopic::SizeOfVarType( VARTYPE vt )
 /*-------------------------------------------------------------------------*/
 
 bool
+CMsmqPubSubClientTopic::StringToMsmqGUID( const CORE::CAsciiString& guidString ,
+                                          GUID& guid                           )
+{GUCEF_TRACE;
+
+    if ( !guidString.IsNULLOrEmpty() && guidString.IsFormattingValid() )
+    {
+        int scanResult = sscanf( guidString.C_String(), "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+                &guid.Data1, &guid.Data2, &guid.Data3, 
+                &guid.Data4[0], &guid.Data4[1], &guid.Data4[2], &guid.Data4[3] ,
+                &guid.Data4[4], &guid.Data4[5], &guid.Data4[6], &guid.Data4[7] );
+
+        return 11 == scanResult;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqGUIDToString( const GUID& guid               ,
+                                          CORE::CAsciiString& guidString )
+{GUCEF_TRACE;
+
+    guidString.Reserve( 128 );
+    int printResult = sprintf( guidString.C_String(), "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+                guid.Data1, guid.Data2, guid.Data3, 
+                guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3] ,
+                guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7] );
+    guidString.DetermineLength();
+                
+    return printResult > 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable )
 {GUCEF_TRACE;
 
@@ -1165,13 +1280,7 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
             if ( m_config.convertMsmqClsIdToString )
             {
                 const GUID& guid = *msmqSourceVariant.puuid;
-                int printResult = sprintf( m_guidStr.C_String(), "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
-                            guid.Data1, guid.Data2, guid.Data3, 
-                            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3] ,
-                            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7] );
-                m_guidStr.DetermineLength();
-                
-                if ( printResult > 0 )
+                if ( MsmqGUIDToString( guid, m_guidStr ) )
                 {
                     targetVariant = m_guidStr;
                     return true;

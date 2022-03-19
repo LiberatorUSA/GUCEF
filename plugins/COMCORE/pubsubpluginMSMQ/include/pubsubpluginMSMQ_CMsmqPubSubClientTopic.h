@@ -271,6 +271,18 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public COMCO
     static bool MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
                                                    std::wstring& queueFormatName  );
 
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid ,
+                                                    std::wstring& queueFormatName  );
+
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                    std::wstring& queueFormatName  );
+
+    static bool MsmqGUIDToString( const GUID& guid               ,
+                                  CORE::CAsciiString& guidString );
+
+    static bool StringToMsmqGUID( const CORE::CAsciiString& guidString ,
+                                  GUID& guid                           );
+    
     const std::wstring& GetMsmqQueueFormatName( void ) const;
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
