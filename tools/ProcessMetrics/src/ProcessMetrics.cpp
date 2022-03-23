@@ -873,7 +873,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
     m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
 
-    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
+    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).AsString().ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )
     {

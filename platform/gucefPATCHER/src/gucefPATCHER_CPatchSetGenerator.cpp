@@ -189,7 +189,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
 
                     TFileEntry fileEntry;
                     fileEntry.name = entryName;
-                    fileEntry.sizeInBytes = CORE::DI_Size( dirEntry );
+                    fileEntry.sizeInBytes = (UInt32) CORE::DI_Size( dirEntry );
                     CORE::CString filePath = localRoot;
                     CORE::AppendToPath( filePath, fileEntry.name );
 

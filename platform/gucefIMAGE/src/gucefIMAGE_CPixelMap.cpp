@@ -27,10 +27,10 @@
 #include <assert.h>
 #include <math.h>
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
@@ -148,8 +148,8 @@ bool
 CPixelMap::SetIsNormalizedAsPercentage( bool isNormalizedAsPercentage )
 {GUCEF_TRACE;
     
-    if ( m_pixelComponentDataType == MT::DATATYPE_FLOAT32 ||
-         m_pixelComponentDataType == MT::DATATYPE_FLOAT64  )
+    if ( m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT32 ||
+         m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT64  )
     {
         m_isNormalizedAsPercentage = isNormalizedAsPercentage;
         return true;
@@ -169,7 +169,7 @@ CPixelMap::NormalizeAsPercentage( void )
     // First we convert the pixel component format to Float64
     // This will give us the precision we want for normalization except when int64 was used
     // but that is such an edge case we dont worry about it right now
-    if ( ConvertFormatTo( MT::DATATYPE_FLOAT64 ) )
+    if ( ConvertFormatTo( MT::DATATYPE_LE_FLOAT64 ) )
     {
         Float64* pixelMapData = (Float64*) m_pixelMapData;
         Float64 percentage = std::numeric_limits< Float64 >::max() / 100.0;
@@ -219,7 +219,7 @@ CPixelMap::ApplyContrastImp( Float32 adjustmentPercentage )
 
     T theMax = std::numeric_limits< T >::max();
     Float64 adjustedMax = (Float64) theMax;
-    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_FLOAT64;
+    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT64;
     if ( tIsFloat && m_isNormalizedAsPercentage )
     {
         adjustedMax = 1.0;
@@ -263,11 +263,11 @@ CPixelMap::ApplyContrast( Float32 adjustmentPercentage )
 
     switch ( m_pixelComponentDataType )
     {
-        case MT::DATATYPE_FLOAT32:
+        case MT::DATATYPE_LE_FLOAT32:
         {
             return ApplyContrastImp< CORE::Float32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_FLOAT64:
+        case MT::DATATYPE_LE_FLOAT64:
         {
             return ApplyContrastImp< CORE::Float64 >( adjustmentPercentage );
         }
@@ -279,27 +279,27 @@ CPixelMap::ApplyContrast( Float32 adjustmentPercentage )
         {
             return ApplyContrastImp< CORE::Int8 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT16:
+        case MT::DATATYPE_LE_UINT16:
         {
             return ApplyContrastImp< CORE::UInt16 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT16:
+        case MT::DATATYPE_LE_INT16:
         {
             return ApplyContrastImp< CORE::Int16 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT32:
+        case MT::DATATYPE_LE_UINT32:
         {
             return ApplyContrastImp< CORE::UInt32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT32:
+        case MT::DATATYPE_LE_INT32:
         {
             return ApplyContrastImp< CORE::Int32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT64:
+        case MT::DATATYPE_LE_UINT64:
         {
             return ApplyContrastImp< CORE::UInt64 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT64:
+        case MT::DATATYPE_LE_INT64:
         {
             return ApplyContrastImp< CORE::Int64 >( adjustmentPercentage );
         }
@@ -349,11 +349,11 @@ CPixelMap::ApplyBrightness( Float32 adjustmentPercentage )
 
     switch ( m_pixelComponentDataType )
     {
-        case MT::DATATYPE_FLOAT32:
+        case MT::DATATYPE_LE_FLOAT32:
         {
             return ApplyBrightnessImp< CORE::Float32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_FLOAT64:
+        case MT::DATATYPE_LE_FLOAT64:
         {
             return ApplyBrightnessImp< CORE::Float64 >( adjustmentPercentage );
         }
@@ -365,27 +365,27 @@ CPixelMap::ApplyBrightness( Float32 adjustmentPercentage )
         {
             return ApplyBrightnessImp< CORE::Int8 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT16:
+        case MT::DATATYPE_LE_UINT16:
         {
             return ApplyBrightnessImp< CORE::UInt16 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT16:
+        case MT::DATATYPE_LE_INT16:
         {
             return ApplyBrightnessImp< CORE::Int16 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT32:
+        case MT::DATATYPE_LE_UINT32:
         {
             return ApplyBrightnessImp< CORE::UInt32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT32:
+        case MT::DATATYPE_LE_INT32:
         {
             return ApplyBrightnessImp< CORE::Int32 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_UINT64:
+        case MT::DATATYPE_LE_UINT64:
         {
             return ApplyBrightnessImp< CORE::UInt64 >( adjustmentPercentage );
         }
-        case MT::DATATYPE_INT64:
+        case MT::DATATYPE_LE_INT64:
         {
             return ApplyBrightnessImp< CORE::Int64 >( adjustmentPercentage );
         }
@@ -422,7 +422,7 @@ CPixelMap::ApplyBrightnessImp( Float32 adjustmentPercentage )
     
     T theMax = std::numeric_limits< T >::max();
     Float64 adjustedMax = (Float64) theMax;
-    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_FLOAT64;
+    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_LE_FLOAT64;
     if ( tIsFloat && m_isNormalizedAsPercentage )
     {
         adjustedMax = 1.0;
@@ -478,7 +478,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
     Float32 gammaPow = 1 / gamma;
     switch ( m_pixelComponentDataType )
     {
-        case MT::DATATYPE_FLOAT32:
+        case MT::DATATYPE_LE_FLOAT32:
         {
             for ( UInt32 n=0; n<valueCount; ++n )
             {
@@ -487,7 +487,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;
         }                            
-        case MT::DATATYPE_FLOAT64:
+        case MT::DATATYPE_LE_FLOAT64:
         {
             for (UInt32 n = 0; n < valueCount; ++n)
             {
@@ -514,7 +514,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;        
         }
-        case MT::DATATYPE_UINT16:
+        case MT::DATATYPE_LE_UINT16:
         {
             for ( UInt32 n=0; n<valueCount; ++n )
             {
@@ -523,7 +523,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;        
         }
-        case MT::DATATYPE_INT16:
+        case MT::DATATYPE_LE_INT16:
         {
             for ( UInt32 n=0; n<valueCount; ++n )
             {
@@ -532,7 +532,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;        
         }
-        case MT::DATATYPE_UINT32:
+        case MT::DATATYPE_LE_UINT32:
         {
             for (UInt32 n = 0; n < valueCount; ++n)
             {
@@ -541,7 +541,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;
         }
-        case MT::DATATYPE_INT32:
+        case MT::DATATYPE_LE_INT32:
         {
             for (UInt32 n = 0; n < valueCount; ++n)
             {
@@ -550,7 +550,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;
         }
-        case MT::DATATYPE_UINT64:
+        case MT::DATATYPE_LE_UINT64:
         {
             for (UInt32 n = 0; n < valueCount; ++n)
             {
@@ -559,7 +559,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             }
             break;
         }
-        case MT::DATATYPE_INT64:
+        case MT::DATATYPE_LE_INT64:
         {
             for (UInt32 n = 0; n < valueCount; ++n)
             {
@@ -597,13 +597,13 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                 UInt32 paletteIndex = 0;
                 switch ( m_pixelComponentDataType )
                 {
-                    case MT::DATATYPE_FLOAT32:
+                    case MT::DATATYPE_LE_FLOAT32:
                     {
                         Float32 index = *(Float32*) ( m_pixelMapData + ( sizeof(Float32) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }                            
-                    case MT::DATATYPE_FLOAT64:
+                    case MT::DATATYPE_LE_FLOAT64:
                     {
                         Float64 index = *(Float64*) ( m_pixelMapData + ( sizeof(Float64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
@@ -619,33 +619,33 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                         paletteIndex = *(Int8*) ( m_pixelMapData + ( sizeof(Int8) * pixelIndex ) );
                         break;
                     }
-                    case MT::DATATYPE_UINT16:
+                    case MT::DATATYPE_LE_UINT16:
                     {
                         paletteIndex = *(UInt16*) ( m_pixelMapData + ( sizeof(UInt16) * pixelIndex ) );
                         break;
                     }
-                    case MT::DATATYPE_INT16:
+                    case MT::DATATYPE_LE_INT16:
                     {
                         paletteIndex = *(UInt16*) ( m_pixelMapData + ( sizeof(UInt16) * pixelIndex ) );
                         break;
                     }
-                    case MT::DATATYPE_UINT32:
+                    case MT::DATATYPE_LE_UINT32:
                     {
                         paletteIndex = *(UInt32*) ( m_pixelMapData + ( sizeof(UInt32) * pixelIndex ) );
                         break;
                     }
-                    case MT::DATATYPE_INT32:
+                    case MT::DATATYPE_LE_INT32:
                     {
                         paletteIndex = *(UInt32*) ( m_pixelMapData + ( sizeof(UInt32) * pixelIndex ) );
                         break;
                     }
-                    case MT::DATATYPE_UINT64:
+                    case MT::DATATYPE_LE_UINT64:
                     {
                         UInt64 index = *(UInt64*) ( m_pixelMapData + ( sizeof(UInt64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }
-                    case MT::DATATYPE_INT64:
+                    case MT::DATATYPE_LE_INT64:
                     {
                         Int64 index = *(Int64*) ( m_pixelMapData + ( sizeof(Int64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
@@ -1977,12 +1977,12 @@ CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
     {
         switch ( m_pixelComponentDataType )
         {
-            case MT::DATATYPE_FLOAT32:
+            case MT::DATATYPE_LE_FLOAT32:
             {
                 CORE::Float32* pixelMapData = (CORE::Float32*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Float32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_FLOAT64:
+            case MT::DATATYPE_LE_FLOAT64:
             {
                 CORE::Float64* pixelMapData = (CORE::Float64*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Float64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
@@ -1997,32 +1997,32 @@ CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
                 CORE::Int8* pixelMapData = (CORE::Int8*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Int8 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_UINT16:
+            case MT::DATATYPE_LE_UINT16:
             {
                 CORE::UInt16* pixelMapData = (CORE::UInt16*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::UInt16 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_INT16:
+            case MT::DATATYPE_LE_INT16:
             {
                 CORE::Int16* pixelMapData = (CORE::Int16*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Int16 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_UINT32:
+            case MT::DATATYPE_LE_UINT32:
             {
                 CORE::UInt32* pixelMapData = (CORE::UInt32*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::UInt32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_INT32:
+            case MT::DATATYPE_LE_INT32:
             {
                 CORE::Int32* pixelMapData = (CORE::Int32*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Int32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_UINT64:
+            case MT::DATATYPE_LE_UINT64:
             {
                 CORE::UInt64* pixelMapData = (CORE::UInt64*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::UInt64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
             }
-            case MT::DATATYPE_INT64:
+            case MT::DATATYPE_LE_INT64:
             {
                 CORE::Int64* pixelMapData = (CORE::Int64*) m_pixelMapData;
                 return ConvertFormatToImp< CORE::Int64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
@@ -2098,20 +2098,20 @@ CPixelMap::GetPixelChannelSize( const TBuildinDataType pixelComponentDataType )
         {
             return 1;
         }
-        case GUCEF::MT::DATATYPE_INT16 :
-        case GUCEF::MT::DATATYPE_UINT16 :
+        case GUCEF::MT::DATATYPE_LE_INT16 :
+        case GUCEF::MT::DATATYPE_LE_UINT16 :
         {
             return 2;
         }        
-        case GUCEF::MT::DATATYPE_INT32 :
-        case GUCEF::MT::DATATYPE_UINT32 :
-        case GUCEF::MT::DATATYPE_FLOAT32 :
+        case GUCEF::MT::DATATYPE_LE_INT32 :
+        case GUCEF::MT::DATATYPE_LE_UINT32 :
+        case GUCEF::MT::DATATYPE_LE_FLOAT32 :
         {
             return 4;
         }
-        case GUCEF::MT::DATATYPE_INT64 :
-        case GUCEF::MT::DATATYPE_UINT64 :
-        case GUCEF::MT::DATATYPE_FLOAT64 :
+        case GUCEF::MT::DATATYPE_LE_INT64 :
+        case GUCEF::MT::DATATYPE_LE_UINT64 :
+        case GUCEF::MT::DATATYPE_LE_FLOAT64 :
         {
             return 8;
         }

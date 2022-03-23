@@ -256,8 +256,8 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
         return false;
     }
 
-    CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( "DirToWatch" );
-    CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+    CORE::CValueList::TVariantVector settingValues = appConfig.GetValueVectorAlways( "DirToWatch" );
+    CORE::CValueList::TVariantVector::iterator n = settingValues.begin();
     while ( n != settingValues.end() )
     {
         CORE::CString settingValue = CORE::ResolveVars( (*n) );

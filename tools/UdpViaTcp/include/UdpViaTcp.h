@@ -295,7 +295,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
     THostAddressVector m_udpDestinations;
     COMCORE::CHostAddress m_udpReceiver;
     COMCORE::CHostAddress m_udpTransmitter;
-    CORE::CValueList::TStringVector m_udpReceiverMulticastSources;
+    CORE::CValueList::TVariantVector m_udpReceiverMulticastSources;
 
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;

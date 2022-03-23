@@ -348,7 +348,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
 
     switch ( m_pixelComponentDataType )
     {
-        case MT::DATATYPE_FLOAT32:
+        case MT::DATATYPE_LE_FLOAT32:
         {
             CORE::Float32* pixel = (CORE::Float32*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::Float32 >::max() )
@@ -367,7 +367,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }
-        case MT::DATATYPE_FLOAT64:
+        case MT::DATATYPE_LE_FLOAT64:
         {
             CORE::Float64* pixel = (CORE::Float64*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::Float64 >::max() )
@@ -424,7 +424,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }             
-        case MT::DATATYPE_UINT16:
+        case MT::DATATYPE_LE_UINT16:
         {
             CORE::UInt16* pixel = (CORE::UInt16*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::UInt16 >::max() )
@@ -443,7 +443,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }
-        case MT::DATATYPE_INT16:
+        case MT::DATATYPE_LE_INT16:
         {
             CORE::Int16* pixel = (CORE::Int16*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::Int16 >::max() )
@@ -462,7 +462,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }
-        case MT::DATATYPE_UINT32:
+        case MT::DATATYPE_LE_UINT32:
         {
             CORE::UInt32* pixel = (CORE::UInt32*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::UInt32 >::max() )
@@ -481,7 +481,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }
-        case MT::DATATYPE_INT32:
+        case MT::DATATYPE_LE_INT32:
         {
             CORE::Int32* pixel = (CORE::Int32*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::Int32 >::max() )
@@ -500,7 +500,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }            
             return true;
         }
-        case MT::DATATYPE_UINT64:
+        case MT::DATATYPE_LE_UINT64:
         {
             CORE::UInt64* pixel = (CORE::UInt64*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::UInt64 >::max() )
@@ -519,7 +519,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
             }
             return true;
         }
-        case MT::DATATYPE_INT64:
+        case MT::DATATYPE_LE_INT64:
         {
             CORE::Int64* pixel = (CORE::Int64*) pixelAddr;
             if ( std::numeric_limits< T >::max() == std::numeric_limits< CORE::Int64 >::max() )

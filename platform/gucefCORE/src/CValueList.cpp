@@ -106,21 +106,21 @@ CValueList::operator=( const CValueList& src )
 
 /*-------------------------------------------------------------------------*/
 
-CString&
+CVariant&
 CValueList::operator[]( const CString& key )
 {GUCEF_TRACE;
 
-    TStringVector& values = m_list[ key ];
+    TVariantVector& values = m_list[ key ];
     if ( values.empty() )
     {
-        values.push_back( CString::Empty );
+        values.push_back( CVariant::Empty );
     }
     return (*values.begin());
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
+const CVariant&
 CValueList::operator[]( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -138,9 +138,9 @@ CValueList::SetMultiple( const CValueList& src    ,
     while ( i != src.m_list.end() )
     {
         const CString& key = (*i).first;
-        const TStringVector& values = (*i).second;
+        const TVariantVector& values = (*i).second;
 
-        TStringVector::const_iterator n = values.begin();
+        TVariantVector::const_iterator n = values.begin();
         while ( n != values.end() )
         {
             // We will just use the 'set' function
@@ -215,8 +215,8 @@ CValueList::SaveConfig( CDataNode& tree ) const
             TValueMap::const_iterator i = m_list.begin();
             while ( i != m_list.end() )
             {
-                const TStringVector& values = (*i).second;
-                TStringVector::const_iterator n = values.begin();
+                const TVariantVector& values = (*i).second;
+                TVariantVector::const_iterator n = values.begin();
                 while ( n != values.end() )
                 {
                     CDataNode* child = nodeNamespaceRoot->AddChild( m_configKeyNamespace + (*i).first );
@@ -231,7 +231,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
             TValueMap::const_iterator i = m_list.begin();
             while ( i != m_list.end() )
             {
-                const TStringVector& values = (*i).second;
+                const TVariantVector& values = (*i).second;
                 if ( !values.empty() )
                     nodeNamespaceRoot->SetAttribute( m_configKeyNamespace + (*i).first, values.front() );
                 ++i;
@@ -407,29 +407,30 @@ CValueList::Set( const CString& keyAndValue       ,
 
     CString key( keyAndValue.SubstrToChar( kvSeperator, true ) );
     CString value( keyAndValue.SubstrToChar( kvSeperator, false ) );
-
+    
+    CVariant valueVar;
+    valueVar.LinkTo( value );
+    
     if ( GUCEF_NULL == optionalKeyPrefix )
     {
-        Set( key   ,
-             value );
+        Set( key, valueVar );
     }
     else
     {
-        Set( *optionalKeyPrefix + key ,
-             value                    );
+        Set( *optionalKeyPrefix + key, valueVar );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CValueList::Set( const CString& key   ,
-                 const CString& value )
+CValueList::Set( const CString& key    ,
+                 const CVariant& value )
 {GUCEF_TRACE;
 
     if ( key.Length() > 0 )
     {
-        TStringVector& values = m_list[ key ];
+        TVariantVector& values = m_list[ key ];
         if ( m_allowDuplicates )
         {
             values.push_back( value );
@@ -438,7 +439,7 @@ CValueList::Set( const CString& key   ,
         {
             // Duplicates are not allowed so if an identical
             // value is already in the list we should not add it
-            TStringVector::iterator n = values.begin();
+            TVariantVector::iterator n = values.begin();
             while ( n != values.end() )
             {
                 if ( (*n) == value )
@@ -460,11 +461,11 @@ CValueList::Set( const CString& key   ,
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector
+CValueList::TVariantVector
 CValueList::GetValueVectorAlways( const CString& key ) const
 {GUCEF_TRACE;
 
-    TStringVector results;
+    TVariantVector results;
     TValueMap::const_iterator i = m_list.find( key );
     if ( i != m_list.end() )
     {
@@ -475,22 +476,22 @@ CValueList::GetValueVectorAlways( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector
-CValueList::GetValueVectorAlways( const CString& key                 ,
-                                  char valueSepChar                  ,
-                                  const TStringVector& defaultValues ) const
+CValueList::TVariantVector
+CValueList::GetValueVectorAlways( const CString& key                  ,
+                                  char valueSepChar                   ,
+                                  const TVariantVector& defaultValues ) const
 {GUCEF_TRACE;
 
-    const TStringVector* firstPass = GUCEF_NULL;
-    TStringVector results;
+    const TVariantVector* firstPass = GUCEF_NULL;
+    TVariantVector results;
     TValueMap::const_iterator i = m_list.find( key );
     if ( i != m_list.end() )
     {
         firstPass = &(*i).second;
-        TStringVector::const_iterator n = firstPass->begin();
+        TVariantVector::const_iterator n = firstPass->begin();
         while ( n != firstPass->end() )
         {
-            TStringVector subSetResults = (*n).ParseElements( valueSepChar,  false );
+            TStringVector subSetResults = (*n).AsString().ParseElements( valueSepChar,  false );
             TStringVector::iterator m = subSetResults.begin();
             while ( m != subSetResults.end() )
             {
@@ -510,19 +511,43 @@ CValueList::GetValueVectorAlways( const CString& key                 ,
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector
+CValueList::TVariantVector
 CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
 {GUCEF_TRACE;
 
-    TStringVector emptyDefault;
+    TVariantVector emptyDefault;
     return GetValueVectorAlways( key, valueSepChar, emptyDefault );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
+const CVariant&
+CValueList::GetValueAlways( const CString& key       ,
+                            const char* defaultValue ) const
+{GUCEF_TRACE;
+
+    CVariant defaultValueVar;
+    defaultValueVar.LinkTo( defaultValue );
+    return GetValueAlways( key, defaultValueVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CVariant&
 CValueList::GetValueAlways( const CString& key          ,
                             const CString& defaultValue ) const
+{GUCEF_TRACE;
+
+    CVariant defaultValueVar;
+    defaultValueVar.LinkTo( defaultValue );
+    return GetValueAlways( key, defaultValueVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CVariant&
+CValueList::GetValueAlways( const CString& key           ,
+                            const CVariant& defaultValue ) const
 {GUCEF_TRACE;
 
     TValueMap::const_iterator i = m_list.find( key );
@@ -536,7 +561,7 @@ CValueList::GetValueAlways( const CString& key          ,
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
+const CVariant&
 CValueList::GetValue( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -551,7 +576,7 @@ CValueList::GetValue( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString&
+CVariant&
 CValueList::GetValue( const CString& key )
 {GUCEF_TRACE;
 
@@ -566,7 +591,7 @@ CValueList::GetValue( const CString& key )
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector&
+CValueList::TVariantVector&
 CValueList::GetValueVector( const CString& key )
 {GUCEF_TRACE;
 
@@ -581,7 +606,7 @@ CValueList::GetValueVector( const CString& key )
 
 /*-------------------------------------------------------------------------*/
 
-const CValueList::TStringVector&
+const CValueList::TVariantVector&
 CValueList::GetValueVector( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -596,7 +621,23 @@ CValueList::GetValueVector( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
+CValueList::TStringVector
+CValueList::GetValueStringVector( const CString& key ) const
+{GUCEF_TRACE;
+
+    TStringVector result;
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        return ToStringVector( (*i).second );
+    }
+
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CVariant&
 CValueList::GetValue( const UInt32 index ) const
 {GUCEF_TRACE;
 
@@ -613,7 +654,7 @@ CValueList::GetValue( const UInt32 index ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString&
+CVariant&
 CValueList::GetValue( const UInt32 index )
 {GUCEF_TRACE;
 
@@ -635,10 +676,10 @@ CValueList::GetPair( const UInt32 index ) const
 {GUCEF_TRACE;
 
     const CString& key = GetKey( index );
-    const CString& value = GetValue( index );
+    const CVariant& value = GetValue( index );
 
     // if no exception was thrown we can now proceed to build the pair
-    CString pair = key + '=' + value;
+    CString pair = key + '=' + value.AsString();
     return pair;
 }
 
@@ -650,7 +691,7 @@ CValueList::GetAllPairs( const UInt32 index          ,
 {GUCEF_TRACE;
 
     const CString& key = GetKey( index );
-    const TStringVector& values = GetValueVector( index );
+    const TVariantVector& values = GetValueVector( index );
 
     CString resultStr;
     bool first = true;
@@ -685,9 +726,9 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
     while ( i != m_list.end() )
     {
         const CString& key = (*i).first;
-        const TStringVector& values = (*i).second;
+        const TVariantVector& values = (*i).second;
 
-        TStringVector::const_iterator n = values.begin();
+        TVariantVector::const_iterator n = values.begin();
         while ( n != values.end() )
         {
             if ( !first )
@@ -716,10 +757,10 @@ CString
 CValueList::GetPair( const CString& key ) const
 {GUCEF_TRACE;
 
-    const CString& value = GetValue( key );
+    const CVariant& value = GetValue( key );
 
     // if no exception was thrown we can now proceed to build the pair
-    CString pair = key + '=' + value;
+    CString pair = key + '=' + value.AsString();
     return pair;
 }
 
@@ -800,7 +841,7 @@ CValueList::GetCount( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CValueList::TStringVector&
+const CValueList::TVariantVector&
 CValueList::GetValueVector( const UInt32 index ) const
 {GUCEF_TRACE;
 

@@ -347,7 +347,7 @@ UdpViaTcp::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
 
     if ( m_udpReceiveMulticast )
     {
-        CORE::CValueList::TStringVector::iterator i = m_udpReceiverMulticastSources.begin();
+        CORE::CValueList::TVariantVector::iterator i = m_udpReceiverMulticastSources.begin();
         while ( i != m_udpReceiverMulticastSources.end() )
         {
             COMCORE::CHostAddress multicastGroup;
@@ -816,7 +816,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    CORE::CString modeAsString = appConfig.GetValueAlways( "Mode", "Receiver" ).Lowercase();
+    CORE::CString modeAsString = appConfig.GetValueAlways( "Mode", "Receiver" ).AsString().Lowercase();
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Application mode: " + modeAsString );
 
     if ( "receiver" == modeAsString )
@@ -846,7 +846,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) ) );
     m_udpReceiver.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpReceiverInterface", "0.0.0.0" ) ) );
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "UdpReceiverMulticastSource" );
-    CORE::CValueList::TStringVector::iterator i = m_udpReceiverMulticastSources.begin();
+    CORE::CValueList::TVariantVector::iterator i = m_udpReceiverMulticastSources.begin();
     while ( i != m_udpReceiverMulticastSources.end() )
     {
         (*i) = CORE::ResolveVars( (*i) );
@@ -865,11 +865,11 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     
     // UDP Destinations are allowed to be configured via multiple config lines or via a , separated list or some combination thereof
     // Do note that in order to garantee correct association between IP and Port we have to specify IP and Port together as <IP>:<Port>
-    CORE::CValueList::TStringVector udpDestinationsCombo = appConfig.GetValueVectorAlways( "UdpDestinations" );
+    CORE::CValueList::TVariantVector udpDestinationsCombo = appConfig.GetValueVectorAlways( "UdpDestinations" );
     i = udpDestinationsCombo.begin();
     while ( i != udpDestinationsCombo.end() )
     {
-        CORE::CValueList::TStringVector elements = (*i).ParseElements( ',', false );
+        CORE::CValueList::TStringVector elements = (*i).AsString().ParseElements( ',', false );
         CORE::CValueList::TStringVector::iterator n = elements.begin();
         while ( n != elements.end() )
         {
@@ -899,7 +899,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "UdpReceiverMulticastSource" );
-    CORE::CValueList::TStringVector::iterator n = m_udpReceiverMulticastSources.begin();
+    CORE::CValueList::TVariantVector::iterator n = m_udpReceiverMulticastSources.begin();
     while ( n != m_udpReceiverMulticastSources.end() )
     {
         (*n) = CORE::ResolveVars( (*n) );

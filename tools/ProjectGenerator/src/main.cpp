@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
+#ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#include "gucefCORE_CGlobalConfigValueList.h"
+#define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
+
 #ifndef GUCEF_PROJECTGEN_DATATYPES_H
 #include "gucefProjectGen_DataTypes.h"
 #define GUCEF_PROJECTGEN_DATATYPES_H
@@ -120,30 +125,14 @@ using namespace GUCEF::PROJECTGEN;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-LoadConfig( const CORE::CString& configPath ,
-            CORE::CValueList& keyValueList  ,
-            CORE::CDataNode* loadedConfig   )
+CORE::CString
+LookForConfigFile( const CORE::CString& configFile )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "ProjectGenerator_d.ini";
-    #else
-    const CORE::CString configFile = "ProjectGenerator.ini";
-    #endif
-
-    CORE::CString configFilePath;
-    bool foundViaParam = false;
-    if ( !configPath.IsNULLOrEmpty() )
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
+    if ( !CORE::FileExists( configFile ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
-        foundViaParam = CORE::FileExists( configPath );
-        configFilePath = configPath;
-    }
-
-    if ( !foundViaParam )
-    {
-        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
@@ -154,22 +143,70 @@ LoadConfig( const CORE::CString& configPath ,
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
-                return false;
+            {            
+                configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
+                configFilePath = CORE::RelativePath( configFilePath );
+
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                if ( !FileExists( configFilePath ) )
+                {                                        
+                    return CORE::CString::Empty;
+                }
             }
         }
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
-    keyValueList.SetConfigNamespace( "Bootstrap/Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
-    keyValueList.SetAllowDuplicates( false );
-    keyValueList.SetAllowMultipleValues( true );
+        return configFilePath; 
+    }
+
+    return configFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadConfig( const CORE::CString& bootstrapConfigPath   ,
+            const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+{GUCEF_TRACE;
+
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString bootstrapConfigFile = "ProjectGenerator_bootstrap_d.ini";
+    const CORE::CString configFile = "ProjectGenerator_d.ini";
+    #else
+    const CORE::CString bootstrapConfigFile = "ProjectGenerator_bootstrap.ini";
+    const CORE::CString configFile = "ProjectGenerator.ini";
+    #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig( loadedConfig );
+    
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configFile );
+
+    if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located bootstrap config file @ " + bootstrapConfigFilePath );
+        configStore.SetBootstrapConfigFile( bootstrapConfigFilePath );
+    }
+    if ( !configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+        configStore.SetConfigFile( configFilePath );
+    }
+    if ( bootstrapConfigFilePath.IsNULLOrEmpty() && configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
+    }
+
+    CORE::CGlobalConfigValueList globalCfg;
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetAllowDuplicates( false );
+    globalCfg.SetAllowMultipleValues( true );
+
+    bool loadSuccess = configStore.LoadConfig( loadedConfig );
+
+    keyValueList = globalCfg;
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,12 +251,13 @@ GUCEF_OSMAIN_BEGIN
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
     CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
     keyValueList.Clear();
     
     // Load settings from a config file (if any) and then override with params (if any)
     CORE::CDataNode loadedConfig;
-    LoadConfig( configPathParam, keyValueList, &loadedConfig );
+    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, &loadedConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
@@ -264,10 +302,10 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
-    TStringVector rootDirs;
+    CORE::CValueList::TStringVector rootDirs;
     try
     {
-        rootDirs = keyValueList.GetValueVector( "rootDir" );
+        rootDirs = keyValueList.GetValueStringVector( "rootDir" );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::ToString( rootDirs.size() ) );
     }
     catch ( CORE::CValueList::EUnknownKey& )
@@ -279,7 +317,7 @@ GUCEF_OSMAIN_BEGIN
     bool addToolCompileTimeToOutput = CORE::StringToBool( keyValueList.GetValueAlways( "addToolCompileTimeToOutput" ) );
 
     // Get the generators to use
-    TStringVector generatorList = keyValueList.GetValueAlways( "generators" ).ParseElements( ';', false );
+    TStringVector generatorList = keyValueList.GetValueAlways( "generators" ).AsString().ParseElements( ';', false );
     if ( generatorList.size() == 0  )
     {
         // No specific generators where specified, defaulting...
@@ -290,7 +328,7 @@ GUCEF_OSMAIN_BEGIN
     ApplyConfigToProject( loadedConfig, projectInfo );
 
     // Set any global dir excludes that where passed as cmd parameters
-    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
+    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).AsString().ParseElements( ';', false );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );

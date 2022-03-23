@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef SHEREDOM_UTF8_H_INCLUDED
+#include "gucefCORE_utf8.h"
+#define SHEREDOM_UTF8_H_INCLUDED
+#endif /* SHEREDOM_UTF8_H_INCLUDED ? */
+
 #include "gucefCORE_CVariant.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -1352,6 +1357,47 @@ CVariant::LinkTo( const void* externalBuffer, UInt32 bufferSize, UInt8 varType )
 /*-------------------------------------------------------------------------*/
 
 CVariant&
+CVariant::LinkTo( const char* externalBuffer, UInt32 bufferSize, UInt8 varType )
+{GUCEF_TRACE;
+
+    // Same as the void* version of this member function
+    // the difference is in the default varType param used
+    Set( externalBuffer, bufferSize, varType, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant&
+CVariant::LinkTo( const char* externalBuffer, UInt8 varType )
+{GUCEF_TRACE;
+
+    switch ( varType )
+    {
+        case GUCEF_DATATYPE_ASCII_STRING:
+        {
+            UInt32 bufferSize = static_cast< UInt32 >( strlen( externalBuffer ) );
+            Set( externalBuffer, bufferSize, varType, true );
+            return *this;
+        }
+        case GUCEF_DATATYPE_UTF8_STRING:
+        {
+            UInt32 bufferSize = static_cast< UInt32 >( utf8size( externalBuffer ) );
+            Set( externalBuffer, bufferSize, varType, true );
+            return *this;
+        }
+        default:
+        {
+            // Cannot determine length automatically
+            Set( externalBuffer, 0, varType, true );
+            return *this;
+        }
+    }  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant&
 CVariant::LinkTo( const CVariant& src )
 {GUCEF_TRACE;
 
@@ -1395,7 +1441,7 @@ CVariant&
 CVariant::LinkTo( const std::wstring& src )
 {GUCEF_TRACE;
 
-    Set( src.c_str(), (UInt32) src.size(), GUCEF_DATATYPE_UTF16_LE_STRING, true );
+    Set( src.c_str(), (UInt32) src.size(), GUCEF_DATATYPE_UTF16_STRING, true );
     return *this;
 }
 

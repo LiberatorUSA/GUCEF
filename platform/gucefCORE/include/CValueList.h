@@ -79,9 +79,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 {
     public:
 
-    typedef CVariant::VariantVector             TVariantVector;
-    typedef CString::StringVector               TStringVector;
-    typedef std::map< CString, TStringVector >  TValueMap;
+    typedef CVariant::VariantVector                 TVariantVector;
+    typedef CString::StringVector                   TStringVector;
+    typedef std::map< CString, TVariantVector >     TValueMap;
 
     CValueList( void );
 
@@ -98,7 +98,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  Will create a new key entry if no such key entry yet exists with an empty string value
      *  thus allowing for valuelist[ "myKey" ] = "example"
      */
-    CString& operator[]( const CString& key );
+    CVariant& operator[]( const CString& key );
 
     /**
      *  Returns the first value associated with the
@@ -106,7 +106,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EUnknownKey thrown if the given key is unknown
      */
-    const CString& operator[]( const CString& key ) const;
+    const CVariant& operator[]( const CString& key ) const;
 
     /**
      *  Sets key/value pairs based on the source valuelist
@@ -128,8 +128,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
               const char kvSeperator = '='                  ,
               const CString* optionalKeyPrefix = GUCEF_NULL );
 
-    void Set( const CString& key   ,
-              const CString& value );
+    void Set( const CString& key    ,
+              const CVariant& value );
 
     /**
      *  Returns the first value associated with the
@@ -137,7 +137,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EUnknownKey thrown if the given key is unknown
      */
-    CString& GetValue( const CString& key );
+    CVariant& GetValue( const CString& key );
 
     /**
      *  Returns the first value associated with the
@@ -145,16 +145,34 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EUnknownKey thrown if the given key is unknown
      */
-    const CString& GetValue( const CString& key ) const;
+    const CVariant& GetValue( const CString& key ) const;
 
     /**
      *  Returns the first value associated with the
      *  given key. This GetValue version differs from the others in
      *  that no exception will be thrown if the key does not exist
-     *  instead it will return an empty string.
+     *  instead it will return an empty variant.
      */
-    const CString& GetValueAlways( const CString& key                           ,
-                                   const CString& defaultValue = CString::Empty ) const;
+    const CVariant& GetValueAlways( const CString& key       ,
+                                    const char* defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    const CVariant& GetValueAlways( const CString& key          ,
+                                    const CString& defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    const CVariant& GetValueAlways( const CString& key                             ,
+                                    const CVariant& defaultValue = CVariant::Empty ) const;
 
     /**
      *  Returns the first value associated with the
@@ -162,7 +180,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
-    CString& GetValue( const UInt32 index );
+    CVariant& GetValue( const UInt32 index );
 
     /**
      *  Returns the first value associated with the
@@ -170,21 +188,13 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
-    const CString& GetValue( const UInt32 index ) const;
-
-    /**
-     *  Returns the value vector associated with the
-     *  given key.
-     *
-     *  @exception EUnknownKey thrown if the given key is unknown
-     */
-    TStringVector& GetValueVector( const CString& key );
+    const CVariant& GetValue( const UInt32 index ) const;
 
     /**
      *  Returns the value vector associated with the
      *  given key if any. Otherwise returns an empty list and will not throw an exception
      */
-    TStringVector GetValueVectorAlways( const CString& key ) const;
+    TVariantVector GetValueVectorAlways( const CString& key ) const;
 
     /**
      *  Returns the value vector associated with the
@@ -192,9 +202,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  Aside from returning the multiple entries for the same key (if permitted) it will also
      *  perform sub string parsing for values per value entry
      */
-    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
+    TVariantVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
 
-    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar, const TStringVector& defaultValues ) const;
+    TVariantVector GetValueVectorAlways( const CString& key, char valueSepChar, const TVariantVector& defaultValues ) const;
 
     /**
      *  Returns all keys matching the key wildcard search
@@ -210,7 +220,23 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EUnknownKey thrown if the given key is unknown
      */
-    const TStringVector& GetValueVector( const CString& key ) const;
+    TVariantVector& GetValueVector( const CString& key );
+
+    /**
+     *  Returns the value vector associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    const TVariantVector& GetValueVector( const CString& key ) const;
+    
+    /**
+     *  Returns a string converted copy of the value vector associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    TStringVector GetValueStringVector( const CString& key ) const;
 
     /**
      *  Returns the value vector associated with the
@@ -218,7 +244,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EIndexOutOfRange thrown if the given index is out of bounds
      */
-    const TStringVector& GetValueVector( const UInt32 index ) const;
+    const TVariantVector& GetValueVector( const UInt32 index ) const;
 
     CString GetPair( const CString& key ) const;
 

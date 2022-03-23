@@ -254,7 +254,7 @@ UdpTransformer::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
 
     if ( m_udpReceiveMulticast )
     {
-        CORE::CValueList::TStringVector::iterator i = m_udpReceiverMulticastSources.begin();
+        CORE::CValueList::TVariantVector::iterator i = m_udpReceiverMulticastSources.begin();
         while ( i != m_udpReceiverMulticastSources.end() )
         {
             COMCORE::CHostAddress multicastGroup;
@@ -497,15 +497,15 @@ UdpTransformer::LoadConfig( const CORE::CValueList& appConfig   ,
     m_transformDescriptionSegments = m_udpPayloadTransformDescription.ParseElements( '|', false );
     m_udpSourceAddrTransformAsString = CORE::StringToBool( appConfig.GetValueAlways( "udpSourceAddrTransformAsString" ), true );
     m_udpSourceAddrTransformAsStringIncludePort = CORE::StringToBool( appConfig.GetValueAlways( "udpSourceAddrTransformAsStringIncludePort" ), false );
-    m_udpSourceAddrTransformAsStringDotReplacementChar = appConfig.GetValueAlways( "udpSourceAddrTransformAsStringDotReplacementChar", "_" ).CodepointAtIndex( 0 );
-    m_udpSourceAddrTransformAsStringColonReplacementChar = appConfig.GetValueAlways( "udpSourceAddrTransformAsStringColonReplacementChar", "_" ).CodepointAtIndex( 0 );
+    m_udpSourceAddrTransformAsStringDotReplacementChar = appConfig.GetValueAlways( "udpSourceAddrTransformAsStringDotReplacementChar", "_" ).AsString().CodepointAtIndex( 0 );
+    m_udpSourceAddrTransformAsStringColonReplacementChar = appConfig.GetValueAlways( "udpSourceAddrTransformAsStringColonReplacementChar", "_" ).AsString().CodepointAtIndex( 0 );
 
     m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "udpReceiverAcceptsUnicast" ), true );
     m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "udpReceiverAcceptsMulticast" ), false );
     m_udpReceiverAddress.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "udpReceiverPort" ) ), 20000 ) );
     m_udpReceiverAddress.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "udpReceiverInterface", "0.0.0.0" ) ) );
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "udpReceiverMulticastSource" );
-    CORE::CValueList::TStringVector::iterator i = m_udpReceiverMulticastSources.begin();
+    CORE::CValueList::TVariantVector::iterator i = m_udpReceiverMulticastSources.begin();
     while ( i != m_udpReceiverMulticastSources.end() )
     {
         (*i) = CORE::ResolveVars( (*i) );
@@ -519,12 +519,12 @@ UdpTransformer::LoadConfig( const CORE::CValueList& appConfig   ,
     
     // UDP Destinations are allowed to be configured via multiple config lines or via a , separated list or some combination thereof
     // Do note that in order to garantee correct association between IP and Port we have to specify IP and Port together as <IP>:<Port>
-    CORE::CValueList::TStringVector udpDestinationsCombo = appConfig.GetValueVectorAlways( "udpDestinations" );
+    CORE::CValueList::TVariantVector udpDestinationsCombo = appConfig.GetValueVectorAlways( "udpDestinations" );
     i = udpDestinationsCombo.begin();
     while ( i != udpDestinationsCombo.end() )
     {
-        CORE::CValueList::TStringVector elements = (*i).ParseElements( ',', false );
-        CORE::CValueList::TStringVector::iterator n = elements.begin();
+        CORE::CString::StringVector elements = (*i).AsString().ParseElements( ',', false );
+        CORE::CString::StringVector::iterator n = elements.begin();
         while ( n != elements.end() )
         {
             CORE::CString destinationStr = CORE::ResolveVars( (*n) ); 
@@ -553,7 +553,7 @@ UdpTransformer::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "udpReceiverMulticastSource" );
-    CORE::CValueList::TStringVector::iterator n = m_udpReceiverMulticastSources.begin();
+    CORE::CValueList::TVariantVector::iterator n = m_udpReceiverMulticastSources.begin();
     while ( n != m_udpReceiverMulticastSources.end() )
     {
         (*n) = CORE::ResolveVars( (*n) );

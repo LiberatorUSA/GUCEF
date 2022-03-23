@@ -644,7 +644,7 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
                     const char* hdrValue = hdrs[ i ].value_string();
                     if ( GUCEF_NULL != hdrValue )
                     {
-                        CORE::CString::StringVector::iterator v = m_channelSettings.kafkaMsgValuesUsedForFiltering.begin();
+                        CORE::CVariant::VariantVector::iterator v = m_channelSettings.kafkaMsgValuesUsedForFiltering.begin();
                         while ( v != m_channelSettings.kafkaMsgValuesUsedForFiltering.end() )
                         {
                             if ( (*v) == hdrValue )
@@ -1783,8 +1783,8 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
     CORE::CString kafkaBrokers = CORE::ResolveVars( appConfig.GetValueAlways( "KafkaBrokers", "127.0.0.1:9092" ) );
 
     Udp2KafkaChannel::ChannelSettings::HostAddressVector consumerModeUdpDestinations;
-    CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( "ConsumerMode.UdpDestinations" );
-    CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+    CORE::CValueList::TVariantVector settingValues = appConfig.GetValueVectorAlways( "ConsumerMode.UdpDestinations" );
+    CORE::CValueList::TVariantVector::iterator n = settingValues.begin();
     while ( n != settingValues.end() )
     {
         CORE::CString settingValue = CORE::ResolveVars( (*n) );
@@ -1811,7 +1811,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
         CORE::CString settingPrefix = "ChannelSetting." + CORE::Int32ToString( channelId );
         
         CORE::CString settingName = settingPrefix + ".KafkaTopicName";
-        CORE::CString settingValue = appConfig.GetValueAlways( settingName );
+        CORE::CString settingValue = appConfig.GetValueAlways( settingName ).AsString();
         if ( !settingValue.IsNULLOrEmpty() )
         {
             channelSettings.channelTopicName = CORE::ResolveVars( settingValue.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
@@ -1858,11 +1858,11 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.metricsPrefix = channelSettings.metricsPrefix.ReplaceSubstr( "{topicName}", channelSettings.channelTopicName );
 
         settingName = settingPrefix + ".Multicast.Join";
-        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName, ',' );
-        CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+        CORE::CValueList::TVariantVector settingValues = appConfig.GetValueVectorAlways( settingName, ',' );
+        CORE::CValueList::TVariantVector::iterator n = settingValues.begin();
         while ( n != settingValues.end() )
         {
-            CORE::CString settingValue = CORE::ResolveVars( (*n) );
+            CORE::CString settingValue = (*n).AsString( CORE::CString::Empty, true );
             COMCORE::CHostAddress multicastAddress( settingValue );
             channelSettings.udpMulticastToJoin.push_back( multicastAddress );
             ++n;
@@ -1904,56 +1904,56 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
 
         settingName = settingPrefix + ".KafkaProducerGlobalConfig.";
         CORE::CValueList::TStringVector kafkaGlobalConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
-        n = kafkaGlobalConfigKeys.begin();
-        while ( n != kafkaGlobalConfigKeys.end() )
+        CORE::CValueList::TStringVector::iterator m = kafkaGlobalConfigKeys.begin();
+        while ( m != kafkaGlobalConfigKeys.end() )
         {
-            CORE::CString kafkaGlobalConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
-            CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*n) );
+            CORE::CString kafkaGlobalConfigSettingKey = (*m).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*m) );
             if ( !kafkaGlobalConfigSettingKey.IsNULLOrEmpty() && !kafkaGlobalConfigSettingValue.IsNULLOrEmpty() )
             {
                 channelSettings.kafkaProducerGlobalConfigSettings[ kafkaGlobalConfigSettingKey ] = kafkaGlobalConfigSettingValue;
             }
-            ++n;
+            ++m;
         }
         settingName = settingPrefix + ".KafkaConsumerGlobalConfig.";
         kafkaGlobalConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
-        n = kafkaGlobalConfigKeys.begin();
-        while ( n != kafkaGlobalConfigKeys.end() )
+        m = kafkaGlobalConfigKeys.begin();
+        while ( m != kafkaGlobalConfigKeys.end() )
         {
-            CORE::CString kafkaGlobalConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
-            CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*n) );
+            CORE::CString kafkaGlobalConfigSettingKey = (*m).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*m) );
             if ( !kafkaGlobalConfigSettingKey.IsNULLOrEmpty() && !kafkaGlobalConfigSettingValue.IsNULLOrEmpty() )
             {
                 channelSettings.kafkaConsumerGlobalConfigSettings[ kafkaGlobalConfigSettingKey ] = kafkaGlobalConfigSettingValue;
             }
-            ++n;
+            ++m;
         }
 
         settingName = settingPrefix + ".KafkaProducerTopicConfig.";
         CORE::CValueList::TStringVector kafkaTopicConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
-        n = kafkaTopicConfigKeys.begin();
-        while ( n != kafkaTopicConfigKeys.end() )
+        m = kafkaTopicConfigKeys.begin();
+        while ( m != kafkaTopicConfigKeys.end() )
         {
-            CORE::CString kafkaTopicConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
-            CORE::CString kafkaTopicConfigSettingValue = appConfig.GetValueAlways( (*n) );
+            CORE::CString kafkaTopicConfigSettingKey = (*m).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaTopicConfigSettingValue = appConfig.GetValueAlways( (*m) );
             if ( !kafkaTopicConfigSettingKey.IsNULLOrEmpty() && !kafkaTopicConfigSettingValue.IsNULLOrEmpty() )
             {
                 channelSettings.kafkaProducerTopicConfigSettings[ kafkaTopicConfigSettingKey ] = kafkaTopicConfigSettingValue;
             }
-            ++n;
+            ++m;
         }
         settingName = settingPrefix + ".KafkaConsumerTopicConfig.";
         kafkaTopicConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
-        n = kafkaTopicConfigKeys.begin();
-        while ( n != kafkaTopicConfigKeys.end() )
+        m = kafkaTopicConfigKeys.begin();
+        while ( m != kafkaTopicConfigKeys.end() )
         {
-            CORE::CString kafkaTopicConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaTopicConfigSettingKey = (*m).CutChars( settingName.Length(), true, 0 );
             CORE::CString kafkaTopicConfigSettingValue = appConfig.GetValueAlways( (*n) );
             if ( !kafkaTopicConfigSettingKey.IsNULLOrEmpty() && !kafkaTopicConfigSettingValue.IsNULLOrEmpty() )
             {
                 channelSettings.kafkaConsumerTopicConfigSettings[ kafkaTopicConfigSettingKey ] = kafkaTopicConfigSettingValue;
             }
-            ++n;
+            ++m;
         }
 
         settingName = settingPrefix + ".KafkaMsgHeaderFilterValues";

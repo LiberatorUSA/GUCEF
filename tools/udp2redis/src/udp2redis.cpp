@@ -954,10 +954,10 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.redisAddress.SetPortInHostByteOrder( m_redisPort );
 
         CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".RedisStreamName";
-        CORE::CString settingValue = appConfig.GetValueAlways( settingName );
+        CORE::CVariant settingValue = appConfig.GetValueAlways( settingName );
         if ( !settingValue.IsNULLOrEmpty() )
         {
-            channelSettings.channelStreamName = CORE::ResolveVars( settingValue.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
+            channelSettings.channelStreamName = CORE::ResolveVars( settingValue.AsString().ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
         }
         else
         {
@@ -978,11 +978,11 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".Multicast.Join";
-        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );
-        CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+        CORE::CValueList::TVariantVector settingValues = appConfig.GetValueVectorAlways( settingName );
+        CORE::CValueList::TVariantVector::iterator n = settingValues.begin();
         while ( n != settingValues.end() )
         {
-            const CORE::CString& settingValue = (*n);
+            CORE::CString settingValue = (*n).AsString();
             COMCORE::CHostAddress multicastAddress( settingValue );
             channelSettings.udpMulticastToJoin.push_back( multicastAddress );
             ++n;

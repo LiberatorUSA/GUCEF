@@ -35,6 +35,11 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
@@ -49,6 +54,11 @@
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#include "gucefCORE_CGlobalConfigValueList.h"
+#define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -79,27 +89,12 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-LoadConfig( const CORE::CString& configPath ,
-            CORE::CValueList& keyValueList  )
+CORE::CString
+LookForConfigFile( const CORE::CString& configFile )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "GucefArchiver_d.ini";
-    #else
-    const CORE::CString configFile = "GucefArchiver.ini";
-    #endif
-
-    CORE::CString configFilePath;
-    bool foundViaParam = false;
-    if ( !configPath.IsNULLOrEmpty() )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
-        foundViaParam = CORE::FileExists( configPath );
-        configFilePath = configPath;
-    }
-
-    if ( !foundViaParam )
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
+    if ( !CORE::FileExists( configFile ) )
     {
         CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
@@ -112,22 +107,70 @@ LoadConfig( const CORE::CString& configPath ,
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
-                return false;
+            {            
+                configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
+                configFilePath = CORE::RelativePath( configFilePath );
+
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                if ( !FileExists( configFilePath ) )
+                {                                        
+                    return CORE::CString::Empty;
+                }
             }
         }
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
-    keyValueList.SetConfigNamespace( "Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
-    keyValueList.SetAllowDuplicates( false );
-    keyValueList.SetAllowMultipleValues( true );
+        return configFilePath; 
+    }
+
+    return configFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadConfig( const CORE::CString& bootstrapConfigPath   ,
+            const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+{GUCEF_TRACE;
+
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString bootstrapConfigFile = "GucefArchiver_bootstrap_d.ini";
+    const CORE::CString configFile = "GucefArchiver_d.ini";
+    #else
+    const CORE::CString bootstrapConfigFile = "GucefArchiver_bootstrap.ini";
+    const CORE::CString configFile = "GucefArchiver.ini";
+    #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configFile );
+
+    if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located bootstrap config file @ " + bootstrapConfigFilePath );
+        configStore.SetBootstrapConfigFile( bootstrapConfigFilePath );
+    }
+    if ( !configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+        configStore.SetConfigFile( configFilePath );
+    }
+    if ( bootstrapConfigFilePath.IsNULLOrEmpty() && configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
+    }
+
+    CORE::CGlobalConfigValueList globalCfg;
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetAllowDuplicates( false );
+    globalCfg.SetAllowMultipleValues( true );
+
+    bool loadSuccess = configStore.LoadConfig( loadedConfig );
+
+    keyValueList = globalCfg;
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -172,11 +215,13 @@ GUCEF_OSMAIN_BEGIN
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
     CORE::CString configPathParam = keyValueList.GetValueAlways( "configPath" );
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)
-    LoadConfig( configPathParam, keyValueList );
+    CORE::CDataNode loadedConfig;
+    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, &loadedConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
@@ -261,7 +306,7 @@ GUCEF_OSMAIN_BEGIN
                     CORE::CString mount = '[' + archiveFilename + ']';
                     
                     // Mount the archive
-                    if ( vfs.MountArchive( mount, archiveFilename, archiveType, mount, false ) )
+                    if ( vfs.MountArchive( mount, archiveFilename, archiveType, mount, false, false ) )
                     {
                         if ( listArchiveContents )
                         {
@@ -289,7 +334,7 @@ GUCEF_OSMAIN_BEGIN
                             VFS::CVFS::TStringSet archiveContent;
                             vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
                             
-                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "archive contains " + CORE::UInt32ToString( archiveContent.size() ) + " entries" );
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "archive contains " + CORE::ToString( archiveContent.size() ) + " entries" );
 
                             // prepare the output folder
                             CORE::CString archiveOutputDir = archiveFilename.ReplaceChar( '.', '_' );

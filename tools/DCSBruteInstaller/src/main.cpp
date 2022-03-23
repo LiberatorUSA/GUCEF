@@ -1,5 +1,5 @@
 /*
- *  SocketSink: Simple socket app to dump incoming traffic to disk for analysis
+ *  DCSBruteInstaller: Brute force code breaker for DCS alarm panel
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,11 @@
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#include "gucefCORE_CGlobalConfigValueList.h"
+#define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
 
 #ifndef GUCEF_CORE_DVCPPOSWRAP_H
 #include "DVCPPOSWRAP.h"
@@ -1065,39 +1070,88 @@ class DCSBruteInstaller : public CORE::CObserver
 
 /*-------------------------------------------------------------------------*/
 
-bool
-LoadConfig( CORE::CValueList& keyValueList )
+CORE::CString
+LookForConfigFile( const CORE::CString& configFile )
 {GUCEF_TRACE;
 
-    //#ifdef GUCEF_DEBUG_MODE
-    //const CORE::CString configFile = "DCSBruteInstaller_d.ini";
-    //#else
-    const CORE::CString configFile = "DCSBruteInstaller.ini";
-    //#endif
-
-    CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
-    configFilePath = CORE::RelativePath( configFilePath );
-
-    if ( !CORE::FileExists( configFilePath ) )
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
+    if ( !CORE::FileExists( configFile ) )
     {
-        configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
-        if ( !FileExists( configFilePath ) )
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+        if ( !CORE::FileExists( configFilePath ) )
         {
-            return false;
-        }
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+            configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+            configFilePath = CORE::RelativePath( configFilePath );
 
-    keyValueList.SetConfigNamespace( "Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
-    keyValueList.SetAllowDuplicates( false );
-    keyValueList.SetAllowMultipleValues( true );
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+            if ( !FileExists( configFilePath ) )
+            {            
+                configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
+                configFilePath = CORE::RelativePath( configFilePath );
+
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                if ( !FileExists( configFilePath ) )
+                {                                        
+                    return CORE::CString::Empty;
+                }
+            }
+        }
+
+        return configFilePath; 
+    }
+
+    return configFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadConfig( const CORE::CString& bootstrapConfigPath   ,
+            const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+{GUCEF_TRACE;
+
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString bootstrapConfigFile = "DCSBruteInstaller_bootstrap_d.ini";
+    const CORE::CString configFile = "DCSBruteInstaller_d.ini";
+    #else
+    const CORE::CString bootstrapConfigFile = "DCSBruteInstaller_bootstrap.ini";
+    const CORE::CString configFile = "DCSBruteInstaller.ini";
+    #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configFile );
+
+    if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located bootstrap config file @ " + bootstrapConfigFilePath );
+        configStore.SetBootstrapConfigFile( bootstrapConfigFilePath );
+    }
+    if ( !configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+        configStore.SetConfigFile( configFilePath );
+    }
+    if ( bootstrapConfigFilePath.IsNULLOrEmpty() && configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
+    }
+
+    CORE::CGlobalConfigValueList globalCfg;
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetAllowDuplicates( false );
+    globalCfg.SetAllowMultipleValues( true );
+
+    bool loadSuccess = configStore.LoadConfig( loadedConfig );
+
+    keyValueList = globalCfg;
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1142,9 +1196,16 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
 
-    // Load settings from a config file (if any) and then override with params (if any)
+    // Check for config param first
     CORE::CValueList keyValueList;
-    LoadConfig( keyValueList );
+    ParseParams( argc, argv, keyValueList );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    keyValueList.Clear();
+
+    // Load settings from a config file (if any) and then override with params (if any)
+    CORE::CDataNode loadedConfig;
+    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, &loadedConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );

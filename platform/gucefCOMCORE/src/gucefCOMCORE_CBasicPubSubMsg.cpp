@@ -294,8 +294,8 @@ CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs, TKeyVa
     while ( i != kvPairs.GetDataEndIterator() )
     {
         const CORE::CString& fieldName = (*i).first;
-        const CORE::CValueList::TStringVector& fieldValues = (*i).second;
-        CORE::CValueList::TStringVector::const_iterator n = fieldValues.begin();
+        const CORE::CValueList::TVariantVector& fieldValues = (*i).second;
+        CORE::CValueList::TVariantVector::const_iterator n = fieldValues.begin();
         while ( n != fieldValues.end() )
         {
             kvPairsStorage.push_back( TKeyValuePair() );

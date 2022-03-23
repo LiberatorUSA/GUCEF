@@ -145,11 +145,11 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
         while ( n != sectionData.GetDataEndIterator() )
         {
             const CString& key = (*n).first;
-            const CValueList::TStringVector& values = (*n).second;
+            const CValueList::TVariantVector& values = (*n).second;
 
             // Since key/value pairs in an ini section have no uniqueness constraint we cannot
             // set the pairs as attributes. Instead they are child nodes using the simplistic value representation
-            CValueList::TStringVector::const_iterator m = values.begin();
+            CValueList::TVariantVector::const_iterator m = values.begin();
             while ( m != values.end() )
             {
                 CDataNode* keyValueNode = sectionNode->AddChild( key );

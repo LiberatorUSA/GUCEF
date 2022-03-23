@@ -40,10 +40,10 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -1885,7 +1885,7 @@ ParseIncludeDirs( const CORE::CString& fileSuffix )
             TStringVector elements = dependenciesStr.ParseElements( ' ' );
             if ( !elements.empty() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " include dirs in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " include dirs in suffix file" );
             }
 
             // Add this collection to the list of all include dirs we found
@@ -1937,7 +1937,7 @@ ParseSuffixFile( TModuleInfo& moduleInfo )
             {
                 // the first element is the name of the module, we don't need it
                 elements.erase( elements.begin() );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " libraries to link to in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " libraries to link to in suffix file" );
             }
 
             // Add this collection to the list of all linked libraries we found
@@ -1991,7 +1991,7 @@ ParseDependencies( const CORE::CString& fileSuffix ,
             {
                 moduleName = *(elements.begin());
                 elements.erase( elements.begin() );
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::Int32ToString( elements.size() ) + " dependencies in suffix file" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::ToString( elements.size() ) + " dependencies in suffix file" );
             }
 
             // Add this collection to the list of all dependencies we found
@@ -2414,11 +2414,11 @@ GenerateCMakeListsFile( const TProjectInfo& projectInfo ,
 
     // Add all the include files
     fileContent += GenerateCMakeListsFileIncludeSection( moduleInfo.includeDirs );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.includeDirs.size() ) + " include dirs for project " + moduleInfo.name );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( moduleInfo.includeDirs.size() ) + " include dirs for project " + moduleInfo.name );
 
     // Add all the source files
     fileContent += GenerateCMakeListsFileSrcSection( moduleInfo.sourceDirs );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) + " source dirs for project " + moduleInfo.name );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::ToString( moduleInfo.sourceDirs.size() ) + " source dirs for project " + moduleInfo.name );
 
     // Add all platform files, headers and source
     fileContent += GenerateCMakeListsFilePlatformFilesSection( moduleInfo );
@@ -2922,7 +2922,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
 
     // Add project info
     outputInfo.SetName( "Project" );
-    outputInfo.SetAttribute( "ModuleCount", CORE::UInt32ToString( projectInfo.modules.size() ) );
+    outputInfo.SetAttribute( "ModuleCount", projectInfo.modules.size() );
 
     // Add info for each module
     TModuleInfoVector::const_iterator i = projectInfo.modules.begin();
@@ -2943,7 +2943,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         headersInfoNode.SetName( "Files" );
         headersInfoNode.SetAttribute( "Type", "Headers" );
         headersInfoNode.SetAttribute( "Platform", "All" );
-        headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        headersInfoNode.SetAttribute( "DirCount", moduleInfo.includeDirs.size() );
         TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
@@ -2955,7 +2955,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             fileNode.SetName( "File" );
 
             const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            pathNode.SetAttribute( "FileCount", fileVector.size() );
             TStringVector::const_iterator m = fileVector.begin();
             while ( m != fileVector.end() )
             {
@@ -2976,7 +2976,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringVectorMap& platformHeaders = (*x).second;
             headersInfoNode.SetAttribute( "Platform", (*x).first );
-            headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( platformHeaders.size() ) );
+            headersInfoNode.SetAttribute( "DirCount", platformHeaders.size() );
 
             n = platformHeaders.begin();
             while ( n != platformHeaders.end() )
@@ -2989,7 +2989,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
                 fileNode.SetName( "File" );
 
                 const TStringVector& fileVector = (*n).second;
-                pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+                pathNode.SetAttribute( "FileCount", fileVector.size() );
                 TStringVector::const_iterator m = fileVector.begin();
                 while ( m != fileVector.end() )
                 {
@@ -3011,7 +3011,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         sourceInfoNode.SetName( "Files" );
         sourceInfoNode.SetAttribute( "Type", "Source" );
         sourceInfoNode.SetAttribute( "Platform", "All" );
-        sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+        sourceInfoNode.SetAttribute( "DirCount", moduleInfo.sourceDirs.size() );
         n = moduleInfo.sourceDirs.begin();
         while ( n != moduleInfo.sourceDirs.end() )
         {
@@ -3023,7 +3023,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             fileNode.SetName( "File" );
 
             const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+            pathNode.SetAttribute( "FileCount", fileVector.size() );
             TStringVector::const_iterator m = fileVector.begin();
             while ( m != fileVector.end() )
             {
@@ -3044,7 +3044,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringVectorMap& platformSources = (*x).second;
             sourceInfoNode.SetAttribute( "Platform", (*x).first );
-            sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
+            sourceInfoNode.SetAttribute( "DirCount", moduleInfo.sourceDirs.size() );
 
             n = platformSources.begin();
             while ( n != platformSources.end() )
@@ -3057,7 +3057,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
                 fileNode.SetName( "File" );
 
                 const TStringVector& fileVector = (*n).second;
-                pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
+                pathNode.SetAttribute( "FileCount", fileVector.size() );
                 TStringVector::const_iterator m = fileVector.begin();
                 while ( m != fileVector.end() )
                 {
@@ -3078,7 +3078,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         CORE::CDataNode includesInfoNode;
         includesInfoNode.SetName( "Includes" );
         includesInfoNode.SetAttribute( "Platform", "All" );
-        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencyIncludeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Count", moduleInfo.dependencyIncludeDirs.size() );
         includesInfoNode.SetAttribute( "Source", "Dependency" );
         TStringSet::const_iterator h = moduleInfo.dependencyIncludeDirs.begin();
         while ( h !=  moduleInfo.dependencyIncludeDirs.end() )
@@ -3099,7 +3099,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringSet& platformIncludes = (*q).second;
             includesInfoNode.SetAttribute( "Platform", (*q).first );
-            includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( platformIncludes.size() ) );
+            includesInfoNode.SetAttribute( "Count", platformIncludes.size() );
             includesInfoNode.SetAttribute( "Source", "Dependency" );
 
             h = platformIncludes.begin();
@@ -3121,7 +3121,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // These are already represented in the path attribute of the files section
         // but for ease of processing and clarity they are provided again in the includes section
         includesInfoNode.SetAttribute( "Platform", "All" );
-        includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
+        includesInfoNode.SetAttribute( "Count", moduleInfo.includeDirs.size() );
         includesInfoNode.SetAttribute( "Source", "Self" );
         n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
@@ -3189,7 +3189,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // Add all the module dependencies
         CORE::CDataNode dependenciesNode;
         dependenciesNode.SetName( "Dependencies" );
-        dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
+        dependenciesNode.SetAttribute( "Count", moduleInfo.dependencies.size() );
         TStringVector::const_iterator m = moduleInfo.dependencies.begin();
         while ( m != moduleInfo.dependencies.end() )
         {
@@ -3204,7 +3204,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // Add all the libraries that are linked but not part of the overall project
         CORE::CDataNode linkedLibrariesNode;
         linkedLibrariesNode.SetName( "LinkedLibraries" );
-        linkedLibrariesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.linkedLibraries.size() ) );
+        linkedLibrariesNode.SetAttribute( "Count", moduleInfo.linkedLibraries.size() );
         m = moduleInfo.linkedLibraries.begin();
         while ( m != moduleInfo.linkedLibraries.end() )
         {
@@ -3308,8 +3308,8 @@ main( int argc , char* argv[] )
     TStringVector rootDirs;
     try
     {
-        rootDirs = keyValueList.GetValueVector( "rootDir" );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::UInt32ToString( rootDirs.size() ) );
+        rootDirs = keyValueList.GetValueStringVector( "rootDir" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::ToString( rootDirs.size() ) );
     }
     catch ( CORE::CValueList::EUnknownKey& )
     {
@@ -3319,8 +3319,8 @@ main( int argc , char* argv[] )
 
     // Set any global dir excludes that where passed as cmd parameters
     TProjectInfo projectInfo;
-    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
+    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).AsString().ParseElements( ';', false );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 
     // Gather all processing instructions
     TStringVector::iterator i = rootDirs.begin();

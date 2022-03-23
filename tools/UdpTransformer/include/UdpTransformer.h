@@ -221,7 +221,7 @@ class UdpTransformer : public CORE::CObservingNotifier
 
     COMCORE::CHostAddress m_udpReceiverAddress;
     COMCORE::CHostAddress m_udpTransmitterAddress;
-    CORE::CValueList::TStringVector m_udpReceiverMulticastSources;
+    CORE::CValueList::TVariantVector m_udpReceiverMulticastSources;
     
     CORE::CString m_udpPayloadTransformDescription;
     CORE::CString::StringVector m_transformDescriptionSegments;
