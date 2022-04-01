@@ -426,12 +426,12 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
             bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
         }
 
-        CORE::UInt32 bufferOffset = m_currentWriteBuffer->GetDataSize();        
-        CORE::UInt64 publishActionId = 0;
+        TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
+        CORE::UInt32 bufferOffset = m_currentWriteBuffer->GetDataSize();                
         while ( i != msgs.end() )    
         {
-            // see if we have a pre-existing action id (retry)
-            TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
+            // see if we have a pre-existing action id (retry)  
+            CORE::UInt64 publishActionId = 0;
             if ( publishActionIdIttr != publishActionIds.end() )
                 publishActionId = (*publishActionIdIttr);
 
@@ -444,7 +444,10 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
             
             // Persist the action id generated on the output param
             if ( publishActionIdIttr == publishActionIds.end() )
+            {
                 publishActionIds.push_back( publishActionId );
+                publishActionIdIttr = publishActionIds.end();
+            }
             else
                 (*publishActionIdIttr) = publishActionId;
 

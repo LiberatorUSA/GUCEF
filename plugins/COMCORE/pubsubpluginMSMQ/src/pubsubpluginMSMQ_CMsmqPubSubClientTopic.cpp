@@ -624,8 +624,8 @@ CMsmqPubSubClientTopic::GetMsmqQueueFormatName( void ) const
     // Should we try and take the string as given and not do anything fancy?
     if ( !m_config.topicNameIsMsmqFormatName )  
     {
-        bool isSuspectedPathName = ( 0 == m_config.topicName.HasSubstr( "DIRECT=" ) );
-        if ( !isSuspectedPathName )
+        bool isSuspectedQueueGuid = ( 0 == m_config.topicName.HasChar( '{', true ) && 0 < m_config.topicName.HasChar( '}', true ) );
+        if ( isSuspectedQueueGuid )
         {
             std::wstring wQueueFormatName;
             if ( MsmqQueueGUIDToMsmqQueueFormatName( m_config.topicName, wQueueFormatName ) )
