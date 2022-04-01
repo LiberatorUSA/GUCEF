@@ -1,3 +1,4 @@
+
 /*
  *  redisinfo: Service for obtaining redis info from a cluster
  *
@@ -250,12 +251,15 @@ RedisInfoService::RedisInfoService()
     , m_cmdInfoKeyspace()
     , m_cmdXinfoStreamMap()
     , m_status()
+    , m_redisInfoValueTypes()
     , m_lock( true )
 {GUCEF_TRACE;
 
-    m_status[ "connected" ] = "false";
-    m_status[ "reconnecting" ] = "false";
-    m_status[ "redisClusterErrorReplies" ] = "0";
+    m_status[ "connected" ] = false;
+    m_status[ "reconnecting" ] = false;
+    m_status[ "redisClusterErrorReplies" ] = 0;
+
+    PopulateDefaultRedisInfoValueTypes();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -463,7 +467,7 @@ RedisInfoService::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ,
                 while ( n != hashMap.end() )
                 {
                     if ( (*n).second.size() < lowestKeysInSlot )
-                        lowestKeysInSlot = (*n).second.size();
+                        lowestKeysInSlot = (CORE::UInt32)(*n).second.size();
                     ++n;
                 }
             }
@@ -579,6 +583,17 @@ RedisInfoService::LoadDocFrom( CORE::CDataNode& doc           ,
         return false;
 
     return codec->BuildDataTree( &doc, file->GetAccess() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::LoadDocFrom( CORE::CDataNode& doc         , 
+                               const CORE::CString& vfsPath ) const
+{GUCEF_TRACE;
+
+    CORE::CString fileType = CORE::ExtractFileExtention( vfsPath );
+    return LoadDocFrom( doc, fileType, vfsPath );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1251,8 +1266,11 @@ RedisInfoService::GetRedisInfo( struct redisReply* reply       ,
                 {
                     // Filter anything labeled as for human viewing since its redundant plus 
                     // we are all about automation in this code
-                    if ( -1 == key.HasSubstr( "_human", false ) )
-                        kv.Set( keyPrefix + key, comboValue );
+                    if ( -1 == key.HasSubstr( "_human", false ) && -1 == key.HasChar( '#', true ) )
+                    {
+                        CORE::CVariant varValue( GetTypeOfRedisInfoValue( key ), comboValue );
+                        kv.Set( keyPrefix + key, varValue );
+                    }
                 }
                 else
                 if ( values.size() > 1 )
@@ -1263,8 +1281,13 @@ RedisInfoService::GetRedisInfo( struct redisReply* reply       ,
                     {
                         // Filter anything labeled as for human viewing since its redundant plus 
                         // we are all about automation in this code
-                        if ( -1 == (*n).HasSubstr( "_human", false ) )
-                            kv.Set( (*n), '=', &extraKeyPrefix );
+                        if ( -1 == (*n).HasSubstr( "_human", false ) && -1 == (*n).HasChar( '#', true ) )
+                        {
+                            const CORE::CString& keyAndValue = (*n);
+                            CORE::CString key( keyAndValue.SubstrToChar( '=', true ) );
+                            CORE::CVariant value( GetTypeOfRedisInfoValue( key ), keyAndValue.SubstrToChar( '=', false ) );
+                            kv.Set( extraKeyPrefix + key, value );
+                        }
                         ++n;
                     }
                 }
@@ -1279,6 +1302,247 @@ RedisInfoService::GetRedisInfo( struct redisReply* reply       ,
         return false;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+RedisInfoService::PopulateDefaultRedisInfoValueTypes( void )
+{GUCEF_TRACE;
+
+    // Various
+    m_redisInfoValueTypes[ "calls" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "count" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "avg_ttl" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "keys" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "expires" ] = GUCEF_DATATYPE_UINT64;
+    
+    // # Server
+    m_redisInfoValueTypes[ "redis_version" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "redis_git_dirty" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "redis_build_id" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "redis_mode" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "multiplexing_api" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "arch_bits" ] = GUCEF_DATATYPE_UINT8;
+    m_redisInfoValueTypes[ "multiplexing_api" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "atomicvar_api" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "gcc_version" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "process_id" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "process_supervised" ] = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING;
+    m_redisInfoValueTypes[ "run_id" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "tcp_port" ] = GUCEF_DATATYPE_UINT16;
+    m_redisInfoValueTypes[ "server_time_usec" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "uptime_in_seconds" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "uptime_in_days" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "hz" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "configured_hz" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "lru_clock" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "executable" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "config_file" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "io_threads_active" ] = GUCEF_DATATYPE_UINT64;
+
+    // # Clients
+    m_redisInfoValueTypes[ "connected_clients" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "cluster_connections" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "maxclients" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "client_recent_max_input_buffer" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "client_recent_max_output_buffer" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "blocked_clients" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "tracking_clients" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "clients_in_timeout_table" ] = GUCEF_DATATYPE_UINT64;
+
+    // # Memory
+    m_redisInfoValueTypes[ "used_memory" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "used_memory_rss" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_peak" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_peak_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "used_memory_peak_perc" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_memory_overhead" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_startup" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_dataset" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_dataset_perc" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "allocator_allocated" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "allocator_active" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "allocator_resident" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_system_memory" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_system_memory_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "used_memory_lua" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_vm_eval" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_lua_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "used_memory_scripts_eval" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "number_of_cached_scripts" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "number_of_functions" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "number_of_libraries" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_vm_functions" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_vm_total" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_vm_total_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "used_memory_functions" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_scripts" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "used_memory_scripts_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "maxmemory" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "maxmemory_human" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "maxmemory_policy" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "allocator_frag_ratio" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "allocator_frag_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "allocator_rss_ratio" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "allocator_rss_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rss_overhead_ratio" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "rss_overhead_bytes" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "mem_fragmentation_ratio" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "mem_fragmentation_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_not_counted_for_evict" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_replication_backlog" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_total_replication_buffers" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_clients_slaves" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_clients_normal" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_cluster_links" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_aof_buffer" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "mem_allocator" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "active_defrag_running" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "lazyfree_pending_objects" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "lazyfreed_objects" ] = GUCEF_DATATYPE_UINT64;
+
+    // # Persistence
+    m_redisInfoValueTypes[ "loading" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "async_loading" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "current_cow_size" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "current_cow_size_age" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "current_fork_perc" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "current_save_keys_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "current_save_keys_total" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_changes_since_last_save" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_bgsave_in_progress" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_last_save_time" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_last_bgsave_status" ] = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING;
+    m_redisInfoValueTypes[ "rdb_last_bgsave_time_sec" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "rdb_current_bgsave_time_sec" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "rdb_current_bgsave_time_sec" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "rdb_saves" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_last_cow_size" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_last_load_keys_expired" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "rdb_last_load_keys_loaded" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "aof_enabled" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "aof_rewrite_in_progress" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "aof_rewrite_scheduled" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "aof_last_rewrite_time_sec" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "aof_current_rewrite_time_sec" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "aof_last_write_status" ] = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING;
+    m_redisInfoValueTypes[ "aof_last_cow_size" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "module_fork_in_progress" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "module_fork_last_cow_size" ] = GUCEF_DATATYPE_UINT64;
+
+    // # Stats
+    m_redisInfoValueTypes[ "total_connections_received" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_commands_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "instantaneous_ops_per_sec" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_net_input_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_net_output_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "instantaneous_input_kbps" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "instantaneous_output_kbps" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "rejected_connections" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "sync_full" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "sync_partial_ok" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "sync_partial_err" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "expired_keys" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "expired_stale_perc" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "expired_time_cap_reached_count" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "expire_cycle_cpu_milliseconds" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "evicted_keys" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "evicted_clients" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_eviction_exceeded_time" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "current_eviction_exceeded_time" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "keyspace_hits" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "keyspace_misses" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "pubsub_channels" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "pubsub_patterns" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "latest_fork_usec" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_forks" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "migrate_cached_sockets" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "slave_expires_tracked_keys" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "active_defrag_hits" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "active_defrag_misses" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "active_defrag_key_hits" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "active_defrag_key_misses" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_active_defrag_time" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "current_active_defrag_time" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "tracking_total_keys" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "tracking_total_items" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "tracking_total_prefixes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "unexpected_error_replies" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_error_replies" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "dump_payload_sanitizations" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_reads_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "total_writes_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "io_threaded_reads_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "io_threaded_writes_processed" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "reply_buffer_shrinks" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "reply_buffer_expands" ] = GUCEF_DATATYPE_UINT64;
+
+    // # Replication
+    m_redisInfoValueTypes[ "role" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "connected_slaves" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "master_failover_state" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "master_replid" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "master_replid2" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "master_repl_offset" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "second_repl_offset" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "repl_backlog_active" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "repl_backlog_size" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "repl_backlog_first_byte_offset" ] = GUCEF_DATATYPE_UINT64;    
+    // If the instance is a replica, these additional fields are provided:
+    m_redisInfoValueTypes[ "master_host" ] = GUCEF_DATATYPE_UTF8_STRING;
+    m_redisInfoValueTypes[ "master_port" ] = GUCEF_DATATYPE_UINT16;
+    m_redisInfoValueTypes[ "master_link_status" ] = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING;
+    m_redisInfoValueTypes[ "master_last_io_seconds_ago" ] = GUCEF_DATATYPE_UINT64;        
+    m_redisInfoValueTypes[ "master_sync_in_progress" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "slave_read_repl_offset" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "slave_repl_offset" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "slave_priority" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "slave_read_only" ] = GUCEF_DATATYPE_BOOLEAN_INT32;
+    m_redisInfoValueTypes[ "replica_announced" ] = GUCEF_DATATYPE_BOOLEAN_INT32;    
+    // If a SYNC operation is on-going, these additional fields are provided:
+    m_redisInfoValueTypes[ "master_sync_total_bytes" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "master_sync_read_bytes" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "master_sync_left_bytes" ] = GUCEF_DATATYPE_INT64;
+    m_redisInfoValueTypes[ "repl_backlog_histlen" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "master_sync_perc" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "master_sync_last_io_seconds_ago" ] = GUCEF_DATATYPE_UINT64;    
+    // If the link between master and replica is down, an additional field is provided:
+    m_redisInfoValueTypes[ "master_link_down_since_seconds" ] = GUCEF_DATATYPE_UINT64;
+    // If the server is configured with the min-slaves-to-write (or starting with Redis 5 with the min-replicas-to-write) directive, an additional field is provided:
+    m_redisInfoValueTypes[ "min_slaves_good_slaves" ] = GUCEF_DATATYPE_UINT64;
+            
+    // # CPU
+    m_redisInfoValueTypes[ "used_cpu_sys" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_cpu_user" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_cpu_sys_children" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_cpu_user_children" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_cpu_sys_main_thread" ] = GUCEF_DATATYPE_FLOAT32;
+    m_redisInfoValueTypes[ "used_cpu_user_main_thread" ] = GUCEF_DATATYPE_FLOAT32;
+
+    // # Cluster
+    m_redisInfoValueTypes[ "cluster_enabled" ] = GUCEF_DATATYPE_BOOLEAN_INT32;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt8
+RedisInfoService::GetTypeOfRedisInfoValue( const CORE::CString& valueName ) const
+{GUCEF_TRACE;
+
+    TStringToUInt8Map::const_iterator i = m_redisInfoValueTypes.find( valueName );
+    if ( i != m_redisInfoValueTypes.end() )
+    {
+        // By default we get all values as strings so if we dont know we just keep it as a string
+        if ( GUCEF_DATATYPE_UNKNOWN == (*i).second )
+            return GUCEF_DATATYPE_UTF8_STRING;
+    
+        return (*i).second;
+    }
+    
+    // By default we get all values as strings so if we dont know we just keep it as a string
+    return GUCEF_DATATYPE_UTF8_STRING;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1374,7 +1638,7 @@ RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
                                     isRedisId = true;
                                     CORE::CString idValue = replyNode->element[ i ]->str;
                                     idValue = idValue.ReplaceChar( '-', '.' );
-                                    info.Set( infoElementName, idValue );
+                                    info.Set( infoElementName, CORE::StringToDouble( idValue ) );
                                 }
                             }
 
@@ -1385,18 +1649,18 @@ RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
                         case REDIS_REPLY_ERROR:
                         case REDIS_REPLY_INTEGER: 
                         { 
-                            info.Set( infoElementName, CORE::ToString( replyNode->element[ i ]->integer ) ); 
+                            info.Set( infoElementName, replyNode->element[ i ]->integer ); 
                             break; 
                         }
                         case REDIS_REPLY_DOUBLE: 
                         { 
-                            info.Set( infoElementName, CORE::ToString( replyNode->element[ i ]->dval ) ); 
+                            info.Set( infoElementName, replyNode->element[ i ]->dval ); 
                             break; 
                         }
                         case REDIS_REPLY_BOOL: 
                         { 
                             if ( !statLikeValuesOnly )
-                                info.Set( infoElementName, CORE::ToString( CORE::StringToBool( replyNode->element[ i ]->str ) ) ); 
+                                info.Set( infoElementName, CORE::StringToBool( replyNode->element[ i ]->str ) ); 
                             break; 
                         }
                         case REDIS_REPLY_ARRAY: 
@@ -1830,7 +2094,7 @@ RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
                                 node.startSlot = (CORE::UInt32) startSlot;
                                 node.endSlot = (CORE::UInt32) endSlot;
                                 node.nodeId = nodeId;
-                                node.host.SetHostnameAndPort( ip, port );
+                                node.host.SetHostnameAndPort( ip, (CORE::UInt16)port );
                             }
                         }
                     }

@@ -40,6 +40,8 @@
 #ifdef __cplusplus
 namespace GUCEF {
 namespace CORE {
+
+   extern "C" {
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -86,11 +88,27 @@ typedef struct SVariantData TVariantData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C const char*
+TypeNameForGucefTypeId( UInt8 typeId );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt8
+GucefTypeIdForTypeName( const char* typeName );
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
+    } /* extern "C" */
+
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 #endif

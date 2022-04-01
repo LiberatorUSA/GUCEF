@@ -124,9 +124,10 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
                       const char kvSeperator = '='                  ,
                       const CString* optionalKeyPrefix = GUCEF_NULL );
 
-    void Set( const CString& keyAndValue                    , 
-              const char kvSeperator = '='                  ,
-              const CString* optionalKeyPrefix = GUCEF_NULL );
+    void SetUsingKvCombo( const CString& keyAndValue                    , 
+                          const char kvSeperator = '='                  ,
+                          const CString* optionalKeyPrefix = GUCEF_NULL ,
+                          UInt8 valueType = GUCEF_DATATYPE_STRING       );
 
     void Set( const CString& key    ,
               const CVariant& value );

@@ -413,6 +413,7 @@ set( SOURCE_FILES
   src/gucefCORE_CVersionRange.cpp
   src/gucefCORE_CoreCodecTypes.cpp
   src/gucefCORE_LogLevels.cpp
+  src/gucefCORE_VariantData.c
   src/gucefCORE_cinterface.cpp
   src/md5.c
   src/streamables.cpp

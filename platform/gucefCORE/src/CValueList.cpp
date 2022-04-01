@@ -161,7 +161,7 @@ CValueList::SetMultiple( int argc    ,
 
     for ( int i=0; i<argc; ++i )
     {
-        Set( argv[ i ] );
+        SetUsingKvCombo( argv[ i ], '=', GUCEF_NULL );
     }
 }
 
@@ -356,7 +356,7 @@ CValueList::SetMultiple( const CString& keyandvalue       ,
     CString::StringVector::iterator i = kvPairs.begin();
     while ( i != kvPairs.end() )
     {
-        Set( (*i), kvSeperator, optionalKeyPrefix );
+        SetUsingKvCombo( (*i), kvSeperator, optionalKeyPrefix );
         ++i;
     }
 }
@@ -400,24 +400,22 @@ CValueList::GetAllowMultipleValues( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CValueList::Set( const CString& keyAndValue       , 
-                 const char kvSeperator           ,
-                 const CString* optionalKeyPrefix )
+CValueList::SetUsingKvCombo( const CString& keyAndValue       , 
+                             const char kvSeperator           ,
+                             const CString* optionalKeyPrefix ,
+                             UInt8 valueType                  )
 {GUCEF_TRACE;
 
     CString key( keyAndValue.SubstrToChar( kvSeperator, true ) );
-    CString value( keyAndValue.SubstrToChar( kvSeperator, false ) );
-    
-    CVariant valueVar;
-    valueVar.LinkTo( value );
+    CVariant value( valueType, keyAndValue.SubstrToChar( kvSeperator, false ), CVariant::Empty );
     
     if ( GUCEF_NULL == optionalKeyPrefix )
     {
-        Set( key, valueVar );
+        Set( key, value );
     }
     else
     {
-        Set( *optionalKeyPrefix + key, valueVar );
+        Set( *optionalKeyPrefix + key, value );
     }
 }
 

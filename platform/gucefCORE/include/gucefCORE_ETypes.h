@@ -95,6 +95,7 @@ typedef MT::Float64 Float64;  /* 8 bytes, signed, decimal */
 
 typedef MT::TBuildinDataType TBuildinDataType;
 typedef MT::TBasicDataType TBasicDataType;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

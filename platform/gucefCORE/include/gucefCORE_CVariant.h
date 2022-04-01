@@ -137,6 +137,12 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  Creates a private copy of any data contained within the buffer
      */
     CVariant( const CDynamicBuffer& data, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
+
+    /**
+     *  Interprets the string form data per the type ID given
+     *  Creates a private copy
+     */
+    CVariant( UInt8 varType, const CString& stringFormData, const CVariant& defaultValue = CVariant::Empty );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
@@ -153,7 +159,14 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsInitialized( void ) const;
     bool IsNULLOrEmpty( void ) const; 
     
-    UInt8 GetTypeId( void ) const;  
+    UInt8 GetTypeId( void ) const;
+    const char* GetTypeNameC( void ) const;
+    CString GetTypeName( void ) const;
+
+    static UInt8 TypeIdForTypeName( const char* typeName );
+    static UInt8 TypeIdForTypeName( const CString& typeName );
+    static const char* TypeNameForTypeIdC( UInt8 typeId );
+    static CString TypeNameForTypeId( UInt8 typeId );
 
     bool            AsBool( bool defaultIfNeeded = false, bool resolveVarsIfApplicable = false ) const;
     char            AsChar( char defaultIfNeeded = '\0' ) const;

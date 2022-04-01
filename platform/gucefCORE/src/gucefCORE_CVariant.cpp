@@ -244,6 +244,16 @@ CVariant::CVariant( const void* data, UInt32 dataSize, UInt8 varType )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( UInt8 varType, const CString& stringFormData, const CVariant& defaultValue )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    SetFromString( varType, stringFormData, defaultValue );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant::CVariant( const CDynamicBuffer& data, UInt8 varType )
     : m_variantData()
 {GUCEF_TRACE;
@@ -524,6 +534,59 @@ CVariant::GetTypeId( void ) const
 {GUCEF_TRACE;
 
     return m_variantData.containedType;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char* 
+CVariant::GetTypeNameC( void ) const
+{GUCEF_TRACE;
+
+    return TypeNameForGucefTypeId( m_variantData.containedType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CVariant::GetTypeName( void ) const
+{GUCEF_TRACE;
+
+    return GetTypeNameC();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt8
+CVariant::TypeIdForTypeName( const char* typeName )
+{GUCEF_TRACE;
+
+    return GucefTypeIdForTypeName( typeName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt8
+CVariant::TypeIdForTypeName( const CString& typeName )
+{GUCEF_TRACE;
+
+    return GucefTypeIdForTypeName( typeName.C_String() );
+}
+/*-------------------------------------------------------------------------*/
+
+const char*
+CVariant::TypeNameForTypeIdC( UInt8 typeId )
+{GUCEF_TRACE;
+
+    return TypeNameForGucefTypeId( typeId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CVariant::TypeNameForTypeId( UInt8 typeId )
+{GUCEF_TRACE;
+
+    return TypeNameForGucefTypeId( typeId );
 }
 
 /*-------------------------------------------------------------------------*/

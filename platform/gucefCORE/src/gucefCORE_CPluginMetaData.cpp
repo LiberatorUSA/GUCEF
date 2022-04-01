@@ -361,7 +361,7 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
         CDataNode::TVariantVector::iterator i = paramList.begin();
         while ( i != paramList.end() )
         {
-            m_params.Set( (*i) );
+            m_params.SetUsingKvCombo( (*i), '=', GUCEF_NULL );
             ++i;
         }
         return true;

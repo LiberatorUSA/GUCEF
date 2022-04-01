@@ -39,6 +39,11 @@
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
 
+#ifndef GUCEF_TYPES_H
+#include "gucef_types.h"         /* GUCEF platform type identifiers */
+#define GUCEF_TYPES_H
+#endif /* GUCEF_TYPES_H ? */
+
 #ifndef GUCEF_BASICHELPERS_H
 #include "gucef_basichelpers.h"  /* GUCEF platform convenience basic helper macros */
 #define GUCEF_BASICHELPERS_H

@@ -1,0 +1,103 @@
+{
+	"info": {
+		"_postman_id": "f0fcea89-2525-45c2-98c6-aa8e510faf53",
+		"name": "pubsub2pubsub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get channel stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get clients index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:50321/clients",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "50321",
+					"path": [
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put config",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"StatsDClient\": {\r\n    \"StatsDestination\": \"127.0.0.1:8125\",\r\n    \"StatsNamePrefix\": \"$HOSTNAME$.\",\r\n    \"Transmit\": false,\r\n    \"logStats\": false\r\n  },\r\n  \"Main\": {\r\n    \"AppArgs\": {\r\n      \"ApplyCpuThreadAffinityByDefault\": true,\r\n      \"ChannelCount\": 2,\r\n      \"ChannelIDs\": \"\",\r\n      \"ChannelSetting.0.WantsTestPackage\": true,\r\n      \"GlobalStandbyEnabled\": true,\r\n      \"MaxUdpSocketUpdateCyclesPerPulse\": 25,\r\n      \"NrOfUdpReceiveBuffersPerSocket\": 100,\r\n      \"PerformRedisWritesInDedicatedThread\": true,\r\n      \"RedisHost\": \"127.0.0.1\",\r\n      \"RedisPort\": 6379,\r\n      \"RedisStreamName\": \"udp-ingress-ch{channelID}\",\r\n      \"RedisStreamStartChannelID\": 0,\r\n      \"RedisXAddMaxLen\": -1,\r\n      \"RedisXAddMaxLenIsApproximate\": true,\r\n      \"RestApiPort\": 10000,\r\n      \"RestBasicHealthUri\": \"/health/basic\",\r\n      \"TestPacketTransmissionIntervalInMs\": 1000,\r\n      \"TicketRefillOnBusyCycle\": 10000,\r\n      \"TransmitMetrics\": true,\r\n      \"TransmitTestPackets\": true,\r\n      \"UdpPortChannelIdOffset\": 20000,\r\n      \"UdpSocketOsReceiveBufferSize\": 10485760,\r\n      \"UdpStartPort\": 20000,\r\n      \"UseUdpPortChannelIdOffset\": false,\r\n      \"allowPeristanceOfNewGlobalConfigViaRestApi\": true,\r\n      \"outputDir\": \"$MODULEDIR$\"\r\n    }\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:10000/config",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"config"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get client topic index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:50321/clients",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "50321",
+					"path": [
+						"clients"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -297,11 +297,11 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
         return -2;
     }
 
-    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     pulseGenerator.RequestPulseInterval( 25 );
     pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
     
-    auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     returnValue = app.main( argc, argv, true );
     pubSub2PubSub.SetStandbyMode( true );
 

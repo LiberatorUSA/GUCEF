@@ -279,6 +279,9 @@ class RedisInfoService : public CORE::CTaskConsumer
                       const CORE::CString& codecName ,
                       const CORE::CString& vfsPath   ) const;
 
+    bool LoadDocFrom( CORE::CDataNode& doc         ,
+                      const CORE::CString& vfsPath ) const;
+
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
     bool CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ,
@@ -355,6 +358,10 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
 
+    CORE::UInt8 GetTypeOfRedisInfoValue( const CORE::CString& valueName ) const;
+
+    void PopulateDefaultRedisInfoValueTypes( void );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -377,6 +384,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > >    TRedisArgs;
     typedef std::vector< GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr >       THttpResourceVector;
     typedef std::map< CORE::CString, CORE::CValueList >                                 TStringToValueListMap;
+    typedef std::map< CORE::CString, CORE::UInt8 >                                      TStringToUInt8Map;
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CValueList >  TStringToValueListMapHttpResource;
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, RedisNodeWithPipe >  TUInt32ToRedisNodeMapHttpResource;    
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, TStringSet >         TUInt32ToStringSetMapHttpResource;    
@@ -404,6 +412,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     CORE::CValueList m_cmdInfoKeyspace;
     TStringToValueListMap m_cmdXinfoStreamMap;
     CORE::CValueList m_status;
+    TStringToUInt8Map m_redisInfoValueTypes;
 
     MT::CReadWriteLock m_lock;
 };
