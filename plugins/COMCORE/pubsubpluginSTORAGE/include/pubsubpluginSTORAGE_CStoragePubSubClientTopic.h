@@ -141,11 +141,14 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     {
         public:
 
-        TopicMetrics( void );
+        TopicMetrics( void );      
 
         CORE::UInt32 queuedReadyToReadBuffers;
         CORE::UInt32 smallestBufferSizeInBytes;
         CORE::UInt32 largestBufferSizeInBytes;
+        CORE::UInt32 msgsLoadedFromStorage;
+        CORE::UInt32 storageCorruptionDetections;
+        CORE::UInt32 storageDeserializationFailures;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
@@ -239,7 +242,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     bool StoreNextReceivedPubSubBuffer( void );
 
-    bool ProcessNextStorageToPubSubRequest( void );
+    bool ProcessNextPubSubRequestRelatedFile( void );
+
+    bool LocateFilesForStorageToPubSubRequest( void );
 
     bool LoadStorageFile( const CORE::CString& vfsPath       ,
                           CORE::CDynamicBuffer& targetBuffer );
@@ -281,6 +286,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                   const CORE::CEvent& eventId  ,
                   CORE::CICloneable* eventData );
 
+    
+    CORE::UInt32 GetMsgsLoadedFromStorageCounter( bool resetCounter );
+    CORE::UInt32 GetStorageCorruptionDetectionCounter( bool resetCounter );
+    CORE::UInt32 GetStorageDeserializationFailuresCounter( bool resetCounter );
+
     private:
 
     CStoragePubSubClient* m_client;
@@ -305,12 +315,17 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
-    StorageToPubSubRequestDeque m_storageToPubSubRequests;
+    StorageToPubSubRequestDeque m_stage1StorageToPubSubRequests;
+    StorageToPubSubRequestDeque m_stage2StorageToPubSubRequests;
    
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDateTime m_lastWriteBlockCompletion;    
     TStorageBufferMetaDataMap m_storageBufferMetaData;
     CStoragePubSubClientTopicVfsTaskPtr m_vfsOpsThread;
+
+    CORE::UInt32 m_msgsLoadedFromStorage;
+    CORE::UInt32 m_storageCorruptionDetections;
+    CORE::UInt32 m_storageDeserializationFailures;
 };
 
 /*-------------------------------------------------------------------------//

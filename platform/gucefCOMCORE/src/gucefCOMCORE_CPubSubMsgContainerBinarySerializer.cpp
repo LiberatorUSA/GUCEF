@@ -211,7 +211,8 @@ bool
 CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index             ,
                                                         UInt32 currentSourceOffset         , 
                                                         const CORE::CDynamicBuffer& source , 
-                                                        UInt32& bytesRead                  )
+                                                        UInt32& bytesRead                  ,
+                                                        bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
 
     try
@@ -237,14 +238,31 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
         // The purpose of the index is quick access to messages by index even though the
         // messages have variable length
         index.reserve( indexSize );
-        for ( UInt32 i=0; i<indexSize; ++i )
+        if ( hdrToFtrOrderedIndex )
         {
-            UInt32 msgOffset = 0;
-            msgOffset = source.AsConstType< UInt32 >( currentSourceOffset - sizeof(msgOffset) );
-            currentSourceOffset -= sizeof(msgOffset);
-            bytesRead += sizeof(msgOffset);
+            // We want to switch to forward reading in order to order the index entries as such
+            currentSourceOffset = currentSourceOffset - ( indexSize * sizeof(UInt32) );
+            for ( UInt32 i=0; i<indexSize; ++i )
+            {
+                UInt32 msgOffset = 0;
+                msgOffset = source.AsConstType< UInt32 >( currentSourceOffset );
+                currentSourceOffset += sizeof(msgOffset);
+                bytesRead += sizeof(msgOffset);
 
-            index.push_back( msgOffset );
+                index.push_back( msgOffset );
+            }
+        }
+        else
+        {
+            for ( UInt32 i=0; i<indexSize; ++i )
+            {
+                UInt32 msgOffset = 0;
+                msgOffset = source.AsConstType< UInt32 >( currentSourceOffset - sizeof(msgOffset) );
+                currentSourceOffset -= sizeof(msgOffset);
+                bytesRead += sizeof(msgOffset);
+
+                index.push_back( msgOffset );
+            }
         }
 
         return true;
@@ -260,10 +278,11 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
 bool 
 CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index             ,
                                                         const CORE::CDynamicBuffer& source , 
-                                                        UInt32& bytesRead                  )
+                                                        UInt32& bytesRead                  ,
+                                                        bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
 
-    return DeserializeFooter( index, source.GetDataSize(), source, bytesRead );
+    return DeserializeFooter( index, source.GetDataSize(), source, bytesRead, hdrToFtrOrderedIndex );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,9 +340,10 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& forwardOrderedIndex ,
-                                                       const CORE::CDynamicBuffer& source   , 
-                                                       UInt32& bytesRead                    )
+CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index             ,
+                                                       const CORE::CDynamicBuffer& source , 
+                                                       UInt32& bytesRead                  ,
+                                                       bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
 
     COMCORE::CPubSubMsgBinarySerializerOptions options;
@@ -333,23 +353,39 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& forwardO
         return false;
     }
 
+    TMsgOffsetIndex tmpIndex;
     while ( bytesRead < source.GetDataSize() )
     {
         UInt32 msgBytesRead = 0;
         CBasicPubSubMsg msg;
         if ( COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, bytesRead, source, msgBytesRead ) )
         {
-            forwardOrderedIndex.push_back( bytesRead );
+            if ( hdrToFtrOrderedIndex )
+                index.push_back( bytesRead );
+            else
+                tmpIndex.push_back( bytesRead );
+
             bytesRead += msgBytesRead;
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to deserialize msg with " + CORE::ToString( IndexRebuildScan ) + " bytes read" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to deserialize msg with " + 
+                CORE::ToString( msgBytesRead ) + " bytes read from offset " + CORE::ToString( bytesRead ) + ". This will be considered the end" );
             break;
         }
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Index rebuild discovered " + CORE::ToString( forwardOrderedIndex.size() ) + " messages" );
+    if ( !hdrToFtrOrderedIndex )
+    {
+        TMsgOffsetIndex::reverse_iterator i = tmpIndex.rbegin();
+        while ( i != tmpIndex.rend() )
+        {
+            index.push_back( bytesRead );
+            ++i;
+        }
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Index rebuild discovered " + CORE::ToString( index.size() ) + " messages" );
     return true;
 }
 
@@ -445,6 +481,72 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
+                                                             bool linkWherePossible       ,
+                                                             TMsgOffsetIndex& index       ,
+                                                             CORE::CDynamicBuffer& source ,
+                                                             bool& isCorrupted            )
+{GUCEF_TRACE;
+
+    bool performedRebuild = false;
+    if ( index.empty() )
+    {
+        CORE::UInt32 bytesRead = 0;
+        if ( !DeserializeFooter( index, source, bytesRead, true ) )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize pubsub msg container footer. Will attempt index rebuild" );
+
+            index.clear();
+            if ( IndexRebuildScan( index, source, bytesRead, true ) )
+            {
+                performedRebuild = true;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Rebuild of index completed" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to rebuild index" );
+                return false;
+            }
+        }
+    }
+                                        
+    if ( !Deserialize( msgs, true, index, source, isCorrupted ) )
+    {
+        // Have we already tried a rebuild? 
+        // If we already did, no point in trying again
+        if ( !performedRebuild )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize messages. isCorrupted=" + 
+                CORE::ToString( isCorrupted ) + ". Will attempt index rebuild");
+
+            index.clear();
+            CORE::UInt32 bytesRead = 0;
+            if ( IndexRebuildScan( index, source, bytesRead, true ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Rebuild of index completed" );
+                
+                bool secondPassIsCorrupted = false;
+                return Deserialize( msgs, true, index, source, secondPassIsCorrupted );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to rebuild index" );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize after we already performed an index rebuild" );
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg                   ,
                                                             bool linkWherePossible             ,
                                                             const CORE::CDynamicBuffer& source ,
@@ -466,7 +568,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
     // Note that the footer is read in reversed order vs how it was written 
     // thus so will be the entries in the index
     TMsgOffsetIndex index;
-    if ( !DeserializeFooter( index, source, bytesRead ) )
+    if ( !DeserializeFooter( index, source, bytesRead, true ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer, this file is corrupted" );
         isCorrupted = true;

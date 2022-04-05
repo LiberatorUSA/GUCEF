@@ -90,21 +90,24 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
     static bool DeserializeFooter( TMsgOffsetIndex& index             ,
                                    UInt32 currentSourceOffset         , 
                                    const CORE::CDynamicBuffer& source , 
-                                   UInt32& bytesRead                  );
+                                   UInt32& bytesRead                  ,
+                                   bool hdrToFtrOrderedIndex          );
 
     static bool DeserializeFooter( TMsgOffsetIndex& index             ,
                                    const CORE::CDynamicBuffer& source , 
-                                   UInt32& bytesRead                  );
+                                   UInt32& bytesRead                  ,
+                                   bool hdrToFtrOrderedIndex          );
     
     /**
      *  If you have a partially written container with a header but no valid 
      *  footer this function can be used to rebuild an index which you could optionally
      *  use to append a new footer at the end of the file with the discovered messages
-     *  by passing the forwardOrderedIndex to SerializeFooter()
+     *  by passing the index to SerializeFooter() with hdrToFtrOrderedIndex=true
      */
-    static bool IndexRebuildScan( TMsgOffsetIndex& forwardOrderedIndex ,
-                                  const CORE::CDynamicBuffer& source   , 
-                                  UInt32& bytesRead                    );
+    static bool IndexRebuildScan( TMsgOffsetIndex& index             ,
+                                  const CORE::CDynamicBuffer& source , 
+                                  UInt32& bytesRead                  ,
+                                  bool hdrToFtrOrderedIndex          );
 
     static bool Serialize( const CPubSubMsgBinarySerializerOptions& options     ,
                            const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
@@ -131,6 +134,17 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                              const CORE::CDynamicBuffer& source ,
                              bool& isCorrupted                  );
 
+
+    /**
+     *  Same as the more basic variant of but adds optional index (footer) deserialization
+     *  with auto index rebuild and the same for deserializing the messages themselves 
+     *  if corruption is detected
+     */
+    static bool DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
+                                        bool linkWherePossible       ,
+                                        TMsgOffsetIndex& index       ,
+                                        CORE::CDynamicBuffer& source ,
+                                        bool& isCorrupted            );
 
     /**
      *  If you only need to read a specific message such as the last message this is a
