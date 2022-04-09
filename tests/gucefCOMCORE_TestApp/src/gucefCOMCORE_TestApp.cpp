@@ -36,6 +36,7 @@
 #include "TestCode_PingTest.h"
 #include "TestCode_ClientServer.h"
 #include "TestCode_SimpleTCPClient.h"
+#include "TestCode_PubSubMsgBinaryStorageTest.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,11 +52,6 @@ GUCEF_OSMAIN_BEGIN
 
     using namespace GUCEF::CORE;
     using namespace GUCEF::COMCORE;
-
-    #ifdef GUCEF_COMCORE_DEBUG_MODE
-    //GUCEF::CORE::GUCEF_LogStackToStdOut();
-    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCEF_COMCORE_DEBUG_MODE ? */
             
     try 
     {                               
@@ -71,19 +67,15 @@ GUCEF_OSMAIN_BEGIN
         
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
-        PerformPingTest();
+        PerformPubSubMsgBinaryStorageTest();
+        //PerformPingTest();
         //SetupClientServerTest();
         //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
         
         return 1;                                                                            
     }
     catch ( ... )
-    {
-        #ifdef GUCEF_COMCORE_DEBUG_MODE
-        GUCEF::CORE::GUCEF_PrintCallstack();
-        GUCEF::CORE::GUCEF_DumpCallstack( "gucefDRN_TestApp_callstack.txt" );
-        #endif /* GUCEF_COMCORE_DEBUG_MODE ? */
-        
+    {        
         GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
                                        "Unhandled exception during program execution, the application will now terminate"  );                                                         
     }

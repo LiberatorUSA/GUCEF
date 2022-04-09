@@ -23,11 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #include "gucefGUI_CGUIDriver.h"
 
 /*-------------------------------------------------------------------------//
@@ -72,9 +67,9 @@ CGUIDriver::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CGUIDriver::CGUIDriver( bool useglobalconfig )
+CGUIDriver::CGUIDriver()
     : CObservingNotifier()                    ,
-      CORE::CIConfigurable( useglobalconfig )
+      CORE::CGloballyConfigurable()
 {GUCEF_TRACE;
 
     RegisterEvents();

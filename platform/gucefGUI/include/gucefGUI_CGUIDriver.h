@@ -31,10 +31,10 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
 #ifndef GUCEF_GUI_CIGUICONTEXT_H
 #include "gucefGUI_CIGUIContext.h"
@@ -62,8 +62,8 @@ namespace GUI {
 //-------------------------------------------------------------------------*/
 
 
-class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
-                                        public CORE::CIConfigurable
+class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier    ,
+                                        public CORE::CGloballyConfigurable
 {    
     public:
 
@@ -105,7 +105,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
     
     protected:
     
-    CGUIDriver( bool useglobalconfig = true );
+    CGUIDriver( void );
     
     CGUIDriver( const CGUIDriver& src );
     

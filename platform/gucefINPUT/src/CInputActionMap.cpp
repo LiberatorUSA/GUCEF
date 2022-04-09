@@ -36,11 +36,6 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_INPUT_CKEYBOARD_H
 #include "gucefINPUT_CKeyboard.h"
 #define GUCEF_INPUT_CKEYBOARD_H

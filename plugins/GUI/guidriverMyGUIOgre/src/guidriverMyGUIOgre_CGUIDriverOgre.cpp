@@ -29,7 +29,7 @@
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
+#include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
@@ -167,7 +167,7 @@ GUI::UInt32
 CGUIDriverOgre::GetContextCount( void )
 {GUCEF_TRACE;
 
-    return m_contextSet.size();
+    return (GUI::UInt32) m_contextSet.size();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -22,8 +22,8 @@
  *      All classes in this library have to do with basic communication facilitys
  */
 
-#ifndef GUCEFCOMCORE_H
-#define GUCEFCOMCORE_H
+#ifndef GUCEF_COMCORE_H
+#define GUCEF_COMCORE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,31 +122,53 @@
 #define GUCEF_COMCORE_CIPADDRESS_H
 #endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
 
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#include "gucefCOMCORE_CIPubSubMsg.h"
+#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgSerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
+#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#include "gucefCOMCORE_CPubSubBookmark.h"
+#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#include "gucefCOMCORE_CPubSubClientFeatures.h"    
+#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#include "gucefCOMCORE_CPubSubClientTopic.h"    
+#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEFCOMCORE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-06-2007 :
-       - Dinand: Added CUDPMasterSocket
-       - Dinand:Added CUDPChannel
-       - Dinand:Added CIPAddress
-       - Dinand:Added CTCPServerConnection
-       - Dinand:Removed CIUDPSocketEventHandler
-- 07-05-2005 :
-       - Dinand:Added CUDPSocket
-       - Dinand:Added CIUDPSocketEventHandler
-- 12-03-2005 :
-       - Dinand: Made the initial version of the library header. The classes here
-         where originally part of one large GUCEF codebase without segmentation.
-
----------------------------------------------------------------------------*/
-
-
- 
+#endif /* GUCEF_COMCORE_H ? */

@@ -42,7 +42,7 @@ namespace GUI {
 
 CWindowManager::CWindowManager( void )
     : CORE::CObservingNotifier()   ,
-      CORE::CIConfigurable( true ) ,
+      CORE::CGloballyConfigurable() ,
       m_backends() ,
       m_lock()
 {GUCEF_TRACE;

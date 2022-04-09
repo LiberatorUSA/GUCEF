@@ -338,6 +338,15 @@ Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UIn
 
 /*-------------------------------------------------------------------------*/
 
+CString 
+Base64Encode( const CString& toBeEncodedStr )
+{GUCEF_TRACE;
+
+    return Base64Encode( toBeEncodedStr.C_String(), toBeEncodedStr.ByteSize()-1 );
+}
+
+/*-------------------------------------------------------------------------*/
+
 static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static const int base64_table[ 256 ] =

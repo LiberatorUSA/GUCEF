@@ -84,7 +84,7 @@ CProductManager::RegisterEvents( void )
 
 CProductManager::CProductManager( void )
     : CObservingNotifier()        ,
-      CIConfigurable( true )      ,
+      CGloballyConfigurable()     ,
       m_productList()             ,
       m_productListPath()         ,
       m_productListCodec( "xml" ) ,

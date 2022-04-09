@@ -259,8 +259,8 @@ GUCEF_OSMAIN_BEGIN
     catch ( ... )
     {
         #ifdef GUCEF_VFS_DEBUG_MODE
-        CORE::GUCEF_PrintCallstack();
-        CORE::GUCEF_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
+        MEMMAN_PrintCallstack();
+        MEMMAN_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
         #endif /* GUCEF_VFS_DEBUG_MODE ? */
 
         try

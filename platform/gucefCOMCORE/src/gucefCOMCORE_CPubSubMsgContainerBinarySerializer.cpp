@@ -287,12 +287,13 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
 
 /*-------------------------------------------------------------------------*/
 
+template < class MsgCollectionType >
 bool
-CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options     ,
-                                                const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                                                UInt32 currentTargetOffset                           , 
-                                                CORE::CDynamicBuffer& target                         , 
-                                                UInt32& bytesWritten                                 )
+CPubSubMsgContainerBinarySerializer::SerializeMsgCollection( const CPubSubMsgBinarySerializerOptions& options ,
+                                                             const MsgCollectionType& msgs                    ,
+                                                             UInt32 currentTargetOffset                       , 
+                                                             CORE::CDynamicBuffer& target                     , 
+                                                             UInt32& bytesWritten                             )
 {GUCEF_TRACE;
 
     // Write the header
@@ -307,10 +308,10 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
     // We do not accept partial success
     TMsgOffsetIndex index( msgs.size(), 0 );
     TMsgOffsetIndex::iterator n = index.begin();
-    CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = msgs.begin();
+    MsgCollectionType::const_iterator i = msgs.begin();
     while ( i != msgs.end() )
     {
-        const CIPubSubMsg* msg = (*i);
+        const CIPubSubMsg* msg = AsIPubSubMsgPointer( (*i) );
         if ( GUCEF_NULL != msg )
         {
             newBytesWritten = 0;
@@ -335,6 +336,33 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
         return false;
 
     return true;
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options ,
+                                                const TBasicPubSubMsgVector& msgs                ,
+                                                UInt32 currentTargetOffset                       , 
+                                                CORE::CDynamicBuffer& target                     , 
+                                                UInt32& bytesWritten                             )
+{GUCEF_TRACE;
+
+    return SerializeMsgCollection< TBasicPubSubMsgVector >( options, msgs, currentTargetOffset, target, bytesWritten );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options     ,
+                                                const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                                                UInt32 currentTargetOffset                           , 
+                                                CORE::CDynamicBuffer& target                         , 
+                                                UInt32& bytesWritten                                 )
+{GUCEF_TRACE;
+
+    return SerializeMsgCollection< CPubSubClientTopic::TPubSubMsgsRefVector >( options, msgs, currentTargetOffset, target, bytesWritten );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -476,6 +504,19 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
+                                                             bool linkWherePossible       ,
+                                                             CORE::CDynamicBuffer& source ,
+                                                             bool& isCorrupted            )
+{GUCEF_TRACE;
+
+    TMsgOffsetIndex index;
+    return DeserializeWithRebuild( msgs, linkWherePossible, index, source, isCorrupted );
 }
 
 /*-------------------------------------------------------------------------*/

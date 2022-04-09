@@ -28,6 +28,11 @@
 
 #include <set>
 
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_CURLDATARETRIEVER_H
 #include "CURLDataRetriever.h"
 #define GUCEF_CORE_CURLDATARETRIEVER_H
@@ -64,7 +69,7 @@ namespace PRODMAN {
 //-------------------------------------------------------------------------*/
 
 class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier ,
-                                                 public CORE::CIConfigurable
+                                                 public CORE::CGloballyConfigurable
 {
     public:
 

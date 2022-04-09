@@ -52,7 +52,7 @@ namespace IMAGE {
 
 CPixel::CPixel( void )
     : m_pixelStorageFormat( PSF_UNKNOWN )              ,
-      m_pixelComponentDataType( MT::DATATYPE_UNKNOWN ) ,  
+      m_pixelComponentDataType( DATATYPE_UNKNOWN ) ,  
       m_pixelData( NULL )                              ,
       m_ownsData( false )
 {GUCEF_TRACE;

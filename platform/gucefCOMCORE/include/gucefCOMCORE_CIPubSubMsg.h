@@ -109,6 +109,17 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CIMessage
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+inline const COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( const COMCORE::CIPubSubMsg& msg ) { return &msg; }
+inline const COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( const COMCORE::CIPubSubMsg* msg ) { return msg; }
+inline COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( COMCORE::CIPubSubMsg& msg ) { return &msg; }
+inline COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( COMCORE::CIPubSubMsg* msg ) { return msg; }
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/

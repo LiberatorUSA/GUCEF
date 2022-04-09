@@ -331,6 +331,11 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP CString
+Base64Encode( const CString& toBeEncodedStr );
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Decodes a base64 encoded string into binary data
  *

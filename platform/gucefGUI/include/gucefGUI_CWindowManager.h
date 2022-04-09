@@ -31,6 +31,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
 #include "gucefGUI_CWindowManagerBackend.h"
 #define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
@@ -55,7 +60,7 @@ namespace GUI {
  *  Central location were window manager backends can be obtained.
  */
 class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier ,
-                                            public CORE::CIConfigurable
+                                            public CORE::CGloballyConfigurable
 {    
     public:
 

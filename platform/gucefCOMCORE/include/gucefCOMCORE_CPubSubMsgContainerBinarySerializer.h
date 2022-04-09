@@ -115,6 +115,11 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                            CORE::CDynamicBuffer& target                         , 
                            UInt32& bytesWritten                                 );
 
+    static bool Serialize( const CPubSubMsgBinarySerializerOptions& options ,
+                           const TBasicPubSubMsgVector& msgs                ,
+                           UInt32 currentTargetOffset                       , 
+                           CORE::CDynamicBuffer& target                     , 
+                           UInt32& bytesWritten                             );
 
     /**
      *  Deserializes all the messages from the source buffer using the already 
@@ -147,6 +152,15 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                                         bool& isCorrupted            );
 
     /**
+     *  Same as the other version of DeserializeWithRebuild except you dont need to pass
+     *  index storage if you dont care about retaining/using that information
+     */
+    static bool DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
+                                        bool linkWherePossible       ,
+                                        CORE::CDynamicBuffer& source ,
+                                        bool& isCorrupted            );
+
+    /**
      *  If you only need to read a specific message such as the last message this is a
      *  useful helper function to do so. Please do not use this function to iterate all
      *  messages as it would be rather inefficient, code your own iteration for that
@@ -160,6 +174,15 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                                        UInt32 msgIndex                    ,
                                        bool fromStart                     ,
                                        bool& isCorrupted                  );
+
+    private:
+
+    template < class MsgCollectionType >
+    static bool SerializeMsgCollection( const CPubSubMsgBinarySerializerOptions& options ,
+                                        const MsgCollectionType& msgs                    ,
+                                        UInt32 currentTargetOffset                       , 
+                                        CORE::CDynamicBuffer& target                     , 
+                                        UInt32& bytesWritten                             );
 };
 
 /*-------------------------------------------------------------------------//

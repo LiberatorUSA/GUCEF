@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+    <Module Name="gucefCOMCORE_TestApp" Platform="All" Type="Executable" Tags="test" >
+		<Dependencies>
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Linker>
+            <Define String="GUCEF_COMCORE_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
+			<RuntimeDependency Name="pubsubpluginKAFKA" />
+			<RuntimeDependency Name="pubsubpluginUDP" />
+			<RuntimeDependency Name="pubsubpluginSTORAGE" />
+			<RuntimeDependency Name="pubsubpluginWEB" />
+		</RuntimeDependencies>
+    </Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="pubsubpluginMSMQ" />
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+			<RuntimeDependency Name="MemoryLeakFinder" />
+		</RuntimeDependencies>
+	</Module>	
+</ModuleInfoEntry>

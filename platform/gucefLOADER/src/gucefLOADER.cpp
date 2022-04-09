@@ -411,8 +411,8 @@ GetHighestVersionAvailableFromDir( const CORE::CString& rootDir ,
                     CORE::CString dirName = CORE::DI_Name( itData );
                     if ( -1 < dirName.HasChar( '.' ) )
                     {
-                        CORE::Int16 dirPatchVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, true ) );
-                        CORE::Int16 dirReleaseVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, false ) );
+                        CORE::Int16 dirPatchVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, true, false ) );
+                        CORE::Int16 dirReleaseVersion = CORE::StringToInt16( dirName.SubstrToChar( '.', 0, false, false ) );
 
                         TVersionMap::iterator i = versionMap.find( dirPatchVersion );
                         if ( i != versionMap.end() )

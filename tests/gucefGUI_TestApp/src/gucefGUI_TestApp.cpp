@@ -122,7 +122,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGucefGuiTestAppSettings : public CORE::CIConfigurable
+class CGucefGuiTestAppSettings : public CORE::CGloballyConfigurable
 {
     public:
 
@@ -232,7 +232,7 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
     private:
 
     CGucefGuiTestAppSettings( void )
-        : CORE::CIConfigurable( true )
+        : CORE::CGloballyConfigurable()
     {
     }
 

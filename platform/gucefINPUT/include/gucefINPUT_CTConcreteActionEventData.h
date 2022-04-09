@@ -26,11 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_INPUT_CACTIONEVENTDATA_H
 #include "gucefINPUT_CActionEventData.h"
 #define GUCEF_INPUT_CACTIONEVENTDATA_H

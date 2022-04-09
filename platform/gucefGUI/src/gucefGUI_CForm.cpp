@@ -23,11 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_GUI_CGUIMANAGER_H
 #include "gucefGUI_CGUIManager.h"
 #define GUCEF_GUI_CGUIMANAGER_H

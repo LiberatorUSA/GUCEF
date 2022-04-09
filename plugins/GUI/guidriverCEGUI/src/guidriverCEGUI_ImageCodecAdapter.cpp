@@ -219,7 +219,7 @@ ImageCodecAdapter::load( const CEGUI::RawDataContainer& data ,
         case IMAGE::PSF_BGR:
         {
             IMAGE::TPixelMapPtr newPixelMap;
-            if ( !pixelMap->ConvertFormatTo( IMAGE::PSF_RGB, MT::DATATYPE_UINT8, newPixelMap ) )
+            if ( !pixelMap->ConvertFormatTo( IMAGE::PSF_RGB, DATATYPE_UINT8, newPixelMap ) )
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecAdapter:load: CEGUI cannot handle BGR images and we were unable to convert" );
                 return NULL;
@@ -234,7 +234,7 @@ ImageCodecAdapter::load( const CEGUI::RawDataContainer& data ,
         case IMAGE::PSF_BGRA:
         {
             IMAGE::TPixelMapPtr newPixelMap;
-            if ( !pixelMap->ConvertFormatTo( IMAGE::PSF_RGBA, MT::DATATYPE_UINT8, newPixelMap ) )
+            if ( !pixelMap->ConvertFormatTo( IMAGE::PSF_RGBA, DATATYPE_UINT8, newPixelMap ) )
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecAdapter:load: CEGUI cannot handle BGRA images and we were unable to convert" );
                 return NULL;
@@ -256,7 +256,7 @@ ImageCodecAdapter::load( const CEGUI::RawDataContainer& data ,
     {
         IMAGE::TPixelStorageFormat sourceFormat = pixelMap->GetPixelStorageFormat();
         IMAGE::TPixelMapPtr newPixelMap;
-        if ( !pixelMap->ConvertFormatTo( sourceFormat, MT::DATATYPE_UINT8, newPixelMap ) )
+        if ( !pixelMap->ConvertFormatTo( sourceFormat, DATATYPE_UINT8, newPixelMap ) )
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecAdapter:load: CEGUI cannot handle images with multi-byte channels and we were unable to convert" );
             return NULL;

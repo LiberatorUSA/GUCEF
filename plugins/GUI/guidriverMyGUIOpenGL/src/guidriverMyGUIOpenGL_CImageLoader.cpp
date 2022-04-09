@@ -184,7 +184,7 @@ CImageLoader::saveImage( int _width                   ,
                                                              _width                           ,
                                                              _height                          ,
                                                              TranslatePixelFormat( _format )  ,
-                                                             MT::DATATYPE_UINT8               );
+                                                             DATATYPE_UINT8                   );
         
         IMAGE::CImage image;
         image.Assign( pixelMap );

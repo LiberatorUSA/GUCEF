@@ -398,7 +398,16 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
      */
     template< typename T >
-    const T* AsConstTypePtr( const UInt32 byteOffse, const UInt32 requiredSizeOfT ) const;
+    const T* AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSizeOfT ) const;
+
+    /**
+     *  Utility member function:
+     *  Performs easy append using the type information for sizing of the nr of bytes to write
+     *
+     *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+     */
+    template< typename T >
+    void AppendValue( const T value, const bool appendToLogicalData = true );
 
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIllegalCast );
 
@@ -512,6 +521,16 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSi
     }
 
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+void 
+CDynamicBuffer::AppendValue( const T value, const bool appendToLogicalData )
+{GUCEF_TRACE;
+
+    Append( &value, sizeof( T ), appendToLogicalData );
 }
 
 /*-------------------------------------------------------------------------//
