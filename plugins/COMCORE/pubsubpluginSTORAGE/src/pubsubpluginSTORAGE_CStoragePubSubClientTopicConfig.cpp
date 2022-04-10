@@ -81,6 +81,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
+    , bestEffortDeserializeIsAllowed( false )
 {GUCEF_TRACE;
     
 }
@@ -111,6 +112,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
     , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
     , defaultCodecDecodeGrowthRatioExpectation( src.defaultCodecDecodeGrowthRatioExpectation )
+    , bestEffortDeserializeIsAllowed( src.bestEffortDeserializeIsAllowed )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -142,6 +144,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const COMCORE:
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
+    , bestEffortDeserializeIsAllowed( false )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -181,6 +184,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     defaultCodecDecodeGrowthRatioExpectation = config.GetAttributeValueOrChildValueByName( "defaultCodecDecodeGrowthRatioExpectation" ).AsFloat32( defaultCodecDecodeGrowthRatioExpectation, true );
+    bestEffortDeserializeIsAllowed = config.GetAttributeValueOrChildValueByName( "bestEffortDeserializeIsAllowed" ).AsBool( bestEffortDeserializeIsAllowed, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -220,7 +224,8 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
     success = config.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
     success = config.SetAttribute( "defaultCodecDecodeGrowthRatioExpectation", defaultCodecDecodeGrowthRatioExpectation ) && success;    
-
+    success = config.SetAttribute( "bestEffortDeserializeIsAllowed", bestEffortDeserializeIsAllowed ) && success;    
+    
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
         success = pubsubBinarySerializerOptions.SaveConfig( *binarySerializerOptionsCfg ) && success;
@@ -280,6 +285,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;
         oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
         defaultCodecDecodeGrowthRatioExpectation = src.defaultCodecDecodeGrowthRatioExpectation;
+        bestEffortDeserializeIsAllowed = src.bestEffortDeserializeIsAllowed;
 
         customConfig = src.customConfig;
     }

@@ -1487,7 +1487,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         CORE::UInt32 bytesRead = 0;
                         COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
                         COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-                        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, originalOffsetIndex, *m_currentWriteBuffer, isCorrupted ) )
+                        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, originalOffsetIndex, *m_currentWriteBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed obtain messages from pubsub msg container at path \"" + 
                                 (*n) + "\". The file will be disregarded as invalid and skipped" );
@@ -1713,7 +1713,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     CORE::UInt32 bytesRead = 0;
     COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
     COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, msgOffsetIndex, *m_currentReadBuffer, isCorrupted ) )
+    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, msgOffsetIndex, *m_currentReadBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
     {
         // update metrics
         if ( isCorrupted )

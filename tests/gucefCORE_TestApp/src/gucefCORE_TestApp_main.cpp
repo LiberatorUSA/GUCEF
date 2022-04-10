@@ -42,6 +42,16 @@
 #define GUCEF_CORE_TESTAPP_TESTSTRING_H
 #endif /* GUCEF_CORE_TESTAPP_TESTSTRING_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTVARIANT_H
+#include "TestVariant.h"
+#define GUCEF_CORE_TESTAPP_TESTVARIANT_H
+#endif /* GUCEF_CORE_TESTAPP_TESTVARIANT_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTVARIANTBINARYSERIALIZER_H
+#include "TestVariantBinarySerializer.h"
+#define GUCEF_CORE_TESTAPP_TESTVARIANTBINARYSERIALIZER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTVARIANTBINARYSERIALIZER_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
 #include "TestNotifierObserver.h"
 #define GUCEF_CORE_TESTAPP_TESTNOTIFIEROBSERVER_H
@@ -87,13 +97,11 @@ main( int argc, char** argv )
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
         
         //PerformStringTests();
-
-        //PerformIniParserTests();
-        
-        PerformSharedPtrTests();
-
+        PerformVariantTests();
+        PerformVariantBinarySerializerTests();
+        //PerformIniParserTests();        
+        //PerformSharedPtrTests();
         //PerformCyclicDynamicBufferTests();
-
         //PerformNotifierObserverTests();
 
         return 1;

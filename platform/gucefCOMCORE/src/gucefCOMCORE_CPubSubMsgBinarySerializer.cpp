@@ -322,6 +322,17 @@ CPubSubMsgBinarySerializer::DeserializeKvPairs( bool linkWherePossible          
 
     if ( nrOfKvPairs > 0 )
     {
+        // Next is a basic sanity check
+        // this is not full proof since the bytes needed for all kv pairs depends on the types of the variants used
+        // however we do know that even if its a NIL variant or similar the smallest size is 1 byte hence we need at minimum nrOfKvPairs*2
+        UInt32 bytesRemaining = source.GetDataSize() - currentSourceOffset;
+        if ( nrOfKvPairs*2 > bytesRemaining )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgBinarySerializer:DeserializeKvPairs: nrOfKvPairs (" + CORE::ToString( nrOfKvPairs ) + ") cannot fit into " + 
+                CORE::ToString( bytesRemaining ) + " bytes available, data is corrupt" );
+            return false;
+        }
+        
         kvPairs.clear();
         kvPairs.resize( nrOfKvPairs );
 

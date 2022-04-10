@@ -110,6 +110,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
     CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
     CORE::Float32 defaultCodecDecodeGrowthRatioExpectation;
+    bool bestEffortDeserializeIsAllowed;
 
     CStoragePubSubClientTopicConfig( void );
 

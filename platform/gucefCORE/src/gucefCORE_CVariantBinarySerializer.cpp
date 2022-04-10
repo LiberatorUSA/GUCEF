@@ -61,12 +61,12 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
     
     try
     {
-        UInt32 lastBytesWritten = 0;
+        UInt32 nrOfBytesWritten = 0;
     
         UInt8 typeId = var.GetTypeId();
-        lastBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(typeId), &typeId );
-        currentTargetOffset += lastBytesWritten;
-        bytesWritten += lastBytesWritten;
+        nrOfBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(typeId), &typeId );
+        currentTargetOffset += nrOfBytesWritten;
+        bytesWritten += nrOfBytesWritten;
 
         // early exit for unknown type, think of this as a placeholder for a nil value
         if ( GUCEF_DATATYPE_UNKNOWN == typeId )
@@ -76,14 +76,28 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
         UInt32 payloadSize = var.ByteSize();
         if ( var.UsesDynamicMemory() )
         {        
-            lastBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(payloadSize), &payloadSize );
-            currentTargetOffset += lastBytesWritten;
-            bytesWritten += lastBytesWritten;
+            nrOfBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(payloadSize), &payloadSize );
+            currentTargetOffset += nrOfBytesWritten;
+            bytesWritten += nrOfBytesWritten;
+
+            if ( nrOfBytesWritten != sizeof(payloadSize) )
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Serialize: payloadSize (" + ToString( payloadSize ) + ") was not written correctly. " + 
+                    ToString( sizeof(payloadSize) ) + " bytes expected, " + ToString( sizeof(nrOfBytesWritten) ) + " bytes written" );
+                return false;
+            }
         }
 
-        lastBytesWritten = target.CopyFrom( currentTargetOffset, payloadSize, var.AsVoidPtr() );
-        currentTargetOffset += lastBytesWritten;
-        bytesWritten += lastBytesWritten;
+        nrOfBytesWritten = target.CopyFrom( currentTargetOffset, payloadSize, var.AsVoidPtr() );
+        currentTargetOffset += nrOfBytesWritten;
+        bytesWritten += nrOfBytesWritten;
+
+        if ( nrOfBytesWritten != payloadSize )
+        {
+            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Serialize: payload of payloadSize " + ToString( payloadSize ) + " bytes was not written correctly. " + 
+                ToString( sizeof(nrOfBytesWritten) ) + " bytes were written" );
+            return false;
+        }
 
         return true;
     }   
@@ -104,6 +118,14 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
     {
         var.Clear();
 
+        UInt32 bufferDataSize = source.GetDataSize();
+        if ( currentSourceOffset+1 > bufferDataSize )
+        {
+            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Deserialize: Invalid starting offset given of " + 
+                ToString( currentSourceOffset ) + " bytes. Available data= " + ToString( bufferDataSize ) );
+            return false;
+        }
+
         UInt8 typeId = source.AsConstType< UInt8 >( currentSourceOffset );
         currentSourceOffset += sizeof( typeId );
         bytesRead += sizeof( typeId );
@@ -118,9 +140,26 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
             currentSourceOffset += sizeof( payloadSize );
             bytesRead += sizeof( payloadSize );
 
-            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, linkWherePossible );
-            bytesRead += var.ByteSize();
-            return result;
+            UInt32 availableBytesLeft = bufferDataSize - currentSourceOffset;
+            if ( payloadSize > availableBytesLeft )
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Deserialize: Invalid payloadSize of " + 
+                    ToString( payloadSize ) + " bytes. Available data= " + ToString( availableBytesLeft ) );
+                return false;
+            }            
+
+            if ( var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, linkWherePossible ) )
+            {
+                bytesRead += payloadSize;
+                return true;
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Deserialize: Failed to set payloadSize " + 
+                    ToString( payloadSize ) + " bytes on variant as " + CVariant::TypeNameForTypeId( typeId ) );
+                bytesRead += var.ByteSize();
+                return false;
+            }
         }
         else
         {

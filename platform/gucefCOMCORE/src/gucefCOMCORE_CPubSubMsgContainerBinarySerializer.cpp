@@ -472,7 +472,8 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
                                                   bool linkWherePossible             ,
                                                   const TMsgOffsetIndex& index       ,
                                                   const CORE::CDynamicBuffer& source ,
-                                                  bool& isCorrupted                  )
+                                                  bool& isCorrupted                  ,
+                                                  bool bestEffortIsOk                )
 {GUCEF_TRACE;
 
     isCorrupted = false;
@@ -498,12 +499,14 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
             isCorrupted = true;
-            return false;
+            
+            if ( !bestEffortIsOk )
+                return false;
         }        
         ++i; ++msgIndex;
     }
 
-    return true;
+    return !isCorrupted;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -512,11 +515,12 @@ bool
 CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
                                                              bool linkWherePossible       ,
                                                              CORE::CDynamicBuffer& source ,
-                                                             bool& isCorrupted            )
+                                                             bool& isCorrupted            ,
+                                                             bool bestEffortIsOk          )
 {GUCEF_TRACE;
 
     TMsgOffsetIndex index;
-    return DeserializeWithRebuild( msgs, linkWherePossible, index, source, isCorrupted );
+    return DeserializeWithRebuild( msgs, linkWherePossible, index, source, isCorrupted, bestEffortIsOk );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -526,7 +530,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
                                                              bool linkWherePossible       ,
                                                              TMsgOffsetIndex& index       ,
                                                              CORE::CDynamicBuffer& source ,
-                                                             bool& isCorrupted            )
+                                                             bool& isCorrupted            ,
+                                                             bool bestEffortIsOk          )
 {GUCEF_TRACE;
 
     bool performedRebuild = false;
@@ -537,6 +542,9 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize pubsub msg container footer. Will attempt index rebuild" );
 
+            // Without a reliable index sourced from the footer 'best effort' deserialize makes no sense because it relies on a good index to skip 'bad' messages
+            bestEffortIsOk = false;
+            
             index.clear();
             if ( IndexRebuildScan( index, source, bytesRead, true ) )
             {
@@ -551,7 +559,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
         }
     }
                                         
-    if ( !Deserialize( msgs, true, index, source, isCorrupted ) )
+    if ( !Deserialize( msgs, true, index, source, isCorrupted, bestEffortIsOk ) )
     {
         // Have we already tried a rebuild? 
         // If we already did, no point in trying again
@@ -566,8 +574,11 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Rebuild of index completed" );
                 
+                // We never use 'best effort' on the second pass since best effort relies on a reliable index having existed in the first place
+                bestEffortIsOk = false;
+
                 bool secondPassIsCorrupted = false;
-                return Deserialize( msgs, true, index, source, secondPassIsCorrupted );
+                return Deserialize( msgs, true, index, source, secondPassIsCorrupted, bestEffortIsOk );
             }
             else
             {
@@ -581,7 +592,6 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
             return false;
         }
     }
-
     return true;
 }
 

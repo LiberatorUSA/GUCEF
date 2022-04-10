@@ -31,7 +31,7 @@
 #endif /* GUCEF_MT_CMAILBOXFORCLONEABLES_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h.h"
+#include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 

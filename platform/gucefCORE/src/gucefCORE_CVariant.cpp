@@ -431,6 +431,8 @@ CVariant::UsesDynamicMemory( UInt8 typeId )
         case GUCEF_DATATYPE_UTF16_BE_STRING:
         case GUCEF_DATATYPE_UTF32_STRING:
         case GUCEF_DATATYPE_BINARY_BLOB:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
         {
             return true;
         }
@@ -498,6 +500,8 @@ CVariant::IsNULLOrEmpty( void ) const
         case GUCEF_DATATYPE_UTF8_STRING:
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
         {
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
                    ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );
@@ -932,6 +936,8 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BINARY_BLOB: return m_variantData.union_data.heap_data.union_data.void_heap_data;
@@ -962,6 +968,8 @@ CVariant::ByteSize( bool includeNullTerm ) const
         case GUCEF_DATATYPE_BINARY_BSOB: return sizeof m_variantData.union_data.bsob_data;
         case GUCEF_DATATYPE_BINARY_BLOB: return m_variantData.union_data.heap_data.heap_data_size;
 
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         case GUCEF_DATATYPE_ASCII_STRING:
@@ -1354,6 +1362,8 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         case GUCEF_DATATYPE_UTF32_STRING:
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
         {
             if ( linkOnlyForDynMem )
             {

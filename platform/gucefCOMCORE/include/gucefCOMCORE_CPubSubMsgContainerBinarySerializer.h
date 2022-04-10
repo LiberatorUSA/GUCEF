@@ -137,7 +137,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                              bool linkWherePossible             ,
                              const TMsgOffsetIndex& index       ,
                              const CORE::CDynamicBuffer& source ,
-                             bool& isCorrupted                  );
+                             bool& isCorrupted                  ,
+                             bool bestEffortIsOk                );
 
 
     /**
@@ -149,7 +150,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                                         bool linkWherePossible       ,
                                         TMsgOffsetIndex& index       ,
                                         CORE::CDynamicBuffer& source ,
-                                        bool& isCorrupted            );
+                                        bool& isCorrupted            ,
+                                        bool bestEffortIsOk          );
 
     /**
      *  Same as the other version of DeserializeWithRebuild except you dont need to pass
@@ -158,7 +160,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
     static bool DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
                                         bool linkWherePossible       ,
                                         CORE::CDynamicBuffer& source ,
-                                        bool& isCorrupted            );
+                                        bool& isCorrupted            ,
+                                        bool bestEffortIsOk          );
 
     /**
      *  If you only need to read a specific message such as the last message this is a

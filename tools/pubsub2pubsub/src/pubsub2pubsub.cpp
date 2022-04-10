@@ -3056,11 +3056,11 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
 
     m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
 
-    m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2PubSubInfoResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, true ) ) );
-    m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new RestApiPubSub2PubSubConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping( "/config/channels/*", RestApiPubSubClientChannelConfigResource::THTTPServerResourcePtr( new RestApiPubSubClientChannelConfigResource( this ) )  );
-    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), RestApiPubSub2PubSubConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
+    m_httpRouter.SetResourceMapping( "/info", ( new RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config/appargs", ( new RestApiPubSub2PubSubConfigResource( this, true ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config", ( new RestApiPubSub2PubSubConfigResource( this, false ) )->CreateSharedPtr()  );
+    m_httpRouter.SetResourceMapping( "/config/channels/*", ( new RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), ( new WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
