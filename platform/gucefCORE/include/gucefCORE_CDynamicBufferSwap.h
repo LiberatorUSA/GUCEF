@@ -104,6 +104,9 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
     CDynamicBuffer* GetNextReaderBuffer( bool alwaysBlockForBufferAvailability = false ,
                                          UInt32 lockWaitTimeoutInMs = 1000             );
 
+    CDynamicBuffer* GetCurrenReaderBuffer( CDateTime& associatedDt           ,
+                                           UInt32 lockWaitTimeoutInMs = 1000 );
+    
     /**
      *  Releases the lock on the current read buffer
      */

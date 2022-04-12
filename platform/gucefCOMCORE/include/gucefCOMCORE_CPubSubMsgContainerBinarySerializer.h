@@ -97,6 +97,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                                    const CORE::CDynamicBuffer& source , 
                                    UInt32& bytesRead                  ,
                                    bool hdrToFtrOrderedIndex          );
+
+    static bool DeserializeFirstAndLastMsgOffsetFromFooter( const CORE::CDynamicBuffer& source , 
+                                                            UInt32 currentSourceOffset         , 
+                                                            UInt32& indexSize                  ,
+                                                            UInt32& firstMsgOffset             ,
+                                                            UInt32& lastMsgOffset              );
     
     /**
      *  If you have a partially written container with a header but no valid 
@@ -178,6 +184,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
                                        bool fromStart                     ,
                                        bool& isCorrupted                  );
 
+    static bool DeserializeFirstAndLastMsgDateTime( CORE::CDateTime& firstMsgDt        ,
+                                                    CORE::CDateTime& lastMsgDt         ,
+                                                    const CORE::CDynamicBuffer& source ,
+                                                    bool& isSupported                  ,
+                                                    bool& isCorrupted                  );
+    
     private:
 
     template < class MsgCollectionType >

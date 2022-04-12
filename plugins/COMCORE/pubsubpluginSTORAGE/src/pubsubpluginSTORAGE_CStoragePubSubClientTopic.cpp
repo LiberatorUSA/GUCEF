@@ -417,6 +417,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                     "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
                 return false;
             }
+            m_currentWriteBuffer->SetDataSize( 0 );
 
             CORE::UInt32 newBytesWritten = 0;
             if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_config.pubsubBinarySerializerOptions, 0, *m_currentWriteBuffer, newBytesWritten ) )
@@ -1349,16 +1350,26 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
     CORE::CDynamicBufferSwap& buffers = GetSerializedMsgBuffers();
         
     CORE::CDateTime msgBatchDt;
-    m_currentReadBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
+    if ( GUCEF_NULL == m_currentReadBuffer )
+        m_currentReadBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
+    
     if ( GUCEF_NULL != m_currentReadBuffer )
     {
         // Get the timestamp of the last message in the buffer.
-        // This is not as expensive an operation as it would appear because we just link to the bytes in the buffer we dont copy them
         bool isCorrupted = false;
-        COMCORE::CBasicPubSubMsg lastMsg;
-        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( lastMsg, true, *m_currentReadBuffer, 0, false, isCorrupted );
+        bool isMsgDtSupported = false;
+        CORE::CDateTime firstMsgDt;
+        CORE::CDateTime lastMsgDt;
+        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( firstMsgDt, lastMsgDt, *m_currentReadBuffer, isMsgDtSupported, isCorrupted ) )
+        {
+            if ( !isMsgDtSupported )
+            {
+                firstMsgDt = msgBatchDt;
+                lastMsgDt = CORE::CDateTime::NowUTCDateTime();
+            }
+        }
 
-        CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsg.GetMsgDateTime().ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
+        CORE::CString vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
         CORE::CString vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
             
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
@@ -1381,10 +1392,11 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
         {
             if ( vfs.EncodeAsFile( *m_currentReadBuffer, 0, vfsStoragePath, true, m_config.encodeCodecFamily, m_config.encodeCodecName ) )
             {
+                m_encodeSizeRatio = (CORE::Float32) ( m_currentReadBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );
+                
                 buffers.SignalEndOfReading();
                 m_currentReadBuffer = GUCEF_NULL;
-
-                m_encodeSizeRatio = (CORE::Float32) ( m_currentReadBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );
+                
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: Successfully encoded and stored pub-sub mesage block at: \"" + vfsStoragePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
             }
             else

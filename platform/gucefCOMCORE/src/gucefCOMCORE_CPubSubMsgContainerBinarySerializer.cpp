@@ -179,7 +179,10 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
         bytesWritten += newBytesWritten;
         currentTargetOffset += newBytesWritten;
         if ( newBytesWritten != sizeof(msgOffsetInBytes) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write footer index entry field" );
             return false;
+        }
 
         ++i;
     }
@@ -191,7 +194,10 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
     bytesWritten += newBytesWritten;
     currentTargetOffset += newBytesWritten;
     if ( newBytesWritten != sizeof(indexSize) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write footer index size field" );
         return false;
+    }
 
     // Now write magic text bytes to help identify the blob as being a complete container of pub sub messages
     // If the magic text was at the start of the container but not at the end you know that the container is potentially
@@ -200,9 +206,20 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
     bytesWritten += newBytesWritten;
     currentTargetOffset += newBytesWritten; 
     if ( newBytesWritten != MagicText.ByteSize()-1 )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write write magic text" );
         return false;
+    }
 
-    return true;
+    if ( currentTargetOffset == target.GetDataSize() )
+    {
+        return true;
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Buffer data size sanity check failed" );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -283,6 +300,53 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
 {GUCEF_TRACE;
 
     return DeserializeFooter( index, source.GetDataSize(), source, bytesRead, hdrToFtrOrderedIndex );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgOffsetFromFooter( const CORE::CDynamicBuffer& source , 
+                                                                                 UInt32 currentSourceOffset         ,
+                                                                                 UInt32& indexSize                  ,
+                                                                                 UInt32& firstMsgOffset             ,
+                                                                                 UInt32& lastMsgOffset              )
+{GUCEF_TRACE;
+
+    try
+    {
+        // Note that footer reading occurs backwards from the end of the container towards the front
+
+        indexSize = 0;
+        firstMsgOffset = 0;
+        lastMsgOffset = 0;
+
+        CORE::CString testStr;    
+        UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
+        if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgOffsetFromFooter: footer magic text verification failed" );
+            return false;
+        }
+        currentSourceOffset -= MagicText.ByteSize()-1;
+
+        indexSize = source.AsConstType< UInt32 >( currentSourceOffset - sizeof(indexSize) );
+        currentSourceOffset -= sizeof(indexSize);
+
+        if ( 0 == indexSize )
+            return true;
+
+        currentSourceOffset = currentSourceOffset - ( indexSize * sizeof(UInt32) );
+        firstMsgOffset = source.AsConstType< UInt32 >( currentSourceOffset );        
+
+        currentSourceOffset = currentSourceOffset + ( (indexSize-1) * sizeof(UInt32) );
+        lastMsgOffset = source.AsConstType< UInt32 >( currentSourceOffset );
+        return true;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgOffsetFromFooter: caught exception: " ) + e.what()  );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -595,6 +659,67 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::CDateTime& firstMsgDt        ,
+                                                                         CORE::CDateTime& lastMsgDt         ,
+                                                                         const CORE::CDynamicBuffer& source ,
+                                                                         bool& isSupported                  ,
+                                                                         bool& isCorrupted                  )
+{GUCEF_TRACE;
+
+    isSupported = false;
+    isCorrupted = false;
+    CORE::UInt32 bytesRead = 0;
+    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    if ( !DeserializeHeader( options, source, bytesRead ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgDateTime: Failed to read container header" );
+        isCorrupted = true;
+        return false;
+    }
+
+    isSupported = options.msgDateTimeIncluded;
+    if ( !isSupported )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgDateTime: Selected storage options preclude msg datetime thus cannot obtain msg dt" );
+        return false;
+    }
+
+    UInt32 indexSize = 0;
+    UInt32 firstMsgOffset = 0;
+    UInt32 lastMsgOffset = 0;
+    if ( !DeserializeFirstAndLastMsgOffsetFromFooter( source               , 
+                                                      source.GetDataSize() ,
+                                                      indexSize            ,
+                                                      firstMsgOffset       ,
+                                                      lastMsgOffset        ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgDateTime: Failed to read first and last msg offsets from footer" );
+        return false;
+    }
+
+    bytesRead = 0;
+    COMCORE::CBasicPubSubMsg msg;
+    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, firstMsgOffset, source, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize first msg at offset " + CORE::ToString( firstMsgOffset ) );
+        isCorrupted = true;
+        return false;
+    }
+    firstMsgDt = msg.GetMsgDateTime();
+
+    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, lastMsgOffset, source, bytesRead ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize last msg at offset " + CORE::ToString( lastMsgOffset ) );
+        isCorrupted = true;
+        return false;
+    }
+    lastMsgDt = msg.GetMsgDateTime();
+
+    return true;
+}
 /*-------------------------------------------------------------------------*/
 
 bool 
