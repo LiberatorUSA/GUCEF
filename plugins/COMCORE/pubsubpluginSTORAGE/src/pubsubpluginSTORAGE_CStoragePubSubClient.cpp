@@ -447,10 +447,18 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_METRIC_GAUGE( metricsPrefix + ".queuedReadyToReadBuffers", topicMetrics.queuedReadyToReadBuffers, 1.0f );
         GUCEF_METRIC_GAUGE( metricsPrefix + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
         GUCEF_METRIC_GAUGE( metricsPrefix + ".largestBufferSizeInBytes", topicMetrics.largestBufferSizeInBytes, 1.0f );
-        GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
-        GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
-        GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
         
+        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_STORAGE_TO_PUBSUB == topicConfig.mode )
+        {
+            GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
+        }
+        else
+        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_STORAGE == topicConfig.mode )
+        {
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msgsWrittenToStorage", topicMetrics.msgsWrittenToStorage, 1.0f );
+        }        
         ++i;
     }
 }

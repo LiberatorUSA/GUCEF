@@ -181,6 +181,25 @@ CDynamicBufferSwap::GetCurrentWriterBufferIndex( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CDateTime
+CDynamicBufferSwap::GetCurrenReaderBufferAssociatedDt( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    if ( m_currentReaderBufferIndex > 0 )
+    {
+        const CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
+        if ( currentBuffer.hasUnreadData )
+        {
+            return currentBuffer.associatedDt;
+        }
+    }
+
+    return CDateTime::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDynamicBuffer*
 CDynamicBufferSwap::GetCurrenReaderBuffer( CDateTime& associatedDt    ,
                                            UInt32 lockWaitTimeoutInMs )
@@ -344,6 +363,7 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
                 else
                     firstBuffer.associatedDt = CDateTime::NowUTCDateTime();
                         
+                firstBuffer.buffer.SetDataSize( 0 );
                 return &firstBuffer.buffer;
             }
             else
@@ -409,6 +429,7 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
             else
                 nextBuffer.associatedDt = CDateTime::NowUTCDateTime();
 
+            nextBuffer.buffer.SetDataSize( 0 );
             return &nextBuffer.buffer;
         }
         else

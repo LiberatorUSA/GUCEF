@@ -154,6 +154,10 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
                               lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs ) == WAIT_FAILED ) 
         return false;
 
+    // In case we are being cleaned up while waiting for the lock
+    if ( GUCEF_NULL == _mutexdata )
+        return false;    
+    
     ((TMutexData*)_mutexdata)->threadOwningLock = (UInt32) ::GetCurrentThreadId();
     return true;
 

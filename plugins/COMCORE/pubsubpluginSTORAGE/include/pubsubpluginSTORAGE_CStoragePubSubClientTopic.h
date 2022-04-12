@@ -147,6 +147,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::UInt32 smallestBufferSizeInBytes;
         CORE::UInt32 largestBufferSizeInBytes;
         CORE::UInt32 msgsLoadedFromStorage;
+        CORE::UInt32 msgBytesLoadedFromStorage;
+        CORE::UInt32 msgsWrittenToStorage;
+        CORE::UInt32 msgBytesWrittenToStorage;
         CORE::UInt32 storageCorruptionDetections;
         CORE::UInt32 storageDeserializationFailures;
     };
@@ -281,6 +284,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     void FinalizeWriteBuffer( TStorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset );
     void FinalizeWriteBuffer( void );
+
+    void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -289,6 +294,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     
     CORE::UInt32 GetMsgsLoadedFromStorageCounter( bool resetCounter );
+    CORE::UInt32 GetMsgBytesLoadedFromStorageCounter( bool resetCounter );
+    CORE::UInt32 GetMsgsWrittenToStorageCounter( bool resetCounter );
+    CORE::UInt32 GetMsgBytesWrittenToStorageCounter( bool resetCounter );
     CORE::UInt32 GetStorageCorruptionDetectionCounter( bool resetCounter );
     CORE::UInt32 GetStorageDeserializationFailuresCounter( bool resetCounter );
 
@@ -325,6 +333,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CStoragePubSubClientTopicVfsTaskPtr m_vfsOpsThread;
 
     CORE::UInt32 m_msgsLoadedFromStorage;
+    CORE::UInt32 m_msgBytesLoadedFromStorage;
+    CORE::UInt32 m_msgsWrittenToStorage;
+    CORE::UInt32 m_msgBytesWrittenToStorage;
     CORE::UInt32 m_storageCorruptionDetections;
     CORE::UInt32 m_storageDeserializationFailures;
 };

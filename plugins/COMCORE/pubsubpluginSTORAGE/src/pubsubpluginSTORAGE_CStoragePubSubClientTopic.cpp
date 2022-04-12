@@ -196,6 +196,9 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_storageBufferMetaData()
     , m_vfsOpsThread()
     , m_msgsLoadedFromStorage( 0 )
+    , m_msgBytesLoadedFromStorage( 0 )
+    , m_msgsWrittenToStorage( 0 )
+    , m_msgBytesWrittenToStorage( 0 )
     , m_storageCorruptionDetections( 0 )
     , m_storageDeserializationFailures( 0 )
 {GUCEF_TRACE;
@@ -466,15 +469,27 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
             // Serialize the message
             CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
             CORE::UInt32 msgBytesWritten = 0;
-            if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( m_config.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_currentWriteBuffer, msgBytesWritten ) )
-            {
+            if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( m_config.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_currentWriteBuffer, msgBytesWritten ) && 0 != msgBytesWritten )
+            {                
+                #ifdef GUCEF_DEBUG_MODE
+                // Extra sanity check
+                if ( !bufferMetaData->msgOffsetIndex.empty() )
+                {
+                    if ( bufferOffset < bufferMetaData->msgOffsetIndex[ bufferMetaData->msgOffsetIndex.size()-1 ] )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                            "):PublishViaMsgPtrs: Non-Ascending msg offset detected. publishActionId=" + CORE::ToString( publishActionId ) );
+                    }
+                }
+                #endif
+                
                 // add to our meta-data tracking
                 bufferMetaData->msgOffsetIndex.push_back( bufferOffset );
-                bufferMetaData->publishActionIds.push_back( publishActionId );
+                bufferMetaData->publishActionIds.push_back( publishActionId );                
 
                 ticks = CORE::GUCEFGetTickCount() - ticks;
                 bufferOffset += msgBytesWritten;
-                m_currentWriteBuffer->SetDataSize( bufferOffset );
+                //m_currentWriteBuffer->SetDataSize( bufferOffset );
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
                     "):PublishViaMsgPtrs: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) + 
@@ -528,6 +543,11 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( TStorageBufferMetaData* bufferMe
         "):FinalizeWriteBuffer: Completed a serialized msg data block of size " + CORE::ToString( bufferOffset ) );                
                 
     m_currentWriteBuffer = GUCEF_NULL;
+
+    // Now that the async threaded work is done signal that we are finished writing
+    // this releases the write buffer for reading as a read buffer
+    m_buffers.SignalEndOfWriting();
+
     m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
 }
 
@@ -866,10 +886,6 @@ CStoragePubSubClientTopic::OnEndOfASyncVfsWork( void )
             // Finalize the write buffer content, there wont be any additional content at this time
             FinalizeWriteBuffer();
 
-            // Now that the async threaded work is done signal that we are finished writing
-            // this releases the write buffer for reading as a read buffer
-            m_buffers.SignalEndOfWriting();
-
             // Persist next ready to read buffer
             StoreNextReceivedPubSubBuffer();
             return;
@@ -952,6 +968,9 @@ CStoragePubSubClientTopic::TopicMetrics::TopicMetrics( void )
     , smallestBufferSizeInBytes( 0 )
     , largestBufferSizeInBytes( 0 )
     , msgsLoadedFromStorage( 0 )
+    , msgBytesLoadedFromStorage( 0 )
+    , msgsWrittenToStorage( 0 )
+    , msgBytesWrittenToStorage( 0 )
     , storageCorruptionDetections( 0 )
     , storageDeserializationFailures( 0 )
 {GUCEF_TRACE;
@@ -994,6 +1013,9 @@ CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     m_metrics.smallestBufferSizeInBytes = smallest;
     m_metrics.largestBufferSizeInBytes = largest;
     m_metrics.msgsLoadedFromStorage = GetMsgsLoadedFromStorageCounter( true );
+    m_metrics.msgBytesLoadedFromStorage = GetMsgBytesLoadedFromStorageCounter( true );
+    m_metrics.msgsWrittenToStorage = GetMsgsWrittenToStorageCounter( true );
+    m_metrics.msgBytesWrittenToStorage = GetMsgBytesWrittenToStorageCounter( true );
     m_metrics.storageCorruptionDetections = GetStorageCorruptionDetectionCounter( true );
     m_metrics.storageDeserializationFailures = GetStorageDeserializationFailuresCounter( true );
     
@@ -1343,6 +1365,29 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStoragePubSubClientTopic::AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success )
+{GUCEF_TRACE;
+
+    size_t idCount = publishActionIds.size();
+    if ( success )
+    {         
+        for ( size_t i=0; i<idCount; ++i )
+        {
+            m_publishSuccessActionIds.push_back( publishActionIds[ i ] );
+        }
+    }
+    else
+    {
+        for ( size_t i=0; i<idCount; ++i )
+        {
+            m_publishFailureActionIds.push_back( publishActionIds[ i ] );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
 {GUCEF_TRACE;
@@ -1352,9 +1397,14 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
     CORE::CDateTime msgBatchDt;
     if ( GUCEF_NULL == m_currentReadBuffer )
         m_currentReadBuffer = buffers.GetNextReaderBuffer( msgBatchDt, false, 25 );
-    
+    else
+        msgBatchDt = buffers.GetCurrenReaderBufferAssociatedDt();
+
     if ( GUCEF_NULL != m_currentReadBuffer )
     {
+        if ( msgBatchDt == CORE::CDateTime::Empty )
+            msgBatchDt = CORE::CDateTime::NowUTCDateTime();
+        
         // Get the timestamp of the last message in the buffer.
         bool isCorrupted = false;
         bool isMsgDtSupported = false;
@@ -1371,13 +1421,18 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
 
         CORE::CString vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
         CORE::CString vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+        TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
             
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
         if ( m_config.encodeCodecFamily.IsNULLOrEmpty() || m_config.encodeCodecName.IsNULLOrEmpty() )
         {
             if ( vfs.StoreAsFile( vfsStoragePath, *m_currentReadBuffer, 0, true ) )
-            {
+            {                                
+                m_msgsWrittenToStorage += (UInt32) bufferMetaData->msgOffsetIndex.size();
+                m_msgBytesWrittenToStorage += m_currentReadBuffer->GetDataSize();
+                AddPublishActionIdsToNotify( bufferMetaData->publishActionIds, true );
+
                 buffers.SignalEndOfReading();
                 m_currentReadBuffer = GUCEF_NULL;
 
@@ -1386,13 +1441,17 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: StoreAsFile() Failed" );
+                AddPublishActionIdsToNotify( bufferMetaData->publishActionIds, false );
             }
         }
         else
         {
             if ( vfs.EncodeAsFile( *m_currentReadBuffer, 0, vfsStoragePath, true, m_config.encodeCodecFamily, m_config.encodeCodecName ) )
             {
-                m_encodeSizeRatio = (CORE::Float32) ( m_currentReadBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );
+                m_msgsWrittenToStorage += (UInt32) bufferMetaData->msgOffsetIndex.size();
+                m_msgBytesWrittenToStorage += m_currentReadBuffer->GetDataSize();
+                m_encodeSizeRatio = (CORE::Float32) ( m_currentReadBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );                                
+                AddPublishActionIdsToNotify( bufferMetaData->publishActionIds, true );
                 
                 buffers.SignalEndOfReading();
                 m_currentReadBuffer = GUCEF_NULL;
@@ -1402,6 +1461,7 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: EncodeAsFile() Failed" );
+                AddPublishActionIdsToNotify( bufferMetaData->publishActionIds, false );
             }
         }
     }
@@ -1688,6 +1748,38 @@ CStoragePubSubClientTopic::OnStoredPubSubMsgTransmissionFailure( const CORE::CDa
 /*-------------------------------------------------------------------------*/
 
 CORE::UInt32 
+CStoragePubSubClientTopic::GetMsgsWrittenToStorageCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 msgsWrittenToStorage = m_msgsWrittenToStorage;
+        m_msgsWrittenToStorage = 0;
+        return msgsWrittenToStorage;
+    }
+    else
+        return m_msgsWrittenToStorage;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32 
+CStoragePubSubClientTopic::GetMsgBytesWrittenToStorageCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 msgBytesWrittenToStorage = m_msgBytesWrittenToStorage;
+        m_msgBytesWrittenToStorage = 0;
+        return msgBytesWrittenToStorage;
+    }
+    else
+        return m_msgBytesWrittenToStorage;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32 
 CStoragePubSubClientTopic::GetMsgsLoadedFromStorageCounter( bool resetCounter )
 {GUCEF_TRACE;
 
@@ -1699,6 +1791,22 @@ CStoragePubSubClientTopic::GetMsgsLoadedFromStorageCounter( bool resetCounter )
     }
     else
         return m_msgsLoadedFromStorage;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32 
+CStoragePubSubClientTopic::GetMsgBytesLoadedFromStorageCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 msgBytesLoadedFromStorage = m_msgBytesLoadedFromStorage;
+        m_msgBytesLoadedFromStorage = 0;
+        return msgBytesLoadedFromStorage;
+    }
+    else
+        return m_msgBytesLoadedFromStorage;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1784,6 +1892,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 
     // update metrics
     m_msgsLoadedFromStorage += static_cast< CORE::UInt32 >( msgs.size() );
+    m_msgBytesLoadedFromStorage += m_currentReadBuffer->GetDataSize();
 
     COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator i = msgs.begin();
     while ( i != msgs.end() )

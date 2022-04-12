@@ -167,24 +167,37 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
     UInt32 footerSize = ((UInt32)index.size()*4)+4+(MagicText.ByteSize()-1);
     if ( target.GetUnusedBufferSize() < footerSize )
         target.SetBufferSize( target.GetBufferSize() + footerSize, false );
+
+    #ifdef GUCEF_DEBUG_MODE
+    // Extra sanity check
+    if ( index.size() >= 2 )
+    {
+        for ( UInt64 m=0; m<index.size()-2; ++m )
+        {
+            if ( index[ m ] > index[ m+1 ] )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Non-Ascending footer entry detected" )
+            }
+        }
+    }    
+    #endif
     
     // Write the msg offset index
     // The purpose of the index is quick access to messages by index even though the
-    // messages have variable length
-    TMsgOffsetIndex::const_iterator i = index.begin();
-    while ( i != index.end() )
+    // messages have variable length  
+    // Use the fact that vector is stored as a single block of memory underneath
+    if ( !index.empty() )    
     {
-        UInt32 msgOffsetInBytes = (*i);
-        UInt32 newBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(msgOffsetInBytes), &msgOffsetInBytes );
+        UInt32 bytesToWrite = (UInt32) index.size() * sizeof(UInt32);
+        UInt32 newBytesWritten = target.CopyFrom( currentTargetOffset, bytesToWrite, &index[0] );
         bytesWritten += newBytesWritten;
         currentTargetOffset += newBytesWritten;
-        if ( newBytesWritten != sizeof(msgOffsetInBytes) )
+
+        if ( newBytesWritten != bytesToWrite )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write footer index entry field" );
             return false;
         }
-
-        ++i;
     }
 
     // Write the msg offset index size

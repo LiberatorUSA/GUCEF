@@ -286,11 +286,12 @@ CDynamicBuffer::operator[]( UInt32 index ) const
 bool
 CDynamicBuffer::operator==( const CDynamicBuffer& other ) const
 {GUCEF_TRACE;
-        if ( m_dataSize == other.m_dataSize )
-        {
-                return memcmp( _buffer, other._buffer, m_dataSize ) == 0;
-        }       
-        return false;
+    
+    if ( m_dataSize == other.m_dataSize )
+    {
+        return memcmp( _buffer, other._buffer, m_dataSize ) == 0;
+    }       
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -299,11 +300,10 @@ bool
 CDynamicBuffer::operator!=( const CDynamicBuffer& other ) const
 {GUCEF_TRACE;
 
-    if ( m_dataSize == other.m_dataSize )
-    {
-        return memcmp( _buffer, other._buffer, m_dataSize ) != 0;
-    }       
-    return true;
+    if ( m_dataSize != other.m_dataSize )
+        return true;
+
+    return memcmp( _buffer, other._buffer, m_dataSize ) != 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -483,7 +483,7 @@ CDynamicBuffer::WriteContentToFile( const CORE::CString& filepath ,
                                     const bool overwrite          ) const
 {GUCEF_TRACE;
     
-    const char* mode = overwrite ? "w" : "r+";
+    const char* mode = overwrite ? "wb" : "rb+";
 
     FILE* fptr = fopen( filepath.C_String(), mode );
     if ( NULL != fptr )
@@ -502,7 +502,7 @@ bool
 CDynamicBuffer::AppendContentToFile( const CORE::CString& filepath ) const
 {GUCEF_TRACE;
     
-    FILE* fptr = fopen( filepath.C_String(), "a" );
+    FILE* fptr = fopen( filepath.C_String(), "ab" );
     if ( NULL != fptr )
     {
         bool success = 1 == fwrite( _buffer, m_dataSize, 1, fptr );
