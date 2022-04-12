@@ -387,6 +387,13 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                                               bool notify                              )
 {GUCEF_TRACE;
 
+    if ( CStoragePubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_STORAGE != m_config.mode )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+            "):PublishViaMsgPtrs: Attempt to publish messages on a topic that is not configured as CHANNELMODE_PUBSUB_TO_STORAGE" );
+        return false;
+    }
+    
     try
     {
         MT::CScopeMutex lock( m_lock );
@@ -675,6 +682,13 @@ CStoragePubSubClientTopic::StopVfsOps( void )
 bool
 CStoragePubSubClientTopic::AddStorageToPubSubRequest( const StorageToPubSubRequest& request )
 {GUCEF_TRACE;
+
+    if ( CStoragePubSubClientTopicConfig::CHANNELMODE_STORAGE_TO_PUBSUB != m_config.mode )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+            "):PublishViaMsgPtrs: Attempt to source messages from storage on a topic that is not configured as CHANNELMODE_STORAGE_TO_PUBSUB" );
+        return false;
+    }
 
     MT::CScopeMutex lock( m_lock );
     m_stage1StorageToPubSubRequests.push_back( request );
@@ -1353,6 +1367,9 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
         {
             if ( vfs.StoreAsFile( vfsStoragePath, *m_currentReadBuffer, 0, true ) )
             {
+                buffers.SignalEndOfReading();
+                m_currentReadBuffer = GUCEF_NULL;
+
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: Successfully stored pub-sub mesage block at: " + vfsStoragePath );
             }
             else
@@ -1364,6 +1381,9 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
         {
             if ( vfs.EncodeAsFile( *m_currentReadBuffer, 0, vfsStoragePath, true, m_config.encodeCodecFamily, m_config.encodeCodecName ) )
             {
+                buffers.SignalEndOfReading();
+                m_currentReadBuffer = GUCEF_NULL;
+
                 m_encodeSizeRatio = (CORE::Float32) ( m_currentReadBuffer->GetDataSize() / ( 1.0f * vfs.GetFileSize( vfsStoragePath ) ) );
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: Successfully encoded and stored pub-sub mesage block at: \"" + vfsStoragePath + "\" with a encoded size ratio of " + CORE::ToString( m_encodeSizeRatio ) );
             }
@@ -1474,6 +1494,11 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
 
                 if ( GUCEF_NULL != m_currentWriteBuffer )
                 {
+                    TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
+                    bufferMetaData->msgOffsetIndex.clear();
+                    bufferMetaData->relatedStorageFile = (*n);
+                    m_currentWriteBuffer->SetDataSize( 0 );
+                    
                     if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
                     {
                         // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
@@ -1486,8 +1511,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         bool isCorrupted = false;                                                
                         CORE::UInt32 bytesRead = 0;
                         COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
-                        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-                        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, originalOffsetIndex, *m_currentWriteBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
+                        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, bufferMetaData->msgOffsetIndex, *m_currentWriteBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed obtain messages from pubsub msg container at path \"" + 
                                 (*n) + "\". The file will be disregarded as invalid and skipped" );
@@ -1502,7 +1526,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         {
                             // Make sure we log this because messages could be missing
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Successfully rebuild index for corrupted pubsub msg container at path \"" + 
-                                (*n) + "\". Found " + CORE::ToString( originalOffsetIndex.size() ) + " recoverable entries in the file" );
+                                (*n) + "\". Found " + CORE::ToString( bufferMetaData->msgOffsetIndex.size() ) + " recoverable entries in the file" );
                         }
 
                         // Check to see how many we need to trim from the start
@@ -1528,12 +1552,12 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         }
 
                         CORE::UInt32 o2=0;
-                        std::size_t newIndexSize = originalOffsetIndex.size() - ( (std::size_t)startIndexOffset + (std::size_t)endIndexOffset );
-                        endIndexOffset = (CORE::UInt32) originalOffsetIndex.size() - endIndexOffset;
+                        std::size_t newIndexSize = bufferMetaData->msgOffsetIndex.size() - ( (std::size_t)startIndexOffset + (std::size_t)endIndexOffset );
+                        endIndexOffset = (CORE::UInt32) bufferMetaData->msgOffsetIndex.size() - endIndexOffset;
                         COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newOffsetIndex( newIndexSize );                            
                         for ( CORE::UInt32 o=startIndexOffset; o<endIndexOffset; ++o )
                         {
-                            newOffsetIndex[ o2 ] = originalOffsetIndex[ o ];
+                            newOffsetIndex[ o2 ] = bufferMetaData->msgOffsetIndex[ o ];
                             ++o2;
                         }
 
@@ -1584,6 +1608,11 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                 if ( GUCEF_NULL != m_currentWriteBuffer )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request" );
+
+                    TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
+                    bufferMetaData->msgOffsetIndex.clear();
+                    bufferMetaData->relatedStorageFile = (*n);
+                    m_currentWriteBuffer->SetDataSize( 0 );
 
                     if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
                     {
@@ -1763,6 +1792,8 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         return true;
 
     m_pubsubMsgsRefs.clear();
+    m_buffers.SignalEndOfReading();
+    m_currentReadBuffer = GUCEF_NULL;
     return true;
 }
 

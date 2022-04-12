@@ -403,16 +403,9 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 
     if ( clientConfig.desiredFeatures.supportsMetrics )
     {
-        if ( GUCEF_NULL != clientConfig.pulseGenerator )
-        {
-            m_metricsTimer = new CORE::CTimer( *clientConfig.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( clientConfig.desiredFeatures.supportsMetrics );
-        }
-        else
-        {
-            m_metricsTimer = new CORE::CTimer( 1000 );
-            m_metricsTimer->SetEnabled( clientConfig.desiredFeatures.supportsMetrics );
-        }
+        if ( GUCEF_NULL != m_metricsTimer )
+            m_metricsTimer = new CORE::CTimer( clientConfig.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( clientConfig.desiredFeatures.supportsMetrics );
     }
 
     RegisterEventHandlers();
@@ -423,6 +416,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
     COMCORE::CPubSubClientConfig::THostAddressVector::const_iterator h = clientConfig.remoteAddresses.begin();
     while ( h != clientConfig.remoteAddresses.end() )
     {
+        // The RdKafka library will re-resolve DNSs on reconnects so we should feed it DNSs
         csvKafkaBrokerList += (*h).HostnameAndPortAsString() + ',';
         ++h;
     }

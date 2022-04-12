@@ -199,6 +199,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     {
         COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
         TPublishActionIdVector publishActionIds; 
+        CORE::CString relatedStorageFile;
     };
     typedef struct SStorageBufferMetaData TStorageBufferMetaData;
     typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;

@@ -111,6 +111,32 @@ CBasicPubSubMsg::~CBasicPubSubMsg()
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CBasicPubSubMsg::operator==( const CBasicPubSubMsg& other ) const
+{GUCEF_TRACE;
+
+    return m_msgId == other.m_msgId &&
+           m_msgIndex == other.m_msgIndex &&
+           m_msgDateTime == other.m_msgDateTime &&
+           m_primaryPayload == other.m_primaryPayload &&
+           m_keyValuePairs == other.m_keyValuePairs &&
+           m_metaDataKeyValuePairs == other.m_metaDataKeyValuePairs;
+
+    // We do not include m_msgOriginClientTopic or m_receiveActionId on purpose
+    // those are runtime associated properties, not intrinsically part of the message content
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::operator!=( const CBasicPubSubMsg& other ) const
+{GUCEF_TRACE;
+
+    return !( operator==( other ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CVariant& 
 CBasicPubSubMsg::GetMsgId( void ) const
 {GUCEF_TRACE;

@@ -67,6 +67,9 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 
     virtual ~CBasicPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
 
+    bool operator==( const CBasicPubSubMsg& other ) const;
+    bool operator!=( const CBasicPubSubMsg& other ) const;
+
     /**
      *  Attempts to serialize the object to a DOM created out of DataNode objects
      */
