@@ -1311,20 +1311,26 @@ CStoragePubSubClientTopic::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
-                                                                CORE::CDateTime& startDt      ,
-                                                                CORE::CDateTime& endDt        ) const
+CStoragePubSubClientTopic::GetTimestampsFromContainerFilename( const CORE::CString& fullPath     ,
+                                                               CORE::CDateTime& firstMsgDt       ,
+                                                               CORE::CDateTime& lastMsgDt        ,
+                                                               CORE::CDateTime& containerStartDt ) const
 {GUCEF_TRACE;
 
     // first strip the extra stuff from the full path to get the string form timestamps
     CORE::CString segment = CORE::ExtractFilename( fullPath );
     segment = segment.CutChars( m_vfsFilePostfix.Length(), false, 0 );
-    CORE::CString startDtSegment = segment.SubstrToChar( '_', true );
-    CORE::CString endDtSegment = segment.SubstrToChar( '_', false );
+    CORE::CString firstMsgDtStr = segment.SubstrToChar( '_', true, false );
+    CORE::CString lastMsgDtStr = segment.SubstrToChar( '_', firstMsgDtStr.Length()+1, true, false );
+    CORE::CString containerStartDtStr = segment.SubstrToChar( '_', false, false  );
 
     // Try to parse what is left as a valid ISO 8601 DateTime
-    if ( startDt.FromIso8601DateTimeString( startDtSegment ) && endDt.FromIso8601DateTimeString( endDtSegment ) )
+    if ( firstMsgDt.FromIso8601DateTimeString( firstMsgDtStr ) && 
+         lastMsgDt.FromIso8601DateTimeString( lastMsgDtStr ) && 
+         containerStartDt.FromIso8601DateTimeString( containerStartDtStr ) )
         return true;
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:GetTimestampsFromContainerFilename: Failed to parse timestamps from filename " + segment );
     return false;
 }
 
@@ -1348,7 +1354,8 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
     {        
         CORE::CDateTime containerFileFirstMsgDt;
         CORE::CDateTime containerFileLastMsgDt;
-        if ( GetStartAndEndFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt ) )
+        CORE::CDateTime containerFileCaptureDt;
+        if ( GetTimestampsFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
         {
             // Check the container first messgage dt against the our time range
             // It is assumed here that the containers have messages chronologically ordered
@@ -1539,7 +1546,8 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
 
             CORE::CDateTime containerFileFirstMsgDt;
             CORE::CDateTime containerFileLastMsgDt;
-            if ( GetStartAndEndFromContainerFilename( (*n), containerFileFirstMsgDt, containerFileLastMsgDt ) )
+            CORE::CDateTime containerCaptureDt;
+            if ( GetTimestampsFromContainerFilename( (*n), containerFileFirstMsgDt, containerFileLastMsgDt, containerCaptureDt ) )
             {
                 containerStartIsInRange = containerFileFirstMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );
                 containerEndIsInRange = containerFileLastMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );                 
@@ -1558,19 +1566,20 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                 totalSuccess = false; 
                 continue;
             }
-            
-            if ( needContainerSubsetOnly )
-            {
-                if ( GUCEF_NULL == m_currentWriteBuffer )
-                    m_currentWriteBuffer = GetSerializedMsgBuffers().GetNextWriterBuffer( containerStartIsInRange ? containerFileFirstMsgDt : queuedRequest.startDt, false, 0 );
 
-                if ( GUCEF_NULL != m_currentWriteBuffer )
+            if ( GUCEF_NULL == m_currentWriteBuffer )
+                m_currentWriteBuffer = GetSerializedMsgBuffers().GetNextWriterBuffer( false, 0 );
+
+            if ( GUCEF_NULL != m_currentWriteBuffer )
+            {
+                TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
+                bufferMetaData->msgOffsetIndex.clear();
+                bufferMetaData->relatedStorageFile = (*n);
+                m_currentWriteBuffer->SetDataSize( 0 );            
+
+                if ( needContainerSubsetOnly )
                 {
-                    TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-                    bufferMetaData->msgOffsetIndex.clear();
-                    bufferMetaData->relatedStorageFile = (*n);
-                    m_currentWriteBuffer->SetDataSize( 0 );
-                    
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the container and used a subset of its data to serve (part of) the request: " + bufferMetaData->relatedStorageFile );
                     if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
                     {
                         // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
@@ -1667,25 +1676,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                 }
                 else
                 {
-                    // No write buffer available, we need to wait before processing more requests
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: No write buffer available" );
-                    return totalSuccess;
-                }
-            }
-            else
-            {
-                if ( GUCEF_NULL == m_currentWriteBuffer )
-                    m_currentWriteBuffer = GetSerializedMsgBuffers().GetNextWriterBuffer( containerFileFirstMsgDt, false, 0 );
-                
-                if ( GUCEF_NULL != m_currentWriteBuffer )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request" );
-
-                    TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-                    bufferMetaData->msgOffsetIndex.clear();
-                    bufferMetaData->relatedStorageFile = (*n);
-                    m_currentWriteBuffer->SetDataSize( 0 );
-
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request: " + bufferMetaData->relatedStorageFile );                        
                     if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
                     {
                         // Since we loaded the entire container and we dont need a subset we are done
@@ -1706,12 +1697,12 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         continue; 
                     }
                 }
-                else
-                {
-                    // No write buffer available, we need to wait before processing more requests
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: No write buffer available" );
-                    return totalSuccess;
-                }
+            }
+            else
+            {
+                // No write buffer available, we need to wait before processing more requests
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: No write buffer available" );
+                return totalSuccess;
             }
             ++n;
         }

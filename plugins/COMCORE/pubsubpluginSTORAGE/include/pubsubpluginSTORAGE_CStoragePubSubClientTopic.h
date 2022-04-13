@@ -253,9 +253,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool LoadStorageFile( const CORE::CString& vfsPath       ,
                           CORE::CDynamicBuffer& targetBuffer );
 
-    bool GetStartAndEndFromContainerFilename( const CORE::CString& fullPath ,
-                                              CORE::CDateTime& startDt      ,
-                                              CORE::CDateTime& endDt        ) const;
+    bool GetTimestampsFromContainerFilename( const CORE::CString& fullPath     ,
+                                             CORE::CDateTime& firstMsgDt       ,
+                                             CORE::CDateTime& lastMsgDt        ,
+                                             CORE::CDateTime& containerStartDt ) const;
 
     CORE::CDynamicBufferSwap& GetSerializedMsgBuffers( void );
     

@@ -253,7 +253,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
         UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container footer magic text" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: Failed to read container footer magic text" );
             return false;
         }
         currentSourceOffset -= MagicText.ByteSize()-1;
@@ -279,6 +279,14 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
                 currentSourceOffset += sizeof(msgOffset);
                 bytesRead += sizeof(msgOffset);
 
+                if ( !index.empty() )
+                {
+                    if ( msgOffset < index[ index.size()-1 ] )
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: non-ascending footer entry detected while reading hdr to ftr" );
+                    }
+                }
+
                 index.push_back( msgOffset );
             }
         }
@@ -287,9 +295,17 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
             for ( UInt32 i=0; i<indexSize; ++i )
             {
                 UInt32 msgOffset = 0;
-                msgOffset = source.AsConstType< UInt32 >( currentSourceOffset - sizeof(msgOffset) );
-                currentSourceOffset -= sizeof(msgOffset);
-                bytesRead += sizeof(msgOffset);
+                currentSourceOffset -= sizeof(UInt32);
+                msgOffset = source.AsConstType< UInt32 >( currentSourceOffset );
+                bytesRead += sizeof(UInt32);
+
+                if ( !index.empty() )
+                {
+                    if ( msgOffset > index[ index.size()-1 ] )
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: non-decending footer entry detected while reading ftr to hdr" );
+                    }
+                }
 
                 index.push_back( msgOffset );
             }

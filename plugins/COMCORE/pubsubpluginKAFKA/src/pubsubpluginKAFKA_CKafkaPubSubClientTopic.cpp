@@ -403,7 +403,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 
     if ( clientConfig.desiredFeatures.supportsMetrics )
     {
-        if ( GUCEF_NULL != m_metricsTimer )
+        if ( GUCEF_NULL == m_metricsTimer )
             m_metricsTimer = new CORE::CTimer( clientConfig.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( clientConfig.desiredFeatures.supportsMetrics );
     }

@@ -39,7 +39,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define ERRORHERE { GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GUCEF::CORE::CString( "Test failed @ " ) + GUCEF::CORE::CString( __FILE__ ) + ':' + GUCEF::CORE::Int32ToString( __LINE__ ) ); assert(0); }
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+  #define DEBUGBREAK __builtin_trap()
+#elif GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+  #define DEBUGBREAK DebugBreak()
+#else
+  #define DEBUGBREAK
+#endif
+
+#define ERRORHERE { std::cout << "Test failed @ " << __FILE__ << "(" << __LINE__ << ")\n"; DEBUGBREAK; }
+#define ASSERT_TRUE( test ) if ( !(test) ) { ERRORHERE; } 
+#define ASSERT_FALSE( test ) if ( (test) ) { ERRORHERE; }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,12 +99,102 @@ GenerateTestBinaryPayload( CORE::CDynamicBuffer& buffer, UInt32 startNum, UInt32
 /*-------------------------------------------------------------------------*/
 
 void
-PerformPubSubMsgBinaryStorageTest( void )
+TestWithSimilarMessagesWithFixedSizes( void )
 {GUCEF_TRACE;
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Running PerformPubSubMsgBinaryStorageTest with PubSubMsgContainerBinarySerializer with format version: " + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Running PerformPubSubMsgBinaryStorageTest - TestWithSimilarMessagesWithFixedSizes" );
+        
+        CORE::CDateTime testStart = CORE::CDateTime::NowLocalDateTime();
+        
+        COMCORE::CIPubSubMsg::TKeyValuePair pubsubKvPair1;
+        pubsubKvPair1.first.LinkTo( testKVKey1 );
+        pubsubKvPair1.second.LinkTo( testKVValue1 );
+
+        COMCORE::CIPubSubMsg::TKeyValuePair pubsubKvPair2;
+        pubsubKvPair2.first.LinkTo( testKVKey2 );
+        pubsubKvPair2.second.LinkTo( testKVValue2 );
+
+        CORE::CDynamicBuffer inMemStorage1( true );
+
+        COMCORE::CPubSubMsgBinarySerializerOptions serializerOptions;
+        serializerOptions.msgIdIncluded = true;
+        serializerOptions.msgIndexIncluded = true;
+        serializerOptions.msgDateTimeIncluded = true;
+        serializerOptions.msgDateTimeAsMsSinceUnixEpochInUtc = true;
+        serializerOptions.msgPrimaryPayloadIncluded = true;
+        serializerOptions.msgKeyValuePairsIncluded = true;
+        serializerOptions.msgMetaDataKeyValuePairsIncluded = true;
+        
+        COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector msgs;
+        msgs.resize( 100 );        
+        for ( UInt32 i=0; i<100; ++i )
+        {
+            COMCORE::CBasicPubSubMsg& msg = msgs[ i ];
+            msg.GetPrimaryPayload().LinkTo( testPlayload1 );
+            msg.GetMsgDateTime() = testStart;
+            msg.GetMsgId().LinkTo( testMsgId1 );
+            msg.GetMsgIndex() = i;
+            msg.AddLinkedKeyValuePair( pubsubKvPair1 );
+            msg.AddLinkedKeyValuePair( pubsubKvPair2 );
+        }
+        
+        UInt32 bytesWritten = 0;
+        ASSERT_TRUE( COMCORE::CPubSubMsgContainerBinarySerializer::Serialize( serializerOptions, msgs, 0, inMemStorage1, bytesWritten ) );
+        ASSERT_TRUE( bytesWritten == inMemStorage1.GetDataSize() );
+
+        bool isCorrupted = false;
+        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgIndex;
+        COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector msgs2;
+        ASSERT_TRUE( COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs2, true, msgIndex, inMemStorage1, isCorrupted, false ) );
+        ASSERT_FALSE( isCorrupted );
+        ASSERT_FALSE( msgIndex.size() != msgs.size() );
+
+        for ( UInt32 i=0; i<100; ++i )
+        {
+            COMCORE::CBasicPubSubMsg& msg = msgs2[ i ];
+            ASSERT_TRUE( msgs[ i ] == msgs2[ i ] );
+            ASSERT_TRUE( msg.GetPrimaryPayload() == testPlayload1 );
+            ASSERT_TRUE( msg.GetMsgDateTime() == testStart );
+            ASSERT_TRUE( msg.GetMsgIndex() == i );
+            ASSERT_TRUE( msg.GetMsgId() == testMsgId1 );
+            
+            COMCORE::CIMessage::TKeyValuePairs& pairs = msg.GetKeyValuePairs();
+            for ( UInt32 n=0; n<2; ++n )
+            {
+                ASSERT_TRUE( msgs[ i ].GetKeyValuePairs()[ n ] == msgs2[ i ].GetKeyValuePairs()[ n ] );
+            }
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished running PerformPubSubMsgBinaryStorageTest - TestWithSimilarMessagesWithFixedSizes" );
+    }
+    catch ( CORE::CMsgException& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled GUCEF exception during PubSubMsgBinaryStorage test: " ) + e.what() );
+        ERRORHERE;
+    }
+    catch ( std::exception& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled std exception during PubSubMsgBinaryStorage test: " ) + e.what() );
+        ERRORHERE;
+    }
+    catch ( ... )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "unhandled exception during PubSubMsgBinaryStorage test" );
+        ERRORHERE;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+TestWithSimilarMessagesWithVariableSizes( void )
+{GUCEF_TRACE;
+
+    try
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Running PerformPubSubMsgBinaryStorageTest - TestWithSimilarMessagesWithVariableSizes" );
         
         CORE::CDateTime testStart = CORE::CDateTime::NowLocalDateTime();
         
@@ -129,25 +229,71 @@ PerformPubSubMsgBinaryStorageTest( void )
             msg.GetPrimaryPayload().LinkTo( testPlayload1 );
             msg.GetMsgDateTime() = testStart;
             msg.GetMsgId().LinkTo( testMsgId1 );
+            msg.GetMsgIndex() = i;
             msg.AddLinkedKeyValuePair( pubsubKvPair1 );
             msg.AddLinkedKeyValuePair( pubsubKvPair2 );
         }
         
         UInt32 bytesWritten = 0;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::Serialize( serializerOptions, msgs, 0, inMemStorage1, bytesWritten ) )
-            ERRORHERE;
-        if ( bytesWritten != inMemStorage1.GetDataSize() )
-            ERRORHERE;
+        ASSERT_TRUE( COMCORE::CPubSubMsgContainerBinarySerializer::Serialize( serializerOptions, msgs, 0, inMemStorage1, bytesWritten ) );
+        ASSERT_TRUE( bytesWritten == inMemStorage1.GetDataSize() );
 
         bool isCorrupted = false;
         COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgIndex;
         COMCORE::CBasicPubSubMsg::TBasicPubSubMsgVector msgs2;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs2, true, msgIndex, inMemStorage1, isCorrupted ) )
-            ERRORHERE;
-        if ( isCorrupted )
-            ERRORHERE;
-        if ( msgIndex.size() != msgs.size() )            
-            ERRORHERE;
+        ASSERT_TRUE( COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs2, true, msgIndex, inMemStorage1, isCorrupted, false ) );
+        ASSERT_FALSE( isCorrupted );
+        ASSERT_FALSE( msgIndex.size() != msgs.size() );
+
+        for ( UInt32 i=0; i<100; ++i )
+        {
+            COMCORE::CBasicPubSubMsg& msg = msgs2[ i ];
+            ASSERT_TRUE( msgs[ i ] == msgs2[ i ] );
+            ASSERT_TRUE( msg.GetPrimaryPayload() == testPlayload1 );
+            ASSERT_TRUE( msg.GetMsgDateTime() == testStart );
+            ASSERT_TRUE( msg.GetMsgIndex() == i );
+            ASSERT_TRUE( msg.GetMsgId() == testMsgId1 );
+            
+            COMCORE::CIMessage::TKeyValuePairs& pairs = msg.GetKeyValuePairs();
+            for ( UInt32 n=0; n<2; ++n )
+            {
+                ASSERT_TRUE( msgs[ i ].GetKeyValuePairs()[ n ] == msgs2[ i ].GetKeyValuePairs()[ n ] );
+            }
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished running PerformPubSubMsgBinaryStorageTest - TestWithSimilarMessagesWithVariableSizes" );
+    }
+    catch ( CORE::CMsgException& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled GUCEF exception during PubSubMsgBinaryStorage TestWithSimilarMessagesWithVariableSizes test: " ) + e.what() );
+        ERRORHERE;
+    }
+    catch ( std::exception& e )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "unhandled std exception during PubSubMsgBinaryStorage TestWithSimilarMessagesWithVariableSizes test: " ) + e.what() );
+        ERRORHERE;
+    }
+    catch ( ... )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "unhandled exception during PubSubMsgBinaryStorage TestWithSimilarMessagesWithVariableSizes test" );
+        ERRORHERE;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PerformPubSubMsgBinaryStorageTest( void )
+{GUCEF_TRACE;
+
+    try
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Running PerformPubSubMsgBinaryStorageTest with PubSubMsgContainerBinarySerializer with format version: " + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) );
+        
+        TestWithSimilarMessagesWithFixedSizes();
+        TestWithSimilarMessagesWithVariableSizes();
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished running PerformPubSubMsgBinaryStorageTest with PubSubMsgContainerBinarySerializer with format version: " + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) );
     }
     catch ( CORE::CMsgException& e )
     {
