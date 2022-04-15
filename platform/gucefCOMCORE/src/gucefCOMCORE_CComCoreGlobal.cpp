@@ -82,16 +82,6 @@
 #define GUCEF_COMCORE_CDISCOVERYMANAGER_H
 #endif /* GUCEF_COMCORE_CDISCOVERYMANAGER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#include "gucefCOMCORE_CPubSubClientTopic.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
-
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -130,7 +120,6 @@ TPingTaskConsumerFactory g_pingTaskConsumerFactory;
 CComCoreGlobal::CComCoreGlobal( void )
     : m_com( GUCEF_NULL )
     , m_discoveryManager( GUCEF_NULL )
-    , m_pubsubClientFactory( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -157,7 +146,6 @@ CComCoreGlobal::Initialize( void )
     CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
-    CPubSubClientTopic::RegisterEvents();
 
     // Make the task manager capable of handling ping tasks
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
@@ -165,7 +153,6 @@ CComCoreGlobal::Initialize( void )
 
     m_com = new CCom();
     m_discoveryManager = new CDiscoveryManager();
-    m_pubsubClientFactory = new CPubSubClientFactory();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -177,8 +164,6 @@ CComCoreGlobal::~CComCoreGlobal()
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
     
-    delete m_pubsubClientFactory;
-    m_pubsubClientFactory = GUCEF_NULL;
     delete m_discoveryManager;
     m_discoveryManager = GUCEF_NULL;
     delete m_com;
@@ -239,15 +224,6 @@ CComCoreGlobal::GetDiscoveryManager( void )
 {GUCEF_TRACE;
 
     return *m_discoveryManager;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubClientFactory& 
-CComCoreGlobal::GetPubSubClientFactory( void )
-{GUCEF_TRACE;
-
-    return *m_pubsubClientFactory;
 }
 
 /*-------------------------------------------------------------------------//

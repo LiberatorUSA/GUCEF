@@ -92,7 +92,7 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
-#include "pubsub2pubsub.h"
+#include "gucefPUBSUB_CPubSub2PubSub.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

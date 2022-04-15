@@ -11,13 +11,8 @@
 
 # Configuration for module: pubsub2pubsub
 
-set( HEADER_FILES 
-  include/pubsub2pubsub.h
-)
-
 set( SOURCE_FILES 
   src/main.cpp
-  src/pubsub2pubsub.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -35,10 +30,10 @@ if ( WIN32 )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
-target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPUBSUB gucefVFS gucefWEB )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPUBSUB gucefVFS gucefWEB )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefPUBSUB/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

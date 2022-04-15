@@ -2,18 +2,22 @@
 <ModuleInfoEntry>
 	<Module Name="pubsub2pubsub" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
-			<Dependency Name="gucefWEB" />
-			<Dependency Name="gucefCOM" />
-			<Dependency Name="gucefCOMCORE" />
-			<Dependency Name="gucefCORE" />
 			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
 		</Dependencies>
 		<Linker>
-			<Dependency Name="gucefWEB" />
-			<Dependency Name="gucefCOM" />
-			<Dependency Name="gucefCOMCORE" />
-			<Dependency Name="gucefCORE" />
 			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
 		</Linker>
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
