@@ -42,6 +42,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CMessageSerializer.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CPubSubBookmark.h
+  include/gucefCOMCORE_CPubSubBookmarkBinarySerializer.h
   include/gucefCOMCORE_CPubSubClient.h
   include/gucefCOMCORE_CPubSubClientConfig.h
   include/gucefCOMCORE_CPubSubClientFactory.h
@@ -90,6 +91,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CMessageSerializer.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CPubSubBookmark.cpp
+  src/gucefCOMCORE_CPubSubBookmarkBinarySerializer.cpp
   src/gucefCOMCORE_CPubSubClient.cpp
   src/gucefCOMCORE_CPubSubClientConfig.cpp
   src/gucefCOMCORE_CPubSubClientFactory.cpp

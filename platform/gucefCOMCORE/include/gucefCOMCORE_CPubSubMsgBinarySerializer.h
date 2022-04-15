@@ -106,8 +106,6 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
 {
     public:
 
-    public:
-
     static bool SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs& kvPairs ,
                                   UInt32 currentTargetOffset                 ,
                                   CORE::CDynamicBuffer& target               , 
