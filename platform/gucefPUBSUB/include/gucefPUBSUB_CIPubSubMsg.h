@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,15 +30,15 @@
 #define GUCEF_COMCORE_CIMESSAGE_H
 #endif /* GUCEF_COMCORE_CIMESSAGE_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
 #include "gucefPUBSUB_CPubSubBookmark.h"
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
+#ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"    
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +47,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@ class CPubSubClientTopic;
  *  Based on the client used different capabilities will be available and 
  *  client will use beft effort to simulate others
  */
-class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CIMessage
+class GUCEF_PUBSUB_EXPORT_CPP CIPubSubMsg : public COMCORE::CIMessage
 {
     public:
 
@@ -113,10 +113,10 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CIMessage
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-inline const COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( const COMCORE::CIPubSubMsg& msg ) { return &msg; }
-inline const COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( const COMCORE::CIPubSubMsg* msg ) { return msg; }
-inline COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( COMCORE::CIPubSubMsg& msg ) { return &msg; }
-inline COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( COMCORE::CIPubSubMsg* msg ) { return msg; }
+inline const CIPubSubMsg* AsIPubSubMsgPointer( const CIPubSubMsg& msg ) { return &msg; }
+inline const CIPubSubMsg* AsIPubSubMsgPointer( const CIPubSubMsg* msg ) { return msg; }
+inline CIPubSubMsg* AsIPubSubMsgPointer( CIPubSubMsg& msg ) { return &msg; }
+inline CIPubSubMsg* AsIPubSubMsgPointer( CIPubSubMsg* msg ) { return msg; }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -124,9 +124,9 @@ inline COMCORE::CIPubSubMsg* AsIPubSubMsgPointer( COMCORE::CIPubSubMsg* msg ) { 
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */

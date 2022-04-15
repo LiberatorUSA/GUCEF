@@ -42,10 +42,10 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 #include "gucefPUBSUB_CPubSubMsgSerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
 
@@ -56,7 +56,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,7 +73,7 @@ const CString CBasicPubSubMsg::ClassTypeName = "GUCEF::COMCORE::CBasicPubSubMsg"
 //-------------------------------------------------------------------------*/
 
 CBasicPubSubMsg::CBasicPubSubMsg( void )
-    : COMCORE::CIPubSubMsg()
+    : CIPubSubMsg()
     , m_msgId()
     , m_msgIndex()
     , m_msgDateTime()
@@ -89,7 +89,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
 /*-------------------------------------------------------------------------*/
 
 CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
-    : COMCORE::CIPubSubMsg( src )
+    : CIPubSubMsg( src )
     , m_msgId( src.m_msgId )
     , m_msgIndex( src.m_msgIndex )
     , m_msgDateTime( src.m_msgDateTime )
@@ -636,7 +636,7 @@ CBasicPubSubMsg::EncodeKeyValuePairsAsBlob( const TKeyValuePairs& kvPairs, const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

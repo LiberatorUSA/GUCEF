@@ -1,0 +1,20 @@
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginMSMQ" Type="SharedLibrary" Platform="all" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefPUBSUB" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefPUBSUB" />
+			<Dependency Name="Mqrt.lib" />
+		</Linker>
+        <Preprocessor>
+            <Define String="PUBSUBPLUGIN_MSMQ_BUILD_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

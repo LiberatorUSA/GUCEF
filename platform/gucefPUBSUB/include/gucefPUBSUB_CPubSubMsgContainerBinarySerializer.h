@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#define GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,20 +25,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #include "gucefPUBSUB_CPubSubClientTopic.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 #include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +47,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,7 +58,7 @@ namespace COMCORE {
 /**
  *  Basic serializer for a container of generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgContainerBinarySerializer
 {
     public:
     
@@ -206,9 +206,9 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgContainerBinarySerializer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */

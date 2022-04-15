@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,10 +40,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
 #include "gucefPUBSUB_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,7 +65,7 @@ class CPubSubClientFeatures;
 /**
  *  Options for the basic serializer for generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::CIConfigurable
 {
     public:
 
@@ -102,7 +102,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::
  *  Please note that the options passed should match between Serialize() and Deserialize()
  *  or the binary format will not be compatible 
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgBinarySerializer
 {
     public:
 
@@ -137,9 +137,9 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */

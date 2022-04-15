@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
+#ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +47,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurable
 {
     public:
 
@@ -126,10 +126,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurab
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 

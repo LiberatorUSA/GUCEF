@@ -92,7 +92,10 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
 #include "gucefPUBSUB_CPubSub2PubSub.h"
+#define GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
+#endif /* GUCEF_PUBSUB_CPUBSUB2PUBSUB_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -244,7 +247,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
         CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
-    PubSub2PubSub pubSub2PubSub;
+    PUBSUB::PubSub2PubSub pubSub2PubSub;
 
     // Check for config param first
     CORE::CValueList keyValueList;

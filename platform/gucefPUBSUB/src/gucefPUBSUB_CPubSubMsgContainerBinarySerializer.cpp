@@ -32,10 +32,10 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
 #include "gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h"
 
@@ -46,7 +46,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -407,7 +407,7 @@ CPubSubMsgContainerBinarySerializer::SerializeMsgCollection( const CPubSubMsgBin
         if ( GUCEF_NULL != msg )
         {
             newBytesWritten = 0;
-            if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( options, *msg, currentTargetOffset, target, newBytesWritten ) )
+            if ( CPubSubMsgBinarySerializer::Serialize( options, *msg, currentTargetOffset, target, newBytesWritten ) )
             {
                 (*n) = currentTargetOffset;
                 currentTargetOffset += newBytesWritten;
@@ -466,7 +466,7 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index   
                                                        bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to read container header" );
@@ -478,7 +478,7 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index   
     {
         UInt32 msgBytesRead = 0;
         CBasicPubSubMsg msg;
-        if ( COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, bytesRead, source, msgBytesRead ) )
+        if ( CPubSubMsgBinarySerializer::Deserialize( options, true, msg, bytesRead, source, msgBytesRead ) )
         {
             if ( hdrToFtrOrderedIndex )
                 index.push_back( bytesRead );
@@ -521,7 +521,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
 
     isCorrupted = false;
     CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: Failed to read container header" );
@@ -545,7 +545,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
         CORE::UInt32 offsetOfMsg = (*i);
         CIPubSubMsg& msg = (*m).GetData();
 
-        if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
+        if ( !CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
             isCorrupted = true;
@@ -570,7 +570,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
 
     isCorrupted = false;
     CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: Failed to read container header" );
@@ -587,7 +587,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
         msgs.push_back( CBasicPubSubMsg() );
         CBasicPubSubMsg& msg = msgs.back();
 
-        if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
+        if ( !CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
             isCorrupted = true;
@@ -700,7 +700,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::C
     isSupported = false;
     isCorrupted = false;
     CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFirstAndLastMsgDateTime: Failed to read container header" );
@@ -729,8 +729,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::C
     }
 
     bytesRead = 0;
-    COMCORE::CBasicPubSubMsg msg;
-    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, firstMsgOffset, source, bytesRead ) )
+    CBasicPubSubMsg msg;
+    if ( !CPubSubMsgBinarySerializer::Deserialize( options, true, msg, firstMsgOffset, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize first msg at offset " + CORE::ToString( firstMsgOffset ) );
         isCorrupted = true;
@@ -738,7 +738,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::C
     }
     firstMsgDt = msg.GetMsgDateTime();
 
-    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, true, msg, lastMsgOffset, source, bytesRead ) )
+    if ( !CPubSubMsgBinarySerializer::Deserialize( options, true, msg, lastMsgOffset, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize last msg at offset " + CORE::ToString( lastMsgOffset ) );
         isCorrupted = true;
@@ -761,7 +761,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
 
     isCorrupted = false;
     CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgBinarySerializerOptions options;
+    CPubSubMsgBinarySerializerOptions options;
     if ( !DeserializeHeader( options, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to read container header" );
@@ -795,7 +795,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
 
     UInt32 actualIndex = (UInt32) ( fromStart ? (index.size()-1) - msgIndex : msgIndex );
     CORE::UInt32 offsetOfLastMsg = index[ actualIndex ];
-    if ( !COMCORE::CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfLastMsg, source, bytesRead ) )
+    if ( !CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfLastMsg, source, bytesRead ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( actualIndex ) + " and offset " + CORE::ToString( offsetOfLastMsg ) );
         isCorrupted = true;
@@ -811,7 +811,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

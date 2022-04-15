@@ -52,20 +52,20 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
 #include "gucefPUBSUB_CPubSubClientFeatures.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #include "gucefPUBSUB_CPubSubClientTopic.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
 #include "gucefPUBSUB_CPubSubClient.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
 #include "gucefPUBSUB_CPubSubMsgSerializer.h"
 
@@ -76,7 +76,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -271,7 +271,7 @@ CPubSubMsgSerializer::Serialize( const CPubSubMsgSerializerOptions& options ,
             success = output.SetAttribute( "receiveActionId", msg.GetReceiveActionId() ) && success;
         }
     
-        const COMCORE::CPubSubClientTopic* topic = msg.GetOriginClientTopic();
+        const CPubSubClientTopic* topic = msg.GetOriginClientTopic();
         if ( GUCEF_NULL != topic )
         {
             if ( options.originTopicNameIncluded )
@@ -449,7 +449,7 @@ CPubSubMsgSerializer::Deserialize( const CPubSubMsgSerializerOptions& options ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

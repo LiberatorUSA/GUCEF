@@ -36,7 +36,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -152,7 +152,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
         CORE::CDataNode::const_iterator i = remoteAddressessCfg->ConstBegin();
         while ( i != remoteAddressessCfg->ConstEnd() )
         {
-            remoteAddresses.push_back( CHostAddress( (*i)->GetValue().AsString( CString::Empty, true ) ) );
+            remoteAddresses.push_back( COMCORE::CHostAddress( (*i)->GetValue().AsString( CString::Empty, true ) ) );
             ++i;
         }
     }
@@ -188,7 +188,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
             CORE::CDataNode::TConstDataNodeSet::iterator i = psClientTopicConfigs.begin();
             while ( i != psClientTopicConfigs.end() )
             {
-                COMCORE::CPubSubClientTopicConfig& topicConfig = topics[ n ];            
+                CPubSubClientTopicConfig& topicConfig = topics[ n ];            
                 if ( !topicConfig.LoadConfig( *(*i) ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load PubSubClientTopicConfig section" );
@@ -218,7 +218,7 @@ CPubSubClientConfig::GetClassTypeName( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

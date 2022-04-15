@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginWEB" Type="SharedLibrary" Platform="all" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
+		</Linker>
+        <Preprocessor>
+            <Define String="PUBSUBPLUGIN_WEB_BUILD_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

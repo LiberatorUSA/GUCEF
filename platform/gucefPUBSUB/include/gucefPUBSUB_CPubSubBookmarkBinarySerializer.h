@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARKBINARYSERIALIZER_H
-#define GUCEF_COMCORE_CPUBSUBBOOKMARKBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,10 +30,10 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
 #include "gucefPUBSUB_CPubSubBookmark.h"
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +53,7 @@ namespace COMCORE {
 /**
  *  Class providing a binary format serializer/deserializer for pubsub bookmark objects
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubBookmarkBinarySerializer
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmarkBinarySerializer
 {
     public:
 
@@ -95,10 +95,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubBookmarkBinarySerializer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARKBINARYSERIALIZER_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H ? */
 

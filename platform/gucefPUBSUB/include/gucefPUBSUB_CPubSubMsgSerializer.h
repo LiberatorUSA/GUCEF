@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
-#define GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H
+#define GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,10 +30,10 @@
 #define GUCEF_COMCORE_CMESSAGESERIALIZER_H
 #endif /* GUCEF_COMCORE_CMESSAGESERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
 #include "gucefPUBSUB_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@ class CPubSubClientFeatures;
 /**
  *  Options for the basic serializer for generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializerOptions : public CMessageSerializerOptions
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgSerializerOptions : public COMCORE::CMessageSerializerOptions
 {
     public:
 
@@ -93,7 +93,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializerOptions : public CMessageSeri
 /**
  *  Basic serializer for generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializer : public CMessageSerializer
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgSerializer : public COMCORE::CMessageSerializer
 {
     public:
 
@@ -126,9 +126,9 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgSerializer : public CMessageSerializer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H ? */

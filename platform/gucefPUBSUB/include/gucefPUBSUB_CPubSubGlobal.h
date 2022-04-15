@@ -30,15 +30,15 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
+#ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 #include "gucefPUBSUB_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

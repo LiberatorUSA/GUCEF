@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,15 +45,15 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
 #include "gucefPUBSUB_CPubSubClientFeatures.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #include "gucefPUBSUB_CPubSubClientTopic.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 #include "gucefPUBSUB_CPubSubClientTopicConfig.h"
 
@@ -64,7 +64,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,8 +75,8 @@ namespace COMCORE {
 /**
  *  Base class for all pub-sub client implementations
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
-                                               public virtual CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
+                                              public virtual CORE::CIConfigurable
 {
     public:
 
@@ -184,10 +184,10 @@ typedef CORE::CTBasicSharedPtr< CPubSubClient, MT::CMutex > CPubSubClientPtr;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -27,10 +27,10 @@
 
 #include <vector>
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
 #include "gucefPUBSUB_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,7 +39,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +53,7 @@ namespace COMCORE {
  *  as efficient compared to a dedicated backend specific implementations.
  *  You can however use memory linking whereever possible to avoid data copies
  */
-class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
+class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 {
     public:
 
@@ -206,9 +206,9 @@ class GUCEF_COMCORE_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */

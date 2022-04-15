@@ -44,15 +44,15 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#include "gucefCOMCORE_CComCoreGlobal.h"
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
@@ -79,6 +79,15 @@
 #include "gucefCORE_MetricsMacros.h"
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -272,11 +281,11 @@ PubSubSideChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-COMCORE::CPubSubClientTopicConfig*
+CPubSubClientTopicConfig*
 PubSubSideChannelSettings::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
+    CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
     while ( i != pubsubClientConfig.topics.end() )
     {
         if ( topicName == (*i).topicName )
@@ -529,7 +538,7 @@ CPubSubClientSide::TopicLink::TopicLink( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
+CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopic* t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
@@ -545,7 +554,7 @@ CPubSubClientSide::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
 
 void
 CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId                ,
-                                              COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+                                              CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
     inFlightMsgs[ publishActionId ] = MsgTrackingEntry( publishActionId, msg );
@@ -554,8 +563,8 @@ CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId      
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                               const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
+CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                               const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
                                                bool inFlightDefaultState                                                   )
 {GUCEF_TRACE;
 
@@ -570,7 +579,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
 
     for ( size_t i=0; i<max; ++i )
     {
-        COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr( msgs[ i ] );
+        CIPubSubMsg::TNoLockSharedPtr msgPtr( msgs[ i ] );
         inFlightMsgs[ publishActionIds[ i ] ] = MsgTrackingEntry( publishActionIds[ i ], msgPtr, inFlightDefaultState );
     }
 }
@@ -578,8 +587,8 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                               const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
+CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                               const CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
                                                bool inFlightDefaultState                                                   )
 {GUCEF_TRACE;
 
@@ -596,7 +605,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic
     {
         // in the sync/blocking flow we have not yet made a copy, lifecycle is for the call chain which doesnt work
         // for keeping longer term references. As such we create a copy of the message here
-        COMCORE::CIPubSubMsg::TNoLockSharedPtr msgPtr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+        CIPubSubMsg::TNoLockSharedPtr msgPtr( static_cast< CIPubSubMsg* >( msgs[ i ]->Clone() ) );
         inFlightMsgs[ publishActionIds[ i ] ] = MsgTrackingEntry( publishActionIds[ i ], msgPtr, inFlightDefaultState );
     }
 }
@@ -619,7 +628,7 @@ CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( void )
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( CORE::UInt64 publishActionID               ,
-                                                                 COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                                                 CIPubSubMsg::TNoLockSharedPtr& msg ,
                                                                  bool isInFlightState                        )
     : retryCount( 0 )
     , firstPublishAttempt( CORE::CDateTime::NowUTCDateTime() )
@@ -687,12 +696,12 @@ CPubSubClientSide::RegisterEventHandlers( void )
 
     TEventCallback callback3( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
     SubscribeTo( m_pubsubClient.GetPointerAlways()                    ,
-                 COMCORE::CPubSubClient::TopicsAccessAutoCreatedEvent ,
+                 CPubSubClient::TopicsAccessAutoCreatedEvent ,
                  callback3                                            );
 
     TEventCallback callback4( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
     SubscribeTo( m_pubsubClient.GetPointerAlways()                      ,
-                 COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEvent ,
+                 CPubSubClient::TopicsAccessAutoDestroyedEvent ,
                  callback4                                              );
     
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
@@ -707,27 +716,27 @@ CPubSubClientSide::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic )
+CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientTopic& topic )
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPubSubClientSide::OnPubSubTopicMsgsReceived );
     SubscribeTo( &topic                                         ,
-                 COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
+                 CPubSubClientTopic::MsgsRecievedEvent ,
                  callback                                       );
 
     TEventCallback callback2( this, &CPubSubClientSide::OnPubSubTopicMsgsPublished );
     SubscribeTo( &topic                                          ,
-                 COMCORE::CPubSubClientTopic::MsgsPublishedEvent ,
+                 CPubSubClientTopic::MsgsPublishedEvent ,
                  callback2                                       );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnPubSubTopicMsgsPublishFailure );
     SubscribeTo( &topic                                               ,
-                 COMCORE::CPubSubClientTopic::MsgsPublishFailureEvent ,
+                 CPubSubClientTopic::MsgsPublishFailureEvent ,
                  callback3                                            );
 
     TEventCallback callback4( this, &CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull );
     SubscribeTo( &topic                                                  ,
-                 COMCORE::CPubSubClientTopic::LocalPublishQueueFullEvent ,
+                 CPubSubClientTopic::LocalPublishQueueFullEvent ,
                  callback4                                               );
 }
 
@@ -833,17 +842,17 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClient::TopicsAccessAutoCreatedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
+    CPubSubClient::TopicsAccessAutoCreatedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
     if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
     {
-        COMCORE::CPubSubClientFeatures clientFeatures;
+        CPubSubClientFeatures clientFeatures;
         m_pubsubClient->GetSupportedFeatures( clientFeatures );
 
-        COMCORE::CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
-        COMCORE::CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
+        CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
+        CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
         {
-            COMCORE::CPubSubClientTopic* tAccess = (*i);
+            CPubSubClientTopic* tAccess = (*i);
             if ( GUCEF_NULL != tAccess )
             {
                 if ( ConfigureTopicLink( *m_sideSettings, *tAccess ) )
@@ -864,14 +873,14 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
                                                 CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEventData* eData = static_cast< COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEventData* >( eventData );
+    CPubSubClient::TopicsAccessAutoDestroyedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoDestroyedEventData* >( eventData );
     if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
     {
-        COMCORE::CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
-        COMCORE::CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
+        CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
+        CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
         {
-            COMCORE::CPubSubClientTopic* tAccess = (*i);
+            CPubSubClientTopic* tAccess = (*i);
             if ( GUCEF_NULL != tAccess )
             {
                 // @TODO: What to do about in-flight messages etc? Any special action?
@@ -921,7 +930,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopic* topic = topicLink.topic;
 
         if ( GUCEF_NULL != topic )
         {
@@ -973,18 +982,18 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
 
     // Add the messages in bulk to the mailbox. Since we use pointer semantics we are actually
     // Adding the IPubSubMsg* elements since the ref will be dereferenced
-    return m_mailbox.AddPtrBulkMail< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+    return m_mailbox.AddPtrBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -998,7 +1007,7 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
         }
         else
         {
-            return PublishMsgsSync< const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+            return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
         }
     }
     return false;
@@ -1007,7 +1016,7 @@ CPubSubClientSide::PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRe
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CPubSubClientSide::GetMsgAttributesForLog( const COMCORE::CIPubSubMsg& msg )
+CPubSubClientSide::GetMsgAttributesForLog( const CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     return "MsgId=\"" + msg.GetMsgId().AsString() + "\", MsgIndex=\"" + msg.GetMsgIndex().AsString() + "\", MsgDateTime=\"" + CORE::ToString( msg.GetMsgDateTime() ) +
@@ -1029,7 +1038,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopic* topic = topicLink.topic;
 
         totalMsgsInFlight += topicLink.inFlightMsgs.size();
 
@@ -1131,7 +1140,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopic* topic = topicLink.topic;
 
         totalMsgsInFlight += topicLink.inFlightMsgs.size();
 
@@ -1353,10 +1362,10 @@ CPubSubClientSide::PublishMailboxMsgs( void )
             maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
     }
 
-    COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
+    CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
     if ( m_mailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
     {
-        bool publishResult = PublishMsgsSync< COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
+        bool publishResult = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
         return publishResult;
     }
     return true;
@@ -1370,7 +1379,7 @@ CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier
                                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
+    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier );
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
         "):OnPubSubTopicLocalPublishQueueFull: Topic=" + topic->GetTopicName() );
@@ -1393,7 +1402,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
 
     try
     {
-        const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs = *static_cast< COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector* >( eventData );
+        const CPubSubClientTopic::TPubSubMsgsRefVector& msgs = *static_cast< CPubSubClientTopic::TPubSubMsgsRefVector* >( eventData );
         if ( !msgs.empty() )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
@@ -1443,7 +1452,7 @@ CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
     {
         TopicLink& topicLink = (*i).second;
 
-        COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+        CIPubSubMsg::TNoLockSharedPtr msg;
         while ( topicLink.publishAckdMsgsMailbox.GetMail( msg ) )
         {
             AcknowledgeReceiptSync( msg );
@@ -1457,7 +1466,7 @@ CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::AcknowledgeReceiptSync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
     return msg->GetOriginClientTopic()->AcknowledgeReceipt( *msg );
@@ -1466,7 +1475,7 @@ CPubSubClientSide::AcknowledgeReceiptSync( COMCORE::CIPubSubMsg::TNoLockSharedPt
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::AcknowledgeReceiptASync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg )
+CPubSubClientSide::AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
     TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic() );
@@ -1491,9 +1500,9 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
     if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
         return;
 
-    const COMCORE::CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< COMCORE::CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
-    const COMCORE::CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
-    COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
+    const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
+    const CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
+    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier );
 
     // Here we translate the publish action IDs back into the original messages
     // Subsequently we use said original messages to ack that to the message origin that we received the message
@@ -1504,7 +1513,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
     {
         TopicLink& topicLink = (*i).second;
 
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
+        CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
         while ( n != publishActionIds->end() )
         {
             TopicLink::TUInt64ToMsgTrackingEntryMap::iterator m = topicLink.inFlightMsgs.find( (*n) );
@@ -1513,7 +1522,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                 TopicLink::MsgTrackingEntry& msgTrackingEntry = (*m).second;
                 msgTrackingEntry.isInFlight = false;
                 msgTrackingEntry.waitingForInFlightConfirmation = false;
-                COMCORE::CIPubSubMsg::TNoLockSharedPtr msg = msgTrackingEntry.msg;
+                CIPubSubMsg::TNoLockSharedPtr msg = msgTrackingEntry.msg;
 
                 if ( AcknowledgeReceiptForSide( msg, this ) )
                 {
@@ -1570,9 +1579,9 @@ CPubSubClientSide::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier   
     if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->retryFailedPublishAttempts )
         return;
 
-    const COMCORE::CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< COMCORE::CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
-    const COMCORE::CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
-    COMCORE::CPubSubClientTopic* topic = static_cast< COMCORE::CPubSubClientTopic* >( notifier );
+    const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
+    const CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
+    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier );
 
     // Here we translate the publish action IDs back into the original messages
     // Subsequently we use said original messages to set up the retry mechanism
@@ -1582,7 +1591,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier   
     {
         TopicLink& topicLink = (*i).second;
 
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
+        CPubSubClientTopic::TPublishActionIdVector::const_iterator n = publishActionIds->begin();
         while ( n != publishActionIds->end() )
         {
             CORE::UInt64 publishActionId = (*n);
@@ -1649,7 +1658,7 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
         return false;
     }
 
-    COMCORE::CPubSubClientFeatures clientFeatures;
+    CPubSubClientFeatures clientFeatures;
     m_pubsubClient->GetSupportedFeatures( clientFeatures );
 
     if ( destroyClient || !clientFeatures.supportsAutoReconnect )
@@ -1664,7 +1673,7 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 
 bool
 CPubSubClientSide::ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSideSettings ,
-                                       COMCORE::CPubSubClientTopic& topic                  )
+                                       CPubSubClientTopic& topic                  )
 {GUCEF_TRACE;
 
     RegisterTopicEventHandlers( topic );
@@ -1684,8 +1693,8 @@ CPubSubClientSide::ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSi
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic                   ,
-                                             const COMCORE::CPubSubClientFeatures& clientFeatures ,
+CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic                   ,
+                                             const CPubSubClientFeatures& clientFeatures ,
                                              const PubSubSideChannelSettings& pubSubSideSettings  )
 {GUCEF_TRACE;
     
@@ -1696,7 +1705,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic 
 
         // We use the 'desired' feature to also drive whether we actually subscribe at this point
         // saves us an extra setting
-        const COMCORE::CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
+        const CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
         if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
         {
             // The method of subscription depends on the supported feature set
@@ -1721,7 +1730,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic 
                 // bookmarks are supported but they rely on client-side persistance
                 // we will need to obtain said bookmark
 
-                COMCORE::CPubSubBookmark bookmark;
+                CPubSubBookmark bookmark;
                 if ( GUCEF_NULL == m_persistance || !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic.GetTopicName(), bookmark ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
@@ -1781,14 +1790,14 @@ CPubSubClientSide::ConnectPubSubClient( void )
         }
         m_sideSettings = pubSubSideSettings;
     }
-    COMCORE::CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
 
     if ( m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
         pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
-        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
+        m_pubsubClient = CPubSubGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )
         {
@@ -1803,7 +1812,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
         m_pubsubClient->SetOpaqueUserData( this );
     }
 
-    COMCORE::CPubSubClientFeatures clientFeatures;
+    CPubSubClientFeatures clientFeatures;
     m_pubsubClient->GetSupportedFeatures( clientFeatures );
 
     if ( !clientFeatures.supportsAutoReconnect )
@@ -1826,16 +1835,16 @@ CPubSubClientSide::ConnectPubSubClient( void )
 
     // Create and configure the pub-sub client's topics
     m_topics.clear();
-    COMCORE::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
+    CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
     while ( i != pubSubConfig.topics.end() )
     {
-        COMCORE::CPubSubClient::PubSubClientTopicSet topicAccess;
+        CPubSubClient::PubSubClientTopicSet topicAccess;
         if ( m_pubsubClient->CreateMultiTopicAccess( (*i), topicAccess ) )
         {
-            COMCORE::CPubSubClient::PubSubClientTopicSet::iterator a = topicAccess.begin();
+            CPubSubClient::PubSubClientTopicSet::iterator a = topicAccess.begin();
             while ( a != topicAccess.end() )
             {            
-                COMCORE::CPubSubClientTopic* topic = (*a);
+                CPubSubClientTopic* topic = (*a);
                 if ( GUCEF_NULL == topic )
                 {
                     if ( !(*i).isOptional )
@@ -1865,7 +1874,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     while ( t != m_topics.end() )
     {
         TopicLink& topicLink = (*t).second;
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopic* topic = topicLink.topic;
         
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
                                                              clientFeatures   ,
@@ -1891,7 +1900,7 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     }
     m_sideSettings = pubSubSideSettings;
 
-    COMCORE::CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
+    CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.metricsIntervalInMs );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
@@ -2100,7 +2109,7 @@ CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientOtherSide::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+CPubSubClientOtherSide::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
                                                    CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
@@ -2182,7 +2191,7 @@ CPubSubClientChannel::PublishChannelMetrics( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+CPubSubClientChannel::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
                                                  CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
@@ -2193,17 +2202,17 @@ CPubSubClientChannel::AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSh
 
 bool
 CPubSubClientChannel::AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId                ,
-                                                     COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                                     CIPubSubMsg::TNoLockSharedPtr& msg ,
                                                      CPubSubClientSide* msgReceiverSide          )
 {GUCEF_TRACE;
 
     // if we only have 2 sides, no need for anything more complicated
     if ( m_sides.size() <= 2 )
     {
-        COMCORE::CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
+        CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
         if ( GUCEF_NULL != originTopic )
         {
-            COMCORE::CPubSubClient* originClient = originTopic->GetClient();
+            CPubSubClient* originClient = originTopic->GetClient();
             if ( GUCEF_NULL != originClient )
             {
                 CPubSubClientSide* originSide = static_cast< CPubSubClientSide* >( originClient->GetOpaqueUserData() );
@@ -3163,5 +3172,15 @@ PubSub2PubSub::GetGlobalConfig( void ) const
     return m_globalConfig;
 }
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace PUBSUB */
+}; /* namespace GUCEF */
+
 /*-------------------------------------------------------------------------*/
+
 

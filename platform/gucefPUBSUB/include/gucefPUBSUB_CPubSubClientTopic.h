@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,20 +50,20 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
 #include "gucefPUBSUB_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
 #include "gucefPUBSUB_CPubSubBookmark.h"
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +72,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -135,7 +135,7 @@ class CPubSubClient;
  *  distinct process runs or backend topic lifecycles.
  *
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifier                                    ,
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifier                                    ,
                                                     public CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >
 {
     public:
@@ -258,10 +258,10 @@ typedef CPubSubClientTopic::TSharedPtrType CPubSubClientTopicPtr;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 

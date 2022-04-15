@@ -34,31 +34,26 @@
 /*
  *      Library build configuration      
  */
-#ifndef GUCEFCOMCORE_CONFIG_H
-#include "gucefCOMCORE_config.h"
-#define GUCEFCOMCORE_CONFIG_H
-#endif /* GUCEFCOMCORE_CONFIG_H ? */
+#ifndef GUCEF_PUBSUB_CONFIG_H
+#include "gucefPUBSUB_config.h"
+#define GUCEF_PUBSUB_CONFIG_H
+#endif /* GUCEF_PUBSUB_CONFIG_H ? */
 
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEFCOMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"
-#define GUCEFCOMCORE_MACROS_H
-#endif /* GUCEFCOMCORE_MACROS_H ? */
+#ifndef GUCEF_PUBSUB_MACROS_H
+#include "gucefPUBSUB_macros.h"
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*
  *      Simple types
  */
-#ifndef GUCEF_COMCORE_ETYPES_H
-#include "gucefCOMCORE_ETypes.h"
-#define GUCEF_COMCORE_ETYPES_H
-#endif /* GUCEF_COMCORE_ETYPES_H ? */
-
-#ifndef SOCKETERRORS_H
-#include "socketerrors.h" 
-#define SOCKETERRORS_H
-#endif /* SOCKETERRORS_H ? */
+#ifndef GUCEF_PUBSUB_ETYPES_H
+#include "gucefPUBSUB_ETypes.h"
+#define GUCEF_PUBSUB_ETYPES_H
+#endif /* GUCEF_PUBSUB_ETYPES_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -67,108 +62,53 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef GUCEF_COMCORE_CCOM_H
-#include "CCom.h"
-#define GUCEF_COMCORE_CCOM_H
-#endif /* GUCEF_COMCORE_CCOM_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
 
-#ifndef GUCEF_COMCORE_CSOCKET_H
-#include "CSocket.h"
-#define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */
+#ifndef GUCEF_PUBSUB_CIPUBSUBMSG_H
+#include "gucefPUBSUB_CIPubSubMsg.h"
+#define GUCEF_PUBSUB_CIPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBMSG_H ? */
 
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#include "gucefPUBSUB_CBasicPubSubMsg.h"
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
-#ifndef GUCEF_COMCORE_CTCPSERVERCONNECTION_H
-#include "CTCPServerConnection.h"
-#define GUCEF_COMCORE_CTCPSERVERCONNECTION_H
-#endif /* GUCEF_COMCORE_CTCPSERVERCONNECTION_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H
+#include "gucefPUBSUB_CPubSubMsgSerializer.h"
+#define GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */ 
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#include "gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h"
+#define GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#include "gucefPUBSUB_CPubSubBookmark.h"
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#include "CUDPMasterSocket.h"
-#define GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#include "gucefPUBSUB_CPubSubClientFeatures.h"    
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
-#include "CUDPChannel.h"
-#define GUCEF_COMCORE_CUDPCHANNEL_H
-#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
-
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#include "CHostAddress.h"
-#define GUCEF_COMCORE_CHOSTADDRESS_H
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#include "CIPAddress.h"
-#define GUCEF_COMCORE_CIPADDRESS_H
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
-
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#include "gucefCOMCORE_CComCoreGlobal.h"
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
-
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
-#include "gucefCOMCORE_CIPubSubMsg.h"
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
-
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#include "gucefCOMCORE_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
-#include "gucefCOMCORE_CPubSubMsgSerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGSERIALIZER_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#include "gucefCOMCORE_CPubSubBookmark.h"
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#include "gucefCOMCORE_CPubSubClientFeatures.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
-
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#include "gucefCOMCORE_CPubSubClientTopic.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"    
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_H ? */
+#endif /* GUCEF_PUBSUB_H ? */

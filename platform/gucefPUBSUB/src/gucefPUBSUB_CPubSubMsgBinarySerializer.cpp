@@ -37,10 +37,10 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
 #include "gucefPUBSUB_CPubSubClientFeatures.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 
 #include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
 
@@ -51,7 +51,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -463,7 +463,7 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

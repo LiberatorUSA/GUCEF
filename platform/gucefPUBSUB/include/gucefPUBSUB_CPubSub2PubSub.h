@@ -16,6 +16,9 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
+#define GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -74,25 +77,25 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
 #include "gucefPUBSUB_CPubSubClient.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 #include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
 #include "gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+#define GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
 
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
@@ -120,7 +123,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-using namespace GUCEF;
+namespace GUCEF {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -128,7 +132,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class PubSubSideChannelSettings : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP PubSubSideChannelSettings : public CORE::CIConfigurable
 {
     public:
 
@@ -136,7 +140,7 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     PubSubSideChannelSettings( const PubSubSideChannelSettings& src );
     PubSubSideChannelSettings& operator=( const PubSubSideChannelSettings& src );
 
-    COMCORE::CPubSubClientConfig pubsubClientConfig;
+    CPubSubClientConfig pubsubClientConfig;
     bool performPubSubInDedicatedThread;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
@@ -154,7 +158,7 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
     bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
     CORE::CString metricsPrefix;                       //< this setting is derived and cached from other settings   
 
-    COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
+    CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -165,7 +169,7 @@ class PubSubSideChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class ChannelSettings : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
@@ -195,18 +199,18 @@ class ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class CIPubSubBookmarkPersistance
+class GUCEF_PUBSUB_EXPORT_CPP CIPubSubBookmarkPersistance
 {
     public:
 
-    virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
-                                       const CORE::CString& topicName     , 
-                                       COMCORE::CPubSubBookmark& bookmark ) = 0;
+    virtual bool GetPersistedBookmark( CORE::Int32 channelId          , 
+                                       const CORE::CString& topicName , 
+                                       CPubSubBookmark& bookmark      ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class CPubSubClientSide : public CORE::CTaskConsumer
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 {
     public:
 
@@ -263,18 +267,18 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
-    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                            CPubSubClientSide* msgReceiverSide          ) = 0;
+    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide ) = 0;
 
-    bool AcknowledgeReceiptASync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+    bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
-    bool AcknowledgeReceiptSync( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
     
     private:
 
     void RegisterEventHandlers( void );
 
-    void RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic );
+    void RegisterTopicEventHandlers( CPubSubClientTopic& topic );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -321,18 +325,18 @@ class CPubSubClientSide : public CORE::CTaskConsumer
                                         const CORE::CEvent& eventId  ,
                                         CORE::CICloneable* eventData );
 
-    bool PublishMsgs( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
     bool ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSideSettings ,
-                             COMCORE::CPubSubClientTopic& topic                  );
+                             CPubSubClientTopic& topic                           );
     
-    bool ConnectPubSubClientTopic( COMCORE::CPubSubClientTopic& topic                   ,
-                                   const COMCORE::CPubSubClientFeatures& clientFeatures ,
-                                   const PubSubSideChannelSettings& pubSubSideSettings  );
+    bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                           ,
+                                   const CPubSubClientFeatures& clientFeatures         ,
+                                   const PubSubSideChannelSettings& pubSubSideSettings );
     
     protected:
 
-    bool PublishMsgsASync( const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
     template < typename TMsgCollection >
     bool PublishMsgsSync( const TMsgCollection& msgs );
@@ -343,11 +347,9 @@ class CPubSubClientSide : public CORE::CTaskConsumer
 
     void ProcessAcknowledgeReceiptsMailbox( void );
 
-    static CORE::CString GetMsgAttributesForLog( const COMCORE::CIPubSubMsg& msg );
+    static CORE::CString GetMsgAttributesForLog( const CIPubSubMsg& msg );
 
-    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
-
-    CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
+    static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );   
 
     class TopicLink
     {
@@ -360,23 +362,23 @@ class CPubSubClientSide : public CORE::CTaskConsumer
             CORE::CDateTime firstPublishAttempt;
             CORE::CDateTime lastPublishAttempt;
             CORE::UInt64 publishActionId;
-            COMCORE::CIPubSubMsg::TNoLockSharedPtr msg;
+            CIPubSubMsg::TNoLockSharedPtr msg;
             bool isInFlight;
             bool waitingForInFlightConfirmation;
             bool readyToAckPublishSuccessButAckFailed;
 
             MsgTrackingEntry( void );
             MsgTrackingEntry( const MsgTrackingEntry& src );
-            MsgTrackingEntry( CORE::UInt64 publishActionId, COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg, bool isInFlightState = false );
+            MsgTrackingEntry( CORE::UInt64 publishActionId, CIPubSubMsg::TNoLockSharedPtr& msg, bool isInFlightState = false );
             MsgTrackingEntry& operator=( const MsgTrackingEntry& src );
         };
         
-        typedef MT::CTMailBox< COMCORE::CIPubSubMsg::TNoLockSharedPtr >             TPubSubMsgPtrMailbox;
+        typedef MT::CTMailBox< CIPubSubMsg::TNoLockSharedPtr >                      TPubSubMsgPtrMailbox;
         typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
         typedef std::set< CORE::UInt64 >                                            TUInt64Set;
 
-        COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
+        CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
         TUInt64ToMsgTrackingEntryMap inFlightMsgs;
         TUInt64Set publishFailedMsgs;
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
@@ -384,26 +386,26 @@ class CPubSubClientSide : public CORE::CTaskConsumer
         CPubSubClientSideMetrics* metrics;
 
         TopicLink( void );
-        TopicLink( COMCORE::CPubSubClientTopic* t );
+        TopicLink( CPubSubClientTopic* t );
         
-        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
-                              bool inFlightDefaultState                                                   );
+        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
+                              bool inFlightDefaultState                                          );
 
-        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
-                              bool inFlightDefaultState                                                   );
+        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
+                              bool inFlightDefaultState                                          );
 
-        void AddInFlightMsg( CORE::UInt64 publishActionId                ,
-                             COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg );
+        void AddInFlightMsg( CORE::UInt64 publishActionId       ,
+                             CIPubSubMsg::TNoLockSharedPtr& msg );
     };
 
     void UpdateTopicMetrics( TopicLink& topicLink );
     
-    typedef std::map< COMCORE::CPubSubClientTopic*, TopicLink > TopicMap;
-    typedef CORE::CTMailboxForSharedCloneables< COMCORE::CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
+    typedef std::map< CPubSubClientTopic*, TopicLink > TopicMap;
+    typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
-    COMCORE::CPubSubClientPtr m_pubsubClient;
+    CPubSubClientPtr m_pubsubClient;
     TopicMap m_topics;
     StringToPubSubClientSideMetricsMap m_metricsMap;
     ChannelSettings m_channelSettings;
@@ -416,6 +418,10 @@ class CPubSubClientSide : public CORE::CTaskConsumer
     char m_side;
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;
+
+    private:
+
+    CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 };
 
 /*-------------------------------------------------------------------------*/
@@ -426,7 +432,7 @@ typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex > CPubSubClientSidePtr;
 
 class CPubSubClientChannel;
 
-class CPubSubClientOtherSide : public CPubSubClientSide
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientOtherSide : public CPubSubClientSide
 {
     public:
 
@@ -442,8 +448,8 @@ class CPubSubClientOtherSide : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                            CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -458,7 +464,7 @@ typedef CORE::CTSharedPtr< CPubSubClientOtherSide, MT::CMutex > CPubSubClientOth
 
 /*-------------------------------------------------------------------------*/
 
-class CPubSubClientChannel : public CPubSubClientSide
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
 {
     public:
 
@@ -480,12 +486,12 @@ class CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool AcknowledgeReceiptForSide( COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
+    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
                                             CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
     
-    bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId                ,
-                                        COMCORE::CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                        CPubSubClientSide* msgReceiverSide          );
+    bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
+                                        CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                        CPubSubClientSide* msgReceiverSide );
     
     void PublishChannelMetrics( void ) const;
 
@@ -503,7 +509,7 @@ typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChann
 
 class PubSub2PubSub;
 
-class RestApiPubSub2PubSubInfoResource : public WEB::CCodecBasedHTTPServerResource
+class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -523,7 +529,7 @@ class RestApiPubSub2PubSubInfoResource : public WEB::CCodecBasedHTTPServerResour
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerResource
+class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -551,7 +557,7 @@ class RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerReso
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServerResource
+class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -571,8 +577,8 @@ class RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServ
 
 /*-------------------------------------------------------------------------*/
 
-class PubSub2PubSub : public CORE::CObserver             ,
-                      public CORE::CGloballyConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver             ,
+                                              public CORE::CGloballyConfigurable
 {
     public:
 
@@ -643,4 +649,16 @@ class PubSub2PubSub : public CORE::CObserver             ,
     bool m_transmitMetrics;
 };
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace PUBSUB */
+}; /* namespace GUCEF */
+
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+

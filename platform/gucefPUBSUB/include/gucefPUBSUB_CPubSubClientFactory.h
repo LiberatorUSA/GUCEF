@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,15 +30,15 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
 #include "gucefPUBSUB_CPubSubClient.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
 #include "gucefPUBSUB_CPubSubClientConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
 #include "CTAbstractFactoryWithParam.h"
@@ -52,7 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,9 +68,9 @@ typedef CORE::CTAbstractFactoryWithParam< CORE::CString, CPubSubClient, CPubSubC
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */

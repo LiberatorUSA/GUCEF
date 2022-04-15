@@ -32,10 +32,10 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#ifndef GUCEF_PUBSUB_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#define GUCEF_PUBSUB_CCOMCOREGLOBAL_H
+#endif /* GUCEF_PUBSUB_CCOMCOREGLOBAL_H ? */
 
 #ifndef GUCEF_COM_CCOMGLOBAL_H
 #include "gucefCOM_CComGlobal.h"
@@ -52,15 +52,15 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 #include "gucefPUBSUB_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #include "gucefPUBSUB_CPubSubClientTopic.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 #include "gucefPUBSUB_CPubSubGlobal.h"  /* definition of the class implemented here */
 
@@ -81,7 +81,6 @@ namespace PUBSUB {
 
 MT::CMutex CPubSubGlobal::g_dataLock;
 CPubSubGlobal* CPubSubGlobal::g_instance = GUCEF_NULL;
-TPingTaskConsumerFactory g_pingTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

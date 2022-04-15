@@ -22,10 +22,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DLLINIT_H
-#include "gucef_DLLInit.h"
-#define GUCEF_DLLINIT_H
-#endif /* GUCEF_DLLINIT_H ? */
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_PUBSUB_CMODULE_H
 #include "gucefPUBSUB_CModule.h"
@@ -43,14 +43,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_EMBED_CODE
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COMCORE::CModule );
+#ifndef GUCEF_PUBSUB_EMBED_CODE
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::PUBSUB::CModule );
 #endif
 
 /*-------------------------------------------------------------------------*/
 
 const char*
-GUCEF_COMCORE_ModuleCompileTimeStamp( void )
+GUCEF_PUBSUB_ModuleCompileTimeStamp( void )
 {
     return __TIMESTAMP__;
 }

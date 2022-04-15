@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,10 +40,10 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
+#ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,7 +63,7 @@ namespace COMCORE {
 /**
  *  Class providing configuration options for pub-sub topics
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigurable
 {
     public:
 
@@ -112,10 +112,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigu
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
 

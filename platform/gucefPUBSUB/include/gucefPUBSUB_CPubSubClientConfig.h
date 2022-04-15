@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
-#define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,15 +45,15 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
 #include "gucefPUBSUB_CPubSubClientFeatures.h"    
-#define GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFEATURES_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFEATURES_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
 #include "gucefPUBSUB_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -73,12 +73,12 @@ namespace COMCORE {
 /**
  *  Class providing construction configuration options for pub-sub clients
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
 {
     public:
 
     typedef std::vector< CPubSubClientTopicConfig > TPubSubClientTopicConfigVector;
-    typedef std::vector< CHostAddress >             THostAddressVector;
+    typedef std::vector< COMCORE::CHostAddress >    THostAddressVector;
 
     CORE::CString pubsubClientType;          /**< the string form type name of the pub-sub client */
     CPubSubClientFeatures desiredFeatures;   /**< desired feature set of the client */ 
@@ -123,10 +123,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 

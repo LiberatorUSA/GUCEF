@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,10 +30,10 @@
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_PUBSUB_MACROS_H
+#include "gucefPUBSUB_macros.h"
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +56,7 @@ namespace COMCORE {
  *  published messages. The actual implementation will vary per backend but the concept is the same
  *  which is simply that, a way of demarkation of where you are.
  */
-class GUCEF_COMCORE_EXPORT_CPP CPubSubBookmark
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmark
 {
     public:
 
@@ -103,10 +103,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubBookmark
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace PUBSUB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 

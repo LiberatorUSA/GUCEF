@@ -1,0 +1,2641 @@
+/*
+ *  pubsubpluginMSMQ: Generic GUCEF COMCORE plugin for providing pubsub via Microsoft MSMQ
+ *
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#include <Objbase.h>
+#include <Mq.h>
+
+#include <string>
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H */
+
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H */
+
+#ifndef PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
+#include "pubsubpluginMSMQ_CMsmqPubSubClient.h"
+#define PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H
+#endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENT_H ? */
+
+#include "pubsubpluginMSMQ_CMsmqPubSubClientTopic.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace PUBSUBPLUGIN {
+namespace MSMQ {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+std::wstring 
+RetrieveWin32APIErrorMessage( DWORD dwErr )
+{
+    // from: https://docs.microsoft.com/en-us/windows/win32/seccrypto/retrieving-error-messages
+
+    WCHAR   wszMsgBuff[512];  // Buffer for text.
+
+    DWORD   dwChars;  // Number of chars returned.
+
+    // Try to get the message from the system errors.
+    dwChars = ::FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM |
+                                FORMAT_MESSAGE_IGNORE_INSERTS,
+                                NULL,
+                                dwErr,
+                                0,
+                                wszMsgBuff,
+                                512,
+                                NULL );
+
+    if (0 == dwChars)
+    {
+        // The error code did not exist in the system errors.
+        // Try Ntdsbmsg.dll for the error code.
+
+        HINSTANCE hInstNtdsbmsg = NULL;
+
+        // Load the library.
+        hInstNtdsbmsg = ::LoadLibraryA( "Ntdsbmsg.dll" );
+        if ( NULL == hInstNtdsbmsg )
+        {
+            // cannot load Ntdsbmsg.dll for refinement
+            return std::wstring();
+        }
+
+        // Try getting message text from ntdsbmsg.
+        dwChars = FormatMessageW( FORMAT_MESSAGE_FROM_HMODULE |
+                                 FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 hInstNtdsbmsg,
+                                 dwErr,
+                                 0,
+                                 wszMsgBuff,
+                                 512,
+                                 NULL );
+
+        // Free the library.
+        ::FreeLibrary( hInstNtdsbmsg );
+
+    }
+
+    return wszMsgBuff;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
+    : PUBSUB::CPubSubClientTopic()
+    , m_client( client )
+    , m_msgSendMsg()
+    , m_config()
+    , m_msmqQueueFormatName()
+    , m_syncReadTimer( GUCEF_NULL )
+    , m_reconnectTimer( GUCEF_NULL )
+    , m_lock()
+    , m_receiveQueueHandle( GUCEF_NULL )
+    , m_sendQueueHandle( GUCEF_NULL )
+    , m_currentPublishActionId( 1 )
+    , m_currentReceiveActionId( 1 )
+    , m_publishSuccessActionIds()
+    , m_publishSuccessActionEventData()
+    , m_publishFailureActionIds()
+    , m_publishFailureActionEventData()
+    , m_guidStr()
+    , m_msmqMessagesPublished( 0 )
+    , m_msmqErrorsOnPublish( 0 )
+    , m_msmqMessagesReceived( 0 )
+    , m_msmqErrorsOnReceive( 0 )
+    , m_msmqErrorsOnAck( 0 )
+    , m_metrics()
+    , m_metricFriendlyTopicName()
+    , m_msmqMsgSentToArriveLatencies()
+    , m_msmqLastLookupId( 0 )
+{GUCEF_TRACE;
+        
+    m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
+    m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
+
+    m_syncReadTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
+
+    if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
+    {
+        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
+    }
+
+    RegisterEventHandlers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::~CMsmqPubSubClientTopic()
+{GUCEF_TRACE;
+
+    Disconnect();
+
+    delete m_syncReadTimer;
+    m_syncReadTimer = GUCEF_NULL;
+
+    delete m_reconnectTimer;
+    m_reconnectTimer = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CPubSubClient*
+CMsmqPubSubClientTopic::GetClient( void )
+{GUCEF_TRACE;
+
+    return m_client;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_syncReadTimer )
+    {
+        TEventCallback callback( this, &CMsmqPubSubClientTopic::OnSyncReadTimerCycle );
+        SubscribeTo( m_syncReadTimer                ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
+    }
+
+    if ( GUCEF_NULL != m_reconnectTimer )
+    {
+        TEventCallback callback( this, &CMsmqPubSubClientTopic::OnReconnectTimerCycle );
+        SubscribeTo( m_reconnectTimer               ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
+    }
+
+    TEventCallback callback( this, &CMsmqPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( m_client->GetConfig().pulseGenerator ,
+                 CORE::CPulseGenerator::PulseEvent    ,
+                 callback                             );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::IsPublishingSupported( void )
+{GUCEF_TRACE;
+    
+    return m_config.needPublishSupport;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::IsSubscribingSupported( void )
+{GUCEF_TRACE;
+
+    return m_config.needSubscribeSupport;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CMsmqPubSubClientTopic::GetTopicName( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.topicName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::CIPubSubMsg& msg, bool notify )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    if ( 0 == publishActionId )
+    {
+        publishActionId = m_currentPublishActionId; 
+        ++m_currentPublishActionId;
+    }
+
+    // Each Message Queuing message can have no more than 4 MB of data.
+    // We cannot do anything with a DateTime already set on the message since MSMQ fully controls the timestamps
+
+    // Do we want to send a body per config?
+    MSGPROPIDToUInt32Map::iterator n = m_msgSendPropMap.find( PROPID_M_BODY );
+    if ( n != m_msgSendPropMap.end() )
+    {
+        // Do we have a body to send?
+        const CORE::CVariant& primaryPayload = msg.GetPrimaryPayload();
+        
+        bool variantConversionSuccess = false; 
+        if ( primaryPayload.IsInitialized() )
+            variantConversionSuccess = VariantToMsmqProperty( PROPID_M_BODY, primaryPayload, m_msgSendMsg.aMsgPropVar[ (*n).second ] );
+        else
+            variantConversionSuccess = VariantToMsmqProperty( PROPID_M_BODY, CORE::CVariant::Empty, m_msgSendMsg.aMsgPropVar[ (*n).second ] );
+
+        if ( !variantConversionSuccess )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Publish: Cannot translate IPubSubMsg primary payload to a MSMQ BODY" ); 
+            return false;
+        }
+
+        SetUInt32OnPropertyVariant( PROPID_M_BODY_SIZE, primaryPayload.ByteSize(), m_msgSendMsg );
+    }
+    
+    const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
+    //@TODO: Find a way to handle these driven by config
+
+    const PUBSUB::CIPubSubMsg::TKeyValuePairs& metaDataKvPairs = msg.GetMetaDataKeyValuePairs();
+    PUBSUB::CIPubSubMsg::TKeyValuePairs::const_iterator i = metaDataKvPairs.begin();
+    while ( i != metaDataKvPairs.end() )
+    {
+        MSGPROPID propId = (MSGPROPID) (*i).first.AsUInt32();
+        MSGPROPIDToUInt32Map::iterator n = m_msgSendPropMap.find( propId );
+        if ( n != m_msgSendPropMap.end() )
+        {
+            if ( !VariantToMsmqProperty( propId, (*i).second, m_msgSendMsg.aMsgPropVar[ (*n).second ] ) ) 
+            {   
+                // Cannot map this property's value
+                if ( !m_config.ignoreUnmappableMetaDataFieldOnPublish )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Publish: Cannot translate IPubSubMsg meta-data value to a configured MSMQ VARIANT. MSGPROPID=" + CORE::ToString( (CORE::UInt32) propId ) ); 
+                    return false;
+                }
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Publish: Cannot translate IPubSubMsg meta-data value to a configured MSMQ VARIANT. Ignoring it. MSGPROPID=" + CORE::ToString( (CORE::UInt32) propId ) ); 
+            }
+        }
+        else
+        {
+            // Cannot map this property
+            
+            if ( !m_config.ignoreUnmappableMetaDataFieldOnPublish )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Publish: Cannot map IPubSubMsg meta-data key to a configured MSMQ field. MSGPROPID=" + CORE::ToString( (CORE::UInt32) propId ) ); 
+                return false;
+            }
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Publish: Cannot map IPubSubMsg meta-data key to a configured MSMQ field. Ignoring it. MSGPROPID=" + CORE::ToString( (CORE::UInt32) propId ) ); 
+        }
+        ++i;
+    }
+
+
+    
+    bool success = false;
+    // @TODO: Code the actual publish to MSMQ, not implemented yet
+
+    if ( notify )
+    {
+        if ( success )
+            m_publishSuccessActionIds.push_back( publishActionId );
+        else
+            m_publishFailureActionIds.push_back( publishActionId );
+    }
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& config )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( LoadConfig( config ) )
+    {
+        PrepStorageForReadMsgs( m_config.maxMsmqMsgsToReadPerSyncCycle );    
+        m_syncReadTimer->SetEnabled( true );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    config = m_config;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CMsmqPubSubClientTopic::GenerateMetricsFriendlyTopicName( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    // Let's avoid non-ASCII stumbling blocks and force the down to ASCII
+    CORE::CAsciiString asciiMetricsFriendlyTopicName = topicName.ForceToAscii( '_' );
+    
+    // Replace special chars
+    static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
+    asciiMetricsFriendlyTopicName = asciiMetricsFriendlyTopicName.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
+
+    // Back to the platform wide string convention format
+    CORE::CString metricsFriendlyTopicName = CORE::ToString( asciiMetricsFriendlyTopicName );
+    return metricsFriendlyTopicName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    m_config = config;
+
+    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:PrepStorageForReadMsgs: Allocating storage to read " + CORE::ToString( msgCount ) + " messages per batch" );
+    
+    bool failedToAllocate = false;
+    do
+    {
+        try
+        {
+            // reset size, note this does not dealloc the underlying memory
+            TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
+            msgRefs.clear();
+
+            if ( msgCount > msgRefs.capacity() )
+            {
+                // Grow the actual storage, this is allowed to become larger than msgCount to limit
+                // the nr of dynamic allocations
+                msgRefs.reserve( msgCount );
+            }
+
+            if ( msgCount > m_pubsubMsgs.size() )
+            {
+                // Grow the actual storage plus count. These slots are pre-reserved to limit the nr of dynamic allocations
+                // This helps make the code more performant
+                m_pubsubMsgs.resize( msgCount );        
+                m_msmqReceiveMsgs.resize( msgCount );
+                if ( !PrepMsmqMsgsStorage() )
+                    failedToAllocate = true;    
+            }
+        }
+        catch ( const std::bad_alloc& )
+        {
+            failedToAllocate = true;
+        }
+
+        if ( failedToAllocate )
+        {
+            // First release all the memory, we dont know where we failed
+            // get back to a clean/consistent state
+            m_pubsubMsgsRefs.resize( 0 );
+            m_pubsubMsgs.resize( 0 );
+            m_msmqReceiveMsgs.resize( 0 );
+
+            // not really on receive/publish but we want to draw attention to this issue
+            ++m_msmqErrorsOnReceive;
+            ++m_msmqErrorsOnPublish;
+
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqPubSubClientTopic:PrepStorageForReadMsgs: Failed to allocate enough memory storage for all message in max batch size (" + CORE::ToString( msgCount ) + "), reducing batch size by half" );
+                
+            msgCount /= 2;
+            if ( 1 >= msgCount )
+                return false;
+        }
+    }
+    while ( failedToAllocate );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::Disconnect( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    m_syncReadTimer->SetEnabled( false );
+
+    if ( GUCEF_NULL != m_receiveQueueHandle )
+    {
+        ::MQCloseQueue( m_receiveQueueHandle );
+        m_receiveQueueHandle = GUCEF_NULL;
+    }
+    if ( GUCEF_NULL != m_sendQueueHandle )
+    {
+        ::MQCloseQueue( m_sendQueueHandle );
+        m_sendQueueHandle = GUCEF_NULL;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::BeginReconnectSequence( const CORE::CEvent* eventMsg )
+{GUCEF_TRACE;
+
+    if ( Disconnect() )
+    {
+        {
+            MT::CScopeMutex lock( m_lock );
+            
+            // Make sure to notify of any messages received already
+            // If we are using the peek behavior you would not lose messages via reconnect but you would lost more time if it happens at a semi-regular interval
+            // If you are not using the peeks then you'd actually lose messages if we dont do this step since the new subscribe will reinitialize everything and thus wipe messages
+            NotifyOfReceivedMsgs();
+            
+            if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect && GUCEF_NULL != m_reconnectTimer )
+            {
+                m_reconnectTimer->SetEnabled( true );
+            }
+        }
+
+        if ( GUCEF_NULL != eventMsg )
+        {
+            NotifyObservers( *eventMsg );
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
+                                                           std::wstring& queueFormatName  )
+{GUCEF_TRACE;
+
+    DWORD maxFormatNameSize = 512;
+    WCHAR queueFormatNameTmp[ 512 ]; 
+    HRESULT formatConversionResult = ::MQPathNameToFormatName( pathName.c_str()    ,    
+                                                               queueFormatNameTmp  ,    
+                                                               &maxFormatNameSize  );
+    if ( !FAILED( formatConversionResult ) )
+    {
+        queueFormatName = queueFormatNameTmp;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPathNameToMsmqQueueFormatName: Converted pathName \"" + 
+            CORE::ToString( pathName ) + "\" to \"" + CORE::ToString( queueFormatName ) + "\"" ) ; 
+        return true;
+    }
+    else
+    {
+        CORE::UInt32 errorCode =  HRESULT_CODE( formatConversionResult );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPathNameToMsmqQueueFormatName: Failed to convert path \"" + 
+            CORE::ToString( pathName ) + "\" to MSMQ format name. HRESULT=" + CORE::ToString( formatConversionResult ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid          ,
+                                                            std::wstring& queueFormatName  )
+{GUCEF_TRACE;
+
+    DWORD maxFormatNameSize = 512;
+    WCHAR queueFormatNameTmp[ 512 ]; 
+    HRESULT formatConversionResult = ::MQInstanceToFormatName( const_cast< GUID* >( &queueGuid ) ,    
+                                                               queueFormatNameTmp                ,    
+                                                               &maxFormatNameSize                );
+    if ( !FAILED( formatConversionResult ) )
+    {
+        queueFormatName = queueFormatNameTmp;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Converted GUID structure to \"" + 
+            CORE::ToString( queueFormatName ) + "\"" ) ; 
+        return true;
+    }
+    else
+    {
+        CORE::UInt32 errorCode =  HRESULT_CODE( formatConversionResult );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Failed to convert GUID to MSMQ format name. HRESULT=" + 
+            CORE::ToString( formatConversionResult ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        return false;
+    }
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                            std::wstring& queueFormatName  )
+{GUCEF_TRACE;
+
+    CORE::CAsciiString asciiGuidStr = queueGuid.ForceToAscii( 0 );
+    if ( asciiGuidStr.DetermineLength() != queueGuid.Length() )
+    {
+        CORE::CAsciiString asciiGuidStrLogExample = queueGuid.ForceToAscii( '*' );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Code point count difference while converting queueGuid \"" + 
+            queueGuid + "\" to ASCII representation. Replacing non-ASCII with '*' yields: " + asciiGuidStrLogExample ) ; 
+    }
+
+    GUID queueGuidStruct;
+    if ( StringToMsmqGUID( asciiGuidStr, queueGuidStruct ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Converted queueGuid string \"" + 
+            queueGuid + "\" to a GUID structure successfully" ); 
+
+        return MsmqQueueGUIDToMsmqQueueFormatName( queueGuidStruct, queueFormatName );
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Failed to convert queueGuid string \"" + 
+        queueGuid + "\" to a GUID structure" ); 
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const std::wstring&
+CMsmqPubSubClientTopic::GetMsmqQueueFormatName( void ) const
+{
+    if ( !m_msmqQueueFormatName.empty() )
+        return m_msmqQueueFormatName;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: MSMQ queue 'format name' is not yet set, attempting to obtain it. Topic=" + m_config.topicName ) ; 
+
+    std::wstring wQueueName;
+    CORE::Utf8toUtf16( m_config.topicName, wQueueName );
+
+    // Should we try and take the string as given and not do anything fancy?
+    if ( !m_config.topicNameIsMsmqFormatName )  
+    {
+        bool isSuspectedQueueGuid = ( 0 == m_config.topicName.HasChar( '{', true ) && 0 < m_config.topicName.HasChar( '}', true ) );
+        if ( isSuspectedQueueGuid )
+        {
+            std::wstring wQueueFormatName;
+            if ( MsmqQueueGUIDToMsmqQueueFormatName( m_config.topicName, wQueueFormatName ) )
+            {
+                m_msmqQueueFormatName = wQueueFormatName;
+            }
+        }
+        else
+        {
+            std::wstring wQueueFormatName;
+            if ( MsmqPathNameToMsmqQueueFormatName( wQueueName, wQueueFormatName ) )
+            {
+                m_msmqQueueFormatName = wQueueFormatName;
+            }
+        }
+    }
+    else
+    {
+        m_msmqQueueFormatName = wQueueName;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: Since the topic name is flagged as a format name we will use it as-is. format name = Topic =" + m_config.topicName );
+    }
+
+    return m_msmqQueueFormatName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::Subscribe( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL != m_receiveQueueHandle )
+    {
+        ::MQCloseQueue( m_receiveQueueHandle );
+        m_receiveQueueHandle = GUCEF_NULL;
+    }
+
+    // MQOpenQueue only supports a format name
+    // As such depending on how the setting is presented we need to translate it
+    const std::wstring& queueFormatName = GetMsmqQueueFormatName();
+    if ( queueFormatName.empty() )
+        return false;
+
+    ///* MQOpenQueue() access flags */
+    //#define MQ_RECEIVE_ACCESS   0x00000001L
+    //#define MQ_SEND_ACCESS      0x00000002L
+    //#define MQ_MOVE_ACCESS      0x00000004L
+    //#define MQ_PEEK_ACCESS      0x00000020L
+    //#define MQ_ADMIN_ACCESS     0x00000080L
+
+    HRESULT openQueueResult = ::MQOpenQueue( queueFormatName.c_str() ,  // IN:  Queue format name
+                                             MQ_RECEIVE_ACCESS       ,  // IN:  Want to receive from queue
+                                             0                       ,  // IN:  Allow sharing
+                                             &m_receiveQueueHandle   ); // OUT: Handle of open queue
+
+    if ( FAILED( openQueueResult ) )
+    {
+        CORE::UInt32 errorCode =  HRESULT_CODE( openQueueResult );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to 'subscribe' by opening a MSMQ queue for recieving. Topic Name: " + 
+            m_config.topicName + ". HRESULT= " + CORE::ToString( openQueueResult ) + ". Code segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+        BeginReconnectSequence( &ConnectionErrorEvent );
+        return false;
+    }
+
+    if ( !PrepStorageForReadMsgs( m_config.maxMsmqMsgsToReadPerSyncCycle ) )
+    {        
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Failed to init memory storage for publishing. Topic Name: " + m_config.topicName );
+        BeginReconnectSequence( &InternalErrorEvent );
+        return false;
+    }
+    
+    // Initialize getting all messages in queue
+    // this needs the proper account access level. if this failed we will not try again in the metrics timer cycle
+    m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue();
+
+    // Enable the timer to start throttled sync reading 
+    m_syncReadTimer->SetEnabled( true );
+    
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:Subscribe: Successfully 'subscribed to topic' for MSMQ queue. Topic Name: " + m_config.topicName );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgIdBookmark )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    // Currently not supported.
+    // Could theoretically be implemented using a cursor combined with PEEK only reads
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    // Currently not supported.
+    // Could theoretically be implemented using a cursor combined with PEEK only reads
+    // For regular queue consuming reads you could perhaps ignore messages with a send time older then msgDtBookmark
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    MT::CScopeMutex lock( m_lock );
+    if ( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX == bookmark.GetBookmarkType() )
+    {
+        m_msmqLastLookupId = bookmark.GetBookmarkData().AsUInt64();
+        return Subscribe();
+    }
+    return false;
+
+    #else
+
+    // Currently not supported.
+    return false;
+    
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CPubSubBookmark 
+CMsmqPubSubClientTopic::GetCurrentBookmark( void )
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    MT::CScopeMutex lock( m_lock );
+    return PUBSUB::CPubSubBookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, CORE::CVariant( m_msmqLastLookupId ) );
+
+    #else
+
+    // Not supported
+    return PUBSUB::CPubSubBookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
+    
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
+{GUCEF_TRACE;
+
+    PUBSUB::CPubSubBookmark bookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, msg.GetMsgIndex() );
+    return AcknowledgeReceiptImpl( bookmark, msg.GetReceiveActionId() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+    
+    return AcknowledgeReceiptImpl( bookmark, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& bookmark , 
+                                                CORE::UInt64 receiveActionId             )
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    if ( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX != bookmark.GetBookmarkType() )
+        return false;
+    
+    MT::CScopeMutex lock( m_lock );
+
+    const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
+    bool supportsAcksViaLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+    if ( supportsAcksViaLookup )
+    {
+        CORE::UInt64 lookupId = bookmark.GetBookmarkData().AsUInt64();
+        if ( 0 != lookupId )
+        {
+            HRESULT receiveHResult = ::MQReceiveMessageByLookupId( m_receiveQueueHandle      ,        // Handle to the queue 
+                                                                   lookupId                  ,        // The lookup identifier  
+                                                                   MQ_LOOKUP_RECEIVE_CURRENT ,        // Access mode: There is no delete per se, we 'receive' the message to delete it
+                                                                   NULL                      ,        // Normally pointer to the MQMSGPROPS structure, we dont care since we care deleting thus NULL
+                                                                   NULL                      ,        // No OVERLAPPED structure  
+                                                                   NULL                      ,        // No callback function  
+                                                                   NULL                      );       // Not in a transaction  
+
+            CORE::UInt64 receiveResult = (CORE::UInt64) receiveHResult;
+            switch ( receiveResult )
+            {
+                case (CORE::UInt64) MQ_OK:
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Successfully removed message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
+                        ". receiveActionId=" + CORE::ToString( receiveActionId ) );
+                    return true;
+                }
+                case (CORE::UInt64) MQ_ERROR_MESSAGE_NOT_FOUND:
+                {
+                    // Per docs: "The message referenced by the lookup identifier does not exist. Either the lookup identifier is incorrect or the message has been removed from the queue."
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Message with msg index (LookupId) " + CORE::ToString( lookupId ) + 
+                        " cannot be found, we will treat this as successfully removed. receiveActionId=" + CORE::ToString( receiveActionId ) );
+                    return true;
+                }
+
+                case (CORE::UInt64) MQ_ERROR_QUEUE_DELETED:        // <- queue was deleted outside the app, just keep trying to 'reconnect'
+                {
+                    // If the queue is deleted the lookup id becomes invalid since its a property of that instance of the queue
+                    m_msmqLastLookupId = 0;
+
+                    // we intentiontionally dont break here because we want the code below as well
+                    // break;
+                }
+                case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_ACTIVE:     // <- caused by someone messing with the queue outside the app?
+                case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_FOUND:      // <- caused by someone messing with the queue outside the app?
+                case (CORE::UInt64) MQ_ERROR_INVALID_HANDLE:
+                case (CORE::UInt64) MQ_ERROR_OPERATION_CANCELLED:  // <- caused by handle becoming invalid as well? Per docs: "For example, the queue handle was closed by another thread while waiting for a message"
+                case (CORE::UInt64) MQ_ERROR_INVALID_PARAMETER:    // <- caused by handle becoming invalid as well?
+                {
+                    ++m_msmqErrorsOnAck;                
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Queue Access issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) +
+                        ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                        ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );
+
+                    lock.EarlyUnlock();
+                    BeginReconnectSequence( &ConnectionErrorEvent );
+                    return false;
+                }
+
+                default:
+                {
+                    ++m_msmqErrorsOnAck;
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Unhandled issue removing message with msg index (LookupId) " + CORE::ToString( lookupId ) +
+                        ". receiveActionId=" + CORE::ToString( receiveActionId ) +
+                        ". HRESULT= " + CORE::Base16Encode( &receiveHResult, sizeof(receiveHResult) ) + 
+                        ". Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( HRESULT_CODE( receiveHResult ) ) ) );          
+
+                    lock.EarlyUnlock();
+                    BeginReconnectSequence( &InternalErrorEvent );
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::AcknowledgeReceipt: Cannot remove message with invalid init msg index (LookupId) 0. receiveActionId=" + CORE::ToString( receiveActionId ) );
+        }
+    }
+
+    #endif
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::IsConnected( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+           
+    if ( m_config.needPublishSupport && GUCEF_NULL == m_sendQueueHandle )
+        return false;
+
+    if ( m_config.needSubscribeSupport && GUCEF_NULL == m_receiveQueueHandle )
+        return false;
+
+    return ( m_config.needPublishSupport && GUCEF_NULL != m_sendQueueHandle ) && ( m_config.needSubscribeSupport && GUCEF_NULL != m_receiveQueueHandle );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::InitializeConnectivity( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    if ( m_config.needPublishSupport )
+    {
+        if ( GUCEF_NULL != m_sendQueueHandle )
+        {
+            ::MQCloseQueue( m_sendQueueHandle );
+            m_sendQueueHandle = GUCEF_NULL;
+        }
+
+        // MQOpenQueue only supports a format name
+        // As such depending on how the setting is presented we need to translate it
+        const std::wstring& queueFormatName = GetMsmqQueueFormatName();
+        if ( queueFormatName.empty() )
+            return false;
+
+        // Opening the handle counts as our 'connectivity'
+        HRESULT openQueueResult = ::MQOpenQueue( queueFormatName.c_str() ,  // IN:  Queue format name
+                                                 MQ_SEND_ACCESS          ,  // IN:  Want to send to queue
+                                                 0                       ,  // IN:  Allow sharing
+                                                 &m_sendQueueHandle      ); // OUT: Handle of open queue
+
+        if ( FAILED( openQueueResult ) )
+        {
+            CORE::UInt32 errorCode =  HRESULT_CODE( openQueueResult );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( openQueueResult ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitializeConnectivity: Failed to init queue access for publishing. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+            
+            lock.EarlyUnlock();
+            BeginReconnectSequence( &ConnectionErrorEvent );
+            return false;
+        }
+        else
+        {
+            if ( !PrepMsmqMsgsStorage() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitializeConnectivity: Failed to init memory storage for publishing. Topic Name: " + m_config.topicName );
+
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &InternalErrorEvent );
+                return false;
+            }
+        }
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitializeConnectivity: Successfully initialized for publishing. Topic Name: " + m_config.topicName );
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetCurrentNrOfMessagesInQueue( void ) const
+{GUCEF_TRACE;
+
+    // MQMgmtGetInfo only supports a format name
+    // As such depending on how the setting is presented we need to translate it
+    const std::wstring& queueFormatName = GetMsmqQueueFormatName();
+    if ( queueFormatName.empty() )
+        return -1;
+
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId = 0;  
+
+    // Define an MQMGMTROPS structure.  
+    ::MQMGMTPROPS mgmtprops;  
+    ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+
+    aMgmtPropId[ cPropId ] = PROPID_MGMT_QUEUE_MESSAGE_COUNT;    // Property identifier  
+    aMgmtPropVar[ cPropId ].vt = VT_NULL;                        // Type indicator  
+    ++cPropId;
+
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;   // number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;// management property IDs  
+    mgmtprops.aPropVar = aMgmtPropVar;// management property values  
+    mgmtprops.aStatus  = NULL;// no storage for error codes   
+
+    // Now that we formulated the request
+    // actually ask for the info
+    std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
+    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueInfoFormatName.c_str(), &mgmtprops );
+    if ( MQ_OK == queueInfoFetchResult )
+    {
+        return (CORE::Int64) aMgmtPropVar[ 0 ].ulVal;
+    }
+
+    CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetCurrentNrOfMessagesInQueue: Failed to obtain count of queued messages. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+   
+// From: https://stackoverflow.com/questions/45149620/convert-ole-automation-date-oadate-double-to-struct-tm-without-using-variantti
+// Slightly altered: used platform types to address ULL type concern
+
+struct tm* SecondsSinceEpochToDateTime(struct tm* pTm, uint64_t SecondsSinceEpoch)
+{
+   uint64_t sec;
+   unsigned int quadricentennials, centennials, quadrennials, annuals/*1-ennial?*/;
+   unsigned int year, leap;
+   unsigned int yday, hour, min;
+   unsigned int month, mday, wday;
+   static const unsigned int daysSinceJan1st[2][13]=
+   {
+      {0,31,59,90,120,151,181,212,243,273,304,334,365}, // 365 days, non-leap
+      {0,31,60,91,121,152,182,213,244,274,305,335,366}  // 366 days, leap
+  };
+/*
+   400 years:
+
+   1st hundred, starting immediately after a leap year that's a multiple of 400:
+   n n n l  \
+   n n n l   } 24 times
+   ...      /
+   n n n l /
+   n n n n
+
+   2nd hundred:
+   n n n l  \
+   n n n l   } 24 times
+   ...      /
+   n n n l /
+   n n n n
+
+   3rd hundred:
+   n n n l  \
+   n n n l   } 24 times
+   ...      /
+   n n n l /
+   n n n n
+
+   4th hundred:
+   n n n l  \
+   n n n l   } 24 times
+   ...      /
+   n n n l /
+   n n n L <- 97'th leap year every 400 years
+*/
+
+   // Re-bias from 1970 to 1601:
+   // 1970 - 1601 = 369 = 3*100 + 17*4 + 1 years (incl. 89 leap days) =
+   // (3*100*(365+24/100) + 17*4*(365+1/4) + 1*365)*24*3600 seconds
+   sec = SecondsSinceEpoch + 11644473600ULL;
+
+   wday = (CORE::UInt32)((sec / 86400 + 1) % 7); // day of week
+
+   // Remove multiples of 400 years (incl. 97 leap days)
+   quadricentennials = (CORE::UInt32)(sec / CORE::UInt64( 12622780800ULL ) ); // 400*365.2425*24*3600
+   sec %= CORE::UInt64( 12622780800ULL );
+
+   // Remove multiples of 100 years (incl. 24 leap days), can't be more than 3
+   // (because multiples of 4*100=400 years (incl. leap days) have been removed)
+   centennials = (CORE::UInt32)(sec / CORE::UInt64( 3155673600ULL ) ); // 100*(365+24/100)*24*3600
+   if (centennials > 3)
+   {
+      centennials = 3;
+   }
+   sec -= centennials * CORE::UInt64( 3155673600 );
+
+   // Remove multiples of 4 years (incl. 1 leap day), can't be more than 24
+   // (because multiples of 25*4=100 years (incl. leap days) have been removed)
+   quadrennials = (CORE::UInt32)(sec / 126230400); // 4*(365+1/4)*24*3600
+   if (quadrennials > 24)
+   {
+      quadrennials = 24;
+   }
+   sec -= quadrennials * CORE::UInt64( 126230400ULL );
+
+   // Remove multiples of years (incl. 0 leap days), can't be more than 3
+   // (because multiples of 4 years (incl. leap days) have been removed)
+   annuals = (CORE::UInt32)(sec / 31536000); // 365*24*3600
+   if (annuals > 3)
+   {
+      annuals = 3;
+   }
+   sec -= annuals * CORE::UInt64( 31536000ULL );
+
+   // Calculate the year and find out if it's leap
+   year = 1601 + quadricentennials * 400 + centennials * 100 + quadrennials * 4 + annuals;
+   leap = !(year % 4) && (year % 100 || !(year % 400));
+
+   // Calculate the day of the year and the time
+   yday = sec / 86400;
+   sec %= 86400;
+   hour = sec / 3600;
+   sec %= 3600;
+   min = sec / 60;
+   sec %= 60;
+
+   // Calculate the month
+   for (mday = month = 1; month < 13; month++)
+   {
+      if (yday < daysSinceJan1st[leap][month])
+      {
+         mday += yday - daysSinceJan1st[leap][month - 1];
+         break;
+      }
+   }
+
+   // Fill in C's "struct tm"
+   memset(pTm, 0, sizeof(*pTm));
+   pTm->tm_sec = sec;          // [0,59]
+   pTm->tm_min = min;          // [0,59]
+   pTm->tm_hour = hour;        // [0,23]
+   pTm->tm_mday = mday;        // [1,31]  (day of month)
+   pTm->tm_mon = month - 1;    // [0,11]  (month)
+   pTm->tm_year = year - 1900; // 70+     (year since 1900)
+   pTm->tm_wday = wday;        // [0,6]   (day since Sunday AKA day of week)
+   pTm->tm_yday = yday;        // [0,365] (day since January 1st AKA day of year)
+   pTm->tm_isdst = -1;         // daylight saving time flag
+
+   return pTm;
+}
+
+/*-------------------------------------------------------------------------*/
+   
+// From: https://stackoverflow.com/questions/45149620/convert-ole-automation-date-oadate-double-to-struct-tm-without-using-variantti
+// Slightly altered, got rid of exception throw
+
+struct tm* fromOADate(struct tm* p_Tm, double p_OADate)
+{
+   static const int64_t OA_UnixTimestamp = -2209161600; /* 30-Dec-1899 */
+
+   if (!(   -109205 <= p_OADate               /* 01-Jan-1601 */
+         &&            p_OADate <= 2958465))  /* 31-Dec-9999 */
+   {
+      return GUCEF_NULL;
+   }
+
+   int64_t OADatePassedDays = p_OADate;
+   double  OADateDayTime    = p_OADate - OADatePassedDays;
+   int64_t OADateSeconds    = OA_UnixTimestamp
+                            + OADatePassedDays * 24LL * 3600LL
+                            + OADateDayTime * 24.0 * 3600.0;
+
+   return SecondsSinceEpochToDateTime(p_Tm, OADateSeconds);
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int32
+CMsmqPubSubClientTopic::SizeOfVarType( VARTYPE vt )
+{GUCEF_TRACE;
+
+    switch ( vt )
+    {
+        case VT_VECTOR | VT_UI1:
+        case VT_UI1:                    { return sizeof( UCHAR ); }
+        
+        case VT_VECTOR | VT_I2:
+        case VT_I2:                     { return sizeof( SHORT ); }
+        
+        case VT_VECTOR | VT_UI2:
+        case VT_UI2:                    { return sizeof( USHORT ); }
+
+        case VT_VECTOR | VT_I4:
+        case VT_I4:                     { return sizeof( LONG ); }
+
+        case VT_UI4:                    { return sizeof( ULONG ); }
+        case VT_UI8:                    { return sizeof( ULONGLONG ); }
+        case VT_ERROR:                  { return sizeof( LONG ); }
+                
+        case VT_VECTOR | VT_BOOL:
+        case VT_BOOL:                   { return sizeof( VARIANT_BOOL ); }
+
+        case VT_VECTOR | VT_CLSID:
+        case VT_CLSID:                  { return sizeof( CLSID ); }
+
+        case VT_VECTOR | VT_BSTR:
+        case VT_BSTR:                   { return sizeof( WCHAR ); }
+        
+        case VT_LPSTR:                  { return sizeof( CHAR ); }
+
+        case VT_VECTOR | VT_LPWSTR:
+        case VT_LPWSTR:                 { return sizeof( WCHAR ); }
+
+        case VT_BLOB:                   { return sizeof( UCHAR ); }        
+        case VT_DATE:                   { return sizeof( DATE ); }
+
+        case VT_VECTOR | VT_VARIANT:    { return sizeof( VARIANT ); }
+        
+        case VT_EMPTY:                  { return 0; }
+
+        default:
+        {
+            return -1;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::StringToMsmqGUID( const CORE::CAsciiString& guidString ,
+                                          GUID& guid                           )
+{GUCEF_TRACE;
+
+    if ( !guidString.IsNULLOrEmpty() && guidString.IsFormattingValid() )
+    {
+        int scanResult = sscanf( guidString.C_String(), "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+                &guid.Data1, &guid.Data2, &guid.Data3, 
+                &guid.Data4[0], &guid.Data4[1], &guid.Data4[2], &guid.Data4[3] ,
+                &guid.Data4[4], &guid.Data4[5], &guid.Data4[6], &guid.Data4[7] );
+
+        return 11 == scanResult;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqGUIDToString( const GUID& guid               ,
+                                          CORE::CAsciiString& guidString )
+{GUCEF_TRACE;
+
+    guidString.Reserve( 128 );
+    int printResult = sprintf( guidString.C_String(), "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}",
+                guid.Data1, guid.Data2, guid.Data3, 
+                guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3] ,
+                guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7] );
+    guidString.DetermineLength();
+                
+    return printResult > 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable )
+{GUCEF_TRACE;
+
+    switch ( msmqSourceVariant.vt )
+    {
+        case VT_I1:                     { targetVariant = (CORE::Int8) msmqSourceVariant.cVal; return true; }
+        case VT_UI1:                    { targetVariant = (CORE::UInt8) msmqSourceVariant.bVal; return true; }
+        case VT_I2:                     { targetVariant = (CORE::Int16) msmqSourceVariant.iVal; return true; }
+        case VT_UI2:                    { targetVariant = (CORE::UInt16) msmqSourceVariant.uiVal; return true; }
+        case VT_I4:                     { targetVariant = (CORE::Int32) msmqSourceVariant.lVal; return true; }
+        case VT_UI4:                    { targetVariant = (CORE::UInt32) msmqSourceVariant.ulVal; return true; }
+        case VT_I8:                     { targetVariant = (CORE::Int64) msmqSourceVariant.hVal.QuadPart; return true; }
+        case VT_UI8:                    { targetVariant = (CORE::UInt64) msmqSourceVariant.uhVal.QuadPart; return true; }
+        case VT_ERROR:                  { targetVariant = (CORE::Int32) msmqSourceVariant.scode; return true; }        
+        case VT_BOOL:                   { targetVariant = ( VARIANT_FALSE != msmqSourceVariant.boolVal ); return true; } // Actually stored as a short
+        
+        // The CLSID (GUID) record type is a C structure. The adapter does not need a size field for this record because it is a fixed length field. 
+        // It is critical that the data must be exactly sizeof(CLSID) bytes (16) long for proper I/O with MSMQ.
+        case VT_CLSID:                  
+        {
+            if ( m_config.convertMsmqClsIdToString )
+            {
+                const GUID& guid = *msmqSourceVariant.puuid;
+                if ( MsmqGUIDToString( guid, m_guidStr ) )
+                {
+                    targetVariant = m_guidStr;
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return targetVariant.Set( msmqSourceVariant.puuid, sizeof(CLSID), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible );
+            }
+        }
+
+        // Rememeber that like the COM concept the length is actually stored at (BSTR pointer address)-4  
+        // Since in the COM world this type is often used to shuttle binary data around we will mark it as a binary and not GUCEF_DATATYPE_UTF16_STRING
+        case VT_BSTR:                   { return targetVariant.Set( msmqSourceVariant.pwszVal, SysStringLen( msmqSourceVariant.bstrVal ), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); } 
+
+        case VT_LPSTR:                  { return targetVariant.Set( msmqSourceVariant.pszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF8_STRING, linkIfPossible ); } 
+        case VT_LPWSTR:                 { return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_LE_STRING, linkIfPossible ); } 
+        case VT_BLOB:                   { return targetVariant.Set( msmqSourceVariant.blob.pBlobData, msmqSourceVariant.blob.cbSize, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); }
+        
+        case VT_DATE:                   
+        { 
+            // Sadly date is stored as a OLE Automation DATE which is a pain to convert
+            struct tm tmStruct;
+            if ( GUCEF_NULL != fromOADate( &tmStruct, msmqSourceVariant.date ) )
+            {
+                targetVariant = CORE::CDateTime( &tmStruct, true ).ToIso8601DateTimeString( true, true );
+                return true;
+            } 
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPropertyToVariant: Unable to convert VT_DATE with value " + CORE::ToString( msmqSourceVariant.date ) );
+                return false;             
+            }
+        }
+        
+        // We dont have support for a special type for more complex data arrangements like vectors
+        // until (if ever) we do, just note these as BINARY data
+        case VT_VECTOR | VT_I1:
+        case VT_VECTOR | VT_UI1:
+        case VT_VECTOR | VT_I2:
+        case VT_VECTOR | VT_UI2:
+        case VT_VECTOR | VT_BOOL:
+        case VT_VECTOR | VT_I4:
+        case VT_VECTOR | VT_UI4:
+        case VT_VECTOR | VT_I8:
+        case VT_VECTOR | VT_UI8:
+        case VT_VECTOR | VT_CLSID:
+        case VT_VECTOR | VT_BSTR:
+        case VT_VECTOR | VT_LPWSTR:
+        case VT_VECTOR | VT_VARIANT:
+        {
+            // msmqSourceVariant.caub.cElems contains the nr of elements possible in the available buffer not the nr of bytes actually used for elements inside said buffer
+            // Hence we need to rely on the "lengthIfApplicable" param which obtains the size from a different property
+            return targetVariant.Set( msmqSourceVariant.caub.pElems, lengthIfApplicable, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); 
+        }
+
+        case VT_EMPTY:
+        {
+            targetVariant.Clear();
+            return true;
+        }
+
+        default:
+        {
+            targetVariant.Clear();
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqPropertyToVariant: Unable to convert VARIANT of type " + CORE::ToString( msmqSourceVariant.vt ) );
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::VariantToMsmqProperty( MSGPROPID propId, const CORE::CVariant& sourceVariant, MQPROPVARIANT& msmqTargetVariant )
+{GUCEF_TRACE;
+
+    VARTYPE targetVarType = GetMsmqVariantTypeForMsmqProperty( propId );    
+    msmqTargetVariant.vt = targetVarType;
+
+    switch ( targetVarType )
+    {
+        case VT_I1:                     { msmqTargetVariant.cVal = (CHAR) sourceVariant.AsInt8(); return true; }
+        case VT_UI1:                    { msmqTargetVariant.bVal = (UCHAR) sourceVariant.AsUInt8(); return true; }
+        case VT_I2:                     { msmqTargetVariant.iVal = (SHORT) sourceVariant.AsInt16(); return true; }
+        case VT_UI2:                    { msmqTargetVariant.uiVal = (USHORT) sourceVariant.AsUInt16(); return true; }
+        case VT_I4:                     { msmqTargetVariant.lVal = (LONG) sourceVariant.AsInt32(); return true; }
+        case VT_UI4:                    { msmqTargetVariant.ulVal = (ULONG) sourceVariant.AsUInt32(); return true; } 
+        case VT_I8:                     { msmqTargetVariant.hVal.QuadPart = (LONGLONG) sourceVariant.AsInt64(); return true; }
+        case VT_UI8:                    { msmqTargetVariant.uhVal.QuadPart = (ULONGLONG) sourceVariant.AsUInt64(); return true; }
+        case VT_ERROR:                  { msmqTargetVariant.scode = (LONG) sourceVariant.AsInt32(); return true; }  
+        case VT_BOOL:                   { msmqTargetVariant.boolVal = (VARIANT_BOOL) sourceVariant.AsBool() ? VARIANT_TRUE : VARIANT_FALSE; return true; } // Actually stored as a short
+        
+        // The CLSID (GUID) record type is a C structure. The adapter does not need a size field for this record because it is a fixed length field. 
+        // It is critical that the data must be exactly sizeof(CLSID) bytes (16) long for proper I/O with MSMQ. No more no less or you get an error!
+        case VT_CLSID:                  
+        { 
+            if ( sourceVariant.ByteSize() >= sizeof(CLSID) ) 
+            { 
+                msmqTargetVariant.puuid = (CLSID*) sourceVariant.AsVoidPtr(); 
+                return true; 
+            } 
+            else
+            { 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:VariantToMsmqProperty: Data given for VT_CLSID field is of incorrect nr of bytes: " + CORE::ToString( sourceVariant.ByteSize() ) );
+                return false; 
+            } 
+        }
+
+        // Remember that like the COM concept the length is actually stored at (BSTR pointer address)-4  
+        // Since in the COM world this type is often used to shuttle binary data around we will mark it as a binary and not GUCEF_DATATYPE_UTF16_STRING
+        case VT_BSTR:                   
+        { 
+            // @TODO if needed, this would require a dynamic memory alloc
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:VariantToMsmqProperty: VT_BSTR is currently not supported" );
+            return false; 
+        } 
+
+        case VT_LPSTR:                  { msmqTargetVariant.pszVal = (LPSTR) sourceVariant.AsCharPtr(); return true; }
+        case VT_LPWSTR:                 { msmqTargetVariant.pwszVal = (LPWSTR) sourceVariant.AsVoidPtr(); return true; }
+        case VT_BLOB:                   { msmqTargetVariant.blob.pBlobData = (BYTE*) sourceVariant.AsVoidPtr(); msmqTargetVariant.blob.cbSize = (ULONG) sourceVariant.ByteSize(); return true; }
+        
+        case VT_DATE:                  
+        { 
+            // Sadly date is stored as a OLE Automation DATE which is a pain to convert
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:VariantToMsmqProperty: VT_DATE is currently not supported" );
+            return false;             
+        }
+        
+        // We dont have support for a special type for more complex data arrangements like vectors
+        // until (if ever) we do, just note these as BINARY data
+        case VT_VECTOR | VT_I1:
+        case VT_VECTOR | VT_UI1:
+        case VT_VECTOR | VT_I2:
+        case VT_VECTOR | VT_UI2:
+        case VT_VECTOR | VT_BOOL:
+        case VT_VECTOR | VT_I4:
+        case VT_VECTOR | VT_UI4:
+        case VT_VECTOR | VT_I8:
+        case VT_VECTOR | VT_UI8:
+        case VT_VECTOR | VT_CLSID:
+        case VT_VECTOR | VT_BSTR:
+        case VT_VECTOR | VT_LPWSTR:
+        case VT_VECTOR | VT_VARIANT:
+        {
+            // msmqSourceVariant.caub.cElems contains the nr of elements possible in the available buffer not the nr of bytes actually used for elements inside said buffer
+            // Hence we need to rely on the "lengthIfApplicable" param which obtains the size from a different property
+            CORE::Int32 elementSize = SizeOfVarType( targetVarType );
+            if ( elementSize > 0 )
+            {
+                msmqTargetVariant.caub.cElems = (ULONG) ( sourceVariant.ByteSize() / elementSize ); 
+                msmqTargetVariant.caub.pElems = (UCHAR*) sourceVariant.AsVoidPtr();
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqPubSubClientTopic:VariantToMsmqProperty: Unable to determine size or vector element of type " + CORE::ToString( targetVarType ) );
+                return false;
+            }
+        }
+        
+        case VT_EMPTY: return true;
+
+        default:
+        {
+            msmqTargetVariant.vt = VT_NULL;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:VariantToMsmqProperty: Unable to map property " + CORE::ToString( (CORE::UInt32) propId ) );
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+VARTYPE
+CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
+{GUCEF_TRACE;
+    
+    switch ( propertyId )
+    {
+        case PROPID_M_HASH_ALG: { return VT_UI4; }
+        case PROPID_M_ENCRYPTION_ALG: { return VT_UI4; }
+        case PROPID_M_SENDER_CERT: { return VT_VECTOR | VT_UI1; } 
+        case PROPID_M_SENDER_CERT_LEN: { return VT_UI4; } 
+        case PROPID_M_SECURITY_CONTEXT: { return VT_UI4; } 
+        case PROPID_M_XACT_STATUS_QUEUE: { return VT_LPWSTR; } 
+        case PROPID_M_XACT_STATUS_QUEUE_LEN: { return VT_UI4; } 
+        case PROPID_M_DEST_SYMM_KEY: { return VT_VECTOR | VT_UI1; }
+        case PROPID_M_DEST_SYMM_KEY_LEN: { return VT_UI4; }
+        case PROPID_M_SIGNATURE: { return VT_VECTOR | VT_UI1; }
+        case PROPID_M_SIGNATURE_LEN: { return VT_UI4; }
+        case PROPID_M_PROV_TYPE: { return VT_UI4; }
+        case PROPID_M_PROV_NAME: { return VT_LPWSTR; }
+        case PROPID_M_PROV_NAME_LEN: { return VT_UI4; }
+        case PROPID_M_PRIV_LEVEL: { return VT_UI4; }
+        case PROPID_M_SENDERID: { return VT_VECTOR | VT_UI1; } 
+        case PROPID_M_SENDERID_LEN: { return VT_UI4; } 
+        case PROPID_M_SENDERID_TYPE: { return VT_UI4; } 
+        case PROPID_M_ACKNOWLEDGE: { return VT_UI1; }
+        case PROPID_M_ADMIN_QUEUE: { return VT_LPWSTR; }                // Format name string of the administration queue.
+        case PROPID_M_ADMIN_QUEUE_LEN: { return VT_UI4; }
+        case PROPID_M_APPSPECIFIC: { return VT_UI4; }
+        case PROPID_M_ARRIVEDTIME: { return VT_UI4; }
+        case PROPID_M_AUTH_LEVEL: { return VT_UI4; }
+        case PROPID_M_AUTHENTICATED: { return VT_UI1; }
+        case PROPID_M_AUTHENTICATED_EX: { return VT_UI1; }
+        case PROPID_M_BODY: { return VT_VECTOR | VT_UI1; }
+        case PROPID_M_BODY_SIZE: { return VT_UI4; }
+        case PROPID_M_BODY_TYPE: { return VT_UI4; }
+        case PROPID_M_CLASS: { return VT_UI2; }
+        case PROPID_M_CONNECTOR_TYPE: { return VT_CLSID; }              // Pointer to a connector application identifier.
+        case PROPID_M_CORRELATIONID: { return VT_VECTOR | VT_UI1; }     // Application-defined 20-byte message identifier (default is 0).
+        case PROPID_M_DELIVERY: { return VT_UI1; }                      // The PROPID_M_DELIVERY property specifies how Message Queuing delivers the message to the queue.
+        case PROPID_M_DEST_QUEUE: { return VT_LPWSTR; }                 // Format name of the original destination queue.
+        case PROPID_M_DEST_QUEUE_LEN: { return VT_UI4; }                // The length (in Unicode characters) of the supplied format name buffer OR length of the returned format name string for the destination queue
+        case PROPID_M_EXTENSION: { return VT_UI1 | VT_VECTOR; }         // This property provides a place to put additional application-defined information that is associated with the message.
+        case PROPID_M_EXTENSION_LEN: { return VT_UI4; }                 // This property specifies the length of the information in the PROPID_M_EXTENSION property.
+        case PROPID_M_FIRST_IN_XACT: { return VT_UI1; }                 // This property indicates whether the message was the first message sent in a transaction.
+        case PROPID_M_JOURNAL: { return VT_UI1; }                       // This property specifies the source journaling level for the message.
+        case PROPID_M_LABEL: { return VT_LPWSTR; }                      // This property specifies a label of the message.
+        case PROPID_M_LABEL_LEN: { return VT_UI4; }                     // This property identifies the length (in Unicode characters) of the message label buffer.
+        case PROPID_M_LAST_IN_XACT: { return VT_UI1; }                  // This property indicates whether the message was the last message sent in a transaction.
+        case PROPID_M_MSGID: { return VT_VECTOR | VT_UI1; }             // This property indicates the MSMQ-generated identifier of the message. MSMQ generates a 20-byte message identifier when the message is sent.
+        case PROPID_M_PRIORITY: { return VT_UI1; }                      // This property specifies the priority of the message. A low number means low priority.
+        case PROPID_M_RESP_QUEUE: { return VT_LPWSTR; }                 // This property specifies the queue where application-generated response messages are returned.
+        case PROPID_M_RESP_QUEUE_LEN: { return VT_UI4; }                // This property indicates the length (in Unicode characters) of the response queue format name buffer.
+        case PROPID_M_SENTTIME: { return VT_UI4; }                      // This property indicates the date and time that the message was sent by the source Queue Manager.
+        case PROPID_M_SRC_MACHINE_ID: { return VT_CLSID; }              // This property specifies the computer where the message originated.
+        case PROPID_M_TIME_TO_BE_RECEIVED: { return VT_UI4; }           // This property specifies the total time (in seconds) the message is allowed to live. This includes the time it spends getting to the destination queue plus the time spent waiting in the queue before it is retrieved by an application.
+        case PROPID_M_TIME_TO_REACH_QUEUE: { return VT_UI4; }           // This property specifies a time limit (in seconds) for the message to reach the queue.
+        case PROPID_M_TRACE: { return VT_UI1; }                         // This property specifies where report messages are sent when tracing a message.
+        case PROPID_M_VERSION: { return VT_UI4; }                       // This property specifies the version of MSMQ used to send the message.
+        case PROPID_M_XACTID: { return VT_VECTOR | VT_UI1; }            // This property indicates which transaction sent the message.
+        case PROPID_Q_AUTHENTICATE: { return VT_UI1; }                  // Optional. This property specifies whether the queue accepts only authenticated messages.
+        case PROPID_Q_CREATE_TIME: { return VT_I4; }                    // Optional read-only. This property indicates the time and date when the queue was created.
+        case PROPID_Q_JOURNAL: { return VT_UI1; }                       // Optional. This property specifies the journaling level of the queue.
+        case PROPID_Q_JOURNAL_QUOTA: { return VT_UI4; }                 // Optional. This property specifies the maximum size (in kilobytes) of the queue journal.
+        case PROPID_Q_LABEL: { return VT_LPWSTR; }                      // Optional. This property specifies a description of the queue.
+        case PROPID_Q_MODIFY_TIME: { return VT_I4; }                    // Optional. This property indicates the last time the properties of a queue were modified.
+        case PROPID_Q_PATHNAME: { return VT_LPWSTR; }                   // Required (to create the queue). This property specifies the MSMQ path name of the queue. The maximum length of the name of the queue is 124 Unicode characters
+        case PROPID_Q_PRIV_LEVEL: { return VT_UI4; }                    // Optional. This property specifies the privacy level required by the queue.
+        case PROPID_Q_QUOTA: { return VT_UI4; }                         // Optional. This property specifies the maximum size (in kilobytes) of the queue. The default is INFINITE.
+        case PROPID_Q_TRANSACTION: { return VT_UI1; }                   // Optional. This property specifies whether the queue is a transactional queue or a nontransactional queue.
+        case PROPID_QM_MACHINE_ID: { return VT_CLSID; }                 // This property identifies the computer. The PROPID_QM_MACHINE_ID property is set by MSMQ when the computer is defined.
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME: { return VT_LPWSTR; }
+        case PROPID_M_RESP_FORMAT_NAME_LEN: { return VT_UI4; }
+        case PROPID_M_DEST_FORMAT_NAME: { return VT_LPWSTR; }           // String that contains a public, private, direct, distribution list, or multiple-element format name.
+        case PROPID_M_DEST_FORMAT_NAME_LEN: { return VT_UI4; }          // On input: The length of the format name buffer (in Unicode characters) allocated by the receiving application. | On return: The length (in Unicode characters) of the format name string (including the null-terminating character) returned in PROPID_M_DEST_FORMAT_NAME.
+        case PROPID_M_LOOKUPID: { return VT_UI8; } 
+        case PROPID_M_SOAP_ENVELOPE: { return VT_LPWSTR; }              // This property provides the SOAP envelope of an HTTP message and does not include binary attachments.
+        case PROPID_M_SOAP_ENVELOPE_LEN: { return VT_UI4; }             // This property provides the size of the SOAP envelope of an HTTP message.
+        case PROPID_M_COMPOUND_MESSAGE: { return VT_VECTOR | VT_UI1; }  // An array of bytes that represents the entire contents of an SRMP message, including both the SOAP envelope and the SOAP attachments (MIME binary attachments) associated with it.
+        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return VT_UI4; }         // The size (in bytes) of the entire SRMP message, including both the SOAP envelope and the SOAP attachments, provided by PROPID_M_COMPOUND_MESSAGE.
+        case PROPID_M_SOAP_HEADER: { return VT_LPWSTR; }                // This property specifies additional application-generated header elements for inclusion in the SOAP envelope of an HTTP message.
+        case PROPID_M_SOAP_BODY: { return VT_LPWSTR; }                  // This property specifies additional application-generated body elements for inclusion in the SOAP envelope of an HTTP message.
+        case PROPID_M_DEADLETTER_QUEUE: { return VT_LPWSTR; }           // The path name of an application-specific DLQ.
+        case PROPID_M_DEADLETTER_QUEUE_LEN: { return VT_UI4; }          // Input: The length of the application-specific dead letter queue (DLQ) name buffer (in Unicode characters) allocated by the receiving application. | Return: The length (in Unicode characters) of the application-specific DLQ name string (including the null-terminating character) returned by PROPID_M_DEADLETTER_QUEUE.
+        case PROPID_M_ABORT_COUNT: { return VT_UI4; } 
+        case PROPID_M_MOVE_COUNT: { return VT_UI4; } 
+        case PROPID_M_LAST_MOVE_TIME: { return VT_UI4; }
+        #endif
+
+        default: 
+        { 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqVariantTypeForMsmqProperty: Unable to map property " + CORE::ToString( (CORE::UInt32) propertyId ) );
+            return VT_EMPTY; 
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+PROPID
+CMsmqPubSubClientTopic::GetPayloadPropertyForPayloadSizeProperty( PROPID payloadSizePropId )
+{GUCEF_TRACE;
+
+    switch ( payloadSizePropId )
+    {
+        case PROPID_M_SENDERID_LEN:          { return PROPID_M_SENDERID; }
+        case PROPID_M_PROV_NAME_LEN:         { return PROPID_M_PROV_NAME; }
+        case PROPID_M_SIGNATURE_LEN:         { return PROPID_M_SIGNATURE; }
+        case PROPID_M_DEST_SYMM_KEY_LEN:     { return PROPID_M_DEST_SYMM_KEY; }
+        case PROPID_M_XACT_STATUS_QUEUE_LEN: { return PROPID_M_XACT_STATUS_QUEUE; }
+        case PROPID_M_SENDER_CERT_LEN:       { return PROPID_M_SENDER_CERT; }
+        case PROPID_M_ADMIN_QUEUE_LEN:       { return PROPID_M_ADMIN_QUEUE; }
+        case PROPID_M_BODY_SIZE:             { return PROPID_M_BODY; }                
+        case PROPID_M_DEST_QUEUE_LEN:        { return PROPID_M_DEST_QUEUE; }
+        case PROPID_M_EXTENSION_LEN:         { return PROPID_M_EXTENSION; }
+        case PROPID_M_LABEL_LEN:             { return PROPID_M_LABEL; }
+        case PROPID_M_RESP_QUEUE_LEN:        { return PROPID_M_RESP_QUEUE; }        
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME_LEN:  { return PROPID_M_RESP_FORMAT_NAME; }
+        case PROPID_M_DEST_FORMAT_NAME_LEN:  { return PROPID_M_DEST_FORMAT_NAME; }
+        case PROPID_M_SOAP_ENVELOPE_LEN:     { return PROPID_M_SOAP_ENVELOPE; }
+        case PROPID_M_COMPOUND_MESSAGE_SIZE: { return PROPID_M_COMPOUND_MESSAGE; }
+        case PROPID_M_DEADLETTER_QUEUE_LEN:  { return PROPID_M_DEADLETTER_QUEUE; }
+        #endif
+                
+        default: 
+        { 
+            return PROPID_M_BASE; 
+        }
+    }
+}   
+
+/*-------------------------------------------------------------------------*/
+
+PROPID
+CMsmqPubSubClientTopic::GetPayloadSizePropertyForPayloadProperty( PROPID payloadPropId )
+{GUCEF_TRACE;
+
+    switch ( payloadPropId )
+    {
+        case PROPID_M_SENDERID:          { return PROPID_M_SENDERID_LEN; }
+        case PROPID_M_PROV_NAME:         { return PROPID_M_PROV_NAME_LEN; }
+        case PROPID_M_SIGNATURE:         { return PROPID_M_SIGNATURE_LEN; }
+        case PROPID_M_DEST_SYMM_KEY:     { return PROPID_M_DEST_SYMM_KEY_LEN; }
+        case PROPID_M_XACT_STATUS_QUEUE: { return PROPID_M_XACT_STATUS_QUEUE_LEN; }
+        case PROPID_M_SENDER_CERT:       { return PROPID_M_SENDER_CERT_LEN; }
+        case PROPID_M_ADMIN_QUEUE:       { return PROPID_M_ADMIN_QUEUE_LEN; }
+        case PROPID_M_BODY:              { return PROPID_M_BODY_SIZE; }
+        case PROPID_M_DEST_QUEUE:        { return PROPID_M_DEST_QUEUE_LEN; }
+        case PROPID_M_EXTENSION:         { return PROPID_M_EXTENSION_LEN; }
+        case PROPID_M_LABEL:             { return PROPID_M_LABEL_LEN; }
+        case PROPID_M_RESP_QUEUE:        { return PROPID_M_RESP_QUEUE_LEN; }
+
+        // For MSMQ 3.0 and above:
+        #if(_WIN32_WINNT >= 0x0501)
+        case PROPID_M_RESP_FORMAT_NAME:  { return PROPID_M_RESP_FORMAT_NAME_LEN; }
+        case PROPID_M_DEST_FORMAT_NAME:  { return PROPID_M_DEST_FORMAT_NAME_LEN; }
+        case PROPID_M_SOAP_ENVELOPE:     { return PROPID_M_SOAP_ENVELOPE_LEN; }
+        case PROPID_M_COMPOUND_MESSAGE:  { return PROPID_M_COMPOUND_MESSAGE_SIZE; }
+        case PROPID_M_DEADLETTER_QUEUE:  { return PROPID_M_DEADLETTER_QUEUE_LEN; }
+        #endif
+                
+        default: 
+        { 
+            return PROPID_M_BASE; 
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::SetUInt32OnPropertyVariant( PROPID propertyId, CORE::UInt32 valueToSet, TMsmqMsg& msgData )
+{GUCEF_TRACE;
+    
+    if ( PROPID_M_BASE == propertyId )
+        return true;
+
+    for ( DWORD i=0; i<msgData.msgprops.cProp; ++i )
+    {
+        if ( propertyId == msgData.msgprops.aPropID[ i ] )
+        {
+            msgData.msgprops.aPropVar[ i ].ulVal = (ULONG) valueToSet;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int32
+CMsmqPubSubClientTopic::GetIndexOfProperty( PROPID propertyId, TMsmqMsg& msgData )
+{GUCEF_TRACE;
+    
+    for ( DWORD i=0; i<msgData.msgprops.cProp; ++i )
+    {
+        if ( propertyId == msgData.msgprops.aPropID[ i ] )
+        {
+            return (CORE::Int32) i;
+        }
+    }
+
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, MQPROPVARIANT& msmqVariant, TMsmqMsg& msgData, bool relinkBufferOnly )
+{GUCEF_TRACE;
+    
+    try
+    {
+        if ( !relinkBufferOnly )
+            memset( &msmqVariant, 0, sizeof(MQPROPVARIANT) );
+
+        msmqVariant.vt = GetMsmqVariantTypeForMsmqProperty( propertyId );
+
+        switch ( msmqVariant.vt )
+        {
+            case VT_LPWSTR:
+            { 
+                // Why 64: 
+                // "Queue names longer than 124 Unicode characters are not supported. Using names longer than 64 Unicode characters for public queue names may cause a slight reduction in performance."
+                // Queue names are the most common usage for VT_LPWSTR
+
+                CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
+                if ( !relinkBufferOnly )
+                    buffer.SetDataSize( 64*sizeof(WCHAR) ); 
+                msmqVariant.pwszVal = buffer.AsTypePtr<WCHAR>();
+                SetUInt32OnPropertyVariant( GetPayloadSizePropertyForPayloadProperty( propertyId ), buffer.GetBufferSize(), msgData );
+                break;
+            } 
+            case VT_LPSTR:
+            { 
+                // Why 64: Since we picked 64 for unicode as the max, seems like a good default for this one as well
+                CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
+                if ( !relinkBufferOnly )
+                    buffer.SetDataSize( 64*sizeof(CHAR) ); 
+                msmqVariant.pszVal = buffer.AsTypePtr<CHAR>();
+                SetUInt32OnPropertyVariant( GetPayloadSizePropertyForPayloadProperty( propertyId ), buffer.GetBufferSize(), msgData );  
+                break;
+            }
+            case VT_CLSID:
+            { 
+                CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
+                buffer.SetDataSize( sizeof(CLSID) ); 
+                msmqVariant.puuid = buffer.AsTypePtr<CLSID>();  
+                break;
+            }
+            case VT_VECTOR | VT_I1:
+            case VT_VECTOR | VT_UI1:
+            case VT_VECTOR | VT_I2:
+            case VT_VECTOR | VT_UI2:
+            case VT_VECTOR | VT_I4:
+            case VT_VECTOR | VT_UI4:
+            case VT_VECTOR | VT_I8:
+            case VT_VECTOR | VT_UI8:
+            {
+                CORE::CDynamicBuffer& buffer = msgData.propBuffers[ propertyId ];
+                if ( !relinkBufferOnly )
+                {
+                    switch ( propertyId )
+                    {
+                        // BODY is by far the largest field in allowing up to 4MB per msg so we handle that as a special case
+                        // We use a config setting for this with a large default. This prevents what would likely be common resizes.
+                        case PROPID_M_BODY: { buffer.SetDataSize( m_config.defaultMsmqBodyBufferSizeInBytes ); break; }
+
+                        // Fields containing a MSGID MUST be exactly PROPID_M_MSGID_SIZE (20 bytes)
+                        // MSDN notes: "The buffer must consist of exactly 20 unsigned characters. Specifying either a smaller or larger buffer will result in an error."
+                        case PROPID_M_CORRELATIONID:
+                        case PROPID_M_MSGID: { buffer.SetDataSize( PROPID_M_MSGID_SIZE ); break; }
+
+                        default: { buffer.SetDataSize( m_config.defaultMsmqMiscBufferSizeInBytes ); break; }
+                    }          
+                }
+                
+                msmqVariant.caub.cElems = (ULONG) buffer.GetBufferSize();
+                msmqVariant.caub.pElems = buffer.AsTypePtr<UCHAR>();  
+                break;
+            } 
+            default:
+                break;
+        }
+    }
+    catch ( const std::bad_alloc& )
+    {
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::PrepMsmqVariantStorageForProperty( PROPID propertyId, TMsmqMsg& msgData, bool relinkBufferOnly )
+{GUCEF_TRACE;
+
+    CORE::Int32 propIndex = GetIndexOfProperty( propertyId, msgData );
+    if ( propIndex < 0 )
+        return false;
+
+    return PrepMsmqVariantStorageForProperty( propertyId, msgData.aMsgPropVar[ propIndex ], msgData, relinkBufferOnly );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData )
+{GUCEF_TRACE;
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: The to-be-mapped MSMQ message reportedly needs larger buffer space to copy the data" );
+
+    // If this happens we need cycle through the message properties and find any mismatch between
+    // size/length of the property as relayed vs the buffer of the associated paired property
+    CORE::UInt32 foundIssues = 0;
+    for ( DWORD i=0; i<msgsData.msgprops.cProp; ++i )
+    {     
+        MSGPROPID propId = msgsData.msgprops.aPropID[ i ];
+        
+        // Check to see if this property has a related payload size or stands on its own
+        PROPID relatedPayloadProperty = GetPayloadPropertyForPayloadSizeProperty( propId );
+        if ( relatedPayloadProperty != PROPID_M_BASE )
+        { 
+            // We have a related payload property
+            
+            CORE::CDynamicBuffer& buffer = msgsData.propBuffers[ relatedPayloadProperty ];
+            CORE::UInt32 currentSize = buffer.GetBufferSize();
+            CORE::UInt32 requiredSize = msgsData.msgprops.aPropVar[ i ].ulVal; 
+
+            if ( currentSize < requiredSize )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: Buffer size for payload property " + CORE::ToString( (CORE::UInt32) relatedPayloadProperty ) + " as specified by property " + 
+                    CORE::ToString( (CORE::UInt32) propId ) + " is insufficient at " + CORE::ToString( currentSize ) + " bytes. It needs " + CORE::ToString( requiredSize ) + " bytes per the MSMQ response"  );
+
+                // First reset the message
+                if ( PrepMsmqMsgStorage( msgsData, m_config.msmqPropIdsToReceive, true ) )
+                {
+                    // We use a suggested size to limit the nr of times we resize vs just taking the required size directly
+                    CORE::UInt32 suggestedSize = currentSize + (CORE::UInt32) ( ( currentSize / 100.0 ) * m_config.minPayloadFieldGrowthPercOnBufferTooSmall );
+                    if ( suggestedSize < requiredSize )
+                        suggestedSize = requiredSize;
+                    
+                    // Resize the buffer and be sure to update the pointers and meta-data for said buffer
+                    buffer.SetDataSize( suggestedSize );
+                    PrepMsmqVariantStorageForProperty( relatedPayloadProperty, msgsData, true );
+                    SetUInt32OnPropertyVariant( propId, suggestedSize, msgsData );
+
+                    ++foundIssues;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgBufferTooSmall: Failed to reset MSMQ message storage in prep for buffer resize"  );
+                }
+            }
+        }
+    }
+
+    if ( 0 == foundIssues )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqPubSubClientTopic::OnMsmqMsgBufferTooSmall: Unable to find any issue with a size mismatch on buffers vs reported needs of the received message, unable to fix the issue" );
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::PrepMsmqPropIdToPropIndexMap( MSGPROPIDToUInt32Map& propIndexMapToBuild, const MSGPROPIDVector& msmqPropIdsToUse )
+{GUCEF_TRACE;
+
+    try
+    {
+        CORE::UInt32 propIndex = 0;
+        MSGPROPIDVector::const_iterator i = msmqPropIdsToUse.begin();
+        while ( i != msmqPropIdsToUse.end() )
+        {
+            propIndexMapToBuild[ (*i) ] = propIndex;
+            ++i; ++propIndex;
+        }
+    }
+    catch ( const std::bad_alloc& )
+    {
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmqPropIdsToUse, bool force )
+{GUCEF_TRACE;
+
+    // @TODO: Note that property storage could be made more efficient by pre-allocating a large buffer for all dynamic length /
+    //        buffer using properties and mapping the individual storage into the larger buffer. This reduces memory fragmentation
+    
+    try
+    {
+        if ( force || msg.aMsgPropId.size() != msmqPropIdsToUse.size() )
+        {       
+            msg.aMsgPropId.resize( msmqPropIdsToUse.size() );
+            msg.aMsgPropVar.resize( msmqPropIdsToUse.size() );
+            msg.aStatus.resize( msmqPropIdsToUse.size() );
+
+            msg.msgprops.cProp = (DWORD) msmqPropIdsToUse.size();   // Number of properties we want to receive or send per message
+            msg.msgprops.aPropID = &msg.aMsgPropId[ 0 ];            // pointer to MSMQ PROPID array
+            msg.msgprops.aPropVar = &msg.aMsgPropVar[ 0 ];          // pointer to MSMQ VARIANT struct array
+            msg.msgprops.aStatus = &msg.aStatus[ 0 ];               // Error reports on a per property basis
+
+            CORE::UInt32 propIndex = 0;
+            MSGPROPIDVector::iterator p = msmqPropIdsToUse.begin();
+            while ( p != msmqPropIdsToUse.end() )
+            {
+                msg.aMsgPropId[ propIndex ] = (*p);
+
+                if ( !PrepMsmqVariantStorageForProperty( (*p), msg.msgprops.aPropVar[ propIndex ], msg, false ) )
+                    return false;
+                ++p; ++propIndex;
+            }
+        }
+    }
+    catch ( const std::bad_alloc& )
+    {
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::PrepMsmqMsgsStorage( void )
+{GUCEF_TRACE;
+    
+    try 
+    {
+        if ( m_config.needSubscribeSupport )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:PrepMsmqMsgsStorage: Allocating storage for subscription related activity. maxMsmqMsgsToReadPerSyncCycle=" + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
+        
+            if ( m_config.convertMsmqClsIdToString )
+                m_guidStr.Reserve( 128 );
+        
+            m_pubsubMsgs.resize( m_config.maxMsmqMsgsToReadPerSyncCycle );
+            m_msmqReceiveMsgs.resize( m_config.maxMsmqMsgsToReadPerSyncCycle );
+            MsmqMsgVector::iterator i = m_msmqReceiveMsgs.begin();
+            while ( i != m_msmqReceiveMsgs.end() )
+            {
+                TMsmqMsg& msg = (*i);
+                if ( !PrepMsmqMsgStorage( msg, m_config.msmqPropIdsToReceive, false ) )
+                    return false;
+                ++i;
+            }
+        }
+
+        if ( m_config.needPublishSupport )
+        {        
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:PrepMsmqMsgsStorage: Allocating storage for publishing related activity" );
+        
+            if ( !PrepMsmqMsgStorage( m_msgSendMsg, m_config.msmqPropIdsToSend, false ) )
+                return false;
+            if ( !PrepMsmqPropIdToPropIndexMap( m_msgSendPropMap, m_config.msmqPropIdsToSend ) )
+                return false;
+        }
+    }
+    catch ( const std::bad_alloc& )
+    {
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::TMsmqHresultSeverityCode
+CMsmqPubSubClientTopic::ExtractSeverityCode( HRESULT code )
+{GUCEF_TRACE;
+
+    CORE::UInt32 sevCode = ( 10 * GUCEF_GETBITX( code, 0 ) ) + GUCEF_GETBITX( code, 1 );
+    return (TMsmqHresultSeverityCode) sevCode;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CMsmqPubSubClientTopicConfig& 
+CMsmqPubSubClientTopic::GetTopicConfig( void ) const
+{GUCEF_TRACE;
+
+    return m_config;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CVariant
+CMsmqPubSubClientTopic::GetMsmqPropertyValue( const MQMSGPROPS& msg, MSGPROPID propertyId )
+{GUCEF_TRACE;
+
+    for ( CORE::UInt32 i=0; i<msg.cProp; ++i )
+    {                
+        MSGPROPID currentPropertyId = msg.aPropID[ i ]; 
+        if ( currentPropertyId == propertyId )
+        {
+            CORE::CVariant ValueVar;
+            if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, false ) )
+            {
+                return ValueVar;
+            }
+        }
+    }
+    return CORE::CVariant::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    PUBSUB::CBasicPubSubMsg& translatedMsg = m_pubsubMsgs[ msgCycleIndex ];
+    translatedMsg.Clear();
+    translatedMsg.SetOriginClientTopic( this );
+
+    translatedMsg.SetReceiveActionId( m_currentReceiveActionId );
+    ++m_currentReceiveActionId;
+
+    CORE::UInt64 sentTimeUnixEpocInSecs = 0;
+    CORE::UInt64 arriveTimeUnixEpocInSecs = 0;
+
+    CORE::UInt32 bodyType = VT_EMPTY;
+    CORE::UInt32 bodySize = 0;
+
+    for ( CORE::UInt32 i=0; i<msg.cProp; ++i )
+    {
+        // Depending on what the property is we may perform special handling
+        // Note that we rely here on config loading having enforced an ordering in the message
+        // properties that ensures that things like length/size or type come before the actual payload
+
+        CORE::CVariant keyVar( (CORE::UInt64) msg.aPropID[ i ] );
+        CORE::CVariant ValueVar;
+        
+        MSGPROPID propertyId = msg.aPropID[ i ];        
+        switch ( propertyId )
+        {
+            
+            case PROPID_M_BODY_TYPE: 
+            { 
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    bodyType = ValueVar.AsUInt32( bodyType ); 
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                }
+                break; 
+            }
+            case PROPID_M_BODY_SIZE: { MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ); bodySize = ValueVar.AsUInt32( bodySize ); break; }
+            case PROPID_M_BODY:
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible, bodySize ) )
+                {                
+                    if ( linkIfPossible )
+                        translatedMsg.GetPrimaryPayload().LinkTo( ValueVar );
+                    else
+                        ValueVar.TransferOwnershipTo( translatedMsg.GetPrimaryPayload() );
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_BODY. Translated message won't have a body" );
+                    translatedMsg.GetPrimaryPayload().Clear();
+                }
+                break;
+            }
+
+            #if(_WIN32_WINNT >= 0x0501)
+            case PROPID_M_LOOKUPID:
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    translatedMsg.GetMsgIndex() = ValueVar.AsUInt64();
+
+                    // IMPORTANT: For the peek cycle to work we need to obtain the lookup id and retain it as state so that
+                    //            we can use it to iterate to the next message
+                    m_msmqLastLookupId = ValueVar.AsUInt64();
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                }
+                else
+                {
+                    // PROPID_M_LOOKUPID should always be available since its MSMQ generated in MSMQ 3.0 and above
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to obtain MSMQ PROPID_M_LOOKUPID. Translated message won't have a message index value" );
+                }
+                break;
+            }
+            #endif
+
+            case PROPID_M_SENTTIME: 
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    // Time is Unix epoch based in second resolution
+                    // It is stored as a UInt32 but we use a UInt64 because we need the headroom to convert to milliseconds
+                    sentTimeUnixEpocInSecs = ValueVar.AsUInt64();
+                    translatedMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( sentTimeUnixEpocInSecs * 1000 );
+
+                    if ( m_config.retainMsmqSentTimeAsMetaData )
+                    {
+                        // Retain as meta-data as well
+                        if ( linkIfPossible )
+                            translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                        else
+                            translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                    }
+                }
+                else
+                {
+                    // PROPID_M_SENTTIME should always be available since its MSMQ generated
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_SENTTIME. Translated message won't have a DateTime timestamp originating from MSMQ, falling back to 'now' dt" );
+                    translatedMsg.GetMsgDateTime() = CORE::CDateTime::NowUTCDateTime();
+                }
+                break;
+            }
+            case PROPID_M_ARRIVEDTIME: 
+            {
+                if ( MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    // Time is Unix epoch based in second resolution
+                    arriveTimeUnixEpocInSecs = ValueVar.AsUInt64();
+
+                    // Retain as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                }
+                else
+                {
+                    // PROPID_M_SENTTIME should always be available since its MSMQ generated
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnMsmqMsgReceived: Unable to translate MSMQ PROPID_M_ARRIVEDTIME" );
+                }
+                break;
+            }
+            
+            default:
+            {
+                if ( !MsmqPropertyToVariant( msg.aPropVar[ i ], ValueVar, linkIfPossible ) )
+                {
+                    // Skip this property, continue best effort
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ meta-data propery value variant for property " + keyVar.AsString() +
+                        " which is property " + CORE::ToString( i ) + " of " + CORE::ToString( (CORE::UInt32) msg.cProp ) );
+                    
+                    if ( propertyId == m_config.msmqMsgPropIdToMapToMsgIdOnReceive )
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnMsmqMsgReceived: Unable to translate MSMQ property type " + keyVar.AsString() + ". Translated message won't have an ID as this property is designated to be used as the MsgId" );
+                    }
+                    
+                    continue;
+                }                
+
+                if ( propertyId == m_config.msmqMsgPropIdToMapToMsgIdOnReceive )
+                {
+                    if ( ValueVar.IsDynamicMemoryLinked() )
+                        translatedMsg.GetMsgId().LinkTo( ValueVar );
+                    else
+                        ValueVar.TransferOwnershipTo( translatedMsg.GetMsgId() );
+                }
+                else
+                {
+                    // No special processing, treat as meta-data
+                    if ( linkIfPossible )
+                        translatedMsg.AddLinkedMetaDataKeyValuePair( keyVar, ValueVar );
+                    else
+                        translatedMsg.AddMetaDataKeyValuePair( keyVar, ValueVar );
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Collect MSMQ transit time metric if so configured
+    // Its a little extra work but can help diagnose the root of latency issues
+    if ( m_config.gatherMsmqTransitTimeOnReceiveMetric && 0 != sentTimeUnixEpocInSecs && 0 != arriveTimeUnixEpocInSecs && m_config.maxMsmqTransitTimeOnReceiveMetricDataPoints >= m_msmqMsgSentToArriveLatencies.size() )
+    {
+        // signed vs unsigned: Ignore errant deltas due to clock drift
+        CORE::Int64 msmqTransitTimeInSecs = (CORE::Int64) ( arriveTimeUnixEpocInSecs - sentTimeUnixEpocInSecs );
+        if ( msmqTransitTimeInSecs >= 0 )
+        {
+            m_msmqMsgSentToArriveLatencies.push_back( (CORE::UInt32) ( msmqTransitTimeInSecs * 1000 ) );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::NotifyOfReceivedMsgs( void )
+{GUCEF_TRACE;
+
+    if ( !m_pubsubMsgsRefs.empty() )
+    {
+        // Communicate all the messages received via an event notification
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:NotifyOfReceivedMsgs: Received and mapped a total of " + CORE::ToString( m_pubsubMsgsRefs.size() ) + 
+            " messages. Poll cycle max =" + CORE::ToString( m_config.maxMsmqMsgsToReadPerSyncCycle ) );
+
+        m_msmqMessagesReceived += m_pubsubMsgsRefs.size();
+        
+        if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return;
+        m_pubsubMsgsRefs.clear();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+        
+    DWORD dwAction = MQ_ACTION_RECEIVE;                 // could support peeking: isPeekOnly ? MQ_ACTION_PEEK_CURRENT : MQ_ACTION_RECEIVE;
+    DWORD dwTimeout = 0;                                // We dont wait for messages during sync reads, we get what we can this cycle and thats it
+    ITransaction* pTransaction = MQ_NO_TRANSACTION;     // could support transactions: isTransactional ? MQ_SINGLE_MESSAGE : MQ_NO_TRANSACTION;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    // For MSMQ 3.0 and above:
+    const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
+    bool supportLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+
+    CORE::UInt32 msgsRead = 0; bool isRetry = false;
+    for ( CORE::Int32 i=0; i<(CORE::Int32)m_config.maxMsmqMsgsToReadPerSyncCycle; ++i )
+    {
+        // For MSMQ 3.0 and above:
+        #if ( _WIN32_WINNT >= 0x0501 )
+        
+        HRESULT receiveHResult = MQ_OK;
+        if ( !supportLookup )
+        {
+            receiveHResult = ::MQReceiveMessage( m_receiveQueueHandle             ,  // Handle to the queue
+                                                 dwTimeout                        ,  // Time out interval
+                                                 dwAction                         ,  // Peek?  or Dequeue.  Receive action
+                                                 &m_msmqReceiveMsgs[ i ].msgprops ,  // Pointer to the MQMSGPROPS structure
+                                                 NULL                             ,  // No OVERLAPPED structure etc.
+                                                 NULL                             ,  // No OVERLAPPED structure etc.
+                                                 NULL                             ,  // NULL, we dont use a cursor
+                                                 pTransaction                     ); // MQ_SINGLE_MESSAGE | MQ_MTS_TRANSACTION | MQ_XA_TRANSACTION   
+        }
+        else
+        {
+            receiveHResult = MQReceiveMessageByLookupId( m_receiveQueueHandle ,                 // Handle to the queue 
+                                                         m_msmqLastLookupId   ,                 // The lookup identifier  
+                                                         0 == m_msmqLastLookupId ? MQ_LOOKUP_PEEK_FIRST : ( isRetry ? MQ_LOOKUP_PEEK_CURRENT : MQ_LOOKUP_PEEK_NEXT ),   // Access mode  
+                                                         &m_msmqReceiveMsgs[ i ].msgprops ,     // Pointer to the MQMSGPROPS structure
+                                                         NULL                 ,                 // No OVERLAPPED structure  
+                                                         NULL                 ,                 // No callback function  
+                                                         pTransaction         );                // Not in a transaction  
+        }
+        
+        // reset the retry flag (MQ_LOOKUP_PEEK_CURRENT)
+        isRetry = false;
+
+        #else
+
+        HRESULT receiveHResult = ::MQReceiveMessage( m_receiveQueueHandle             ,  // Handle to the queue
+                                                     dwTimeout                        ,  // Time out interval
+                                                     dwAction                         ,  // Peek?  or Dequeue.  Receive action
+                                                     &m_msmqReceiveMsgs[ i ].msgprops ,  // Pointer to the MQMSGPROPS structure
+                                                     NULL                             ,  // No OVERLAPPED structure etc.
+                                                     NULL                             ,  // No OVERLAPPED structure etc.
+                                                     NULL                             ,  // NULL, we dont use a cursor
+                                                     pTransaction                     ); // MQ_SINGLE_MESSAGE | MQ_MTS_TRANSACTION | MQ_XA_TRANSACTION  
+
+        #endif
+
+        CORE::UInt64 receiveResult = (CORE::UInt64) receiveHResult;
+        switch ( receiveResult )
+        {
+            case (CORE::UInt64) MQ_OK:
+            {
+                // Successfully received a message
+                // Since we are doing a sync cycle we can use linking
+                OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
+                
+                ++msgsRead;
+                m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                 
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle. receiveActionId=" + CORE::ToString( m_pubsubMsgs[ i ].GetReceiveActionId() ) );
+                break;
+            }
+            case (CORE::UInt64) MQ_ERROR_PROPERTY:         // this means: "One or more message properties specified in m_msmqReceiveMsgs[ i ].msgprops resulted in an error."
+            case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
+            {
+                const MQMSGPROPS& msg = m_msmqReceiveMsgs[ i ].msgprops;
+                for ( CORE::UInt32 s=0; s<msg.cProp; ++s )
+                {
+                    TMsmqHresultSeverityCode sevCode = ExtractSeverityCode( msg.aStatus[ s ] );
+                    switch ( sevCode )
+                    {
+                        case TMsmqHresultSeverityCode::Error:
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having an error status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Warning:
+                        {
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having a warning status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Informational:
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having an informational status" );
+                            break;
+                        }
+                        case TMsmqHresultSeverityCode::Success:
+                        default:
+                            break;
+                    } 
+                }
+
+                // Received a message but some warnings were triggered
+                // Since we are doing a sync cycle we can use linking
+                OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
+                
+                ++msgsRead;
+                m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &m_pubsubMsgs[ i ] ) );
+                
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: Received and mapped MSMQ message " + CORE::ToString( i ) + " of the current cycle but with MSMQ property warnings upon retrieval" );
+                break;
+            }
+
+            // Not an error in the way we use it to check for messages
+            // This is how we find out there are no more messages when using MQReceiveMessage()
+            case (CORE::UInt64) MQ_ERROR_IO_TIMEOUT: 
+            {
+                // No more messages are available, stop trying to read more
+                i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
+                break; 
+            }
+
+            // This is how we find out there are no more messages when using MQReceiveMessageByLookupId()
+            case (CORE::UInt64) MQ_ERROR_MESSAGE_NOT_FOUND:
+            {
+                // No more messages are available, stop trying to read more
+                i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
+                break; 
+            }
+
+            case (CORE::UInt64) MQ_ERROR_BUFFER_OVERFLOW:
+            case (CORE::UInt64) MQ_ERROR_FORMATNAME_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_LABEL_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_PROV_NAME_BUFFER_TOO_SMALL: 
+            case (CORE::UInt64) MQ_ERROR_SENDER_CERT_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SENDERID_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SIGNATURE_BUFFER_TOO_SMALL:
+            case (CORE::UInt64) MQ_ERROR_SYMM_KEY_BUFFER_TOO_SMALL:
+            {
+                ++m_msmqErrorsOnReceive;
+
+                // Use the length/size given to resize buffers as needed
+                // When this error happens the msg is not removed so we can resize and try again
+                OnMsmqMsgBufferTooSmall( m_msmqReceiveMsgs[ i ] );
+                
+                // For MSMQ 3.0 and above:
+                #if ( _WIN32_WINNT >= 0x0501 )
+
+                if ( supportLookup )
+                {
+                    isRetry = true;
+                    if ( 0 == m_msmqLastLookupId )
+                    {
+                        // IMPORTANT: For the peek cycle to work we need to obtain the lookup id and retain it as state so that
+                        //            we can use it to again look at the same message.
+                        CORE::CVariant propValue = GetMsmqPropertyValue( m_msmqReceiveMsgs[ i ].msgprops, PROPID_M_LOOKUPID );
+                        if ( propValue.IsInitialized() )
+                            m_msmqLastLookupId = propValue.AsUInt64();
+                    }
+                }
+
+                #endif
+
+                --i; // retry the same message slot, hopefully this time obtaining all the payloads properly
+                break;
+            }
+
+            case (CORE::UInt64) MQ_ERROR_QUEUE_DELETED:        // <- queue was deleted outside the app, just keep trying to 'reconnect'
+            {
+                // If the queue is deleted the lookup id becomes invalid since its a property of that instance of the queue
+                m_msmqLastLookupId = 0;
+
+                // we intentiontionally dont break here because we want the code below as well
+                // break;
+            }
+            case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_ACTIVE:     // <- caused by someone messing with the queue outside the app?
+            case (CORE::UInt64) MQ_ERROR_QUEUE_NOT_FOUND:      // <- caused by someone messing with the queue outside the app?
+            case (CORE::UInt64) MQ_ERROR_INVALID_HANDLE:
+            case (CORE::UInt64) MQ_ERROR_INVALID_PARAMETER:    // <- caused by handle becoming invalid as well?
+            {
+                ++m_msmqErrorsOnReceive;                
+                i = m_config.maxMsmqMsgsToReadPerSyncCycle;
+
+                CORE::UInt32 win32ErrorCode = HRESULT_CODE( receiveHResult );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Queue Access issue retrieving message " + CORE::ToString( i ) + 
+                    " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                    ". Win32 Error " + CORE::ToString( win32ErrorCode ) + " with message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );
+
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &ConnectionErrorEvent );
+                break;
+            }
+
+            default:
+            {
+                ++m_msmqErrorsOnReceive;
+                i = m_config.maxMsmqMsgsToReadPerSyncCycle;
+
+                CORE::UInt32 win32ErrorCode = HRESULT_CODE( receiveHResult );
+                if ( 11 == win32ErrorCode )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
+                        " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                        ". WIN32 ERROR CODE 11! Check system health! Win32 Error message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: Unhandled issue retrieving message " + CORE::ToString( i ) + 
+                        " of the current cycle. HRESULT= 0x" + CORE::Base16Encode( &receiveResult, sizeof(receiveResult) ) + 
+                        ". Win32 Error " + CORE::ToString( win32ErrorCode ) + " with message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );                
+                }
+
+                // Since this is some unhandled error during a message read we will call it a connection error
+                //  With unhandled errors we have no idea what the problem is and as such have no way of knowing if we can recover
+                //  As a result we have to 'reset' our MSMQ access as a safety precaution. Its always better if its something that can be coded for explcitly in one of
+                //  the above cases
+                lock.EarlyUnlock();
+                BeginReconnectSequence( &ConnectionErrorEvent );  
+                break;
+            }
+        }
+    }
+
+    NotifyOfReceivedMsgs();
+    if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: max msgs per cycle reached, asking for immediate pulse cycle" );
+        m_syncReadTimer->RequestImmediateTrigger();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    if ( m_config.needPublishSupport )
+        totalSuccess = InitializeConnectivity() && totalSuccess;
+    if ( m_config.needSubscribeSupport )
+        totalSuccess = Subscribe() && totalSuccess;
+
+    m_reconnectTimer->SetEnabled( !totalSuccess );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+                      
+    if ( !m_publishSuccessActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
+        m_publishSuccessActionIds.clear();
+    }
+    if ( !m_publishFailureActionIds.empty() )
+    {
+        if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
+        m_publishFailureActionIds.clear();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqMessagesPublishedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqMessagesReceived = m_msmqMessagesReceived;
+        m_msmqMessagesReceived = 0;
+        return msmqMessagesReceived;
+    }
+    else
+        return m_msmqMessagesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqErrorsOnPublishCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqErrorsOnReceive = m_msmqErrorsOnReceive;
+        m_msmqErrorsOnReceive = 0;
+        return msmqErrorsOnReceive;
+    }
+    else
+        return m_msmqErrorsOnReceive;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqMessagesReceivedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqMessagesReceived = m_msmqMessagesReceived;
+        m_msmqMessagesReceived = 0;
+        return msmqMessagesReceived;
+    }
+    else
+        return m_msmqMessagesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqErrorsOnReceiveCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqErrorsOnReceive = m_msmqErrorsOnReceive;
+        m_msmqErrorsOnReceive = 0;
+        return msmqErrorsOnReceive;
+    }
+    else
+        return m_msmqErrorsOnReceive;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClientTopic::GetMsmqErrorsOnAckCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt64 msmqErrorsOnAck = m_msmqErrorsOnAck;
+        m_msmqErrorsOnAck = 0;
+        return msmqErrorsOnAck;
+    }
+    else
+        return m_msmqErrorsOnAck;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::TopicMetrics::TopicMetrics( void )
+    : msmqMsgsInQueue( 0 )
+    , msmqMessagesPublished( 0 )
+    , msmqErrorsOnPublish( 0 )
+    , msmqMessagesReceived( 0 )
+    , msmqErrorsOnReceive( 0 )
+    , msmqErrorsOnAck( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CMsmqPubSubClientTopic::TopicMetrics& 
+CMsmqPubSubClientTopic::GetMetrics( void ) const
+{GUCEF_TRACE;
+
+    return m_metrics;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CMsmqPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
+{GUCEF_TRACE;
+
+    return m_metricFriendlyTopicName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // If m_msmqMsgsQueued is -1 dont bother trying again as we cannot solve config/permission issues here
+    // in order to efficiently get this metric you need elevated access to the queue
+    if ( m_metrics.msmqMsgsInQueue >= 0 )
+    {
+        m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue();
+    }
+
+    const PUBSUB::CPubSubClientConfig& clientConfig = m_client->GetConfig();
+    
+    if ( clientConfig.desiredFeatures.supportsPublishing )
+    {
+        m_metrics.msmqMessagesPublished = GetMsmqMessagesPublishedCounter( true );
+        m_metrics.msmqErrorsOnPublish = GetMsmqErrorsOnPublishCounter( true );
+    }
+    if ( clientConfig.desiredFeatures.supportsSubscribing )
+    {
+        m_metrics.msmqMessagesReceived = GetMsmqMessagesReceivedCounter( true );
+        m_metrics.msmqErrorsOnReceive = GetMsmqErrorsOnReceiveCounter( true );
+        m_metrics.msmqErrorsOnAck = GetMsmqErrorsOnAckCounter( true ); 
+    }
+    if ( m_config.gatherMsmqTransitTimeOnReceiveMetric )
+    {
+        m_metrics.msmqMsgSentToArriveLatencies = m_msmqMsgSentToArriveLatencies;
+        m_msmqMsgSentToArriveLatencies.clear();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CMsmqPubSubClientTopic::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+ bool
+ CMsmqPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace MSMQ */
+}; /* namespace PUBSUBPLUGIN */
+}; /* namespace GUCEF */
+
+/*--------------------------------------------------------------------------*/
