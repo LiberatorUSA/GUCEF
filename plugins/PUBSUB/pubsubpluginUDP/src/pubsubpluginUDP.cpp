@@ -22,10 +22,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
 #ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #include "gucefPUBSUB_CPubSubGlobal.h"
@@ -75,11 +75,11 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load called on COMCORE pubsub plugin UDP" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load called on PUBSUB plugin UDP" );
 
-    PUBSUB::CComCoreGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CUdpPubSubClient::TypeName, &g_udpPubSubClientFactory );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CUdpPubSubClient::TypeName, &g_udpPubSubClientFactory );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load finished for COMCORE pubsub plugin UDP" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load finished for PUBSUB plugin UDP" );
     return 1;
 }
 
@@ -89,11 +89,11 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Unload: Unload called on COMCORE pubsub plugin UDP" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Unload: Unload called on PUBSUB plugin UDP" );
 
-    PUBSUB::CComCoreGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CUdpPubSubClient::TypeName );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CUdpPubSubClient::TypeName );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Unload: Unload finished for COMCORE pubsub plugin UDP" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Unload: Unload finished for PUBSUB plugin UDP" );
 }
 
 /*--------------------------------------------------------------------------*/

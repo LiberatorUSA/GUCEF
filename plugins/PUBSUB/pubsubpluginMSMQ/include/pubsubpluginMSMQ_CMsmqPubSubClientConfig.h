@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
-#include "gucefCOMCORE_CPubSubClientConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTCONFIG_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#include "gucefPUBSUB_CPubSubClientConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_MSMQ_MACROS_H
 #include "pubsubpluginMSMQ_macros.h"

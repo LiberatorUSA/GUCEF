@@ -35,15 +35,15 @@
 #define GUCEF_CORE_CTHREADPOOL_H
 #endif /* GUCEF_CORE_CTHREADPOOL_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
-#include "gucefCOMCORE_CPubSubClient.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#include "gucefPUBSUB_CPubSubClient.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
 #ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPIC_H
 #include "pubsubpluginUDP_CUdpPubSubClientTopic.h"
@@ -137,7 +137,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public PUBSUB::CPub
     CUdpPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
-    PUBSUB::CUDPSocket* m_testUdpSocket;
+    COMCORE::CUDPSocket* m_testUdpSocket;
     CORE::CTimer* m_testPacketTransmitTimer;
 };
 

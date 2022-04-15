@@ -94,7 +94,7 @@ CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
 
     if ( m_config.transmitTestPackets )
     {
-        m_testUdpSocket = new PUBSUB::CUDPSocket( *m_config.pulseGenerator, false );
+        m_testUdpSocket = new COMCORE::CUDPSocket( *m_config.pulseGenerator, false );
         m_testPacketTransmitTimer = new CORE::CTimer( *m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
         m_testPacketTransmitTimer->SetEnabled( m_config.transmitTestPackets );
     }

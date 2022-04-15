@@ -115,7 +115,7 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     // Within the context of UDP the consumer group field can be used to signal a multicast or broadcast group
     if ( !consumerGroupName.IsNULLOrEmpty() )
     {
-        PUBSUB::CHostAddress networkGroup;
+        COMCORE::CHostAddress networkGroup;
         if ( networkGroup.SetHostnameAndPort( consumerGroupName ) ) // note that port will be ignored       
             udpMulticastToJoin.push_back( networkGroup );
     }
@@ -123,7 +123,7 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     // UDP broadcast acts as the subscriber id / group member name
     if ( !consumerName.IsNULLOrEmpty() )
     {
-        PUBSUB::CHostAddress networkInterface;
+        COMCORE::CHostAddress networkInterface;
         if ( networkInterface.SetHostnameAndPort( consumerName ) ) // note that port will be ignored       
             udpInterface = networkInterface;
     }

@@ -24,10 +24,10 @@
 
 #include <Objbase.h>
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
 #ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #include "gucefPUBSUB_CPubSubGlobal.h"
@@ -77,11 +77,11 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on COMCORE pubsub plugin MSMQ" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin MSMQ" );
 
-    PUBSUB::CComCoreGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CMsmqPubSubClient::TypeName, &g_msmqClusterPubSubClientFactory );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CMsmqPubSubClient::TypeName, &g_msmqClusterPubSubClientFactory );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load failed for COMCORE pubsub plugin MSMQ" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load failed for PUBSUB plugin MSMQ" );
     return 1;
 }
 
@@ -91,11 +91,11 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on COMCORE pubsub plugin MSMQ" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on PUBSUB plugin MSMQ" );
 
-    PUBSUB::CComCoreGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CMsmqPubSubClient::TypeName );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CMsmqPubSubClient::TypeName );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for COMCORE pubsub plugin MSMQ" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin MSMQ" );
 }
 
 /*--------------------------------------------------------------------------*/

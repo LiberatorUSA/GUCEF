@@ -57,7 +57,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP RedisNode
 {
     public:
 
-    PUBSUB::CHostAddress host;
+    COMCORE::CHostAddress host;
     CORE::CString nodeId;
     CORE::UInt32 startSlot;
     CORE::UInt32 endSlot;

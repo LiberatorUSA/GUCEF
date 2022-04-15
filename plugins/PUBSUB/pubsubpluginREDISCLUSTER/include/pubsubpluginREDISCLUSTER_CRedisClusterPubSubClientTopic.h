@@ -35,10 +35,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#include "gucefCOMCORE_CPubSubClientTopic.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 #include "hiredis.h"
 #include "async.h"
@@ -212,7 +212,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     TBufferVector m_pubsubMsgAttribs;
     TRedisArgs m_redisMsgArgs;
-    PUBSUB::CHostAddress m_redisShardHost;
+    COMCORE::CHostAddress m_redisShardHost;
     CORE::CString m_redisShardNodeId;
     CORE::CTimer* m_redisReconnectTimer;
     CRedisClusterPubSubClientTopicConfig m_config;

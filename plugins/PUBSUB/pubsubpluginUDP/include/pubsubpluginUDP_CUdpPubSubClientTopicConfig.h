@@ -32,10 +32,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#include "gucefPUBSUB_CPubSubClientTopicConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_UDP_MACROS_H
 #include "pubsubpluginUDP_macros.h"
@@ -68,7 +68,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
 {
     public:
 
-    typedef std::vector< PUBSUB::CHostAddress > HostAddressVector;
+    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
 
     CUdpPubSubClientTopicConfig( void );
     
@@ -82,7 +82,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
-    PUBSUB::CHostAddress udpInterface;
+    COMCORE::CHostAddress udpInterface;
     HostAddressVector udpMulticastToJoin;
     bool wantsTestPackage;
     CORE::UInt32 ticketRefillOnBusyCycle;

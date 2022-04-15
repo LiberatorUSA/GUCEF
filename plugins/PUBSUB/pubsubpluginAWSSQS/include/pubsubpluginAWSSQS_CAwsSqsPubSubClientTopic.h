@@ -35,10 +35,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#include "gucefCOMCORE_CPubSubClientTopic.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 #ifndef PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.h"
@@ -149,7 +149,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     TBufferVector m_pubsubMsgAttribs;
-    PUBSUB::CHostAddress m_redisShardHost;
+    COMCORE::CHostAddress m_redisShardHost;
     CAwsSqsPubSubClientTopicConfig m_config;
     MT::CMutex m_lock;
     Aws::String m_queueUrl;

@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefCOMCORE_CPubSubClientTopicConfig.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#include "gucefPUBSUB_CPubSubClientTopicConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_KAFKA_MACROS_H
 #include "pubsubpluginKAFKA_macros.h"

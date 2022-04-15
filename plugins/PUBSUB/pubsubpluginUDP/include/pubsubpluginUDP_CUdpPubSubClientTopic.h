@@ -40,10 +40,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#include "gucefCOMCORE_CPubSubClientTopic.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
 #ifndef PUBSUBPLUGIN_UDP_CUDPPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginUDP_CUdpPubSubClientTopicConfig.h"
@@ -200,7 +200,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
-    PUBSUB::CUDPSocket m_udpSocket;
+    COMCORE::CUDPSocket m_udpSocket;
 
 };
 

@@ -121,23 +121,23 @@ CUdpPubSubClientTopic::RegisterEventHandlers( void )
     // Register UDP socket event handlers
     TEventCallback callback( this, &CUdpPubSubClientTopic::OnUDPSocketError );
     SubscribeTo( &m_udpSocket                             ,
-                 PUBSUB::CUDPSocket::UDPSocketErrorEvent ,
+                 COMCORE::CUDPSocket::UDPSocketErrorEvent ,
                  callback                                 );
     TEventCallback callback2( this, &CUdpPubSubClientTopic::OnUDPSocketClosed );
     SubscribeTo( &m_udpSocket                              ,
-                 PUBSUB::CUDPSocket::UDPSocketClosedEvent ,
+                 COMCORE::CUDPSocket::UDPSocketClosedEvent ,
                  callback2                                 );
     TEventCallback callback3( this, &CUdpPubSubClientTopic::OnUDPSocketClosing );
     SubscribeTo( &m_udpSocket                               ,
-                 PUBSUB::CUDPSocket::UDPSocketClosingEvent ,
+                 COMCORE::CUDPSocket::UDPSocketClosingEvent ,
                  callback3                                  );
     TEventCallback callback4( this, &CUdpPubSubClientTopic::OnUDPSocketOpened );
     SubscribeTo( &m_udpSocket                              ,
-                 PUBSUB::CUDPSocket::UDPSocketOpenedEvent ,
+                 COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback4                                 );
     TEventCallback callback5( this, &CUdpPubSubClientTopic::OnUDPPacketsRecieved );
     SubscribeTo( &m_udpSocket                                 ,
-                 PUBSUB::CUDPSocket::UDPPacketsRecievedEvent ,
+                 COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
                  callback5                                    );
 
     TEventCallback callback6( this, &CUdpPubSubClientTopic::OnPulseCycle );
@@ -444,7 +444,7 @@ CUdpPubSubClientTopic::OnUDPSocketError( CORE::CNotifier* notifier    ,
                                          CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    PUBSUB::CUDPSocket::TSocketErrorEventData* eData = static_cast< PUBSUB::CUDPSocket::TSocketErrorEventData* >( eventData );
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "): UDP Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
 }
 
@@ -473,7 +473,7 @@ CUdpPubSubClientTopic::OnUDPSocketClosing( CORE::CNotifier* notifier    ,
     CUdpPubSubClientTopicConfig::HostAddressVector::iterator m = m_config.udpMulticastToJoin.begin();
     while ( m != m_config.udpMulticastToJoin.end() )
     {
-        const PUBSUB::CHostAddress& multicastAddr = (*m);
+        const COMCORE::CHostAddress& multicastAddr = (*m);
         if ( m_udpSocket.Leave( multicastAddr ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.AddressAndPortAsString() +
@@ -501,7 +501,7 @@ CUdpPubSubClientTopic::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
     CUdpPubSubClientTopicConfig::HostAddressVector::iterator m = m_config.udpMulticastToJoin.begin();
     while ( m != m_config.udpMulticastToJoin.end() )
     {
-        const PUBSUB::CHostAddress& multicastAddr = (*m);
+        const COMCORE::CHostAddress& multicastAddr = (*m);
         if ( m_udpSocket.Join( multicastAddr ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
@@ -542,10 +542,10 @@ CUdpPubSubClientTopic::OnUDPPacketsRecieved( CORE::CNotifier* notifier    ,
                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    PUBSUB::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< PUBSUB::CUDPSocket::UDPPacketsRecievedEventData* >( eventData );
+    COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( eventData );
     if ( GUCEF_NULL != udpPacketData )
     {
-        const PUBSUB::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
+        const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
 
         CORE::UInt32 packetsReceived = data.packetsReceived;
         if ( packetsReceived > data.packets.size() )
@@ -561,7 +561,7 @@ CUdpPubSubClientTopic::OnUDPPacketsRecieved( CORE::CNotifier* notifier    ,
         TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
         for ( CORE::UInt32 i=0; i<packetsReceived; ++i )
         {
-            const PUBSUB::CUDPSocket::TPacketEntry& packetEntry = data.packets[ i ];
+            const COMCORE::CUDPSocket::TPacketEntry& packetEntry = data.packets[ i ];
             
             PUBSUB::CBasicPubSubMsg& msgWrapper = m_pubsubMsgs[ i ];
             msgWrapper.Clear();
