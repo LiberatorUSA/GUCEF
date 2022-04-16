@@ -248,6 +248,12 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
     {
         // Note that footer reading occurs backwards from the end of the container towards the front
 
+        if ( source.GetDataSize() < ( MagicText.ByteSize() + 4 ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: Not enough data for minimal footer" );
+            return false;
+        }
+        
         CORE::CString testStr;    
         UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )

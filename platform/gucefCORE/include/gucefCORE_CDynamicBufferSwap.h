@@ -104,13 +104,36 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
     CDynamicBuffer* GetNextReaderBuffer( bool alwaysBlockForBufferAvailability = false ,
                                          UInt32 lockWaitTimeoutInMs = 1000             );
 
+    
+    /**
+     *  Re-obtains the currently assigned reader buffer, if any
+     *  returns GUCEF_NULL if there is no reader buffer currently assigned
+     *  This does not advance to the next buffer (if any) nor does it signal the end of reading
+     */
     CDynamicBuffer* GetCurrenReaderBuffer( CDateTime& associatedDt           ,
                                            UInt32 lockWaitTimeoutInMs = 1000 );
         
+    /**
+     *  Provides the associated datetime of the current reader buffer if there is one
+     *  if no reading is ongoing then CDateTime::Empty is returned
+     *
+     *  Note that this is really only useful from the same thread that does the reading for most use-cases
+     *  From any other thread this is merely a mostly undefined snapshot in time
+     */
     CDateTime GetCurrenReaderBufferAssociatedDt( void ) const;
+
+    /**
+     *  Provides the associated datetime of the current writer buffer if there is one
+     *  if no writing is ongoing then CDateTime::Empty is returned
+     *
+     *  Note that this is really only useful from the same thread that does the writing for most use-cases
+     *  From any other thread this is merely a mostly undefined snapshot in time
+     */
+    CDateTime GetCurrenWriterBufferAssociatedDt( void ) const;
     
     /**
      *  Releases the lock on the current read buffer
+     *  This operation is also an implicit part of GetNextReaderBuffer()
      */
     bool SignalEndOfReading( void );
 
@@ -118,16 +141,24 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
      *  Releases the lock on the current write buffer (if any) and attempts to aquire a lock 
      *  on the next write buffer. 
      *  If the lock could not be obtainned within the specified timeout period GUCEF_NULL will be returned
+     *  This operation also sets the buffer associated dt to the dt the buffer was obtained upon successfully obtaining a write buffer
      */
     CDynamicBuffer* GetNextWriterBuffer( bool alwaysBlockForBufferAvailability ,
                                          UInt32 lockWaitTimeoutInMs            );
 
+    /**
+     *  Releases the lock on the current write buffer (if any) and attempts to aquire a lock 
+     *  on the next write buffer. 
+     *  If the lock could not be obtainned within the specified timeout period GUCEF_NULL will be returned
+     *  The passed associated dt if non-Empty will be set as the buffer associated dt if a buffer is obtained
+     */
     CDynamicBuffer* GetNextWriterBuffer( const CDateTime& associatedDt         ,
                                          bool alwaysBlockForBufferAvailability ,
                                          UInt32 lockWaitTimeoutInMs            );
 
     /**
-     *  Releases the lock on the current write buffer if any and resets the writer buffer index 
+     *  Releases the lock on the current write buffer if any
+     *  This operation is also an implicit part of GetNextWriterBuffer()
      */
     bool SignalEndOfWriting( void );
 
@@ -161,7 +192,9 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
     
     TBufferEntryVector m_buffers;
     Int32 m_currentReaderBufferIndex;
+    bool m_readingIsOngoing;
     Int32 m_currentWriterBufferIndex;
+    bool m_writingIsOngoing;
     UInt32 m_buffersQueuedToRead;
     MT::CMutex m_lock;
 };

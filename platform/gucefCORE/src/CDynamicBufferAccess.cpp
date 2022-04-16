@@ -148,9 +148,20 @@ CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
 /*-------------------------------------------------------------------------*/
 
 void
+CDynamicBufferAccess::Unlink( void )
+{GUCEF_TRACE;
+
+    LinkTo( (const void*) GUCEF_NULL, (UInt32) 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CDynamicBufferAccess::LinkTo( CDynamicBuffer* externalBuffer   ,
                               bool deleteBufferUponDestruction )
 {GUCEF_TRACE;
+
+    Unlink();
 
     m_deleteBufferUponDestruction = deleteBufferUponDestruction;
     m_buffer = externalBuffer;
@@ -168,14 +179,17 @@ CDynamicBufferAccess::LinkTo( const void* externalBuffer ,
 
     if ( m_deleteBufferUponDestruction )
     {
-        delete m_buffer;
-        m_buffer = NULL;
+        delete m_buffer;        
     }
+    m_buffer = GUCEF_NULL;
     
-    m_buffer = new CDynamicBuffer();
-    m_deleteBufferUponDestruction = true;
-    m_bufferWasConst = true;
-    m_buffer->LinkTo( externalBuffer, bufferSize );    
+    if ( GUCEF_NULL != externalBuffer && bufferSize != 0 )
+    {
+        m_buffer = new CDynamicBuffer();
+        m_deleteBufferUponDestruction = true;
+        m_bufferWasConst = true;
+        m_buffer->LinkTo( externalBuffer, bufferSize );    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -239,7 +253,8 @@ CDynamicBufferAccess::ReadString( void )
     const char* bufferStr = static_cast< const char* >( m_buffer->GetConstBufferPtr() );
     while ( m_carat+1 < m_buffer->GetDataSize() )
     {
-        if ( ( bufferStr[ m_carat ] == ' ' )  ||
+        if ( ( bufferStr[ m_carat ] == '\0' ) ||
+             ( bufferStr[ m_carat ] == ' ' )  ||
              ( bufferStr[ m_carat ] == '\t' ) ||
              ( bufferStr[ m_carat ] == '\n' ) ||
              ( bufferStr[ m_carat ] == '\r' ) )

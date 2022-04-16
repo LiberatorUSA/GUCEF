@@ -1649,6 +1649,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                             // We are done with this container
                             ++containersProcessed;
                             m_currentWriteBuffer = GUCEF_NULL;
+                            m_buffers.SignalEndOfWriting();
 
                             queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                             n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
@@ -1682,6 +1683,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         // Since we loaded the entire container and we dont need a subset we are done
                         ++containersProcessed;
                         m_currentWriteBuffer = GUCEF_NULL;
+                        m_buffers.SignalEndOfWriting();
 
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                         n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
@@ -1723,7 +1725,6 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
         }
     }
 
-    GetSerializedMsgBuffers().SignalEndOfWriting();
     return totalSuccess;
 }
 

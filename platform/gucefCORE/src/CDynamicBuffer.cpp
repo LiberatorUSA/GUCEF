@@ -342,8 +342,9 @@ CDynamicBuffer::operator=( const CDynamicBuffer &src )
  *      Sets the new buffer size.
  */
 bool
-CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
-                               const bool allowreduction )
+CDynamicBuffer::SetBufferSize( const UInt32 newSize                   ,
+                               const bool allowreduction              ,
+                               const bool resultOnDisallowedReduction )
 {GUCEF_TRACE;
 
     SecureLinkBeforeMutation();
@@ -351,7 +352,7 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     if ( _bsize == newSize ) 
         return true;  // already at the desired size
     if ( newSize < _bsize && !allowreduction )
-        return false; // we do not allow size reductions
+        return resultOnDisallowedReduction; // we do not allow size reductions
 
     if ( 0 == newSize )
     {
@@ -700,7 +701,7 @@ CDynamicBuffer::RelinquishDataOwnership( void*& data, UInt32& dataSize )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+UInt32 
 CDynamicBuffer::Append( const void* data                            ,
                         const UInt32 size                           ,
                         const bool appendToLogicalData /* = true */ )
@@ -710,32 +711,39 @@ CDynamicBuffer::Append( const void* data                            ,
 
     if ( appendToLogicalData )
     {
-        SetBufferSize( m_dataSize + size, false );
-        memcpy( _buffer + m_dataSize, data, size );
-        m_dataSize += size;
+        if ( SetBufferSize( m_dataSize + size, false, true ) )
+        {
+            memcpy( _buffer + m_dataSize, data, size );
+            m_dataSize += size;
+            return size;
+        }
     }
     else
     {
         UInt32 oldBufferSize = _bsize;
-        SetBufferSize( oldBufferSize + size, false );
-        memcpy( _buffer + oldBufferSize, data, size );
-        m_dataSize = _bsize;
+        if ( SetBufferSize( oldBufferSize + size, false, true ) )
+        {
+            memcpy( _buffer + oldBufferSize, data, size );
+            m_dataSize = _bsize;
+            return size;
+        }
     }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+UInt32
 CDynamicBuffer::Append( const CDynamicBuffer& data     ,
                         const bool appendToLogicalData )
 {GUCEF_TRACE;
 
-    Append( data._buffer, data.m_dataSize, appendToLogicalData );
+    return Append( data._buffer, data.m_dataSize, appendToLogicalData );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+UInt32
 CDynamicBuffer::Append( CIOAccess& data                ,
                         const bool appendToLogicalData )
 {GUCEF_TRACE;
@@ -753,25 +761,32 @@ CDynamicBuffer::Append( CIOAccess& data                ,
     if ( inputSize > -1 )
     {
         // Copy the recource data all at once
-        SetBufferSize( inputSize );
-        data.Read( *this     ,
-                   1         ,
-                   inputSize );
+        if ( SetBufferSize( inputSize, false, true ) )
+        {
+            UInt32 bytesAppended = data.Read( *this     ,
+                                              1         ,
+                                              inputSize );
+            return bytesAppended;
+        }
+        return 0;
     }
     else
     {
         // read blocks till we hit the end of the recource
-        UInt32 nrOfBytesRead = 0;
+        UInt32 bytesAppended = 0;
         while ( !data.Eof() )
         {
-            nrOfBytesRead = data.Read( *this ,
-                                       1     ,
-                                       1024  );
-            if ( nrOfBytesRead < 1024 )
+            UInt32 newBytesAppended = data.Read( *this ,
+                                                 1     ,
+                                                 1024  );
+            bytesAppended += newBytesAppended;
+            
+            if ( newBytesAppended < 1024 )
             {
                 break;
             }
         }
+        return bytesAppended;
     }
 }
 
@@ -874,7 +889,19 @@ CDynamicBuffer::SetDataSize( const UInt32 newSize )
 UInt32
 CDynamicBuffer::GetDataSize( void ) const
 {GUCEF_TRACE;
-        return m_dataSize;
+
+    return m_dataSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CDynamicBuffer::GetRemainingDataSize( UInt32 offset ) const
+{GUCEF_TRACE;
+
+    if ( offset < m_dataSize )
+        return m_dataSize - offset;
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

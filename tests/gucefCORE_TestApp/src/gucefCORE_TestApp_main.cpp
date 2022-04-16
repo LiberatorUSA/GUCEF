@@ -23,14 +23,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
 #endif /* GUCEF_CORE_H ? */
-
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-#include <windows.h>
-#endif
 
 #ifndef GUCEF_CORE_TESTAPP_TESTSHAREDPTR_H
 #include "TestSharedPtr.h"
@@ -62,6 +63,11 @@
 #define GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_TESTAPP_TESTCYCLICDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSWAP_H
+#include "TestDynamicBufferSwap.h"
+#define GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSWAP_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSWAP_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTINIPARSER_H
 #include "TestIniParser.h"
 #define GUCEF_CORE_TESTAPP_TESTINIPARSER_H
@@ -76,8 +82,7 @@
 /*
  *      Application entry point
  */
-int
-main( int argc, char** argv )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     try
@@ -89,18 +94,18 @@ main( int argc, char** argv )
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
+        GUCEF::CORE::CPlatformNativeConsoleLogger console;
+        if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+            GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
         
         //PerformStringTests();
-        PerformVariantTests();
-        PerformVariantBinarySerializerTests();
+        //PerformVariantTests();
+        //PerformVariantBinarySerializerTests();
         //PerformIniParserTests();        
         //PerformSharedPtrTests();
+        PerformDynamicBufferSwapTests();
         //PerformCyclicDynamicBufferTests();
         //PerformNotifierObserverTests();
 
@@ -113,31 +118,6 @@ main( int argc, char** argv )
     }
     return 1;
 }
-
-/*---------------------------------------------------------------------------*/
-
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{GUCEF_TRACE;
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-
-    return main( argc, argv );
-}
-
-#endif
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------*/

@@ -173,8 +173,9 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     /**
      *      Sets the new actual buffer size.
      */
-    bool SetBufferSize( const UInt32 newSize       ,
-                        bool allowreduction = true );
+    bool SetBufferSize( const UInt32 newSize                           ,
+                        const bool allowreduction = true               ,
+                        const bool resultOnDisallowedReduction = false );
 
     /**
      *      Returns the actual buffer size.
@@ -192,6 +193,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *      This is assumed to be useful data and the remainder simply extra buffer space
      */
     UInt32 GetDataSize( void ) const;
+
+    UInt32 GetRemainingDataSize( UInt32 offset ) const;
 
     UInt32 GetUnusedBufferSize( void ) const;
 
@@ -272,24 +275,27 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     /**
      *  Appends the given data to the back of the data bytes in the buffer
      *  Note that if the buffer is linked this operation will result in the creation of a private copy
+     *  Returns the number of bytes successfully appended
      */
-    void Append( const void* data                      ,
-                    const UInt32 size                     ,
-                    const bool appendToLogicalData = true );
+    UInt32 Append( const void* data                      ,
+                   const UInt32 size                     ,
+                   const bool appendToLogicalData = true );
 
     /**
      *  Appends the given data to the back of the data bytes in the buffer
      *  Note that if the buffer is linked this operation will result in the creation of a private copy
+     *  Returns the number of bytes successfully appended
      */
-    void Append( const CDynamicBuffer& data            ,
-                 const bool appendToLogicalData = true );
+    UInt32 Append( const CDynamicBuffer& data            ,
+                   const bool appendToLogicalData = true );
 
     /**
      *  Appends the given data to the back of the data bytes in the buffer
      *  Note that if the buffer is linked this operation will result in the creation of a private copy
+     *  Returns the number of bytes successfully appended
      */
-    void Append( CIOAccess& data                       ,
-                    const bool appendToLogicalData = true );
+    UInt32 Append( CIOAccess& data                       ,
+                   const bool appendToLogicalData = true );
 
     /**
      *  Attempts to find a matching block of bytes if any from the given offset and returns the offset
@@ -403,11 +409,12 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     /**
      *  Utility member function:
      *  Performs easy append using the type information for sizing of the nr of bytes to write
+     *  Returns the number of bytes successfully appended
      *
      *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
      */
     template< typename T >
-    void AppendValue( const T value, const bool appendToLogicalData = true );
+    UInt32 AppendValue( const T value, const bool appendToLogicalData = true );
 
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIllegalCast );
 
@@ -526,11 +533,11 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSi
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-void 
+UInt32 
 CDynamicBuffer::AppendValue( const T value, const bool appendToLogicalData )
 {GUCEF_TRACE;
 
-    Append( &value, sizeof( T ), appendToLogicalData );
+    return Append( &value, sizeof( T ), appendToLogicalData );
 }
 
 /*-------------------------------------------------------------------------//
@@ -545,22 +552,3 @@ CDynamicBuffer::AppendValue( const T value, const bool appendToLogicalData )
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 14-12-2006 :
-        - Added some conversion utilities for ease of use using templated
-          member functions
-- 06-10-2006 :
-        - Added LinkTo()
-- 13-03-2005 :
-        - Updated to match new coding style
-        - Added SetAutoEnlarge() and GetAutoEnlarge()
-- 27-07-2004 :
-        - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

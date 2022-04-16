@@ -78,7 +78,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - gucefCOMCORE: Optional library used when building software that performs basic networking
 - gucefCOM: Optional library used when building software that performs networking and uses fairly industry standard functionality such as StatsD
 - gucefWEB: Optional library used when building software that performs Internet/Web style networking
-- gucefPUBSUB: Planned, needs split from gucefCOMCORE: Optional library used when building software that uses publish/subscribe concepts
+- gucefPUBSUB: Optional library used when building software that uses publish/subscribe concepts
 - gucefGUI: Optional library used when a GUI is needed. Main focus is on GUIs within the context of rendering not OS native GUIs
 - gucefINPUT: Optional library used when support for human input devices is needed.
 - gucefLOADER: Optional library used when dynamically loading multiple GUCEF platform versions dynamically 
@@ -150,7 +150,6 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - Short term: Complete initial pass at pubsub2pubsub 'aws sns' plugin
 - Short term: Complete initial pass at pubsub2pubsub 'aws sqs' plugin
 - Short term: Refactor the way the /projects folder content is stuctured to allow the various outputs (CMake/Premake/Android) to be kept in sync more easily.
-- Short term: Split new gucefPUBSUB library from gucefCOMCORE
 - Short term: Add config driven CodecChain class
 - Mid term: Fix the GitHub CI integration. The auto build trigger link is broken.
 - Mid term: Add DataNode schema system
@@ -172,4 +171,4 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - One day: Deprecate/undo the classic MFC style 'C' prefix for classes. This would be a huge change breaking everything which is why it has not occured yet. 
 - Ongoing: Evaluate need to update various dependencies considering plethora of constraints
 - Ongoing: Refine logging/metrics
-- Ongoing: Add more javadoc format documentation
+- Ongoing: Add more javadoc format (doxygen compatible) documentation

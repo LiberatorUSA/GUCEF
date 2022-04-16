@@ -81,7 +81,9 @@ CDynamicBufferSwap::CDynamicBufferSwap( UInt32 nrOfBuffers )
     : MT::CILockable()
     , m_buffers()
     , m_currentReaderBufferIndex( -1 )
+    , m_readingIsOngoing( false )
     , m_currentWriterBufferIndex( -1 )
+    , m_writingIsOngoing( false )
     , m_buffersQueuedToRead( 0 )
     , m_lock()
 {GUCEF_TRACE;
@@ -182,11 +184,27 @@ CDynamicBufferSwap::GetCurrentWriterBufferIndex( void ) const
 /*-------------------------------------------------------------------------*/
 
 CDateTime
+CDynamicBufferSwap::GetCurrenWriterBufferAssociatedDt( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    if ( m_writingIsOngoing && m_currentWriterBufferIndex >= 0 )
+    {
+        const CBufferEntry& currentBuffer = m_buffers[ m_currentWriterBufferIndex ];
+        return currentBuffer.associatedDt;
+    }
+
+    return CDateTime::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDateTime
 CDynamicBufferSwap::GetCurrenReaderBufferAssociatedDt( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    if ( m_currentReaderBufferIndex > 0 )
+    if ( m_readingIsOngoing && m_currentReaderBufferIndex >= 0 )
     {
         const CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         if ( currentBuffer.hasUnreadData )
@@ -206,7 +224,7 @@ CDynamicBufferSwap::GetCurrenReaderBuffer( CDateTime& associatedDt    ,
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    if ( m_currentReaderBufferIndex > 0 )
+    if ( m_readingIsOngoing && m_currentReaderBufferIndex >= 0 )
     {
         CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         if ( currentBuffer.hasUnreadData )
@@ -228,6 +246,12 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                                          UInt32 lockWaitTimeoutInMs            )
 {GUCEF_TRACE;
 
+    if ( !SignalEndOfReading() )
+    {
+        associatedDt = CDateTime::Empty;
+        return GUCEF_NULL;
+    }
+    
     do
     {
         MT::CScopeMutex lock( m_lock );          
@@ -239,6 +263,8 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
             {
                 associatedDt = firstBuffer.associatedDt;
                 m_currentReaderBufferIndex = 0;
+
+                m_readingIsOngoing = true;
                 return &firstBuffer.buffer;
             }
             else
@@ -250,7 +276,10 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                     continue;
                 }
                 else
+                {
+                    associatedDt = CDateTime::Empty;
                     return GUCEF_NULL;
+                }
             }
         }
     
@@ -275,19 +304,13 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
         //        return GUCEF_NULL;
         //}
 
-        CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextReaderBufferIndex ];
-    
-        currentBuffer.hasUnreadData = false;
-        currentBuffer.buffer.SetDataSize( 0 );
-
         if ( nextBuffer.hasUnreadData && nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
         {           
-            currentBuffer.lock.Unlock();
-
             m_currentReaderBufferIndex = nextReaderBufferIndex;  
-            --m_buffersQueuedToRead;
             associatedDt = nextBuffer.associatedDt;
+
+            m_readingIsOngoing = true;
             return &nextBuffer.buffer;
         }
         else
@@ -299,10 +322,15 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                 continue;
             }
             else
+            {
+                associatedDt = CDateTime::Empty;
                 return GUCEF_NULL;
+            }
         }
     }
     while ( alwaysBlockForBufferAvailability );
+
+    associatedDt = CDateTime::Empty;
     return GUCEF_NULL;
 }            
 
@@ -327,11 +355,16 @@ CDynamicBufferSwap::SignalEndOfReading( void )
 
     MT::CScopeMutex lock( m_lock );
 
-    if ( m_currentReaderBufferIndex >= 0 )
+    if ( m_readingIsOngoing && m_currentReaderBufferIndex >= 0 )
     {
         CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         currentBuffer.hasUnreadData = false;
         currentBuffer.buffer.SetDataSize( 0 );
+        
+        if ( m_buffersQueuedToRead > 0 )
+            --m_buffersQueuedToRead;        
+        
+        m_readingIsOngoing = false;
         return currentBuffer.lock.Unlock();
     }
     return true;
@@ -344,6 +377,9 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
                                          bool alwaysBlockForBufferAvailability ,
                                          UInt32 lockWaitTimeoutInMs            )
 {GUCEF_TRACE;
+
+    if ( !SignalEndOfWriting() )
+        return GUCEF_NULL;
 
     do
     {
@@ -364,6 +400,7 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
                     firstBuffer.associatedDt = CDateTime::NowUTCDateTime();
                         
                 firstBuffer.buffer.SetDataSize( 0 );
+                m_writingIsOngoing = true;
                 return &firstBuffer.buffer;
             }
             else
@@ -400,7 +437,6 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
         //        return GUCEF_NULL;
         //}
 
-        CBufferEntry& currentBuffer = m_buffers[ m_currentWriterBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextWriterBufferIndex ];
 
         if ( nextBuffer.hasUnreadData )
@@ -418,11 +454,7 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
     
         if ( nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
         {   
-            currentBuffer.hasUnreadData = true;
-            currentBuffer.lock.Unlock();
-
             m_currentWriterBufferIndex = nextWriterBufferIndex;
-            ++m_buffersQueuedToRead;
 
             if ( &associatedDt != &CDateTime::Empty )
                 nextBuffer.associatedDt = associatedDt;
@@ -430,6 +462,7 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
                 nextBuffer.associatedDt = CDateTime::NowUTCDateTime();
 
             nextBuffer.buffer.SetDataSize( 0 );
+            m_writingIsOngoing = true;
             return &nextBuffer.buffer;
         }
         else
@@ -468,10 +501,14 @@ CDynamicBufferSwap::SignalEndOfWriting( void )
 
     MT::CScopeMutex lock( m_lock );
 
-    if ( m_currentWriterBufferIndex >= 0 )
+    if ( m_writingIsOngoing && m_currentWriterBufferIndex >= 0 )
     {
         CBufferEntry& currentBuffer = m_buffers[ m_currentWriterBufferIndex ];
         currentBuffer.hasUnreadData = true;
+
+        ++m_buffersQueuedToRead;
+        m_writingIsOngoing = false;
+
         return currentBuffer.lock.Unlock();
     }
     return true;

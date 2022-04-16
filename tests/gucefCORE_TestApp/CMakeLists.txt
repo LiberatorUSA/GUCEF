@@ -13,6 +13,7 @@
 
 set( HEADER_FILES 
   include/TestCyclicDynamicBuffer.h
+  include/TestDynamicBufferSwap.h
   include/TestIniParser.h
   include/TestNotifierObserver.h
   include/TestSharedPtr.h
@@ -23,6 +24,7 @@ set( HEADER_FILES
 
 set( SOURCE_FILES 
   src/TestCyclicDynamicBuffer.cpp
+  src/TestDynamicBufferSwap.cpp
   src/TestIniParser.cpp
   src/TestNotifierObserver.cpp
   src/TestSharedPtr.cpp

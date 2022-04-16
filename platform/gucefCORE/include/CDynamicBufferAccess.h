@@ -81,6 +81,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     void LinkTo( CDynamicBuffer* externalBuffer   ,
                  bool deleteBufferUponDestruction );
 
+    void Unlink( void );
+    
     /**
      *      open the resource for I/O
      */
