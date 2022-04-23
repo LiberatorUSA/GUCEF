@@ -22,12 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#include "gucefPUBSUB_CPubSubClientTopicConfig.h"
+#include "gucefPUBSUB_CIPubSubBookmarkPersistence.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,64 +35,56 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CPubSubBookmarkPersistenceConfig::ClassTypeName = "GUCEF::PUBSUB::CPubSubBookmarkPersistenceConfig";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
+CPubSubBookmarkPersistenceConfig::CPubSubBookmarkPersistenceConfig( void )
     : CORE::CIConfigurable()
-    , isOptional( false )
-    , needSubscribeSupport( false )
-    , needPublishSupport( false )
-    , preferDedicatedConnection( false )
-    , topicName()
-    , consumerGroupName()
-    , consumerName()
-    , customConfig()
+    , bookmarkPersistenceType()
+    , bookmarkNamespace()
+    , customConfig()    
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConfig& src )
-    : CORE::CIConfigurable( src )
-    , isOptional( src.isOptional )
-    , needSubscribeSupport( src.needSubscribeSupport )
-    , needPublishSupport( src.needPublishSupport )
-    , preferDedicatedConnection( src.preferDedicatedConnection )
-    , topicName( src.topicName )
-    , consumerGroupName( src.consumerGroupName )
-    , consumerName( src.consumerName )
-    , customConfig( src.customConfig )
+CPubSubBookmarkPersistenceConfig::CPubSubBookmarkPersistenceConfig( const CPubSubBookmarkPersistenceConfig& src )
+    : CORE::CIConfigurable()
+    , bookmarkPersistenceType( src.bookmarkPersistenceType )
+    , bookmarkNamespace( src.bookmarkNamespace )
+    , customConfig( src.customConfig )    
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicConfig::~CPubSubClientTopicConfig()
+CPubSubBookmarkPersistenceConfig::~CPubSubBookmarkPersistenceConfig()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicConfig& 
-CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
+CPubSubBookmarkPersistenceConfig& 
+CPubSubBookmarkPersistenceConfig::operator=( const CPubSubBookmarkPersistenceConfig& src )
 {GUCEF_TRACE;
-
+    
     if ( this != &src )
     {
-        CORE::CIConfigurable::operator=( src );
-        isOptional = src.isOptional;
-        needSubscribeSupport = src.needSubscribeSupport;
-        needPublishSupport = src.needPublishSupport;
-        preferDedicatedConnection = src.preferDedicatedConnection;
-        topicName = src.topicName;
-        consumerGroupName = src.consumerGroupName;
-        consumerName = src.consumerName;
-        customConfig = src.customConfig;        
+        bookmarkPersistenceType = src.bookmarkPersistenceType;
+        bookmarkNamespace = src.bookmarkNamespace;
+        customConfig = src.customConfig;
     }
     return *this;
 }
@@ -105,34 +92,27 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& tree ) const
+CPubSubBookmarkPersistenceConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
+    
+    bool totalSuccess = true;
 
-    tree.SetAttribute( "isOptional", isOptional );
-    tree.SetAttribute( "needSubscribeSupport", needSubscribeSupport );
-    tree.SetAttribute( "needPublishSupport", needPublishSupport );
-    tree.SetAttribute( "preferDedicatedConnection", preferDedicatedConnection );
-    tree.SetAttribute( "topicName", topicName );
-    tree.SetAttribute( "consumerGroupName", consumerGroupName );
-    tree.SetAttribute( "consumerName", consumerName );    
-    tree.CopySubTree( customConfig );    
-    return true;
+       
+    cfg.CopySubTree( customConfig );    
+
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
+CPubSubBookmarkPersistenceConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    isOptional = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "isOptional" ) ), isOptional );
-    needSubscribeSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needSubscribeSupport" ) ), needSubscribeSupport );
-    needPublishSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needPublishSupport" ) ), needPublishSupport );
-    preferDedicatedConnection = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "preferDedicatedConnection" ) ), preferDedicatedConnection );
-    topicName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "topicName", topicName ) );
-    consumerGroupName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerGroupName", consumerGroupName ) );
-    consumerName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerName", consumerName ) );
-    
+    bookmarkPersistenceType = cfg.GetAttributeValueOrChildValueByName( "bookmarkPersistenceType" ).AsString( bookmarkPersistenceType, true );
+    bookmarkNamespace = cfg.GetAttributeValueOrChildValueByName( "bookmarkNamespace" ).AsString( bookmarkNamespace, true );
+
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )
     {
@@ -146,11 +126,42 @@ CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
 /*-------------------------------------------------------------------------*/
 
 const CString& 
-CPubSubClientTopicConfig::GetClassTypeName( void ) const
+CPubSubBookmarkPersistenceConfig::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubClientTopicConfig";
-    return classTypeName;
+    return ClassTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubBookmarkPersistence::CIPubSubBookmarkPersistence( void )
+    : CORE::CTSharedPtrCreator< CIPubSubBookmarkPersistence, MT::CMutex >( this )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubBookmarkPersistence::CIPubSubBookmarkPersistence( const CIPubSubBookmarkPersistence& src )
+    : CORE::CTSharedPtrCreator< CIPubSubBookmarkPersistence, MT::CMutex >( this )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubBookmarkPersistence::~CIPubSubBookmarkPersistence()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubBookmarkPersistence& 
+CIPubSubBookmarkPersistence::operator=( const CIPubSubBookmarkPersistence& other )
+{GUCEF_TRACE;
+    
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//

@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CITIME_H
 #endif /* GUCEF_CORE_CITIME_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_CORE_VARIANTDATA_H
 #include "gucefCORE_VariantData.h"
 #define GUCEF_CORE_VARIANTDATA_H
@@ -92,6 +97,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  to a privately owned copy to avoid hard to trace invalid pointer issues
      */
     CVariant( const CVariant& src );
+
+    /**
+     *  Copies the variant like a copy constructor but via the 'linkIfPossible' param
+     *  allows specifying if we can perform a LinkTo() operation in a single step.
+     *  Please use with care as to not end up with invalid pointers, this is intended to be used in-stack
+     */
+    CVariant( const CVariant& src, bool linkIfPossible );
 
     #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
     CVariant( CVariant&& src ) GUCEF_NOEXCEPT;
@@ -186,6 +198,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
     const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;    
     CDynamicBuffer  AsBuffer( void ) const;
+    CDateTime       AsDateTime( const CDateTime& defaultIfNeeded = CDateTime::Empty, bool resolveVarsIfApplicable = false ) const;
 
     template < typename TemplateBsobType >
     TemplateBsobType AsBsob( void ) const;
@@ -225,6 +238,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( const CDynamicBuffer& data );
     CVariant& operator=( const CAsciiString& data );
     CVariant& operator=( const CUtf8String& data );
+    CVariant& operator=( const CDateTime& data );    
     CVariant& operator=( const std::string& data );
     CVariant& operator=( const std::wstring& data );
     CVariant& operator=( const CVariant& src );
@@ -353,6 +367,7 @@ template <> inline Float32 CVariant::AsTValue( const Float32 defaultIfNeeded, bo
 template <> inline Float64 CVariant::AsTValue( const Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsFloat64( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline CAsciiString CVariant::AsTValue( const CAsciiString defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsAsciiString( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline CUtf8String CVariant::AsTValue( const CUtf8String defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUtf8String( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline CDateTime CVariant::AsTValue( const CDateTime defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsDateTime( defaultIfNeeded, resolveVarsIfApplicable ); }
 
 /*-------------------------------------------------------------------------*/
 

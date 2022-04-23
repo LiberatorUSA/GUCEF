@@ -63,6 +63,15 @@
 
 /*--------------------------------------------------------------------------*/
 
+#define GUCEF_VFS_FILE_PROPERTY_UNKNOWN             0
+#define GUCEF_VFS_FILE_PROPERTY_NAME                1
+#define GUCEF_VFS_FILE_PROPERTY_BYTESIZE            2
+#define GUCEF_VFS_FILE_PROPERTY_CREATIONDATETIME    3
+#define GUCEF_VFS_FILE_PROPERTY_MODIFIEDDATETIME    4
+#define GUCEF_VFS_FILE_PROPERTY_HASH                5
+
+/*--------------------------------------------------------------------------*/
+
 /*
  *  We only have to define types when using C++ due to namespacing 
  *  For C the gucefMT versions are automaticly used in the global namespace
@@ -99,6 +108,18 @@ typedef CORE::Float32 Float32;  /* 4 bytes, signed, decimal */
 typedef CORE::Float64 Float64;  /* 8 bytes, signed, decimal */
 
 typedef CORE::CString CString;
+
+/*--------------------------------------------------------------------------*/
+
+enum EVfsFilePropertyTypes : Int32
+{
+    Unknown             = GUCEF_VFS_FILE_PROPERTY_UNKNOWN,
+    Name                = GUCEF_VFS_FILE_PROPERTY_NAME,
+    ByteSize            = GUCEF_VFS_FILE_PROPERTY_BYTESIZE,
+    CreationDateTime    = GUCEF_VFS_FILE_PROPERTY_CREATIONDATETIME,
+    ModifiedDateTime    = GUCEF_VFS_FILE_PROPERTY_MODIFIEDDATETIME,
+    Hash                = GUCEF_VFS_FILE_PROPERTY_HASH
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -58,6 +58,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
 #define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
@@ -367,10 +372,10 @@ ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
     const CORE::CDataNode* pubSubClientCfgNode = cfg.Find( "PubSubClientConfig" );
     if ( GUCEF_NULL != pubSubClientCfgNode )
     {
-        COMCORE::CPubSubClientConfig pubSubClientCfg;
+        PUBSUB::CPubSubClientConfig pubSubClientCfg;
         if ( pubSubClientCfg.LoadConfig( *pubSubClientCfgNode ) )
         {
-            m_pubSubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( pubSubClientCfg.pubsubClientType, pubSubClientCfg );
+            m_pubSubClient = PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().Create( pubSubClientCfg.pubsubClientType, pubSubClientCfg );
             if ( !m_pubSubClient.IsNULL() )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully instantiated pub-sub client of type: " + pubSubClientCfg.pubsubClientType );

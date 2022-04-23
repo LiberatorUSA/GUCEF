@@ -1429,9 +1429,9 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 
     if ( filter.Length() > 0 )
     {
-        CVFS::TStringList segs = filter.ParseElements( '*', false );
+        CVFS::TStringVector segs = filter.ParseElements( '*', false );
         VFS::Int32 lastSeg = 0;
-        CVFS::TStringList::iterator i = segs.begin();
+        CVFS::TStringVector::iterator i = segs.begin();
         while ( i != segs.end() )
         {
             lastSeg = filename.HasSubstr( (*i), lastSeg, true );
@@ -1511,13 +1511,12 @@ CVFS::GetEligableMounts( const CString& location                ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVFS::GetList( TStringSet& outputList                   ,
-               const CString& location                  ,
-               bool recursive             /* = false */ ,
-               bool includePathInFilename /* = false */ ,
-               const CString& filter /* = "" */         ,
-               bool addFiles /* = true */               ,
-               bool addDirs /* = false */               ) const
+CVFS::GetFileList( TStringVector& outputList      ,
+                   const CString& location        , 
+                   bool recursive                 ,
+                   bool includePathInFilename     ,
+                   const CString& nameFilter      ,
+                   UInt32 maxListEntries          ) const
 {GUCEF_TRACE;
 
     CString path = ConformVfsDirPath( location );
@@ -1533,14 +1532,13 @@ CVFS::GetList( TStringSet& outputList                   ,
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
-        mountLink.mountEntry->archive->GetList( outputList                      ,
-                                                mountLink.mountEntry->mountPath ,
-                                                mountLink.remainder             ,
-                                                recursive                       ,
-                                                includePathInFilename           ,
-                                                filter                          ,
-                                                addFiles                        ,
-                                                addDirs                         );
+        mountLink.mountEntry->archive->GetFileList( outputList                      ,
+                                                    mountLink.mountEntry->mountPath ,
+                                                    mountLink.remainder             ,
+                                                    recursive                       ,
+                                                    includePathInFilename           ,
+                                                    nameFilter                      ,
+                                                    maxListEntries                  );
         ++i;
     }
 }
@@ -1548,28 +1546,63 @@ CVFS::GetList( TStringSet& outputList                   ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVFS::GetList( CORE::CDataNode& outputDataTree        ,
-               const CORE::CString& location          ,
-               bool recursive  /* = false */          ,
-               const CORE::CString& filter /* = "" */ ,
-               const bool addHash /* = false */       ) const
+CVFS::GetDirList( TStringVector& outputList  ,
+                  const CString& location    ,
+                  bool recursive             ,
+                  bool includePathInFilename ,
+                  const CString& nameFilter  ,
+                  UInt32 maxListEntries      ) const
+{GUCEF_TRACE;
+
+    CString path = ConformVfsDirPath( location );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Get a list from each mount
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        mountLink.mountEntry->archive->GetDirList( outputList                      ,
+                                                   mountLink.mountEntry->mountPath ,
+                                                   mountLink.remainder             ,
+                                                   recursive                       ,
+                                                   includePathInFilename           ,
+                                                   nameFilter                      ,
+                                                   maxListEntries                  );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::GetFileList( CORE::CDataNode& outputDataTree        ,
+                   const CORE::CString& location          ,
+                   bool recursive  /* = false */          ,
+                   const CORE::CString& filter /* = "" */ ,
+                   const bool addHash /* = false */       ,
+                   UInt32 maxListEntries                  ) const
 {GUCEF_TRACE;
 
     // First we get a list of files and their path
-    TStringSet outputList;
-    GetList( outputList ,
-             location   ,
-             recursive  ,
-             true       ,
-             filter     ,
-             true       ,
-             false      );
+    TStringVector outputList;
+    GetFileList( outputList      ,
+                 location        ,
+                 recursive       ,
+                 true            ,
+                 filter          ,
+                 maxListEntries  );
 
     // First we clear the tree
     outputDataTree.Clear();
 
     // Now we build our data tree using the list we obtained
-    TStringSet::iterator i = outputList.begin();
+    TStringVector::iterator i = outputList.begin();
     while ( i != outputList.end() )
     {
         // First we build the path structure in the data tree

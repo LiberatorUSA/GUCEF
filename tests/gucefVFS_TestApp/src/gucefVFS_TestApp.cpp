@@ -23,7 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
@@ -34,6 +37,11 @@
 #include "gucefVFS.h"
 #define GUCEF_VFS_H
 #endif /* GUCEF_VFS_H ? */
+
+#ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#include "gucefCORE_CGlobalConfigValueList.h"
+#define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
+#endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
 
 #ifndef TESTCODE_VFSFILELOADUNLOADTEST_H
 #include "TestCode_VFSFileLoadUnloadTest.h"
@@ -54,30 +62,14 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-LoadConfig( const CORE::CString& configPath            ,
-            CORE::CValueList& keyValueList             ,
-            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+CORE::CString
+LookForConfigFile( const CORE::CString& configFile )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "bootstrap_d.ini";
-    #else
-    const CORE::CString configFile = "bootstrap.ini";
-    #endif
-
-    CORE::CString configFilePath;
-    bool foundViaParam = false;
-    if ( !configPath.IsNULLOrEmpty() )
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
+    if ( !CORE::FileExists( configFile ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
-        foundViaParam = CORE::FileExists( configPath );
-        configFilePath = configPath;
-    }
-
-    if ( !foundViaParam )
-    {
-        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
@@ -88,46 +80,70 @@ LoadConfig( const CORE::CString& configPath            ,
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {
-                #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-                CORE::CString platformDir = "mswin";
-                #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
-                CORE::CString platformDir = "linux";
-                #elif GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
-                CORE::CString platformDir = "android";
-                #endif
-
-                configFilePath = CORE::CombinePath( "$MODULEDIR$", "../../../TestData/gucefVFS_TestApp/" + platformDir );
-                configFilePath = CORE::CombinePath( configFilePath, configFile );
+            {            
+                configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
                 configFilePath = CORE::RelativePath( configFilePath );
-                
+
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
                 if ( !FileExists( configFilePath ) )
-                {
-                    configFilePath = CORE::CombinePath( "$ENVVAR:GUCEF_HOME$", "common/bin/TestData/gucefVFS_TestApp/" + platformDir );
-                    configFilePath = CORE::CombinePath( configFilePath, configFile );
-                    configFilePath = CORE::RelativePath( configFilePath );
-                
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
-                    if ( !FileExists( configFilePath ) )
-                    {   
-                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
-                        return false;
-                    }
+                {                                        
+                    return CORE::CString::Empty;
                 }
             }
         }
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
-    keyValueList.SetConfigNamespace( "Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
-    keyValueList.SetAllowDuplicates( false );
-    keyValueList.SetAllowMultipleValues( true );
+        return configFilePath; 
+    }
+
+    return configFile;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadConfig( const CORE::CString& bootstrapConfigPath   ,
+            const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+{GUCEF_TRACE;
+
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString bootstrapConfigFile = "ProcessMetrics_bootstrap_d.ini";
+    const CORE::CString configFile = "ProcessMetrics_d.ini";
+    #else
+    const CORE::CString bootstrapConfigFile = "ProcessMetrics_bootstrap.ini";
+    const CORE::CString configFile = "ProcessMetrics.ini";
+    #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig( loadedConfig );
+    
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configFile );
+
+    if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located bootstrap config file @ " + bootstrapConfigFilePath );
+        configStore.SetBootstrapConfigFile( bootstrapConfigFilePath );
+    }
+    if ( !configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+        configStore.SetConfigFile( configFilePath );
+    }
+    if ( bootstrapConfigFilePath.IsNULLOrEmpty() && configFilePath.IsNULLOrEmpty() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params only" );
+    }
+
+    CORE::CGlobalConfigValueList globalCfg;
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetAllowDuplicates( false );
+    globalCfg.SetAllowMultipleValues( true );
+
+    bool loadSuccess = configStore.LoadConfig( loadedConfig );
+
+    keyValueList = globalCfg;
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -213,12 +229,13 @@ GUCEF_OSMAIN_BEGIN
         // Check for config param first
         CORE::CValueList keyValueList;
         ParseParams( argc, argv, keyValueList );
+        CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
         CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
         keyValueList.Clear();
 
         // Load settings from a config file (if any) and then override with params (if any)
         CORE::CDataNode* globalConfig = new CORE::CDataNode();
-        if ( !LoadConfig( configPathParam, keyValueList, globalConfig ) )
+        if ( !LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, globalConfig ) )
         {
             SetupLogging();
             CORE::ShowErrorMessage( "Initialization error"                ,
@@ -259,8 +276,8 @@ GUCEF_OSMAIN_BEGIN
     catch ( ... )
     {
         #ifdef GUCEF_VFS_DEBUG_MODE
-        MEMMAN_PrintCallstack();
-        MEMMAN_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
+        //MEMMAN_PrintCallstack();
+        //MEMMAN_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
         #endif /* GUCEF_VFS_DEBUG_MODE ? */
 
         try

@@ -141,6 +141,7 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSubSideChannelSettings : public CORE::CIConfigu
     PubSubSideChannelSettings& operator=( const PubSubSideChannelSettings& src );
 
     CPubSubClientConfig pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig pubsubBookmarkPersistenceConfig;
     bool performPubSubInDedicatedThread;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
@@ -199,14 +200,14 @@ class GUCEF_PUBSUB_EXPORT_CPP ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CIPubSubBookmarkPersistance
-{
-    public:
-
-    virtual bool GetPersistedBookmark( CORE::Int32 channelId          , 
-                                       const CORE::CString& topicName , 
-                                       CPubSubBookmark& bookmark      ) = 0;
-};
+//class GUCEF_PUBSUB_EXPORT_CPP CIPubSubBookmarkPersistence
+//{
+//    public:
+//
+//    virtual bool GetPersistedBookmark( CORE::Int32 channelId          , 
+//                                       const CORE::CString& topicName , 
+//                                       CPubSubBookmark& bookmark      ) = 0;
+//};
 
 /*-------------------------------------------------------------------------*/
 
@@ -351,6 +352,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );   
 
+    bool GetLatestBookmark( const CPubSubClientTopic& topic ,
+                            CPubSubBookmark& bookmark       );
+
     class TopicLink
     {
         public:
@@ -406,6 +410,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     CPubSubClientPtr m_pubsubClient;
+    TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
+    CORE::CString m_bookmarkNamespace;
     TopicMap m_topics;
     StringToPubSubClientSideMetricsMap m_metricsMap;
     ChannelSettings m_channelSettings;
@@ -414,7 +420,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CORE::CTimer* m_timedOutInFlightMessagesCheckTimer;
-    CIPubSubBookmarkPersistance* m_persistance;
     char m_side;
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;

@@ -71,8 +71,8 @@ void
 PerformVFSFileLoadUnloadTest( void )
 {  
     #ifdef GUCEF_VFS_DEBUG_MODE
-    CORE::GUCEF_LogStackToStdOut();
-    CORE::GUCEF_SetStackLogging( 1 );
+    //MEMAN_LogStackToStdOut();
+    //MEMAN_SetStackLogging( 1 );
     #endif /* GUCEF_VFS_DEBUG_MODE ? */
     
     try
@@ -86,8 +86,8 @@ PerformVFSFileLoadUnloadTest( void )
 
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
-        VFS::CVFS::TStringSet fileList;
-        vfs.GetList( fileList, "", false, "" );
+        VFS::CVFS::TStringVector fileList;
+        vfs.GetFileList( fileList, "", false, "" );
 
         if ( fileList.size() == 0 )
         {
@@ -98,7 +98,7 @@ PerformVFSFileLoadUnloadTest( void )
         // We will attempt to load a number of files in sequence
         VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : (VFS::UInt32) fileList.size();
         std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
-        VFS::CVFS::TStringSet::iterator n = fileList.begin();
+        VFS::CVFS::TStringVector::iterator n = fileList.begin();
         for ( VFS::UInt32 i=0; i<maxFiles; ++i )
         {
             // Try to load the file
@@ -211,7 +211,7 @@ PerformVFSFileLoadUnloadTest( void )
     {
         GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "unhandled exception during test" );
         #ifdef GUCEF_VFS_DEBUG_MODE
-        CORE::GUCEF_PrintCallstack();
+        //GUCEF::MEMAN_PrintCallstack();
         #endif /* GUCEF_VFS_DEBUG_MODE ? */
         ERRORHERE;
     } 

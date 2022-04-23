@@ -47,6 +47,7 @@ namespace PUBSUB {
 CPubSubBookmark::CPubSubBookmark( void )
     : m_bmType( BOOKMARK_TYPE_NOT_INITIALIZED )
     , m_bmData()
+    , m_bmDt()
 {GUCEF_TRACE;
 
 }
@@ -56,15 +57,42 @@ CPubSubBookmark::CPubSubBookmark( void )
 CPubSubBookmark::CPubSubBookmark( TBookmarkType bmType )
     : m_bmType( bmType )
     , m_bmData()
+    , m_bmDt()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubBookmark::CPubSubBookmark( TBookmarkType bmType, const CORE::CVariant& bmData )
+CPubSubBookmark::CPubSubBookmark( TBookmarkType bmType         , 
+                                  const CORE::CVariant& bmData )
     : m_bmType( bmType )
     , m_bmData( bmData )
+    , m_bmDt()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubBookmark::CPubSubBookmark( TBookmarkType bmType         , 
+                                  const CORE::CVariant& bmData ,
+                                  const CORE::CDateTime& bmDt  )
+    : m_bmType( bmType )
+    , m_bmData( bmData )
+    , m_bmDt( bmDt )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubBookmark::CPubSubBookmark( const CPubSubBookmark& src  , 
+                                  bool linkIfPossible         ,
+                                  const CORE::CDateTime& bmDt )
+    : m_bmType( src.m_bmType )
+    , m_bmData( src.m_bmData, linkIfPossible )
+    , m_bmDt( bmDt )
 {GUCEF_TRACE;
 
 }
@@ -78,12 +106,28 @@ CPubSubBookmark::~CPubSubBookmark()
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubBookmark&
+CPubSubBookmark::operator=( const CPubSubBookmark& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        m_bmType = src.m_bmType;
+        m_bmData = src.m_bmData;
+        m_bmDt = src.m_bmDt;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubBookmark::SetBookmarkType( TBookmarkType bmType )
 {GUCEF_TRACE;
 
     m_bmType = bmType;
 }
+
 /*-------------------------------------------------------------------------*/
 
 CPubSubBookmark::TBookmarkType
@@ -91,6 +135,28 @@ CPubSubBookmark::GetBookmarkType( void ) const
 {GUCEF_TRACE;
 
     return m_bmType;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CPubSubBookmark::GetBookmarkTypeName( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_bmType )        
+    {        
+        case BOOKMARK_TYPE_NOT_AVAILABLE:       return "BOOKMARK_TYPE_NOT_AVAILABLE";
+        case BOOKMARK_TYPE_NOT_APPLICABLE:      return "BOOKMARK_TYPE_NOT_APPLICABLE";
+        
+        case BOOKMARK_TYPE_MSG_ID:              return "BOOKMARK_TYPE_MSG_ID";
+        case BOOKMARK_TYPE_MSG_INDEX:           return "BOOKMARK_TYPE_MSG_INDEX";
+        case BOOKMARK_TYPE_MSG_DATETIME:        return "BOOKMARK_TYPE_MSG_DATETIME";
+        case BOOKMARK_TYPE_TOPIC_INDEX:         return "BOOKMARK_TYPE_TOPIC_INDEX";
+        
+        default:
+        case BOOKMARK_TYPE_NOT_INITIALIZED:     return "BOOKMARK_TYPE_NOT_INITIALIZED";
+    }
+ 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,6 +183,35 @@ CPubSubBookmark::GetBookmarkData( void )
 {GUCEF_TRACE;
 
     return m_bmData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDateTime&
+CPubSubBookmark::GetBookmarkDateTime( void ) const
+{GUCEF_TRACE;
+    
+    return m_bmDt;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CDateTime&
+CPubSubBookmark::GetBookmarkDateTime( void )
+{GUCEF_TRACE;
+
+    return m_bmDt;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CPubSubBookmark::ToString( void ) const
+{GUCEF_TRACE;
+
+    // Since a bookmark is a simple combo of a few basic fields we can just use a CSV approach
+    // Keep in mind this also relies on Base64 encoding of BLOBs and such by the variant
+    return m_bmDt.ToIso8601DateTimeString( false, true ) + ',' + CORE::ToString( m_bmType ) + ',' + m_bmData.AsString();
 }
 
 /*-------------------------------------------------------------------------//

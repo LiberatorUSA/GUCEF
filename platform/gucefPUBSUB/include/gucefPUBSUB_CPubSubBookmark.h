@@ -30,6 +30,11 @@
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"
 #define GUCEF_PUBSUB_MACROS_H
@@ -60,6 +65,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmark
 {
     public:
 
+    typedef std::vector< CPubSubBookmark >  TPubSubBookmarkVector;
+
     enum EBookmarkType : Int32
     {
         BOOKMARK_TYPE_NOT_INITIALIZED = 0 ,         /**< the backend has not initialized the bookmark information to anything */
@@ -77,13 +84,26 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmark
 
     CPubSubBookmark( TBookmarkType bmType );
 
-    CPubSubBookmark( TBookmarkType bmType, const CORE::CVariant& bmData );
+    CPubSubBookmark( TBookmarkType bmType         , 
+                     const CORE::CVariant& bmData );
+
+    CPubSubBookmark( TBookmarkType bmType         , 
+                     const CORE::CVariant& bmData ,
+                     const CORE::CDateTime& bmDt  );
+
+    CPubSubBookmark( const CPubSubBookmark& src   , 
+                     bool linkIfPossible          ,
+                     const CORE::CDateTime& bmDt  );
 
     virtual ~CPubSubBookmark();
+
+    CPubSubBookmark& operator=( const CPubSubBookmark& src );
 
     void SetBookmarkType( TBookmarkType bmType );
     
     TBookmarkType GetBookmarkType( void ) const;
+
+    CORE::CString GetBookmarkTypeName( void ) const;
 
     void SetBookmarkData( const CORE::CVariant& bmData );
     
@@ -91,11 +111,34 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmark
 
     CORE::CVariant& GetBookmarkData( void );
 
+    /**
+     *  Gets the bookmark's timestamp
+     *  Note that a bookmark itself can also be a timestamp but this is not the same thing
+     *  This is the time at which the bookmark was originated which can differ from the bookmark data itself
+     *  for example when one is dealing with historical data
+     */
+    const CORE::CDateTime& GetBookmarkDateTime( void ) const;
+
+    /**
+     *  Gets the bookmark's timestamp
+     *  Note that a bookmark itself can also be a timestamp but this is not the same thing
+     *  This is the time at which the bookmark was originated which can differ from the bookmark data itself
+     *  for example when one is dealing with historical data
+     */
+    CORE::CDateTime& GetBookmarkDateTime( void );
+
+    CORE::CString ToString( void ) const;
+
     private:
 
     TBookmarkType m_bmType;
     CORE::CVariant m_bmData;
+    CORE::CDateTime m_bmDt;
 };
+
+/*-------------------------------------------------------------------------*/
+
+inline CORE::CString ToString( const CPubSubBookmark& bm ) { return bm.ToString(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

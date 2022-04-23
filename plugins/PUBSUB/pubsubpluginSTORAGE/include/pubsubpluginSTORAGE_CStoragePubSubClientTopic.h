@@ -92,6 +92,18 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     typedef enum CStoragePubSubClientTopicConfig::EChannelMode  TChannelMode;
     typedef std::vector< CORE::UInt32 >                         UInt32Vector;
 
+    #pragma pack(push, 1)  // No structure packing
+    struct SStorageBookmarkInfo
+    {
+        UInt8 bookmarkFormatVersion;
+        UInt8 doneWithFile;
+        CORE::UInt32 msgIndex;
+        CORE::UInt32 offsetInFile;
+        CORE::CString vfsFilePath;
+    };
+    typedef struct SStorageBookmarkInfo TStorageBookmarkInfo;
+    #pragma pack(pop)
+
     CStoragePubSubClientTopic( CStoragePubSubClient* client );
 
     virtual ~CStoragePubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
@@ -115,6 +127,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     virtual bool SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark );
 
     virtual bool SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+
+    bool SubscribeStartingAtBookmarkInfo( const TStorageBookmarkInfo& bookmarkInfo );
 
     virtual PUBSUB::CPubSubBookmark GetCurrentBookmark( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -207,6 +221,12 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     typedef struct SStorageBufferMetaData TStorageBufferMetaData;
     typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
 
+    bool SyncBookmarkInfoToBookmark( const TStorageBookmarkInfo& info  , 
+                                     PUBSUB::CPubSubBookmark& bookmark );
+
+    bool SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
+                                     TStorageBookmarkInfo& info              );
+    
     void RegisterEventHandlers( void );
 
     bool SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& config );
@@ -321,6 +341,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     CORE::CDynamicBuffer* m_currentReadBuffer;
     CORE::CDynamicBuffer* m_currentWriteBuffer;
+    TStorageBookmarkInfo m_currentBookmarkInfo;
+    PUBSUB::CPubSubBookmark m_currentBookmark;
     CORE::CString m_vfsFilePostfix;
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;

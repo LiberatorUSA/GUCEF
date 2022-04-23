@@ -44,15 +44,15 @@
 #define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 #endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
-#include "gucefCOMCORE_CPubSubClient.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#include "gucefPUBSUB_CPubSubClient.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
@@ -235,9 +235,9 @@ class ProcessMetrics : public CORE::CObservingNotifier
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
-    COMCORE::CPubSubClientFactory::TProductPtr m_pubSubClient;
-    COMCORE::CPubSubClientTopic* m_thresholdNotificationPublishTopic;
-    COMCORE::CPubSubClientFeatures m_pubSubFeatures;
+    PUBSUB::CPubSubClientFactory::TProductPtr m_pubSubClient;
+    PUBSUB::CPubSubClientTopic* m_thresholdNotificationPublishTopic;
+    PUBSUB::CPubSubClientFeatures m_pubSubFeatures;
     CORE::CString m_thresholdNotificationPrimaryPayloadCodecType;
     bool m_gatherMemStats;
     bool m_gatherCpuStats;

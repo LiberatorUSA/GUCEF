@@ -84,7 +84,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CPubSubMsgSerializerOptions::ClassTypeName = "GUCEF::COMCORE::CPubSubMsgSerializerOptions";
+const CString CPubSubMsgSerializerOptions::ClassTypeName = "GUCEF::PUBSUB::CPubSubMsgSerializerOptions";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

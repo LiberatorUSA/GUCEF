@@ -212,17 +212,88 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3BucketArchive::GetList( TStringSet& outputList              ,
-                           const VFS::CString& mountLocation   , 
-                           const VFS::CString& archiveLocation ,
-                           bool recursive                      ,
-                           bool includePathInFilename          ,
-                           const VFS::CString& filter          ,
-                           bool addFiles                       ,
-                           bool addDirs                        ) const
+CS3BucketArchive::GetFileList( TStringVector& outputList           ,
+                               const VFS::CString& mountLocation   , 
+                               const VFS::CString& archiveLocation ,
+                               bool recursive                      ,
+                               bool includePathInFilename          ,
+                               const VFS::CString& nameFilter      ,
+                               UInt32 maxListEntries               ) const
 {GUCEF_TRACE;
 
+    try
+    {
+        Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
+        if ( GUCEF_NULL == s3Client )
+            return;
 
+        Aws::S3::Model::ListObjectsRequest objectsRequest;
+        objectsRequest.WithBucket( m_archiveName );
+
+        auto listObjectsOutcome = s3Client->ListObjects( objectsRequest );
+        if ( listObjectsOutcome.IsSuccess() )
+        {
+            // Get up to 1000 objects
+            // @TODO: support more than 1000
+
+            #ifdef GUCEF_DEBUG_MODE
+            CORE::CString objectKeys;
+            #endif
+
+            Aws::Vector< Aws::S3::Model::Object > objectList = listObjectsOutcome.GetResult().GetContents();
+            for (auto const& s3Object : objectList )
+            {
+                if ( outputList.size() >= maxListEntries )
+                    break;
+                
+                CORE::CString objKey = s3Object.GetKey();
+                if ( !nameFilter.IsNULLOrEmpty() ) 
+                {
+                    if ( !objKey.WildcardEquals( nameFilter ) )
+                        continue;
+                }
+
+                #ifdef GUCEF_DEBUG_MODE
+                objectKeys += objKey + ", ";
+                #endif
+                
+                outputList.push_back( objKey );
+            }
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Bucket \"" + m_archiveName + "\"has the following objects: " + objectKeys );
+            return;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: ListObjects error: " + 
+                listObjectsOutcome.GetError().GetExceptionName() + " - " + listObjectsOutcome.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "S3BucketArchive: Exception trying to S3 load bucket object index: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 load bucket object index" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CS3BucketArchive::GetDirList( TStringVector& outputList           ,
+                              const VFS::CString& mountLocation   , 
+                              const VFS::CString& archiveLocation ,
+                              bool recursive                      ,
+                              bool includeParentDirInName         ,
+                              const VFS::CString& nameFilter      ,
+                              UInt32 maxListEntries               ) const
+{GUCEF_TRACE;
+
+    // buckets dont have actual dirs
+    // the dirs only exist logically as part of object key names
+
+    // @TODO
 }
 
 /*-------------------------------------------------------------------------*/

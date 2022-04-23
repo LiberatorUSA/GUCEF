@@ -35,6 +35,7 @@
 		<RuntimeDependencies>
 			<RuntimeDependency Name="pubsubpluginMSMQ" />
 			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
 			<RuntimeDependency Name="MemoryLeakFinder" />
 		</RuntimeDependencies>
 	</Module>	

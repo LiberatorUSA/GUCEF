@@ -176,6 +176,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     void* m_opaqueUserData;
 };
 
+/*-------------------------------------------------------------------------*/
+
 typedef CORE::CTBasicSharedPtr< CPubSubClient, MT::CMutex > CPubSubClientPtr;
 
 /*-------------------------------------------------------------------------//

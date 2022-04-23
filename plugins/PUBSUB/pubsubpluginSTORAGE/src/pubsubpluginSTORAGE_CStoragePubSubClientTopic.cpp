@@ -54,6 +54,11 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
 #define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
@@ -185,6 +190,8 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_metricFriendlyTopicName()
     , m_currentReadBuffer( GUCEF_NULL )
     , m_currentWriteBuffer( GUCEF_NULL )
+    , m_currentBookmarkInfo()
+    , m_currentBookmark()
     , m_vfsFilePostfix( GenerateDefaultVfsStorageContainerFileExt() )
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
@@ -755,12 +762,52 @@ CStoragePubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime
     MT::CScopeMutex lock( m_lock );
     if ( ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
     {
-        AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad ) );
+        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad ) ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to add publish request. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+            return false;
+        }
     }
 
     bool success = BeginVfsOps();
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+    if ( success )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to start VFS Ops. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+    }
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStoragePubSubClientTopic::SubscribeStartingAtBookmarkInfo( const TStorageBookmarkInfo& bookmarkInfo ) 
+{GUCEF_TRACE;
+
+    if ( 0 != bookmarkInfo.doneWithFile )
+    {
+        // Since we were done with the file referenced we want the next available file
+
+        CORE::CDateTime firstMsgDt;
+        CORE::CDateTime lastMsgDt;
+        CORE::CDateTime containerDt;
+        if ( GetTimestampsFromContainerFilename( bookmarkInfo.vfsFilePath, firstMsgDt, lastMsgDt, containerDt ) )
+        {
+            // We now know the datetime of the last message
+            // We use this as the starting point
+            return SubscribeStartingAtMsgDateTime( lastMsgDt );
+        }
+    }
+    else
+    {
+        // we were not done yet with the referenced file
+        // we need to reload it and resume operations
+                          // @TODO
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -769,7 +816,78 @@ bool
 CStoragePubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark ) 
 {GUCEF_TRACE;
 
-    // Currently not supported.
+    switch ( bookmark.GetBookmarkType() )
+    {
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME:
+        {
+            CORE::CDateTime msgDtBookmark = bookmark.GetBookmarkData().AsDateTime();
+            if ( CORE::CDateTime::Empty != msgDtBookmark )
+                return SubscribeStartingAtMsgDateTime( msgDtBookmark );    
+            return false;
+        }
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX:
+        {
+            TStorageBookmarkInfo bookmarkInfo;
+            if ( SyncBookmarkToBookmarkInfo( bookmark, bookmarkInfo ) )
+                return SubscribeStartingAtBookmarkInfo( bookmarkInfo );
+            return false;
+        }
+
+        default:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtBookmark: Unsupported bookmark type given. Type=" + bookmark.GetBookmarkTypeName() );
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::SyncBookmarkInfoToBookmark( const TStorageBookmarkInfo& info  , 
+                                                       PUBSUB::CPubSubBookmark& bookmark )
+{GUCEF_TRACE;
+
+    CORE::CVariant& data = bookmark.GetBookmarkData(); 
+    if ( data.IsBlob() )
+    {
+        CORE::CDynamicBuffer buffer;
+        buffer.LinkTo( data );
+        CORE::CDynamicBufferAccess bufferAccess( buffer );
+        
+        bool totalSuccess = true;
+        totalSuccess = bufferAccess.WriteValue( info.bookmarkFormatVersion ) && totalSuccess;
+        totalSuccess = bufferAccess.WriteValue( info.doneWithFile ) && totalSuccess;
+        totalSuccess = bufferAccess.WriteValue( info.msgIndex ) && totalSuccess;
+        totalSuccess = bufferAccess.WriteValue( info.offsetInFile ) && totalSuccess;
+        totalSuccess = bufferAccess.WriteByteSizePrefixedString( info.vfsFilePath ) && totalSuccess;
+        return totalSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
+                                                       TStorageBookmarkInfo& info              )
+{GUCEF_TRACE;
+
+    const CORE::CVariant& data = bookmark.GetBookmarkData(); 
+    if ( data.IsBlob() )
+    {
+        CORE::CDynamicBuffer buffer;
+        buffer.LinkTo( data );
+        CORE::CDynamicBufferAccess bufferAccess( buffer );
+        
+        bool totalSuccess = true;
+        totalSuccess = bufferAccess.ReadValue( info.bookmarkFormatVersion ) && totalSuccess;
+        totalSuccess = bufferAccess.ReadValue( info.doneWithFile ) && totalSuccess;
+        totalSuccess = bufferAccess.ReadValue( info.msgIndex ) && totalSuccess;
+        totalSuccess = bufferAccess.ReadValue( info.offsetInFile ) && totalSuccess;
+        totalSuccess = bufferAccess.ReadByteSizePrefixedString( info.vfsFilePath ) && totalSuccess;
+        return totalSuccess;
+    }
     return false;
 }
 
@@ -779,8 +897,12 @@ PUBSUB::CPubSubBookmark
 CStoragePubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
-    // Not supported
-    return PUBSUB::CPubSubBookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
+    MT::CScopeMutex lock( m_lock );
+
+    if ( SyncBookmarkInfoToBookmark( m_currentBookmarkInfo, m_currentBookmark ) )
+        return m_currentBookmark;
+
+    return PUBSUB::CPubSubBookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1063,14 +1185,14 @@ CStoragePubSubClientTopic::GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 l
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true, false );
+    VFS::CVFS::TStringVector index;
+    vfs.GetFileList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true );
 
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
     if ( !index.empty() )
     {        
-        VFS::CVFS::TStringSet::reverse_iterator f = index.rbegin();
+        VFS::CVFS::TStringVector::reverse_iterator f = index.rbegin();
         CORE::UInt32 n=0;
         while ( n<lastOffset && f != index.rend() )   
         {
@@ -1346,10 +1468,10 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true, false );
+    VFS::CVFS::TStringVector index;
+    vfs.GetFileList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true );
 
-    VFS::CVFS::TStringSet::iterator i = index.begin();
+    VFS::CVFS::TStringVector::iterator i = index.begin();
     while ( i != index.end() )
     {        
         CORE::CDateTime containerFileFirstMsgDt;

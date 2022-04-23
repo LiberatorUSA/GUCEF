@@ -119,7 +119,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     typedef TAbstractArchiveFactory::TProductPtr                        TArchivePtr;
     typedef TAbstractArchiveFactory::TConcreteFactory                   TArchiveFactory;
     typedef CArchive::CVFSHandlePtr                                     CVFSHandlePtr;
-    typedef CArchive::TStringList                                       TStringList;
+    typedef CArchive::TStringVector                                     TStringVector;
     typedef CArchive::TStringSet                                        TStringSet;
     
     static const CORE::CString FileSystemArchiveTypeName;
@@ -413,20 +413,27 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 
     bool DeleteFile( const CString& filePath ,
                      bool okIfItDoesNotExist );
-    
-    void GetList( TStringSet& outputList             ,
-                  const CORE::CString& location      , 
-                  bool recursive = false             ,
-                  bool includePathInFilename = false ,
-                  const CORE::CString& filter = ""   ,
-                  bool addFiles = true               ,
-                  bool addDirs  = false              ) const;
 
-    void GetList( CORE::CDataNode& outputDataTree    ,
-                  const CORE::CString& location      , 
-                  bool recursive = false             ,
-                  const CORE::CString& filter = ""   ,
-                  const bool addHash = false         ) const;
+    virtual void GetFileList( TStringVector& outputList                       ,
+                              const CString& location                         ,
+                              bool recursive = false                          ,
+                              bool includePathInFilename = false              ,
+                              const VFS::CString& nameFilter = CString::Empty ,
+                              UInt32 maxListEntries = GUCEF_UINT16MAX         ) const;
+
+    virtual void GetDirList( TStringVector& outputList                  ,
+                             const CString& location                    ,
+                             bool recursive = false                     ,
+                             bool includeParentDirInName = false        ,
+                             const CString& nameFilter = CString::Empty ,
+                             UInt32 maxListEntries = GUCEF_UINT16MAX    ) const;
+
+    void GetFileList( CORE::CDataNode& outputDataTree                    ,
+                      const CORE::CString& location                      ,               
+                      bool recursive = false                             ,
+                      const CORE::CString& filter = CORE::CString::Empty ,
+                      const bool addHash = false                         ,
+                      UInt32 maxListEntries = GUCEF_UINT16MAX            ) const;
                   
     /**
      *  Checks if the item pointed at is a mounted archive

@@ -34,8 +34,16 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_CORE_CTFACTORY_H
 #include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTFACTORY_H ? */
+
+#ifndef GUCEF_CORE_CTFACTORYBASE_H
 #include "CTFactoryBase.h"
+#define GUCEF_CORE_CTFACTORYBASE_H
+#endif /* GUCEF_CORE_CTFACTORYBASE_H ? */
+
 #include "CMsgException.h"
 
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H

@@ -62,6 +62,11 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
+#include "gucefPUBSUB_CVfsPubSubBookmarkPersistence.h"
+#define GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
+#endif /* GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H ? */
+
 #include "gucefPUBSUB_CPubSubGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -75,21 +80,31 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactoryWithParam< CIPubSubBookmarkPersistence, CVfsPubSubBookmarkPersistence, CPubSubBookmarkPersistenceConfig >    TVfsPubSubBookmarkPersistenceFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CPubSubGlobal::g_dataLock;
 CPubSubGlobal* CPubSubGlobal::g_instance = GUCEF_NULL;
+TVfsPubSubBookmarkPersistenceFactory g_vfsPubSubBookmarkPersistenceFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CPubSubGlobal::CPubSubGlobal( void )
     : m_pubsubClientFactory( GUCEF_NULL )
+    , m_pubsubBookmarkPersistenceFactory( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -111,6 +126,9 @@ CPubSubGlobal::Initialize( void )
     CPubSubClientTopic::RegisterEvents();
 
     m_pubsubClientFactory = new CPubSubClientFactory();
+    m_pubsubBookmarkPersistenceFactory = new CPubSubBookmarkPersistenceFactory();
+
+    m_pubsubBookmarkPersistenceFactory->RegisterConcreteFactory( CVfsPubSubBookmarkPersistence::BookmarkPersistenceType, &g_vfsPubSubBookmarkPersistenceFactory );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,8 +138,14 @@ CPubSubGlobal::~CPubSubGlobal()
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPUBSUB Global systems shutting down" );
   
+    m_pubsubBookmarkPersistenceFactory->UnregisterConcreteFactory( CVfsPubSubBookmarkPersistence::BookmarkPersistenceType );
+    
+    delete m_pubsubBookmarkPersistenceFactory;
+    m_pubsubBookmarkPersistenceFactory = GUCEF_NULL;
+
     delete m_pubsubClientFactory;
     m_pubsubClientFactory = GUCEF_NULL;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,6 +188,15 @@ CPubSubGlobal::GetPubSubClientFactory( void )
 {GUCEF_TRACE;
 
     return *m_pubsubClientFactory;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubBookmarkPersistenceFactory& 
+CPubSubGlobal::GetPubSubBookmarkPersistenceFactory( void )
+{GUCEF_TRACE;
+
+    return *m_pubsubBookmarkPersistenceFactory;
 }
 
 /*-------------------------------------------------------------------------//

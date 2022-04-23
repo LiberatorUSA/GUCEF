@@ -64,7 +64,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CBasicPubSubMsg::ClassTypeName = "GUCEF::COMCORE::CBasicPubSubMsg";
+const CString CBasicPubSubMsg::ClassTypeName = "GUCEF::PUBSUB::CBasicPubSubMsg";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

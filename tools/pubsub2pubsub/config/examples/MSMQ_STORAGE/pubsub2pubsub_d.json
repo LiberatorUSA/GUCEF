@@ -98,7 +98,15 @@
 									"supportsSubscribing": true,
 									"supportsTopicIndexBasedBookmark": false
 								}
-							}
+							},
+							"PubSubBookmarkPersistenceConfig": {
+								"bookmarkPersistenceType": "VFS",
+								"bookmarkNamespace": "",
+								"CustomConfig": {
+									"vfsRootPath": "",
+									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+								}
+							}								
 						},
 						"B": {
 							"allowOutOfOrderPublishRetry": true,
@@ -171,7 +179,15 @@
 									"supportsSubscribing": true,
 									"supportsTopicIndexBasedBookmark": false
 								}
-							}
+							},
+							"PubSubBookmarkPersistenceConfig": {
+								"bookmarkPersistenceType": "VFS",
+								"bookmarkNamespace": "",
+								"CustomConfig": {
+									"vfsRootPath": "",
+									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+								}
+							}								
 						}
 					}
 				}

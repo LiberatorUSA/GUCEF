@@ -167,16 +167,31 @@ CDVPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDVPArchive::GetList( TStringSet& outputList              ,
-                      const VFS::CString& mountLocation   , 
-                      const VFS::CString& archiveLocation ,
-                      bool recursive                      ,
-                      bool includePathInFilename          ,
-                      const VFS::CString& filter          ,
-                      bool addFiles                       ,
-                      bool addDirs                        ) const
+CDVPArchive::GetFileList( TStringVector& outputList           ,
+                          const VFS::CString& mountLocation   , 
+                          const VFS::CString& archiveLocation ,
+                          bool recursive                      ,
+                          bool includePathInFilename          ,
+                          const VFS::CString& nameFilter      ,
+                          UInt32 maxListEntries               ) const
 {GUCEF_TRACE;
 
+    // @TODO
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDVPArchive::GetDirList( TStringVector& outputList           ,
+                         const VFS::CString& mountLocation   , 
+                         const VFS::CString& archiveLocation ,
+                         bool recursive                      ,
+                         bool includeParentDirInName         ,
+                         const VFS::CString& nameFilter      ,
+                         UInt32 maxListEntries               ) const
+{GUCEF_TRACE;
+
+    // this format does not support sub-dirs
 }
 
 /*-------------------------------------------------------------------------*/

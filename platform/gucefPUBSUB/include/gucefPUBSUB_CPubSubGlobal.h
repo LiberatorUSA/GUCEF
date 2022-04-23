@@ -40,6 +40,11 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
+#include "gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -63,6 +68,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
 
     CPubSubClientFactory& GetPubSubClientFactory( void );
 
+    CPubSubBookmarkPersistenceFactory& GetPubSubBookmarkPersistenceFactory( void );
+
     private:
     friend class CModule;
 
@@ -78,6 +85,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
     private:
 
     CPubSubClientFactory* m_pubsubClientFactory;
+    CPubSubBookmarkPersistenceFactory* m_pubsubBookmarkPersistenceFactory;
 
     static MT::CMutex g_dataLock;
     static CPubSubGlobal* g_instance;

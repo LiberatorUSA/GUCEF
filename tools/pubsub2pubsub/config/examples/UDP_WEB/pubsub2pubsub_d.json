@@ -87,6 +87,14 @@
 									"supportsSubscribing": true,
 									"supportsTopicIndexBasedBookmark": false
 								}
+							},
+							"PubSubBookmarkPersistenceConfig": {
+								"bookmarkPersistenceType": "VFS",
+								"bookmarkNamespace": "",
+								"CustomConfig": {
+									"vfsRootPath": "",
+									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+								}
 							}
 						},
 						"B": {
@@ -143,7 +151,15 @@
 									"supportsSubscribing": true,
 									"supportsTopicIndexBasedBookmark": false
 								}								
-							}
+							},
+							"PubSubBookmarkPersistenceConfig": {
+								"bookmarkPersistenceType": "VFS",
+								"bookmarkNamespace": "",
+								"CustomConfig": {
+									"vfsRootPath": "",
+									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+								}
+							}							
 						}
 					}
 				}

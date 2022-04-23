@@ -195,16 +195,31 @@ CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CZIPArchive::GetList( TStringSet& outputList              ,
-                      const VFS::CString& mountLocation   , 
-                      const VFS::CString& archiveLocation ,
-                      bool recursive                      ,
-                      bool includePathInFilename          ,
-                      const VFS::CString& filter          ,
-                      bool addFiles                       ,
-                      bool addDirs                        ) const
+CZIPArchive::GetFileList( TStringVector& outputList           ,
+                          const VFS::CString& mountLocation   , 
+                          const VFS::CString& archiveLocation ,
+                          bool recursive                      ,
+                          bool includePathInFilename          ,
+                          const VFS::CString& nameFilter      ,
+                          UInt32 maxListEntries               ) const
 {GUCEF_TRACE;
 
+    // @TODO
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CZIPArchive::GetDirList( TStringVector& outputList           ,
+                         const VFS::CString& mountLocation   , 
+                         const VFS::CString& archiveLocation ,
+                         bool recursive                      ,
+                         bool includeParentDirInName         ,
+                         const VFS::CString& nameFilter      ,
+                         UInt32 maxListEntries               ) const
+{GUCEF_TRACE;
+
+    // @TODO
 }
 
 /*-------------------------------------------------------------------------*/

@@ -14,11 +14,13 @@
 set( HEADER_FILES 
   include/gucefPUBSUB.h
   include/gucefPUBSUB_CBasicPubSubMsg.h
+  include/gucefPUBSUB_CIPubSubBookmarkPersistence.h
   include/gucefPUBSUB_CIPubSubMsg.h
   include/gucefPUBSUB_CModule.h
   include/gucefPUBSUB_CPubSub2PubSub.h
   include/gucefPUBSUB_CPubSubBookmark.h
   include/gucefPUBSUB_CPubSubBookmarkBinarySerializer.h
+  include/gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h
   include/gucefPUBSUB_CPubSubClient.h
   include/gucefPUBSUB_CPubSubClientConfig.h
   include/gucefPUBSUB_CPubSubClientFactory.h
@@ -29,6 +31,7 @@ set( HEADER_FILES
   include/gucefPUBSUB_CPubSubMsgBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgSerializer.h
+  include/gucefPUBSUB_CVfsPubSubBookmarkPersistence.h
   include/gucefPUBSUB_ETypes.h
   include/gucefPUBSUB_config.h
   include/gucefPUBSUB_macros.h
@@ -37,6 +40,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/gucefPUBSUB.cpp
   src/gucefPUBSUB_CBasicPubSubMsg.cpp
+  src/gucefPUBSUB_CIPubSubBookmarkPersistence.cpp
   src/gucefPUBSUB_CIPubSubMsg.cpp
   src/gucefPUBSUB_CModule.cpp
   src/gucefPUBSUB_CPubSub2PubSub.cpp
@@ -52,6 +56,7 @@ set( SOURCE_FILES
   src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgSerializer.cpp
+  src/gucefPUBSUB_CVfsPubSubBookmarkPersistence.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

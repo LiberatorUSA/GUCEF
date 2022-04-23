@@ -120,7 +120,7 @@ const CString&
 CPubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::COMCORE::CPubSubClient";
+    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubClient";
     return classTypeName;
 }
 

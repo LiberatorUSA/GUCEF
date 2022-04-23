@@ -46,7 +46,8 @@ namespace PUBSUB {
 
 bool
 CModule::Load( void )
-{
+{GUCEF_TRACE;
+
     CPubSubGlobal::Instance();
     return true;
 }
@@ -55,7 +56,8 @@ CModule::Load( void )
 
 bool
 CModule::Unload( void )
-{
+{GUCEF_TRACE;
+
     CPubSubGlobal::Deinstance();
     return true;
 }

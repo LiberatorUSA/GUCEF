@@ -55,9 +55,15 @@ namespace CORE {
 
 typedef CAsciiString                        CString;
 
+#define GUCEF_DATATYPE_DATETIME_ISO8601_STRING     GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING
+#define GUCEF_DATATYPE_STRING                      GUCEF_DATATYPE_ASCII_STRING
+
 #else
 
 typedef CUtf8String                         CString;
+
+#define GUCEF_DATATYPE_DATETIME_ISO8601_STRING     GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING
+#define GUCEF_DATATYPE_STRING                      GUCEF_DATATYPE_UTF8_STRING
 
 #endif
 

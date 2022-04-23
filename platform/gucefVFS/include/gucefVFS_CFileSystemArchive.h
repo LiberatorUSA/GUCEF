@@ -83,14 +83,21 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
                               const CORE::UInt64 offset        ,
                               const bool overwrite             ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void GetList( TStringSet& outputList             ,
-                          const CString& mountLocation       , 
-                          const CString& archiveLocation     ,
-                          bool recursive = false             ,
-                          bool includePathInFilename = false ,
-                          const CString& filter = ""         ,
-                          bool addFiles = true               ,
-                          bool addDirs  = false              ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void GetFileList( TStringVector& outputList                       ,
+                              const CString& mountLocation                    , 
+                              const CString& archiveLocation                  ,
+                              bool recursive = false                          ,
+                              bool includePathInFilename = false              ,
+                              const VFS::CString& nameFilter = CString::Empty ,
+                              UInt32 maxListEntries = GUCEF_UINT16MAX         ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void GetDirList( TStringVector& outputList                  ,
+                             const CString& mountLocation               , 
+                             const CString& archiveLocation             ,
+                             bool recursive = false                     ,
+                             bool includeParentDirInName = false        ,
+                             const CString& nameFilter = CString::Empty ,
+                             UInt32 maxListEntries = GUCEF_UINT16MAX    ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool DeleteFile( const CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -150,7 +157,7 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
                           bool recursive                    , 
                           bool includePathInFilename        , 
                           const CORE::CString& filter       , 
-                          TStringSet& outputList            , 
+                          TStringVector& outputList         , 
                           bool addFiles                     ,
                           bool addDirs                      ) const;
     

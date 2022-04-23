@@ -289,6 +289,32 @@ CVariant::CVariant( const CVariant& data )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( const CVariant& data , 
+                    bool linkIfPossible  )
+    : m_variantData( data.m_variantData )
+{GUCEF_TRACE;
+
+    // If dynamic memory is used we need to actually copy said memory
+    // into a private copy
+    if ( !linkIfPossible && data.UsesDynamicMemory() )
+    {
+        if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
+        {
+            m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+            assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
+            memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+        }
+        else
+        {
+            m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
+            m_variantData.union_data.heap_data.heap_data_size = 0;
+        }
+        m_variantData.union_data.heap_data.heap_data_is_linked = 0;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
 CVariant::CVariant( CVariant&& src ) GUCEF_NOEXCEPT
     : m_variantData( src.m_variantData )
@@ -1163,6 +1189,17 @@ CVariant::operator=( const CDynamicBuffer& data )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant& 
+CVariant::operator=( const CDateTime& data )
+{GUCEF_TRACE;
+
+    CString str = data.ToIso8601DateTimeString( false, true );
+    Set( str.C_String(), str.ByteSize(), GUCEF_DATATYPE_DATETIME_ISO8601_STRING, false );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant&
 CVariant::operator=( const CAsciiString& data )
 {GUCEF_TRACE;
@@ -1895,7 +1932,9 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BOOLEAN_INT32:         { return ToString( AsBool( StringToBool( ResolveVars( defaultIfNeeded ), false ) ) ); }
             case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
             case GUCEF_DATATYPE_ASCII_STRING:          { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+            case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
             case GUCEF_DATATYPE_UTF8_STRING:           { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
             case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
@@ -1946,6 +1985,41 @@ CVariant::AsBuffer( void ) const
 {GUCEF_TRACE;
 
     return CDynamicBuffer( static_cast< const char* >( AsVoidPtr() ), ByteSize() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDateTime       
+CVariant::AsDateTime( const CDateTime& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_UTF8_STRING:
+        case GUCEF_DATATYPE_ASCII_STRING:          
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
+        {  
+            CString str = AsString( CString::Empty, resolveVarsIfApplicable ); 
+            if ( str.IsNULLOrEmpty() )
+                return defaultIfNeeded;
+            
+            CDateTime dt;
+            if ( dt.FromIso8601DateTimeString( str ) )
+                return dt;
+            return defaultIfNeeded;
+        }
+
+        case GUCEF_DATATYPE_UINT64:
+        {
+            CDateTime dt;
+            dt.FromUnixEpochBasedTicksInMillisecs( m_variantData.union_data.uint64_data );
+            return dt;
+        }
+        
+        default:
+            return defaultIfNeeded;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

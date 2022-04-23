@@ -109,6 +109,7 @@ namespace PUBSUB {
 PubSubSideChannelSettings::PubSubSideChannelSettings( void )
     : CORE::CIConfigurable()
     , pubsubClientConfig()
+    , pubsubBookmarkPersistenceConfig()
     , performPubSubInDedicatedThread( true )                                                            // typically the most performant overall
     , applyThreadCpuAffinity( false )                                                                   // if we don't have a dedicated host this may cause bigger problems so safer to go with false
     , cpuAffinityForPubSubThread( 0 )
@@ -133,6 +134,7 @@ PubSubSideChannelSettings::PubSubSideChannelSettings( void )
 PubSubSideChannelSettings::PubSubSideChannelSettings( const PubSubSideChannelSettings& src )
     : CORE::CIConfigurable( src )
     , pubsubClientConfig( src.pubsubClientConfig )
+    , pubsubBookmarkPersistenceConfig( src.pubsubBookmarkPersistenceConfig )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
@@ -163,6 +165,7 @@ PubSubSideChannelSettings::operator=( const PubSubSideChannelSettings& src )
         CORE::CIConfigurable::operator=( src );
 
         pubsubClientConfig = src.pubsubClientConfig;
+        pubsubBookmarkPersistenceConfig = src.pubsubBookmarkPersistenceConfig;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
@@ -189,6 +192,7 @@ bool
 PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
+    bool totalSuccess = true;
     CORE::CDataNode* psClientConfig = cfg.Structure( "PubSubClientConfig", '/' );
     if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
     {
@@ -196,25 +200,32 @@ PubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
         return false;
     }
 
-    cfg.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
-    cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
-    cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread );
-    cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted );
-    cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts );
-    cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry );
-    cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts );
-    cfg.SetAttribute( "maxMsgPublishRetryTotalTimeInMs", maxMsgPublishRetryTotalTimeInMs );
-    cfg.SetAttribute( "maxPublishedMsgInFlightTimeInMs", maxPublishedMsgInFlightTimeInMs );
-    cfg.SetAttribute( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder", allowTimedOutPublishedInFlightMsgsRetryOutOfOrder );
-    cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts );
-    cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs );
-    cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight );
+    CORE::CDataNode* psBookmarkPersistenceConfig = cfg.Structure( "PubSubBookmarkPersistenceConfig", '/' );
+    if ( !pubsubBookmarkPersistenceConfig.SaveConfig( *psBookmarkPersistenceConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save PubSubBookmarkPersistenceConfig section" );
+        return false;
+    }    
+
+    totalSuccess = cfg.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryTotalTimeInMs", maxMsgPublishRetryTotalTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxPublishedMsgInFlightTimeInMs", maxPublishedMsgInFlightTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder", allowTimedOutPublishedInFlightMsgsRetryOutOfOrder ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;
 
     // Derived settings are advisory outputs only meaning we will save them but we wont load them
-    cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck );
-    cfg.SetAttribute( "metricsPrefix", metricsPrefix );
+    totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
 
-    return true;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -254,6 +265,20 @@ PubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
         return false;
     }
 
+    const CORE::CDataNode* psBookmarkPersistenceConfig = cfg.Search( "PubSubBookmarkPersistenceConfig", '/', false );
+    if ( GUCEF_NULL != psBookmarkPersistenceConfig )
+    {
+        if ( !pubsubBookmarkPersistenceConfig.LoadConfig( *psBookmarkPersistenceConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: failed to load mandatory PubSubBookmarkPersistenceConfig section" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: a PubSubBookmarkPersistenceConfig section is expected, will use defaults" );
+    }
+
     performPubSubInDedicatedThread = cfg.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
     applyThreadCpuAffinity = cfg.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = cfg.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
@@ -275,7 +300,7 @@ const CORE::CString&
 PubSubSideChannelSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString classTypeName = "pubsub2storage::PubSubSideChannelSettings";
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSubSideChannelSettings";
     return classTypeName;
 }
 
@@ -480,7 +505,7 @@ const CORE::CString&
 ChannelSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString classTypeName = "pubsub2storage::ChannelSettings";
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::ChannelSettings";
     return classTypeName;
 }
 
@@ -489,6 +514,8 @@ ChannelSettings::GetClassTypeName( void ) const
 CPubSubClientSide::CPubSubClientSide( char side )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
+    , m_pubsubBookmarkPersistence()
+    , m_bookmarkNamespace()
     , m_topics()
     , m_metricsMap()
     , m_channelSettings()
@@ -497,7 +524,6 @@ CPubSubClientSide::CPubSubClientSide( char side )
     , m_metricsTimer( GUCEF_NULL )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL )
-    , m_persistance( GUCEF_NULL )
     , m_side( side )
     , m_awaitingFailureReport( false )
     , m_totalMsgsInFlight( 0 )
@@ -589,7 +615,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublis
 void
 CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                                                const CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
-                                               bool inFlightDefaultState                                                   )
+                                               bool inFlightDefaultState                                          )
 {GUCEF_TRACE;
 
     // this variation gets called during sync flow
@@ -627,9 +653,9 @@ CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( CORE::UInt64 publishActionID               ,
+CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( CORE::UInt64 publishActionID      ,
                                                                  CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                                 bool isInFlightState                        )
+                                                                 bool isInFlightState               )
     : retryCount( 0 )
     , firstPublishAttempt( CORE::CDateTime::NowUTCDateTime() )
     , lastPublishAttempt( CORE::CDateTime::Empty )
@@ -695,14 +721,14 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  callback2                            );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()                    ,
+    SubscribeTo( m_pubsubClient.GetPointerAlways()           ,
                  CPubSubClient::TopicsAccessAutoCreatedEvent ,
-                 callback3                                            );
+                 callback3                                   );
 
     TEventCallback callback4( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()                      ,
+    SubscribeTo( m_pubsubClient.GetPointerAlways()             ,
                  CPubSubClient::TopicsAccessAutoDestroyedEvent ,
-                 callback4                                              );
+                 callback4                                     );
     
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
     {
@@ -720,24 +746,24 @@ CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientTopic& topic )
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPubSubClientSide::OnPubSubTopicMsgsReceived );
-    SubscribeTo( &topic                                         ,
+    SubscribeTo( &topic                                ,
                  CPubSubClientTopic::MsgsRecievedEvent ,
-                 callback                                       );
+                 callback                              );
 
     TEventCallback callback2( this, &CPubSubClientSide::OnPubSubTopicMsgsPublished );
-    SubscribeTo( &topic                                          ,
+    SubscribeTo( &topic                                 ,
                  CPubSubClientTopic::MsgsPublishedEvent ,
-                 callback2                                       );
+                 callback2                              );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnPubSubTopicMsgsPublishFailure );
-    SubscribeTo( &topic                                               ,
+    SubscribeTo( &topic                                      ,
                  CPubSubClientTopic::MsgsPublishFailureEvent ,
-                 callback3                                            );
+                 callback3                                   );
 
     TEventCallback callback4( this, &CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull );
-    SubscribeTo( &topic                                                  ,
+    SubscribeTo( &topic                                         ,
                  CPubSubClientTopic::LocalPublishQueueFullEvent ,
-                 callback4                                               );
+                 callback4                                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1693,6 +1719,19 @@ CPubSubClientSide::ConfigureTopicLink( const PubSubSideChannelSettings& pubSubSi
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::GetLatestBookmark( const CPubSubClientTopic& topic ,
+                                      CPubSubBookmark& bookmark       )
+{GUCEF_TRACE;
+
+    if ( m_pubsubBookmarkPersistence.IsNULL() || m_pubsubClient.IsNULL() )
+        return false;
+
+    return m_pubsubBookmarkPersistence->GetLatestBookmark( m_bookmarkNamespace, *m_pubsubClient.GetPointerAlways(), topic, bookmark );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic                   ,
                                              const CPubSubClientFeatures& clientFeatures ,
                                              const PubSubSideChannelSettings& pubSubSideSettings  )
@@ -1729,9 +1768,15 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
             {
                 // bookmarks are supported but they rely on client-side persistance
                 // we will need to obtain said bookmark
-
                 CPubSubBookmark bookmark;
-                if ( GUCEF_NULL == m_persistance || !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic.GetTopicName(), bookmark ) )
+                if ( GetLatestBookmark( topic, bookmark ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
+
+                    subscribeSuccess = topic.SubscribeStartingAtBookmark( bookmark );
+                }
+                else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
@@ -1748,13 +1793,6 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                     }
                     else
                         return false;
-                }
-                else
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
-
-                    subscribeSuccess = topic.SubscribeStartingAtBookmark( bookmark );
                 }
             }
 
@@ -1791,6 +1829,15 @@ CPubSubClientSide::ConnectPubSubClient( void )
         m_sideSettings = pubSubSideSettings;
     }
     CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
+
+    // Set the bookmark namespace:
+    // Depending on the context in which pubsub is used you'd want a different namespace
+    // In this case we need to take care to account for the channel and side relationship to provide a unique storage area or rely on config
+    if ( !m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
+        m_bookmarkNamespace = m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace;
+    else
+        m_bookmarkNamespace = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::ToString( m_side ); 
 
     if ( m_pubsubClient.IsNULL() )
     {
@@ -1825,6 +1872,26 @@ CPubSubClientSide::ConnectPubSubClient( void )
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
     // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
     m_sideSettings->needToTrackInFlightPublishedMsgsForAck = pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck && clientFeatures.supportsSubscriberMsgReceivedAck;
+
+    if ( m_pubsubBookmarkPersistence.IsNULL() )
+    {
+        // Create and configure the pub-sub bookmark persistence
+        pubSubConfig.pulseGenerator = GetPulseGenerator();
+        pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
+        m_pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
+
+        if ( m_pubsubClient.IsNULL() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):ConnectPubSubClient: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );
+            return false;
+        }
+
+        // Link the client back to this object
+        // This allows getting all the way from:
+        //      a message -> a topic -> a client -> a pubsub side
+        m_pubsubClient->SetOpaqueUserData( this );
+    }
 
     if ( !m_pubsubClient->Connect() )
     {
@@ -2192,7 +2259,7 @@ CPubSubClientChannel::PublishChannelMetrics( void ) const
 
 bool
 CPubSubClientChannel::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                 CPubSubClientSide* msgReceiverSide          )
+                                                 CPubSubClientSide* msgReceiverSide )
 {GUCEF_TRACE;
 
     return AcknowledgeReceiptForSideImpl( GetDelegatorThreadId(), msg, msgReceiverSide );
@@ -2201,9 +2268,9 @@ CPubSubClientChannel::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId                ,
+CPubSubClientChannel::AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
                                                      CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                     CPubSubClientSide* msgReceiverSide          )
+                                                     CPubSubClientSide* msgReceiverSide )
 {GUCEF_TRACE;
 
     // if we only have 2 sides, no need for anything more complicated
@@ -3093,7 +3160,7 @@ const CORE::CString&
 PubSub2PubSub::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "PubSub2PubSub";
+    static const CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSub";
     return classTypeName;
 }
 

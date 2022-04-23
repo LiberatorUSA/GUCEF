@@ -67,159 +67,177 @@ class CDynamicBuffer;
  */
 class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
 {
-        public:
+    public:
 
-        CIOAccess( void );
+    CIOAccess( void );
 
-        CIOAccess( const CIOAccess& src );
+    CIOAccess( const CIOAccess& src );
 
-        virtual ~CIOAccess();
+    virtual ~CIOAccess();
 
-        CIOAccess& operator=( const CIOAccess& src );
+    CIOAccess& operator=( const CIOAccess& src );
 
-        /**
-         *      open the resource for I/O
-         */
-        virtual void Open( void ) = 0;
+    /**
+     *      open the resource for I/O
+     */
+    virtual void Open( void ) = 0;
 
-        /**
-         *      close the resource
-         */
-        virtual void Close( void ) = 0;
+    /**
+     *      close the resource
+     */
+    virtual void Close( void ) = 0;
 
-        /**
-         *      is the resource opened for reading ?
-         */
-        virtual bool Opened( void ) const = 0;
+    /**
+     *      is the resource opened for reading ?
+     */
+    virtual bool Opened( void ) const = 0;
 
-        /**
-         *      read a line of text
-         *      The delimiter is the platform text file line
-         *      delimiter.
-         */
-        virtual CString ReadLine( void ) = 0;
+    /**
+     *      read a line of text
+     *      The delimiter is the platform text file line
+     *      delimiter.
+     */
+    virtual CString ReadLine( void ) = 0;
 
-        /**
-         *      reads data until the specified delimiter is reached.
-         *      The data is written into the destination buffer until the
-         *      delimiter is reached or the end of the file is reached.
-         *      The delimiter itself is not written to the destination buffer
-         *
-         *      @param dest the destination buffer for the data
-         *      @param bsize size of the destination buffer
-         *      @param delimiter data segment delimiter
-         *      @param size of the data segment delimiter
-         *      @return number of bytes written into dest
-         */
-        UInt32 ReadUntill( void *dest            ,
-                           UInt32 bsize          ,
-                           const void* delimiter ,
-                           UInt32 delimsize      );
+    /**
+     *      reads data until the specified delimiter is reached.
+     *      The data is written into the destination buffer until the
+     *      delimiter is reached or the end of the file is reached.
+     *      The delimiter itself is not written to the destination buffer
+     *
+     *      @param dest the destination buffer for the data
+     *      @param bsize size of the destination buffer
+     *      @param delimiter data segment delimiter
+     *      @param size of the data segment delimiter
+     *      @return number of bytes written into dest
+     */
+    UInt32 ReadUntill( void *dest            ,
+                       UInt32 bsize          ,
+                       const void* delimiter ,
+                       UInt32 delimsize      );
 
-        /**
-         *      Skips bytesuntil the delimiter is reached or
-         *      until the end of the file is reached.
-         *      the actual number of bytes skipped is returned.
-         *
-         *      @param delimiter the delimiter bytes
-         *      @param delimsize size of the delimiter segment
-         *      @return the actual number of bytes skipped.
-         */
-        UInt32 SkipUntill( const void* delimiter ,
-                           UInt32 delimsize      );
+    /**
+     *      Skips bytesuntil the delimiter is reached or
+     *      until the end of the file is reached.
+     *      the actual number of bytes skipped is returned.
+     *
+     *      @param delimiter the delimiter bytes
+     *      @param delimsize size of the delimiter segment
+     *      @return the actual number of bytes skipped.
+     */
+    UInt32 SkipUntill( const void* delimiter ,
+                       UInt32 delimsize      );
 
-        /**
-         *      Reads a string from the resource
-         */
-        virtual CString ReadString( void ) = 0;
+    /**
+     *      Reads a string from the resource
+     */
+    virtual CString ReadString( void ) = 0;
 
-        /**
-         *      Attempts to read the specified number of bytes from the resource
-         */
-        virtual UInt32 Read( void *dest      ,
-                             UInt32 esize    ,
-                             UInt32 elements ) = 0;
+    /**
+     *      Attempts to read the specified number of bytes from the resource
+     */
+    virtual UInt32 Read( void *dest      ,
+                         UInt32 esize    ,
+                         UInt32 elements ) = 0;
 
-        UInt32 Read( CDynamicBuffer& dest ,
-                     UInt32 esize         ,
-                     UInt32 elements      );
+    UInt32 Read( CDynamicBuffer& dest ,
+                 UInt32 esize         ,
+                 UInt32 elements      );
 
-        UInt32 Read( CDynamicBuffer& dest ,
-                     UInt32 esize         );
+    UInt32 Read( CDynamicBuffer& dest ,
+                 UInt32 esize         );
 
-        /**
-         *      Attempts to write the specified number of bytes to the resource
-         *      using srcdata as the data source.
-         */
-        virtual UInt32 Write( const void* srcdata ,
-                              UInt32 esize        ,
-                              UInt32 elements     );
+    template < typename T >
+    bool ReadValue( T& value ) { return 1 == Read( &value, sizeof( T ), 1 ); }
 
-        virtual UInt32 Write( CIOAccess& sourceData );
+    /**
+     *  Attempts to read a binary safe string that has a UInt32 byteSize field followed by the actual bytes
+     *  This is a common way of reading strings that is both binary safe and doesnt rely on seeking for a null terminator    
+     */
+    bool ReadByteSizePrefixedString( CString& str );
+
+    /**
+     *  Attempts to write a binary safe string that has a UInt32 byteSize field followed by the actual bytes
+     *  This is a common way of reading strings that is both binary safe and doesnt rely on seeking for a null terminator    
+     */
+    bool WriteByteSizePrefixedString( const CString& str );
+
+    /**
+     *      Attempts to write the specified number of bytes to the resource
+     *      using srcdata as the data source.
+     */
+    virtual UInt32 Write( const void* srcdata ,
+                          UInt32 esize        ,
+                          UInt32 elements     );
+
+    virtual UInt32 Write( CIOAccess& sourceData );
         
-        virtual UInt32 Write( const CString& string );
+    virtual UInt32 Write( const CString& string );
 
-        /**
-         *      Get the current offset in bytes
-         */
-        virtual UInt32 Tell( void ) const = 0;
+    template < typename T >
+    bool WriteValue( const T value ) { return 1 == Write( &value, sizeof( T ), 1 ); }
 
-        /**
-         *      jump to a different part of the resource
-         */
-        virtual Int32 Seek( Int32 offset ,
-                            Int32 origin ) = 0;
+    /**
+     *      Get the current offset in bytes
+     */
+    virtual UInt32 Tell( void ) const = 0;
 
-        /**
-         *      jump to the given offset in the resource
-         */
-        virtual UInt32 Setpos( UInt32 position );
+    /**
+     *      jump to a different part of the resource
+     */
+    virtual Int32 Seek( Int32 offset ,
+                        Int32 origin ) = 0;
 
-        /**
-         *      Read a single character
-         */
-        virtual char GetChar( void ) = 0;
+    /**
+     *      jump to the given offset in the resource
+     */
+    virtual UInt32 Setpos( UInt32 position );
 
-        /**
-         *      are we at the end of the resource ?
-         */
-        virtual bool Eof( void ) const = 0;
+    /**
+     *      Read a single character
+     */
+    virtual char GetChar( void ) = 0;
 
-        /**
-         *      Can we read from this resource?
-         */
-        virtual bool IsReadable( void ) const = 0;
+    /**
+        *      are we at the end of the resource ?
+        */
+    virtual bool Eof( void ) const = 0;
 
-        /**
-         *      Can we write to this resource?
-         */
-        virtual bool IsWriteable( void ) const = 0;
+    /**
+     *      Can we read from this resource?
+     */
+    virtual bool IsReadable( void ) const = 0;
 
-        /**
-         *      Is the access to the resource a valid one or
-         *      has something gone wrong ?
-         */
-        virtual bool IsValid( void ) = 0;
+    /**
+     *      Can we write to this resource?
+     */
+    virtual bool IsWriteable( void ) const = 0;
 
-        /**
-         *  @return returns the size of the resource if possible.
-         */
-        virtual UInt32 GetSize( void ) const;
+    /**
+     *      Is the access to the resource a valid one or
+     *      has something gone wrong ?
+     */
+    virtual bool IsValid( void ) = 0;
 
-        /**
-         *  Flushes all outstanding mutations on the I/O device
-         */
-        virtual void Flush( void ) = 0;
+    /**
+     *  @return returns the size of the resource if possible.
+     */
+    virtual UInt32 GetSize( void ) const;
 
-        virtual TIOAccess* CStyleAccess( void );
+    /**
+     *  Flushes all outstanding mutations on the I/O device
+     */
+    virtual void Flush( void ) = 0;
 
-        private:
+    virtual TIOAccess* CStyleAccess( void );
 
-        void LinkCStyleAccess( void );
+    private:
 
-        private:
+    void LinkCStyleAccess( void );
 
-        TIOAccess m_cStyleAccess;
+    private:
+
+    TIOAccess m_cStyleAccess;
 };
 
 /*-------------------------------------------------------------------------//

@@ -417,6 +417,39 @@ CIOAccess::Read( CDynamicBuffer& dest ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CIOAccess::ReadByteSizePrefixedString( CString& str )
+{GUCEF_TRACE;
+
+    UInt32 strByteSize = 0;
+    if ( ReadValue( strByteSize ) )
+    {
+        char* strBuffer = str.Reserve( strByteSize );
+        if ( Read( strBuffer, strByteSize, 1 ) )
+        {
+            str.DetermineLength();
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CIOAccess::WriteByteSizePrefixedString( const CString& str )
+{GUCEF_TRACE;
+
+    UInt32 strByteSize = str.ByteSize();
+    if ( WriteValue( strByteSize ) )
+    {
+        return 1 == Write( str.C_String(), strByteSize, 1 );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 TIOAccess*
 CIOAccess::CStyleAccess( void )
 {GUCEF_TRACE;

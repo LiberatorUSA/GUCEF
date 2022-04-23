@@ -117,7 +117,7 @@ const CString&
 CPubSubMsgBinarySerializerOptions::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::CORE::CPubSubMsgBinarySerializerOptions";
+    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubMsgBinarySerializerOptions";
     return classTypeName;
 }
 

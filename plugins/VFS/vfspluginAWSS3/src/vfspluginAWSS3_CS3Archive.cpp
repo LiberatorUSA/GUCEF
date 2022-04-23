@@ -150,17 +150,77 @@ CS3Archive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3Archive::GetList( TStringSet& outputList              ,
-                     const VFS::CString& mountLocation   , 
-                     const VFS::CString& archiveLocation ,
-                     bool recursive                      ,
-                     bool includePathInFilename          ,
-                     const VFS::CString& filter          ,
-                     bool addFiles                       ,
-                     bool addDirs                        ) const
+CS3Archive::GetFileList( TStringVector& outputList           ,
+                         const VFS::CString& mountLocation   , 
+                         const VFS::CString& archiveLocation ,
+                         bool recursive                      ,
+                         bool includePathInFilename          ,
+                         const VFS::CString& nameFilter      ,
+                         UInt32 maxListEntries               ) const
 {GUCEF_TRACE;
 
+    // You need to mount a bucket to see its contents
+}
 
+/*-------------------------------------------------------------------------*/
+
+void
+CS3Archive::GetDirList( TStringVector& outputList           ,
+                        const VFS::CString& mountLocation   , 
+                        const VFS::CString& archiveLocation ,
+                        bool recursive                      ,
+                        bool includeParentDirInName         ,
+                        const VFS::CString& nameFilter      ,
+                        UInt32 maxListEntries               ) const
+{GUCEF_TRACE;
+
+    // @TODO: handle archiveLocation & recursive
+    
+    // List all S3 buckets available based on our credentials.
+    try
+    {
+        Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
+        auto outcome = s3Client->ListBuckets();
+        if ( outcome.IsSuccess() )
+        {
+            const TBucketList& bucketList = outcome.GetResult().GetBuckets();
+            for ( auto const &bucket : bucketList )
+            {
+                if ( outputList.size() >= maxListEntries )
+                    break;
+                
+                CORE::CString bucketName = bucket.GetName();
+                if ( !nameFilter.IsNULLOrEmpty() ) 
+                {
+                    if ( !bucketName.WildcardEquals( nameFilter ) )
+                        continue;
+                }
+                
+                if ( includeParentDirInName )
+                {
+                    CORE::CString bucketPath = "/aws/s3/" + bucket.GetName();
+                    outputList.push_back( bucketPath );
+                }
+                else
+                {
+                    outputList.push_back( bucket.GetName() );
+                }
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: ListBuckets error: " + 
+                outcome.GetError().GetExceptionName() + " - " + outcome.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "AwsS3Global: Exception trying to update S3 bucket inventory: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsS3Global: Unknown exception trying to update S3 bucket inventory" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

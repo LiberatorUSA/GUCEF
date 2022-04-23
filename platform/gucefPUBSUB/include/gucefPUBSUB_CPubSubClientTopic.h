@@ -136,7 +136,7 @@ class CPubSubClient;
  *
  */
 class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifier                                    ,
-                                                    public CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >
+                                                   public CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >
 {
     public:
 

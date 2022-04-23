@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H
-#define GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,15 +25,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"    
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
-#include "gucefPUBSUB_CPubSubBookmark.h"
-#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
+#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
+#include "CTAbstractFactory.h"
+#define GUCEF_CORE_CTABSTRACTFACTORY_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+
+#ifndef GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
+#include "CTAbstractFactoryWithParam.h"
+#define GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H ? */
+
+#ifndef GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTANCE_H
+#include "gucefPUBSUB_CIPubSubBookmarkPersistence.h"
+#define GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTANCE_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTANCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,50 +60,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class providing a binary format serializer/deserializer for pubsub bookmark objects
- */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmarkBinarySerializer
-{
-    public:
-
-    static const CORE::CString  MagicText;
-    static const CORE::UInt8    CurrentFormatVersion;
-
-    /**
-     *  Serializes a pubsub bookmark object to the provided buffer
-     */
-    static bool Serialize( const CPubSubBookmark& bookmark ,
-                           UInt32 currentTargetOffset      , 
-                           CORE::CDynamicBuffer& target    , 
-                           UInt32& bytesWritten            );
-
-    /**
-     *  Serializes a pubsub bookmark object to the provided buffer
-     */
-    static bool Serialize( const CPubSubBookmark& bookmark ,
-                           CORE::CDynamicBuffer& target    );
-
-    /**
-     *  Deserializes a pubsub bookmark object from the provided buffer
-     */
-    static bool Deserialize( CPubSubBookmark& bookmark          ,
-                             UInt32 currentSourceOffset         ,
-                             bool linkWherePossible             ,
-                             const CORE::CDynamicBuffer& source ,
-                             bool& isCorrupted                  ,
-                             UInt32& bytesRead                  );
-
-    /**
-     *  Deserializes a pubsub bookmark object from the provided buffer
-     */
-    static bool Deserialize( CPubSubBookmark& bookmark          ,
-                             bool linkWherePossible             ,
-                             const CORE::CDynamicBuffer& source );
-
-    CPubSubBookmarkBinarySerializer( void );
-    ~CPubSubBookmarkBinarySerializer();
-};
+typedef CORE::CTAbstractFactoryWithParam< CORE::CString, CIPubSubBookmarkPersistence, CPubSubBookmarkPersistenceConfig, MT::CMutex >   CPubSubBookmarkPersistenceFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,5 +73,4 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmarkBinarySerializer
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKBINARYSERIALIZER_H ? */
-
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H ? */

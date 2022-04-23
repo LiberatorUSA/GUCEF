@@ -182,14 +182,77 @@ CVPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVPArchive::GetList( TStringSet& outputList              ,
-                     const VFS::CString& mountLocation   , 
-                     const VFS::CString& archiveLocation ,
-                     bool recursive                      ,
-                     bool includePathInFilename          ,
-                     const VFS::CString& filter          ,
-                     bool addFiles                       ,
-                     bool addDirs                        ) const
+CVPArchive::GetFileList( TStringVector& outputList           ,
+                         const VFS::CString& mountLocation   , 
+                         const VFS::CString& archiveLocation ,
+                         bool recursive                      ,
+                         bool includePathInFilename          ,
+                         const VFS::CString& nameFilter      ,
+                         UInt32 maxListEntries               ) const
+{GUCEF_TRACE;
+
+    TFileIndexMap::const_iterator i = m_index.begin();
+    while ( i != m_index.end() )
+    {
+        // Check if the starting path matches
+        const VFS::CString& filePath = (*i).first;
+
+        if ( filePath == archiveLocation )
+        {
+            // Don't add the location itself to the list
+            ++i;
+            continue;
+        }
+
+        if ( 0 == filePath.HasSubstr( archiveLocation, true ) )
+        {
+            const TVPIndexEntry& indexEntry = (*i).second;
+
+            // Check if the entry is a file
+            if ( indexEntry.size != 0 && indexEntry.offset != 0 )
+            {
+                if ( !recursive )
+                {
+                    // Check if we have multiple subdirs beyond the "location" to get to
+                    // the archive. If so then we cannot add this archive because recursive
+                    // searching is not allowed.
+                    if ( !CORE::IsFileInDir( archiveLocation, filePath ) )
+                    {
+                        // The directory seperator was not the last character so we have multiple
+                        // sub-dirs which is not allowed, we cannot add this item
+                        ++i;
+                        continue;
+                    }
+                }
+
+                VFS::CString filename = CORE::ExtractFilename( filePath );
+                if ( filename != ".." )
+                {
+                    if ( includePathInFilename )
+                    {
+                        outputList.push_back( filePath );
+                    }
+                    else
+                    {
+                        outputList.push_back( filename );
+                    }
+                }
+            }
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVPArchive::GetDirList( TStringVector& outputList           ,
+                        const VFS::CString& mountLocation   , 
+                        const VFS::CString& archiveLocation ,
+                        bool recursive                      ,
+                        bool includeParentDirInName         ,
+                        const VFS::CString& nameFilter      ,
+                        UInt32 maxListEntries               ) const
 {GUCEF_TRACE;
 
     TFileIndexMap::const_iterator i = m_index.begin();
@@ -212,47 +275,31 @@ CVPArchive::GetList( TStringSet& outputList              ,
             // Check if the entry is a directory
             if ( indexEntry.size == 0 || indexEntry.offset == 0 )
             {
-                if ( !addDirs )
+                if ( !recursive )
                 {
-                    // Skip this item
-                    ++i;
-                    continue;
+                    // Check if we have multiple subdirs beyond the "location" to get to
+                    // the archive. If so then we cannot add this archive because recursive
+                    // searching is not allowed.
+                    if ( !CORE::IsFileInDir( archiveLocation, filePath ) )
+                    {
+                        // The directory seperator was not the last character so we have multiple
+                        // sub-dirs which is not allowed, we cannot add this item
+                        ++i;
+                        continue;
+                    }
                 }
-            }
-            else
-            {
-                if ( !addFiles )
-                {
-                    // Skip this item
-                    ++i;
-                    continue;
-                }
-            }
 
-            if ( !recursive )
-            {
-                // Check if we have multiple subdirs beyond the "location" to get to
-                // the archive. If so then we cannot add this archive because recursive
-                // searching is not allowed.
-                if ( !CORE::IsFileInDir( archiveLocation, filePath ) )
+                VFS::CString filename = CORE::ExtractFilename( filePath );
+                if ( filename != ".." )
                 {
-                    // The directory seperator was not the last character so we have multiple
-                    // sub-dirs which is not allowed, we cannot add this item
-                    ++i;
-                    continue;
-                }
-            }
-
-            VFS::CString filename = CORE::ExtractFilename( filePath );
-            if ( filename != ".." )
-            {
-                if ( includePathInFilename )
-                {
-                    outputList.insert( filePath );
-                }
-                else
-                {
-                    outputList.insert( filename );
+                    if ( includeParentDirInName )
+                    {
+                        outputList.push_back( filePath );
+                    }
+                    else
+                    {
+                        outputList.push_back( filename );
+                    }
                 }
             }
         }

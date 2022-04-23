@@ -93,7 +93,19 @@ CPubSubBookmarkBinarySerializer::Serialize( const CPubSubBookmark& bookmark ,
     currentTargetOffset += newBytesWritten;
     if ( newBytesWritten != sizeof(formatVersion) )
         return false;
-    
+
+    // Write the DateTime of the bookmark as milliseconds since Unix Epoch in UTC
+    // In most applications Unix Epoch is not UTC and leap seconds are not taken into account
+    // However since the source is of higher fidelity we can retain accuracy as long as the same method is
+    // used to deserialize as well. There is a problem with any DateTime which predates Unix epoch
+    // this is not considered an issue here due to the intended timestamp style usage
+    UInt64 msSinceUnixEpochInUtc = bookmark.GetBookmarkDateTime().ToUnixEpochBasedTicksInMillisecs();
+    newBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(msSinceUnixEpochInUtc), &msSinceUnixEpochInUtc );
+    currentTargetOffset += newBytesWritten;
+    bytesWritten += newBytesWritten;
+    if ( newBytesWritten != sizeof(msSinceUnixEpochInUtc) )
+        return false;
+        
     // Write the type of bookmark we are dealing with
     Int32 bmType = bookmark.GetBookmarkType();
     newBytesWritten = target.CopyFrom( currentTargetOffset, sizeof(bmType), &bmType );
@@ -110,6 +122,17 @@ CPubSubBookmarkBinarySerializer::Serialize( const CPubSubBookmark& bookmark ,
     bytesWritten += varBinSize;
                  
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubBookmarkBinarySerializer::Serialize( const CPubSubBookmark& bookmark ,
+                                            CORE::CDynamicBuffer& target    )
+{GUCEF_TRACE;
+
+    UInt32 bytesWritten = 0;
+    return Serialize( bookmark, 0, target, bytesWritten );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -150,6 +173,15 @@ CPubSubBookmarkBinarySerializer::Deserialize( CPubSubBookmark& bookmark         
             return false;
         }
 
+        // Read the DateTime of the bookmark which is milliseconds since Unix epoch in UTC IF
+        // this class's Serialize() was used. Commonly used Unix epoch variables do NOT have a  
+        // timezone associated nor does the Unix epoch offset in a lot of implementations take
+        // leap seconds into account. Hence choose carefully to ensure consistency in interpretation
+        UInt64 msSinceUnixEpochInUtc = source.AsConstType< UInt64 >( currentSourceOffset );
+        currentSourceOffset += sizeof(msSinceUnixEpochInUtc);
+        bytesRead += sizeof(msSinceUnixEpochInUtc);
+        bookmark.GetBookmarkDateTime().FromUnixEpochBasedTicksInMillisecs( msSinceUnixEpochInUtc );
+
         Int32 bmType = source.AsConstType< Int32 >( currentSourceOffset );
         bytesRead += sizeof(bmType);
         currentSourceOffset += sizeof(bmType);
@@ -163,8 +195,9 @@ CPubSubBookmarkBinarySerializer::Deserialize( CPubSubBookmark& bookmark         
 
         return true;
     }
-    catch ( const std::exception& )
+    catch ( const std::exception& e )
     {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubBookmarkBinarySerializer:Deserialize: Exception encountered: " + CORE::ToString( e.what() ) );
         return false;
     }
 }

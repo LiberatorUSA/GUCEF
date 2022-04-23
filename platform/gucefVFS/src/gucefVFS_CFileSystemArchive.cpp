@@ -135,11 +135,11 @@ CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
         vfs.GetListOfSupportedArchiveTypes( keySet );
 
         // Get a list of all files from the root onward
-        TStringSet files;
-        GetList( files, settings.GetMountPath(), CString::Empty, true, true, CString::Empty, true, false );
+        TStringVector files;
+        GetFileList( files, settings.GetMountPath(), CString::Empty, true, true, CString::Empty );
 
         // Find mountable types
-        TStringSet::iterator i = files.begin();
+        TStringVector::iterator i = files.begin();
         while ( i != files.end() )
         {
             // Mount based on archive file extention type
@@ -259,7 +259,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                                      bool recursive                    ,
                                      bool includePathInFilename        ,
                                      const CString& filter             ,
-                                     TStringSet& outputList            ,
+                                     TStringVector& outputList         ,
                                      bool addFiles                     ,
                                      bool addDirs                      ) const
 {GUCEF_TRACE;
@@ -288,13 +288,13 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                         {
                             if ( !includePathInFilename )
                             {
-                                outputList.insert( filename );
+                                outputList.push_back( filename );
                             }
                             else
                             {
                                 CORE::CString vfsFilePath = CORE::CombinePath( vfsPath, filename );
                                 vfsFilePath = vfsFilePath.ReplaceChar( '\\', '/' );
-                                outputList.insert( vfsFilePath );
+                                outputList.push_back( vfsFilePath );
                             }
                         }
                     }
@@ -307,7 +307,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                 {
                     if ( addDirs )
                     {
-                        outputList.insert( dirName + '/' );
+                        outputList.push_back( dirName + '/' );
                     }
 
                     if ( recursive )
@@ -339,31 +339,59 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::GetList( TStringSet& outputList                 ,
-                             const VFS::CString& vfsMountLocation   , 
-                             const VFS::CString& vfsArchiveLocation ,
-                             bool recursive                         ,
-                             bool includePathInFilename             ,
-                             const CString& filter                  ,
-                             bool addFiles                          ,
-                             bool addDirs                           ) const
+CFileSystemArchive::GetFileList( TStringVector& outputList      ,
+                                 const CString& mountLocation   , 
+                                 const CString& archiveLocation ,
+                                 bool recursive                 ,
+                                 bool includePathInFilename     ,
+                                 const CString& nameFilter      ,
+                                 UInt32 maxListEntries          ) const
 {GUCEF_TRACE;
 
     // Translate to a local filesystem path
-    CString actualFsRootdir = CombinePath( m_rootDir, vfsArchiveLocation.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString actualFsRootdir = CombinePath( m_rootDir, archiveLocation.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     /*
      *      Process the root
      */
     GetListFromRoot( actualFsRootdir       ,
-                     vfsMountLocation      ,
-                     vfsArchiveLocation    ,
+                     mountLocation         ,
+                     archiveLocation       ,
                      recursive             ,
                      includePathInFilename ,
-                     filter                ,
+                     nameFilter            ,
                      outputList            ,
-                     addFiles              ,
-                     addDirs               );
+                     true                  ,
+                     false                 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemArchive::GetDirList( TStringVector& outputList      ,
+                                const CString& mountLocation   , 
+                                const CString& archiveLocation ,
+                                bool recursive                 ,
+                                bool includePathInFilename     ,
+                                const CString& nameFilter      ,
+                                UInt32 maxListEntries          ) const
+{GUCEF_TRACE;
+
+    // Translate to a local filesystem path
+    CString actualFsRootdir = CombinePath( m_rootDir, archiveLocation.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+
+    /*
+     *      Process the root
+     */
+    GetListFromRoot( actualFsRootdir       ,
+                     mountLocation         ,
+                     archiveLocation       ,
+                     recursive             ,
+                     includePathInFilename ,
+                     nameFilter            ,
+                     outputList            ,
+                     false                 ,
+                     true                  );
 }
 
 /*-------------------------------------------------------------------------*/

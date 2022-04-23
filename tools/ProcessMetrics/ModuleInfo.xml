@@ -2,30 +2,35 @@
 <ModuleInfoEntry>
 	<Module Name="ProcessMetrics" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
-			<Dependency Name="gucefWEB" />			
-			<Dependency Name="gucefCOM" />
-			<Dependency Name="gucefCOMCORE" />
-			<Dependency Name="gucefCORE" />
 			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
 		</Dependencies>
 		<Linker>
-			<Dependency Name="gucefWEB" />
-			<Dependency Name="gucefCOM" />
-			<Dependency Name="gucefCOMCORE" />
-			<Dependency Name="gucefCORE" />
 			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefPUBSUB" />
 		</Linker>
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="pubsubpluginSTORAGE" />
+			<RuntimeDependency Name="pubsubpluginKAFKA" />
+			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >
 		<RuntimeDependencies>
-			<RuntimeDependency Name="pubsubpluginAWSSQS" />
-			<RuntimeDependency Name="pubsubpluginKAFKA" />
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />			
 			<RuntimeDependency Name="pubsubpluginMSMQ" />
-			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
 		</RuntimeDependencies>
 	</Module>	
 </ModuleInfoEntry>
