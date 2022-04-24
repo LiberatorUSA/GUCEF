@@ -68,14 +68,14 @@ add_dependencies( ${MODULE_NAME} hiredis )
 target_link_libraries( ${MODULE_NAME} hiredis )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "REDIS_PLUS_PLUS_BUILD_TEST=OFF;REDIS_PLUS_PLUS_CXX_STANDARD=11" )
 
-include_directories( ../../../../../dependencies ../../../../hiredis )
+include_directories( ../../../../ ../../../../hiredis )
 
 if ( ANDROID )
-  include_directories( ../../../../../dependencies/Ogre ../../../../../dependencies/Ogre/RenderSystems ../../../../../dependencies/Ogre/RenderSystems/GLES2 ../../../../../dependencies/Ogre/RenderSystems/GLES2/include ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL/Android ../../../../hiredis )
+  include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Android ../../../../hiredis )
 endif( ANDROID )
 
 if ( EMSCRIPTEN )
-  include_directories( ../../../../../dependencies/Ogre ../../../../../dependencies/Ogre/RenderSystems ../../../../../dependencies/Ogre/RenderSystems/GLES2 ../../../../../dependencies/Ogre/RenderSystems/GLES2/include ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL/Emscripten ../../../../hiredis )
+  include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Emscripten ../../../../hiredis )
 endif( EMSCRIPTEN )
 
 if ( GLX )
@@ -99,11 +99,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( NACL )
-  include_directories( ../../../../../dependencies/Ogre ../../../../../dependencies/Ogre/RenderSystems ../../../../../dependencies/Ogre/RenderSystems/GLES2 ../../../../../dependencies/Ogre/RenderSystems/GLES2/include ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/NaCl ../../../../hiredis )
+  include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/NaCl ../../../../hiredis )
 endif( NACL )
 
 if ( OSX )
-  include_directories( ../../../../../dependencies/libRocket ../../../../../dependencies/libRocket/Samples ../../../../../dependencies/libRocket/Samples/shell ../../../../../dependencies/libRocket/Samples/shell/include ../../../../../dependencies/libRocket/Samples/shell/include/macosx ../../../../hiredis )
+  include_directories( ../../../../hiredis ../../../../libRocket ../../../../libRocket/Samples ../../../../libRocket/Samples/shell ../../../../libRocket/Samples/shell/include ../../../../libRocket/Samples/shell/include/macosx )
 endif( OSX )
 
 if ( POSIX )
@@ -123,7 +123,7 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../../../../dependencies/Ogre ../../../../../dependencies/Ogre/RenderSystems ../../../../../dependencies/Ogre/RenderSystems/GLES2 ../../../../../dependencies/Ogre/RenderSystems/GLES2/include ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL ../../../../../dependencies/Ogre/RenderSystems/GLES2/include/EGL/WIN32 ../../../../../dependencies/berkelium ../../../../../dependencies/berkelium/win32 ../../../../../dependencies/berkelium/win32/demo ../../../../../dependencies/berkelium/win32/demo/GL ../../../../../dependencies/libRocket ../../../../../dependencies/libRocket/Samples ../../../../../dependencies/libRocket/Samples/shell ../../../../../dependencies/libRocket/Samples/shell/include ../../../../../dependencies/libRocket/Samples/shell/include/win32 ../../../../hiredis )
+  include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/WIN32 ../../../../berkelium ../../../../berkelium/win32 ../../../../berkelium/win32/demo ../../../../berkelium/win32/demo/GL ../../../../hiredis ../../../../libRocket ../../../../libRocket/Samples ../../../../libRocket/Samples/shell ../../../../libRocket/Samples/shell/include ../../../../libRocket/Samples/shell/include/win32 )
 endif( WIN32 )
 
 if ( WIN64 )

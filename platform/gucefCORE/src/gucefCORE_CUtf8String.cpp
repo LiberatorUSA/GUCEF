@@ -1732,28 +1732,25 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
 
         if ( startFront )
         {
-            // Loop trough the buffer growing our comparison string
-            UInt32 bytesFromStart=0;
-            const char* startPos = thisStr->CodepointPtrAtIndex( startOffset, bytesFromStart );
-            const char* cpPos = startPos;
-            UInt32 subLength=1;
-            size_t subByteSize = utf8codepointcalcsize( cpPos );
-            while ( subLength<=maxMatchLength )
-            {
-                if ( memcmp( startPos, theSearchStr->m_string, subByteSize ) != 0 )
-                {
-                    // Reached the maximum equality length
-                    return subLength-1;
-                }
+            // Loop trough comparing code points
+            UInt32 thisStrBytesFromStart=0;
+            const char* thisStrStartPos = thisStr->CodepointPtrAtIndex( startOffset, thisStrBytesFromStart );
+            const char* thisStrCpPos = thisStrStartPos;
+            UInt32 searchStrBytesFromStart=0;
+            const char* searchStrStartPos = theSearchStr->CodepointPtrAtIndex( 0, searchStrBytesFromStart );
+            const char* searchStrCpPos = searchStrStartPos;
 
-                // Grow the comparison segment enough bytes to fit 1 extra codepoint
-                Int32 cp;
-                cpPos = (const char*) utf8codepoint( cpPos, &cp );
-                subByteSize = (UInt32)( cpPos - startPos );
-
-                ++subLength;
+            Int32 thisStrCp = 0;
+            Int32 searchStrCp = 0;
+            UInt32 matchingCpCount=0;
+            for ( ; matchingCpCount<maxMatchLength; ++matchingCpCount )
+            {                      
+                thisStrCpPos = (const char*) utf8codepoint( thisStrCpPos, &thisStrCp );
+                searchStrCpPos = (const char*) utf8codepoint( searchStrCpPos, &searchStrCp );
+                if ( thisStrCp != searchStrCp )
+                    break;
             }
-            return subLength-1;
+            return matchingCpCount;
         }
         else
         {
@@ -1766,7 +1763,7 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
             UInt32 subLength=1;
             size_t subByteSize = utf8codepointcalcsize( cpPos );
             while ( subLength<=maxMatchLength )
-            {
+            {                         // @TODO: refactor: compare based on code points not memcmp()
                 if ( memcmp( startPos-subByteSize, otherString-subByteSize, subByteSize ) != 0 )
                 {
                     // Reached the maximum equality length
@@ -1782,6 +1779,108 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
             }
             return subLength-1;
         }
+    }
+
+    // Unable to find an equality
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CUtf8String::FindMaxSegmentEquality( const CUtf8String& otherStr   ,
+                                     Int32 segmentDividerCodePoint ,
+                                     bool startFront               ,
+                                     bool isCaseSentive            ) const
+{GUCEF_TRACE;
+
+    // Here we want to be able to support case insensitive compares
+    // without having to suffer the performance penalty of making string lowercase
+    // when not doing case insensitive compares. This we do some pointer magic to
+    // avoid this overhead when we can
+    CUtf8String lowercaseSearchStrStorage;
+    CUtf8String lowercaseThisStrStorage;
+    const CUtf8String* theSearchStr = &otherStr;
+    const CUtf8String* thisStr = this;
+
+    if ( !isCaseSentive )
+    {
+        // Caller wants a case-insensitive compare,..
+        // take the performance hit
+        lowercaseSearchStrStorage = otherStr.Lowercase();
+        theSearchStr = &lowercaseSearchStrStorage;
+        lowercaseThisStrStorage = Lowercase();
+        thisStr = &lowercaseThisStrStorage;
+    }
+
+    if ( thisStr->m_length == theSearchStr->m_length )
+    {
+        // possible early out
+        if ( (*thisStr) == (*theSearchStr) )
+            return thisStr->m_length;
+    }
+
+    // Get the smallest of the 2 buffer limits
+    UInt32 maxMatchLength = theSearchStr->m_length;
+    if ( thisStr->m_length < maxMatchLength )
+    {
+        maxMatchLength = thisStr->m_length;
+    }
+
+    if ( startFront )
+    {
+        // Loop trough comparing code points
+        UInt32 thisStrBytesFromStart=0;
+        const char* thisStrStartPos = thisStr->CodepointPtrAtIndex( 0, thisStrBytesFromStart );
+        const char* thisStrCpPos = thisStrStartPos;
+        UInt32 searchStrBytesFromStart=0;
+        const char* searchStrStartPos = theSearchStr->CodepointPtrAtIndex( 0, searchStrBytesFromStart );
+        const char* searchStrCpPos = searchStrStartPos;
+
+        Int32 thisStrCp = 0;
+        Int32 searchStrCp = 0;
+        UInt32 matchingCpCount=0;
+        UInt32 matchingCpCountAtDivider=0;
+        for ( ; matchingCpCount<maxMatchLength; ++matchingCpCount )
+        {                      
+            thisStrCpPos = (const char*) utf8codepoint( thisStrCpPos, &thisStrCp );
+            searchStrCpPos = (const char*) utf8codepoint( searchStrCpPos, &searchStrCp );
+            if ( thisStrCp != searchStrCp )
+                break;
+            if ( thisStrCp == segmentDividerCodePoint )
+                matchingCpCountAtDivider = matchingCpCount;    
+        }
+
+        if ( matchingCpCount >= maxMatchLength )
+        {
+            if ( thisStr->m_length > theSearchStr->m_length )
+            {
+                // check to see if the next code point in the longer string is a divider
+                // if so we need to include this last segment
+                thisStrCpPos = (const char*) utf8codepoint( thisStrCpPos, &thisStrCp );
+                if ( thisStrCp == segmentDividerCodePoint )
+                {
+                    matchingCpCountAtDivider = matchingCpCount;
+                }
+            }
+            else
+            if ( thisStr->m_length < theSearchStr->m_length )
+            {
+                // check to see if the next code point in the longer string is a divider
+                // if so we need to include this last segment
+                searchStrCpPos = (const char*) utf8codepoint( searchStrCpPos, &searchStrCp );
+                if ( searchStrCp == segmentDividerCodePoint )
+                {
+                    matchingCpCountAtDivider = matchingCpCount;
+                }
+            }
+        }
+
+        return matchingCpCountAtDivider;
+    }
+    else
+    {
+        // @TODO
     }
 
     // Unable to find an equality
@@ -1833,7 +1932,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
 {GUCEF_TRACE;
 
     // Sanity check on the startindex range
-    if ( startIndex < 0 || (UInt32) startIndex > m_length )
+    if ( startIndex < 0 || (UInt32) startIndex > m_length || substr.IsNULLOrEmpty() )
         return -1;
 
     // Cheap check for obvious mismatches

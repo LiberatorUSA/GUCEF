@@ -382,10 +382,24 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      */
     UInt32 GetCharacterRepeatCount( const Int32 searchChar ) const;
 
+    /**
+     *  Find the max number of matching code points
+     *  returns the code point counts that matched
+     */
     UInt32 FindMaxSubstrEquality( const CUtf8String& searchStr ,
                                   const UInt32 startOffset     ,
                                   bool frontToBack             ,
                                   bool isCaseSentive           ) const;
+
+    /**
+     *  Find the max number of matching code points segment
+     *  Each segment is deliniated by 'segmentDividerCodePoint' 
+     *  returns the code point counts that matched
+     */
+    UInt32 FindMaxSegmentEquality( const CUtf8String& otherStr   ,
+                                   Int32 segmentDividerCodePoint ,
+                                   bool startFront               ,
+                                   bool isCaseSentive            ) const;
 
     CUtf8String CutChars( UInt32 charcount        ,
                           bool frontToBack = true ,

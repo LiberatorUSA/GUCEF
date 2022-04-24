@@ -1,0 +1,12 @@
+common/include/*
+dependencies/json-builder/*
+dependencies/json-parser/*
+dependencies/libparsifal/*
+platform/gucefCOM/*
+platform/gucefCORE/*
+platform/gucefMT/*
+platform/gucefVFS/*
+platform/gucefWEB/*
+plugins/CORE/dstorepluginJSONPARSER/*
+plugins/CORE/dstorepluginPARSIFALXML/*
+tools/UdpTransformer/*

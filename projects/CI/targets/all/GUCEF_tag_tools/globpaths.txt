@@ -1,0 +1,12 @@
+common/include/*
+dependencies/libparsifal/*
+platform/gucefCOMCORE/*
+platform/gucefCORE/*
+platform/gucefIMAGE/*
+platform/gucefMT/*
+platform/gucefVFS/*
+plugins/CORE/dstorepluginPARSIFALXML/*
+tools/DCSBruteInstaller/*
+tools/GucefArchiver/*
+tools/ProjectGen/*
+tools/itvExporter/*

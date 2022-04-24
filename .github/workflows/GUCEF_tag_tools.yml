@@ -1,0 +1,165 @@
+name: target_GUCEF_tag_tools
+
+on:
+  workflow_dispatch:
+    inputs:
+      archiveBuildArtifacts:
+        description: 'Archive Build Artifacts?'
+        required: false
+        default: 'false'
+      targetPlatform:
+        description: 'Target platform to build?'
+        required: false
+        default: 'all'
+
+jobs:
+
+  GUCEF_tag_tools-all:
+    runs-on: self-hosted
+    env:
+      TARGET_NAME: GUCEF_tag_tools
+      TARGET_PLATFORM: all
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_tools
+      PRODUCT_NAME: GUCEF_tag_tools
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_tools for platform all
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-all/packages/*GUCEF_tag_tools*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-all/packages/*GUCEF_tag_tools*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-all/packages/*GUCEF_tag_tools*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-all/packages/*GUCEF_tag_tools*.tar.xz
+  GUCEF_tag_tools-linux32:
+    runs-on: self-hosted
+    env:
+      TARGET_NAME: GUCEF_tag_tools
+      TARGET_PLATFORM: linux32
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_tools
+      PRODUCT_NAME: GUCEF_tag_tools
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_tools for platform linux32
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux32/packages/*GUCEF_tag_tools*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux32/packages/*GUCEF_tag_tools*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux32/packages/*GUCEF_tag_tools*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux32/packages/*GUCEF_tag_tools*.tar.xz
+  GUCEF_tag_tools-linux64:
+    runs-on: self-hosted
+    env:
+      TARGET_NAME: GUCEF_tag_tools
+      TARGET_PLATFORM: linux64
+      TARGET_PROJECT: projects/CMake/targets/GUCEF_tag_tools
+      PRODUCT_NAME: GUCEF_tag_tools
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_tools for platform linux64
+        run: ./projects/CI/targets/ci_build.sh
+      - name: Archive Debian build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Debian packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux64/packages/*GUCEF_tag_tools*.deb
+      - name: Archive RPM build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: RPM packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux64/packages/*GUCEF_tag_tools*.rpm
+      - name: Archive Tarball - bz2 compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.bz2 packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux64/packages/*GUCEF_tag_tools*.tar.bz2
+      - name: Archive Tarball - Xz compressed build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tar.xz packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-linux64/packages/*GUCEF_tag_tools*.tar.xz
+  GUCEF_tag_tools-win32:
+    runs-on: self-hosted
+    env:
+      TARGET_NAME: GUCEF_tag_tools
+      TARGET_PLATFORM: win32
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_tools
+      PRODUCT_NAME: GUCEF_tag_tools
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_tools for platform win32
+        run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-win32/packages/*GUCEF_tag_tools*.zip
+  GUCEF_tag_tools-win64:
+    runs-on: self-hosted
+    env:
+      TARGET_NAME: GUCEF_tag_tools
+      TARGET_PLATFORM: win64
+      TARGET_PROJECT: projects\CMake\targets\GUCEF_tag_tools
+      PRODUCT_NAME: GUCEF_tag_tools
+      CI_TOOL: GITHUB-ACTIONS
+      BUILD_TOOL: CMAKE
+    steps:
+      - uses: actions/checkout@master
+      - name: Build GUCEF_tag_tools for platform win64
+        run: .\projects\CI\targets\ci_build.ps1
+      - name: Archive ZIP build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZIP packages
+          path: |
+            ./common/bin/GUCEF_tag_tools-win64/packages/*GUCEF_tag_tools*.zip

@@ -1,8 +1,16 @@
 common/include/*
+dependencies/json-builder/*
+dependencies/json-parser/*
+dependencies/libparsifal/*
+dependencies/zlib/*
 platform/gucefCOM/*
 platform/gucefCORE/*
 platform/gucefMT/*
 platform/gucefVFS/*
 platform/gucefWEB/*
+plugins/CORE/codecspluginZLIB/*
+plugins/CORE/dstorepluginJSONPARSER/*
+plugins/CORE/dstorepluginPARSIFALXML/*
 tools/GucefLogServiceApp/*
+tools/GucefLogServiceClientPlugin/*
 tools/GucefLogServiceLib/*

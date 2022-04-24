@@ -112,24 +112,49 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 CORE::CString
-LookForConfigFile( const CORE::CString& configFile )
+LookForConfigFile( const CORE::CString& configPath, const CORE::CString& configFile )
 {GUCEF_TRACE;
-
+    
+    if ( !configPath.IsNULLOrEmpty() )
+    {
+        // Maybe we received a fully qualified path to the config file
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
+        if ( !CORE::FileExists( configPath ) )
+        {
+            // Maybe we only received a parent dir and should look for the default filename
+            CORE::CString configFileDir = CORE::StripFilename( configPath );
+            if ( !configFileDir.IsNULLOrEmpty() )
+            {
+                CORE::CString configFilePath = CORE::CombinePath( configFileDir, configFile );
+                if ( CORE::FileExists( configFilePath ) )
+                    return configFilePath; 
+            }
+        }
+        else
+        {
+            return configPath;
+        }
+    }       
+        
+    // Maybe just checking for the file itself works
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFile );
     if ( !CORE::FileExists( configFile ) )
     {
+        // Maybe its in the current working dir, usually the same thing as the check above
         CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
         if ( !CORE::FileExists( configFilePath ) )
         {
+            // Maybe its in the same dir as the program binaries
             configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
             configFilePath = CORE::RelativePath( configFilePath );
-
+            
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
             {            
+                // Maybe its in the O/S temp folder due to write restrictions
                 configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
                 configFilePath = CORE::RelativePath( configFilePath );
 
@@ -164,8 +189,8 @@ LoadConfig( const CORE::CString& bootstrapConfigPath ,
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     
-    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
-    CORE::CString configFilePath = LookForConfigFile( configFile );
+    CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigPath, bootstrapConfigFile );
+    CORE::CString configFilePath = LookForConfigFile( configPath, configFile );
 
     if ( !bootstrapConfigFilePath.IsNULLOrEmpty() )
     {

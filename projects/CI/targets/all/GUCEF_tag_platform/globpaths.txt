@@ -11,6 +11,7 @@ platform/gucefMT/*
 platform/gucefMULTIPLAY/*
 platform/gucefPATCHER/*
 platform/gucefPRODMAN/*
+platform/gucefPUBSUB/*
 platform/gucefSMDRN/*
 platform/gucefVFS/*
 platform/gucefWEB/*

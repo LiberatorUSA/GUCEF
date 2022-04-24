@@ -1,0 +1,15 @@
+common/include/*
+dependencies/libparsifal/*
+platform/gucefCOM/*
+platform/gucefCORE/*
+platform/gucefIMAGE/*
+platform/gucefMT/*
+platform/gucefPATCHER/*
+platform/gucefVFS/*
+plugins/CORE/dstorepluginPARSIFALXML/*
+tools/ArchiveDiff/*
+tools/CMakeListGenerator/*
+tools/DCSBruteInstaller/*
+tools/GucefArchiver/*
+tools/ProjectGen/*
+tools/itvExporter/*

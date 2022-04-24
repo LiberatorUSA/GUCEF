@@ -69,6 +69,7 @@ plugins/VFS/vfspluginITV/*
 plugins/VFS/vfspluginVP/*
 plugins/VFS/vfspluginZIP/*
 tests/MemoryLeakFinder_TestApp/*
+tests/gucefCOMCORE_TestApp/*
 tests/gucefCORE_TestApp/*
 tests/gucefGUI_TestApp/*
 tests/gucefIMAGE_TestApp/*

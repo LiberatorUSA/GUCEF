@@ -1,4 +1,9 @@
 common/include/*
-platform/gucefCORE/include/*
-platform/gucefMT/include/*
+dependencies/json-builder/*
+dependencies/json-parser/*
+dependencies/libparsifal/*
+platform/gucefCORE/*
+platform/gucefMT/*
+plugins/CORE/dstorepluginJSONPARSER/*
+plugins/CORE/dstorepluginPARSIFALXML/*
 tests/gucefCORE_TestApp/*

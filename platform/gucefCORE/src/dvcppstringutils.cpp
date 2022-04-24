@@ -554,8 +554,12 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
     typedef std::vector< CString >  TStringVector;
 
     // First resolve any variables in the paths,.. normalize
+    // This includes getting rid of any redundant foo/../bar segments
     CString absFromPath = RelativePath( fromPath, resolveVars );
     CString absToPath = RelativePath( toPath, resolveVars );
+
+    CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );  
+    CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );    
 
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
@@ -567,34 +571,46 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
 
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path
-    Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, false );
-
+    UInt32 pathEquality = fromPathRemainder.FindMaxSegmentEquality( toPathRemainder, '/', true, false );
+                                                 
     #else
 
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path
-    Int32 pathEquality = (Int32) absFromPath.FindMaxSubstrEquality( absToPath, 0, true, true );
+    UInt32 pathEquality = fromPathRemainder.FindMaxSegmentEquality( toPathRemainder, '/', true, true );
 
     #endif
 
-    CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );
-    CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );
-    pathEquality = toPathRemainder.HasChar( '/', pathEquality, false );
-    if ( pathEquality >= 0 )
-    {
-        toPathRemainder = toPathRemainder.CutChars( pathEquality+1, true );
-        fromPathRemainder = fromPathRemainder.CutChars( pathEquality+1, true );
-        TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
+    // If there is overlap we will need to determine how to get to the other path
+    // If there is no overlap then there is nothing to do
+    if ( pathEquality > 0 )
+    {      
+        // fromPathRemainder
+        //     foo/bar/example
+        //   -->
+        // toPathRemainder   
+        //     foo/lol
+        //   =
+        //     ../../lol            
 
+        fromPathRemainder = fromPathRemainder.CutChars( pathEquality, true, 0 );
+            
+        TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
         CString relativePath;
         for ( UInt32 i=0; i<upDirElements.size(); ++i )
         {
             relativePath += "../";
         }
-        AppendToPath( relativePath, toPathRemainder );
+            
+        toPathRemainder = toPathRemainder.CutChars( pathEquality, true, 0 );
+        relativePath = CombinePath( relativePath, toPathRemainder );
+        if ( !relativePath.IsNULLOrEmpty() && '/' == relativePath[ 0 ] )
+            relativePath = relativePath.CutChars( 1, true, 0 );
         return RelativePath( relativePath, resolveVars );
     }
-    return toPathRemainder;
+
+    // No overlap so we return the entire absolute path to the 'to' location
+    return absToPath;
 }
 
 /*-------------------------------------------------------------------------*/

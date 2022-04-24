@@ -190,8 +190,11 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( 1 == slist.size() );
         
         // test FindMaxSubstrEquality
+        testStr1 = alphabetLc;
         testStr2 = "jklmnopqrstuvwxyz";
-        testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
+        ASSERT_TRUE( testStr2 != testStr1 );
+        UInt32 equality = testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
+        ASSERT_TRUE( 0 == equality );
 
         // test ReplaceEnvelopingSubstr
         testStr1 = "$MYVAR:VALUE$";
@@ -202,6 +205,14 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( testStr2 == "blablabla{{VALUE}}foobar" );
         testStr2 = testStr1.ReplaceEnvelopingSubstr( "$NOT_HERE:", "$", "{{", "}}" );
         ASSERT_TRUE( testStr2 == testStr1 );
+
+        // test CutChars
+        testStr1 = testStr2 = "foobar";
+        testStr2 = testStr1.CutChars( 3, true, 0 );
+        ASSERT_TRUE( testStr2 == "bar" );
+        ASSERT_TRUE( 3 == testStr2.Length() );
+        ASSERT_TRUE( 4 == testStr2.ByteSize() );
+        ASSERT_TRUE( testStr2 != testStr1 );
     }
     catch( ... )
     {
