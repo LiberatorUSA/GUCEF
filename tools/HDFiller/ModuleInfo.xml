@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+	<Module Name="HDFiller" Platform="All" Type="Executable" Tags="tools" >
+		<Dependencies>
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Linker>	
+		<Preprocessor>
+            <Define String="HDFILLER_BUILD_MODULE" />
+        </Preprocessor>
+	</Module>
+</ModuleInfoEntry>

@@ -29,19 +29,10 @@
 #include <stdio.h>
 #include <cstdlib>
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
-
-#ifdef GUCEF_MSWIN_BUILD
-#include <windows.h>
-#endif /* GUCEF_MSWIN_BUILD ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,8 +49,10 @@ const GUCEF::CORE::UInt32 MAXBLOCKS = ( GUCEFCORE_UINT32MAX / BLOCKSIZE ) -1;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-int
-main( int argc , char* argv[] )
+/*
+ *      Application entry point
+ */
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     GUCEF::CORE::UInt8* buffer = new GUCEF::CORE::UInt8[ BLOCKSIZE ];
@@ -102,32 +95,8 @@ main( int argc , char* argv[] )
     }
 
     delete []buffer;
+
 }
-
-/*---------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-
-    return main( argc, argv );
-}
-
-#endif
+GUCEF_OSMAIN_END
 
 /*---------------------------------------------------------------------------*/
