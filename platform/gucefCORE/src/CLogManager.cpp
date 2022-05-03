@@ -134,8 +134,8 @@ CLogManager::CLogManager( void )
     : m_loggers( new CMultiLogger() )
     , m_loggingTask()
     , m_useLogThread( false )
-    , m_bootstrapLog() 
-    , m_busyLogging( false ) 
+    , m_bootstrapLog()
+    , m_busyLogging( false )
     , m_redirectToLogQueue( false )
     , m_logFormatterFactory( false, false )
     , m_defaultLogFormatter()
@@ -160,8 +160,8 @@ CLogManager::~CLogManager()
     ClearLoggers();
     ClearLoggingFormatters();
 
-    m_loggingTask = GUCEF_NULL;
-    
+    m_loggingTask.Unlink();
+
     delete m_loggers;
     m_loggers = GUCEF_NULL;
 }
@@ -171,7 +171,7 @@ CLogManager::~CLogManager()
 void
 CLogManager::RedirectToBootstrapLogQueue( bool redirect )
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeLock lock( this );
 
     m_redirectToLogQueue = redirect;
@@ -277,7 +277,7 @@ CLogManager::ClearLoggers( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CLogManager::AddLoggingFormatterFactory( const CString& name                    ,
                                          TLoggingFormatterFactory* formatterFac ,
                                          bool overrideDefault                   )
@@ -296,7 +296,7 @@ CLogManager::AddLoggingFormatterFactory( const CString& name                    
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CLogManager::RemoveLoggingFormatterFactory( const CString& name )
 {GUCEF_TRACE;
 
@@ -311,7 +311,7 @@ CLogManager::RemoveLoggingFormatterFactory( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CLogManager::ClearLoggingFormatters( void )
 {GUCEF_TRACE;
 
@@ -321,7 +321,7 @@ CLogManager::ClearLoggingFormatters( void )
 
 /*-------------------------------------------------------------------------*/
 
-CLogManager::TLoggingFormatterPtr 
+CLogManager::TLoggingFormatterPtr
 CLogManager::CreateLoggingFormatter( const CString& name )
 {GUCEF_TRACE;
 
@@ -331,17 +331,17 @@ CLogManager::CreateLoggingFormatter( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
-CLogManager::TLoggingFormatterPtr 
+CLogManager::TLoggingFormatterPtr
 CLogManager::CreateDefaultLoggingFormatter( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    return m_logFormatterFactory.Create( m_defaultLogFormatter ); 
+    return m_logFormatterFactory.Create( m_defaultLogFormatter );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CLogManager::SetDefaultLoggingFormatter( const CString& name )
 {GUCEF_TRACE;
 
@@ -381,7 +381,7 @@ CLogManager::SetMinLogLevel( const Int32 logLevel )
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+Int32
 CLogManager::GetMinLogLevel( void ) const
 {GUCEF_TRACE;
 
@@ -552,7 +552,7 @@ CLogManager::FlushLogs( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CLogManager::SetUseLoggingThread( bool useLogThread )
 {GUCEF_TRACE;
 
@@ -562,7 +562,7 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
         if ( useLogThread )
         {
             CLoggingTaskPtr loggingTask( new CLoggingTask( *m_loggers ) );
-            m_loggingTask = loggingTask; 
+            m_loggingTask = loggingTask;
             if ( CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->StartTask( loggingTask ) )
                 m_useLogThread = useLogThread;
         }
@@ -571,7 +571,7 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
             if ( CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->RequestTaskToStop( m_loggingTask->GetTaskId(), false ) )
             {
                 m_useLogThread = useLogThread;
-                m_loggingTask = GUCEF_NULL;
+                m_loggingTask.Unlink();
             }
         }
     }
@@ -579,7 +579,7 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CLogManager::GetUseLoggingThread( void ) const
 {GUCEF_TRACE;
 
@@ -588,7 +588,7 @@ CLogManager::GetUseLoggingThread( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const MT::CILockable* 
+const MT::CILockable*
 CLogManager::AsLockable( void ) const
 {GUCEF_TRACE;
 
@@ -599,7 +599,7 @@ CLogManager::AsLockable( void ) const
 
 bool
 CLogManager::Lock( UInt32 lockWaitTimeoutInMs ) const
-{GUCEF_TRACE;       
+{GUCEF_TRACE;
 
     return m_dataLock.Lock( lockWaitTimeoutInMs );
 }

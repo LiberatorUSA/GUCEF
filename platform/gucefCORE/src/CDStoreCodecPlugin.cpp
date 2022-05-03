@@ -287,7 +287,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
 {GUCEF_TRACE;
 
     if ( IsLoaded() ) return false;
-    
+
     _sohandle = modulePtr;
     if ( NULL != _sohandle )
     {
@@ -364,7 +364,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
              ( _fptable[ DSTOREPLUG_SET_READ_HANDLERS ] == NULL ) ||
              ( _fptable[ DSTOREPLUG_START_READING ] == NULL ) )
         {
-                memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
+                memset( _fptable, 0, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
                 _sohandle = NULL;
 
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Invalid codec module: One or more functions could not be located in the module " + PointerToString( modulePtr ) );
@@ -378,28 +378,28 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
         if ( statusCode > 0 )
         {
             // We have loaded & linked our plugin module
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodecPlugin: Successfully loaded module and invoked Init() which returned status " + 
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodecPlugin: Successfully loaded module and invoked Init() which returned status " +
                     Int32ToString( statusCode  ) + " using module: " + PointerToString( modulePtr ) );
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Name: " + GetName() );
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
 
             // Copy the given metadata and update it with info from the actual module
-            m_metaData = new CPluginMetaData( *pluginMetaData );                 
+            m_metaData = new CPluginMetaData( *pluginMetaData );
             m_metaData->SetDescription( GetDescription() );
             m_metaData->SetCopyright( GetCopyright() );
             m_metaData->SetVersion( GetVersion() );
-            
+
             return true;
         }
         else
         {
-            memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
+            memset( _fptable, 0, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
             _sohandle = NULL;
             _plugdata = NULL;
 
             GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Initialization routine reported an error for module " + PointerToString( modulePtr ) );
             return false;
-        }        
+        }
     }
 
     return false;
@@ -417,7 +417,7 @@ CDStoreCodecPlugin::Unlink( void )
         ( (TDSTOREPLUGFPTR_Shutdown) _fptable[ DSTOREPLUG_SHUTDOWN ] )( &_plugdata );
 
         // Cleanup recources
-        memset( _fptable, NULL, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
+        memset( _fptable, 0, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
         m_metaData = NULL;
         _sohandle = NULL;
     }
@@ -470,7 +470,7 @@ void
 CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
                                void** filedata    )
 {GUCEF_TRACE;
-        
+
     int nodeType( n->GetNodeType() );
     UInt32 count( n->GetAttCount() );
     const char* name( n->GetName().C_String() );
@@ -560,7 +560,7 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
 {GUCEF_TRACE;
 
     Create_Path_Directories( filename.C_String() );
-    
+
     CFileAccess access( filename, "wb" );
     if ( access.IsValid() )
     {

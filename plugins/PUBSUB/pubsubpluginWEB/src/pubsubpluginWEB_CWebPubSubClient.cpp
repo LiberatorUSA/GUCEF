@@ -22,7 +22,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <Objbase.h>
 #include <string.h>
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
@@ -95,7 +94,7 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
+            m_metricsTimer = new CORE::CTimer( 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -109,7 +108,7 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
 
 CWebPubSubClient::~CWebPubSubClient()
 {GUCEF_TRACE;
-    
+
     Disconnect();
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -120,14 +119,14 @@ CWebPubSubClient::~CWebPubSubClient()
         ++i;
     }
     m_topicMap.clear();
-    
+
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CWebPubSubClientConfig& 
+CWebPubSubClientConfig&
 CWebPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
@@ -151,14 +150,14 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsPublishing = true;                    // We support Web clients consuming messages in a variaty of Webby ways
     features.supportsSubscribing = true;                   // We support Web clients pushing messages in a variaty of Webby ways
     features.supportsMetrics = true;                       // This plugin has support for reporting its own set of metrics
-    features.supportsAutoReconnect = true;                 // Server port can attempt to auto-re-open on error and such       
-    
+    features.supportsAutoReconnect = true;                 // Server port can attempt to auto-re-open on error and such
+
     // todo:
     features.supportsAbsentMsgReceivedAck = false;         // Since MSMQ is a queue, by default you consume the message when you read it
-    features.supportsAckUsingLastMsgInBatch = false;       // Even when using LookupID we have to operate per message. We dont track the batch ourselves    
-    features.supportsBookmarkingConcept = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this    
+    features.supportsAckUsingLastMsgInBatch = false;       // Even when using LookupID we have to operate per message. We dont track the batch ourselves
+    features.supportsBookmarkingConcept = true;            // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
     features.supportsAutoBookmarking = true;               // Always getting the top msg in the queue could be thought of as "remembering your last read position" so as such we will claim MSMQ supports this
-    features.supportsMsgIdBasedBookmark = false;           // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
+    features.supportsMsgIdBasedBookmark = false;           // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsMsgIndexBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsMsgDateTimeBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsServerSideBookmarkPersistance = true; // since MSMQ is a queue it remembers simply through consumption
@@ -206,7 +205,7 @@ CWebPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopic*
 CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -225,7 +224,7 @@ CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -234,14 +233,14 @@ CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
-        
-        delete topicAccess;        
+
+        delete topicAccess;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+const PUBSUB::CPubSubClientTopicConfig*
 CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -259,7 +258,7 @@ CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CWebPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
                                              const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
@@ -297,7 +296,7 @@ CWebPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topic
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CWebPubSubClient::GetType( void ) const
 {GUCEF_TRACE;
 
@@ -306,7 +305,7 @@ CWebPubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CWebPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
@@ -315,7 +314,7 @@ CWebPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CWebPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 {GUCEF_TRACE;
 
@@ -408,7 +407,7 @@ CWebPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                         CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    // Quickly grab a snapshot of metric values for all topics 
+    // Quickly grab a snapshot of metric values for all topics
     // we don't combine this with metrics publishing as it adds to metrics timeframe drift across topics
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )

@@ -2922,7 +2922,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
 
     // Add project info
     outputInfo.SetName( "Project" );
-    outputInfo.SetAttribute( "ModuleCount", projectInfo.modules.size() );
+    outputInfo.SetAttribute( "ModuleCount", (UInt64) projectInfo.modules.size() );
 
     // Add info for each module
     TModuleInfoVector::const_iterator i = projectInfo.modules.begin();
@@ -2943,7 +2943,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         headersInfoNode.SetName( "Files" );
         headersInfoNode.SetAttribute( "Type", "Headers" );
         headersInfoNode.SetAttribute( "Platform", "All" );
-        headersInfoNode.SetAttribute( "DirCount", moduleInfo.includeDirs.size() );
+        headersInfoNode.SetAttribute( "DirCount", (UInt64) moduleInfo.includeDirs.size() );
         TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
@@ -2955,7 +2955,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             fileNode.SetName( "File" );
 
             const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", fileVector.size() );
+            pathNode.SetAttribute( "FileCount", (UInt64) fileVector.size() );
             TStringVector::const_iterator m = fileVector.begin();
             while ( m != fileVector.end() )
             {
@@ -2976,7 +2976,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringVectorMap& platformHeaders = (*x).second;
             headersInfoNode.SetAttribute( "Platform", (*x).first );
-            headersInfoNode.SetAttribute( "DirCount", platformHeaders.size() );
+            headersInfoNode.SetAttribute( "DirCount", (UInt64) platformHeaders.size() );
 
             n = platformHeaders.begin();
             while ( n != platformHeaders.end() )
@@ -2989,7 +2989,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
                 fileNode.SetName( "File" );
 
                 const TStringVector& fileVector = (*n).second;
-                pathNode.SetAttribute( "FileCount", fileVector.size() );
+                pathNode.SetAttribute( "FileCount", (UInt64) fileVector.size() );
                 TStringVector::const_iterator m = fileVector.begin();
                 while ( m != fileVector.end() )
                 {
@@ -3011,7 +3011,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         sourceInfoNode.SetName( "Files" );
         sourceInfoNode.SetAttribute( "Type", "Source" );
         sourceInfoNode.SetAttribute( "Platform", "All" );
-        sourceInfoNode.SetAttribute( "DirCount", moduleInfo.sourceDirs.size() );
+        sourceInfoNode.SetAttribute( "DirCount", (UInt64) moduleInfo.sourceDirs.size() );
         n = moduleInfo.sourceDirs.begin();
         while ( n != moduleInfo.sourceDirs.end() )
         {
@@ -3023,7 +3023,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
             fileNode.SetName( "File" );
 
             const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", fileVector.size() );
+            pathNode.SetAttribute( "FileCount", (UInt64) fileVector.size() );
             TStringVector::const_iterator m = fileVector.begin();
             while ( m != fileVector.end() )
             {
@@ -3044,7 +3044,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringVectorMap& platformSources = (*x).second;
             sourceInfoNode.SetAttribute( "Platform", (*x).first );
-            sourceInfoNode.SetAttribute( "DirCount", moduleInfo.sourceDirs.size() );
+            sourceInfoNode.SetAttribute( "DirCount", (UInt64) moduleInfo.sourceDirs.size() );
 
             n = platformSources.begin();
             while ( n != platformSources.end() )
@@ -3057,7 +3057,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
                 fileNode.SetName( "File" );
 
                 const TStringVector& fileVector = (*n).second;
-                pathNode.SetAttribute( "FileCount", fileVector.size() );
+                pathNode.SetAttribute( "FileCount", (UInt64) fileVector.size() );
                 TStringVector::const_iterator m = fileVector.begin();
                 while ( m != fileVector.end() )
                 {
@@ -3078,7 +3078,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         CORE::CDataNode includesInfoNode;
         includesInfoNode.SetName( "Includes" );
         includesInfoNode.SetAttribute( "Platform", "All" );
-        includesInfoNode.SetAttribute( "Count", moduleInfo.dependencyIncludeDirs.size() );
+        includesInfoNode.SetAttribute( "Count", (UInt64) moduleInfo.dependencyIncludeDirs.size() );
         includesInfoNode.SetAttribute( "Source", "Dependency" );
         TStringSet::const_iterator h = moduleInfo.dependencyIncludeDirs.begin();
         while ( h !=  moduleInfo.dependencyIncludeDirs.end() )
@@ -3099,7 +3099,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         {
             const TStringSet& platformIncludes = (*q).second;
             includesInfoNode.SetAttribute( "Platform", (*q).first );
-            includesInfoNode.SetAttribute( "Count", platformIncludes.size() );
+            includesInfoNode.SetAttribute( "Count", (UInt64) platformIncludes.size() );
             includesInfoNode.SetAttribute( "Source", "Dependency" );
 
             h = platformIncludes.begin();
@@ -3121,7 +3121,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // These are already represented in the path attribute of the files section
         // but for ease of processing and clarity they are provided again in the includes section
         includesInfoNode.SetAttribute( "Platform", "All" );
-        includesInfoNode.SetAttribute( "Count", moduleInfo.includeDirs.size() );
+        includesInfoNode.SetAttribute( "Count", (UInt64) moduleInfo.includeDirs.size() );
         includesInfoNode.SetAttribute( "Source", "Self" );
         n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
@@ -3189,7 +3189,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // Add all the module dependencies
         CORE::CDataNode dependenciesNode;
         dependenciesNode.SetName( "Dependencies" );
-        dependenciesNode.SetAttribute( "Count", moduleInfo.dependencies.size() );
+        dependenciesNode.SetAttribute( "Count", (UInt64) moduleInfo.dependencies.size() );
         TStringVector::const_iterator m = moduleInfo.dependencies.begin();
         while ( m != moduleInfo.dependencies.end() )
         {
@@ -3204,7 +3204,7 @@ GenerateProjectInfoDataTree( const TProjectInfo& projectInfo ,
         // Add all the libraries that are linked but not part of the overall project
         CORE::CDataNode linkedLibrariesNode;
         linkedLibrariesNode.SetName( "LinkedLibraries" );
-        linkedLibrariesNode.SetAttribute( "Count", moduleInfo.linkedLibraries.size() );
+        linkedLibrariesNode.SetAttribute( "Count", (UInt64) moduleInfo.linkedLibraries.size() );
         m = moduleInfo.linkedLibraries.begin();
         while ( m != moduleInfo.linkedLibraries.end() )
         {
@@ -3234,7 +3234,7 @@ WriteProjectInfoDataTreeToDisk( const TProjectInfo& projectInfo         ,
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preparing to write all project information to disk file \"" + outputInfoFilename + "\"" );
 
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
-    if ( NULL != codec )
+    if ( !codec.IsNULL() )
     {
         CORE::CDataNode info;
         if ( GenerateProjectInfoDataTree( projectInfo, info ) )

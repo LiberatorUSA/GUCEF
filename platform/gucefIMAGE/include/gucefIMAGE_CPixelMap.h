@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_IMAGE_CPIXELMAP_H
@@ -27,6 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <limits>
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
@@ -77,59 +78,59 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     public:
 
     typedef CORE::CTSharedPtr< CPixelMap, MT::CMutex > TPixelMapPtr;
-    typedef std::map< CPixel, UInt32 > TColorCounters; 
-    
+    typedef std::map< CPixel, UInt32 > TColorCounters;
+
     CPixelMap( const TImageMipMapLevel& mipmapLevel );
-    
-    CPixelMap( const void* pixelMapData                      , 
+
+    CPixelMap( const void* pixelMapData                      ,
                const UInt32 widthInPixels                    ,
                const UInt32 heightInPixels                   ,
                const TPixelStorageFormat pixelStorageFormat  ,
                const TBuildinDataType pixelComponentDataType );
 
     CPixelMap( const CPixelMap& src );
-    
+
     virtual ~CPixelMap();
-    
+
     CPixelMap& operator=( const CPixelMap& src );
-    
+
     UInt32 GetWidthInBytes( void ) const;
-    
+
     UInt32 GetHeightInBytes( void ) const;
 
     UInt32 GetWidthInPixels( void ) const;
-    
+
     UInt32 GetHeightInPixels( void ) const;
-    
+
     UInt32 GetPixelCount( void ) const;
-    
+
     UInt32 GetPixelChannelSize( void ) const;
-    
+
     UInt32 GetSizeOfPixelInBytes( void ) const;
-    
-    UInt32 GetTotalSizeInBytes( void ) const; 
-    
+
+    UInt32 GetTotalSizeInBytes( void ) const;
+
     UInt32 GetNumberOfChannelsPerPixel( void ) const;
-    
+
     UInt64 GetTotalNumberOfChannelComponentValues( void ) const;
-    
+
     TPixelStorageFormat GetPixelStorageFormat( void ) const;
-    
+
     void* GetDataPtr( const UInt32 pixelOffset = 0 );
-    
+
     const void* GetDataPtr( const UInt32 pixelOffset = 0 ) const;
 
     void* RelinquishPixelDataOwnership( void );
 
     TBuildinDataType GetPixelComponentDataType( void ) const;
-   
+
     void* GetDataAtScanLine( const UInt32 scanLineIndex );
-    
+
     const void* GetDataAtScanLine( const UInt32 scanLineIndex ) const;
 
     /**
      *  flips image vertically
-     *  This operation will be applied to all frames and mipmap levels    
+     *  This operation will be applied to all frames and mipmap levels
      *
      *  @return wheter or the the flip was successfull.
      */
@@ -141,7 +142,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *      @return wheter or the the flip was successfull.
      */
     bool FlipHorizontal( void );
-    
+
     /**
      *  Use mask color given to set the aplha value of each pixel to 0
      *  when the color matches the given values.
@@ -155,29 +156,29 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      */
     bool ApplyMaskColor( Float32 r ,
                          Float32 g ,
-                         Float32 b );    
+                         Float32 b );
 
     /**
      *  Attempts to convert the current pixel format into the given format
      */
-    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
                           const TBuildinDataType pixelComponentDataType );
 
     /**
      *  Attempts to convert the pixel format into the given format and gives back the new pixelmap
      */
-    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
                           const TBuildinDataType pixelComponentDataType ,
                           TPixelMapPtr& newMap                          );
 
     bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat );
 
-    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
                           TPixelMapPtr& newMap                          );
 
     bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType );
 
-    bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType , 
+    bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType ,
                           TPixelMapPtr& newMap                          );
 
     /**
@@ -186,7 +187,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *      @return Wheter or not the image data has an alpha channel.
      */
     bool GetHasAlpha( void ) const;
-    
+
     /**
      *      Unloads pixel data if needed and resets values to there defaults
      */
@@ -237,7 +238,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *  Returns the normalization flag. This can only be 'true' if the pixel component type is not an integer
      */
     bool IsNormalizedAsPercentage( void ) const;
-    
+
     /**
      *  Assigns the data to the object.
      *  If no source pixel data is given then a 0'ed pixel grid
@@ -249,12 +250,12 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *  @param pixelStorageFormat format used to define a pixel, ie. how the pixel component(s) make up a pixel
      *  @param pixelComponentDataType data type used to store a single pixel component of a single pixel
      */
-    void Assign( const void* pixelMapData                      , 
+    void Assign( const void* pixelMapData                      ,
                  const UInt32 widthInPixels                    ,
                  const UInt32 heightInPixels                   ,
                  const TPixelStorageFormat pixelStorageFormat  ,
                  const TBuildinDataType pixelComponentDataType );
-                 
+
     /**
      *  Copy the pixel map data to the resource given.
      *  No meta data is added, just the pixel map itself
@@ -264,16 +265,16 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     bool CopyTo( CORE::CIOAccess& resource );
 
     /**
-     *  Determines the actual number of unique colors 
+     *  Determines the actual number of unique colors
      */
     UInt32 DetermineActualColorCount( void ) const;
 
     bool GetColorCounters( TColorCounters& colorCountMap ) const;
-    
+
     static UInt32 GetChannelCountForFormat( const TPixelStorageFormat pixelStorageFormat );
-    
+
     static UInt32 GetPixelChannelSize( const TBuildinDataType pixelComponentDataType );
-    
+
     static UInt32 GetPixelSize( const TPixelStorageFormat pixelStorageFormat  ,
                                 const TBuildinDataType pixelComponentDataType );
 
@@ -287,7 +288,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                                            const TBuildinDataType pixelComponentDataType );
 
     static bool GetHasAlpha( const TPixelStorageFormat pixelStorageFormat );
-    
+
     /**
      *  Utility member function allowing assignment to the channels of a pixel without
      *  having to directly deal with different storage sizes of each channel
@@ -297,12 +298,12 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                         const T* channelValues  );
 
     private:
-    
+
     CPixelMap( void );
-    
+
     template< typename T >
     bool ConvertFormatToImp( T* pixelMapData                               ,
-                             const TPixelStorageFormat pixelStorageFormat  , 
+                             const TPixelStorageFormat pixelStorageFormat  ,
                              const TBuildinDataType pixelComponentDataType ,
                              TPixelMapPtr& newMap                          );
 
@@ -310,17 +311,17 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     bool ApplyContrastImp( Float32 adjustmentPercentage );
 
     template < typename T >
-    bool ApplyBrightnessImp( Float32 adjustmentPercentage );    
+    bool ApplyBrightnessImp( Float32 adjustmentPercentage );
 
     private:
-    
+
     UInt32 m_widthInPixels;
     UInt32 m_heightInPixels;
     TPixelStorageFormat m_pixelStorageFormat;
     TBuildinDataType m_pixelComponentDataType;
     bool m_isNormalizedAsPercentage;
-    
-    UInt8* m_pixelMapData; 
+
+    UInt8* m_pixelMapData;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -341,7 +342,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
 
     UInt32 channelCount = GetNumberOfChannelsPerPixel();
     void* pixelAddr = GetDataPtr( pixelIndex );
-    
+
     // Pixel color values as an industry standard dont use negative values
     // 0 is already the absence of light, negative light makes no sense, thus we use:
     // NewValue = (OldValue * NewRange) / OldRange
@@ -423,7 +424,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
                 }
             }
             return true;
-        }             
+        }
         case DATATYPE_LE_UINT16:
         {
             CORE::UInt16* pixel = (CORE::UInt16*) pixelAddr;
@@ -497,7 +498,7 @@ CPixelMap::AssignToPixel( const UInt32 pixelIndex ,
                 {
                     pixel[ i ] = static_cast< CORE::Int32 >( ( channelValues[ i ] * std::numeric_limits< T >::max() ) / std::numeric_limits< CORE::Int32 >::max() );
                 }
-            }            
+            }
             return true;
         }
         case DATATYPE_LE_UINT64:

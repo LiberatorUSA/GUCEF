@@ -95,7 +95,7 @@ struct SPcmWaveHeader
     char ChunkID[ 4 ];              // should be "RIFF"
     CORE::Int32 ChunkSize;          // 36 + SubChunk2Size, or more precisely: 4 + (8 + SubChunk1Size) + (8 + SubChunk2Size). This is the size of the rest of the chunk following this number.  This is the size of the entire file in bytes minus 8 bytes for the two fields not included in this count: ChunkID and ChunkSize.
     char Format[ 4 ];               // should be "WAVE"
-    
+
     // The format sub chunk
     char Subchunk1ID[ 4 ];          // should be "fmt "
     CORE::Int32 Subchunk1Size;      // 16 for PCM. This is the size of the rest of the Subchunk which follows this number.
@@ -134,7 +134,7 @@ ConfigureITVPcmHeader( PcmWaveHeader& header, CORE::Int32 dataSize )
     header.ByteRate = header.SampleRate * header.NumChannels * (header.BitsPerSample/8);
     header.BlockAlign = header.NumChannels * (header.BitsPerSample/8);
     memcpy( header.Subchunk2ID, "data", 4 );
-    header.Subchunk2Size = dataSize;    
+    header.Subchunk2Size = dataSize;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -161,8 +161,8 @@ WritePcmWaveHeader( const PcmWaveHeader& header ,
 /*-------------------------------------------------------------------------*/
 
 void
-WriteITVPcm( CORE::CIOAccess& rawStream , 
-             CORE::Int32 rawDataSize    , 
+WriteITVPcm( CORE::CIOAccess& rawStream ,
+             CORE::Int32 rawDataSize    ,
              CORE::CIOAccess& outStream )
 {
     PcmWaveHeader header;
@@ -191,19 +191,19 @@ LookForConfigFile( const CORE::CString& configFile )
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {            
+            {
                 configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
                 configFilePath = CORE::RelativePath( configFilePath );
 
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
                 if ( !FileExists( configFilePath ) )
-                {                                        
+                {
                     return CORE::CString::Empty;
                 }
             }
         }
 
-        return configFilePath; 
+        return configFilePath;
     }
 
     return configFile;
@@ -227,7 +227,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
     #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    
+
     CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
     CORE::CString configFilePath = LookForConfigFile( configFile );
 
@@ -247,7 +247,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
     }
 
     CORE::CGlobalConfigValueList globalCfg;
-    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );
     globalCfg.SetAllowDuplicates( false );
     globalCfg.SetAllowMultipleValues( true );
 
@@ -352,7 +352,7 @@ GUCEF_OSMAIN_BEGIN
 
             bool listArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "list", "true" ) );
             bool extractArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "extract", "false" ) );
-            bool overwrite = CORE::StringToBool( keyValueList.GetValueAlways( "overwrite", "false" ) ); 
+            bool overwrite = CORE::StringToBool( keyValueList.GetValueAlways( "overwrite", "false" ) );
             bool extractImages = CORE::StringToBool( keyValueList.GetValueAlways( "extractImages", "true" ) );
             bool extractAudio = CORE::StringToBool( keyValueList.GetValueAlways( "extractAudio", "true" ) );
             bool extractAnimations = CORE::StringToBool( keyValueList.GetValueAlways( "extractAnimations", "true" ) );
@@ -371,44 +371,44 @@ GUCEF_OSMAIN_BEGIN
             // Add the archive dir as a VFS root named root
             vfs.AddRoot( archiveDir, "root", false, false );
 
-            VFS::CVFS::TStringSet archiveFileNames;
+            VFS::CVFS::TStringVector archiveFileNames;
             if ( -1 < archiveFilename.HasChar( '*' ) )
             {
                 // Use the filename as a filter
-                vfs.GetList( archiveFileNames, CORE::CString::Empty, false, false, archiveFilename, true, false );
+                vfs.GetFileList( archiveFileNames, CORE::CString::Empty, false, false, archiveFilename );
             }
             else
             {
                 // directly use the filename
-                archiveFileNames.insert( archiveFilename );
+                archiveFileNames.push_back( archiveFilename );
             }
 
-            GUCEF::IMAGE::CImage palette;  
-            
+            GUCEF::IMAGE::CImage palette;
+
             // Batch extract each of the archives
-            VFS::CVFS::TStringSet::iterator n = archiveFileNames.begin();
+            VFS::CVFS::TStringVector::iterator n = archiveFileNames.begin();
             while ( n != archiveFileNames.end() )
-            {            
+            {
                 archiveFilename = (*n);
-                
+
                 if ( vfs.FileExists( archiveFilename ) )
-                {   
+                {
                     CORE::CString mount = '[' + archiveFilename + ']';
-                    
+
                     // Mount the archive
                     if ( vfs.MountArchive( mount, archiveFilename, archiveType, mount, false, false ) )
                     {
                         if ( listArchiveContents )
                         {
                             // Get the contents of the archive
-                            VFS::CVFS::TStringSet archiveContent;
-                            vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
+                            VFS::CVFS::TStringVector archiveContent;
+                            vfs.GetFileList( archiveContent, mount, true, true, CORE::CString::Empty );
 
                             // Write the contents to the log which includes the console
                             console.GetLogger()->SetFormatAsConsoleUI( true );
                             GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** BEGIN ARCHIVE CONTENTS *****" );
                             CORE::UInt32 n=1;
-                            VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
+                            VFS::CVFS::TStringVector::iterator i = archiveContent.begin();
                             while ( i != archiveContent.end() )
                             {
                                 GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, CORE::UInt32ToString( n ) + ": " + (*i) );
@@ -421,9 +421,9 @@ GUCEF_OSMAIN_BEGIN
                         if ( extractArchiveContents )
                         {
                             // Get the contents of the archive
-                            VFS::CVFS::TStringSet archiveContent;
-                            vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
-                            
+                            VFS::CVFS::TStringVector archiveContent;
+                            vfs.GetFileList( archiveContent, mount, true, true, CORE::CString::Empty );
+
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "archive contains " + CORE::ToString( archiveContent.size() ) + " entries" );
 
                             // prepare the output folder
@@ -432,9 +432,9 @@ GUCEF_OSMAIN_BEGIN
                             if ( CORE::CreateDirs( archiveOutputDir ) )
                             {
                                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Output path " + archiveOutputDir + " is available for extraction" );
-                            
+
                                 // Obtain access to each of the resources in the archive and extract it
-                                VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
+                                VFS::CVFS::TStringVector::iterator i = archiveContent.begin();
                                 while ( i != archiveContent.end() )
                                 {
                                     CORE::CString filename = CORE::ExtractFilename( (*i) );
@@ -493,11 +493,11 @@ GUCEF_OSMAIN_BEGIN
                                                     // Skip ITV header
                                                     fileAccess->Setpos( 55 );
                                                     fileSize -= 55;
-                                                
+
                                                     // Dump remainder as FLIC file
                                                     CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
                                                     extractedFile.Close();
-                                        
+
                                                     if ( fileSize == bytesExtracted )
                                                     {
                                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into FLIC file: " + extractedFilePath );
@@ -524,7 +524,7 @@ GUCEF_OSMAIN_BEGIN
                                         if ( "itv1" == dataType )
                                         {
                                             if ( extractImages )
-                                            {                                            
+                                            {
                                                 // Images are extracted as a common format instead
                                                 IMAGE::CImage image;
                                                 if ( image.Load( *file->GetAccess(), dataType ) )
@@ -534,10 +534,10 @@ GUCEF_OSMAIN_BEGIN
                                                     if ( !palette.TryGetPixelMap( 0, 0, palettePixels ) )
                                                     {
                                                         if ( vfs.FileExists( archiveFilename ) )
-                                                        {   
+                                                        {
                                                             CORE::CString palleteArchive = "IV_PAL.RES";
                                                             CORE::CString mount = '[' + palleteArchive + ']';
-                    
+
                                                             // Mount the archive
                                                             if ( vfs.MountArchive( mount, palleteArchive, archiveType, mount, false, false ) )
                                                             {
@@ -547,7 +547,7 @@ GUCEF_OSMAIN_BEGIN
                                                                 {
                                                                     if ( palette.Load( *paletteFile->GetAccess(), "itv5" ) )
                                                                     {
-                                                                        palettePixels = palette.GetPixelMap(); 
+                                                                        palettePixels = palette.GetPixelMap();
                                                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded palette for ITV images from " + subPath );
                                                                     }
                                                                 }
@@ -558,12 +558,12 @@ GUCEF_OSMAIN_BEGIN
                                                     if ( palettePixels )
                                                     {
                                                         image.GetPixelMap()->FlipHorizontal();
-                                                    
+
                                                         // Apply the palette so that we can save in another format
                                                         if ( image.GetPixelMap()->ApplyPalette( palettePixels ) )
                                                         {
                                                             image.GetPixelMap()->ApplyBrightness( 200 );
-                                                        
+
                                                             extractedFilePath = extractedFilePath + ".png";
                                                             CORE::CFileAccess extractedFile;
                                                             if ( extractedFile.Open( extractedFilePath, "wb" ) )
@@ -572,24 +572,24 @@ GUCEF_OSMAIN_BEGIN
                                                                 {
                                                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully coverted image to PNG saved to " + extractedFilePath );
                                                                 }
-                                                            }                                                        
+                                                            }
                                                         }
                                                         else
                                                         {
                                                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to apply palette to image " + file->GetFilename() );
-                                                        } 
+                                                        }
                                                     }
                                                     else
                                                     {
                                                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain palette for image " + file->GetFilename() );
-                                                    }  
+                                                    }
                                                 }
                                             }
                                         }
                                         else
                                         {
                                             if ( extractOther )
-                                            {                                            
+                                            {
                                                 CORE::CFileAccess extractedFile;
                                                 if ( extractedFile.Open( extractedFilePath, "wb" ) )
                                                 {
@@ -597,7 +597,7 @@ GUCEF_OSMAIN_BEGIN
                                                     CORE::UInt32 fileSize = fileAccess->GetSize();
                                                     CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
                                                     extractedFile.Close();
-                                        
+
                                                     if ( fileSize == bytesExtracted )
                                                     {
                                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
@@ -613,7 +613,7 @@ GUCEF_OSMAIN_BEGIN
                                                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to open target file for writing: " + extractedFilePath );
                                                 }
                                             }
-                                        }                                                                                                                
+                                        }
                                     }
                                     else
                                     {
@@ -621,9 +621,9 @@ GUCEF_OSMAIN_BEGIN
                                     }
                                     ++i;
                                 }
-                            }                                                
+                            }
                         }
-                    
+
                         if ( !vfs.UnmountArchiveByName( mount ) )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to unmount archive" );
@@ -648,7 +648,7 @@ GUCEF_OSMAIN_BEGIN
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Missing minimal param \"archive\" thus no idea which archive to use" );
         }
     }
-	
+
 	GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();

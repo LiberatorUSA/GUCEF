@@ -65,17 +65,17 @@ struct EnableIfNot< false, T > { typedef T type; };
 
 /**
  *  C++98 compatible SFINAE template helper
- *  Allows for checking for the existance of the typedef TContainedType 
+ *  Allows for checking for the existance of the typedef TContainedType
  */
-template < class T > 
+template < class T >
 struct TypeHasContainedType
 {
     // For the compile time comparison.
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename TestClass::TContainedType* /*unused*/ ) { }
-    template < typename TestClass > static no&  test( ... ) { }
+    template < typename TestClass > static yes& test( typename TestClass::TContainedType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
     enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
@@ -85,17 +85,17 @@ struct TypeHasContainedType
 
 /**
  *  C++98 compatible SFINAE template helper
- *  Allows for checking for the existance of the typedef TLockType 
+ *  Allows for checking for the existance of the typedef TLockType
  */
-template < class T > 
+template < class T >
 struct TypeHasLockType
 {
     // For the compile time comparison.
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename TestClass::TLockType* /*unused*/ ) { }
-    template < typename TestClass > static no&  test( ... ) { }
+    template < typename TestClass > static yes& test( typename TestClass::TLockType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
     enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
@@ -107,7 +107,7 @@ struct TypeHasLockType
  *  C++98 compatible SFINAE template helper
  *  Allows for checking for the existance of the member function TContainedType* T::GetPointerAlways
  */
-template < class T > 
+template < class T >
 struct TypeHasMemberFunctionGetPointerAlways
 {
     // For the compile time comparison.
@@ -116,8 +116,8 @@ struct TypeHasMemberFunctionGetPointerAlways
 
     template <typename U, U u> struct reallyHas;
 
-    template < typename TestClass > static yes& test( reallyHas< typename TestClass::TContainedType* (TestClass::*)(), &TestClass::GetPointerAlways >* /*unused*/ ) { }
-    template < typename TestClass > static no&  test( ... ) { }
+    template < typename TestClass > static yes& test( reallyHas< typename TestClass::TContainedType* (TestClass::*)(), &TestClass::GetPointerAlways >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
     enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
