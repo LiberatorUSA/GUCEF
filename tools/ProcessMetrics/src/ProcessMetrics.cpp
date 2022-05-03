@@ -436,7 +436,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
     if ( m_pubSubClient.IsNULL() || GUCEF_NULL == m_thresholdNotificationPublishTopic )
         return;
 
-    COMCORE::CBasicPubSubMsg msg;
+    PUBSUB::CBasicPubSubMsg msg;
 
     msg.AddKeyValuePair( "ProcessMetrics.EventMsgType", "MetricThresholdExceeded" );
     msg.AddKeyValuePair( "ProcessMetrics.MetricName", metricName );

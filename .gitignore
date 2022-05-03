@@ -16,3 +16,4 @@ ProjectGenerator_Log.txt
 dependencies/android-ndk-r21d/
 projects/Android/obj/
 projects/Android/libs/
+projects/k3s/github/vanvelzen-github-runner-base-latest.tar

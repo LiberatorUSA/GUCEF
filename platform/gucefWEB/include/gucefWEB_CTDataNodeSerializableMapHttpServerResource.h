@@ -167,29 +167,29 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
     CORE::CIValueToDataNodeSerializer* m_valueSerializer;
 
     private:
-    
-    template < typename S >    
-    bool SerializeMappedType( const S* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
-        { return GUCEF_NULL != ptr ? m_valueSerializer->Serialize( *mappedType, domRootNode, serializerOptions ) : false; }
 
-    template < typename S >    
-    bool SerializeMappedType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+    template < typename S >
+    bool SerializeMappedType( const S* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType ? m_valueSerializer->Serialize( *mappedType, domRootNode, serializerOptions ) : false; }
+
+    template < typename S >
+    bool SerializeMappedType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Serialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
 
-    template < typename S >    
-    bool SerializeMappedType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions) 
+    template < typename S >
+    bool SerializeMappedType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions)
         { return m_valueSerializer->Serialize( mappedType, domRootNode, serializerOptions ); }
 
     template < typename S >
-    bool DeserializeMappedType( S* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+    bool DeserializeMappedType( S* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != mappedType ? m_valueSerializer->Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
 
     template < typename S >
-    bool DeserializeMappedType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+    bool DeserializeMappedType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
        { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Deserialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
-    
+
     template < typename S >
-    bool DeserializeMappedType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions ) 
+    bool DeserializeMappedType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
        { return m_valueSerializer->Deserialize( mappedType, domRootNode, serializerOptions ); }
 
     CTDataNodeSerializableMapHttpServerResource( void );

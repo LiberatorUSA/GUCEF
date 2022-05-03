@@ -1,0 +1,86 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: runner-deployment
+  namespace: github-runners
+spec:
+  template:
+    spec:
+
+      securityContext:
+        #All level/role/type/user values will vary based on your SELinux policies.
+        #See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/container_security_guide/docker_selinux_security_policy for information about SELinux with containers
+        seLinuxOptions: 
+          level: "s0"
+          role: "system_r"
+          type: "super_t"
+          user: "system_u"
+          
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/test
+        operator: Exists
+
+      repository: LiberatorUSA/GUCEF
+      
+      # specify the container image to use
+      # almost always this needs to be a derivative of the basic runner image or you wont have any build tools
+      image: vanvelzen/github-runner-base:latest
+
+      # if you created the image locally you can set the imagePullPolicy not to pull
+      # this is one way of avoiding the 'ErrImagePull' problem since k3s wont check its registries for the image
+      imagePullPolicy: Never
+
+      # Timeout after a node crashed or became unreachable to evict your pods somewhere else (default 5mins)
+      tolerations:
+        - key: "node.kubernetes.io/unreachable"
+          operator: "Exists"
+          effect: "NoExecute"
+          tolerationSeconds: 10
+      # true (default) = The runner restarts after running jobs, to ensure a clean and reproducible build environment
+      # false = The runner is persistent across jobs and doesn't automatically restart
+      # This directly controls the behaviour of `--once` flag provided to the github runner
+      ephemeral: false
+      # true (default) = A privileged docker sidecar container is included in the runner pod.
+      # false = A docker sidecar container is not included in the runner pod and you can't use docker.
+      # If set to false, there are no privileged container and you cannot use docker.
+      dockerEnabled: false
+      # Optional Docker containers network MTU
+      # If your network card MTU is smaller than Docker's default 1500, you might encounter Docker networking issues.
+      # To fix these issues, you should setup Docker MTU smaller than or equal to that on the outgoing network card.
+      # More information:
+      # - https://mlohr.com/docker-mtu/
+      dockerMTU: 1500
+      # Optional Docker registry mirror
+      # Docker Hub has enabled rate-limiting for free plans.
+      # To avoid disruptions in your CI/CD pipelines, you might want to setup an external or on-premises Docker registry mirror.
+      # More information:
+      # - https://docs.docker.com/docker-hub/download-rate-limit/
+      # - https://cloud.google.com/container-registry/docs/pulling-cached-images
+      dockerRegistryMirror: https://mirror.gcr.io/
+      # false (default) = Docker support is provided by a sidecar container deployed in the runner pod.
+      # true = No docker sidecar container is deployed in the runner pod but docker can be used within the runner container instead. The image summerwind/actions-runner-dind is used by default.
+      dockerdWithinRunnerContainer: true
+      # workDir if not specified (default = /runner/_work)
+      # You can customise this setting allowing you to change the default working directory location
+      # for example, the below setting is the same as on the ubuntu-18.04 image
+      workDir: /home/runner/work
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: runner-deployment-autoscaler
+spec:
+  scaleTargetRef:
+    name: runner-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: TotalNumberOfQueuedAndInProgressWorkflowRuns
+    repositoryNames:
+    - LiberatorUSA/GUCEF
+  - type: PercentageRunnersBusy
+    scaleUpThreshold: '0.75'    # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+    scaleDownThreshold: '0.3'   # The percentage of busy runners at which the number of desired runners are re-evaluated to scale down
+    scaleUpFactor: '1.4'        # The scale up multiplier factor applied to desired count
+    scaleDownFactor: '0.7'      # The scale down multiplier factor applied to desired count

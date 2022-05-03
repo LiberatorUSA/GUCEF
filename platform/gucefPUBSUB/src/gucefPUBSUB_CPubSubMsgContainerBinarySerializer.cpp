@@ -65,15 +65,15 @@ const CORE::UInt8   CPubSubMsgContainerBinarySerializer::CurrentFormatVersion = 
 
 bool
 CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
-                                                      UInt32 currentTargetOffset                       , 
-                                                      CORE::CDynamicBuffer& target                     , 
+                                                      UInt32 currentTargetOffset                       ,
+                                                      CORE::CDynamicBuffer& target                     ,
                                                       UInt32& bytesWritten                             )
 {GUCEF_TRACE;
 
     // magic text bytes to help identify the blob as being a container of pub sub messages
     UInt32 newBytesWritten = target.CopyFrom( MagicText, currentTargetOffset, false );
     bytesWritten += newBytesWritten;
-    currentTargetOffset += newBytesWritten; 
+    currentTargetOffset += newBytesWritten;
     if ( newBytesWritten != MagicText.ByteSize()-1 )
         return false;
 
@@ -93,7 +93,7 @@ CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySeri
     currentTargetOffset += newBytesWritten;
     if ( newBytesWritten != sizeof(msgSerializerOptions) )
         return false;
-                 
+
     return true;
 }
 
@@ -101,15 +101,15 @@ CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySeri
 
 bool
 CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
-                                                        UInt32 currentSourceOffset                 , 
-                                                        const CORE::CDynamicBuffer& source         , 
+                                                        UInt32 currentSourceOffset                 ,
+                                                        const CORE::CDynamicBuffer& source         ,
                                                         UInt32& bytesRead                          )
 {GUCEF_TRACE;
 
     try
     {
         // magic text bytes to help identify the blob as being a container of pub sub messages
-        CORE::CString testStr;    
+        CORE::CString testStr;
         UInt32 newBytesRead = source.CopyTo( currentSourceOffset, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         bytesRead += newBytesRead;
         currentSourceOffset += newBytesRead;
@@ -147,7 +147,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
 
 bool
 CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
-                                                        const CORE::CDynamicBuffer& source         , 
+                                                        const CORE::CDynamicBuffer& source         ,
                                                         UInt32& bytesRead                          )
 {GUCEF_TRACE;
 
@@ -158,8 +158,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
 
 bool
 CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& index ,
-                                                      UInt32 currentTargetOffset   , 
-                                                      CORE::CDynamicBuffer& target , 
+                                                      UInt32 currentTargetOffset   ,
+                                                      CORE::CDynamicBuffer& target ,
                                                       UInt32& bytesWritten         )
 {GUCEF_TRACE;
 
@@ -178,14 +178,14 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Non-Ascending footer entry detected" )
             }
         }
-    }    
+    }
     #endif
-    
+
     // Write the msg offset index
     // The purpose of the index is quick access to messages by index even though the
-    // messages have variable length  
+    // messages have variable length
     // Use the fact that vector is stored as a single block of memory underneath
-    if ( !index.empty() )    
+    if ( !index.empty() )
     {
         UInt32 bytesToWrite = (UInt32) index.size() * sizeof(UInt32);
         UInt32 newBytesWritten = target.CopyFrom( currentTargetOffset, bytesToWrite, &index[0] );
@@ -216,7 +216,7 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
     // only a partial file. At that point the footer/index could potentially be rebuild by scanning the entire container from the start
     newBytesWritten = target.CopyFrom( MagicText, currentTargetOffset, false );
     bytesWritten += newBytesWritten;
-    currentTargetOffset += newBytesWritten; 
+    currentTargetOffset += newBytesWritten;
     if ( newBytesWritten != MagicText.ByteSize()-1 )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write write magic text" );
@@ -236,10 +236,10 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index             ,
-                                                        UInt32 currentSourceOffset         , 
-                                                        const CORE::CDynamicBuffer& source , 
+                                                        UInt32 currentSourceOffset         ,
+                                                        const CORE::CDynamicBuffer& source ,
                                                         UInt32& bytesRead                  ,
                                                         bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
@@ -253,8 +253,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: Not enough data for minimal footer" );
             return false;
         }
-        
-        CORE::CString testStr;    
+
+        CORE::CString testStr;
         UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
         {
@@ -326,9 +326,9 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index             ,
-                                                        const CORE::CDynamicBuffer& source , 
+                                                        const CORE::CDynamicBuffer& source ,
                                                         UInt32& bytesRead                  ,
                                                         bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
@@ -338,8 +338,8 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgOffsetFromFooter( const CORE::CDynamicBuffer& source , 
+bool
+CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgOffsetFromFooter( const CORE::CDynamicBuffer& source ,
                                                                                  UInt32 currentSourceOffset         ,
                                                                                  UInt32& indexSize                  ,
                                                                                  UInt32& firstMsgOffset             ,
@@ -354,7 +354,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgOffsetFromFooter(
         firstMsgOffset = 0;
         lastMsgOffset = 0;
 
-        CORE::CString testStr;    
+        CORE::CString testStr;
         UInt32 newBytesRead = source.CopyTo( currentSourceOffset - MagicText.ByteSize()+1, MagicText.ByteSize()-1, testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) );
         if ( newBytesRead != MagicText.ByteSize()-1 || testStr != MagicText )
         {
@@ -370,7 +370,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgOffsetFromFooter(
             return true;
 
         currentSourceOffset = currentSourceOffset - ( indexSize * sizeof(UInt32) );
-        firstMsgOffset = source.AsConstType< UInt32 >( currentSourceOffset );        
+        firstMsgOffset = source.AsConstType< UInt32 >( currentSourceOffset );
 
         currentSourceOffset = currentSourceOffset + ( (indexSize-1) * sizeof(UInt32) );
         lastMsgOffset = source.AsConstType< UInt32 >( currentSourceOffset );
@@ -389,8 +389,8 @@ template < class MsgCollectionType >
 bool
 CPubSubMsgContainerBinarySerializer::SerializeMsgCollection( const CPubSubMsgBinarySerializerOptions& options ,
                                                              const MsgCollectionType& msgs                    ,
-                                                             UInt32 currentTargetOffset                       , 
-                                                             CORE::CDynamicBuffer& target                     , 
+                                                             UInt32 currentTargetOffset                       ,
+                                                             CORE::CDynamicBuffer& target                     ,
                                                              UInt32& bytesWritten                             )
 {GUCEF_TRACE;
 
@@ -406,7 +406,7 @@ CPubSubMsgContainerBinarySerializer::SerializeMsgCollection( const CPubSubMsgBin
     // We do not accept partial success
     TMsgOffsetIndex index( msgs.size(), 0 );
     TMsgOffsetIndex::iterator n = index.begin();
-    MsgCollectionType::const_iterator i = msgs.begin();
+    typename MsgCollectionType::const_iterator i = msgs.begin();
     while ( i != msgs.end() )
     {
         const CIPubSubMsg* msg = AsIPubSubMsgPointer( (*i) );
@@ -442,8 +442,8 @@ CPubSubMsgContainerBinarySerializer::SerializeMsgCollection( const CPubSubMsgBin
 bool
 CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options ,
                                                 const TBasicPubSubMsgVector& msgs                ,
-                                                UInt32 currentTargetOffset                       , 
-                                                CORE::CDynamicBuffer& target                     , 
+                                                UInt32 currentTargetOffset                       ,
+                                                CORE::CDynamicBuffer& target                     ,
                                                 UInt32& bytesWritten                             )
 {GUCEF_TRACE;
 
@@ -455,8 +455,8 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
 bool
 CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options     ,
                                                 const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                                                UInt32 currentTargetOffset                           , 
-                                                CORE::CDynamicBuffer& target                         , 
+                                                UInt32 currentTargetOffset                           ,
+                                                CORE::CDynamicBuffer& target                         ,
                                                 UInt32& bytesWritten                                 )
 {GUCEF_TRACE;
 
@@ -465,9 +465,9 @@ CPubSubMsgContainerBinarySerializer::Serialize( const CPubSubMsgBinarySerializer
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index             ,
-                                                       const CORE::CDynamicBuffer& source , 
+                                                       const CORE::CDynamicBuffer& source ,
                                                        UInt32& bytesRead                  ,
                                                        bool hdrToFtrOrderedIndex          )
 {GUCEF_TRACE;
@@ -495,7 +495,7 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index   
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to deserialize msg with " + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:IndexRebuildScan: Failed to deserialize msg with " +
                 CORE::ToString( msgBytesRead ) + " bytes read from offset " + CORE::ToString( bytesRead ) + ". This will be considered the end" );
             break;
         }
@@ -517,7 +517,7 @@ CPubSubMsgContainerBinarySerializer::IndexRebuildScan( TMsgOffsetIndex& index   
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
                                                   bool linkWherePossible                         ,
                                                   const TMsgOffsetIndex& index                   ,
@@ -537,7 +537,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
 
     if ( msgs.size() <= index.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: The given message storage was not properly pre-allocated ( " + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:Deserialize: The given message storage was not properly pre-allocated ( " +
                 CORE::ToString( msgs.size() ) + " vs " + CORE::ToString( index.size() ) + ")" );
         isCorrupted = false;
         return false;
@@ -556,7 +556,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
             isCorrupted = true;
             return false;
-        }        
+        }
         ++i; ++m; ++msgIndex;
     }
 
@@ -565,7 +565,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs        ,
                                                   bool linkWherePossible             ,
                                                   const TMsgOffsetIndex& index       ,
@@ -597,10 +597,10 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
             isCorrupted = true;
-            
+
             if ( !bestEffortIsOk )
                 return false;
-        }        
+        }
         ++i; ++msgIndex;
     }
 
@@ -609,7 +609,7 @@ CPubSubMsgContainerBinarySerializer::Deserialize( TBasicPubSubMsgVector& msgs   
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
                                                              bool linkWherePossible       ,
                                                              CORE::CDynamicBuffer& source ,
@@ -623,7 +623,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVector& msgs  ,
                                                              bool linkWherePossible       ,
                                                              TMsgOffsetIndex& index       ,
@@ -642,7 +642,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
 
             // Without a reliable index sourced from the footer 'best effort' deserialize makes no sense because it relies on a good index to skip 'bad' messages
             bestEffortIsOk = false;
-            
+
             index.clear();
             if ( IndexRebuildScan( index, source, bytesRead, true ) )
             {
@@ -656,14 +656,14 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
             }
         }
     }
-                                        
+
     if ( !Deserialize( msgs, true, index, source, isCorrupted, bestEffortIsOk ) )
     {
-        // Have we already tried a rebuild? 
+        // Have we already tried a rebuild?
         // If we already did, no point in trying again
         if ( !performedRebuild )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize messages. isCorrupted=" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Failed to deserialize messages. isCorrupted=" +
                 CORE::ToString( isCorrupted ) + ". Will attempt index rebuild");
 
             index.clear();
@@ -671,7 +671,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
             if ( IndexRebuildScan( index, source, bytesRead, true ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeWithRebuild: Rebuild of index completed" );
-                
+
                 // We never use 'best effort' on the second pass since best effort relies on a reliable index having existed in the first place
                 bestEffortIsOk = false;
 
@@ -695,7 +695,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::CDateTime& firstMsgDt        ,
                                                                          CORE::CDateTime& lastMsgDt         ,
                                                                          const CORE::CDynamicBuffer& source ,
@@ -724,7 +724,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::C
     UInt32 indexSize = 0;
     UInt32 firstMsgOffset = 0;
     UInt32 lastMsgOffset = 0;
-    if ( !DeserializeFirstAndLastMsgOffsetFromFooter( source               , 
+    if ( !DeserializeFirstAndLastMsgOffsetFromFooter( source               ,
                                                       source.GetDataSize() ,
                                                       indexSize            ,
                                                       firstMsgOffset       ,
@@ -756,7 +756,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFirstAndLastMsgDateTime( CORE::C
 }
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg                   ,
                                                             bool linkWherePossible             ,
                                                             const CORE::CDynamicBuffer& source ,
@@ -775,7 +775,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( CIPubSubMsg& msg    
         return false;
     }
 
-    // Note that the footer is read in reversed order vs how it was written 
+    // Note that the footer is read in reversed order vs how it was written
     // thus so will be the entries in the index
     TMsgOffsetIndex index;
     if ( !DeserializeFooter( index, source, bytesRead, true ) )

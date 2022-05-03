@@ -74,7 +74,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     : PUBSUB::CPubSubClientTopic()
     , m_client( client )
     , m_redisPipeline( GUCEF_NULL )
-    , m_redisContext( GUCEF_NULL )
+    , m_redisContext()
     , m_redisErrorReplies( 0 )
     , m_redisTransmitQueueSize( 0 )
     , m_redisMsgsTransmitted( 0 )
@@ -118,7 +118,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
             m_redisReconnectTimer = new CORE::CTimer( client->GetConfig().reconnectDelayInMs );
         }
     }
-        
+
     RegisterEventHandlers();
 }
 
@@ -164,7 +164,7 @@ CRedisClusterPubSubClientTopic::GetClient( void )
 bool
 CRedisClusterPubSubClientTopic::IsPublishingSupported( void )
 {GUCEF_TRACE;
-    
+
     return m_config.needPublishSupport;
 }
 
@@ -179,7 +179,7 @@ CRedisClusterPubSubClientTopic::IsSubscribingSupported( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 {GUCEF_TRACE;
 
@@ -189,7 +189,7 @@ CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::CIPubSubMsg& msg, bool notify )
 {GUCEF_TRACE;
 
@@ -197,13 +197,13 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PU
 
     if ( 0 == publishActionId )
     {
-        publishActionId = m_currentPublishActionId; 
+        publishActionId = m_currentPublishActionId;
         ++m_currentPublishActionId;
     }
-    
+
     const CORE::CVariant& msgId = msg.GetMsgId();
     sw::redis::StringView idSV( msgId.AsCharPtr(), msgId.ByteSize( false ) );
-    
+
     const CORE::CVariant& primaryPayload = msg.GetPrimaryPayload();
     const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
     bool hasNoPrimaryPayload = primaryPayload.IsNULLOrEmpty();
@@ -212,20 +212,20 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PU
     // allocating a new array (vector) on every call to Publish()
     m_redisMsgArgs.clear();
     m_redisMsgArgs.reserve( (size_t) kvPairs.size() + ( hasNoPrimaryPayload ? 0 : 1 ) );
-    
+
     if ( !hasNoPrimaryPayload )
     {
         // This is really not appropriote use of the redis backend
         // its strongly prefered for the application to specify a proper key name to ensure its non-conflicting
-        
+
         static const CORE::CString& fieldName = "PRIMARYPAYLOAD";
         sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize()-1 );
 
         sw::redis::StringView fvSV( primaryPayload.AsCharPtr(), primaryPayload.ByteSize( false ) );
 
         m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
-    }    
-    
+    }
+
     PUBSUB::CIPubSubMsg::TKeyValuePairs::const_iterator i = kvPairs.begin();
     while ( i != kvPairs.end() )
     {
@@ -236,33 +236,33 @@ CRedisClusterPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PU
         sw::redis::StringView fvSV( fieldValue.AsCharPtr(), fieldValue.ByteSize( false ) );
 
         m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
-        
+
         ++i;
     }
-    
+
     return RedisSendSyncImpl( publishActionId, idSV, m_redisMsgArgs, notify );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClientTopic::SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     config = m_config;
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     m_config = config;
     m_redisHashSlot = CalculateRedisHashSlot( m_config.topicName );
     //m_readOffset = config.redisXReadDefaultOffset;
@@ -270,14 +270,14 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
     m_redisXreadCount = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadCount" ).AsUInt32( m_redisXreadCount );
     m_redisXreadBlockTimeoutInMs = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadBlockTimeoutInMs" ).AsUInt32( m_redisXreadBlockTimeoutInMs );
 
-    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName ); 
-    
+    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CRedisClusterPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 {GUCEF_TRACE;
 
@@ -287,13 +287,13 @@ CRedisClusterPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId      , 
-                                                   const sw::redis::StringView& msgId , 
-                                                   const TRedisArgs& kvPairs          , 
+CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId      ,
+                                                   const sw::redis::StringView& msgId ,
+                                                   const TRedisArgs& kvPairs          ,
                                                    bool notify                        )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
+    if ( m_redisContext.IsNULL() || GUCEF_NULL == m_redisPipeline )
         return false;
 
     static const sw::redis::StringView autoGenMsgId = sw::redis::StringView( "*", 1 );
@@ -301,7 +301,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
     bool totalSuccess = true;
 
     try
-    {        
+    {
         sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
 
         if ( m_config.redisXAddMaxLen >= 0 )
@@ -310,7 +310,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
             m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
 
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
-        
+
         size_t replyCount = redisReplies.size();
         for ( size_t r=0; r<replyCount; ++r )
         {
@@ -391,7 +391,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
     }
 
     return totalSuccess;
-} 
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -408,7 +408,7 @@ CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
     {
         // Grow the actual storage, this is allowed to become larger than msgCount to limit
         // the nr of dynamic allocations
-        m_pubsubMsgs.reserve( msgCount );        
+        m_pubsubMsgs.reserve( msgCount );
         msgRefs.reserve( msgCount );
     }
 }
@@ -421,18 +421,18 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
     bool totalSuccess = false;
     MT::CScopeMutex lock( m_lock );
-    
-    if ( GUCEF_NULL == m_redisContext || m_config.topicName.IsNULLOrEmpty() )
+
+    if ( m_redisContext.IsNULL() || m_config.topicName.IsNULLOrEmpty() )
         return totalSuccess;
 
     try
-    {       
+    {
         sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
         std::chrono::milliseconds readBlockTimeout( m_redisXreadBlockTimeoutInMs );
-        
+
         TRedisMsgByStreamInserter inserter = std::inserter( m_redisReadMsgs, m_redisReadMsgs.end() );
-        
+
         if ( m_redisXreadCount > 0 )
             m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) m_redisXreadCount, inserter );
         else
@@ -456,8 +456,8 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                 TRedisMsgVector::iterator i = msgs.begin();
                 while ( i != msgs.end() )
                 {
-                    std::string& msgId = (*i).first;                
-                    TRedisMsgAttributes& msgAttribs = (*i).second;                                    
+                    std::string& msgId = (*i).first;
+                    TRedisMsgAttributes& msgAttribs = (*i).second;
 
                     m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
                     PUBSUB::CBasicPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
@@ -470,42 +470,42 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     ++m_currentReceiveActionId;
 
                     // set basic message properties
-                    
+
                     pubsubMsg.GetMsgId().LinkTo( msgId );
                     CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
                     pubsubMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( unixUtcDt );
-                
+
                     // set the message attributes
 
                     if ( msgAttribs.size() > m_pubsubMsgAttribs.size() )
                         m_pubsubMsgAttribs.resize( msgAttribs.size() );
                     pubsubMsg.GetKeyValuePairs().clear();
                     pubsubMsg.GetKeyValuePairs().reserve( msgAttribs.size() );
-                
+
                     TBufferVector::iterator a = m_pubsubMsgAttribs.begin();
                     TRedisMsgAttributes::iterator n = msgAttribs.begin();
                     while ( n != msgAttribs.end() )
                     {
                         std::string& keyAtt = (*n).first;
                         std::string& valueAtt = (*n).second;
-                    
+
                         CORE::CDynamicBuffer& keyAttBuffer = (*a).first;
                         CORE::CDynamicBuffer& valueAttBuffer = (*a).second;
 
                         keyAttBuffer.LinkTo( keyAtt );
                         valueAttBuffer.LinkTo( valueAtt );
-                    
+
                         pubsubMsg.GetKeyValuePairs().push_back( PUBSUB::CBasicPubSubMsg::TKeyValuePair() );
                         PUBSUB::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
 
                         kvLink.first.LinkTo( keyAttBuffer );
                         kvLink.second.LinkTo( valueAttBuffer );
-                    
+
                         ++n; ++a;
                     }
                     ++i;
                 }
-                
+
                 m_readOffset = (*msgs.rbegin()).first;
 
                 ++s;
@@ -611,7 +611,7 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
         delete m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
-        
+
         // the parent client owns the context, we just null it
         m_redisContext = GUCEF_NULL;
 
@@ -640,11 +640,11 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
 {
     MT::CScopeMutex lock( m_lock );
-    
+
     try
     {
         // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
@@ -699,8 +699,8 @@ CRedisClusterPubSubClientTopic::Subscribe( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CRedisClusterPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark ) 
+bool
+CRedisClusterPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
     // With Redis the default ID format is a Unix Epoch based datetime
@@ -711,7 +711,7 @@ CRedisClusterPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubS
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubBookmark 
+PUBSUB::CPubSubBookmark
 CRedisClusterPubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
@@ -741,12 +741,12 @@ CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmar
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    return GUCEF_NULL != m_redisContext && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
+    return !m_redisContext.IsNULL() && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -756,14 +756,14 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
     Disconnect();
-    
+
     MT::CScopeMutex lock( m_lock );
     try
     {
         m_redisContext = m_client->GetRedisContext();
-        if ( GUCEF_NULL == m_redisContext )
+        if ( m_redisContext.IsNULL() )
             return false;
-        
+
         // The following is not a must-have for connectivity
         const RedisNodeMap& nodeMap = m_client->GetRedisNodeMap();
         RedisNodeMap::const_iterator i = nodeMap.begin();
@@ -783,7 +783,7 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
         }
 
         if ( m_config.preferDedicatedConnection )
-        {        
+        {
             // Connect to the specific shard used for this channel's stream with a single dedicated connection
             sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
             delete m_redisPipeline;
@@ -815,17 +815,15 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
     }
 }
 
-
-
 /*-------------------------------------------------------------------------*/
 
 bool
 CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
         return false;
-    
+
     try
     {
         CORE::CString clusterCmd( "CLUSTER" );
@@ -841,14 +839,14 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
             {
                 CORE::CString allText = reply->str;
                 CORE::CString::StringVector lines = allText.ParseElements( '\n', false );
-                
+
                 // First add all the primary nodes
                 CORE::CString::StringVector::iterator i = lines.begin();
                 while ( i != lines.end() )
                 {
                     CORE::CString::StringVector properties = (*i).ParseElements( ' ', true );
                     if ( properties.size() >= 8 )
-                    {                  
+                    {
                         bool isReplica = properties[ 2 ].HasSubstr( "slave" ) > -1;
                         if ( !isReplica )
                         {
@@ -869,12 +867,12 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
                             node.nodeId = nodeId;
                             node.host.SetHostnameAndPort( ipAndPort );
                             node.startSlot = startSlot;
-                            node.endSlot = endSlot; 
+                            node.endSlot = endSlot;
                         }
                     }
                     ++i;
                 }
-                
+
             //    // Now add the replicas
             //    i = lines.begin();
             //    while ( i != lines.end() )
@@ -886,12 +884,12 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
             //            if ( isReplica )
             //            {
             //                CORE::CString& nodeId = properties[ 0 ];
-            //                CORE::CString ipAndPort = properties[ 1 ].SubstrToChar( '@' );                    
+            //                CORE::CString ipAndPort = properties[ 1 ].SubstrToChar( '@' );
             //                CORE::CString& parentNodeId = properties[ 3 ];
             //                //bool isConnected = properties[ 7 ] == "connected";
 
             //                RedisNodeMap::iterator n = nodeMap.begin();
-            //                while ( n != nodeMap.end() ) 
+            //                while ( n != nodeMap.end() )
             //                {
             //                    RedisNode* replicaNode = (*n).second.FindReplica( nodeId, parentNodeId, true );
             //                    if ( GUCEF_NULL != replicaNode )
@@ -938,7 +936,7 @@ CRedisClusterPubSubClientTopic::GenerateMetricsFriendlyTopicName( const CORE::CS
 
     // Let's avoid non-ASCII stumbling blocks and force the down to ASCII
     CORE::CAsciiString asciiMetricsFriendlyTopicName = topicName.ForceToAscii( '_' );
-    
+
     // Replace special chars
     static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
     asciiMetricsFriendlyTopicName = asciiMetricsFriendlyTopicName.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
@@ -989,7 +987,7 @@ CRedisClusterPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
-                      
+
     if ( !m_publishSuccessActionIds.empty() )
     {
         if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
@@ -1004,7 +1002,7 @@ CRedisClusterPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-const MT::CILockable* 
+const MT::CILockable*
 CRedisClusterPubSubClientTopic::AsLockable( void ) const
 {GUCEF_TRACE;
 
