@@ -64,30 +64,30 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
-#include "gucefCOMCORE_CPubSubClient.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENT_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#include "gucefPUBSUB_CPubSubClient.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#include "gucefCOMCORE_CPubSubBookmark.h"
-#define GUCEF_COMCORE_CPUBSUBBOOKMARK_H
-#endif /* GUCEF_COMCORE_CPUBSUBBOOKMARK_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#include "gucefPUBSUB_CPubSubBookmark.h"
+#define GUCEF_PUBSUB_CPUBSUBBOOKMARK_H
+#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARK_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#include "gucefCOMCORE_CPubSubClientFactory.h"
-#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#include "gucefPUBSUB_CPubSubClientFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#include "gucefCOMCORE_CPubSubMsgBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
+#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
-#ifndef GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#include "gucefCOMCORE_CPubSubMsgContainerBinarySerializer.h"
-#define GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#endif /* GUCEF_COMCORE_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#include "gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h"
+#define GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
 
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
@@ -127,7 +127,7 @@ class ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< COMCORE::CPubSubClientTopicConfig > TTopicConfigVector;
+    typedef std::vector< PUBSUB::CPubSubClientTopicConfig > TTopicConfigVector;
     enum EChannelMode : CORE::Int32
     {
         CHANNELMODE_UNKNOWN = 0 ,
@@ -141,8 +141,8 @@ class ChannelSettings : public CORE::CIConfigurable
     ChannelSettings( const ChannelSettings& src );
     ChannelSettings& operator=( const ChannelSettings& src );
 
-    COMCORE::CPubSubClientConfig pubsubClientConfig;
-    COMCORE::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
+    PUBSUB::CPubSubClientConfig pubsubClientConfig;
+    PUBSUB::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
     CORE::CString vfsStorageRootPath;
@@ -165,7 +165,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
 
 
-    COMCORE::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
+    PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -182,7 +182,7 @@ class CIPubSubBookmarkPersistance
 
     virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
                                        const CORE::CString& topicName     , 
-                                       COMCORE::CPubSubBookmark& bookmark ) = 0;
+                                       PUBSUB::CPubSubBookmark& bookmark ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -223,7 +223,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
 
-    void RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic );
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic& topic );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -252,26 +252,26 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     {
         public:
 
-        typedef std::map< CORE::UInt64, COMCORE::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
+        typedef std::map< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
 
-        COMCORE::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
-        COMCORE::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
+        PUBSUB::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        PUBSUB::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
         TUInt64ToIPubSubMsgNoLockSharedPtrMap inFlightMsgs;
 
         TopicLink( void );
-        TopicLink( COMCORE::CPubSubClientTopic* t );
+        TopicLink( PUBSUB::CPubSubClientTopic* t );
         
-        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
+        void AddInFlightMsgs( const PUBSUB::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const PUBSUB::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );
 
-        void AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
+        void AddInFlightMsgs( const PUBSUB::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const PUBSUB::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               );
     };
 
     typedef std::vector< TopicLink > TopicVector;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
-    COMCORE::CPubSubClientPtr m_pubsubClient;
+    PUBSUB::CPubSubClientPtr m_pubsubClient;
     TopicVector m_topics;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
@@ -281,7 +281,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDynamicBuffer* m_msgReceiveBuffer;
     CORE::CDateTime m_lastWriteBlockCompletion;    
-    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
+    PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex m_msgOffsetIndex;
     CIPubSubBookmarkPersistance* m_persistance;
 };
 
@@ -337,7 +337,7 @@ class CStorageChannel : public CORE::CTaskConsumer ,
 
     virtual bool GetPersistedBookmark( CORE::Int32 channelId              , 
                                        const CORE::CString& topicName     , 
-                                       COMCORE::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+                                       PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
                                                 const CORE::CString& topicName , 

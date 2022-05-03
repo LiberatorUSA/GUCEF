@@ -2,6 +2,7 @@
 <ModuleInfoEntry>
 	<Module Name="pubsub2storage" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
+			<Dependency Name="gucefPUBSUB" />
 			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
@@ -10,6 +11,7 @@
 			<Dependency Name="gucefMT" />
 		</Dependencies>
 		<Linker>
+			<Dependency Name="gucefPUBSUB" />
 			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
@@ -20,16 +22,16 @@
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
-			<RuntimeDependency Name="codecspluginZLIB" />
-			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="codecspluginZLIB" />			
 			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
-			<RuntimeDependency Name="pubsubpluginKAFKA" />
-			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+			<RuntimeDependency Name="pubsubpluginKAFKA" />			
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >
 		<RuntimeDependencies>
 			<RuntimeDependency Name="pubsubpluginMSMQ" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />
 		</RuntimeDependencies>
 	</Module>	
 </ModuleInfoEntry>

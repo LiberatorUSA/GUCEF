@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -34,11 +39,6 @@
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -59,12 +59,6 @@
 #include "CServerPortExtenderClient.h"
 #define CSERVERPORTEXTENDERCLIENT_H
 #endif /* CSERVERPORTEXTENDERCLIENT_H ? */
-
-#ifdef GUCEF_MSWIN_BUILD
-#include <windows.h>
-#endif /* GUCEF_MSWIN_BUILD ? */
-
-#include "callstack.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -88,8 +82,8 @@ class SpeTestController : CORE::CObserver
     {
         GUCEF::CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
 
-        m_spe = new CServerPortExtender( app->GetPulseGenerator() );
-        m_speClient = new CServerPortExtenderClient( app->GetPulseGenerator() );
+        m_spe = new CServerPortExtender( *app->GetPulseGenerator() );
+        m_speClient = new CServerPortExtenderClient( *app->GetPulseGenerator() );
 
         SubscribeTo( app );
         SubscribeTo( m_spe );
@@ -293,26 +287,50 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
-int
-main( int argc, char* argv[] )
+void
+GucefAppSignalHandler( int signal )
 {GUCEF_TRACE;
+    
+    ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
 
-    #ifdef GUCEF_CALLSTACK_TRACING
-    CORE::GUCEF_LogStackTo( "SPE_Callstack.cvs" );
-    CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
-    CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCEF_CALLSTACK_TRACING ? */
+/*-------------------------------------------------------------------------*/
 
-    CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-    CORE::AppendToPath( logFilename, "ServerPortExtender_Log.txt" );
-    CORE::CFileAccess logFileAccess( logFilename, "w" );
-
-    CORE::CStdLogger logger( logFileAccess );
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+/*
+ *      Application entry point
+ */
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
+{GUCEF_TRACE;
 
     // Parse the application parameters
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
+
+    CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
+    if ( outputDir.IsNULLOrEmpty() )
+    {
+        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+    }
+    CORE::CreateDirs( outputDir );
+
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "ServerPortExtender_Log.txt" );
+
+    keyValueList.Set( "logfile", logFilename );
+
+    CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+    logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+    CORE::CPlatformNativeConsoleLogger console;
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
+
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
     // Do we want to display the console window?
     #ifdef GUCEF_MSWIN_BUILD
@@ -361,26 +379,26 @@ main( int argc, char* argv[] )
         CORE::UInt16 extendedServerPort = 10234;
         if ( keyValueList.HasKey( "extendedServerPort" ) )
         {
-            extendedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "extendedServerPort" ) );
+            extendedServerPort = keyValueList.GetValue( "extendedServerPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: extended server port set to " + CORE::UInt16ToString( extendedServerPort ) );
 
         CORE::UInt16 serverControlPort = 10236;
         if ( keyValueList.HasKey( "serverControlPort" ) )
         {
-            serverControlPort = CORE::StringToUInt16( keyValueList.GetValue( "serverControlPort" ) );
+            serverControlPort = keyValueList.GetValue( "serverControlPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: server control port set to " + CORE::UInt16ToString( serverControlPort ) );
 
         CORE::UInt16 reversedServerPort = 10235;
         if ( keyValueList.HasKey( "reversedServerPort" ) )
         {
-            reversedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "reversedServerPort" ) );
+            reversedServerPort = keyValueList.GetValue( "reversedServerPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
         CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
-        CServerPortExtender serverPortExtender( app->GetPulseGenerator() );
+        CServerPortExtender serverPortExtender( *app->GetPulseGenerator() );
 
         serverPortExtender.ListenForReversedControlClientOnPort( serverControlPort );
         serverPortExtender.ListenForReversedClientsOnPort( reversedServerPort );
@@ -395,40 +413,40 @@ main( int argc, char* argv[] )
         CORE::UInt16 actualServerPort = 10234;
         if ( keyValueList.HasKey( "actualServerPort" ) )
         {
-            actualServerPort = CORE::StringToUInt16( keyValueList.GetValue( "actualServerPort" ) );
+            actualServerPort = keyValueList.GetValue( "actualServerPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server port set to " + CORE::UInt16ToString( actualServerPort ) );
 
         CORE::CString actualServerHostname = "localhost";
         if ( keyValueList.HasKey( "actualServerHostname" ) )
         {
-            actualServerHostname = keyValueList.GetValue( "actualServerHostname" );
+            actualServerHostname = keyValueList.GetValue( "actualServerHostname" ).AsString();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server hostname set to " + actualServerHostname );
 
         CORE::UInt16 reversedServerPort = 10235;
         if ( keyValueList.HasKey( "reversedServerPort" ) )
         {
-            reversedServerPort = CORE::StringToUInt16( keyValueList.GetValue( "reversedServerPort" ) );
+            reversedServerPort = keyValueList.GetValue( "reversedServerPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
         CORE::CString speServerHostname = "localhost";
         if ( keyValueList.HasKey( "speServerHostname" ) )
         {
-            speServerHostname = keyValueList.GetValue( "speServerHostname" );
+            speServerHostname = keyValueList.GetValue( "speServerHostname" ).AsString();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server hostname set to " + speServerHostname );
 
         CORE::UInt16 speServerPort = 10236;
         if ( keyValueList.HasKey( "speServerControlPort" ) )
         {
-            speServerPort = CORE::StringToUInt16( keyValueList.GetValue( "speServerControlPort" ) );
+            speServerPort = keyValueList.GetValue( "speServerControlPort" ).AsUInt16();
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server port set to " + CORE::UInt16ToString( speServerPort ) );
 
         CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
-        CServerPortExtenderClient serverPortExtenderClient( app->GetPulseGenerator() );
+        CServerPortExtenderClient serverPortExtenderClient( *app->GetPulseGenerator() );
 
         serverPortExtenderClient.SetLocalServer( actualServerHostname, actualServerPort );
         serverPortExtenderClient.SetRemoteServerSocket( reversedServerPort );
@@ -445,31 +463,6 @@ main( int argc, char* argv[] )
 
     return 0;
 }
-
-/*---------------------------------------------------------------------------*/
-
-#ifdef GUCEF_MSWIN_BUILD
-
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{GUCEF_TRACE;
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-
-    return main( argc, argv );
-}
-
-#endif
+GUCEF_OSMAIN_END
 
 /*---------------------------------------------------------------------------*/

@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
 #endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H ? */
 
+#ifndef GUCEF_CORE_CROLLINGFILEACCESS_H
+#include "gucefCORE_CRollingFileAccess.h"
+#define GUCEF_CORE_CROLLINGFILEACCESS_H
+#endif /* GUCEF_CORE_CROLLINGFILEACCESS_H ? */
+
 /*
  *  Below are platform specific loggers which can be
  *  used directly however please consider using the

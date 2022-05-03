@@ -39,10 +39,15 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
-#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#include "gucefCOMCORE_CBasicPubSubMsg.h"
-#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
-#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#include "gucefPUBSUB_CBasicPubSubMsg.h"
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
@@ -288,7 +293,7 @@ ChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-COMCORE::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfig* 
 ChannelSettings::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -341,7 +346,7 @@ CPubSubClientChannel::TopicLink::TopicLink( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientChannel::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
+CPubSubClientChannel::TopicLink::TopicLink( PUBSUB::CPubSubClientTopic* t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
@@ -352,8 +357,8 @@ CPubSubClientChannel::TopicLink::TopicLink( COMCORE::CPubSubClientTopic* t )
 /*-------------------------------------------------------------------------*/
 
 void 
-CPubSubClientChannel::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                                  const COMCORE::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
+CPubSubClientChannel::TopicLink::AddInFlightMsgs( const PUBSUB::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                                  const PUBSUB::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              )
 {GUCEF_TRACE;
     
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
@@ -364,14 +369,14 @@ CPubSubClientChannel::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTo
 /*-------------------------------------------------------------------------*/
 
 void 
-CPubSubClientChannel::TopicLink::AddInFlightMsgs( const COMCORE::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                                                  const COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
+CPubSubClientChannel::TopicLink::AddInFlightMsgs( const PUBSUB::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                                                  const PUBSUB::CPubSubClientTopic::TPubSubMsgsRefVector& msgs               )
 {GUCEF_TRACE;
     
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );    
     for ( size_t i=0; i<max; ++i )
     {
-        COMCORE::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< COMCORE::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
+        PUBSUB::CIPubSubMsg::TNoLockSharedPtr ptr( static_cast< PUBSUB::CIPubSubMsg* >( msgs[ i ]->Clone() ) );
         inFlightMsgs[ publishActionIds[ i ] ] = ptr;
     }
 }
@@ -399,14 +404,14 @@ CPubSubClientChannel::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientChannel::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic )
+CPubSubClientChannel::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic& topic )
 {GUCEF_TRACE;
 
     if ( m_channelSettings.mode == TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE )
     {
         TEventCallback callback( this, &CPubSubClientChannel::OnPubSubTopicMsgsReceived );
         SubscribeTo( &topic                                         ,
-                     COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
+                     PUBSUB::CPubSubClientTopic::MsgsRecievedEvent ,
                      callback                                       );
     }
 }
@@ -477,10 +482,10 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
     
     try
     {
-        const COMCORE::CPubSubClientTopic::TMsgsRecievedEventData& receiveAction = ( *static_cast< COMCORE::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
+        const PUBSUB::CPubSubClientTopic::TMsgsRecievedEventData& receiveAction = ( *static_cast< PUBSUB::CPubSubClientTopic::TMsgsRecievedEventData* >( eventData ) );
         if ( !receiveAction.empty() )
         {                            
-            COMCORE::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = receiveAction.begin();
+            PUBSUB::CPubSubClientTopic::TPubSubMsgsRefVector::const_iterator i = receiveAction.begin();
             const CORE::CDateTime& firstMsgDt = (*i)->GetMsgDateTime();
 
             bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
@@ -493,7 +498,7 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 m_msgReceiveBuffer = m_buffers.GetNextWriterBuffer( firstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
                 
                 CORE::UInt32 newBytesWritten = 0;
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_channelSettings.pubsubBinarySerializerOptions, 0, *m_msgReceiveBuffer, newBytesWritten ) )
+                if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_channelSettings.pubsubBinarySerializerOptions, 0, *m_msgReceiveBuffer, newBytesWritten ) )
                 {
                     // We carry on best effort but this is really bad
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
@@ -507,7 +512,7 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             {
                 CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
                 CORE::UInt32 msgBytesWritten = 0;
-                if ( COMCORE::CPubSubMsgBinarySerializer::Serialize( m_channelSettings.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_msgReceiveBuffer, msgBytesWritten ) )
+                if ( PUBSUB::CPubSubMsgBinarySerializer::Serialize( m_channelSettings.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_msgReceiveBuffer, msgBytesWritten ) )
                 {
                     m_msgOffsetIndex.push_back( bufferOffset );
                     ticks = CORE::GUCEFGetTickCount() - ticks;
@@ -533,7 +538,7 @@ CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 // Let's wrap things up...
                 
                 CORE::UInt32 newBytesWritten = 0;
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( m_msgOffsetIndex, bufferOffset, *m_msgReceiveBuffer, newBytesWritten ) )
+                if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( m_msgOffsetIndex, bufferOffset, *m_msgReceiveBuffer, newBytesWritten ) )
                 {
                     // We carry on best effort but this is really bad
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
@@ -570,7 +575,7 @@ CPubSubClientChannel::DisconnectPubSubClient( bool destroyClient )
         return false;                    
     }
 
-    COMCORE::CPubSubClientFeatures clientFeatures;
+    PUBSUB::CPubSubClientFeatures clientFeatures;
     m_pubsubClient->GetSupportedFeatures( clientFeatures );
 
     if ( destroyClient || !clientFeatures.supportsAutoReconnect )
@@ -594,7 +599,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     {
         // Create and configure the pub-sub client
         m_channelSettings.pubsubClientConfig.pulseGenerator = GetPulseGenerator();
-        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( m_channelSettings.pubsubClientConfig.pubsubClientType, m_channelSettings.pubsubClientConfig );
+        m_pubsubClient = PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().Create( m_channelSettings.pubsubClientConfig.pubsubClientType, m_channelSettings.pubsubClientConfig );
 
         if ( m_pubsubClient.IsNULL() )
         {
@@ -604,7 +609,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
         }
     }
 
-    COMCORE::CPubSubClientFeatures clientFeatures;
+    PUBSUB::CPubSubClientFeatures clientFeatures;
     m_pubsubClient->GetSupportedFeatures( clientFeatures );
         
     if ( !clientFeatures.supportsAutoReconnect )
@@ -627,7 +632,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     ChannelSettings::TTopicConfigVector::iterator i = m_channelSettings.pubsubClientConfig.topics.begin();
     while ( i != m_channelSettings.pubsubClientConfig.topics.end() )
     {
-        COMCORE::CPubSubClientTopic* topic = m_pubsubClient->CreateTopicAccess( (*i) );
+        PUBSUB::CPubSubClientTopic* topic = m_pubsubClient->CreateTopicAccess( (*i) );
         if ( GUCEF_NULL == topic )
         {
             if ( !(*i).isOptional )
@@ -652,7 +657,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     while ( t != m_topics.end() )
     {
         TopicLink& topicLink = (*t);
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        PUBSUB::CPubSubClientTopic* topic = topicLink.topic;
 
         if ( topic->InitializeConnectivity() )
         {
@@ -661,7 +666,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
 
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
-            COMCORE::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( topic->GetTopicName() );
+            PUBSUB::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( topic->GetTopicName() );
             if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
             {            
                 // The method of subscription depends on the supported feature set
@@ -686,7 +691,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
                     // bookmarks are supported but they rely on client-side persistance
                     // we will need to obtain said bookmark
                     
-                    COMCORE::CPubSubBookmark bookmark;
+                    PUBSUB::CPubSubBookmark bookmark;
                     if ( !m_persistance->GetPersistedBookmark( m_channelSettings.channelId, topic->GetTopicName(), bookmark ) )
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
@@ -802,8 +807,8 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
         "):TransmitNextPubSubMsgBuffer: New buffer is available of " + CORE::ToString( m_msgReceiveBuffer->GetDataSize() ) + " bytes" );         
 
     CORE::UInt32 bytesRead = 0;
-    COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead ) )
+    PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
+    if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead, true ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):TransmitNextPubSubMsgBuffer: Failed to read container footer" );
@@ -818,8 +823,8 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
     CORE::UInt32 startIndexOffset = 0;
     CORE::UInt32 endIndexOffset = 0;
     bool isCorrupted = false;                        
-    COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
-    if ( !COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
+    PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
+    if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted, true ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):TransmitNextPubSubMsgBuffer: Failed to deserialize messages from container. According to the footer the container had " + 
@@ -837,7 +842,7 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i);
-        COMCORE::CPubSubClientTopic* topic = topicLink.topic;
+        PUBSUB::CPubSubClientTopic* topic = topicLink.topic;
 
         if ( GUCEF_NULL != topic )
         {
@@ -1079,7 +1084,7 @@ CStorageChannel::LoadConfig( const ChannelSettings& channelSettings )
         if ( "deflate" == m_channelSettings.encodeCodecName )
             m_channelSettings.decodeCodecName = "inflate";
     }
-    m_vfsFilePostfix = ".v" + CORE::ToString( COMCORE::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_channelSettings.vfsFileExtention;
+    m_vfsFilePostfix = ".v" + CORE::ToString( PUBSUB::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_channelSettings.vfsFileExtention;
         
     return m_pubsubClient->LoadConfig( channelSettings );
 }
@@ -1217,14 +1222,14 @@ CStorageChannel::GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter, true, false );
+    VFS::CVFS::TStringVector index;
+    vfs.GetFileList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter );
 
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
     if ( !index.empty() )
     {        
-        VFS::CVFS::TStringSet::reverse_iterator f = index.rbegin();
+        VFS::CVFS::TStringVector::reverse_iterator f = index.rbegin();
         CORE::UInt32 n=0;
         while ( n<lastOffset && f != index.rend() )   
         {
@@ -1271,7 +1276,7 @@ CStorageChannel::GetLastPersistedMsgAttributes( CORE::Int32 channelId          ,
 bool 
 CStorageChannel::GetPersistedBookmark( CORE::Int32 channelId              , 
                                        const CORE::CString& topicName     , 
-                                       COMCORE::CPubSubBookmark& bookmark )
+                                       PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
     // @TODO: Update to use dedicated bookmark persistance
@@ -1283,18 +1288,18 @@ CStorageChannel::GetPersistedBookmark( CORE::Int32 channelId              ,
         if ( msgId.IsInitialized() )
         {
             bookmark.SetBookmarkData( msgId );
-            bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID );
+            bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID );
         }
         else
         {
             CORE::CVariant dtStrVar = msgDt.ToIso8601DateTimeString( true, true );
             bookmark.SetBookmarkData( dtStrVar );
-            bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME );
+            bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_DATETIME );
         }
         return true;
     }
 
-    bookmark.SetBookmarkType( COMCORE::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE );
+    bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE );
     return false;
 }
 
@@ -1382,8 +1387,8 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
         }
 
         bool isCorrupted = false;
-        COMCORE::CBasicPubSubMsg msg;
-        if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
+        PUBSUB::CBasicPubSubMsg msg;
+        if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
         {
             if ( isCorrupted )
             {
@@ -1392,13 +1397,13 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Failed to deserialize the last message, will attempt an index rebuild of the corrupt container" );
                
                 CORE::UInt32 bytesRead = 0;
-                COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newRecoveredIndex;
-                if ( COMCORE::CPubSubMsgContainerBinarySerializer::IndexRebuildScan( newRecoveredIndex, lastStorageFileContent, bytesRead ) )
+                PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newRecoveredIndex;
+                if ( PUBSUB::CPubSubMsgContainerBinarySerializer::IndexRebuildScan( newRecoveredIndex, lastStorageFileContent, bytesRead, true ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully performed an index rebuild of the corrupt container, discovered " + CORE::ToString( newRecoveredIndex.size() ) + " messages. Will attempt to add a new footer" );
                     
                     CORE::UInt32 bytesWritten = 0;
-                    if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newRecoveredIndex, lastStorageFileContent.GetDataSize()-1, lastStorageFileContent, bytesWritten ) )
+                    if ( PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( newRecoveredIndex, lastStorageFileContent.GetDataSize()-1, lastStorageFileContent, bytesWritten ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:GetLastPersistedMsgAttributes: Successfully serialized a new footer to the previously corrupt container. Will attempt to persist the amended container" );
 
@@ -1435,7 +1440,7 @@ CStorageChannel::GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId 
                 }
 
                 // Lets try again, hopefully its fixed now best effort...
-                if ( !COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
+                if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( msg, true, lastStorageFileContent, 0, false, isCorrupted ) )
                 {
                     // This should not happen, something is seriously wrong here.
                     fileExistedButHasIssue = true;
@@ -1486,10 +1491,10 @@ CStorageChannel::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
-    VFS::CVFS::TStringSet index;
-    vfs.GetList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter, true, false );
+    VFS::CVFS::TStringVector index;
+    vfs.GetFileList( index, m_channelSettings.vfsStorageRootPath, false, true, fileFilter );
 
-    VFS::CVFS::TStringSet::iterator i = index.begin();
+    VFS::CVFS::TStringVector::iterator i = index.begin();
     while ( i != index.end() )
     {        
         CORE::CDateTime containerFileFirstMsgDt;
@@ -1524,8 +1529,8 @@ CStorageChannel::StoreNextReceivedPubSubBuffer( void )
         // Get the timestamp of the last message in the buffer.
         // This is not as expensive an operation as it would appear because we just link to the bytes in the buffer we dont copy them
         bool isCorrupted = false;
-        COMCORE::CBasicPubSubMsg lastMsg;
-        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( lastMsg, true, *m_msgReceiveBuffer, 0, false, isCorrupted );
+        PUBSUB::CBasicPubSubMsg lastMsg;
+        PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeMsgAtIndex( lastMsg, true, *m_msgReceiveBuffer, 0, false, isCorrupted );
 
         CORE::CString vfsFilename = msgBatchDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsg.GetMsgDateTime().ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
         CORE::CString vfsStoragePath = CORE::CombinePath( m_channelSettings.vfsStorageRootPath, vfsFilename );
@@ -1636,8 +1641,8 @@ CStorageChannel::ProcessNextStorageToPubSubRequest( void )
                     if ( LoadStorageFile( (*n), *m_msgReceiveBuffer ) )
                     {
                         CORE::UInt32 bytesRead = 0;
-                        COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
-                        COMCORE::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead );
+                        PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex originalOffsetIndex;
+                        PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeFooter( originalOffsetIndex, *m_msgReceiveBuffer, bytesRead, true );
 
                         // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
                         // The way we can do that is by editing the footer in the buffer to logically eliminate entries we do not need
@@ -1645,14 +1650,14 @@ CStorageChannel::ProcessNextStorageToPubSubRequest( void )
                         CORE::UInt32 startIndexOffset = 0;
                         CORE::UInt32 endIndexOffset = 0;
                         bool isCorrupted = false;                        
-                        COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
-                        if ( COMCORE::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted ) )
+                        PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;                        
+                        if ( PUBSUB::CPubSubMsgContainerBinarySerializer::Deserialize( msgs, true, originalOffsetIndex, *m_msgReceiveBuffer, isCorrupted, true ) )
                         {
                             // Check to see how many we need to trim from the start
 
                             if ( !containerStartIsInRange )
                             {
-                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator m = msgs.begin();
+                                PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator m = msgs.begin();
                                 while ( m != msgs.end() )    
                                 {
                                     if ( (*m).GetMsgDateTime() >= queuedRequest.startDt )
@@ -1662,7 +1667,7 @@ CStorageChannel::ProcessNextStorageToPubSubRequest( void )
                             }
                             if ( !containerEndIsInRange )
                             {
-                                COMCORE::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::reverse_iterator m = msgs.rbegin();
+                                PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::reverse_iterator m = msgs.rbegin();
                                 while ( m != msgs.rend() )    
                                 {
                                     if ( (*m).GetMsgDateTime() <= queuedRequest.endDt )
@@ -1674,7 +1679,7 @@ CStorageChannel::ProcessNextStorageToPubSubRequest( void )
                             CORE::UInt32 o2=0;
                             std::size_t newIndexSize = originalOffsetIndex.size() - ( startIndexOffset + endIndexOffset );
                             endIndexOffset = (CORE::UInt32) originalOffsetIndex.size() - endIndexOffset;
-                            COMCORE::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newOffsetIndex( newIndexSize );                            
+                            PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex newOffsetIndex( newIndexSize );                            
                             for ( CORE::UInt32 o=startIndexOffset; o<endIndexOffset; ++o )
                             {
                                 newOffsetIndex[ o2 ] = originalOffsetIndex[ o ];
@@ -1683,7 +1688,7 @@ CStorageChannel::ProcessNextStorageToPubSubRequest( void )
 
                             // Now we overwrite the footer in the in-memory container to only have the subset of messages we care about referenced
                             CORE::UInt32 bytesWritten = 0;
-                            if ( COMCORE::CPubSubMsgContainerBinarySerializer::SerializeFooter( newOffsetIndex, m_msgReceiveBuffer->GetDataSize()-1, *m_msgReceiveBuffer, bytesWritten ) )
+                            if ( PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( newOffsetIndex, m_msgReceiveBuffer->GetDataSize()-1, *m_msgReceiveBuffer, bytesWritten ) )
                             {
                                 // We are done with this container
                                 ++containersProcessed;

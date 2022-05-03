@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+	<ModuleInfoEntry>
+		<Module Name="ServerPortExtender" Platform="All" Type="Executable" Tags="services" >
+			<Dependencies>
+				<Dependency Name="gucefCOMCORE" />
+				<Dependency Name="gucefCORE" />
+				<Dependency Name="gucefMT" />
+			</Dependencies>
+			<Linker>
+				<Dependency Name="gucefCOMCORE" />
+				<Dependency Name="gucefCORE" />
+				<Dependency Name="gucefMT" />
+			</Linker>
+        <Preprocessor>
+            <Define String="SERVERPORTEXTENDER_BUILD_MODULE" />
+        </Preprocessor>
+		</Module>
+	</ModuleInfoEntry>

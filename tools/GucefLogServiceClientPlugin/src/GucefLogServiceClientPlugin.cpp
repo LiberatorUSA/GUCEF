@@ -78,15 +78,26 @@ CLogSvcClient* g_svcClient;
 //-------------------------------------------------------------------------*/
 
 void
-ParseParams( const int argc                 , 
-             const char** argv              ,
+ParseParams( const int argc                 ,
+             const char* argv[]             ,
              CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
-    
+
     keyValueList.DeleteAll();
-    for ( CORE::Int32 i=0; i<argc; ++i ) 
+    GUCEF::CORE::CString argString;
+    if ( argc > 0 )
     {
-        keyValueList.Set( argv[ i ] );
+        argString = *argv;
+
+        // Combine the argument strings back into a single string because we don't want to use
+        // a space as the seperator
+        for ( int i=1; i<argc; ++i )
+        {
+            argString += ' ' + CORE::CString( argv[ i ] );
+        }
+
+        // Parse the param list based on the ' symbol
+        keyValueList.SetMultiple( argString, '\'' );
     }
 }
 

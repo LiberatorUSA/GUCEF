@@ -144,7 +144,6 @@ LoadConfig( const CORE::CString& configPath            ,
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
     keyValueList.SetConfigNamespace( "Main/AppArgs" );
-    keyValueList.SetUseGlobalConfig( true );
     keyValueList.SetAllowDuplicates( false );
     keyValueList.SetAllowMultipleValues( true );
 
