@@ -293,6 +293,21 @@ CMetricsClientManager::Count( const CString& key, const UInt32 delta, const Floa
 /*-------------------------------------------------------------------------*/
 
 void
+CMetricsClientManager::Gauge( const CString& key, const Int32 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+    TMetricsSystemClientPtrMap::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i).second->Gauge( key, value, frequency );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 

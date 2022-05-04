@@ -103,6 +103,7 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate
      */
+    virtual void Gauge( const CString& key, const Int32 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual void Gauge( const CString& key, const Int64 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -120,9 +121,9 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
     virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-                                                          
+
     private:
     friend class CCoreGlobal;
 

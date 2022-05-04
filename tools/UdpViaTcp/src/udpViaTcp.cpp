@@ -149,7 +149,7 @@ UdpViaTcp::UdpViaTcp( void )
     , m_transmitMetrics( true )
 {GUCEF_TRACE;
 
-    RegisterEventHandlers();    
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -297,7 +297,7 @@ UdpViaTcp::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             GUCEF_METRIC_COUNT( "UdpViaTcp.TcpClient.BufferedSendDataInBytes", m_tcpClientSocket.GetBufferedDataToSendInBytes(), 1.0f );
             GUCEF_METRIC_COUNT( "UdpViaTcp.TcpClient.BytesSent", m_tcpClientSocket.GetBytesTransmitted( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.PackagesQueued", m_tcpClientSendPacketBuffers.size(), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.PackagesQueued", (UInt64) m_tcpClientSendPacketBuffers.size(), 1.0f );
             GUCEF_METRIC_COUNT( "UdpViaTcp.UdpReceiver.BytesReceived", m_udpReceiveSocket.GetBytesReceived( true ), 1.0f );
             GUCEF_METRIC_COUNT( "UdpViaTcp.UdpReceiver.MsgsReceived", m_udpReceiveSocket.GetNrOfDataReceivedEvents( true ), 1.0f );
         }
@@ -320,7 +320,7 @@ UdpViaTcp::OnUDPReceiveSocketError( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
 }
 
@@ -376,13 +376,13 @@ UdpViaTcp::OnUDPReceiveSocketPacketsRecieved( CORE::CNotifier* notifier    ,
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: UDP Receive Socket received a packet from " + data.packets[ i ].sourceAddress.AddressAndPortAsString() );
 
-            char packetHeader[ 7 ]; 
+            char packetHeader[ 7 ];
             memcpy( packetHeader, "UDP", 3 );
-        
+
             bool successfullSend = false;
             bool failedToSendQueued = false;
             if ( m_tcpClientSocket.IsActive() )
-            {            
+            {
                 while ( !m_tcpClientSendPacketBuffers.empty() )
                 {
                     CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
@@ -442,7 +442,7 @@ UdpViaTcp::OnUDPTransmitSocketError( CORE::CNotifier* notifier    ,
                                      CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
 }
 
@@ -486,10 +486,10 @@ UdpViaTcp::OnUDPTransmitSocketPacketsRecieved( CORE::CNotifier* notifier   ,
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket received a packet from " + data.packets[ i ].sourceAddress.AddressAndPortAsString() );
 
-            char packetHeader[ 7 ]; 
+            char packetHeader[ 7 ];
             CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
             memcpy( packetHeader, "UDP", 3 );
-            memcpy( packetHeader+3, &packetSize, 4 );        
+            memcpy( packetHeader+3, &packetSize, 4 );
             m_tcpServerSocket.SendToAllClients( packetHeader, 7 );
             m_tcpServerSocket.SendToAllClients( udpPacketBuffer.GetConstBufferPtr(), packetSize );
         }
@@ -534,7 +534,7 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
     // As such we concat bytes into a packet buffer and split according to the protocol this app uses
     CORE::CDynamicBuffer& packetBuffer = m_tcpServerReceivePacketBuffers[ connection->GetConnectionIndex() ];
     packetBuffer.Append( receivedData.GetConstBufferPtr(), receivedData.GetDataSize(), true );
-    
+
     // Check to see if we received full UDP packets and if so transmit them
     CORE::UInt32 offset = 0;
     CORE::Int32 index = 0;
@@ -543,12 +543,12 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
         if ( offset+7 > packetBuffer.GetDataSize() )
             break;
 
-        CORE::UInt32 packetSize = packetBuffer.AsConstType< CORE::UInt32 >( offset+3 );                
+        CORE::UInt32 packetSize = packetBuffer.AsConstType< CORE::UInt32 >( offset+3 );
         if ( offset+7+packetSize > packetBuffer.GetDataSize() )
             break;
 
         ++m_tcpServerCompleteUdpPacketsReceived;
-        
+
         // Don't try to send 0 length packages.
         // These are used as an application level keep-alive mechanism
         if ( 0 == packetSize )
@@ -556,16 +556,16 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
             offset = ( (CORE::UInt32) index ) + 7 + packetSize;
             break;
         }
-        
+
         // We have received a complete UDP packet, transmit it
         bool sendError = false;
         THostAddressVector::iterator i = m_udpDestinations.begin();
         while ( i != m_udpDestinations.end() )
         {
-            CORE::Int32 bytesTransmitted = m_udpTransmitSocket.SendPacketTo( (*i)                                       , 
-                                                                             packetBuffer.GetConstBufferPtr( offset+7 ) , 
+            CORE::Int32 bytesTransmitted = m_udpTransmitSocket.SendPacketTo( (*i)                                       ,
+                                                                             packetBuffer.GetConstBufferPtr( offset+7 ) ,
                                                                              packetSize                                 );
-    
+
             // If we could not transmit all the bytes just try again later and keep the bytes in the packet buffer
             if ( bytesTransmitted != packetSize )
             {
@@ -574,7 +574,7 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
             }
             ++i;
         }
-        
+
         if ( sendError )
             break;
 
@@ -592,19 +592,19 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
                                  const CORE::CEvent& eventId  ,
                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
-    
+
     if ( m_useTcpClientAppLvlKeepAlive )
     {
         m_tcpClientAppLvlKeepAliveTimer.Reset();
         m_tcpClientAppLvlKeepAliveTimer.SetEnabled( true );
     }
-    
+
     if ( !m_tcpClientSendPacketBuffers.empty() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected. Will attempt to send " + 
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected. Will attempt to send " +
             CORE::UInt32ToString( (CORE::UInt32) m_tcpClientSendPacketBuffers.size() ) + " queued packages" );
-        
-        char packetHeader[ 7 ]; 
+
+        char packetHeader[ 7 ];
         memcpy( packetHeader, "UDP", 3 );
 
         while ( !m_tcpClientSendPacketBuffers.empty() )
@@ -643,7 +643,7 @@ UdpViaTcp::OnTCPClientDisconnected( CORE::CNotifier* notifier    ,
                                     const CORE::CEvent& eventId  ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
-    
+
     m_tcpClientAppLvlKeepAliveTimer.Reset();
     m_tcpClientAppLvlKeepAliveTimer.SetEnabled( false );
 
@@ -671,7 +671,7 @@ UdpViaTcp::OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 UdpViaTcp::OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
                                           const CORE::CEvent& eventId  ,
@@ -698,10 +698,10 @@ UdpViaTcp::OnTCPServerClientError( CORE::CNotifier* notifier    ,
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client Error" );
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 UdpViaTcp::OnTCPServerSocketOpened( CORE::CNotifier* notifier    ,
                                     const CORE::CEvent& eventId  ,
                                     CORE::CICloneable* eventData )
@@ -709,7 +709,7 @@ UdpViaTcp::OnTCPServerSocketOpened( CORE::CNotifier* notifier    ,
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Server socket has been opened" );
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -753,7 +753,7 @@ UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    
 
     const COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* >( eventData );
     CORE::Int32 maxConnections = eData->GetData();
-    
+
     // Only resize if we are enlarging. Shrinking causes too many headaches
     if ( (CORE::Int32) m_tcpServerReceivePacketBuffers.size() < maxConnections )
     {
@@ -774,9 +774,9 @@ UdpViaTcp::Start( void )
         m_tcpServerSocket.SetMaxUpdatesPerCycle( 10 );
         m_tcpServerSocket.SetAutoReOpenOnError( true );
         m_tcpServerSocket.ListenOnPort( m_tcpReceiver.GetPortInHostByteOrder() );
-        
+
         m_udpTransmitSocket.SetMaxUpdatesPerCycle( 10 );
-        m_udpTransmitSocket.SetAutoReOpenOnError( true ); 
+        m_udpTransmitSocket.SetAutoReOpenOnError( true );
         m_udpTransmitSocket.Open( m_udpTransmitter );
     }
     if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
@@ -788,7 +788,7 @@ UdpViaTcp::Start( void )
         m_tcpClientSocket.ConnectTo( m_tcpDestination, false );
 
         m_udpReceiveSocket.SetMaxUpdatesPerCycle( 10 );
-        m_udpReceiveSocket.SetAutoReOpenOnError( true ); 
+        m_udpReceiveSocket.SetAutoReOpenOnError( true );
         m_udpReceiveSocket.Open( m_udpReceiver );
     }
 
@@ -796,8 +796,8 @@ UdpViaTcp::Start( void )
     {
         m_metricsTimer.SetInterval( 1000 );
         m_metricsTimer.SetEnabled( true );
-    }  
-    
+    }
+
     if ( m_httpServer.Listen() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
@@ -811,7 +811,7 @@ UdpViaTcp::Start( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
@@ -837,7 +837,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
 
     m_useTcpClientAppLvlKeepAlive = CORE::StringToBool( appConfig.GetValueAlways( "UseTcpClientAppLvlKeepAlive", "true" ) );
     m_tcpClientAppLvlKeepAliveTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TcpClientAppLvlKeepAliveInterval", "10000" ) ) );
-    
+
     m_tcpServerSocket.SetDisconnectClientConnectionIfIdle( CORE::StringToBool( appConfig.GetValueAlways( "UseTcpServerIdleClientDisconnect", "true" ) ) );
     m_tcpServerSocket.SetClientConnectionMaxIdleDurationInMs( CORE::StringToUInt32( appConfig.GetValueAlways( "TcpServerMaxClientIdleDurationInMs", "600000" ) ) );
 
@@ -854,15 +854,15 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     }
     m_udpReceiveSocket.SetAllowMulticastLoopback( CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAllowMulticastLoopback", "false" ) ) );
     m_udpReceiveSocket.SetMulticastTTL( CORE::StringToInt32( appConfig.GetValueAlways( "UdpReceiverMulticastTTL", "8" ) ) );
-    
+
     m_tcpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( ( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) ) ) );
     m_tcpDestination.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) ) );
     m_tcpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) ) );
     m_tcpReceiver.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "TcpTunnelReceiveInterface", "0.0.0.0" ) ) );
-        
+
     m_udpTransmitter.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpTransmitterPort", "20001" ) ) ) );
-    m_udpTransmitter.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpTransmitterInterface", "0.0.0.0" ) ) ); 
-    
+    m_udpTransmitter.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpTransmitterInterface", "0.0.0.0" ) ) );
+
     // UDP Destinations are allowed to be configured via multiple config lines or via a , separated list or some combination thereof
     // Do note that in order to garantee correct association between IP and Port we have to specify IP and Port together as <IP>:<Port>
     CORE::CValueList::TVariantVector udpDestinationsCombo = appConfig.GetValueVectorAlways( "UdpDestinations" );
@@ -873,7 +873,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
         CORE::CValueList::TStringVector::iterator n = elements.begin();
         while ( n != elements.end() )
         {
-            CORE::CString destinationStr = CORE::ResolveVars( (*n) ); 
+            CORE::CString destinationStr = CORE::ResolveVars( (*n) );
             COMCORE::CHostAddress destination( destinationStr );
             m_udpDestinations.push_back( destination );
             ++n;
@@ -905,14 +905,14 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
         (*n) = CORE::ResolveVars( (*n) );
         ++n;
     }
-        
+
     m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
 
     m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
-    
+
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
     m_appConfig = appConfig;
@@ -922,7 +922,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CValueList& 
+const CORE::CValueList&
 UdpViaTcp::GetAppConfig( void ) const
 {
     return m_appConfig;
@@ -930,7 +930,7 @@ UdpViaTcp::GetAppConfig( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CDataNode& 
+const CORE::CDataNode&
 UdpViaTcp::GetGlobalConfig( void ) const
 {
     return m_globalConfig;

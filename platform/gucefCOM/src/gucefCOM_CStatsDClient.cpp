@@ -162,6 +162,16 @@ CStatsDClient::Count( const CString& key, const UInt64 delta, const Float32 freq
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::Gauge( const CString& key, const Int32 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "g";
+    Transmit( key, value, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
@@ -284,7 +294,7 @@ CStatsDClient::Transmit( const CString& key      ,
     if ( msgSize > 0 )
     {
         #ifdef GUCEF_DEBUG_MODE
-        
+
         if ( m_logStats )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
@@ -293,16 +303,16 @@ CStatsDClient::Transmit( const CString& key      ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
         }
-        
+
         #else
-        
+
         if ( m_logStats )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
         }
 
         #endif
-        
+
         if ( m_transmit )
         {
             if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize ) )
