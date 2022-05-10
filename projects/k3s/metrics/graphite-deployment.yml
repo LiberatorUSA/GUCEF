@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ labels:
+   app: graphite
+ name: graphite
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: graphite
+ template:
+   metadata:
+     labels:
+       app: graphite
+   spec:
+     containers:
+     - image: graphiteapp/graphite-statsd
+       name: graphite
+       ports:
+       - containerPort: 2003
+         name: carbon-plain     
+       - containerPort: 2004
+         name: carbon-pkl   
+       - containerPort: 2023
+         name: carbon-ag-plain
+       - containerPort: 2024
+         name: carbon-ag-pkl   
+       - containerPort: 8125
+         name: statsd   
+       - containerPort: 8126
+         name: statsd-admin  
+       - containerPort: 80
+         name: http       
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: graphite
+ labels:
+   app: graphite
+spec:
+ type: LoadBalancer
+ ports:
+ - port: 80
+   protocol: TCP
+   targetPort: 80
+   name: http
+ - port: 2003
+   protocol: TCP
+   targetPort: 2003
+   name: carbon
+ selector:
+   app: graphite

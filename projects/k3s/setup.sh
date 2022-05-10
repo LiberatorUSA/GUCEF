@@ -21,30 +21,39 @@ sudo chmod 700 get_helm.sh
 
 # set up helm
 sudo ./get_helm.sh
+rm ./get_helm.sh
 
 # confirm we are dealing with Helm 3
 sudo helm version
 
 # set often used repos and update
-#sudo helm repo add stable https://charts.helm.sh/stable --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo add bitnami https://charts.bitnami.com/bitnami --kubeconfig /etc/rancher/k3s/k3s.yaml
-#sudo helm repo add grafana https://grafana.github.io/helm-charts --kubeconfig /etc/rancher/k3s/k3s.yaml
-sudo helm repo add jetstack https://charts.jetstack.io --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo add jenkins https://charts.jenkins.io --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo add gitlab https://charts.gitlab.io/ --kubeconfig /etc/rancher/k3s/k3s.yaml
-sudo helm repo add github-actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo update --kubeconfig /etc/rancher/k3s/k3s.yaml
 
 # install the common prereq of cert manager
-sudo helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --set prometheus.enabled=true --set webhook.timeoutSeconds=4 --kubeconfig /etc/rancher/k3s/k3s.yaml --debug
+cd ./cert-manager
+./setup.sh
+cd ..
+
+# setup the Kubernetes dashboard
+cd ./dashboard
+./setup.sh
+cd ..
 
 # setup GitHub runner integration
 cd ./github
 ./setup.sh
 cd ..
 
+# setup Nexus for storing build artifacts and deployment, CICD
+cd ./nexus
+./setup.sh
+cd ..
 
-
-
-
+# setup metrics support
+cd ./metrics
+./setup.sh
+cd ..
 
