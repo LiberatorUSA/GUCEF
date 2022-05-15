@@ -1,21 +1,20 @@
-*
-*  ProjectGenerator
-*  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
-*
-*  This software is free software; you can redistribute it and/or
-*  modify it under the terms of the GNU Lesser General Public
-*  License as published by the Free Software Foundation; either
-*  version 3 of the License, or (at your option) any later version.
-*
-*  This software is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*  Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this library; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
-*
+/*
+ *  ProjectGenerator
+ *
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 ----------------------------------------------
 About:
@@ -52,9 +51,9 @@ include paths will be correct again as soon as you re-run the generator.
 Version:
 ----------------------------------------------
 
-This is a release build created on 4'th of April 2012.
+This is a release build created on 15'th of May 2022.
 It is a 32-bit Win32 application for the x86 platform.
-if you encounter any problems let me know.
+if you encounter any problems please let me know.
 
 ----------------------------------------------
 Features:
@@ -63,6 +62,9 @@ Features:
 - Automatically locate and list all header and source file for each module
 - Ability to manipulate what is excluded/included using processing instructions
 - Automatically generates the include paths for each module's dependencies
+- Automatically generates multiple views on the code base based on an executable or tag
+  This makes it easy to split large code bases into sub-projects and is also needed for 
+  packaging with CPack when the repo contains multiple independent applications.
 - Handles most include/source directory structures
 - Special processing for platform specific headers/sources is supported.
 - Support for combined processing of multipe source trees
@@ -76,10 +78,14 @@ Features:
 - Support for a special kind of module called a "CodeIncludeLocation" which allows
   you to embed code from another location into your module by adding a dependence on
   such a location.
+- Suppport for runtime dependency references (plugins) to be included in the build tree
 - Support for multiple generator backends:
      - CMake
-     - XML
+     - XML (Information dump)
      - Android make
+	 - Premake 4
+	 - Premake 5
+	 - CI Helper
 
 
 ----------------------------------------------
@@ -118,7 +124,7 @@ These are as follows:
 
 
 ----------------------------------------------
-Usage: Overview (New system)
+Usage: Overview 
 ----------------------------------------------
 
 Note that the method described here can be used in paralell to the "Legacy System"
@@ -144,45 +150,6 @@ There are 4 kinds of files involved in the definition of modules, these are:
 The generator tool is meant to run as part of your build system setup before running 
 followup tools such as CMake. In combination the generator plus followup tooling
 will allow you to automate almost every aspect of setting up your module/project files.
-
-
-
-----------------------------------------------
-Usage: Overview (Legacy system)
-----------------------------------------------
-
-Note even though ProjectGenerator uses a different method of defining modules it still
-supports the old method using a CMakeListsSuffix file. Both methods can be used at the 
-same time to allow developers to migrate over time to the new system. Do note that this
-old method is considered deprecated and will be removed in some future release.
-
-There are 4 kinds of files involved in the generation of the CMakeLists.txt 
-files, these are:
-- CMakeLists.txt:
-        Module (project) file which is automatically generated.
-        Note that if a CMakeLists.txt file already exists the tool will overwrite it!
-- CMakeListsSuffix.txt: 
-        Like the name says, a suffix that will be added to the automatically 
-        generated CMakeLists.txt. It is also used for dependency determination by the
-        generator. Directories containing a suffix file will be considered project 
-        directories. Includes in this file will be merged with includes determined by the tool.
-- CMakeGenExcludeList.txt:
-        A simple text file containing a sub-dir/file name per line that should be 
-        excluded from CMakeListGenerator processing. This is also referred to as the 
-        "Simple exclude list" because it is simple to specify but lacks some flexibity.
-        If you to to include as well or need to do platform specific processing use the 
-        xml based instruction file described below. For more details see the section 
-        on processing instructions.
-- CMakeGenInstructions.xml:
-        Offers a more advanced method of changing how data will be processed by the
-        generator. It allows you to specify which files/directories to include/exclude
-        and for what platform. For more details see the section on processing instructions.
-
-The combination of the latter three files produces the first, the actual CMakeLists.txt file
-which CMake needs to generate your project/module files. The generator tool is meant to run as
-part of your build system setup before running CMake. In combination the generator plus CMake
-will allow you to automate almost every aspect of setting up your module/project files.
-
 
 
 ----------------------------------------------
@@ -224,7 +191,7 @@ library (dll/so) for the platform "All".
 The platform tag "All" is a special plaform which can be used to indicate that the code 
 is not platform specific but just standard C/C++ or perhaps it has its own macros and whatnot
 to deal with being platform independent. A module definition for the "All" platform is considered 
-a baseline which specific platform info can supplement. You can see an exmaple of this in the 
+a baseline which specific platform info can supplement. You can see an example of this in the 
 linux platform section where an additional linker dependency is defined. 
   "All" + "linux" = all linker dependencies. 
 In this case the module has no "All" platforms linker dependency and as such its total number of linker 
@@ -368,7 +335,7 @@ Usage: Generator specific command line parameters: CMake
 
 The CMake generator supports the following additonal params:
 
-- *cmakgen:TemplateDir=<pathToTemplateDir>
+- *cmakegen:TemplateDir=<pathToTemplateDir>
     Example:
        *cmakgen:TemplateDir=C:\Dev\MyCodeRoot\projects\MyProjectGenCMakeTemplates*
 
@@ -535,7 +502,25 @@ up the generator's processing time. As such processing instructions can also be 
 ----------------------------------------------
 History:
 ----------------------------------------------
-
+- 15'th of May 2022:
+	 - While the latest ProjectGenerator had been available via the code for a long time no updated binaries
+	   were included in the repo for out-of-the-box generation of the latest files without disconnects due to feature gaps
+	   This is now remedied with this build being provided to close said feature gap.
+	 - Deleted a whole slew of older ProjectGenerator builds from the repo dating back to 2011
+- 15'th December 2019:
+     - Breaking changes in ProjectGenerator were introduced to allow multiple logical views on the codebase.
+	   This was added to allow for proper packaging with CPack without having unrelated binaries being included.
+- 29'th January 2017:
+     - Some notes between 2013 and now went missing. Need tp figure out what went missing from the notes and backfill
+     - Added first pass of support for BinaryPackage dependencies. Its a simple way of defining a package that was not 
+       build from source by this build system and consuming it from other packages that are.
+     - CMake backend now takes targetName into account
+     - Added the concept of passthrough environment variables. This uses similar syntax as variables which are resolved
+       by GUCEF such as $ENVVAR:EXAMPLE$ but adds extra symbols which will prevent them from being resolved in GUCEF and instead
+       indicates to the generator backend that it is to remain a variable at script execution to the extent supported by the backend
+       in this case for CMake that would be: $ENVVAR:EXAMPLE$ -> $#$ENVVAR:EXAMPLE$#$ -> $ENV{EXAMPLE}
+- 22'nd January 2013:
+     - Build using latest dependencies, no other changes
 - 4'th April 2012 :
      - Changes to ensure preprocessor defines are alphabetically ordered every time the scripts are generated.
        This ensures the generated scripts wont show as changed when re-running the ProjectGenerator.

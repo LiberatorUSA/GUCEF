@@ -1,21 +1,21 @@
 @echo off
 
 SET GUCEF_THEBATCHDIR=%~dp0
-GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_CMAKELISTGENERATOR
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_VS2019_PROJECTGENERATOR
 
 
 REM -----------------------------------------------------
 
-:FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
+:FIND_GUCEF_RELEASE_PROJECTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2020.02.28\
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2022.05.15\
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of ProjectGenerator dated Feb 28th 2020
-  GOTO RUN_CMAKELISTGENERATOR
+  ECHO Using released version of ProjectGenerator dated May 15th 2022
+  GOTO RUN_PROJECTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
@@ -24,33 +24,33 @@ IF NOT EXIST "%EXETEST%" (
 )
     
 cd "%GUCEF_THEBATCHDIR%"
-GOTO RUN_CMAKELISTGENERATOR
+GOTO RUN_PROJECTGENERATOR
 
 REM -----------------------------------------------------
 
-:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_CMAKELISTGENERATOR
+:FIND_GUCEF_CMAKE_SLN_DEBUG_VS2019_PROJECTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC14\bin\Debug
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\VS2019_ProjectGenerator\bin\Debug
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Warning: Using VC14 CMake debug development version of the ProjectGenerator
-  GOTO RUN_CMAKELISTGENERATOR
+  ECHO Warning: Using VS2019 debug development version of the ProjectGenerator
+  GOTO RUN_PROJECTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate VC14 CMake debug development version of the ProjectGenerator
-  GOTO FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
+  ECHO Cannot locate VS2019 debug development version of the ProjectGenerator
+  GOTO FIND_GUCEF_RELEASE_PROJECTGENERATOR
 )
 
 cd "%GUCEF_THEBATCHDIR%"
-GOTO RUN_CMAKELISTGENERATOR
+GOTO RUN_PROJECTGENERATOR
 
 REM -----------------------------------------------------
 
-:RUN_CMAKELISTGENERATOR
+:RUN_PROJECTGENERATOR
 
 SET CMAKE_ROOT="C:\Program Files (x86)\CMake"
 
