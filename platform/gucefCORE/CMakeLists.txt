@@ -144,6 +144,8 @@ set( HEADER_FILES
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
   include/gucefCORE_CCoreGlobal.h
+  include/gucefCORE_CDStoreBinaryCodec.h
+  include/gucefCORE_CDataNodeBinarySerializer.h
   include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
@@ -351,6 +353,8 @@ set( SOURCE_FILES
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp
   src/gucefCORE_CCoreGlobal.cpp
+  src/gucefCORE_CDStoreBinaryCodec.cpp
+  src/gucefCORE_CDataNodeBinarySerializer.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp

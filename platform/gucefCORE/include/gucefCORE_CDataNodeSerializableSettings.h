@@ -71,8 +71,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurabl
         
         DataNodeSerializableLod_KeyOnly = 1,
         DataNodeSerializableLod_MinimumDetails = 2,
-        DataNodeSerializableLod_AverageDetails = GUCEFCORE_UINT32MAX / 2,
-        DataNodeSerializableLod_MaximumDetails = GUCEFCORE_UINT32MAX,
+        DataNodeSerializableLod_AverageDetails = GUCEF_UINT32MAX / 2,
+        DataNodeSerializableLod_MaximumDetails = GUCEF_UINT32MAX,
     };
 
     CDataNodeSerializableSettings( void );

@@ -159,13 +159,19 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     const CVariant& GetValue( void ) const;
 
+    /**
+     *  Gets the current node mutable value
+     *  @return the current simplistic node value
+     */
+    CVariant& GetValue( void );
+
     bool HasValue( void ) const;
 
     int GetValueType( void ) const;
     
-    void SetNodeType( int nodeType );
+    void SetNodeType( Int32 nodeType );
     
-    int GetNodeType( void ) const;
+    Int32 GetNodeType( void ) const;
 
     bool IsAttribute( const CString& name ) const;
 
@@ -202,8 +208,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     bool SetAttribute( const CString& name, Int32 value );
     bool SetAttribute( const CString& name, Int64 value );
     bool SetAttribute( const CString& name, UInt64 value );
-    bool SetAttribute( const CString& name, const CVariant& value );
+    bool SetAttribute( const CString& name, const CVariant& value, bool linkWherePossible = false );
     bool SetAttribute( const CString& name, Float32 value );
+    //bool SetAttribute( const CVariant& name, const CVariant& value, bool linkWherePossible = false );
 
     void DelAttribute( const CString& name );
 
@@ -406,6 +413,13 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     bool HasChildren( void ) const;
 
     /**
+     *  Adds an child node to the given node of type unknown for later/external initialization
+     *
+     *  @return pointer to the new child.
+     */
+    CDataNode* AddChild( void );
+
+    /**
      *  Adds an child node to the given node using the
      *  given newnode as a template.
      *
@@ -452,9 +466,14 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     /**
      *  Counts all the child nodes for the node the 
-     *  request is made on.
+     *  request is made on. This includes children of children
      */
     UInt32 GetNrOfChildNodes( void ) const;
+
+    /**
+     *  Counts all the directly child nodes, no recursion
+     */
+    UInt32 GetNrOfDirectChildNodes( void ) const;
     
     /**
      *  Counts all the nodes in the data tree
@@ -595,7 +614,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     void DetachChild( CDataNode* child ); /**< detaches the given child node */
 
     
-    int m_nodeType;       /**< metadata encoding the type of the node */
+    Int32 m_nodeType;     /**< metadata encoding the type of the node */
     CString _name;        /**< name of the node */
     CVariant m_value;     /**< simplistic value field of the node */
     TAttributeMap _atts;  /**< list of node attributes */

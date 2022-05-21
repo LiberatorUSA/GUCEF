@@ -170,8 +170,22 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
                           UInt32 esize        ,
                           UInt32 elements     );
 
+    /**
+     *  Attempts to write all the elements from the source data buffer
+     *  returns the number of elements written
+     */
+    virtual UInt32 Write( CDynamicBuffer& sourceData ,
+                          UInt32 esize               ,
+                          UInt32 elements            );
+
+    /**
+     *  Attempts to write all the bytes in the source data buffer
+     *  returns the number of bytes written
+     */
+    virtual UInt32 Write( CDynamicBuffer& sourceData );
+
     virtual UInt32 Write( CIOAccess& sourceData );
-        
+
     virtual UInt32 Write( const CString& string );
 
     template < typename T >

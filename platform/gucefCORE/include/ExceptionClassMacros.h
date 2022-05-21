@@ -87,6 +87,10 @@
                        const int originLineNr ,                       \
                        const char* errorMsg   );                      \
                                                                       \
+        exceptionName( const char* originFile  ,                      \
+                       const int originLineNr  ,                      \
+                       const CString& errorMsg );                     \
+                                                                      \
         exceptionName( const exceptionName& src );                    \
                                                                       \
         virtual ~exceptionName() throw();                             \
@@ -112,6 +116,17 @@
         exceptionName( const char* originFile ,                          \
                        const int originLineNr ,                          \
                        const char* errorMsg   )                          \
+                                                                         \
+            : GUCEF::CORE::CMsgException( originFile   ,                 \
+                                          originLineNr ,                 \
+                                          errorMsg     )                 \
+        {                                                                \
+                                                                         \
+        }                                                                \
+                                                                         \
+        exceptionName( const char* originFile  ,                         \
+                       const int originLineNr  ,                         \
+                       const CString& errorMsg )                         \
                                                                          \
             : GUCEF::CORE::CMsgException( originFile   ,                 \
                                           originLineNr ,                 \
@@ -178,8 +193,17 @@ ownerScopeClass::exceptionName::exceptionName( const char* originFile ,     \
                                                const int originLineNr ,     \
                                                const char* errorMsg   )     \
     : GUCEF::CORE::CMsgException( originFile   ,                            \
-                               originLineNr ,                               \
-                               errorMsg     )                               \
+                                  originLineNr ,                            \
+                                  errorMsg     )                            \
+{                                                                           \
+}                                                                           \
+                                                                            \
+ownerScopeClass::exceptionName::exceptionName( const char* originFile  ,    \
+                                               const int originLineNr  ,    \
+                                               const CString& errorMsg )    \
+    : GUCEF::CORE::CMsgException( originFile   ,                            \
+                                  originLineNr ,                            \
+                                  errorMsg     )                            \
 {                                                                           \
 }                                                                           \
                                                                             \

@@ -464,7 +464,8 @@ CDynamicBuffer::AsType( const UInt32 byteOffset /* = 0 */ )
         return *reinterpret_cast< T* >( static_cast< char* >( GetBufferPtr() ) + byteOffset );
     }
 
-    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsType(): Cannot cast to the given type" );
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsType(): Cannot cast to the given type. Need " + 
+        ToString( sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -479,7 +480,8 @@ CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
         return *reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
 
-    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type" );
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type. Need " + 
+        ToString( sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -495,7 +497,8 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const
         return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
 
-    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type. Need " + 
+        ToString( sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -511,7 +514,8 @@ CDynamicBuffer::AsTypePtr( const UInt32 byteOffset /* = 0 */ )
         return reinterpret_cast< T* >( static_cast< char* >( GetBufferPtr() ) + byteOffset );
     }
 
-    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsTypePtr(): Cannot cast to the given type" );
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsTypePtr(): Cannot cast to the given type. Need " + 
+        ToString( sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -527,7 +531,8 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSi
         return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
 
-    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type. Need " + 
+        ToString( requiredSizeOfT ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 
 /*-------------------------------------------------------------------------*/

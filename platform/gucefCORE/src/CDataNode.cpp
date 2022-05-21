@@ -237,6 +237,14 @@ CDataNode::GetValue( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CVariant& 
+CDataNode::GetValue( void )
+{
+    return m_value;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CDataNode::HasValue( void ) const
 {GUCEF_TRACE;
@@ -256,7 +264,7 @@ CDataNode::GetValueType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CDataNode::SetNodeType( int nodeType )
+CDataNode::SetNodeType( Int32 nodeType )
 {GUCEF_TRACE;
 
     m_nodeType = nodeType;
@@ -264,7 +272,7 @@ CDataNode::SetNodeType( int nodeType )
 
 /*-------------------------------------------------------------------------*/
 
-int 
+Int32 
 CDataNode::GetNodeType( void ) const
 {GUCEF_TRACE;
 
@@ -532,13 +540,32 @@ CDataNode::SetAttribute( const CString& name ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDataNode::SetAttribute( const CString& name   ,
-                         const CVariant& value )
+CDataNode::SetAttribute( const CString& name    ,
+                         const CVariant& value  ,
+                         bool linkWherePossible )
 {GUCEF_TRACE;
 
-    _atts[ name ] = value;
+    if ( linkWherePossible )
+        _atts[ name ].LinkTo( value );
+    else
+        _atts[ name ] = value;
     return true;                      
 }
+
+/*-------------------------------------------------------------------------*/
+
+//bool 
+//CDataNode::SetAttribute( const CVariant& name   ,
+//                         const CVariant& value  ,
+//                         bool linkWherePossible )
+//{GUCEF_TRACE;
+//
+//    if ( linkWherePossible )
+//        _atts[ name ].LinkTo( value );
+//    else
+//        _atts[ name ] = value;
+//    return true;                      
+//}
 
 /*-------------------------------------------------------------------------*/
 
@@ -962,6 +989,15 @@ CDataNode::Find( const CString& name ) const
         ++m;
     }
     return nullptr;       
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CDataNode::GetNrOfDirectChildNodes( void ) const
+{GUCEF_TRACE;
+
+    return (UInt32) m_children.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1497,6 +1533,26 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 
     CDataNode newNode( nodeName, nodeType );
     return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddChild( void )
+{GUCEF_TRACE;
+
+    CDataNode* n = new CDataNode( GUCEF_DATATYPE_UNKNOWN );
+    n->_pparent = this;
+
+    if ( !m_children.empty() )
+    {
+        CDataNode* last = m_children.back();
+        last->_pnext = n;
+        n->_pprev = last;
+    }
+
+    m_children.push_back( n );
+    return n;
 }
 
 /*-------------------------------------------------------------------------*/

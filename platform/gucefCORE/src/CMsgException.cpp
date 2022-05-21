@@ -58,8 +58,21 @@ namespace CORE {
 CMsgException::CMsgException( const char* originFile   ,
                               const Int32 originLineNr ,
                               const char* errorMsg     )
-    : CException( originFile, originLineNr )             ,
-      m_errorMsg( errorMsg )
+    : CException( originFile, originLineNr )             
+    , m_errorMsgC( errorMsg ) // avoid memory allocs if we can here
+    , m_errorMsg()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsgException::CMsgException( const char* originFile   ,
+                              const Int32 originLineNr ,
+                              const CString& errorMsg  )
+    : CException( originFile, originLineNr )             
+    , m_errorMsgC( GUCEF_NULL )
+    , m_errorMsg( errorMsg )
 {GUCEF_TRACE;
 
 }
@@ -67,15 +80,16 @@ CMsgException::CMsgException( const char* originFile   ,
 /*-------------------------------------------------------------------------*/
 
 CMsgException::CMsgException( const CMsgException& src )
-    : CException( src )              ,
-      m_errorMsg( src.m_errorMsg )
+    : CException( src )              
+    , m_errorMsgC( src.m_errorMsgC )
+    , m_errorMsg( src.m_errorMsg )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CMsgException::~CMsgException() throw()
+CMsgException::~CMsgException() 
 {GUCEF_TRACE;
 
 }
@@ -99,7 +113,9 @@ const char*
 CMsgException::GetErrorMsg( void ) const
 {GUCEF_TRACE;
 
-    return m_errorMsg;
+    if ( m_errorMsg.IsNULLOrEmpty() )
+        return m_errorMsgC;
+    return m_errorMsg.C_String();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -108,7 +124,7 @@ const char*
 CMsgException::what( void ) const throw()
 {GUCEF_TRACE;
 
-    static CString whatStr;
+    static CString whatStr;       // TODO: thread safety?
     whatStr = "GUCEF message exception: " + CString( m_errorMsg ) + " - thrown from: " + CString( GetOriginFile() ) + ':' + Int32ToString( GetOriginLineNr() );
     return whatStr.C_String();
 }

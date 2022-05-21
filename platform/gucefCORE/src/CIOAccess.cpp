@@ -472,6 +472,34 @@ CIOAccess::Write( const void* srcdata ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CIOAccess::Write( CDynamicBuffer& sourceData ,
+                  UInt32 esize               ,
+                  UInt32 elements            )
+{GUCEF_TRACE;
+
+    return Write( sourceData.GetConstBufferPtr() ,
+                  esize                          ,
+                  elements                       );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CIOAccess::Write( CDynamicBuffer& sourceData )
+{GUCEF_TRACE;
+
+    if ( 1 == Write( sourceData.GetConstBufferPtr() ,
+                     sourceData.GetDataSize()       ,
+                     1                              ) )
+    {
+        return sourceData.GetDataSize();
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CIOAccess::Write( CIOAccess& sourceData )
 {GUCEF_TRACE;
 

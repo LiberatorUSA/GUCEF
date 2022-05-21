@@ -1405,8 +1405,11 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             if ( linkOnlyForDynMem )
             {
                 m_variantData.union_data.heap_data.heap_data_is_linked = 1;
-                m_variantData.union_data.heap_data.union_data.void_heap_data = const_cast< void* >( data );
                 m_variantData.union_data.heap_data.heap_data_size = dataSize;
+                if ( dataSize > 0 )
+                    m_variantData.union_data.heap_data.union_data.void_heap_data = const_cast< void* >( data );
+                else
+                    m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
                 m_variantData.containedType = varType;
                 return true;
             }
@@ -1581,9 +1584,10 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
 
     if ( allowReduction || m_variantData.union_data.heap_data.heap_data_size < byteSize )
     {
-        if ( 0 == byteSize && GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data )
+        if ( 0 == byteSize )
         {
-            free( m_variantData.union_data.heap_data.union_data.void_heap_data );
+            if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data )
+                free( m_variantData.union_data.heap_data.union_data.void_heap_data );
             m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
             m_variantData.union_data.heap_data.heap_data_size = 0;
             m_variantData.union_data.heap_data.heap_data_is_linked = 0;

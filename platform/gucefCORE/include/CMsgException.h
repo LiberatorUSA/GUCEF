@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CEXCEPTION_H
 #endif /* GUCEF_CORE_CEXCEPTION_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -61,6 +66,10 @@ class GUCEF_CORE_PUBLIC_CPP CMsgException : public CException
                    const Int32 originLineNr ,
                    const char* errorMsg     );
 
+    CMsgException( const char* originFile   ,
+                   const Int32 originLineNr ,
+                   const CString& errorMsg  );
+
     CMsgException( const CMsgException& src );
 
     virtual ~CMsgException() throw();
@@ -77,7 +86,8 @@ class GUCEF_CORE_PUBLIC_CPP CMsgException : public CException
 
     private:
 
-    const char* m_errorMsg;
+    const char* m_errorMsgC;
+    CString m_errorMsg;
     Int32 m_errorCode;
 };
 

@@ -73,6 +73,11 @@
 #define GUCEF_CORE_TESTAPP_TESTINIPARSER_H
 #endif /* GUCEF_CORE_TESTAPP_TESTINIPARSER_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H
+#include "TestDataNodeBinarySerializer.h"
+#define GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -100,14 +105,15 @@ GUCEF_OSMAIN_BEGIN
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
         
-        PerformStringTests();
-        PerformVariantTests();
-        PerformVariantBinarySerializerTests();
-        PerformIniParserTests();        
-        PerformSharedPtrTests();
-        PerformDynamicBufferSwapTests();
-        PerformCyclicDynamicBufferTests();
-        PerformNotifierObserverTests();
+        //PerformStringTests();
+        //PerformVariantTests();
+        //PerformVariantBinarySerializerTests();
+        PerformDataNodeBinarySerializerTests();
+        //PerformIniParserTests();        
+        //PerformSharedPtrTests();
+        //PerformDynamicBufferSwapTests();
+        //PerformCyclicDynamicBufferTests();
+        //PerformNotifierObserverTests();
 
         return 1;
     }

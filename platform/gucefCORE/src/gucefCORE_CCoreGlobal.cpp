@@ -68,6 +68,11 @@
 #define GUCEF_CORE_CINIDATASTORECODEC_H
 #endif /* GUCEF_CORE_CINIDATASTORECODEC_H ? */
 
+#ifndef GUCEF_CORE_CDSTOREBINARYCODEC_H
+#include "gucefCORE_CDStoreBinaryCodec.h"
+#define GUCEF_CORE_CDSTOREBINARYCODEC_H
+#endif /* GUCEF_CORE_CDSTOREBINARYCODEC_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -313,10 +318,15 @@ CCoreGlobal::Initialize( void )
     m_urlHandlerRegistry = new CURLHandlerRegistry();
 
     /*
-     *      Register some default codecs/handlers
+     *      Register some default URI handlers
      */
     m_urlHandlerRegistry->Register( "file", new CFileURLHandler() );
+
+    /*
+     *      Register some default codecs
+     */    
     m_dstoreCodecRegistry->Register( "ini", new CIniDataStoreCodec() );
+    m_dstoreCodecRegistry->Register( "dnc", new CDataStoreBinaryCodec() );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE Global systems initialized" );
 }
