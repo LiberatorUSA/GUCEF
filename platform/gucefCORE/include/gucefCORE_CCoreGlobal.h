@@ -79,6 +79,7 @@ class CStdCodecPluginManager;
 class CConfigStore;
 class CPulseGenerator;
 class CCodecRegistry;
+class CFunctionRegistry;
 
 /*-------------------------------------------------------------------------*/
 
@@ -126,6 +127,8 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CExclusiveActivationManager& GetExclusiveActivationManager( void );
 
     CCodecRegistry& GetCodecRegistry( void );
+
+    CFunctionRegistry& GetFunctionRegistry( void );
 
     /**
      *  Logging proxy call provided here to avoid including the logging manager 
@@ -176,6 +179,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CStdCodecPluginManager* m_stdCodecPluginManager;
     CConfigStore* m_configStore;
     CCodecRegistry* m_codecRegistry;
+    CFunctionRegistry* m_functionRegistry;
 
     static MT::CMutex g_dataLock;
     static CCoreGlobal* g_instance;

@@ -93,7 +93,7 @@
                                                                       \
         exceptionName( const exceptionName& src );                    \
                                                                       \
-        virtual ~exceptionName() throw();                             \
+        virtual ~exceptionName();                                     \
                                                                       \
         private:                                                      \
         exceptionName( void );                                        \
@@ -141,7 +141,7 @@
                                                                          \
         }                                                                \
                                                                          \
-        virtual ~exceptionName() throw()                                 \
+        virtual ~exceptionName()                                         \
         {                                                                \
                                                                          \
         }                                                                \
@@ -175,7 +175,7 @@ ownerScopeClass::exceptionName::exceptionName( const exceptionName& src )   \
 {                                                                           \
 }                                                                           \
                                                                             \
-ownerScopeClass::exceptionName::~exceptionName() throw()                    \
+ownerScopeClass::exceptionName::~exceptionName()                            \
 {                                                                           \
 }
 
@@ -212,7 +212,7 @@ ownerScopeClass::exceptionName::exceptionName( const exceptionName& src )   \
 {                                                                           \
 }                                                                           \
                                                                             \
-ownerScopeClass::exceptionName::~exceptionName() throw()                    \
+ownerScopeClass::exceptionName::~exceptionName()                            \
 {                                                                           \
 }
 

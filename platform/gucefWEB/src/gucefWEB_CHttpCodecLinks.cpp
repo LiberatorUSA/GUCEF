@@ -181,6 +181,13 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up INI codec to MIME types" );
     }
+    if ( codecRegistry.TryLookup( "DNC", codec, false ) )
+    {
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeGupDataNodeContainer ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeGupDataNodeContainer ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up GUP's DNC codec to MIME types" );
+    }
     if ( codecRegistry.TryLookup( "XML", codec, false ) )
     {
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeXml ] = codec;

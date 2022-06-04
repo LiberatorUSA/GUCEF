@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CENUMERABLE_H
+#include "gucefCORE_CIEnumerable.h"
+#define GUCEF_CORE_CENUMERABLE_H
+#endif /* GUCEF_CORE_CENUMERABLE_H ? */
+
 #include "gucefCORE_CEnumerator.h"
 
 /*-------------------------------------------------------------------------//
@@ -41,6 +46,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CConstEnumerator::CConstEnumerator( void )
+    : m_enumerable( GUCEF_NULL )
+    , m_enumeratorData()
 {GUCEF_TRACE;
 
 }
@@ -48,6 +55,18 @@ CConstEnumerator::CConstEnumerator( void )
 /*-------------------------------------------------------------------------*/
 
 CConstEnumerator::CConstEnumerator( const CConstEnumerator& src )
+    : m_enumerable( src.m_enumerable )
+    , m_enumeratorData( src.m_enumeratorData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CConstEnumerator::CConstEnumerator( const CIEnumerable* enumerable ,
+                                    const CVariant& enumeratorData )
+    : m_enumerable( const_cast< CIEnumerable* >( enumerable ) )   // <- constness it maintained via the type of operations this class exposes
+    , m_enumeratorData( enumeratorData )
 {GUCEF_TRACE;
 
 }
@@ -65,6 +84,11 @@ CConstEnumerator&
 CConstEnumerator::operator=( const CConstEnumerator& src )
 {GUCEF_TRACE;
 
+    if ( &src != this )
+    {
+        m_enumerable = src.m_enumerable;
+        m_enumeratorData = src.m_enumeratorData;
+    }
     return *this;
 }
 
@@ -149,6 +173,136 @@ CConstEnumerator::operator!=( const CConstEnumerator& other )
 }
 
 /*-------------------------------------------------------------------------*/
+
+UInt8
+CConstEnumerator::GetTypeOfCurrent( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetTypeOfCurrent( m_enumeratorData );
+    return GUCEF_DATATYPE_UNKNOWN;
+}
+    
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::GetCurrent( CVariant& value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetCurrent( m_enumeratorData, value, linkIfPossible );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::GetCurrent( const CIEnumerable** enumerable )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetCurrent( m_enumeratorData, enumerable );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::GetIdOfCurrent( CVariant& value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetIdOfCurrent( m_enumeratorData, value, linkIfPossible );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::GetNameOfCurrent( CVariant& value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetNameOfCurrent( m_enumeratorData, value, linkIfPossible );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::CanEnumerateForward( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->CanEnumerateForward( m_enumeratorData );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::CanEnumerateBackward( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->CanEnumerateBackward( m_enumeratorData );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CConstEnumerator::MoveNext( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->MoveNext( m_enumeratorData );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CConstEnumerator::MovePrev( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->MovePrev( m_enumeratorData );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConstEnumerator::IsAtEnd( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->IsAtEnd( m_enumeratorData );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 
+CConstEnumerator::Compare( const CConstEnumerator& other ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+    {
+        if ( m_enumerable == other.m_enumerable )
+        {
+            return m_enumerable->Compare( m_enumeratorData, other.m_enumeratorData );
+        }
+        else
+        {
+            return memcmp( m_enumerable, other.m_enumerable, sizeof m_enumerable );
+        }
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
 //
 //CConstEnumerator::CStyleAccess()
 //{GUCEF_TRACE;
@@ -159,6 +313,16 @@ CConstEnumerator::operator!=( const CConstEnumerator& other )
 
 CEnumerator::CEnumerator( void )
     : CConstEnumerator()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEnumerator::CEnumerator( CIEnumerable* enumerable       ,
+                          const CVariant& enumeratorData )
+    : CConstEnumerator( enumerable     ,
+                        enumeratorData )
 {GUCEF_TRACE;
 
 }
@@ -263,6 +427,17 @@ CEnumerator::operator!=( const CEnumerator& other )
 {GUCEF_TRACE;
 
     return CConstEnumerator::operator!=( other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEnumerator::GetCurrent( CIEnumerable** enumerable )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_enumerable )
+        return m_enumerable->GetCurrent( m_enumeratorData, enumerable );
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

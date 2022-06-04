@@ -78,6 +78,47 @@ class GUCEF_CORE_PUBLIC_CPP CIEnumerable
 
     bool GetConstEnumerator( CConstEnumerator& enumerator )
         { return const_cast< const CIEnumerable* >( this )->GetEnumerator( enumerator ); }
+
+    
+    protected:
+    friend class CConstEnumerator;
+
+    virtual UInt8 GetTypeOfCurrent( CVariant& enumeratorData ) const = 0;
+    
+    virtual bool GetCurrent( CVariant& enumeratorData   , 
+                             CVariant& value            , 
+                             bool linkIfPossible = true ) = 0;
+
+    virtual bool GetCurrent( CVariant& enumeratorData        ,
+                             const CIEnumerable** enumerable ) = 0;
+
+    virtual bool GetIdOfCurrent( CVariant& enumeratorData   , 
+                                 CVariant& value            , 
+                                 bool linkIfPossible = true ) = 0;
+
+    virtual bool GetNameOfCurrent( CVariant& enumeratorData ,
+                                   CVariant& value          , 
+                                   bool linkIfPossible = true ) = 0;
+
+    virtual bool CanEnumerateForward( CVariant& enumeratorData ) const = 0;
+
+    virtual bool CanEnumerateBackward( CVariant& enumeratorData ) const = 0;
+
+    virtual bool MoveNext( CVariant& enumeratorData ) = 0;
+    
+    virtual bool MovePrev( CVariant& enumeratorData ) = 0;
+
+    virtual bool IsAtEnd( CVariant& enumeratorData ) const = 0;
+
+    virtual Int32 Compare( CVariant& enumeratorData            ,
+                           const CVariant& otherEnumeratorData ) const = 0;
+
+    protected:
+    friend class CEnumerator;
+
+    virtual bool GetCurrent( CVariant& enumeratorData  ,
+                             CIEnumerable** enumerable ) = 0;
+
 };
 
 /*-------------------------------------------------------------------------//

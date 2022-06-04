@@ -51,7 +51,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( int nodeType )
-    : m_nodeType( nodeType )
+    : CIEnumerable()
+    , m_nodeType( nodeType )
     , _pparent( NULL ) 
     , m_children()     
     , _pnext( NULL )   
@@ -65,7 +66,8 @@ CDataNode::CDataNode( int nodeType )
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CString& name, int nodeType )
-    : m_nodeType( nodeType )
+    : CIEnumerable()
+    , m_nodeType( nodeType )
     , _name( name )    
     , m_value()      
     , _pparent( NULL ) 
@@ -79,7 +81,8 @@ CDataNode::CDataNode( const CString& name, int nodeType )
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CDataNode& src )
-    : m_nodeType( src.m_nodeType )
+    : CIEnumerable()
+    , m_nodeType( src.m_nodeType )
     , _name( src._name )       
     , m_value( src.m_value ) 
     , _atts( src._atts )       
@@ -1782,7 +1785,7 @@ CDataNode::GetFirstChild( void ) const
 
     if ( !m_children.empty() )
         return m_children.front();
-    return nullptr;
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1793,7 +1796,7 @@ CDataNode::GetLastChild( void ) const
 
     if ( !m_children.empty() )
         return m_children.back();
-    return nullptr;
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1812,6 +1815,29 @@ CDataNode::GetPrevious( void ) const
 {GUCEF_TRACE;
 
     return _pprev;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode* 
+CDataNode::GetChildAtIndex( UInt32 index ) const
+{GUCEF_TRACE;
+
+    if ( !m_children.empty() )
+    {
+        CDataNode* firstChild = GetFirstChild();
+        CDataNode* child = firstChild;
+
+        UInt32 i=0;
+        while ( firstChild != child && i < index )
+        {
+            child = child->_pnext;
+            ++i;
+        }
+        return child;
+
+    }
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2058,116 +2084,433 @@ CDataNode::iterator::iterator( const iterator& src )
           _pos( src._pos )         ,
           _atend( src._atend )     ,
           _atstart( src._atstart )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator::~iterator()
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator& 
 CDataNode::iterator::operator=( const iterator& src )
-{
-        GUCEF_BEGIN;
-        if ( this != &src )
-        {
-                _pos = src._pos;
-                _pfchild = src._pfchild;
-                _atend = src._atend;
-                _atstart = src._atstart;
-                GUCEF_END;
-                return *this;
-        }
-        GUCEF_END;
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        _pos = src._pos;
+        _pfchild = src._pfchild;
+        _atend = src._atend;
+        _atstart = src._atstart;
         return *this;
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode* 
 CDataNode::iterator::operator*( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pos;
+{GUCEF_TRACE;
+
+    return _pos;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator& 
 CDataNode::iterator::operator++( void )
-{
-        GUCEF_BEGIN;
-        if ( _pos )
+{GUCEF_TRACE;
+
+    if ( _pos )
+    {
+        if ( _pos->_pnext )
         {
-                if ( _pos->_pnext )
-                {
-                        _pos = _pos->_pnext;
-                        GUCEF_END;
-                        return *this;
-                }
-                _pos = NULL;
-                _atend = true;
-                _atstart = false;
-                GUCEF_END;
-                return *this;
+            _pos = _pos->_pnext;
+            return *this;
         }
-        GUCEF_END;
-        return *this;                
+        _pos = NULL;
+        _atend = true;
+        _atstart = false;
+        return *this;
+    }
+    return *this;                
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator& 
 CDataNode::iterator::operator--( void )
-{
-        GUCEF_BEGIN;
-        if ( _pfchild )
+{GUCEF_TRACE;
+
+    if ( _pfchild )
+    {
+        if ( _pos == _pfchild )
         {
-                if ( _pos == _pfchild )
-                {
-                        _pos = NULL;
-                        _atstart = true;
-                        _atend = false;
-                        GUCEF_END;
-                        return *this;
-                }
-                _pos = _pos->_pprev;
-                GUCEF_END;
-                return *this;              
+            _pos = NULL;
+            _atstart = true;
+            _atend = false;
+            return *this;
         }
-        GUCEF_END;                
-        return *this;
+        _pos = _pos->_pprev;
+        return *this;              
+    }             
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
 CDataNode::iterator::operator!=( const iterator& src ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END; 
-        return !( ( _pos == src._pos ) && 
-                  ( _atend == src._atend ) &&
-                  ( _atstart == src._atstart ) ); 
+{GUCEF_TRACE;
+
+    return !( ( _pos == src._pos ) && 
+              ( _atend == src._atend ) &&
+              ( _atstart == src._atstart ) ); 
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
 CDataNode::iterator::operator==( const iterator& src ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END; 
-        return ( ( _pos == src._pos ) && 
-                 ( _atend == src._atend ) &&
-                 ( _atstart == src._atstart ) ); 
+{GUCEF_TRACE;
+
+    return ( ( _pos == src._pos ) && 
+             ( _atend == src._atend ) &&
+             ( _atstart == src._atstart ) ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::GetEnumerator( CEnumerator& enumerator )
+{GUCEF_TRACE;
+
+    Int64 index = -1;
+    if ( GUCEF_DATATYPE_UNKNOWN != m_value.GetTypeId() )
+        index = 0;
+    else
+    if ( !_atts.empty() || !m_children.empty() )
+        index = 1;
+
+    enumerator = CEnumerator( this, CVariant( index ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::GetEnumerator( CConstEnumerator& enumerator ) const
+{GUCEF_TRACE;
+
+    Int64 index = -1;
+    if ( GUCEF_DATATYPE_UNKNOWN != m_value.GetTypeId() )
+        index = 0;
+    else
+    if ( !_atts.empty() || !m_children.empty() )
+        index = 1;
+
+    enumerator = CConstEnumerator( this, CVariant( index ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt8
+CDataNode::GetTypeOfCurrent( CVariant& enumeratorData ) const
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( 0 < index )
+        {
+            return GUCEF_DATATYPE_UNKNOWN;
+        }
+        else
+        if ( 0 == index )
+        {
+            return m_value.GetTypeId();
+        }
+        else
+        if ( (size_t)index < _atts.size() )
+        {
+            const TKeyValuePair* kvPair = GetAttribute( (UInt32) index-1 );
+            if ( GUCEF_NULL != kvPair )
+            {
+                return kvPair->second.GetTypeId();
+            }
+        }
+        else
+        if ( !m_children.empty() )
+        {
+            index -= (Int64) _atts.size(); 
+            CDataNode* child = GetChildAtIndex( (UInt32) index );
+            if ( GUCEF_NULL != child )
+            {
+                return (UInt8) child->GetNodeType();
+            }
+        }
+    }
+    return GUCEF_DATATYPE_UNKNOWN;    
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDataNode::GetCurrent( CVariant& enumeratorData , 
+                       CVariant& value          , 
+                       bool linkIfPossible      )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( 0 < index )
+        {
+            // you are at 'end' thus no name
+            return false;
+        }
+        if ( 0 == index )
+        {
+            linkIfPossible ? value.LinkTo( m_value ) : value = m_value;
+            return true;
+        }
+        if ( (size_t)index < _atts.size() )
+        {
+            TKeyValuePair* kvPair = GetAttribute( (UInt32) index-1 );
+            if ( GUCEF_NULL != kvPair )
+            {
+                linkIfPossible ? value.LinkTo( kvPair->second ) : value = kvPair->second;
+                return true;
+            }
+        }
+        // else: 
+        //    you cannot get an entire child node as a variant
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::GetCurrent( CVariant& enumeratorData        ,
+                       const CIEnumerable** enumerable )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 && GUCEF_NULL != enumerable )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index > (Int64) _atts.size() )
+        {
+            index = index - (Int64) _atts.size();
+            if ( index < (Int64) m_children.size() )
+            {
+                // the child node is also an enumerable
+                CDataNode* child = GetChildAtIndex( (UInt32) index );
+                if ( GUCEF_NULL != child )
+                {
+                    *enumerable = child;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::GetCurrent( CVariant& enumeratorData  ,
+                       CIEnumerable** enumerable )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index > (Int64) _atts.size() )
+        {
+            index = index - (Int64) _atts.size();
+            if ( index < (Int64) m_children.size() )
+            {
+                // the child node is also an enumerable
+                CDataNode* child = GetChildAtIndex( (UInt32) index );
+                if ( GUCEF_NULL != child )
+                {
+                    *enumerable = child;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::GetIdOfCurrent( CVariant& enumeratorData ,
+                           CVariant& value          ,  
+                           bool linkIfPossible      )
+{GUCEF_TRACE;
+
+    // not supported
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::GetNameOfCurrent( CVariant& enumeratorData ,
+                             CVariant& value          ,  
+                             bool linkIfPossible      )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( 0 < index )
+        {
+            // you are at 'end' thus no name
+            return false;
+        }
+        else
+        if ( 0 == index )
+        {
+            // the node value uses the node name as its name
+            linkIfPossible ? value.LinkTo( _name ) : value = _name;
+            return true;
+        }
+        else
+        if ( (size_t)index < _atts.size() )
+        {
+            TKeyValuePair* kvPair = GetAttribute( (UInt32) index-1 );
+            if ( GUCEF_NULL != kvPair )
+            {
+                linkIfPossible ? value.LinkTo( kvPair->first ) : value = kvPair->first;
+                return true;
+            }
+        }
+        else
+        {
+            index = index - (Int64) _atts.size();
+            if ( index < (Int64) m_children.size() )
+            {
+                CDataNode* child = GetChildAtIndex( (UInt32) index );
+                if ( GUCEF_NULL != child )
+                {
+                    linkIfPossible ? value.LinkTo( child->_name ) : value = child->_name;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::CanEnumerateForward( CVariant& enumeratorData ) const
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index >= 0 && (size_t) index < _atts.size() + m_children.size() )
+        {
+            return true;
+        }
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::CanEnumerateBackward( CVariant& enumeratorData ) const
+{GUCEF_TRACE;
+    
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index > 0 )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::MoveNext( CVariant& enumeratorData )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index >= 0 && (size_t) index < _atts.size() + m_children.size() )
+        {
+            enumeratorData = ++index;
+            return true;
+        }
+    }
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CDataNode::MovePrev( CVariant& enumeratorData )
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        if ( index > 0 )
+        {
+            enumeratorData = --index;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::IsAtEnd( CVariant& enumeratorData ) const
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        return index < 0;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CDataNode::Compare( CVariant& enumeratorData            ,
+                    const CVariant& otherEnumeratorData ) const
+{GUCEF_TRACE;
+
+    if ( enumeratorData.GetTypeId() == GUCEF_DATATYPE_INT64 )
+    {
+        Int64 index = enumeratorData.AsInt64();
+        return index < 0;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

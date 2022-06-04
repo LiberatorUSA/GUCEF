@@ -41,6 +41,16 @@
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
 
+#ifndef GUCEF_CORE_CPROPERTY_H
+#include "gucefCORE_CProperty.h"
+#define GUCEF_CORE_CPROPERTY_H
+#endif /* GUCEF_CORE_CPROPERTY_H ? */
+
+#ifndef GUCEF_CORE_CENUMERABLE_H
+#include "gucefCORE_CIEnumerable.h"
+#define GUCEF_CORE_CENUMERABLE_H
+#endif /* GUCEF_CORE_CENUMERABLE_H ? */
+
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
 #define GUCEF_CORE_CICLONEABLE_H
@@ -68,7 +78,7 @@ namespace CORE {
  *      Note that CDataNode objects always remain owner of all their
  *      children so do not delete any node or node attribute directly yourself.
  */
-class GUCEF_CORE_PUBLIC_CPP CDataNode
+class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 {
     public:
 
@@ -105,7 +115,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     /**
      *      Cleans up all attributes and children
      */
-    ~CDataNode();
+    virtual ~CDataNode();
 
     /**
      *      Turns the given node and it's sub-tree into an replica
@@ -261,7 +271,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     TVariantVector GetChildrenValuesByName( const CString& name ) const;
 
     /**
-     *  Retrieves the "value: property of each child node if set and aggregates them
+     *  Retrieves the 'value' property of each child node if set and aggregates them
      *
      *  @return the values of the child nodes
      */
@@ -503,15 +513,21 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     /**
      *  Sets the associated data if any
-     *  Note that the associated given is clones and the clone is subsequently owned by the data node 
+     *  Note that the associated given is cloned and the clone is subsequently owned by the data node 
      */
     void SetAssociatedData( CICloneable* associatedData );
+
+    virtual bool GetEnumerator( CEnumerator& enumerator ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetEnumerator( CConstEnumerator& enumerator ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CDataNode* GetParent( void ) const;
 
     CDataNode* GetFirstChild( void ) const;
 
     CDataNode* GetLastChild( void ) const;
+
+    CDataNode* GetChildAtIndex( UInt32 index ) const;
 
     CDataNode* GetNext( void ) const;
 
@@ -594,6 +610,45 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     TAttributeMap::const_iterator AttributeBegin( void ) const;
     
     TAttributeMap::const_iterator AttributeEnd( void ) const;
+
+    protected:
+    friend class CConstEnumerator;
+
+    virtual UInt8 GetTypeOfCurrent( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool GetCurrent( CVariant& enumeratorData   , 
+                             CVariant& value            , 
+                             bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetCurrent( CVariant& enumeratorData        ,
+                             const CIEnumerable** enumerable ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetIdOfCurrent( CVariant& enumeratorData   , 
+                                 CVariant& value            , 
+                                 bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetNameOfCurrent( CVariant& enumeratorData ,
+                                   CVariant& value          , 
+                                   bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CanEnumerateForward( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CanEnumerateBackward( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool MoveNext( CVariant& enumeratorData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool MovePrev( CVariant& enumeratorData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsAtEnd( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual Int32 Compare( CVariant& enumeratorData            ,
+                           const CVariant& otherEnumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+    friend class CEnumerator;
+
+    virtual bool GetCurrent( CVariant& enumeratorData  ,
+                             CIEnumerable** enumerable ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class iterator;

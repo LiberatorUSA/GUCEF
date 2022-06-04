@@ -50,6 +50,7 @@ const CORE::CString CHttpMimeTypes::MimeTypeIniProper = "zz-application/zz-winas
 const CORE::CString CHttpMimeTypes::MimeTypeText = "text/plain";
 const CORE::CString CHttpMimeTypes::MimeTypeOctet = "application/octet-stream";
 const CORE::CString CHttpMimeTypes::MimeTypeWwwFormUrlencoded = "application/x-www-form-urlencoded";
+const CORE::CString CHttpMimeTypes::MimeTypeGupDataNodeContainer = "application/vnd.galaxyunlimitedplatform.datanodecontainer";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

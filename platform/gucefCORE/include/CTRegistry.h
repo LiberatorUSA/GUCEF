@@ -35,6 +35,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -382,7 +387,7 @@ UInt32
 CTRegistry< T, LockType >::GetCount( void ) const
 {GUCEF_TRACE;
     
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
     return static_cast< UInt32 >( m_list.size() );
 }
 
@@ -393,7 +398,7 @@ void
 CTRegistry< T, LockType >::GetList( TStringList& destList ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     typename TRegisteredObjList::const_iterator i = m_list.begin();
     while ( i != m_list.end() )

@@ -153,6 +153,11 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CFUNCTIONREGISTRY_H
+#include "gucefCORE_CFunctionRegistry.h"
+#define GUCEF_CORE_CFUNCTIONREGISTRY_H
+#endif /* GUCEF_CORE_CFUNCTIONREGISTRY_H ? */
+
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
   #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
@@ -316,6 +321,7 @@ CCoreGlobal::Initialize( void )
     m_genericPluginManager = new CGenericPluginManager();
     m_stdCodecPluginManager = new CStdCodecPluginManager();        
     m_urlHandlerRegistry = new CURLHandlerRegistry();
+    m_functionRegistry = new CFunctionRegistry();
 
     /*
      *      Register some default URI handlers
@@ -350,6 +356,7 @@ CCoreGlobal::CCoreGlobal( void )
     , m_stdCodecPluginManager( GUCEF_NULL )      
     , m_configStore( GUCEF_NULL )                
     , m_codecRegistry( GUCEF_NULL )
+    , m_functionRegistry( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -407,6 +414,8 @@ CCoreGlobal::~CCoreGlobal()
     m_configStore = GUCEF_NULL;
     delete m_codecRegistry;
     m_codecRegistry = GUCEF_NULL;
+    delete m_functionRegistry;
+    m_functionRegistry = GUCEF_NULL;
     delete m_pulseGenerator;
     m_pulseGenerator = GUCEF_NULL;
 
@@ -577,6 +586,15 @@ CCoreGlobal::GetCodecRegistry( void )
 {GUCEF_TRACE;
 
     return *m_codecRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFunctionRegistry&
+CCoreGlobal::GetFunctionRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_functionRegistry;
 }
 
 /*-------------------------------------------------------------------------//

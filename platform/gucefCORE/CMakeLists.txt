@@ -138,6 +138,7 @@ set( HEADER_FILES
   include/dvmd5utils.h
   include/dvstrutils.h
   include/gucefCORE.h
+  include/gucefCORE_BasicFunctions.h
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CAsciiString.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
@@ -147,6 +148,7 @@ set( HEADER_FILES
   include/gucefCORE_CDStoreBinaryCodec.h
   include/gucefCORE_CDataNodeBinarySerializer.h
   include/gucefCORE_CDataNodeSerializableSettings.h
+  include/gucefCORE_CDataSchemaNode.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcherEvents.h
@@ -155,6 +157,7 @@ set( HEADER_FILES
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CForwardingNotifier.h
+  include/gucefCORE_CFunctionRegistry.h
   include/gucefCORE_CGenericValueToDataNodeSerializer.h
   include/gucefCORE_CGlobalConfigValueList.h
   include/gucefCORE_CGloballyConfigurable.h
@@ -165,6 +168,7 @@ set( HEADER_FILES
   include/gucefCORE_CIDirectoryWatcher.h
   include/gucefCORE_CIEnumerable.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
+  include/gucefCORE_CIFunction.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
   include/gucefCORE_CINotifier.h
@@ -190,6 +194,8 @@ set( HEADER_FILES
   include/gucefCORE_CPlatformNativeConsoleWindow.h
   include/gucefCORE_CPluginGroup.h
   include/gucefCORE_CPluginMetaData.h
+  include/gucefCORE_CProperty.h
+  include/gucefCORE_CPropertyConstraints.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
   include/gucefCORE_CRollingFileAccess.h
@@ -201,12 +207,15 @@ set( HEADER_FILES
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTMailboxForSharedCloneables.h
+  include/gucefCORE_CTMultiRegistry.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
   include/gucefCORE_CUrlEncoder.h
   include/gucefCORE_CUtf8String.h
+  include/gucefCORE_CValueConstraint.h
+  include/gucefCORE_CValueConstraintList.h
   include/gucefCORE_CVariant.h
   include/gucefCORE_CVariantBinarySerializer.h
   include/gucefCORE_CVersion.h
@@ -363,6 +372,7 @@ set( SOURCE_FILES
   src/gucefCORE_CEnumerator.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
+  src/gucefCORE_CFunctionRegistry.cpp
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
   src/gucefCORE_CGlobalConfigValueList.cpp
   src/gucefCORE_CGloballyConfigurable.cpp
@@ -373,6 +383,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIDirectoryWatcher.cpp
   src/gucefCORE_CIEnumerable.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
+  src/gucefCORE_CIFunction.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
   src/gucefCORE_CINotifier.cpp
@@ -398,6 +409,8 @@ set( SOURCE_FILES
   src/gucefCORE_CPlatformNativeConsoleWindow.cpp
   src/gucefCORE_CPluginGroup.cpp
   src/gucefCORE_CPluginMetaData.cpp
+  src/gucefCORE_CProperty.cpp
+  src/gucefCORE_CPropertyConstraints.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
   src/gucefCORE_CRollingFileAccess.cpp
@@ -405,12 +418,15 @@ set( SOURCE_FILES
   src/gucefCORE_CSingleTaskDelegator.cpp
   src/gucefCORE_CSubFileAccess.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
+  src/gucefCORE_CTMultiRegistry.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
   src/gucefCORE_CThreadPool.cpp
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CUrlEncoder.cpp
   src/gucefCORE_CUtf8String.cpp
+  src/gucefCORE_CValueConstraint.cpp
+  src/gucefCORE_CValueConstraintList.cpp
   src/gucefCORE_CVariant.cpp
   src/gucefCORE_CVariantBinarySerializer.cpp
   src/gucefCORE_CVersion.cpp

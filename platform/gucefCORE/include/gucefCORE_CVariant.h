@@ -88,7 +88,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     typedef std::vector< CVariant >     VariantVector;
     typedef std::set< CVariant >        VariantSet;
 
-    static const CVariant   Empty;
+    static const CVariant           Empty;
+    static const VariantVector      EmptyVector;
     
     CVariant( void );
     
@@ -199,6 +200,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;    
     CDynamicBuffer  AsBuffer( void ) const;
     CDateTime       AsDateTime( const CDateTime& defaultIfNeeded = CDateTime::Empty, bool resolveVarsIfApplicable = false ) const;
+    size_t          AsSizeT( size_t defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
 
     template < typename TemplateBsobType >
     TemplateBsobType AsBsob( void ) const;

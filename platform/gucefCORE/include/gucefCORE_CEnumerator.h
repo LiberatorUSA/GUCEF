@@ -54,7 +54,7 @@ namespace CORE {
 class CIEnumerable;
 
 /**
- *  Base class for runtime polymorphic read-only access to an enumeration
+ *  class for runtime polymorphic read-only access to an enumeration
  * 
  *  While slower than STL iterators and the like, carrying a runtime penalty, this interface allows
  *  for iteration across different data sets where regular C++ iterators struggle due to their
@@ -68,31 +68,36 @@ class GUCEF_CORE_PUBLIC_CPP CConstEnumerator
 
     CConstEnumerator( void );
 
+    CConstEnumerator( const CIEnumerable* enumerable ,
+                      const CVariant& enumeratorData );
+
     CConstEnumerator( const CConstEnumerator& src );
 
     virtual ~CConstEnumerator();
 
     CConstEnumerator& operator=( const CConstEnumerator& src );
 
-    virtual UInt8 GetTypeOfCurrent( void ) const = 0;
+    UInt8 GetTypeOfCurrent( void ) const;
     
-    virtual bool GetCurrent( CVariant& value, bool linkIfPossible = true ) = 0;
+    bool GetCurrent( CVariant& value, bool linkIfPossible = true );
 
-    virtual bool GetCurrent( const CIEnumerable* enumerable ) = 0;
+    bool GetCurrent( const CIEnumerable** enumerable );
 
-    virtual bool GetIdOfCurrent( CVariant& value, bool linkIfPossible = true ) = 0;
+    bool GetIdOfCurrent( CVariant& value, bool linkIfPossible = true );
 
-    virtual bool CanEnumerateForward( void ) const = 0;
+    bool GetNameOfCurrent( CVariant& value, bool linkIfPossible = true );
 
-    virtual bool CanEnumerateBackward( void ) const = 0;
+    bool CanEnumerateForward( void ) const;
 
-    virtual bool MoveNext( void ) = 0;
+    bool CanEnumerateBackward( void ) const;
+
+    bool MoveNext( void );
     
-    virtual bool MovePrev( void ) = 0;
+    bool MovePrev( void );
 
-    virtual bool IsAtEnd( void ) const = 0;
+    bool IsAtEnd( void ) const;
 
-    virtual Int32 Compare( const CConstEnumerator& other ) const = 0;
+    Int32 Compare( const CConstEnumerator& other ) const;
 
     CConstEnumerator& operator++( void );
 
@@ -106,6 +111,11 @@ class GUCEF_CORE_PUBLIC_CPP CConstEnumerator
     bool operator!=( const CConstEnumerator& other );
 
     //CStyleAccess( void );
+
+    protected:
+
+    CIEnumerable* m_enumerable;
+    mutable CVariant m_enumeratorData;
 };
 
 
@@ -126,13 +136,16 @@ class GUCEF_CORE_PUBLIC_CPP CEnumerator : public CConstEnumerator
 
     CEnumerator( void );
 
+    CEnumerator( CIEnumerable* enumerable       ,
+                 const CVariant& enumeratorData );
+
     CEnumerator( const CEnumerator& src );
 
     virtual ~CEnumerator();
 
     CEnumerator& operator=( const CEnumerator& src );
 
-    virtual bool GetCurrent( CIEnumerable* enumerable ) = 0;
+    bool GetCurrent( CIEnumerable** enumerable );
 
     CEnumerator& operator++( void );
 
