@@ -211,6 +211,32 @@ CValueConstraint::SetValueConstraint( CIFunction* function                  ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CValueConstraint::operator==( const CValueConstraint& other ) const
+{GUCEF_TRACE;
+
+    return m_functionName == other.m_functionName &&
+           m_params == other.m_params &&
+           m_constrainedValueParamIndex == other.m_constrainedValueParamIndex &&
+           m_passIfFunctionExecIssue == other.m_passIfFunctionExecIssue &&
+           m_constraintResultIndex == other.m_constraintResultIndex;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueConstraint::operator!=( const CValueConstraint& other ) const
+{GUCEF_TRACE;
+
+    return m_functionName != other.m_functionName ||
+           m_params != other.m_params ||
+           m_constrainedValueParamIndex != other.m_constrainedValueParamIndex ||
+           m_passIfFunctionExecIssue != other.m_passIfFunctionExecIssue ||
+           m_constraintResultIndex != other.m_constraintResultIndex;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CValueConstraint::Serialize( CDataNode& domRootNode                        ,
                              const CDataNodeSerializableSettings& settings ) const
@@ -254,8 +280,9 @@ CValueConstraint::Deserialize( const CDataNode& domRootNode                  ,
     if ( GUCEF_NULL != paramsNode )
     {
         //paramsNode
-        return true;
+        
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

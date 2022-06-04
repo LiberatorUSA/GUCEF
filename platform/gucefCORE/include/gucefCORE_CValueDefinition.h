@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CVALUECONSTRAINTLIST_H
-#define GUCEF_CORE_CVALUECONSTRAINTLIST_H
+#ifndef GUCEF_CORE_CVALUEDEFINITION_H
+#define GUCEF_CORE_CVALUEDEFINITION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CVALUECONSTRAINT_H
-#include "gucefCORE_CValueConstraint.h"
-#define GUCEF_CORE_CVALUECONSTRAINT_H
-#endif /* GUCEF_CORE_CVALUECONSTRAINT_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#include "gucefCORE_CIDataNodeSerializable.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+
+#ifndef GUCEF_CORE_CVALUECONSTRAINTLIST_H
+#include "gucefCORE_CValueConstraintList.h"
+#define GUCEF_CORE_CVALUECONSTRAINTLIST_H
+#endif /* GUCEF_CORE_CVALUECONSTRAINTLIST_H ? */
+
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,34 +62,35 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class to provide the ability to represent a set of value constraints as an object 
- *  and provide the ability to check against said constraints
+ *  Class which describes a property as something that has a name with a value and a (unique?) id
  */
-class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
+class GUCEF_CORE_PUBLIC_CPP CValueDefinition : public CIDataNodeSerializable
 {
     public:
 
-    typedef CValueConstraint::ValueConstraintVector   ValueConstraintVector;
+    typedef std::vector< CValueDefinition >  ValueDefinitionVector;
+   
+    CVariant default;
+    bool isRequired;
+    CValueConstraintList constraints;
 
     /**
-     *  This is what it is all about. This is the member function that will carry out the constraint check
+     *  This is the member function that will carry out the constraint check
      *  against the value given as 'valueToConstrain' using the full set of constraints
      */
-    bool AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const;       
+    bool AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const;
 
-    CValueConstraintList( void );
+    CValueDefinition( void );
 
-    CValueConstraintList( const CValueConstraintList& src );
+    CValueDefinition( const CValueDefinition& src );
     
-    virtual ~CValueConstraintList();
+    virtual ~CValueDefinition();
 
-    ValueConstraintVector& GetConstraints( void );
+    CValueDefinition& operator=( const CValueDefinition& src );
 
-    const ValueConstraintVector& GetConstraints( void ) const;
+    bool operator==( const CValueDefinition& other ) const;
 
-    bool operator==( const CValueConstraintList& other ) const;
-
-    bool operator!=( const CValueConstraintList& other ) const;
+    bool operator!=( const CValueDefinition& other ) const;
 
     /**
      *  Attempts to serialize the object to a DOM created out of DataNode objects
@@ -90,10 +106,6 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
      */
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    private:
-
-    ValueConstraintVector m_constraints;
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,4 +119,4 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CVALUECONSTRAINTLIST_H ? */
+#endif /* GUCEF_CORE_CVALUEDEFINITION_H ? */

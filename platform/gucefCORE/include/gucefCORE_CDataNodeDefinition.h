@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CDATASCHEMANODE_H
-#define GUCEF_CORE_CDATASCHEMANODE_H
+#ifndef GUCEF_CORE_CDATANODEDEFINITION_H
+#define GUCEF_CORE_CDATANODEDEFINITION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,10 +46,15 @@
 #define GUCEF_CORE_CPROPERTY_H
 #endif /* GUCEF_CORE_CPROPERTY_H ? */
 
-#ifndef GUCEF_CORE_CPROPERTYCONSTRAINTS_H
-#include "gucefCORE_CPropertyConstraints.h"
-#define GUCEF_CORE_CPROPERTYCONSTRAINTS_H
-#endif /* GUCEF_CORE_CPROPERTYCONSTRAINTS_H ? */
+#ifndef GUCEF_CORE_CPROPERTYDEFINITION_H
+#include "gucefCORE_CPropertyDefinition.h"
+#define GUCEF_CORE_CPROPERTYDEFINITION_H
+#endif /* GUCEF_CORE_CPROPERTYDEFINITION_H ? */
+
+#ifndef GUCEF_CORE_CPROPERTYDEFINITIONLIST_H
+#include "gucefCORE_CPropertyDefinitionList.h"
+#define GUCEF_CORE_CPROPERTYDEFINITIONLIST_H
+#endif /* GUCEF_CORE_CPROPERTYDEFINITIONLIST_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,28 +71,46 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-///**
-// *  
-// */                       
-//class GUCEF_CORE_PUBLIC_CPP CDataSchemaNode : public CIDataNodeSerializable
-//{
-//    public:
-//
-//    typedef CPropertyConstraints::PropertyConstraintsVector   PropertyConstraintsVector;
-//
-//    CPropertyConstraints nodeIdentity;
-//    PropertyConstraintsVector attributeConstraints;
-//
-//   
-//    CDataSchemaNode( void );
-//
-//    CDataSchemaNode( const CDataSchemaNode& src );
-//
-//    virtual ~CDataSchemaNode();
-//
-//    CDataSchemaNode& operator=( const CDataSchemaNode& src );
-//
-//};
+/**
+ *  
+ */                       
+class GUCEF_CORE_PUBLIC_CPP CDataNodeDefinition : public CIDataNodeSerializable
+{
+    public:
+
+    typedef CPropertyDefinition::PropertyDefinitionVector   PropertyDefinitionVector;
+
+    CPropertyDefinition identity;
+    CPropertyDefinitionList attributes;
+    //CDataNodeDefinition childOptions
+   
+    CDataNodeDefinition( void );
+
+    CDataNodeDefinition( const CDataNodeDefinition& src );
+
+    virtual ~CDataNodeDefinition();
+
+    CDataNodeDefinition& operator=( const CDataNodeDefinition& src );
+
+    bool operator==( const CDataNodeDefinition& other ) const;
+
+    bool operator!=( const CDataNodeDefinition& other ) const;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     */
+    virtual bool Serialize( CDataNode& domRootNode                        ,
+                            const CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Attempts to serialize the object to a DOM created out of DataNode objects
+     *
+     *  @param domRootNode Node that acts as root of the DOM data tree from which to deserialize
+     *  @return whether deserializing the object data from the given DOM was successfull.
+     */
+    virtual bool Deserialize( const CDataNode& domRootNode                  ,
+                              const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,4 +123,4 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CDATASCHEMANODE_H ? */
+#endif /* GUCEF_CORE_CDATANODEDEFINITION_H ? */

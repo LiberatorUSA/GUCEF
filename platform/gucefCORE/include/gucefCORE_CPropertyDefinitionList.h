@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CVALUECONSTRAINTLIST_H
-#define GUCEF_CORE_CVALUECONSTRAINTLIST_H
+#ifndef GUCEF_CORE_CPROPERTYDEFINITIONLIST_H
+#define GUCEF_CORE_CPROPERTYDEFINITIONLIST_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CVALUECONSTRAINT_H
-#include "gucefCORE_CValueConstraint.h"
-#define GUCEF_CORE_CVALUECONSTRAINT_H
-#endif /* GUCEF_CORE_CVALUECONSTRAINT_H ? */
+#ifndef GUCEF_CORE_CPROPERTYDEFINITION_H
+#include "gucefCORE_CPropertyDefinition.h"
+#define GUCEF_CORE_CPROPERTYDEFINITION_H
+#endif /* GUCEF_CORE_CPROPERTYDEFINITION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,34 +47,35 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class to provide the ability to represent a set of value constraints as an object 
- *  and provide the ability to check against said constraints
+ *  Class which defines a list of properties
  */
-class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
+class GUCEF_CORE_PUBLIC_CPP CPropertyDefinitionList : public CIDataNodeSerializable
 {
     public:
 
-    typedef CValueConstraint::ValueConstraintVector   ValueConstraintVector;
+    typedef CPropertyDefinition::PropertyDefinitionVector   PropertyDefinitionVector;
+
+    bool propertyNamesAreUnique;
+    bool propertyIdsAreUnique;
+    PropertyDefinitionVector properties;
 
     /**
-     *  This is what it is all about. This is the member function that will carry out the constraint check
-     *  against the value given as 'valueToConstrain' using the full set of constraints
+     *  member function that will carry out the constraint checks
+     *  against the property given as 'propertyToConstrain' using the full set of constraints
      */
-    bool AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const;       
+    bool AreConstraintsSatisfiedBy( const CProperty& propertyToConstrain ) const;
 
-    CValueConstraintList( void );
+    CPropertyDefinitionList( void );
 
-    CValueConstraintList( const CValueConstraintList& src );
+    CPropertyDefinitionList( const CPropertyDefinitionList& src );
+
+    CPropertyDefinitionList& operator=( const CPropertyDefinitionList& src );
+
+    bool operator==( const CPropertyDefinitionList& other ) const;
+
+    bool operator!=( const CPropertyDefinitionList& other ) const;
     
-    virtual ~CValueConstraintList();
-
-    ValueConstraintVector& GetConstraints( void );
-
-    const ValueConstraintVector& GetConstraints( void ) const;
-
-    bool operator==( const CValueConstraintList& other ) const;
-
-    bool operator!=( const CValueConstraintList& other ) const;
+    virtual ~CPropertyDefinitionList();
 
     /**
      *  Attempts to serialize the object to a DOM created out of DataNode objects
@@ -90,10 +91,6 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
      */
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    private:
-
-    ValueConstraintVector m_constraints;
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,4 +104,4 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraintList : public CIDataNodeSerializable
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CVALUECONSTRAINTLIST_H ? */
+#endif /* GUCEF_CORE_CPROPERTYDEFINITIONLIST_H ? */

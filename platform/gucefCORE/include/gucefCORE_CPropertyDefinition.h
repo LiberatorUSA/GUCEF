@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CPROPERTYCONSTRAINTS_H
-#define GUCEF_CORE_CPROPERTYCONSTRAINTS_H
+#ifndef GUCEF_CORE_CPROPERTYDEFINITION_H
+#define GUCEF_CORE_CPROPERTYDEFINITION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,10 +36,10 @@
 #define GUCEF_CORE_CIDATANODESERIALIZABLE_H
 #endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
 
-#ifndef GUCEF_CORE_CVALUECONSTRAINTLIST_H
-#include "gucefCORE_CValueConstraintList.h"
-#define GUCEF_CORE_CVALUECONSTRAINTLIST_H
-#endif /* GUCEF_CORE_CVALUECONSTRAINTLIST_H ? */
+#ifndef GUCEF_CORE_CVALUEDEFINITION_H
+#include "gucefCORE_CValueDefinition.h"
+#define GUCEF_CORE_CVALUEDEFINITION_H
+#endif /* GUCEF_CORE_CVALUEDEFINITION_H ? */
 
 #ifndef GUCEF_CORE_CPROPERTY_H
 #include "gucefCORE_CProperty.h"
@@ -64,31 +64,33 @@ namespace CORE {
 /**
  *  Class which describes a property as something that has a name with a value and a (unique?) id
  */
-class GUCEF_CORE_PUBLIC_CPP CPropertyConstraints : public CIDataNodeSerializable
+class GUCEF_CORE_PUBLIC_CPP CPropertyDefinition : public CIDataNodeSerializable
 {
     public:
 
-    typedef std::vector< CPropertyConstraints >  PropertyConstraintsVector;
-   
-    CProperty propertyDefaults;
-    bool nameIsRequired;
-    bool idIsRequired;
-    bool valueIsRequired;
-    CValueConstraintList nameConstraints;
-    CValueConstraintList idConstraints;
-    CValueConstraintList valueConstraints;
+    typedef std::vector< CPropertyDefinition >  PropertyDefinitionVector;
+
+    CValueDefinition name;
+    CValueDefinition id;
+    CValueDefinition value;
 
     /**
-     *  This is what it is all about. This is the member function that will carry out the constraint check
+     *  member function that will carry out the constraint checks
      *  against the property given as 'propertyToConstrain' using the full set of constraints
      */
     bool AreConstraintsSatisfiedBy( const CProperty& propertyToConstrain ) const;
 
-    CPropertyConstraints( void );
+    CPropertyDefinition( void );
 
-    CPropertyConstraints( const CPropertyConstraints& src );
+    CPropertyDefinition( const CPropertyDefinition& src );
+
+    CPropertyDefinition& operator=( const CPropertyDefinition& src );
+
+    bool operator==( const CPropertyDefinition& other ) const;
+
+    bool operator!=( const CPropertyDefinition& other ) const;
     
-    virtual ~CPropertyConstraints();
+    virtual ~CPropertyDefinition();
 
     /**
      *  Attempts to serialize the object to a DOM created out of DataNode objects
@@ -117,4 +119,4 @@ class GUCEF_CORE_PUBLIC_CPP CPropertyConstraints : public CIDataNodeSerializable
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CPROPERTYCONSTRAINTS_H ? */
+#endif /* GUCEF_CORE_CPROPERTYDEFINITION_H ? */

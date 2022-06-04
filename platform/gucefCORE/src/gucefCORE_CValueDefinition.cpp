@@ -28,7 +28,7 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#include "gucefCORE_CValueConstraintList.h"
+#include "gucefCORE_CValueDefinition.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,104 +45,102 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CValueConstraintList::CValueConstraintList( void )
+CValueDefinition::CValueDefinition( void )
     : CIDataNodeSerializable()
-    , m_constraints()
+    , default()
+    , isRequired( false )
+    , constraints()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CValueConstraintList::CValueConstraintList( const CValueConstraintList& src )
+CValueDefinition::CValueDefinition( const CValueDefinition& src )
     : CIDataNodeSerializable( src )
-    , m_constraints( src.m_constraints )
+    , default( src.default )
+    , isRequired( src.isRequired )
+    , constraints( src.constraints )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CValueConstraintList::~CValueConstraintList()
+CValueDefinition::~CValueDefinition()
 {GUCEF_TRACE;
 
-    m_constraints.clear();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CValueConstraintList::ValueConstraintVector&
-CValueConstraintList::GetConstraints( void )
-{GUCEF_TRACE;
-
-    return m_constraints;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CValueConstraintList::ValueConstraintVector&
-CValueConstraintList::GetConstraints( void ) const
-{GUCEF_TRACE;
-
-    return m_constraints;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CValueConstraintList::AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const
+CValueDefinition::AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const
 {GUCEF_TRACE;
 
-    ValueConstraintVector::const_iterator i = m_constraints.begin();
-    while ( i != m_constraints.end() )
+    if ( isRequired && !valueToConstrain.IsInitialized() )
+        return false;
+
+    return constraints.AreConstraintsSatisfiedBy( valueToConstrain );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueDefinition& 
+CValueDefinition::operator=( const CValueDefinition& src ) 
+{GUCEF_TRACE;
+
+    if ( this != &src )
     {
-        if ( !(*i).IsConstraintSatisfiedBy( valueToConstrain ) )
-            return false;
-        ++i;
+        CIDataNodeSerializable::operator=( src );        
+        default = src.default;
+        isRequired = src.isRequired;
+        constraints = src.constraints;
     }
-    return true;
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CValueConstraintList::operator==( const CValueConstraintList& other ) const
+CValueDefinition::operator==( const CValueDefinition& other ) const
 {GUCEF_TRACE;
 
-    return m_constraints == other.m_constraints;
+    return default == other.default &&
+           isRequired == other.isRequired &&
+           constraints == other.constraints;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CValueConstraintList::operator!=( const CValueConstraintList& other ) const
+CValueDefinition::operator!=( const CValueDefinition& other ) const
 {GUCEF_TRACE;
 
-    return m_constraints != other.m_constraints;
+    return default != other.default ||
+           isRequired != other.isRequired ||
+           constraints != other.constraints;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CValueConstraintList::Serialize( CDataNode& domRootNode                        ,
-                                 const CDataNodeSerializableSettings& settings ) const
+CValueDefinition::Serialize( CDataNode& domRootNode                        ,
+                             const CDataNodeSerializableSettings& settings ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
 
     domRootNode.Clear();
-    domRootNode.SetName( "ValueConstraintList" );
-    domRootNode.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    domRootNode.SetName( "ValueDefinition" );
 
-    ValueConstraintVector::const_iterator i = m_constraints.begin();
-    while ( i != m_constraints.end() )
+    totalSuccess = domRootNode.SetAttribute( "default", default ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "isRequired", isRequired ) && totalSuccess;
+
+    CDataNode* constraintsNode = domRootNode.AddChild( "constraints", GUCEF_DATATYPE_ARRAY );
+    if ( GUCEF_NULL != constraintsNode )
     {
-        CDataNode* valueConstraintNode = domRootNode.AddChild( "ValueConstraint", GUCEF_DATATYPE_OBJECT );
-        if ( GUCEF_NULL != valueConstraintNode )
-        {
-            totalSuccess = (*i).Serialize( *valueConstraintNode, settings ) && totalSuccess;
-        }
-        ++i;
+        totalSuccess = constraints.Serialize( *constraintsNode, settings ) && totalSuccess;
     }
 
     return totalSuccess;
@@ -151,30 +149,19 @@ CValueConstraintList::Serialize( CDataNode& domRootNode                        ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CValueConstraintList::Deserialize( const CDataNode& domRootNode                  ,
-                                   const CDataNodeSerializableSettings& settings ) 
+CValueDefinition::Deserialize( const CDataNode& domRootNode                  ,
+                               const CDataNodeSerializableSettings& settings )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
+    
+    default = domRootNode.GetAttributeValueOrChildValueByName( "default", default );
+    isRequired = domRootNode.GetAttributeValueOrChildValueByName( "isRequired", isRequired ).AsBool();
 
-    CDataNode::TConstDataNodeSet valueConstraintNodes = domRootNode.FindChildrenOfType( "ValueConstraint", false );
-    CDataNode::TConstDataNodeSet::const_iterator i = valueConstraintNodes.begin();
-    while ( i != valueConstraintNodes.end() )
+    const CDataNode* constraintsNode = domRootNode.FindChild( "constraints" );
+    if ( GUCEF_NULL != constraintsNode )
     {
-        const CDataNode* valueConstraintNode = (*i);
-        if ( GUCEF_NULL != valueConstraintNode )
-        {
-            CValueConstraint newConstraint;
-            if ( newConstraint.Deserialize( *valueConstraintNode, settings ) )
-            {
-                m_constraints.push_back( newConstraint );
-            }
-            else
-            {
-                totalSuccess = false;
-            }
-        }
-        ++i;
+        totalSuccess = constraints.Deserialize( *constraintsNode, settings ) && totalSuccess;
     }
 
     return totalSuccess;

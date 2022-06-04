@@ -147,8 +147,8 @@ set( HEADER_FILES
   include/gucefCORE_CCoreGlobal.h
   include/gucefCORE_CDStoreBinaryCodec.h
   include/gucefCORE_CDataNodeBinarySerializer.h
+  include/gucefCORE_CDataNodeDefinition.h
   include/gucefCORE_CDataNodeSerializableSettings.h
-  include/gucefCORE_CDataSchemaNode.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcherEvents.h
@@ -195,7 +195,9 @@ set( HEADER_FILES
   include/gucefCORE_CPluginGroup.h
   include/gucefCORE_CPluginMetaData.h
   include/gucefCORE_CProperty.h
-  include/gucefCORE_CPropertyConstraints.h
+  include/gucefCORE_CPropertyDefinition.h
+  include/gucefCORE_CPropertyDefinitionList.h
+  include/gucefCORE_CPropertyList.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
   include/gucefCORE_CRollingFileAccess.h
@@ -216,6 +218,7 @@ set( HEADER_FILES
   include/gucefCORE_CUtf8String.h
   include/gucefCORE_CValueConstraint.h
   include/gucefCORE_CValueConstraintList.h
+  include/gucefCORE_CValueDefinition.h
   include/gucefCORE_CVariant.h
   include/gucefCORE_CVariantBinarySerializer.h
   include/gucefCORE_CVersion.h
@@ -364,6 +367,7 @@ set( SOURCE_FILES
   src/gucefCORE_CCoreGlobal.cpp
   src/gucefCORE_CDStoreBinaryCodec.cpp
   src/gucefCORE_CDataNodeBinarySerializer.cpp
+  src/gucefCORE_CDataNodeDefinition.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
@@ -410,7 +414,9 @@ set( SOURCE_FILES
   src/gucefCORE_CPluginGroup.cpp
   src/gucefCORE_CPluginMetaData.cpp
   src/gucefCORE_CProperty.cpp
-  src/gucefCORE_CPropertyConstraints.cpp
+  src/gucefCORE_CPropertyDefinition.cpp
+  src/gucefCORE_CPropertyDefinitionList.cpp
+  src/gucefCORE_CPropertyList.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
   src/gucefCORE_CRollingFileAccess.cpp
@@ -427,6 +433,7 @@ set( SOURCE_FILES
   src/gucefCORE_CUtf8String.cpp
   src/gucefCORE_CValueConstraint.cpp
   src/gucefCORE_CValueConstraintList.cpp
+  src/gucefCORE_CValueDefinition.cpp
   src/gucefCORE_CVariant.cpp
   src/gucefCORE_CVariantBinarySerializer.cpp
   src/gucefCORE_CVersion.cpp

@@ -109,6 +109,10 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraint : public CIDataNodeSerializable
                              bool passIfFunctionExecIssue = true                           ,
                              UInt32 constraintResultIndex = 0                              );
 
+    bool operator==( const CValueConstraint& other ) const;
+
+    bool operator!=( const CValueConstraint& other ) const;
+
     /**
      *  Attempts to serialize the object to a DOM created out of DataNode objects
      */
