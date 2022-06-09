@@ -165,6 +165,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefLogServiceL
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefLogService_TestApp ${CMAKE_BINARY_DIR}/GucefLogService_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/HDFiller ${CMAKE_BINARY_DIR}/HDFiller )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/MemoryLeakFinder ${CMAKE_BINARY_DIR}/MemoryLeakFinder )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/MsmqMetrics ${CMAKE_BINARY_DIR}/MsmqMetrics )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PackageUpgrader ${CMAKE_BINARY_DIR}/PackageUpgrader )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PatchSetGenerator ${CMAKE_BINARY_DIR}/PatchSetGenerator )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PatcherGUI/MFCPatcherGUI ${CMAKE_BINARY_DIR}/MFCPatcherGUI )
