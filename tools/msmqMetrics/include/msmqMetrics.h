@@ -150,6 +150,20 @@ class MsmqMetrics : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
     
+    class MsmqQueueProperties
+    {
+        public:
+        
+        CORE::CString queueLabel;
+        UInt64 quota;
+        CORE::CString pathName;
+        CORE::CString pathNameDNS;
+
+        CORE::CString ToString( void ) const;
+
+        MsmqQueueProperties( void );
+    };
+
     class MsmqQueue
     {
         public:
@@ -158,16 +172,48 @@ class MsmqMetrics : public CORE::CObservingNotifier
         std::wstring msmqQueueFormatName;
         bool queueNameIsMsmqFormatName;
         CORE::CString metricFriendlyQueueName;
+        MsmqQueueProperties queueProperties;
 
-        MsmqQueue( const CORE::CString& qName                   , 
-                   const CORE::CString& metricFriendlyQueueName ,
-                   bool queueNamesAreMsmqFormatNames            );
+        MsmqQueue( const CORE::CString& qName        , 
+                   bool queueNamesAreMsmqFormatNames );
     };
     typedef std::vector< MsmqQueue >    MsmqQueueVector;
     
+    CORE::Int64 GetQueueMetric( MsmqQueue& q                           , 
+                                const CORE::CString& metricDescription ,
+                                CORE::UInt32 propId                    ,
+                                CORE::UInt32 propType                  ) const;
+
+    CORE::UInt64 GetMsmqComputerMetric( const CORE::CString& metricDescription ,
+                                        CORE::UInt32 propId                    ,
+                                        CORE::UInt32 propType                  ) const;
+    
     CORE::Int64 GetCurrentNrOfMessagesInQueue( MsmqQueue& q ) const;
 
-    const std::wstring& GetMsmqQueueFormatName( MsmqQueue& q ) const;
+    CORE::Int64 GetCurrentByteCountOfMesssagesInQueue( MsmqQueue& q ) const;
+
+    CORE::Int64 GetCurrentNrOfMessagesInQueueJournal( MsmqQueue& q ) const;
+
+    CORE::Int64 GetCurrentByteCountOfMesssagesInQueueJournal( MsmqQueue& q ) const;
+
+    CORE::UInt64 GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues( void ) const;
+
+    static const std::wstring& GetMsmqQueueFormatName( MsmqQueue& q );
+
+    static bool GetMsmqQueueLabel( const std::wstring& queueFormatName  ,
+                                   CORE::CString& queueLabel            );
+
+    static bool GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
+                                      CORE::CString& queuePathName         );
+
+    static bool GetMsmqQueuePathNameDNS( const std::wstring& queueFormatName  ,
+                                         CORE::CString& queuePathNameDNS      );
+
+    static bool GetMsmqQueueQuota( const std::wstring& queueFormatName ,
+                                   UInt64& queueQuota                  );
+
+    static bool GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
+                                        MsmqQueueProperties& queueProperties );
 
     static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
                                                     std::wstring& queueFormatName  );
@@ -183,6 +229,8 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static bool MsmqGUIDToString( const GUID& guid, CORE::CAsciiString& guidString );
 
     static CORE::CString GenerateMetricsFriendlyQueueName( const CORE::CString& queueName );
+
+    static bool InitQueueInfo( MsmqQueue& q );
     
     private:
 
