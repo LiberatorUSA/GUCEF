@@ -512,7 +512,7 @@ CUtf8String::operator std::string() const
 
     if ( m_length > 0 )
     {
-        return std::string( (const char*) m_string, m_byteSize );
+        return std::string( (const char*) m_string, m_byteSize-1 );
     }
     return std::string();
 }

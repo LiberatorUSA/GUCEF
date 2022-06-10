@@ -1428,12 +1428,12 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    size_t charsNeeded = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, 0, 0, 0, 0 );
+    size_t charsNeeded = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size(), 0, 0, 0, 0 );
     if ( charsNeeded == 0 )
         return false; // Failed converting UTF-16 string to UTF-8
 
     str.resize( charsNeeded, '\0' );
-    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, (LPSTR)str.c_str(), (int)charsNeeded, 0, 0 );
+    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size(), (LPSTR)str.c_str(), (int)charsNeeded, 0, 0 );
     if ( charsConverted == 0 )
         return false; // Failed converting UTF-16 string to UTF-8
 
