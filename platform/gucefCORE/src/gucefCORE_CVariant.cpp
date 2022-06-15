@@ -1485,13 +1485,24 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             }
             else
             {
-                if ( GUCEF_NULL != HeapReserve( dataSize ) )
+                m_variantData.union_data.heap_data.heap_data_is_linked = 0;                
+                if ( dataSize > 0 )
                 {
-                    memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data, dataSize );
+                    if ( GUCEF_NULL != HeapReserve( dataSize ) )
+                    {
+                        memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data, dataSize );
+                        m_variantData.containedType = varType;
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
+                    m_variantData.union_data.heap_data.heap_data_size = 0;
                     m_variantData.containedType = varType;
                     return true;
                 }
-                return false;
             }
         }
         case GUCEF_DATATYPE_NULL:
@@ -2095,6 +2106,23 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_ASCII_STRING:          { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
             case GUCEF_DATATYPE_UTF8_STRING:           { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+
+            // @TODO: we dont have native UTF16 support yet, so convert to UTF8
+            case GUCEF_DATATYPE_UTF16_LE_STRING:           
+            case GUCEF_DATATYPE_UTF16_BE_STRING:           
+            { 
+                if ( m_variantData.union_data.heap_data.heap_data_size > 0 )
+                {
+                    std::wstring wideStr;   // <- not exactly UTF16 but best we have right now
+                    wideStr.resize( (size_t)( m_variantData.union_data.heap_data.heap_data_size / sizeof( wchar_t ) ) );
+                    memcpy( const_cast< wchar_t* >( wideStr.c_str() ), m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+                    wideStr.shrink_to_fit();
+
+                    return ResolveVars( ToUtf8String( wideStr ) ); 
+                }
+                return CString::Empty;
+            }
+
             case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
             case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? ResolveVars( defaultIfNeeded ) : result; }
             case GUCEF_DATATYPE_UNKNOWN:               { return ResolveVars( defaultIfNeeded ); }
@@ -2128,6 +2156,23 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
+            
+            // @TODO: we dont have native UTF16 support yet, so convert to UTF8
+            case GUCEF_DATATYPE_UTF16_LE_STRING:           
+            case GUCEF_DATATYPE_UTF16_BE_STRING:           
+            { 
+                if ( m_variantData.union_data.heap_data.heap_data_size > 0 )
+                {
+                    std::wstring wideStr;   // <- not exactly UTF16 but best we have right now
+                    wideStr.resize( (size_t)( m_variantData.union_data.heap_data.heap_data_size / sizeof( wchar_t ) ) + 1 );
+                    memcpy( const_cast< wchar_t* >( wideStr.c_str() ), m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+                    wideStr.shrink_to_fit();
+
+                    return ToUtf8String( wideStr ); 
+                }
+                return CString::Empty;
+            }
+            
             case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
             case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
             case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }

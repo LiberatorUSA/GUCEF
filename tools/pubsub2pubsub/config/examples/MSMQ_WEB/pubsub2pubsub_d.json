@@ -8,11 +8,23 @@
 		"LogLevel": 5
 	},
 	"StatsDClient": {
-		"statsDestination": "statsd.mynetwork.example:8125",
+		"statsDestination": "127.0.0.1:8125",
 		"statsNamePrefix": "myenv.$HOSTNAME$.pubsub2pubsub.",
 		"transmit": true,
 		"logStats": false
 	},
+	"VFS": {
+		"ArchiveSettings": {
+			"ActualArchivePath": "$MODULEDIR$",
+			"MountPath": "InstallPath",
+			"ArchiveName": "InstallPath",
+			"ArchiveType": "FileSystem",
+			"MountArchives": false,
+			"MountArchivesIsRecursive": false,
+			"Writeable": true,
+			"Readable": true
+		}
+	},	
 	"PubSub2PubSub": {
 		"Channels": {
 			"*": {
@@ -38,7 +50,8 @@
 								"pubsubClientType": "MSMQ",
 								"reconnectDelayInMs": "",
 								"CustomConfig": {
-									"simulateReceiveAckFeatureViaLookupId": true
+									"simulateReceiveAckFeatureViaLookupId": true,
+									"gatherMsmqMetricForTotalBytesAllQueues": true
 								},
 								"Topics": {
 									"0": {
@@ -91,7 +104,7 @@
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
 								"CustomConfig": {
-									"vfsRootPath": "",
+									"vfsRootPath": "InstallPath/bookmarks",
 									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
 								}
 							}								
@@ -155,7 +168,7 @@
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
 								"CustomConfig": {
-									"vfsRootPath": "",
+									"vfsRootPath": "InstallPath/bookmarks",
 									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
 								}
 							}								

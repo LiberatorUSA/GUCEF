@@ -134,6 +134,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_client( client )
     , m_msgSendMsg()
     , m_config()
+    , m_queue()
     , m_msmqQueueFormatName()
     , m_syncReadTimer( GUCEF_NULL )
     , m_reconnectTimer( GUCEF_NULL )
@@ -153,7 +154,6 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_msmqErrorsOnReceive( 0 )
     , m_msmqErrorsOnAck( 0 )
     , m_metrics()
-    , m_metricFriendlyTopicName()
     , m_msmqMsgSentToArriveLatencies()
     , m_msmqLastLookupId( 0 )
 {GUCEF_TRACE;
@@ -183,6 +183,37 @@ CMsmqPubSubClientTopic::~CMsmqPubSubClientTopic()
 
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::MsmqQueue::MsmqQueue( void )
+    : queueName()
+    , msmqQueueFormatName()
+    , queueNameIsMsmqFormatName( false )
+    , metricFriendlyQueueName()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMsmqPubSubClientTopic::MsmqQueueProperties::MsmqQueueProperties( void )
+    : queueLabel()
+    , quota( 0 )
+    , pathName()
+    , pathNameDNS()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CMsmqPubSubClientTopic::MsmqQueueProperties::ToString( void ) const
+{GUCEF_TRACE;
+
+    return "queueLabel=" + queueLabel + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -350,6 +381,7 @@ CMsmqPubSubClientTopic::SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& conf
 
     if ( LoadConfig( config ) )
     {
+        InitQueueInfo( m_queue, config );
         PrepStorageForReadMsgs( m_config.maxMsmqMsgsToReadPerSyncCycle );    
         m_syncReadTimer->SetEnabled( true );
         return true;
@@ -396,8 +428,7 @@ CMsmqPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& conf
     MT::CScopeMutex lock( m_lock );
     
     m_config = config;
-
-    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+    InitQueueInfo( m_queue, config );
 
     return true;
 }
@@ -611,26 +642,26 @@ CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString&
 /*-------------------------------------------------------------------------*/
 
 const std::wstring&
-CMsmqPubSubClientTopic::GetMsmqQueueFormatName( void ) const
+CMsmqPubSubClientTopic::GetMsmqQueueFormatName( MsmqQueue& q )
 {
-    if ( !m_msmqQueueFormatName.empty() )
-        return m_msmqQueueFormatName;
+    if ( !q.msmqQueueFormatName.empty() )
+        return q.msmqQueueFormatName;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: MSMQ queue 'format name' is not yet set, attempting to obtain it. Topic=" + m_config.topicName ) ; 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: MSMQ queue 'format name' is not yet set, attempting to obtain it. Queue name =" + q.queueName ) ; 
 
     std::wstring wQueueName;
-    CORE::Utf8toUtf16( m_config.topicName, wQueueName );
+    CORE::Utf8toUtf16( q.queueName, wQueueName );
 
     // Should we try and take the string as given and not do anything fancy?
-    if ( !m_config.topicNameIsMsmqFormatName )  
+    if ( !q.queueNameIsMsmqFormatName )  
     {
-        bool isSuspectedQueueGuid = ( 0 == m_config.topicName.HasChar( '{', true ) && 0 < m_config.topicName.HasChar( '}', true ) );
+        bool isSuspectedQueueGuid = ( 0 == q.queueName.HasChar( '{', true ) && 0 < q.queueName.HasChar( '}', true ) );
         if ( isSuspectedQueueGuid )
         {
             std::wstring wQueueFormatName;
-            if ( MsmqQueueGUIDToMsmqQueueFormatName( m_config.topicName, wQueueFormatName ) )
+            if ( MsmqQueueGUIDToMsmqQueueFormatName( q.queueName, wQueueFormatName ) )
             {
-                m_msmqQueueFormatName = wQueueFormatName;
+                q.msmqQueueFormatName = wQueueFormatName;
             }
         }
         else
@@ -638,17 +669,17 @@ CMsmqPubSubClientTopic::GetMsmqQueueFormatName( void ) const
             std::wstring wQueueFormatName;
             if ( MsmqPathNameToMsmqQueueFormatName( wQueueName, wQueueFormatName ) )
             {
-                m_msmqQueueFormatName = wQueueFormatName;
+                q.msmqQueueFormatName = wQueueFormatName;
             }
         }
     }
     else
     {
-        m_msmqQueueFormatName = wQueueName;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: Since the topic name is flagged as a format name we will use it as-is. format name = Topic =" + m_config.topicName );
+        q.msmqQueueFormatName = wQueueName;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueFormatName: Since the topic name is flagged as a format name we will use it as-is. format name aka queue aka Topic =" + q.queueName );
     }
 
-    return m_msmqQueueFormatName; 
+    return q.msmqQueueFormatName; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -665,9 +696,11 @@ CMsmqPubSubClientTopic::Subscribe( void )
         m_receiveQueueHandle = GUCEF_NULL;
     }
 
+    InitQueueInfo( m_queue, m_config );
+
     // MQOpenQueue only supports a format name
     // As such depending on how the setting is presented we need to translate it
-    const std::wstring& queueFormatName = GetMsmqQueueFormatName();
+    const std::wstring& queueFormatName = GetMsmqQueueFormatName( m_queue );
     if ( queueFormatName.empty() )
         return false;
 
@@ -702,7 +735,7 @@ CMsmqPubSubClientTopic::Subscribe( void )
     
     // Initialize getting all messages in queue
     // this needs the proper account access level. if this failed we will not try again in the metrics timer cycle
-    m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue();
+    m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( m_queue );
 
     // Enable the timer to start throttled sync reading 
     m_syncReadTimer->SetEnabled( true );
@@ -934,7 +967,7 @@ CMsmqPubSubClientTopic::InitializeConnectivity( void )
 
         // MQOpenQueue only supports a format name
         // As such depending on how the setting is presented we need to translate it
-        const std::wstring& queueFormatName = GetMsmqQueueFormatName();
+        const std::wstring& queueFormatName = GetMsmqQueueFormatName( m_queue );
         if ( queueFormatName.empty() )
             return false;
 
@@ -970,52 +1003,6 @@ CMsmqPubSubClientTopic::InitializeConnectivity( void )
     }
 
     return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::Int64
-CMsmqPubSubClientTopic::GetCurrentNrOfMessagesInQueue( void ) const
-{GUCEF_TRACE;
-
-    // MQMgmtGetInfo only supports a format name
-    // As such depending on how the setting is presented we need to translate it
-    const std::wstring& queueFormatName = GetMsmqQueueFormatName();
-    if ( queueFormatName.empty() )
-        return -1;
-
-    // Define the required constants and variables.  
-    const int NUMBEROFPROPERTIES = 1;  
-    DWORD cPropId = 0;  
-
-    // Define an MQMGMTROPS structure.  
-    ::MQMGMTPROPS mgmtprops;  
-    ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
-    ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
-
-    aMgmtPropId[ cPropId ] = PROPID_MGMT_QUEUE_MESSAGE_COUNT;    // Property identifier  
-    aMgmtPropVar[ cPropId ].vt = VT_NULL;                        // Type indicator  
-    ++cPropId;
-
-    // Initialize the MQMGMTPROPS structure.  
-    mgmtprops.cProp = cPropId;   // number of management properties  
-    mgmtprops.aPropID = aMgmtPropId;// management property IDs  
-    mgmtprops.aPropVar = aMgmtPropVar;// management property values  
-    mgmtprops.aStatus  = NULL;// no storage for error codes   
-
-    // Now that we formulated the request
-    // actually ask for the info
-    std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
-    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueInfoFormatName.c_str(), &mgmtprops );
-    if ( MQ_OK == queueInfoFetchResult )
-    {
-        return (CORE::Int64) aMgmtPropVar[ 0 ].ulVal;
-    }
-
-    CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
-    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetCurrentNrOfMessagesInQueue: Failed to obtain count of queued messages. Topic Name: " + m_config.topicName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
-    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1257,7 +1244,13 @@ CMsmqPubSubClientTopic::MsmqGUIDToString( const GUID& guid               ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable )
+CMsmqPubSubClientTopic::MsmqPropertyToVariantStatic( MQPROPVARIANT& msmqSourceVariant , 
+                                                     CORE::CVariant& targetVariant    , 
+                                                     bool linkIfPossible              , 
+                                                     CORE::UInt32 lengthIfApplicable  ,
+                                                     bool scanForNullTerminatorOnStrs ,
+                                                     bool convertMsmqClsIdToString    ,
+                                                     CORE::CAsciiString& guidStrCache )
 {GUCEF_TRACE;
 
     switch ( msmqSourceVariant.vt )
@@ -1277,12 +1270,12 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         // It is critical that the data must be exactly sizeof(CLSID) bytes (16) long for proper I/O with MSMQ.
         case VT_CLSID:                  
         {
-            if ( m_config.convertMsmqClsIdToString )
+            if ( convertMsmqClsIdToString )
             {
                 const GUID& guid = *msmqSourceVariant.puuid;
-                if ( MsmqGUIDToString( guid, m_guidStr ) )
+                if ( MsmqGUIDToString( guid, guidStrCache ) )
                 {
-                    targetVariant = m_guidStr;
+                    targetVariant = guidStrCache;
                     return true;
                 }
                 return false;
@@ -1297,8 +1290,19 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
         // Since in the COM world this type is often used to shuttle binary data around we will mark it as a binary and not GUCEF_DATATYPE_UTF16_STRING
         case VT_BSTR:                   { return targetVariant.Set( msmqSourceVariant.pwszVal, SysStringLen( msmqSourceVariant.bstrVal ), GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); } 
 
-        case VT_LPSTR:                  { return targetVariant.Set( msmqSourceVariant.pszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF8_STRING, linkIfPossible ); } 
-        case VT_LPWSTR:                 { return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_LE_STRING, linkIfPossible ); } 
+        case VT_LPSTR:                  
+        { 
+            if ( scanForNullTerminatorOnStrs )
+                return targetVariant.Set( msmqSourceVariant.pszVal, (UInt32) strlen( msmqSourceVariant.pszVal ), GUCEF_DATATYPE_UTF8_STRING, linkIfPossible );
+            return targetVariant.Set( msmqSourceVariant.pszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF8_STRING, linkIfPossible );
+        }
+        case VT_LPWSTR:                 
+        { 
+            if ( scanForNullTerminatorOnStrs )
+                return targetVariant.Set( msmqSourceVariant.pwszVal, (UInt32) wcslen( msmqSourceVariant.pwszVal ), GUCEF_DATATYPE_UTF16_LE_STRING, linkIfPossible );    
+            return targetVariant.Set( msmqSourceVariant.pwszVal, lengthIfApplicable, GUCEF_DATATYPE_UTF16_LE_STRING, linkIfPossible );
+        }
+
         case VT_BLOB:                   { return targetVariant.Set( msmqSourceVariant.blob.pBlobData, msmqSourceVariant.blob.cbSize, GUCEF_DATATYPE_BINARY_BLOB, linkIfPossible ); }
         
         case VT_DATE:                   
@@ -1351,6 +1355,24 @@ CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant,
             return false;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant , 
+                                               CORE::CVariant& targetVariant    , 
+                                               bool linkIfPossible              , 
+                                               CORE::UInt32 lengthIfApplicable  )
+{GUCEF_TRACE;
+                                                     
+    return MsmqPropertyToVariantStatic( msmqSourceVariant                 ,
+                                        targetVariant                     ,
+                                        linkIfPossible                    ,
+                                        lengthIfApplicable                ,
+                                        false                             , 
+                                        m_config.convertMsmqClsIdToString ,
+                                        m_guidStr                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1522,6 +1544,7 @@ CMsmqPubSubClientTopic::GetMsmqVariantTypeForMsmqProperty( PROPID propertyId )
         case PROPID_Q_LABEL: { return VT_LPWSTR; }                      // Optional. This property specifies a description of the queue.
         case PROPID_Q_MODIFY_TIME: { return VT_I4; }                    // Optional. This property indicates the last time the properties of a queue were modified.
         case PROPID_Q_PATHNAME: { return VT_LPWSTR; }                   // Required (to create the queue). This property specifies the MSMQ path name of the queue. The maximum length of the name of the queue is 124 Unicode characters
+        case PROPID_Q_PATHNAME_DNS: { return VT_LPWSTR; }
         case PROPID_Q_PRIV_LEVEL: { return VT_UI4; }                    // Optional. This property specifies the privacy level required by the queue.
         case PROPID_Q_QUOTA: { return VT_UI4; }                         // Optional. This property specifies the maximum size (in kilobytes) of the queue. The default is INFINITE.
         case PROPID_Q_TRANSACTION: { return VT_UI1; }                   // Optional. This property specifies whether the queue is a transactional queue or a nontransactional queue.
@@ -2540,6 +2563,9 @@ CMsmqPubSubClientTopic::GetMsmqErrorsOnAckCounter( bool resetCounter )
 CMsmqPubSubClientTopic::TopicMetrics::TopicMetrics( void )
     : msmqMsgsInQueue( 0 )
     , msmqMessagesPublished( 0 )
+    , msmqMsgsInJournal( 0 )
+    , msmqMsgBytesInQueue( 0 )
+    , msmqMsgBytesInJournal( 0 )
     , msmqErrorsOnPublish( 0 )
     , msmqMessagesReceived( 0 )
     , msmqErrorsOnReceive( 0 )
@@ -2563,7 +2589,304 @@ const CORE::CString&
 CMsmqPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 {GUCEF_TRACE;
 
-    return m_metricFriendlyTopicName;
+    return m_queue.metricFriendlyQueueName;
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetQueueMetric( MsmqQueue& q                           , 
+                                        const CORE::CString& metricDescription ,
+                                        UInt32 propId                          ,
+                                        UInt32 propType                        )
+{GUCEF_TRACE;
+
+    // MQMgmtGetInfo only supports a format name
+    // As such depending on how the setting is presented we need to translate it
+    const std::wstring& queueFormatName = GetMsmqQueueFormatName( q );
+    if ( queueFormatName.empty() )
+        return -1;
+
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId = 0;  
+
+    // Define an MQMGMTROPS structure.  
+    ::MQMGMTPROPS mgmtprops;  
+    ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+
+    aMgmtPropId[ cPropId ] = (PROPID) propId;              // Property identifier  
+    aMgmtPropVar[ cPropId ].vt = (VARTYPE) propType;       // Type indicator  
+    ++cPropId;
+
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;   // number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;// management property IDs  
+    mgmtprops.aPropVar = aMgmtPropVar;// management property values  
+    mgmtprops.aStatus  = NULL;// no storage for error codes   
+
+    // Now that we formulated the request
+    // actually ask for the info
+    std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
+    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueInfoFormatName.c_str(), &mgmtprops );
+    if ( MQ_OK == queueInfoFetchResult )
+    {
+        switch ( propType )
+        {
+            case VT_UI4: return (CORE::Int64) aMgmtPropVar[ 0 ].ulVal;
+            case VT_UI8: return (CORE::Int64) aMgmtPropVar[ 0 ].uhVal.QuadPart;
+
+            default:
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetQueueMetric: PropType is unsupported. Change the code! Type=" + CORE::ToString( propType ) );
+                return 0;
+            }
+        }
+        
+    }
+
+    CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetQueueMetric: Failed to obtain " + metricDescription + ". Queue Name: " + q.queueName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetCurrentNrOfMessagesInQueue( MsmqQueue& q ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    return GetQueueMetric( q, "count of queued messages", PROPID_MGMT_QUEUE_MESSAGE_COUNT, VT_UI4 );
+    #else
+    return -1;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetCurrentByteCountOfMesssagesInQueue( MsmqQueue& q ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    return GetQueueMetric( q, "byte count of messages", PROPID_MGMT_QUEUE_BYTES_IN_QUEUE, VT_UI4 );
+    #else
+    return -1;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetCurrentNrOfMessagesInQueueJournal( MsmqQueue& q ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    return GetQueueMetric( q, "count of messages in journal", PROPID_MGMT_QUEUE_JOURNAL_MESSAGE_COUNT, VT_UI4 );
+    #else
+    return -1;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+CMsmqPubSubClientTopic::GetCurrentByteCountOfMesssagesInQueueJournal( MsmqQueue& q ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    return GetQueueMetric( q, "byte count of messages in journal", PROPID_MGMT_QUEUE_BYTES_IN_JOURNAL, VT_UI4 );
+    #else
+    return -1;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueueProperty( const std::wstring& queueFormatName ,
+                                              UInt32 propId                       ,
+                                              UInt32 propType                     ,
+                                              CORE::CVariant& qProperty           )
+{GUCEF_TRACE;
+
+    // Validate the input string.  
+    if ( queueFormatName.empty() ) 
+        return false;  
+
+    // Define the maximum number of queue properties and a property counter.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId=0;  
+  
+    // Define a queue property structure.  
+    MQQUEUEPROPS   QueueProps;  
+    QUEUEPROPID    aQueuePropId[ NUMBEROFPROPERTIES ];  
+    MQPROPVARIANT  aQueuePropVar[ NUMBEROFPROPERTIES ];  
+    HRESULT        aQueuePropStatus[ NUMBEROFPROPERTIES ];  
+    HRESULT queryResultCode = MQ_OK;  
+  
+    // Specify the property we want to read
+    aQueuePropId[ cPropId ] = propId;                // Property ID  
+    aQueuePropVar[ cPropId ].vt = propType;          // Type indicator  
+    cPropId++;  
+  
+    // Initialize the MQQUEUEPROPS structure.  
+    QueueProps.cProp = cPropId;  
+    QueueProps.aPropID = aQueuePropId;  
+    QueueProps.aPropVar = aQueuePropVar;                                     
+    QueueProps.aStatus = aQueuePropStatus;  
+ 
+    // Get the queue properties.  
+    queryResultCode = ::MQGetQueueProperties( queueFormatName.c_str(), &QueueProps );  
+    if ( FAILED( queryResultCode ) )  
+    {  
+        CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueProperty: Failed to obtain queue quota for queue format name \"" + 
+            CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        return false; 
+    } 
+    
+    CORE::CAsciiString guidConversionTmp;
+    bool success = MsmqPropertyToVariantStatic( aQueuePropVar[ 0 ], qProperty, false, 0, true, true, guidConversionTmp );
+    if ( !success )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:GetMsmqQueueProperty: Failed to convert MSMQ property to variant for queue format name \"" +  CORE::ToString( queueFormatName ) + "\"" ) ; 
+    }
+
+    VARTYPE outputType = GetMsmqVariantTypeForMsmqProperty( propId );
+    switch ( outputType )
+    {
+        case VT_LPSTR:  { MQFreeMemory( aQueuePropVar[ 0 ].pszVal ); break; }
+        case VT_LPWSTR: { MQFreeMemory( aQueuePropVar[ 0 ].pwszVal ); break; }
+        default: { }
+    }
+    
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueueQuota( const std::wstring& queueFormatName ,
+                                           UInt64& queueQuota                  )
+
+{GUCEF_TRACE;
+
+    CORE::CVariant qProperty;
+    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_QUOTA, VT_NULL, qProperty );
+    if ( success )
+    {
+        queueQuota = qProperty.AsUInt64();
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueueLabel( const std::wstring& queueFormatName  ,
+                                           CORE::CString& queueLabel            )
+{GUCEF_TRACE;
+
+    CORE::CVariant qProperty;
+    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_LABEL, VT_NULL, qProperty );
+    if ( success )
+    {
+        queueLabel = qProperty.AsString();
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
+                                              CORE::CString& queuePathName         )
+{GUCEF_TRACE;
+
+    CORE::CVariant qProperty;
+    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_PATHNAME, VT_NULL, qProperty );
+    if ( success )
+    {
+        queuePathName = qProperty.AsString();
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueuePathNameDNS( const std::wstring& queueFormatName  ,
+                                                 CORE::CString& queuePathNameDNS      )
+{GUCEF_TRACE;
+
+    CORE::CVariant qProperty;
+    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_PATHNAME_DNS, VT_NULL, qProperty );
+    if ( success )
+    {
+        queuePathNameDNS = qProperty.AsString();
+        return true;
+    }
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
+                                                MsmqQueueProperties& queueProperties )
+{GUCEF_TRACE;
+
+    // Validate the input string.  
+    if ( queueFormatName.empty() ) 
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueueProperties: No queue format name was provided" ); 
+        return false; 
+    }
+
+    // We query for each of the properties independently since we have no clue what type of queue we are 
+    // actually dealing with. As such we best effort try to obtain properties, getting whatever we can get
+    bool totalSuccess = true;
+    totalSuccess = GetMsmqQueueLabel( queueFormatName, queueProperties.queueLabel ) && totalSuccess;
+    totalSuccess = GetMsmqQueueQuota( queueFormatName, queueProperties.quota ) && totalSuccess;
+    totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
+    totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::InitQueueInfo( MsmqQueue& q, const CMsmqPubSubClientTopicConfig& config )
+{GUCEF_TRACE;
+
+    q.queueName = config.topicName;
+    q.msmqQueueFormatName = GetMsmqQueueFormatName( q );
+    q.metricFriendlyQueueName = GenerateMetricsFriendlyTopicName( q.queueName );    
+    if ( !q.msmqQueueFormatName.empty() )
+    {
+        GetMsmqQueueProperties( q.msmqQueueFormatName, q.queueProperties );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitQueueInfo: Obtained properties of MSMQ queue with name \"" + q.queueName + 
+            "\" as follows: " + q.queueProperties.ToString() );
+
+        if ( !q.queueProperties.queueLabel.IsNULLOrEmpty() && "private" != q.queueProperties.queueLabel )
+            q.metricFriendlyQueueName = GenerateMetricsFriendlyTopicName( q.queueProperties.queueLabel );
+    }
+
+    return true; // best effort is fine
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2576,9 +2899,13 @@ CMsmqPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
     // If m_msmqMsgsQueued is -1 dont bother trying again as we cannot solve config/permission issues here
     // in order to efficiently get this metric you need elevated access to the queue
+    // We assume the same would apply to the other similar metrics since they have the same restriction
     if ( m_metrics.msmqMsgsInQueue >= 0 )
     {
-        m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue();
+        m_metrics.msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( m_queue );
+        m_metrics.msmqMsgBytesInQueue = GetCurrentByteCountOfMesssagesInQueue( m_queue );
+        m_metrics.msmqMsgsInJournal = GetCurrentNrOfMessagesInQueueJournal( m_queue );
+        m_metrics.msmqMsgBytesInJournal = GetCurrentByteCountOfMesssagesInQueueJournal( m_queue );
     }
 
     const PUBSUB::CPubSubClientConfig& clientConfig = m_client->GetConfig();

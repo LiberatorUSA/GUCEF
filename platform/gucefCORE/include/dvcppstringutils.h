@@ -463,6 +463,7 @@ inline CAsciiString ToAsciiString( const CUtf8String& str ) { return CAsciiStrin
 inline CAsciiString ToAsciiString( const CAsciiString& str ) { return str; }
 inline CUtf8String ToUtf8String( const CUtf8String& str ) { return str; }
 inline CUtf8String ToUtf8String( const CAsciiString& str ) { return CUtf8String( str ); }
+inline CUtf8String ToUtf8String( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
 
 /*-------------------------------------------------------------------------*/
 

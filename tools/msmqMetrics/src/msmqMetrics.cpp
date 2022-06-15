@@ -332,7 +332,7 @@ MsmqMetrics::GetMsmqQueueQuota( const std::wstring& queueFormatName ,
     HRESULT queryResultCode = MQ_OK;  
   
     // Specify the PROPID_Q_LABEL property.  
-    aQueuePropId[ cPropId ] = PROPID_Q_LABEL;       // Property ID  
+    aQueuePropId[ cPropId ] = PROPID_Q_QUOTA;       // Property ID  
     aQueuePropVar[ cPropId ].vt = VT_NULL;          // Type indicator  
     cPropId++;  
   
@@ -438,8 +438,8 @@ MsmqMetrics::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
     HRESULT        aQueuePropStatus[ NUMBEROFPROPERTIES ];  
     HRESULT queryResultCode = MQ_OK;  
   
-    // Specify the PROPID_Q_PATHNAME_DNS property.  
-    aQueuePropId[ cPropId ] = PROPID_Q_PATHNAME_DNS;   // Property ID  
+    // Specify the PROPID_Q_PATHNAME property.  
+    aQueuePropId[ cPropId ] = PROPID_Q_PATHNAME;   // Property ID  
     aQueuePropVar[ cPropId ].vt = VT_NULL;             // Type indicator  
     cPropId++;  
   

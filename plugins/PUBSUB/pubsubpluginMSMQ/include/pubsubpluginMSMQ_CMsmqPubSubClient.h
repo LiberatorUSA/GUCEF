@@ -123,6 +123,12 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
     
     CMsmqPubSubClient( void ); /**< not implemented */
 
+    static CORE::UInt64 GetMsmqComputerMetric( const CORE::CString& metricDescription ,
+                                               CORE::UInt32 propId                    ,
+                                               CORE::UInt32 propType                  );
+
+    static CORE::UInt64 GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues( void );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CMsmqPubSubClient > TEventCallback;

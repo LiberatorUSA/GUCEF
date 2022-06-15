@@ -181,6 +181,9 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
         TopicMetrics( void );
 
         CORE::Int64 msmqMsgsInQueue;
+        CORE::Int64 msmqMsgsInJournal;
+        CORE::Int64 msmqMsgBytesInQueue;
+        CORE::Int64 msmqMsgBytesInJournal;
 
         CORE::UInt64 msmqMessagesPublished;
         CORE::UInt64 msmqErrorsOnPublish;
@@ -189,6 +192,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
         CORE::UInt64 msmqMessagesReceived;
         CORE::UInt64 msmqErrorsOnReceive;
 
+        CORE::UInt64 msmqGlobalMsgBytes;
         UInt32Vector msmqMsgSentToArriveLatencies;
     };
 
@@ -282,8 +286,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     static bool StringToMsmqGUID( const CORE::CAsciiString& guidString ,
                                   GUID& guid                           );
-    
-    const std::wstring& GetMsmqQueueFormatName( void ) const;
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
@@ -310,11 +312,88 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
 
-    bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant, CORE::CVariant& targetVariant, bool linkIfPossible, CORE::UInt32 lengthIfApplicable = 0 );
+    static bool MsmqPropertyToVariantStatic( MQPROPVARIANT& msmqSourceVariant , 
+                                             CORE::CVariant& targetVariant    , 
+                                             bool linkIfPossible              , 
+                                             CORE::UInt32 lengthIfApplicable  ,
+                                             bool scanForNullTerminatorOnStrs ,
+                                             bool convertMsmqClsIdToString    ,
+                                             CORE::CAsciiString& guidStrCache );
+
+    bool MsmqPropertyToVariant( MQPROPVARIANT& msmqSourceVariant     , 
+                                CORE::CVariant& targetVariant        , 
+                                bool linkIfPossible                  , 
+                                CORE::UInt32 lengthIfApplicable = 0  );
+    
     static bool VariantToMsmqProperty( MSGPROPID propId, const CORE::CVariant& sourceVariant, MQPROPVARIANT& msmqTargetVariant );
     static CORE::Int32 SizeOfVarType( VARTYPE vt );
     static CORE::Int32 GetIndexOfProperty( PROPID propertyId, TMsmqMsg& msgData );
+   
+    class MsmqQueueProperties
+    {
+        public:
+        
+        CORE::CString queueLabel;
+        UInt64 quota;
+        CORE::CString pathName;
+        CORE::CString pathNameDNS;
+
+        CORE::CString ToString( void ) const;
+
+        MsmqQueueProperties( void );
+    };
+
+    class MsmqQueue
+    {
+        public:
+        
+        CORE::CString queueName;
+        std::wstring msmqQueueFormatName;
+        bool queueNameIsMsmqFormatName;
+        CORE::CString metricFriendlyQueueName;
+        MsmqQueueProperties queueProperties;
+
+        MsmqQueue( void );
+    };
+    typedef std::vector< MsmqQueue >    MsmqQueueVector;
     
+    static const std::wstring& GetMsmqQueueFormatName( MsmqQueue& q );
+    
+    static CORE::Int64 GetQueueMetric( MsmqQueue& q                           , 
+                                       const CORE::CString& metricDescription ,
+                                       CORE::UInt32 propId                    ,
+                                       CORE::UInt32 propType                  );
+    
+    static CORE::Int64 GetCurrentNrOfMessagesInQueue( MsmqQueue& q );
+
+    static CORE::Int64 GetCurrentByteCountOfMesssagesInQueue( MsmqQueue& q );
+
+    static CORE::Int64 GetCurrentNrOfMessagesInQueueJournal( MsmqQueue& q );
+
+    static CORE::Int64 GetCurrentByteCountOfMesssagesInQueueJournal( MsmqQueue& q );
+
+    static bool GetMsmqQueueProperty( const std::wstring& queueFormatName ,
+                                      CORE::UInt32 propId                 ,
+                                      CORE::UInt32 propType               ,
+                                      CORE::CVariant& qProperty           );
+        
+    static bool GetMsmqQueueLabel( const std::wstring& queueFormatName  ,
+                                   CORE::CString& queueLabel            );
+
+    static bool GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
+                                      CORE::CString& queuePathName         );
+
+    static bool GetMsmqQueuePathNameDNS( const std::wstring& queueFormatName  ,
+                                         CORE::CString& queuePathNameDNS      );
+
+    static bool GetMsmqQueueQuota( const std::wstring& queueFormatName ,
+                                   UInt64& queueQuota                  );
+
+    static bool GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
+                                        MsmqQueueProperties& queueProperties );
+    
+    static bool InitQueueInfo( MsmqQueue& q, const CMsmqPubSubClientTopicConfig& config );
+
     private:
 
     CMsmqPubSubClient* m_client;
@@ -324,6 +403,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     TMsmqMsg m_msgSendMsg;
     MSGPROPIDToUInt32Map m_msgSendPropMap;
     CMsmqPubSubClientTopicConfig m_config;
+    MsmqQueue m_queue;
     mutable std::wstring m_msmqQueueFormatName;
     CORE::CTimer* m_syncReadTimer;    
     CORE::CTimer* m_reconnectTimer;
@@ -343,10 +423,13 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     CORE::UInt64 m_msmqErrorsOnReceive;
     CORE::UInt64 m_msmqErrorsOnAck;
     TopicMetrics m_metrics;
-    CORE::CString m_metricFriendlyTopicName;
     UInt32Vector m_msmqMsgSentToArriveLatencies;
     CORE::UInt64 m_msmqLastLookupId;
 };
+
+/*--------------------------------------------------------------------------*/
+
+std::wstring RetrieveWin32APIErrorMessage( DWORD dwErr );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

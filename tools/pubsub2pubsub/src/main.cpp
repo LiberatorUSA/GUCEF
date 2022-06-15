@@ -277,14 +277,14 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
-    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
-    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "bootstrapConfigPath" );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "configPath" );
     keyValueList.Clear();
 
     // Load settings from a config file
     if ( !LoadConfig( bootstrapConfigPathParam, configPathParam ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because LoadConfig failed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because LoadConfig failed" );
         ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         return -1;
     }
@@ -293,12 +293,12 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     const CORE::CDataNode* appConfig = pubSub2PubSub.GetAppConfig();
     if ( GUCEF_NULL == appConfig )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisCluster: Exiting because no app config is available" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2pubsub: Exiting because no app config is available" );
         ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         return -1;
     }
 
-    CORE::Int32 minLogLevel = appConfig->GetAttributeValueOrChildValueByName( "MinimalLogLevel" ).AsInt32( CORE::LOGLEVEL_BELOW_NORMAL, true );
+    CORE::Int32 minLogLevel = appConfig->GetAttributeValueOrChildValueByName( "minimalLogLevel" ).AsInt32( CORE::LOGLEVEL_BELOW_NORMAL, true );
     CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
 
     CORE::CString outputDir = appConfig->GetAttributeValueOrChildValueByName( "outputDir" ).AsString( "$CURWORKDIR$", true );

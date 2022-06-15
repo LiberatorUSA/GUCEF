@@ -48,6 +48,7 @@ namespace MSMQ {
 CMsmqPubSubClientConfig::CMsmqPubSubClientConfig( void )
     : PUBSUB::CPubSubClientConfig()
     , simulateReceiveAckFeatureViaLookupId( true )
+    , gatherMsmqMetricForTotalBytesAllQueues( false )
 {GUCEF_TRACE;
 
 }
@@ -57,6 +58,7 @@ CMsmqPubSubClientConfig::CMsmqPubSubClientConfig( void )
 CMsmqPubSubClientConfig::CMsmqPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig )
     : PUBSUB::CPubSubClientConfig( genericConfig )
     , simulateReceiveAckFeatureViaLookupId( true )
+    , gatherMsmqMetricForTotalBytesAllQueues( false )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -76,6 +78,7 @@ CMsmqPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
     simulateReceiveAckFeatureViaLookupId = config.GetAttributeValueOrChildValueByName( "simulateReceiveAckFeatureViaLookupId" ).AsBool( simulateReceiveAckFeatureViaLookupId, true );    
+    gatherMsmqMetricForTotalBytesAllQueues = config.GetAttributeValueOrChildValueByName( "gatherMsmqMetricForTotalBytesAllQueues" ).AsBool( gatherMsmqMetricForTotalBytesAllQueues, true );    
 
     return true;
 }
@@ -104,6 +107,7 @@ CMsmqPubSubClientConfig::operator=( const CMsmqPubSubClientConfig& src )
     {
         PUBSUB::CPubSubClientConfig::operator=( src );
         simulateReceiveAckFeatureViaLookupId = src.simulateReceiveAckFeatureViaLookupId;
+        gatherMsmqMetricForTotalBytesAllQueues = src.gatherMsmqMetricForTotalBytesAllQueues;
     }
     return *this;
 }

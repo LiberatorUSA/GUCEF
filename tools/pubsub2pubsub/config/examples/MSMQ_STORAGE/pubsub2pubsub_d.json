@@ -50,7 +50,8 @@
 								"pubsubClientType": "MSMQ",
 								"reconnectDelayInMs": "",
 								"CustomConfig": {
-									"simulateReceiveAckFeatureViaLookupId": false
+									"simulateReceiveAckFeatureViaLookupId": true,
+									"gatherMsmqMetricForTotalBytesAllQueues": true
 								},
 								"Topics": {
 									"0": {
@@ -103,7 +104,7 @@
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
 								"CustomConfig": {
-									"vfsRootPath": "",
+									"vfsRootPath": "InstallPath/bookmarks",
 									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
 								}
 							}								
@@ -184,7 +185,7 @@
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
 								"CustomConfig": {
-									"vfsRootPath": "",
+									"vfsRootPath": "InstallPath/bookmarks",
 									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
 								}
 							}								

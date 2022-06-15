@@ -81,7 +81,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 
     PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CMsmqPubSubClient::TypeName, &g_msmqClusterPubSubClientFactory );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load failed for PUBSUB plugin MSMQ" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin MSMQ" );
     return 1;
 }
 

@@ -62,6 +62,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientConfig : public PUBS
     public:
 
     bool simulateReceiveAckFeatureViaLookupId;
+    bool gatherMsmqMetricForTotalBytesAllQueues;
     
     CMsmqPubSubClientConfig( void );
     

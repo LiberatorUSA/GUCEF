@@ -418,6 +418,72 @@ CMsmqPubSubClient::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt64
+CMsmqPubSubClient::GetMsmqComputerMetric( const CORE::CString& metricDescription ,
+                                          UInt32 propId                          ,
+                                          UInt32 propType                        )
+{GUCEF_TRACE;
+
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId = 0;  
+
+    // Define an MQMGMTROPS structure.  
+    ::MQMGMTPROPS mgmtprops;  
+    ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+
+    aMgmtPropId[ cPropId ] = (PROPID) propId;              // Property identifier  
+    aMgmtPropVar[ cPropId ].vt = (VARTYPE) propType;       // Type indicator  
+    ++cPropId;
+
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;   // number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;// management property IDs  
+    mgmtprops.aPropVar = aMgmtPropVar;// management property values  
+    mgmtprops.aStatus  = NULL;// no storage for error codes   
+
+    // Now that we formulated the request
+    // actually ask for the info
+    HRESULT computerInfoFetchResult = ::MQMgmtGetInfo( NULL, L"MACHINE", &mgmtprops );
+    if ( MQ_OK == computerInfoFetchResult )
+    {
+        switch ( propType )
+        {
+            case VT_UI4: return (CORE::Int64) aMgmtPropVar[ 0 ].ulVal;
+            case VT_UI8: return (CORE::Int64) aMgmtPropVar[ 0 ].uhVal.QuadPart;
+
+            default:
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetMsmqComputerMetric: PropType is unsupported. Change the code! Type=" + CORE::ToString( propType ) );
+                return 0;
+            }
+        }
+        
+    }
+
+    CORE::UInt32 errorCode =  HRESULT_CODE( computerInfoFetchResult );
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( computerInfoFetchResult ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetMsmqComputerMetric: Failed to obtain " + metricDescription + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt64
+CMsmqPubSubClient::GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues( void ) 
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+    return (CORE::UInt64) GetMsmqComputerMetric( "global byte count of messages", PROPID_MGMT_MSMQ_BYTES_IN_ALL_QUEUES, VT_UI8 );
+    #else
+    return 0;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                         const CORE::CEvent& eventId  ,
@@ -447,6 +513,12 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
         if ( topicMetrics.msmqMsgsInQueue >= 0 )
             GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", topicMetrics.msmqMsgsInQueue, 1.0f );
+        if ( topicMetrics.msmqMsgsInJournal >= 0 )
+            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournal", topicMetrics.msmqMsgsInJournal, 1.0f );
+        if ( topicMetrics.msmqMsgBytesInQueue >= 0 )
+            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgBytesInQueue", topicMetrics.msmqMsgBytesInQueue, 1.0f );
+        if ( topicMetrics.msmqMsgBytesInJournal >= 0 )
+            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgBytesInJournal", topicMetrics.msmqMsgBytesInJournal, 1.0f );
 
         if ( m_config.desiredFeatures.supportsPublishing )
         {
@@ -465,7 +537,7 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
             #endif
         }
-        
+
         if ( topicConfig.gatherMsmqTransitTimeOnReceiveMetric )
         {
             CMsmqPubSubClientTopic::UInt32Vector::const_iterator n = topicMetrics.msmqMsgSentToArriveLatencies.begin();
@@ -477,6 +549,12 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
 
         ++i;
+    }
+
+    if ( m_config.gatherMsmqMetricForTotalBytesAllQueues )
+    {
+        CORE::UInt64 msmqGlobalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
+        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + ".msmqGlobalMsgBytes", msmqGlobalMsgBytes, 1.0f );
     }
 }
 
