@@ -847,38 +847,38 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), m_gatherCpuStats );
-    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), m_enableRestApi );
-    m_enableEventMsgPublishing = CORE::StringToBool( appConfig.GetValueAlways( "EnableEventMsgPublishing" ), m_enableEventMsgPublishing );
-    m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs" ), 1000 ) );
-    m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "ExeMatchPidMatchThreshold" ), m_exeMatchPidMatchThreshold );
+    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCPUStats" ), m_gatherCpuStats );
+    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "enableRestApi" ), m_enableRestApi );
+    m_enableEventMsgPublishing = CORE::StringToBool( appConfig.GetValueAlways( "enableEventMsgPublishing" ), m_enableEventMsgPublishing );
+    m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "metricsGatheringIntervalInMs" ), 1000 ) );
+    m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "exeMatchPidMatchThreshold" ), m_exeMatchPidMatchThreshold );
 
-    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats" ), m_gatherMemStats );
-    m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes" ), m_gatherProcPageFaultCountInBytes );
-    m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes" ), m_gatherProcPageFileUsageInBytes );
-    m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakPageFileUsageInBytes" ), m_gatherProcPeakPageFileUsageInBytes );
-    m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakWorkingSetSizeInBytes" ), m_gatherProcPeakWorkingSetSizeInBytes );
-    m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcWorkingSetSizeInBytes" ), m_gatherProcWorkingSetSizeInBytes );
+    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcMemStats" ), m_gatherMemStats );
+    m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcPageFaultCountInBytes" ), m_gatherProcPageFaultCountInBytes );
+    m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcPageFileUsageInBytes" ), m_gatherProcPageFileUsageInBytes );
+    m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcPeakPageFileUsageInBytes" ), m_gatherProcPeakPageFileUsageInBytes );
+    m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcPeakWorkingSetSizeInBytes" ), m_gatherProcPeakWorkingSetSizeInBytes );
+    m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcWorkingSetSizeInBytes" ), m_gatherProcWorkingSetSizeInBytes );
 
-    m_gatherGlobMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemStats" ), m_gatherGlobMemStats );
-    m_gatherGlobalAvailablePageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailablePageFileSizeInBytes" ), m_gatherGlobalAvailablePageFileSizeInBytes );
-    m_gatherGlobalPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalPageFileUsageInBytes" ), m_gatherGlobalPageFileUsageInBytes );
-    m_gatherGlobalAvailableVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailableVirtualMemoryInBytes" ), m_gatherGlobalAvailableVirtualMemoryInBytes );
-    m_gatherGlobalAvailExtendedVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailExtendedVirtualMemoryInBytes" ), m_gatherGlobalAvailExtendedVirtualMemoryInBytes );
-    m_gatherGlobalMemoryLoadPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemoryLoadPercentage" ), m_gatherGlobalMemoryLoadPercentage );
-    m_gatherGlobalTotalPageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPageFileSizeInBytes" ), m_gatherGlobalTotalPageFileSizeInBytes );
-    m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes" ), m_gatherGlobalTotalPhysicalMemoryInBytes );
-    m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes" ), m_gatherGlobalTotalVirtualMemoryInBytes );
+    m_gatherGlobMemStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalMemStats" ), m_gatherGlobMemStats );
+    m_gatherGlobalAvailablePageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalAvailablePageFileSizeInBytes" ), m_gatherGlobalAvailablePageFileSizeInBytes );
+    m_gatherGlobalPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalPageFileUsageInBytes" ), m_gatherGlobalPageFileUsageInBytes );
+    m_gatherGlobalAvailableVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalAvailableVirtualMemoryInBytes" ), m_gatherGlobalAvailableVirtualMemoryInBytes );
+    m_gatherGlobalAvailExtendedVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalAvailExtendedVirtualMemoryInBytes" ), m_gatherGlobalAvailExtendedVirtualMemoryInBytes );
+    m_gatherGlobalMemoryLoadPercentage = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalMemoryLoadPercentage" ), m_gatherGlobalMemoryLoadPercentage );
+    m_gatherGlobalTotalPageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalTotalPageFileSizeInBytes" ), m_gatherGlobalTotalPageFileSizeInBytes );
+    m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalTotalPhysicalMemoryInBytes" ), m_gatherGlobalTotalPhysicalMemoryInBytes );
+    m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalTotalVirtualMemoryInBytes" ), m_gatherGlobalTotalVirtualMemoryInBytes );
 
-    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime" ), m_gatherProcCpuUptime );
-    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
+    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCPUUptime" ), m_gatherProcCpuUptime );
+    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
 
-    m_gatherGlobalCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuStats" ), m_gatherGlobalCpuStats );
-    m_gatherGlobalCpuCurrentFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuCurrentFrequencyInMhz" ), m_gatherGlobalCpuCurrentFrequencyInMhz );
-    m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
-    m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
+    m_gatherGlobalCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuStats" ), m_gatherGlobalCpuStats );
+    m_gatherGlobalCpuCurrentFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuCurrentFrequencyInMhz" ), m_gatherGlobalCpuCurrentFrequencyInMhz );
+    m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
+    m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
 
-    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).AsString().ParseElements( ';', false );
+    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "exeProcsToWatch" ).AsString().ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )
     {
@@ -928,7 +928,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
             ++c;
         }
 
-        m_thresholdNotificationPrimaryPayloadCodecType =  appConfig.GetValueAlways( "ThresholdNotificationPrimaryPayloadCodecType", "json" );
+        m_thresholdNotificationPrimaryPayloadCodecType =  appConfig.GetValueAlways( "thresholdNotificationPrimaryPayloadCodecType", "json" );
         if ( !m_thresholdNotificationPrimaryPayloadCodecType.IsNULLOrEmpty() )
         {
             if ( !CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().IsRegistered( m_thresholdNotificationPrimaryPayloadCodecType ) )
@@ -944,15 +944,19 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
             // continue best effort, at least we'd have metrics
         }
     }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Metric threshold event message publishing is not enabled per config and thus will not be available" );
+    }
 
     if ( m_enableRestApi )
     {
-        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
+        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "restApiPort" ) ), 10000 ) );
 
         m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
         m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
-        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "restBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
         m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     }

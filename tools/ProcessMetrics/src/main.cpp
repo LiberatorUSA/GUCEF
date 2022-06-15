@@ -234,8 +234,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
-    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
-    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "bootstrapConfigPath" );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "configPath" );
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)
@@ -244,7 +244,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+    CORE::CString valueStr = keyValueList.GetValueAlways( "minimalLogLevel" );
     if ( !valueStr.IsNULLOrEmpty() )
     {
         minLogLevel = CORE::StringToInt32( valueStr );
