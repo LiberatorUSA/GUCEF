@@ -392,6 +392,18 @@ CKafkaPubSubClientTopic::LoadConfig( const CKafkaPubSubClientTopicConfig& config
 
 /*-------------------------------------------------------------------------*/
 
+int
+CKafkaPubSubClientTopic::RdKafkaStatsCallback( rd_kafka_t *rk  ,
+                                               char *json      ,
+                                               size_t json_len ,
+						                       void *opaque    )
+{GUCEF_TRACE;
+
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CKafkaPubSubClientTopic::RdKafkaLogCallback( const rd_kafka_t *rk , 
                                              int level            ,
@@ -550,6 +562,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
 
         rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );
+        rd_kafka_conf_set_stats_cb( kafkaConf->c_ptr_global(), &RdKafkaStatsCallback );
 
         CKafkaPubSubClientConfig::StringMap::const_iterator m = clientConfig.kafkaConsumerGlobalConfigSettings.begin();
         while ( m != clientConfig.kafkaConsumerGlobalConfigSettings.end() )
@@ -642,7 +655,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         }
 
         RdKafka::KafkaConsumer* consumer = RdKafka::KafkaConsumer::create( m_kafkaConsumerConf, errStr );
-	    if ( consumer == nullptr )
+	    if ( consumer == GUCEF_NULL )
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to create Kafka consumer, error message: " + errStr );
             ++m_kafkaErrorReplies;

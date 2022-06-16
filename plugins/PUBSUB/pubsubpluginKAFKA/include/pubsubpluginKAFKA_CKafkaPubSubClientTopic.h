@@ -196,6 +196,11 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
                                     const char* fac      , 
                                     const char* buf      );
 
+    static int RdKafkaStatsCallback( rd_kafka_t *rk  ,
+                                     char *json      ,
+ 				                     size_t json_len ,
+						             void *opaque    );
+
     void RegisterEventHandlers( void );
 
     void Clear( void );
