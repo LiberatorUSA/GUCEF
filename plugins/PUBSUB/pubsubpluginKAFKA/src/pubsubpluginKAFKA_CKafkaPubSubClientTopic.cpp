@@ -1913,15 +1913,17 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 {
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName + "\". Wrong DNS?" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName +
+                        "\". Wrong DNS? event msg=\"" + event.str() + "\". error as string =\"" + RdKafka::err2str( event.err() ) + "\"" );
                     if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
                     break;
                 }
                 case RdKafka::ERR__TRANSPORT:
-                {
+                {             
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + "\"" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + 
+                        "\". event msg=\"" + event.str() + "\". error as string =\"" + RdKafka::err2str( event.err() ) + "\"" );
                     if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
                     break;
                 }

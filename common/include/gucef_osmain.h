@@ -308,7 +308,8 @@
         Win32ReportStatus( SERVICE_RUNNING );                                                          \
         g_win32StopEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );                                   \
         int appResult = Win32ServiceInitializer( argc, argv );                                         \
-        ::CloseHandle( g_win32StopEvent );                                                             \
+        if ( 0 != g_win32StopEvent )                                                                   \
+            ::CloseHandle( g_win32StopEvent );                                                         \
                                                                                                        \
         if ( appResult != 0 )                                                                          \
             Win32ReportErrorStatus( (DWORD)appResult );                                                \
