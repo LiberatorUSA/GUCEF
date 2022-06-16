@@ -392,6 +392,57 @@ CKafkaPubSubClientTopic::LoadConfig( const CKafkaPubSubClientTopicConfig& config
 
 /*-------------------------------------------------------------------------*/
 
+void
+CKafkaPubSubClientTopic::RdKafkaLogCallback( const rd_kafka_t *rk , 
+                                             int level            ,
+                                             const char *fac      , 
+                                             const char *buf      )
+{GUCEF_TRACE;
+
+    // When using this approach to getting logs from RdKafka note that this callback is called
+    // directly from various internal RdKafka threads
+
+	switch ( level )
+    {
+        case RdKafka::Event::EVENT_SEVERITY_ALERT:
+        case RdKafka::Event::EVENT_SEVERITY_EMERG:
+        case RdKafka::Event::EVENT_SEVERITY_CRITICAL:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+        case RdKafka::Event::EVENT_SEVERITY_ERROR:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+        case RdKafka::Event::EVENT_SEVERITY_WARNING:
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+        case RdKafka::Event::EVENT_SEVERITY_INFO:
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+        case RdKafka::Event::EVENT_SEVERITY_DEBUG:
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+
+        case RdKafka::Event::EVENT_SEVERITY_NOTICE:
+        default:
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 {GUCEF_TRACE;
@@ -430,6 +481,8 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
 	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+
+        rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );  
 
         CKafkaPubSubClientConfig::StringMap::const_iterator m = clientConfig.kafkaProducerGlobalConfigSettings.begin();
         while ( m != clientConfig.kafkaProducerGlobalConfigSettings.end() )
@@ -495,6 +548,8 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
 	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+
+        rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );
 
         CKafkaPubSubClientConfig::StringMap::const_iterator m = clientConfig.kafkaConsumerGlobalConfigSettings.begin();
         while ( m != clientConfig.kafkaConsumerGlobalConfigSettings.end() )

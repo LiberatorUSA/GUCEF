@@ -554,7 +554,7 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     if ( m_config.gatherMsmqMetricForTotalBytesAllQueues )
     {
         CORE::UInt64 msmqGlobalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
-        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + ".msmqGlobalMsgBytes", msmqGlobalMsgBytes, 1.0f );
+        GUCEF_METRIC_GAUGE( m_config.metricsPrefix + "msmqGlobalMsgBytes", msmqGlobalMsgBytes, 1.0f );
     }
 }
 

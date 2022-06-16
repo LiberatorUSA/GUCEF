@@ -50,6 +50,7 @@
 #define GUCEF_DYNNEWOFF_H
 #endif /* GUCEF_DYNNEWOFF_H ? */
 
+#include "rdkafka.h"
 #include "rdkafkacpp.h"
 
 /*-------------------------------------------------------------------------//
@@ -189,6 +190,11 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     static bool VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets );
     static bool VariantToPartitionOffset( const CORE::CVariant& partitionOffsetBlob, TPartitionOffset& offset );
+
+    static void RdKafkaLogCallback( const rd_kafka_t* rk , 
+                                    int level            ,
+                                    const char* fac      , 
+                                    const char* buf      );
 
     void RegisterEventHandlers( void );
 

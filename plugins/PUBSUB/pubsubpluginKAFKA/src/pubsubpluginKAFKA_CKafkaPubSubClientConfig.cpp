@@ -83,6 +83,19 @@ CKafkaPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
     const CORE::CDataNode* producerCfgNode = config.Search( "KafkaProducerGlobalConfig", '/', false, false ); 
     if ( GUCEF_NULL != producerCfgNode )
     {
+        UInt32 attCount = producerCfgNode->GetAttCount();
+        for ( UInt32 n=0; n<attCount; ++n )
+        {
+            const CORE::CDataNode::TKeyValuePair* att = producerCfgNode->GetAttribute( n );
+            if ( GUCEF_NULL != att )
+            {
+                if ( !att->first.IsNULLOrEmpty() && !att->second.IsNULLOrEmpty() )
+                {
+                    kafkaProducerGlobalConfigSettings[ att->first ] = att->second; 
+                }                
+            }
+        }
+        
         CORE::CDataNode::const_iterator i = producerCfgNode->ConstBegin();
         while ( i != producerCfgNode->ConstEnd() )
         {
@@ -102,6 +115,19 @@ CKafkaPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
     const CORE::CDataNode* consumerCfgNode = config.Search( "KafkaConsumerGlobalConfig", '/', false, false ); 
     if ( GUCEF_NULL != consumerCfgNode )
     {
+        UInt32 attCount = consumerCfgNode->GetAttCount();
+        for ( UInt32 n=0; n<attCount; ++n )
+        {
+            const CORE::CDataNode::TKeyValuePair* att = consumerCfgNode->GetAttribute( n );
+            if ( GUCEF_NULL != att )
+            {
+                if ( !att->first.IsNULLOrEmpty() && !att->second.IsNULLOrEmpty() )
+                {
+                    kafkaConsumerGlobalConfigSettings[ att->first ] = att->second; 
+                }                
+            }
+        }
+
         CORE::CDataNode::const_iterator i = consumerCfgNode->ConstBegin();
         while ( i != consumerCfgNode->ConstEnd() )
         {
@@ -120,6 +146,19 @@ CKafkaPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
     consumerCfgNode = config.Search( "KafkaConsumerDefaultTopicConfig", '/', false, false ); 
     if ( GUCEF_NULL != consumerCfgNode )
     {
+        UInt32 attCount = consumerCfgNode->GetAttCount();
+        for ( UInt32 n=0; n<attCount; ++n )
+        {
+            const CORE::CDataNode::TKeyValuePair* att = consumerCfgNode->GetAttribute( n );
+            if ( GUCEF_NULL != att )
+            {
+                if ( !att->first.IsNULLOrEmpty() && !att->second.IsNULLOrEmpty() )
+                {
+                    kafkaConsumerDefaultTopicConfigSettings[ att->first ] = att->second; 
+                }                
+            }
+        }
+
         CORE::CDataNode::const_iterator i = consumerCfgNode->ConstBegin();
         while ( i != consumerCfgNode->ConstEnd() )
         {

@@ -166,11 +166,13 @@
 													"message.timeout.ms": "300000",
 													"partitioner": "consistent",
 													"request.required.acks": "-1",
-													"request.timeout.ms": "30000"
+													"request.timeout.ms": "30000",
+													"log_level": "7"
 												},
 												"KafkaConsumerGlobalConfig": {
 													"auto.offset.reset": "largest",
-													"consume.callback.max.messages": "0"
+													"consume.callback.max.messages": "0",
+													"log_level": "7"
 												}
 											}
 										}
