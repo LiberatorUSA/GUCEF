@@ -179,6 +179,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_config()
     , m_syncVfsOpsTimer( GUCEF_NULL )
     , m_reconnectTimer( GUCEF_NULL )
+    , m_bufferContentTimeWindowCheckTimer( GUCEF_NULL )
     , m_lock()
     , m_currentPublishActionId( 1 )
     , m_currentReceiveActionId( 1 )
@@ -220,6 +221,11 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
         m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
     }
 
+    if ( m_client->GetConfig().desiredFeatures.supportsPublishing )
+    {
+        m_bufferContentTimeWindowCheckTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+    }
+    
     RegisterEventHandlers();
 }
 
@@ -235,6 +241,9 @@ CStoragePubSubClientTopic::~CStoragePubSubClientTopic()
 
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
+
+    delete m_bufferContentTimeWindowCheckTimer;
+    m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -268,6 +277,13 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                      callback                       );
     }
 
+    if ( GUCEF_NULL != m_bufferContentTimeWindowCheckTimer )
+    {
+        TEventCallback callback( this, &CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle );
+        SubscribeTo( m_bufferContentTimeWindowCheckTimer ,
+                     CORE::CTimer::TimerUpdateEvent      ,
+                     callback                            );
+    }
 
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnPulseCycle );
     SubscribeTo( m_client->GetConfig().pulseGenerator ,
@@ -408,121 +424,130 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
     {
         MT::CScopeMutex lock( m_lock );
 
+        TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
         typename std::vector< T >::const_iterator i = msgs.begin();
-        const CORE::CDateTime& firstMsgDt = (*i)->GetMsgDateTime();
+        bool work = true;
+        while ( work )
+        {        
+            bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
+            if ( firstBlock )
+            {
+                m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
+            }
 
-        bool firstBlock = m_lastWriteBlockCompletion == CORE::CDateTime::Empty;
-        if ( firstBlock )
-        {
-            m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
-        }
-
-        TStorageBufferMetaData* bufferMetaData = GUCEF_NULL;
-        if ( GUCEF_NULL == m_currentWriteBuffer )
-        {
-            m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( firstMsgDt, true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+            TStorageBufferMetaData* bufferMetaData = GUCEF_NULL;
             if ( GUCEF_NULL == m_currentWriteBuffer )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                    "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
-                return false;
-            }
-            m_currentWriteBuffer->SetDataSize( 0 );
+                m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( CORE::CDateTime::NowUTCDateTime(), true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+                if ( GUCEF_NULL == m_currentWriteBuffer )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                        "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
+                    return false;
+                }
+                m_currentWriteBuffer->SetDataSize( 0 );
 
-            CORE::UInt32 newBytesWritten = 0;
-            if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_config.pubsubBinarySerializerOptions, 0, *m_currentWriteBuffer, newBytesWritten ) )
-            {
-                // We carry on best effort but this is really bad
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                    "):PublishViaMsgPtrs: Failed to write container header at start of new pub-sub msg container" );
-            }
+                CORE::UInt32 newBytesWritten = 0;
+                if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeHeader( m_config.pubsubBinarySerializerOptions, 0, *m_currentWriteBuffer, newBytesWritten ) )
+                {
+                    // We carry on best effort but this is really bad
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                        "):PublishViaMsgPtrs: Failed to write container header at start of new pub-sub msg container" );
+                }
 
-            // We are (re)using a new buffer, as such make sure we reset the meta-data that may be pre-existing
-            bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-            bufferMetaData->msgOffsetIndex.clear();
-            bufferMetaData->publishActionIds.clear();
-        }
-        else
-        {
-            // fetch the meta-data for this buffer
-            bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-        }
+                // We are (re)using a new buffer, as such make sure we reset the meta-data that may be pre-existing
+                bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
+                bufferMetaData->msgOffsetIndex.clear();
+                bufferMetaData->publishActionIds.clear();
 
-        TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
-        CORE::UInt32 bufferOffset = m_currentWriteBuffer->GetDataSize();
-        while ( i != msgs.end() )
-        {
-            // see if we have a pre-existing action id (retry)
-            CORE::UInt64 publishActionId = 0;
-            if ( publishActionIdIttr != publishActionIds.end() )
-                publishActionId = (*publishActionIdIttr);
-
-            // Assign a new action id if we dont yet have one
-            if ( 0 == publishActionId )
-            {
-                publishActionId = m_currentPublishActionId;
-                ++m_currentPublishActionId;
-            }
-
-            // Persist the action id generated on the output param
-            if ( publishActionIdIttr == publishActionIds.end() )
-            {
-                publishActionIds.push_back( publishActionId );
-                publishActionIdIttr = publishActionIds.end();
+                // Start the timer on content for this buffer
+                m_bufferContentTimeWindowCheckTimer->SetEnabled( true );
             }
             else
-                (*publishActionIdIttr) = publishActionId;
-
-            // Serialize the message
-            CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
-            CORE::UInt32 msgBytesWritten = 0;
-            if ( PUBSUB::CPubSubMsgBinarySerializer::Serialize( m_config.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_currentWriteBuffer, msgBytesWritten ) && 0 != msgBytesWritten )
             {
-                #ifdef GUCEF_DEBUG_MODE
-                // Extra sanity check
-                if ( !bufferMetaData->msgOffsetIndex.empty() )
+                // fetch the meta-data for this buffer
+                bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
+            }
+            
+            CORE::UInt32 bufferOffset = m_currentWriteBuffer->GetDataSize();
+        
+            while ( i != msgs.end() )
+            {
+                // see if we have a pre-existing action id (retry)
+                CORE::UInt64 publishActionId = 0;
+                if ( publishActionIdIttr != publishActionIds.end() )
+                    publishActionId = (*publishActionIdIttr);
+
+                // Assign a new action id if we dont yet have one
+                if ( 0 == publishActionId )
                 {
-                    if ( bufferOffset < bufferMetaData->msgOffsetIndex[ bufferMetaData->msgOffsetIndex.size()-1 ] )
+                    publishActionId = m_currentPublishActionId;
+                    ++m_currentPublishActionId;
+                }
+
+                // Persist the action id generated on the output param
+                if ( publishActionIdIttr == publishActionIds.end() )
+                {
+                    publishActionIds.push_back( publishActionId );
+                    publishActionIdIttr = publishActionIds.end();
+                }
+                else
+                    (*publishActionIdIttr) = publishActionId;
+
+                // Serialize the message
+                CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
+                CORE::UInt32 msgBytesWritten = 0;
+                if ( PUBSUB::CPubSubMsgBinarySerializer::Serialize( m_config.pubsubBinarySerializerOptions, *(*i), bufferOffset, *m_currentWriteBuffer, msgBytesWritten ) && 0 != msgBytesWritten )
+                {
+                    #ifdef GUCEF_DEBUG_MODE
+                    // Extra sanity check
+                    if ( !bufferMetaData->msgOffsetIndex.empty() )
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                            "):PublishViaMsgPtrs: Non-Ascending msg offset detected. publishActionId=" + CORE::ToString( publishActionId ) );
+                        if ( bufferOffset < bufferMetaData->msgOffsetIndex[ bufferMetaData->msgOffsetIndex.size()-1 ] )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                                "):PublishViaMsgPtrs: Non-Ascending msg offset detected. publishActionId=" + CORE::ToString( publishActionId ) );
+                        }
+                    }
+                    #endif
+
+                    // add to our meta-data tracking
+                    bufferMetaData->msgOffsetIndex.push_back( bufferOffset );
+                    bufferMetaData->publishActionIds.push_back( publishActionId );
+
+                    ticks = CORE::GUCEFGetTickCount() - ticks;
+                    bufferOffset += msgBytesWritten;
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                        "):PublishViaMsgPtrs: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) +
+                        ". This took " + CORE::ToString( ticks ) + "ms. publishActionId=" + CORE::ToString( publishActionId ) );
+
+                    // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
+                    if ( m_currentWriteBuffer->GetDataSize() >= m_config.desiredMinimalSerializedBlockSize ||                                                                  // <- container byte size limit criterea
+                        ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) ||  // <- container max timespan limit criterea 
+                        ( m_config.maxTotalMsgsInFlight > 0 && bufferMetaData->publishActionIds.size() >= (size_t) m_config.maxTotalMsgsInFlight ) )                           // <- respect max in-flight limit and dont block
+                    {
+                        // The current container is now considered to have enough content.
+                        // Let's wrap things up...
+                        FinalizeWriteBuffer( bufferMetaData, bufferOffset );
+                        ++i; break;
                     }
                 }
-                #endif
+                else
+                {
+                    // End of the road for this message
+                    m_publishFailureActionIds.push_back( publishActionId );
 
-                // add to our meta-data tracking
-                bufferMetaData->msgOffsetIndex.push_back( bufferOffset );
-                bufferMetaData->publishActionIds.push_back( publishActionId );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                        "):PublishViaMsgPtrs: Failed to serialize a message. publishActionId=" + CORE::ToString( publishActionId ) );
+                }
 
-                ticks = CORE::GUCEFGetTickCount() - ticks;
-                bufferOffset += msgBytesWritten;
-                //m_currentWriteBuffer->SetDataSize( bufferOffset );
-
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                    "):PublishViaMsgPtrs: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) +
-                    ". This took " + CORE::ToString( ticks ) + "ms. publishActionId=" + CORE::ToString( publishActionId ) );
+                ++i;
             }
-            else
-            {
-                // End of the road for this message
-                m_publishFailureActionIds.push_back( publishActionId );
-
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                    "):PublishViaMsgPtrs: Failed to serialize a message. publishActionId=" + CORE::ToString( publishActionId ) );
-            }
-
-            ++i;
+            
+            if ( i == msgs.end() )
+                work = false;
         }
-
-        // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
-        if ( m_currentWriteBuffer->GetDataSize() >= m_config.desiredMinimalSerializedBlockSize ||
-            ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) )
-        {
-            // The current container is now considered to have enough content.
-            // Let's wrap things up...
-            FinalizeWriteBuffer( bufferMetaData, bufferOffset );
-        }
-
         return true;
     }
     catch ( const std::exception& e )
@@ -549,6 +574,7 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( TStorageBufferMetaData* bufferMe
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
         "):FinalizeWriteBuffer: Completed a serialized msg data block of size " + CORE::ToString( bufferOffset ) );
 
+    // prevent further write action on this buffer and cause a new write buffer to be requested
     m_currentWriteBuffer = GUCEF_NULL;
 
     // Now that the async threaded work is done signal that we are finished writing
@@ -556,6 +582,7 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( TStorageBufferMetaData* bufferMe
     m_buffers.SignalEndOfWriting();
 
     m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
+    m_bufferContentTimeWindowCheckTimer->SetEnabled( false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1120,6 +1147,23 @@ CStoragePubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle( CORE::CNotifier* notifier    ,
+                                                                const CORE::CEvent& eventId  ,
+                                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_currentWriteBuffer )
+    {
+        if ( m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
+        {
+            FinalizeWriteBuffer();
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                                 const CORE::CEvent& eventId  ,
                                                 CORE::CICloneable* eventData )
@@ -1548,14 +1592,26 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
             }
         }
 
-        CORE::CString vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
-        CORE::CString vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+
         TStorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
 
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
         if ( m_config.encodeCodecFamily.IsNULLOrEmpty() || m_config.encodeCodecName.IsNULLOrEmpty() )
         {
+            // Check if the file does not already exists which is highly unlikely working with buffers and a millisecond batch callout
+            CORE::CString vfsFilename;
+            CORE::CString vfsStoragePath;
+            UInt32 loopIndex = 0;
+            do 
+            {
+                msgBatchDt.SetMilliseconds( msgBatchDt.GetMilliseconds() + loopIndex );
+                vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
+                vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+                ++loopIndex;
+            }
+            while ( vfs.FileExists( vfsStoragePath ) );
+            
             if ( vfs.StoreAsFile( vfsStoragePath, *m_currentReadBuffer, 0, true ) )
             {
                 m_msgsWrittenToStorage += (UInt32) bufferMetaData->msgOffsetIndex.size();
@@ -1575,6 +1631,21 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
         }
         else
         {
+            // Check if the file does not already exists which is highly unlikely working with buffers and a millisecond batch callout
+            CORE::CString vfsFilename;
+            CORE::CString vfsStoragePath;
+            CORE::CString vfsEncodedStoragePath;
+            UInt32 loopIndex = 0;
+            do 
+            {
+                msgBatchDt.SetMilliseconds( msgBatchDt.GetMilliseconds() + loopIndex );
+                vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
+                vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+                vfsEncodedStoragePath = vfsStoragePath + '.' + m_config.encodeCodecName;  
+                ++loopIndex;
+            }
+            while ( vfs.FileExists( vfsEncodedStoragePath ) );
+
             if ( vfs.EncodeAsFile( *m_currentReadBuffer, 0, vfsStoragePath, true, m_config.encodeCodecFamily, m_config.encodeCodecName ) )
             {
                 m_msgsWrittenToStorage += (UInt32) bufferMetaData->msgOffsetIndex.size();

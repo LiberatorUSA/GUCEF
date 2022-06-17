@@ -79,7 +79,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     virtual ~CAwsSqsPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 

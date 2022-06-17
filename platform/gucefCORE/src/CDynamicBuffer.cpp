@@ -347,32 +347,42 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize                   ,
                                const bool resultOnDisallowedReduction )
 {GUCEF_TRACE;
 
-    SecureLinkBeforeMutation();
+    try
+    {
+        SecureLinkBeforeMutation();
     
-    if ( _bsize == newSize ) 
-        return true;  // already at the desired size
-    if ( newSize < _bsize && !allowreduction )
-        return resultOnDisallowedReduction; // we do not allow size reductions
+        if ( _bsize == newSize ) 
+            return true;  // already at the desired size
+        if ( newSize < _bsize && !allowreduction )
+            return resultOnDisallowedReduction; // we do not allow size reductions
 
-    if ( 0 == newSize )
-    {
-        Clear( false );
-        return true;
-    }
-
-    Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
-    assert( GUCEF_NULL != newBuffer );
-    if ( GUCEF_NULL != newBuffer )
-    {
-        _buffer = newBuffer;
-        _bsize = newSize;
-        if ( m_dataSize > newSize )
+        if ( 0 == newSize )
         {
-            m_dataSize = newSize;
+            Clear( false );
+            return true;
         }
-        return true;
-    }
 
+        Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
+        assert( GUCEF_NULL != newBuffer );
+        if ( GUCEF_NULL != newBuffer )
+        {
+            _buffer = newBuffer;
+            _bsize = newSize;
+            if ( m_dataSize > newSize )
+            {
+                m_dataSize = newSize;
+            }
+            return true;
+        }
+    }
+    catch ( const std::bad_alloc& )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "DynamicBuffer:SetBufferSize: bad_alloc exception trying to set buffer size to " + ToString( newSize ) + " bytes" );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "DynamicBuffer:SetBufferSize: exception trying to set buffer size to " + ToString( newSize ) + " bytes: " + ToString( e.what() ) );
+    }
     return false;
 }
 
@@ -530,7 +540,10 @@ CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
     {
         if ( _autoenlarge )
         {
-            SetBufferSize( destinationOffset+size );
+            if ( !SetBufferSize( destinationOffset+size ) )
+            {
+                return 0;
+            }
         }
         else
         {       

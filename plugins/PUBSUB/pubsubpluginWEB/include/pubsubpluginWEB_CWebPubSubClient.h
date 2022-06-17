@@ -81,7 +81,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClient : public PUBSUB::CPub
 
     virtual ~CWebPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 

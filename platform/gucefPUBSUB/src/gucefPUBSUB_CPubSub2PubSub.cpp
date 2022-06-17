@@ -943,6 +943,37 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    // better safe then sorry...
+    if ( m_pubsubClient.IsNULL() || GUCEF_NULL == m_sideSettings )
+        return true;
+
+    CPubSubClientFeatures clientFeatures;
+    m_pubsubClient->GetSupportedFeatures( clientFeatures );
+
+    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+
+    // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
+    // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
+    // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
+    
+    bool doWeWantIt = pubSubConfig.desiredFeatures.supportsSubscribing &&                     // <- does it apply in this context ?
+                      pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck;          // <- do we want it?
+    
+    bool isItSupported = clientFeatures.supportsSubscriberMsgReceivedAck;                     // <- Is it supported by the backend regardless of desired features
+    bool canWeNotWantIt = clientFeatures.supportsAbsentMsgReceivedAck;                        // <- Is it even an option to not do it regardless of desired features
+    
+    return ( doWeWantIt && isItSupported ) || 
+           ( !doWeWantIt && canWeNotWantIt && isItSupported );
+}
+
+/*-------------------------------------------------------------------------*/
+
 template < typename TMsgCollection >
 bool
 CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
@@ -1778,7 +1809,9 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    // GUCEF_ERROR_LOG
+                    // This is not fully supported yet, make it a non-error log statement for now
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
 
                     if ( pubSubSideSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
@@ -1868,10 +1901,10 @@ CPubSubClientSide::ConnectPubSubClient( void )
             m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
     }
 
-    // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
-    // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
-    // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
-    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck && clientFeatures.supportsSubscriberMsgReceivedAck;
+    // Whether we need to track successfull message handoff (garanteed handling) depends on various factors outside the scope of any one side
+    // as such we need to ask the overarching infra to come up with a conclusion on this need
+    // We will cache the outcome as a side local setting to negate locking needs
+    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = IsTrackingInFlightPublishedMsgsForAcksNeeded();
 
     if ( m_pubsubBookmarkPersistence.IsNULL() )
     {
@@ -2176,8 +2209,21 @@ CPubSubClientOtherSide::GetAllSides( TPubSubClientSideVector*& sides )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientOtherSide::IsTrackingInFlightPublishedMsgsForAcksNeeded( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentChannel )
+        return m_parentChannel->IsTrackingInFlightPublishedMsgsForAcksNeeded();
+    
+    // we should be able to access to parent channel always, but if not, better safe then sorry
+    return true;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientOtherSide::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                   CPubSubClientSide* msgReceiverSide          )
+                                                   CPubSubClientSide* msgReceiverSide )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_parentChannel )
@@ -2253,6 +2299,31 @@ CPubSubClientChannel::PublishChannelMetrics( void ) const
         }
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::IsTrackingInFlightPublishedMsgsForAcksNeeded( void )
+{GUCEF_TRACE;
+
+    // Right now we dont have config driven data flows yet
+    // every side flows to every side.
+    // As such we need tracking as soon as 1 side needs a subscriber ack
+   
+    TPubSubClientSideVector::const_iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        const PubSubSideChannelSettings* sideSettings = (*i)->GetSideSettings();
+        if ( GUCEF_NULL != sideSettings )
+        {
+            if ( (*i)->HasSubscribersNeedingAcks() )
+                return true;
+        }
+        ++i;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -159,7 +159,7 @@ CRedisClusterPubSubClient::GetThreadPool( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const 
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data

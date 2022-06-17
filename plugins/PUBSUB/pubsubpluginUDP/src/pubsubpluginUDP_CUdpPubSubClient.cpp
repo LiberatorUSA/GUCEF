@@ -142,7 +142,7 @@ CUdpPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // UDP supports a binary payload natively

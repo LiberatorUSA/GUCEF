@@ -117,7 +117,7 @@
 							"maxMsgPublishRetryAttempts": 20,
 							"maxMsgPublishRetryTotalTimeInMs": 60000,
 							"maxPublishedMsgInFlightTimeInMs": 240000,
-							"maxTotalMsgsInFlight": 1000,
+							"maxTotalMsgsInFlight": 500000,
 							"performPubSubInDedicatedThread": true,
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
@@ -133,6 +133,7 @@
 											"needSubscribeSupport": true,
 											"preferDedicatedConnection": false,
 											"topicName": "pubsub",
+											"maxTotalMsgsInFlight": 500000,											
 											"CustomConfig": {
 												"desiredMinimalSerializedBlockSize": 5000000,
 												"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 15000,

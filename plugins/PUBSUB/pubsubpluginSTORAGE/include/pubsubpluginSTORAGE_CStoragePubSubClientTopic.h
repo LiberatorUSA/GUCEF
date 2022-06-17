@@ -294,7 +294,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                             const CORE::CEvent& eventId  ,
                             CORE::CICloneable* eventData );
 
-    
+    void
+    OnBufferContentTimeWindowCheckCycle( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData );
+
     friend class CStoragePubSubClientTopicVfsTask;
 
     void PerformASyncVfsWork( void );
@@ -329,6 +333,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CStoragePubSubClientTopicConfig m_config;
     CORE::CTimer* m_syncVfsOpsTimer;    
     CORE::CTimer* m_reconnectTimer;
+    CORE::CTimer* m_bufferContentTimeWindowCheckTimer;
     MT::CMutex m_lock;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;

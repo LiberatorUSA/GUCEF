@@ -200,17 +200,6 @@ class GUCEF_PUBSUB_EXPORT_CPP ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-//class GUCEF_PUBSUB_EXPORT_CPP CIPubSubBookmarkPersistence
-//{
-//    public:
-//
-//    virtual bool GetPersistedBookmark( CORE::Int32 channelId          , 
-//                                       const CORE::CString& topicName , 
-//                                       CPubSubBookmark& bookmark      ) = 0;
-//};
-
-/*-------------------------------------------------------------------------*/
-
 class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 {
     public:
@@ -266,7 +255,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool IsRunningInDedicatedThread( void ) const;
 
+    bool HasSubscribersNeedingAcks( void ) const;
+
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
+
+    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) = 0;
 
     virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
                                             CPubSubClientSide* msgReceiverSide ) = 0;
@@ -453,6 +446,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientOtherSide : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
                                             CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -491,8 +486,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) GUCEF_VIRTUAL_OVERRIDE;
+    
     virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                            CPubSubClientSide* msgReceiverSide          ) GUCEF_VIRTUAL_OVERRIDE;
+                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
     
     bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
                                         CIPubSubMsg::TNoLockSharedPtr& msg ,

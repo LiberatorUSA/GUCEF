@@ -128,7 +128,7 @@ CKafkaPubSubClient::GetThreadPool( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
                      
     features.supportsBinaryPayloads = true;               // Kafka supports this natively

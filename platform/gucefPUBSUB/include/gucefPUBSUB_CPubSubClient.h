@@ -100,7 +100,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     CPubSubClient& operator=( const CPubSubClient& src );
 
-    virtual bool GetSupportedFeatures( CPubSubClientFeatures& features ) = 0;
+    virtual bool GetSupportedFeatures( CPubSubClientFeatures& features ) const = 0;
 
     virtual CPubSubClientTopic* CreateTopicAccess( const CPubSubClientTopicConfig& topicConfig ) = 0;
 

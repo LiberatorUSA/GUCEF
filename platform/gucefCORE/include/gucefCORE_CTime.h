@@ -70,6 +70,8 @@ class GUCEF_CORE_PUBLIC_CPP CTime : public CITime
 
     virtual UInt8 GetSeconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void SetMilliseconds( UInt16 milliseconds );
+    
     virtual UInt16 GetMilliseconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CTime& operator=( const CTime& src );

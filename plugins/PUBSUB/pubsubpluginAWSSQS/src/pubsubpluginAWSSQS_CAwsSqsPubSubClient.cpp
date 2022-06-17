@@ -135,7 +135,7 @@ CAwsSqsPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = false;             // Per SendMessage doc: "A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed", so only text and a tiny subset of Unicode

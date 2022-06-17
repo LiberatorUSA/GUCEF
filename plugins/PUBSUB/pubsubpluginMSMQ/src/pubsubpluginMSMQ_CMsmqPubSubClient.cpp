@@ -137,7 +137,7 @@ CMsmqPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload

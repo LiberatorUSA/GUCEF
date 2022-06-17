@@ -136,7 +136,7 @@ CWebPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;                // We can use our own serializer for the messages and as such we should be able to support all its fields

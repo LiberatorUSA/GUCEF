@@ -203,6 +203,15 @@ CTime::GetSeconds( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTime::SetMilliseconds( UInt16 milliseconds )
+{GUCEF_TRACE;
+
+    m_milliseconds = milliseconds;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt16
 CTime::GetMilliseconds( void ) const
 {GUCEF_TRACE;

@@ -148,7 +148,7 @@ CStoragePubSubClient::GetThreadPool( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features )
+CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // The storage backend with the natively compatible pub-sub serializers can always support everything

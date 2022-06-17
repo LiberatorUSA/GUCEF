@@ -53,6 +53,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
     , topicName()
     , consumerGroupName()
     , consumerName()
+    , maxTotalMsgsInFlight( -1 )
     , customConfig()
 {GUCEF_TRACE;
 
@@ -69,6 +70,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConf
     , topicName( src.topicName )
     , consumerGroupName( src.consumerGroupName )
     , consumerName( src.consumerName )
+    , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , customConfig( src.customConfig )
 {GUCEF_TRACE;
 
@@ -97,6 +99,7 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
         topicName = src.topicName;
         consumerGroupName = src.consumerGroupName;
         consumerName = src.consumerName;
+        maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
         customConfig = src.customConfig;        
     }
     return *this;
@@ -115,6 +118,7 @@ CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "topicName", topicName );
     tree.SetAttribute( "consumerGroupName", consumerGroupName );
     tree.SetAttribute( "consumerName", consumerName );    
+    tree.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight );        
     tree.CopySubTree( customConfig );    
     return true;
 }
@@ -125,13 +129,14 @@ bool
 CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    isOptional = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "isOptional" ) ), isOptional );
-    needSubscribeSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needSubscribeSupport" ) ), needSubscribeSupport );
-    needPublishSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needPublishSupport" ) ), needPublishSupport );
-    preferDedicatedConnection = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "preferDedicatedConnection" ) ), preferDedicatedConnection );
-    topicName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "topicName", topicName ) );
-    consumerGroupName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerGroupName", consumerGroupName ) );
-    consumerName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerName", consumerName ) );
+    isOptional = cfg.GetAttributeValueOrChildValueByName( "isOptional" ).AsBool( isOptional, true );
+    needSubscribeSupport = cfg.GetAttributeValueOrChildValueByName( "needSubscribeSupport" ).AsBool( needSubscribeSupport, true );
+    needPublishSupport = cfg.GetAttributeValueOrChildValueByName( "needPublishSupport" ).AsBool( needPublishSupport, true );
+    preferDedicatedConnection = cfg.GetAttributeValueOrChildValueByName( "preferDedicatedConnection" ).AsBool( preferDedicatedConnection, true );
+    topicName = cfg.GetAttributeValueOrChildValueByName( "topicName" ).AsString( topicName, true );
+    consumerGroupName = cfg.GetAttributeValueOrChildValueByName( "consumerGroupName" ).AsString( consumerGroupName, true );
+    consumerName = cfg.GetAttributeValueOrChildValueByName( "consumerName" ).AsString( consumerName, true );
+    maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )
