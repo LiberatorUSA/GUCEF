@@ -71,10 +71,6 @@
 
 #include "gucefPUBSUB_CPubSub2PubSub.h"
 
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    #include <winsock2.h>
-#endif
-
 #ifndef GUCEF_CORE_METRICSMACROS_H
 #include "gucefCORE_MetricsMacros.h"
 #define GUCEF_CORE_METRICSMACROS_H
@@ -514,6 +510,7 @@ ChannelSettings::GetClassTypeName( void ) const
 CPubSubClientSide::CPubSubClientSide( char side )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
+    , m_clientFeatures()
     , m_pubsubBookmarkPersistence()
     , m_bookmarkNamespace()
     , m_topics()
@@ -558,6 +555,8 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , publishAckdMsgsMailbox()
     , metricFriendlyTopicName()
     , metrics( GUCEF_NULL )
+    , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
+    , msgsSinceLastBookmarkPersist( 0 )
 {GUCEF_TRACE;
 
 }
@@ -572,6 +571,8 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopic* t )
     , publishAckdMsgsMailbox()
     , metricFriendlyTopicName()
     , metrics( GUCEF_NULL )
+    , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
+    , msgsSinceLastBookmarkPersist( 0 )
 {GUCEF_TRACE;
 
 }
@@ -871,9 +872,6 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
     CPubSubClient::TopicsAccessAutoCreatedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
     if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
     {
-        CPubSubClientFeatures clientFeatures;
-        m_pubsubClient->GetSupportedFeatures( clientFeatures );
-
         CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
@@ -883,7 +881,7 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
             {
                 if ( ConfigureTopicLink( *m_sideSettings, *tAccess ) )
                 {
-                    ConnectPubSubClientTopic( *tAccess, clientFeatures, *m_sideSettings );
+                    ConnectPubSubClientTopic( *tAccess, m_clientFeatures, *m_sideSettings );
                 }
             }
             ++i;
@@ -953,21 +951,24 @@ CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
     if ( m_pubsubClient.IsNULL() || GUCEF_NULL == m_sideSettings )
         return true;
 
-    CPubSubClientFeatures clientFeatures;
-    m_pubsubClient->GetSupportedFeatures( clientFeatures );
-
     CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
 
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
     // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
     
-    bool doWeWantIt = pubSubConfig.desiredFeatures.supportsSubscribing &&                     // <- does it apply in this context ?
-                      pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck;          // <- do we want it?
-    
-    bool isItSupported = clientFeatures.supportsSubscriberMsgReceivedAck;                     // <- Is it supported by the backend regardless of desired features
-    bool canWeNotWantIt = clientFeatures.supportsAbsentMsgReceivedAck;                        // <- Is it even an option to not do it regardless of desired features
-    
+    bool doWeWantIt = ( pubSubConfig.desiredFeatures.supportsSubscribing &&                         // <- does it apply in this context ?
+                        ( pubSubConfig.desiredFeatures.supportsSubscriberMsgReceivedAck ||          // <- do we want it?
+                          pubSubConfig.desiredFeatures.supportsSubscribingUsingBookmark  )
+                      );
+
+    bool isItSupported = m_clientFeatures.supportsSubscriberMsgReceivedAck ||
+                         ( m_clientFeatures.supportsBookmarkingConcept && m_clientFeatures.supportsSubscribingUsingBookmark );
+
+    bool canWeNotWantIt = m_clientFeatures.supportsAbsentMsgReceivedAck &&          // <- Is it even an option to not do it regardless of desired features
+                          ( !m_clientFeatures.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
+                             m_clientFeatures.supportsBookmarkingConcept && m_clientFeatures.supportsSubscribingUsingBookmark && m_clientFeatures.supportsServerSideBookmarkPersistance );
+                              
     return ( doWeWantIt && isItSupported ) || 
            ( !doWeWantIt && canWeNotWantIt && isItSupported );
 }
@@ -1469,6 +1470,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             TPubSubClientSideVector* sides = GUCEF_NULL;
             if ( GetAllSides( sides ) && GUCEF_NULL != sides )
             {
+                bool totalSuccess = true;
                 TPubSubClientSideVector::iterator i = sides->begin();
                 while ( i != sides->end() )
                 {
@@ -1483,19 +1485,91 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                         else
                         {
                             // We will rely on that side's retry logic
+                            totalSuccess = false;
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Failed to publish (some?) message(s) to side " + (*i)->m_side );
                         }
                     }
                     ++i;
                 }
-            }
+
+                // If we successfully published but we dont need to wait on any acks then we can update bookmarks right now if applicable
+                // instead of waiting for the ack to do the same
+                if ( totalSuccess && !m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                {
+                    const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
+                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
+                    if ( i != m_topics.end() )
+                    {
+                        TopicLink& topicLink = (*i).second;
+                        topicLink.msgsSinceLastBookmarkPersist += (Int32) msgs.size();
+
+                        UpdateReceivedMessagesBookmarkAsNeeded( *lastMsgRef, topicLink );
+                    }
+                }
+            }            
         }
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg , 
+                                                           TopicLink& topicLink   )
+{GUCEF_TRACE;
+
+    if ( !m_clientFeatures.supportsBookmarkingConcept )
+        return true;
+    
+    // Check criterea for our generic bookmark persistance     
+    if ( !m_pubsubBookmarkPersistence.IsNULL() && 
+            (
+                ( m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval > 0 && topicLink.msgsSinceLastBookmarkPersist >= m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval ) || 
+                ( m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && topicLink.lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs ) 
+            ) )
+    {
+        CPubSubBookmark bookmark;
+        if ( m_clientFeatures.supportsDerivingBookmarkFromMsg )
+        {
+            if ( topicLink.topic->DeriveBookmarkFromMsg( msg, bookmark ) )
+            {
+                if ( m_pubsubBookmarkPersistence->StoreBookmark( m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace , 
+                                                                 *m_pubsubClient.GetPointerAlways()                                , 
+                                                                 *topicLink.topic                                                  ,  
+                                                                 bookmark                                                          ) )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):UpdateReceivedMessagesBookmarkAsNeeded: Stored bookmark. receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
+
+                    topicLink.lastBookmarkPersistSuccess = CORE::CDateTime::NowUTCDateTime();
+                    topicLink.msgsSinceLastBookmarkPersist = 0;
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to store bookmark. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
+                        ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
+                        GetMsgAttributesForLog( msg ) );
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to derive bookmark from message. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
+                    ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
+                    GetMsgAttributesForLog( msg ) );
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1512,7 +1586,11 @@ CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
         CIPubSubMsg::TNoLockSharedPtr msg;
         while ( topicLink.publishAckdMsgsMailbox.GetMail( msg ) )
         {
-            AcknowledgeReceiptSync( msg );
+            if ( !AcknowledgeReceiptSync( msg, topicLink ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ProcessAcknowledgeReceiptsMailbox: Failed to sync ack receipt of message. " + GetMsgAttributesForLog( *msg ) );
+            }
         }
 
         UpdateTopicMetrics( topicLink );
@@ -1526,7 +1604,33 @@ bool
 CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    return msg->GetOriginClientTopic()->AcknowledgeReceipt( *msg );
+    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic() );
+    if ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+        return AcknowledgeReceiptSync( msg, topicLink );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                           TopicLink& topicLink               )
+{GUCEF_TRACE;
+
+    bool success = true;
+    if ( m_clientFeatures.supportsSubscriberMsgReceivedAck )
+        success = msg->GetOriginClientTopic()->AcknowledgeReceipt( *msg );
+
+    if ( success )
+    {
+        // the ack success determines the result, the bookmark persistance is best-effort
+        ++topicLink.msgsSinceLastBookmarkPersist;
+        UpdateReceivedMessagesBookmarkAsNeeded( *msg.GetPointerAlways(), topicLink );
+    }
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1715,10 +1819,7 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
         return false;
     }
 
-    CPubSubClientFeatures clientFeatures;
-    m_pubsubClient->GetSupportedFeatures( clientFeatures );
-
-    if ( destroyClient || !clientFeatures.supportsAutoReconnect )
+    if ( destroyClient || !m_clientFeatures.supportsAutoReconnect )
     {
         m_pubsubClient.Unlink();
     }
@@ -1870,7 +1971,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     if ( !m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
         m_bookmarkNamespace = m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace;
     else
-        m_bookmarkNamespace = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::ToString( m_side ); 
+        m_bookmarkNamespace = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::CString( m_side ); 
 
     if ( m_pubsubClient.IsNULL() )
     {
@@ -1892,10 +1993,10 @@ CPubSubClientSide::ConnectPubSubClient( void )
         m_pubsubClient->SetOpaqueUserData( this );
     }
 
-    CPubSubClientFeatures clientFeatures;
-    m_pubsubClient->GetSupportedFeatures( clientFeatures );
+    // Refresh our client features cache
+    m_pubsubClient->GetSupportedFeatures( m_clientFeatures );
 
-    if ( !clientFeatures.supportsAutoReconnect )
+    if ( !m_clientFeatures.supportsAutoReconnect )
     {
         if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
             m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
@@ -1909,21 +2010,14 @@ CPubSubClientSide::ConnectPubSubClient( void )
     if ( m_pubsubBookmarkPersistence.IsNULL() )
     {
         // Create and configure the pub-sub bookmark persistence
-        pubSubConfig.pulseGenerator = GetPulseGenerator();
-        pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
         m_pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
 
-        if ( m_pubsubClient.IsNULL() )
+        if ( m_pubsubBookmarkPersistence.IsNULL() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):ConnectPubSubClient: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );
+                "):ConnectPubSubClient: Failed to create bookmark persistance access of type \"" + pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
             return false;
         }
-
-        // Link the client back to this object
-        // This allows getting all the way from:
-        //      a message -> a topic -> a client -> a pubsub side
-        m_pubsubClient->SetOpaqueUserData( this );
     }
 
     if ( !m_pubsubClient->Connect() )
@@ -1977,7 +2071,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
         CPubSubClientTopic* topic = topicLink.topic;
         
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
-                                                             clientFeatures   ,
+                                                             m_clientFeatures ,
                                                              *m_sideSettings  ) && totalTopicConnectSuccess;
 
         ++t;

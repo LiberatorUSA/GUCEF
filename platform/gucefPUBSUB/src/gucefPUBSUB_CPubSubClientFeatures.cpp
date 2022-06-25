@@ -72,6 +72,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsMsgIndexBasedBookmark( false )
     , supportsTopicIndexBasedBookmark( false )
     , supportsMsgDateTimeBasedBookmark( false )
+    , supportsDerivingBookmarkFromMsg( false )
     , supportsDiscoveryOfAvailableTopics( false )
     , supportsGlobPatternTopicNames( false )
 {GUCEF_TRACE;
@@ -117,6 +118,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark );
     tree.SetAttribute( "supportsTopicIndexBasedBookmark", supportsTopicIndexBasedBookmark );    
     tree.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark );
+    tree.SetAttribute( "supportsDerivingBookmarkFromMsg", supportsDerivingBookmarkFromMsg );    
     tree.SetAttribute( "supportsDiscoveryOfAvailableTopics", supportsDiscoveryOfAvailableTopics );    
     tree.SetAttribute( "supportsGlobPatternTopicNames", supportsGlobPatternTopicNames );    
     tree.SetAttribute( "supportsMetrics", supportsMetrics );
@@ -156,6 +158,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsMsgIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgIndexBasedBookmark" ).AsBool( supportsMsgIndexBasedBookmark, true );
     supportsTopicIndexBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsTopicIndexBasedBookmark" ).AsBool( supportsTopicIndexBasedBookmark, true );
     supportsMsgDateTimeBasedBookmark = cfg.GetAttributeValueOrChildValueByName( "supportsMsgDateTimeBasedBookmark" ).AsBool( supportsMsgDateTimeBasedBookmark, true );
+    supportsDerivingBookmarkFromMsg = cfg.GetAttributeValueOrChildValueByName( "supportsDerivingBookmarkFromMsg" ).AsBool( supportsDerivingBookmarkFromMsg, true );
     supportsDiscoveryOfAvailableTopics = cfg.GetAttributeValueOrChildValueByName( "supportsDiscoveryOfAvailableTopics" ).AsBool( supportsDiscoveryOfAvailableTopics, true );    
     supportsGlobPatternTopicNames = cfg.GetAttributeValueOrChildValueByName( "supportsGlobPatternTopicNames" ).AsBool( supportsGlobPatternTopicNames, true );    
     supportsMetrics = cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ).AsBool( supportsMetrics, true );

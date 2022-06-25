@@ -160,6 +160,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     virtual bool AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
     bool AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& bookmark, CORE::UInt64 receiveActionId );
 
+    virtual bool DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
@@ -309,8 +311,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     void OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 msgCycleIndex, bool linkIfPossible );
 
     bool OnMsmqMsgBufferTooSmall( TMsmqMsg& msgsData );
-
-    CORE::Int64 GetCurrentNrOfMessagesInQueue( void ) const;
 
     static bool MsmqPropertyToVariantStatic( MQPROPVARIANT& msmqSourceVariant , 
                                              CORE::CVariant& targetVariant    , 

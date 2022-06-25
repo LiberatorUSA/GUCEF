@@ -438,12 +438,31 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
             TStorageBufferMetaData* bufferMetaData = GUCEF_NULL;
             if ( GUCEF_NULL == m_currentWriteBuffer )
             {
-                m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( CORE::CDateTime::NowUTCDateTime(), true, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+                m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( CORE::CDateTime::NowUTCDateTime(), m_config.performVfsOpsASync, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
                 if ( GUCEF_NULL == m_currentWriteBuffer )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                        "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
-                    return false;
+                    if ( m_config.performVfsOpsASync )
+                    {
+                        // We should not get here with both the blocking & long timeout
+                        // the async buffer reads should be allowing us to proceed in a reasonable timeframe
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                            "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
+                    }
+                    else
+                    {
+                        // Try to persist next ready to read buffer as part of the call chain, consequence of not doing async
+                        if ( StoreNextReceivedPubSubBuffer() )
+                        {
+                            // Try again to get a write buffer, this should typically work based on the prior operation
+                            m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( CORE::CDateTime::NowUTCDateTime(), m_config.performVfsOpsASync, GUCEF_MT_INFINITE_LOCK_TIMEOUT );                            
+                        }
+                        if ( GUCEF_NULL == m_currentWriteBuffer )
+                        {                        
+                            lock.EarlyUnlock();
+                            NotifyObservers( LocalPublishQueueFullEvent );
+                            return false;
+                        }
+                    }
                 }
                 m_currentWriteBuffer->SetDataSize( 0 );
 
@@ -583,6 +602,12 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( TStorageBufferMetaData* bufferMe
 
     m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
     m_bufferContentTimeWindowCheckTimer->SetEnabled( false );
+
+    if ( !m_config.performVfsOpsASync )
+    {
+        // Try to persist next ready to read buffer as part of the call chain, consequence of not doing async
+        StoreNextReceivedPubSubBuffer();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -678,34 +703,62 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
 
     if ( !m_config.performVfsOpsASync )
     {
+        // If we do not perform VFS Ops Async then we use less system resources but we do run the risk
+        // of filling up our write queues etc and causing performance issues in the pipeline
+        // This is a performance tradeoff specific to your use-case
         if ( GUCEF_NULL != m_syncVfsOpsTimer )
-            m_syncVfsOpsTimer->SetEnabled( true );
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Will use timer for sync VFS ops" );
+            return m_syncVfsOpsTimer->SetEnabled( true );
+        }
+        return false;
     }
     else
-    if ( m_config.performVfsOpsInDedicatedThread )
     {
-        if ( m_vfsOpsThread.IsNULL() )
+        // Do we want a dedicated thread per topic or will a more general threadpool with intermixed work suffice
+        // This is a performance tradeoff specific to your use-case
+        //      Do you have extra threading capacity available on the node?
+        //      Is it important we write to VFS as fast as possible?
+        //      Etc.
+        if ( m_config.performVfsOpsInDedicatedThread )
         {
-            m_vfsOpsThread = CStoragePubSubClientTopicVfsTaskPtr( new CStoragePubSubClientTopicVfsTask( this ) );
-        }
-        if ( !m_vfsOpsThread.IsNULL() )
-        {
-            CORE::ThreadPoolPtr threadPool = m_client->GetThreadPool();
-            if ( threadPool.IsNULL() )
+            if ( m_vfsOpsThread.IsNULL() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to obtain dedicated thread pool for dedicated VFS thread for async operations. Falling back to global thread pool" );
-                threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+                m_vfsOpsThread = CStoragePubSubClientTopicVfsTaskPtr( new CStoragePubSubClientTopicVfsTask( this ) );
+            }
+            if ( !m_vfsOpsThread.IsNULL() )
+            {
+                CORE::ThreadPoolPtr threadPool = m_client->GetThreadPool();
                 if ( threadPool.IsNULL() )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to obtain global thread pool for dedicated VFS thread for async operations" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to obtain dedicated thread pool for dedicated VFS thread for async operations. Falling back to global thread pool" );
+                    threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+                    if ( threadPool.IsNULL() )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to obtain global thread pool for dedicated VFS thread for async operations" );
+                        return false;
+                    }
+                }
+                if ( threadPool->StartTask( m_vfsOpsThread ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Started dedicated per-topic thread for async VFS ops" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to start dedicated VFS thread for async operations" );
                     return false;
                 }
             }
-            if ( !threadPool->StartTask( m_vfsOpsThread ) )
+            else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to start dedicated VFS thread for async operations" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to create dedicated VFS task (thread) for async operations" );
                 return false;
             }
+        }
+        else
+        {
+            // Seems we want async but not go as far as spinning up a dedicated thread per topic to handle VFS operations
+            // we will rely on defining 'work' tasks as work arrives
         }
     }
     return true;
@@ -934,6 +987,18 @@ CStoragePubSubClientTopic::GetCurrentBookmark( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CStoragePubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg    , 
+                                                  PUBSUB::CPubSubBookmark& bookmark ) const
+{GUCEF_TRACE;
+
+    bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX );
+    bookmark.SetBookmarkData( msg.GetMsgIndex() );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
@@ -982,6 +1047,7 @@ bool
 CStoragePubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
+    m_buffers.SetNrOfBuffers( m_config.desiredNrOfBuffers );
     m_buffers.SetMinimalBufferSize( m_config.desiredMinimalSerializedBlockSize );
 
     if ( m_config.performVfsOpsInDedicatedThread )
@@ -2113,4 +2179,4 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

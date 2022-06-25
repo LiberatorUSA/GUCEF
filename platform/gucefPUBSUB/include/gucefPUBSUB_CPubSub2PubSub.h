@@ -381,6 +381,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
         CORE::CString metricFriendlyTopicName;
         CPubSubClientSideMetrics* metrics;
+        CORE::CDateTime lastBookmarkPersistSuccess;
+        CORE::Int32 msgsSinceLastBookmarkPersist;
 
         TopicLink( void );
         TopicLink( CPubSubClientTopic* t );
@@ -398,11 +400,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     };
 
     void UpdateTopicMetrics( TopicLink& topicLink );
+
+    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg, TopicLink& topicLink );
+    
+    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg, TopicLink& topicLink );
     
     typedef std::map< CPubSubClientTopic*, TopicLink > TopicMap;
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     CPubSubClientPtr m_pubsubClient;
+    CPubSubClientFeatures m_clientFeatures;
     TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::CString m_bookmarkNamespace;
     TopicMap m_topics;

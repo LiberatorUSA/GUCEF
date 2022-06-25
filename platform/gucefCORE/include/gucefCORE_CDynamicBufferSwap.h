@@ -80,6 +80,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
 
     virtual ~CDynamicBufferSwap();
 
+    bool SetNrOfBuffers( UInt32 nrOfBuffers );
+
     UInt32 GetNrOfBuffers( void ) const;
     
     void SetMinimalBufferSize( UInt32 minimalBufferSize );

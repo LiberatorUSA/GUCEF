@@ -50,6 +50,7 @@ namespace STORAGE {
 #define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES    (1024*1024*50)// 50MB
 #define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
 #define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
+#define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,6 +62,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
     , pubsubBinarySerializerOptions()
     , pubsubSerializerOptions()
+    , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
     , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
     , vfsStorageRootPath()
@@ -92,6 +94,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     : PUBSUB::CPubSubClientTopicConfig( src )
     , pubsubBinarySerializerOptions( src.pubsubBinarySerializerOptions )
     , pubsubSerializerOptions( src.pubsubSerializerOptions )
+    , desiredNrOfBuffers( src.desiredNrOfBuffers )
     , desiredMinimalSerializedBlockSize( src.desiredMinimalSerializedBlockSize )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
     , vfsStorageRootPath( src.vfsStorageRootPath )
@@ -124,6 +127,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , pubsubBinarySerializerOptions()
     , pubsubSerializerOptions()
+    , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
     , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
     , vfsStorageRootPath()
@@ -164,6 +168,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
 {GUCEF_TRACE;
     
     bool success = true;
+    desiredNrOfBuffers = config.GetAttributeValueOrChildValueByName( "desiredNrOfBuffers" ).AsUInt32( desiredNrOfBuffers, true );
     desiredMinimalSerializedBlockSize = config.GetAttributeValueOrChildValueByName( "desiredMinimalSerializedBlockSize" ).AsUInt32( desiredMinimalSerializedBlockSize, true );
     desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = config.GetAttributeValueOrChildValueByName( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs" ).AsUInt32( desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs, true );
     vfsStorageRootPath = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPath" ).AsString( vfsStorageRootPath, true );
@@ -204,6 +209,8 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
 {GUCEF_TRACE;
 
     bool success = true;
+    
+    success = config.SetAttribute( "desiredNrOfBuffers", desiredNrOfBuffers ) && success;
     success = config.SetAttribute( "desiredMinimalSerializedBlockSize", desiredMinimalSerializedBlockSize ) && success;
     success = config.SetAttribute( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs", desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) && success;
     success = config.SetAttribute( "vfsStorageRootPath", vfsStorageRootPath ) && success;
@@ -265,6 +272,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
 
         pubsubBinarySerializerOptions = src.pubsubBinarySerializerOptions;
         pubsubSerializerOptions = src.pubsubSerializerOptions;
+        desiredNrOfBuffers = src.desiredNrOfBuffers;
         desiredMinimalSerializedBlockSize = src.desiredMinimalSerializedBlockSize;
         desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;
         vfsStorageRootPath = src.vfsStorageRootPath;

@@ -211,6 +211,11 @@ CPubSubBookmark::ToString( void ) const
 
     // Since a bookmark is a simple combo of a few basic fields we can just use a CSV approach
     // Keep in mind this also relies on Base64 encoding of BLOBs and such by the variant
+
+    CORE::CString a =  m_bmDt.ToIso8601DateTimeString( false, true );
+    CORE::CString b = CORE::ToString( m_bmType );
+     CORE::CString c = m_bmData.AsString();
+
     return m_bmDt.ToIso8601DateTimeString( false, true ) + ',' + CORE::ToString( m_bmType ) + ',' + m_bmData.AsString();
 }
 

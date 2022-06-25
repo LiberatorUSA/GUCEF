@@ -90,6 +90,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
 
     PUBSUB::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
     PUBSUB::CPubSubMsgSerializerOptions pubsubSerializerOptions;
+    CORE::UInt32 desiredNrOfBuffers;
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
     CORE::CString vfsStorageRootPath;

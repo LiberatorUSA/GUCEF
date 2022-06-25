@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -153,6 +158,7 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( void )
     , m_config()
     , m_serializationBuffer()
     , m_bookmarkFilePostfix( ".v" + CORE::ToString( CPubSubBookmarkBinarySerializer::CurrentFormatVersion ) + ".pubsubbookmark" )
+    , m_lock()
 {GUCEF_TRACE;
 
 }
@@ -163,7 +169,8 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( const CPubSubBookm
     : CIPubSubBookmarkPersistence()
     , m_config( config )
     , m_serializationBuffer()
-    , m_bookmarkFilePostfix()
+    , m_bookmarkFilePostfix( ".v" + CORE::ToString( CPubSubBookmarkBinarySerializer::CurrentFormatVersion ) + ".pubsubbookmark" )
+    , m_lock()
 {GUCEF_TRACE;
 }
 
@@ -174,6 +181,7 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( const CVfsPubSubBo
     , m_config( src.m_config )
     , m_serializationBuffer( src.m_serializationBuffer )
     , m_bookmarkFilePostfix( src.m_bookmarkFilePostfix )
+    , m_lock()
 {GUCEF_TRACE;
 
 }
@@ -188,10 +196,16 @@ CVfsPubSubBookmarkPersistence::~CVfsPubSubBookmarkPersistence()
 /*-------------------------------------------------------------------------*/
 
 CVfsPubSubBookmarkPersistence& 
-CVfsPubSubBookmarkPersistence::operator=( const CVfsPubSubBookmarkPersistence& other )
+CVfsPubSubBookmarkPersistence::operator=( const CVfsPubSubBookmarkPersistence& src )
 {GUCEF_TRACE;
     
-    CIPubSubBookmarkPersistence::operator=( other );
+    if ( this != &src )
+    {
+        MT::CScopeMutex lock( m_lock );
+        CIPubSubBookmarkPersistence::operator=( src );
+        m_config = src.m_config;
+        m_bookmarkFilePostfix = src.m_bookmarkFilePostfix;
+    }
     return *this;
 }
 
@@ -203,6 +217,8 @@ CVfsPubSubBookmarkPersistence::GetBookmarkPersistenceRootPath( const CPubSubClie
                                                                CORE::CString& rootPath         )
 {GUCEF_TRACE;
     
+    MT::CScopeMutex lock( m_lock );
+
     const CORE::CString& clientType = client.GetType();
     const CORE::CString& topicName = topic.GetTopicName();
 
@@ -220,6 +236,7 @@ CVfsPubSubBookmarkPersistence::GetBookmarkPersistenceFileName( const CPubSubBook
                                                                CORE::CString& bookmarkName     )
 {GUCEF_TRACE;
     
+    MT::CScopeMutex lock( m_lock );
     bookmarkName = bookmark.GetBookmarkDateTime().ToIso8601DateTimeString( false, true ) + m_bookmarkFilePostfix;
     return true;
 }
@@ -233,6 +250,8 @@ CVfsPubSubBookmarkPersistence::GetLatestBookmark( const CORE::CString& bookmarkN
                                                   CPubSubBookmark& bookmark              )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     CORE::CString rootPath;
     if ( !GetBookmarkPersistenceRootPath( client   ,
                                           topic    ,
@@ -244,10 +263,36 @@ CVfsPubSubBookmarkPersistence::GetLatestBookmark( const CORE::CString& bookmarkN
     
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
-    //vfs.GetList(
+    CORE::CString::StringVector bmFilePaths;
+    vfs.GetFileList( bmFilePaths, rootPath, false, true, "*" + m_bookmarkFilePostfix, 25 );
 
-    //CORE::CDynamicBuffer bookmarkResource;
-    //vfs.LoadFile( bookmarkResource, , "rb" );
+    CORE::CString::StringVector::iterator i = bmFilePaths.begin();
+    while ( i != bmFilePaths.end() )
+    {
+        CORE::CDynamicBuffer bookmarkResource;
+        if ( vfs.LoadFile( bookmarkResource, (*i), "rb" ) )
+        {
+            if ( CPubSubBookmarkBinarySerializer::Deserialize( bookmark, false, bookmarkResource ) )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmark: Successfully obtained latest bookmark (" + bookmark.ToString() + ") from " + (*i) );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmark: Failed to deserialize bookmark from data loaded from " + (*i) );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmark: Failed to load data from " + (*i) );
+        }
+        ++i;
+    }
+
+    if ( bmFilePaths.empty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmark: No bookmarks found using VFS root path: " + rootPath );
+    }
 
     return false;
 }
@@ -260,6 +305,8 @@ CVfsPubSubBookmarkPersistence::StoreBookmark( const CORE::CString& bookmarkNames
                                               const CPubSubClientTopic& topic        ,
                                               const CPubSubBookmark& bookmark        )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     CORE::CString bmFilename;
     bool serializeOk = false;

@@ -297,20 +297,27 @@ CVariant::CVariant( const CVariant& data ,
 
     // If dynamic memory is used we need to actually copy said memory
     // into a private copy
-    if ( !linkIfPossible && data.UsesDynamicMemory() )
+    if ( data.UsesDynamicMemory() )
     {
-        if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
+        if ( !linkIfPossible )
         {
-            m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-            assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
-            memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+            if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
+            {
+                m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+                assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
+                memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
+            }
+            else
+            {
+                m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
+                m_variantData.union_data.heap_data.heap_data_size = 0;
+            }
+            m_variantData.union_data.heap_data.heap_data_is_linked = 0;
         }
         else
         {
-            m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
-            m_variantData.union_data.heap_data.heap_data_size = 0;
+            m_variantData.union_data.heap_data.heap_data_is_linked = 1;
         }
-        m_variantData.union_data.heap_data.heap_data_is_linked = 0;
     }
 }
 

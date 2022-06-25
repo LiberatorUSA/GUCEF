@@ -818,12 +818,41 @@ CMsmqPubSubClientTopic::GetCurrentBookmark( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CMsmqPubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
+    bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX );
+    bookmark.SetBookmarkData( msg.GetMsgIndex() );
+    return true;
+
+    #else
+
+    return false; 
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMsmqPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+
     PUBSUB::CPubSubBookmark bookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, msg.GetMsgIndex() );
     return AcknowledgeReceiptImpl( bookmark, msg.GetReceiveActionId() );
+
+    #else
+
+    return false; 
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/

@@ -78,6 +78,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmarkPersistenceConfig : public CORE::CI
 
     CORE::CString bookmarkPersistenceType;
     CORE::CString bookmarkNamespace;
+    bool autoPersistAlways;                         /**< standard provided advisory flag for both the backend and the higher level app on whether we wait for app code to programatically store bookmarks */
+    bool autoPersistIfClientSideBookmarksNeeded;    /**< standard provided advisory flag for both the backend and the higher level app on whether we wait for app code to programatically store bookmarks */ 
+    CORE::Int32 autoPersistIntervalInMs;            /**< if >0: max number of milliseconds between bookmark updates, typically a tradeoff between constant overhead and resend volume in case of issues */
+    CORE::Int32 autoPersistMsgInterval;             /**< if >0: max number of messages between bookmark updates, typically a tradeoff between constant overhead and resend volume in case of issues */
+    CORE::Int32 maxNrOfBookmarksToKeep;             /**< if >0: defines the number of bookmarks that will be persisted, if the backend supports keeping multiple revisions */
     CORE::CDataNode customConfig;
 
     CPubSubBookmarkPersistenceConfig( void );

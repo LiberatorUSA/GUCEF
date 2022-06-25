@@ -172,8 +172,9 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
     features.supportsAckUsingBookmark = supportLookup;               // Bookmark or message, either way we use the LookupID which we count as a topic index
     features.supportsServerSideBookmarkPersistance = !supportLookup; // If we are using lookups the LookUp will need to be persisted externally from the app between runs
     
-    features.supportsSubscribingUsingBookmark = true;             // we use the LookupID which we count as a topic index
-    features.supportsTopicIndexBasedBookmark = true;              // we use the LookupID which we count as a topic index
+    features.supportsSubscribingUsingBookmark = supportLookup;    // we use the LookupID which we count as a topic index
+    features.supportsTopicIndexBasedBookmark = supportLookup;     // we use the LookupID which we count as a topic index
+    features.supportsDerivingBookmarkFromMsg = supportLookup;     // the message index property is the LookupID
     
     #else
 

@@ -35,6 +35,16 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_DEFAULT_DEFAULT_AUTO_PERSIST_INTERVAL_IN_MS           1000
+#define GUCEF_DEFAULT_DEFAULT_AUTO_PERSIST_MSG_INTERVAL             1000
+#define GUCEF_DEFAULT_DEFAULT_MAX_OLD_BOOKMARKS_TO_KEEP             25
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -51,6 +61,11 @@ CPubSubBookmarkPersistenceConfig::CPubSubBookmarkPersistenceConfig( void )
     : CORE::CIConfigurable()
     , bookmarkPersistenceType()
     , bookmarkNamespace()
+    , autoPersistAlways( false )
+    , autoPersistIfClientSideBookmarksNeeded( true )
+    , autoPersistIntervalInMs( GUCEF_DEFAULT_DEFAULT_AUTO_PERSIST_INTERVAL_IN_MS )
+    , autoPersistMsgInterval( GUCEF_DEFAULT_DEFAULT_AUTO_PERSIST_MSG_INTERVAL )
+    , maxNrOfBookmarksToKeep( GUCEF_DEFAULT_DEFAULT_MAX_OLD_BOOKMARKS_TO_KEEP )
     , customConfig()    
 {GUCEF_TRACE;
 
@@ -62,6 +77,11 @@ CPubSubBookmarkPersistenceConfig::CPubSubBookmarkPersistenceConfig( const CPubSu
     : CORE::CIConfigurable()
     , bookmarkPersistenceType( src.bookmarkPersistenceType )
     , bookmarkNamespace( src.bookmarkNamespace )
+    , autoPersistAlways( src.autoPersistAlways )
+    , autoPersistIfClientSideBookmarksNeeded( src.autoPersistIfClientSideBookmarksNeeded )
+    , autoPersistIntervalInMs( src.autoPersistIntervalInMs )
+    , autoPersistMsgInterval( src.autoPersistMsgInterval )
+    , maxNrOfBookmarksToKeep( src.maxNrOfBookmarksToKeep )
     , customConfig( src.customConfig )    
 {GUCEF_TRACE;
 
@@ -84,6 +104,12 @@ CPubSubBookmarkPersistenceConfig::operator=( const CPubSubBookmarkPersistenceCon
     {
         bookmarkPersistenceType = src.bookmarkPersistenceType;
         bookmarkNamespace = src.bookmarkNamespace;
+        autoPersistAlways = src.autoPersistAlways;
+        autoPersistIfClientSideBookmarksNeeded = src.autoPersistIfClientSideBookmarksNeeded;
+        autoPersistIntervalInMs = src.autoPersistIntervalInMs;
+        autoPersistMsgInterval = src.autoPersistMsgInterval;
+        maxNrOfBookmarksToKeep = src.maxNrOfBookmarksToKeep;
+
         customConfig = src.customConfig;
     }
     return *this;
@@ -112,6 +138,11 @@ CPubSubBookmarkPersistenceConfig::LoadConfig( const CORE::CDataNode& cfg )
 
     bookmarkPersistenceType = cfg.GetAttributeValueOrChildValueByName( "bookmarkPersistenceType" ).AsString( bookmarkPersistenceType, true );
     bookmarkNamespace = cfg.GetAttributeValueOrChildValueByName( "bookmarkNamespace" ).AsString( bookmarkNamespace, true );
+    autoPersistAlways = cfg.GetAttributeValueOrChildValueByName( "autoPersistAlways" ).AsBool( autoPersistAlways, true );
+    autoPersistIfClientSideBookmarksNeeded = cfg.GetAttributeValueOrChildValueByName( "autoPersistIfClientSideBookmarksNeeded" ).AsBool( autoPersistIfClientSideBookmarksNeeded, true );
+    autoPersistIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "autoPersistIntervalInMs" ).AsInt32( autoPersistIntervalInMs, true );
+    autoPersistMsgInterval = cfg.GetAttributeValueOrChildValueByName( "autoPersistMsgInterval" ).AsInt32( autoPersistMsgInterval, true );
+    maxNrOfBookmarksToKeep = cfg.GetAttributeValueOrChildValueByName( "maxNrOfBookmarksToKeep" ).AsInt32( maxNrOfBookmarksToKeep, true );
 
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )

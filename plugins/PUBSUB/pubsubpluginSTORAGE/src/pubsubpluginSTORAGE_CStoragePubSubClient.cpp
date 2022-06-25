@@ -173,7 +173,7 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsAckUsingLastMsgInBatch = false;    
     features.supportsAutoMsgReceivedAck = false;         
     features.supportsSubscriberMsgReceivedAck = false;     
-    features.supportsAckUsingBookmark = false;             
+    features.supportsAckUsingBookmark = false;                 
 
     features.supportsBookmarkingConcept = true;         // We can create a reference to the storage location plus offset        
     features.supportsAutoBookmarking = false;           // Currently we do 'forget' where we are if the app crashes    
@@ -183,6 +183,7 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsMsgDateTimeBasedBookmark = false;      // In this context we have no idea what the message datetime is, as such we cannot use it as a bookmark since we cannot garantee anything    
     features.supportsServerSideBookmarkPersistance = false; // Currently we do 'forget' where we are if the app crashes. @TODO? Maybe we can add storage backend opinionated bookmark storage    
     features.supportsSubscribingUsingBookmark = true;       // We can create a reference to the storage location plus offset and then use that to resume the reading from that location
+    features.supportsDerivingBookmarkFromMsg = true;    // the message index property is set to hold the info we need
     
     
     return true;

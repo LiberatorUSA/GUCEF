@@ -114,6 +114,22 @@ CDynamicBufferSwap::GetBuffersQueuedToRead( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDynamicBufferSwap::SetNrOfBuffers( UInt32 nrOfBuffers )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    if ( (UInt32) m_buffers.size() < nrOfBuffers )
+    {
+        m_buffers.resize( nrOfBuffers );
+        return true;
+    }
+    return false;
+}   
+
+/*-------------------------------------------------------------------------*/
+
 UInt32 
 CDynamicBufferSwap::GetNrOfBuffers( void ) const
 {GUCEF_TRACE;

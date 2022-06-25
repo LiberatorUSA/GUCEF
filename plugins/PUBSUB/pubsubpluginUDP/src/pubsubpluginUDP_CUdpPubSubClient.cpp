@@ -170,6 +170,7 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsServerSideBookmarkPersistance = false; // UDP is fire-and-forget: not supported    
     features.supportsSubscribingUsingBookmark = false;  // UDP is fire-and-forget: not supported
     features.supportsTopicIndexBasedBookmark = false;   // UDP is fire-and-forget: not supported
+    features.supportsDerivingBookmarkFromMsg = false;   // UDP is fire-and-forget: not supported
     features.supportsDiscoveryOfAvailableTopics = false; // UDP has no such concept 
     features.supportsGlobPatternTopicNames = false;
 

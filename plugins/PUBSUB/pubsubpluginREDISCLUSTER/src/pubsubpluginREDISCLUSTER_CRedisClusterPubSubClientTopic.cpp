@@ -647,6 +647,8 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
 
     try
     {
+        m_readOffset = readOffset;
+        
         // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
         // Redis does not support pushing of data directly
 
@@ -722,11 +724,25 @@ CRedisClusterPubSubClientTopic::GetCurrentBookmark( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+CRedisClusterPubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg    , 
+                                                       PUBSUB::CPubSubBookmark& bookmark ) const
+{GUCEF_TRACE;
+
+    // The Redis message ID is a unique entry id per topic and as such a topic index
+    // we set it on the generic message id property when reading messages
+    bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX );
+    bookmark.SetBookmarkData( msg.GetMsgId() );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    // Does not apply to Redis wrt what this plugin supports
-    return false;
+    // Does not apply to Redis wrt what this plugin supports. just treat as a no-op fyi
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -735,8 +751,8 @@ bool
 CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    // Does not apply to Redis wrt what this plugin supports
-    return false;
+    // Does not apply to Redis wrt what this plugin supports. just treat as a no-op fyi
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

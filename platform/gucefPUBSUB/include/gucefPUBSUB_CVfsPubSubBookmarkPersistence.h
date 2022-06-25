@@ -111,6 +111,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CVfsPubSubBookmarkPersistence : public CIPubSubBoo
     CVfsPubSubBookmarkPersistenceConfig m_config;
     CORE::CDynamicBuffer m_serializationBuffer;
     CORE::CString m_bookmarkFilePostfix;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

@@ -155,6 +155,7 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
     features.supportsMsgIndexBasedBookmark = true;        // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsTopicIndexBasedBookmark = true;      // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsMsgDateTimeBasedBookmark = true;     // We support this via code that converts the DateTime to offsets
+    features.supportsDerivingBookmarkFromMsg = true;      // Supported via a BSOD on the message's index field currently
     features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
     features.supportsGlobPatternTopicNames = false;
     return true;
