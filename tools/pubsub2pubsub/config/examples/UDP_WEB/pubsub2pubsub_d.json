@@ -93,7 +93,7 @@
 								"bookmarkNamespace": "",
 								"CustomConfig": {
 									"vfsRootPath": "InstallPath/bookmarks",
-									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}
 						},
@@ -157,7 +157,7 @@
 								"bookmarkNamespace": "",
 								"CustomConfig": {
 									"vfsRootPath": "InstallPath/bookmarks",
-									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}							
 						}

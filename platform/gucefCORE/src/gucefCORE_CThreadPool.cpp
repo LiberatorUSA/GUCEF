@@ -879,6 +879,7 @@ CThreadPool::RequestTaskToStop( const UInt32 taskID    ,
             TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
             if ( !delegator.IsNULL() )
             {
+                lock.EarlyUnlock();
                 delegator->Deactivate( false, callerShouldWait );
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );

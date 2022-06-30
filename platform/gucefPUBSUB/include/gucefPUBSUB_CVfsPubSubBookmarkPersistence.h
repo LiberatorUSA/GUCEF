@@ -90,12 +90,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CVfsPubSubBookmarkPersistence : public CIPubSubBoo
                                      const CPubSubClientTopic& topic        ,
                                      TPubSubBookmarkVector& bookmark        , 
                                      UInt32 maxNrToLoad                     ) GUCEF_VIRTUAL_OVERRIDE;
-    
+                                            
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    bool GetBookmarkPersistenceRootPath( const CPubSubClient& client     ,
-                                         const CPubSubClientTopic& topic ,
-                                         CORE::CString& rootPath         );
+    bool GetBookmarkPersistenceRootPath( const CORE::CString& bookmarkNamespace ,
+                                         const CPubSubClient& client            ,
+                                         const CPubSubClientTopic& topic        ,
+                                         CORE::CString& rootPath                );
 
     bool GetBookmarkPersistenceFileName( const CPubSubBookmark& bookmark ,
                                          CORE::CString& bookmarkName     );
@@ -108,9 +109,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CVfsPubSubBookmarkPersistence : public CIPubSubBoo
 
     private:
 
+    void PerformMaxBookmarkFilesCleanup( const CORE::CString& bookmarkNamespace ,
+                                         const CPubSubClient& client            ,
+                                         const CPubSubClientTopic& topic        );
+
+    void PerformMaxBookmarkFilesCleanup( const CORE::CString& rootPath );
+
     CVfsPubSubBookmarkPersistenceConfig m_config;
     CORE::CDynamicBuffer m_serializationBuffer;
     CORE::CString m_bookmarkFilePostfix;
+    CORE::CString m_bookmarkFilePostfixFilter;
     MT::CMutex m_lock;
 };
 

@@ -127,7 +127,8 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
 CRedisClusterPubSubClientTopic::~CRedisClusterPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Disconnect();
+    CleanupRedisReaderThread();
+    Disconnect();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -640,9 +641,38 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CRedisClusterPubSubClientTopic::CleanupRedisReaderThread( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    try
+    {
+        // We use blocking "long polling" reads which means we needed a dedicated thread to block until there is data
+        // since Redis does not support pushing of data directly
+        // We will now clean up that thread
+
+        if ( !m_readerThread.IsNULL() )
+        {
+            if ( !m_client->GetThreadPool()->RequestTaskToStop( m_readerThread.StaticCast< CORE::CTaskConsumer >(), true ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):CleanupRedisReaderThread: Failed to stop dedicated redis reader thread" );
+            }
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):CleanupRedisReaderThread: exception: " + e.what() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
-{
+{GUCEF_TRACE;
+
     MT::CScopeMutex lock( m_lock );
 
     try

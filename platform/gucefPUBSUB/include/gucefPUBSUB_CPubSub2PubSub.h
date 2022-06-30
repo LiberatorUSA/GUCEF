@@ -372,6 +372,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         
         typedef MT::CTMailBox< CIPubSubMsg::TNoLockSharedPtr >                      TPubSubMsgPtrMailbox;
         typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
+        typedef std::map< CORE::UInt64, CPubSubBookmark >                           TUInt64ToBookmarkMap;
         typedef std::set< CORE::UInt64 >                                            TUInt64Set;
 
         CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
@@ -383,6 +384,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CPubSubClientSideMetrics* metrics;
         CORE::CDateTime lastBookmarkPersistSuccess;
         CORE::Int32 msgsSinceLastBookmarkPersist;
+        TUInt64ToBookmarkMap bookmarksOnMsgReceived;
 
         TopicLink( void );
         TopicLink( CPubSubClientTopic* t );
@@ -403,7 +405,29 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg, TopicLink& topicLink );
     
-    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg, TopicLink& topicLink );
+    /**
+     *  Attempts to update the bookmark persistance with the given bookmark
+     *  Note that if bookmarking is not supported then this is treated as a fyi no-op 
+     */
+    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg                  , 
+                                                 const CPubSubBookmark& msgBatchBookmark ,
+                                                 TopicLink& topicLink                    );
+
+    /**
+     *  Same functionality as the 'UpdateReceivedMessagesBookmarkAsNeeded' variant that accepts a bookmark except it
+     *  has the additional overhead of obtaining the bookmark itself through whatever means are supported.
+     *  If you already have the relevant bookmark you should use the other variant instead 
+     */
+    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg , 
+                                                 TopicLink& topicLink   );
+    
+    bool FindClosestMsgBatchBookmarkToMsg( const CIPubSubMsg& msg            ,                                                            
+                                           const TopicLink& topicLink        ,
+                                           UInt64& msgBatchBookmarkReceiveId ,
+                                           CPubSubBookmark& msgBatchBookmark );
+
+    void CleanupMsgBatchBookmarksUpTo( TopicLink& topicLink             , 
+                                       UInt64 msgBatchBookmarkReceiveId );
     
     typedef std::map< CPubSubClientTopic*, TopicLink > TopicMap;
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;

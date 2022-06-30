@@ -179,6 +179,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     bool SubscribeImpl( const std::string& readOffset );
 
+    void CleanupRedisReaderThread( void );
+
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
     private:

@@ -557,6 +557,7 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , metrics( GUCEF_NULL )
     , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
     , msgsSinceLastBookmarkPersist( 0 )
+    , bookmarksOnMsgReceived()
 {GUCEF_TRACE;
 
 }
@@ -573,6 +574,7 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopic* t )
     , metrics( GUCEF_NULL )
     , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
     , msgsSinceLastBookmarkPersist( 0 )
+    , bookmarksOnMsgReceived()
 {GUCEF_TRACE;
 
 }
@@ -1465,7 +1467,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                 "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s)" );
-
+            
             // We now broadcast the received messages to all other sides which is the purpose of this service
             TPubSubClientSideVector* sides = GUCEF_NULL;
             if ( GetAllSides( sides ) && GUCEF_NULL != sides )
@@ -1493,21 +1495,99 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                     ++i;
                 }
 
-                // If we successfully published but we dont need to wait on any acks then we can update bookmarks right now if applicable
-                // instead of waiting for the ack to do the same
-                if ( totalSuccess && !m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept )
                 {
                     const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
                     TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
                     if ( i != m_topics.end() )
                     {
                         TopicLink& topicLink = (*i).second;
-                        topicLink.msgsSinceLastBookmarkPersist += (Int32) msgs.size();
+                        CPubSubBookmark currentBookmark;
+                        if ( m_clientFeatures.supportsDerivingBookmarkFromMsg )
+                        {
+                            if ( !lastMsgRef->GetOriginClientTopic()->DeriveBookmarkFromMsg( *lastMsgRef, currentBookmark ) )
+                            {
+                                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):OnPubSubTopicMsgsReceived: Unable to derive bookmark from message even through its supported. Falling back to getting bookmark for the current message batch" );
 
-                        UpdateReceivedMessagesBookmarkAsNeeded( *lastMsgRef, topicLink );
-                    }
-                }
-            }            
+                                currentBookmark = lastMsgRef->GetOriginClientTopic()->GetCurrentBookmark();
+                            }
+                        }
+                        else
+                        {
+                            currentBookmark = lastMsgRef->GetOriginClientTopic()->GetCurrentBookmark();
+                        }
+                        CPubSubBookmark::TBookmarkType currentBookmarkType = currentBookmark.GetBookmarkType();
+
+                        switch ( currentBookmarkType )
+                        {
+                            case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_AVAILABLE:
+                            {
+                                // Better luck next batch, we will potentially not be able to use bookmarking to cover the current batch in isolation
+                                // if derivation of a bookmark from a message is not supported
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):OnPubSubTopicMsgsReceived: Current bookmark is temp not available for the current message batch" );
+                                break;
+                            }                            
+                            case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE:
+                            {
+                                // We should not get here, if we do there is some logic error in feature checking here or in 
+                                // bookmark management in the backend code
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):OnPubSubTopicMsgsReceived: Current bookmark obtained from backend came back as not applicable. This should not happen based on the feature set!" );
+                                break;
+                            }
+                            case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_INITIALIZED:
+                            {
+                                // We should not get here, if we do there is some logic error in feature checking here or in 
+                                // bookmark management in the backend code
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                    "):OnPubSubTopicMsgsReceived: Current bookmark obtained from backend came back as not initialized. This should not happen!" );
+                                break;
+                            }
+                            default:
+                            {
+                                // Per the spec the 'current' bookmark requested during this event and its callback handler will be 
+                                // bookmark position of the beginning of this message batch 'msgs'
+                                // As such even if the backend does not support deriving a bookmark from a message we can still use bookmarks
+                                // we just need perform some extra administration to keep track of them. Its the extra admin needs that make
+                                // the derivation of a bookmark directly from a message the preferred route as its likely to be more efficient
+                                if ( m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                                {
+                                    if ( !m_clientFeatures.supportsDerivingBookmarkFromMsg )
+                                    {
+                                        // note this this operation is in opposition to the one below where we dont need to keep track because we dont care
+                                        // about delayed acks. In that case you have the luxory of skipping this overhead
+                                        //
+                                        // Note that entries added here are removed at a later time via calls to CleanupMsgBatchBookmarksUpTo()
+                                        topicLink.bookmarksOnMsgReceived[ lastMsgRef->GetReceiveActionId() ] = currentBookmark;
+
+                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                            "):OnPubSubTopicMsgsReceived: Retaining bookmark at recieveActionId " + CORE::ToString( lastMsgRef->GetReceiveActionId() ) );
+                                    }
+                                }
+                                else
+                                {
+                                    // If we successfully published but we dont need to wait on any acks then we can update bookmarks right now if applicable
+                                    // instead of waiting for the ack to come back before doing the same thing
+                                    const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
+                                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
+                                    if ( i != m_topics.end() )
+                                    {
+                                        TopicLink& topicLink = (*i).second;
+                                        topicLink.msgsSinceLastBookmarkPersist += (Int32) msgs.size();
+
+                                        UpdateReceivedMessagesBookmarkAsNeeded( *lastMsgRef     , 
+                                                                                currentBookmark , 
+                                                                                topicLink       );
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }   
+                }  
+            }                
         }
     }
     catch ( const std::exception& e )
@@ -1519,12 +1599,13 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg , 
-                                                           TopicLink& topicLink   )
+CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg                  , 
+                                                           const CPubSubBookmark& msgBatchBookmark ,
+                                                           TopicLink& topicLink                    )
 {GUCEF_TRACE;
 
     if ( !m_clientFeatures.supportsBookmarkingConcept )
-        return true;
+        return true; // not supported, treat as fyi no-op
     
     // Check criterea for our generic bookmark persistance     
     if ( !m_pubsubBookmarkPersistence.IsNULL() && 
@@ -1533,30 +1614,51 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
                 ( m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && topicLink.lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs ) 
             ) )
     {
+        if ( m_pubsubBookmarkPersistence->StoreBookmark( m_bookmarkNamespace                , 
+                                                         *m_pubsubClient.GetPointerAlways() , 
+                                                         *topicLink.topic                   ,  
+                                                         msgBatchBookmark                   ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):UpdateReceivedMessagesBookmarkAsNeeded: Stored bookmark. receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
+
+            topicLink.lastBookmarkPersistSuccess = CORE::CDateTime::NowUTCDateTime();
+            topicLink.msgsSinceLastBookmarkPersist = 0;
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to store bookmark. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
+                ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
+                GetMsgAttributesForLog( msg ) );
+            return false;
+        }
+    }
+
+    // not supported due to config or does not apply due to storage contraints
+    // either way... treat as fyi no-op
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg , 
+                                                           TopicLink& topicLink   )
+{GUCEF_TRACE;
+
+    if ( m_clientFeatures.supportsBookmarkingConcept )
+    {    
+        // Deriving a bookmark from a message is preferred if supported due to the reduced administrative overhead
+        // versus the assumed-to-be-implemented-more-efficiently 'DeriveBookmarkFromMsg' operation
         CPubSubBookmark bookmark;
         if ( m_clientFeatures.supportsDerivingBookmarkFromMsg )
         {
             if ( topicLink.topic->DeriveBookmarkFromMsg( msg, bookmark ) )
             {
-                if ( m_pubsubBookmarkPersistence->StoreBookmark( m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace , 
-                                                                 *m_pubsubClient.GetPointerAlways()                                , 
-                                                                 *topicLink.topic                                                  ,  
-                                                                 bookmark                                                          ) )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):UpdateReceivedMessagesBookmarkAsNeeded: Stored bookmark. receiveActionId=" + CORE::ToString( msg.GetReceiveActionId() ) );
-
-                    topicLink.lastBookmarkPersistSuccess = CORE::CDateTime::NowUTCDateTime();
-                    topicLink.msgsSinceLastBookmarkPersist = 0;
-                }
-                else
-                {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to store bookmark. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
-                        ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
-                        GetMsgAttributesForLog( msg ) );
-                    return false;
-                }
+                // this message will represent the 'bookmarked' batch which may differ from the batch size in which it was originally received
+                // functionality this does not matter as the effect achieved is the same
+                return UpdateReceivedMessagesBookmarkAsNeeded( msg, bookmark, topicLink );
             }
             else
             {
@@ -1567,9 +1669,93 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
                 return false;
             }
         }
+        else
+        {
+            // find the bookmark associated with the message batch
+            // this gets a tad tricky since we do not store bookmarks for every message in a batch plus the ones we do store at the batch beginning
+            // may not line up since this message is likely not the exact beginning of a batch
+            // As such we rely on the receiveActionId to help us out since we know it is required to always increment
+            // We can use this in a sorted map to find the closest bookmark <= the position of this message
+            UInt64 msgBatchBookmarkReceiveId = 0;
+            if ( FindClosestMsgBatchBookmarkToMsg( msg, topicLink, msgBatchBookmarkReceiveId, bookmark ) )
+            {
+                // the message passed will represent the closest 'bookmarked' batch which may differ from the batch size in which it was originally received
+                // functionality this does not matter as the effect achieved is the same
+                if ( UpdateReceivedMessagesBookmarkAsNeeded( msg, bookmark, topicLink ) )
+                {
+                    CleanupMsgBatchBookmarksUpTo( topicLink, msgBatchBookmarkReceiveId );
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to locate nearest msg batch bookmark for message. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
+                    ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
+                    GetMsgAttributesForLog( msg ) );
+                return false;
+            }
+        }
     }
 
+    // not supported, treat as fyi no-op
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::FindClosestMsgBatchBookmarkToMsg( const CIPubSubMsg& msg            ,                                                            
+                                                     const TopicLink& topicLink        ,
+                                                     UInt64& msgBatchBookmarkReceiveId ,
+                                                     CPubSubBookmark& msgBatchBookmark )
+{GUCEF_TRACE;
+
+    CORE::UInt64 msgReceiveActionId = msg.GetReceiveActionId();
+    CORE::UInt64 lastBestBmReceiveActionId = 0;
+    const CPubSubBookmark* lastBestBm = GUCEF_NULL;
+
+    // the map will store the IDs in ascending order, we can count on that
+    TopicLink::TUInt64ToBookmarkMap::const_iterator i = topicLink.bookmarksOnMsgReceived.begin();
+    while ( i != topicLink.bookmarksOnMsgReceived.end() )
+    {
+        CORE::UInt64 bmReceiveActionId = (*i).first;
+        if ( bmReceiveActionId <= msgReceiveActionId )
+        {
+            lastBestBmReceiveActionId = bmReceiveActionId;
+            lastBestBm = &(*i).second;
+        }
+        else
+            break;
+        ++i;
+    }
+
+    if ( 0 != lastBestBmReceiveActionId && GUCEF_NULL != lastBestBm )
+    {
+        // We found closest bookmark we can use which matches or pre-dates the bookmark
+        // that would have existed for the message given
+        msgBatchBookmarkReceiveId = lastBestBmReceiveActionId;
+        msgBatchBookmark.LinkTo( *lastBestBm );
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::CleanupMsgBatchBookmarksUpTo( TopicLink& topicLink             , 
+                                                 UInt64 msgBatchBookmarkReceiveId )
+{GUCEF_TRACE;
+
+    // the map will store the IDs in ascending order, we can count on that, hence we can delete the entire range
+    TopicLink::TUInt64ToBookmarkMap::iterator i = topicLink.bookmarksOnMsgReceived.find( msgBatchBookmarkReceiveId );
+    if ( i != topicLink.bookmarksOnMsgReceived.end() )
+    {
+        topicLink.bookmarksOnMsgReceived.erase( topicLink.bookmarksOnMsgReceived.begin(), i );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

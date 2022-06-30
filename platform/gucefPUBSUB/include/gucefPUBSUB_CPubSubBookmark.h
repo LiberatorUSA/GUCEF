@@ -129,6 +129,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubBookmark
 
     CORE::CString ToString( void ) const;
 
+    /**
+     *  Same as the assignment operator except that the variant data is linked not copied
+     *  This provides a small performance boost when said variant is reliant on dynamic memory
+     *  Standard rules wrt LinkTo() behavior applies
+     */
+    CPubSubBookmark& LinkTo( const CPubSubBookmark& srcBookmark );
+
     private:
 
     TBookmarkType m_bmType;

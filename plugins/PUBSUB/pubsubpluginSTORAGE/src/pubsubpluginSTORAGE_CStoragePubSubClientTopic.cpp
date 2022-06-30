@@ -977,6 +977,10 @@ PUBSUB::CPubSubBookmark
 CStoragePubSubClientTopic::GetCurrentBookmark( void )
 {GUCEF_TRACE;
 
+    // This is the only way to obtain a bookmark from this backend
+    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. 
+    // As such it cannot support deriving a bookmark directly from a message, it can however provide a bookmark for the currently read batch of data
+    
     MT::CScopeMutex lock( m_lock );
 
     if ( SyncBookmarkInfoToBookmark( m_currentBookmarkInfo, m_currentBookmark ) )
@@ -992,9 +996,8 @@ CStoragePubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg
                                                   PUBSUB::CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;
 
-    bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX );
-    bookmark.SetBookmarkData( msg.GetMsgIndex() );
-    return true;
+    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. As such it cannot support this
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1003,8 +1006,8 @@ bool
 CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    PUBSUB::CPubSubBookmark bookmark( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX, msg.GetMsgIndex() );
-    return AcknowledgeReceiptImpl( bookmark, msg.GetReceiveActionId() );
+    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. As such it cannot support this
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

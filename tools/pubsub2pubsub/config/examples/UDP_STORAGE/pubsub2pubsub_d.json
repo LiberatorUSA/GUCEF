@@ -104,9 +104,14 @@
 							"PubSubBookmarkPersistenceConfig": {
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
+							    "autoPersistAlways": false,
+								"autoPersistIfClientSideBookmarksNeeded": true,
+								"autoPersistIntervalInMs": 1000,
+								"autoPersistMsgInterval": 1000,
+								"maxNrOfBookmarksToKeep": 10,								
 								"CustomConfig": {
 									"vfsRootPath": "InstallPath/bookmarks",
-									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}							
 						},
@@ -186,9 +191,14 @@
 							"PubSubBookmarkPersistenceConfig": {
 								"bookmarkPersistenceType": "VFS",
 								"bookmarkNamespace": "",
+							    "autoPersistAlways": false,
+								"autoPersistIfClientSideBookmarksNeeded": true,
+								"autoPersistIntervalInMs": 1000,
+								"autoPersistMsgInterval": 1000,
+								"maxNrOfBookmarksToKeep": 10,								
 								"CustomConfig": {
 									"vfsRootPath": "InstallPath/bookmarks",
-									"persistenceStructure": "clientType/{clientType}/topicName/{topicName}"
+									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}							
 						}

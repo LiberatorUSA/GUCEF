@@ -158,9 +158,11 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( void )
     , m_config()
     , m_serializationBuffer()
     , m_bookmarkFilePostfix( ".v" + CORE::ToString( CPubSubBookmarkBinarySerializer::CurrentFormatVersion ) + ".pubsubbookmark" )
+    , m_bookmarkFilePostfixFilter()
     , m_lock()
 {GUCEF_TRACE;
 
+    m_bookmarkFilePostfixFilter = '*' + m_bookmarkFilePostfix; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -170,8 +172,11 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( const CPubSubBookm
     , m_config( config )
     , m_serializationBuffer()
     , m_bookmarkFilePostfix( ".v" + CORE::ToString( CPubSubBookmarkBinarySerializer::CurrentFormatVersion ) + ".pubsubbookmark" )
+    , m_bookmarkFilePostfixFilter()
     , m_lock()
 {GUCEF_TRACE;
+
+    m_bookmarkFilePostfixFilter = '*' + m_bookmarkFilePostfix;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -181,6 +186,7 @@ CVfsPubSubBookmarkPersistence::CVfsPubSubBookmarkPersistence( const CVfsPubSubBo
     , m_config( src.m_config )
     , m_serializationBuffer( src.m_serializationBuffer )
     , m_bookmarkFilePostfix( src.m_bookmarkFilePostfix )
+    , m_bookmarkFilePostfixFilter( src.m_bookmarkFilePostfixFilter )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -205,6 +211,7 @@ CVfsPubSubBookmarkPersistence::operator=( const CVfsPubSubBookmarkPersistence& s
         CIPubSubBookmarkPersistence::operator=( src );
         m_config = src.m_config;
         m_bookmarkFilePostfix = src.m_bookmarkFilePostfix;
+        m_bookmarkFilePostfixFilter = src.m_bookmarkFilePostfixFilter;
     }
     return *this;
 }
@@ -212,9 +219,10 @@ CVfsPubSubBookmarkPersistence::operator=( const CVfsPubSubBookmarkPersistence& s
 /*-------------------------------------------------------------------------*/
 
 bool 
-CVfsPubSubBookmarkPersistence::GetBookmarkPersistenceRootPath( const CPubSubClient& client     ,
-                                                               const CPubSubClientTopic& topic ,
-                                                               CORE::CString& rootPath         )
+CVfsPubSubBookmarkPersistence::GetBookmarkPersistenceRootPath( const CORE::CString& bookmarkNamespace ,
+                                                               const CPubSubClient& client            ,
+                                                               const CPubSubClientTopic& topic        ,
+                                                               CORE::CString& rootPath                )
 {GUCEF_TRACE;
     
     MT::CScopeMutex lock( m_lock );
@@ -222,7 +230,8 @@ CVfsPubSubBookmarkPersistence::GetBookmarkPersistenceRootPath( const CPubSubClie
     const CORE::CString& clientType = client.GetType();
     const CORE::CString& topicName = topic.GetTopicName();
 
-    rootPath = m_config.persistenceStructure.ReplaceSubstr( "{clientType}", clientType );
+    rootPath = m_config.persistenceStructure.ReplaceSubstr( "{bookmarkNamespace}", bookmarkNamespace );
+    rootPath = rootPath.ReplaceSubstr( "{clientType}", clientType );
     rootPath = rootPath.ReplaceSubstr( "{topicName}", topicName );
     rootPath = CORE::CombinePath( m_config.vfsRootPath, rootPath );
 
@@ -253,9 +262,10 @@ CVfsPubSubBookmarkPersistence::GetLatestBookmark( const CORE::CString& bookmarkN
     MT::CScopeMutex lock( m_lock );
 
     CORE::CString rootPath;
-    if ( !GetBookmarkPersistenceRootPath( client   ,
-                                          topic    ,
-                                          rootPath ) )
+    if ( !GetBookmarkPersistenceRootPath( bookmarkNamespace ,
+                                          client            ,
+                                          topic             ,
+                                          rootPath          ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmark: failed to generate path" );
         return false;
@@ -264,7 +274,7 @@ CVfsPubSubBookmarkPersistence::GetLatestBookmark( const CORE::CString& bookmarkN
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
     CORE::CString::StringVector bmFilePaths;
-    vfs.GetFileList( bmFilePaths, rootPath, false, true, "*" + m_bookmarkFilePostfix, 25 );
+    vfs.GetFileList( bmFilePaths, rootPath, false, true, m_bookmarkFilePostfixFilter, 25 );
 
     CORE::CString::StringVector::iterator i = bmFilePaths.begin();
     while ( i != bmFilePaths.end() )
@@ -326,9 +336,10 @@ CVfsPubSubBookmarkPersistence::StoreBookmark( const CORE::CString& bookmarkNames
     if ( serializeOk )
     {
         CORE::CString rootPath;
-        if ( !GetBookmarkPersistenceRootPath( client   ,
-                                              topic    ,
-                                              rootPath ) )
+        if ( !GetBookmarkPersistenceRootPath( bookmarkNamespace ,
+                                              client            ,
+                                              topic             ,
+                                              rootPath          ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:StoreBookmark: failed to generate root path" );
             return false;
@@ -339,6 +350,10 @@ CVfsPubSubBookmarkPersistence::StoreBookmark( const CORE::CString& bookmarkNames
         if ( vfs.StoreAsFile( fullPath, m_serializationBuffer, 0, true ) )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:StoreBookmark: Successfully stored bookmark (" + bookmark.ToString() + ") at " + fullPath );
+
+            // Also clean up older files as we go
+            PerformMaxBookmarkFilesCleanup( rootPath );
+
             return true;
         }
         else
@@ -360,20 +375,61 @@ bool
 CVfsPubSubBookmarkPersistence::GetLatestBookmarks( const CORE::CString& bookmarkNamespace ,
                                                    const CPubSubClient& client            ,
                                                    const CPubSubClientTopic& topic        ,
-                                                   TPubSubBookmarkVector& bookmark        , 
+                                                   TPubSubBookmarkVector& bookmarks       , 
                                                    UInt32 maxNrToLoad                     )
 {GUCEF_TRACE;
 
     CORE::CString rootPath;
-    if ( !GetBookmarkPersistenceRootPath( client   ,
-                                          topic    ,
-                                          rootPath ) )
+    if ( !GetBookmarkPersistenceRootPath( bookmarkNamespace ,
+                                          client            ,
+                                          topic             ,
+                                          rootPath          ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmarks: failed to generate path" );
         return false;
     } 
 
-    return false;
+    MT::CScopeMutex lock( m_lock );
+    
+    // Since bookmark files have the datetime in the same we can just get a list of files from the VFS
+    // they would be automatically alphabetically ordered based on age due to the naming
+    CString::StringVector files;
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    vfs.GetFileList( files, rootPath, false, true, m_bookmarkFilePostfixFilter, maxNrToLoad );
+
+    CORE::CString::StringVector::iterator i = files.begin();
+    while ( i != files.end() )
+    {
+        CORE::CDynamicBuffer bookmarkResource;
+        if ( vfs.LoadFile( bookmarkResource, (*i), "rb" ) )
+        {
+            CPubSubBookmark bookmark;
+            if ( CPubSubBookmarkBinarySerializer::Deserialize( bookmark, false, bookmarkResource ) )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmarks: Successfully obtained bookmark (" + bookmark.ToString() + ") from " + (*i) );
+                bookmarks.push_back( bookmark );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmarks: Failed to deserialize bookmark from data loaded from " + (*i) );
+                
+                // We are looking for a list of 'latest', no gaps allowed in the ordering.
+                // As such we abort if we fail to obtain a bookmark
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:GetLatestBookmarks: Failed to load data from " + (*i) );
+
+            // We are looking for a list of 'latest', no gaps allowed in the ordering.
+            // As such we abort if we fail to obtain a bookmark
+            return false;
+        }
+        ++i;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -383,6 +439,79 @@ CVfsPubSubBookmarkPersistence::GetType( void ) const
 {GUCEF_TRACE;
     
     return BookmarkPersistenceType;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVfsPubSubBookmarkPersistence::PerformMaxBookmarkFilesCleanup( const CORE::CString& rootPath )
+{GUCEF_TRACE;
+
+    // Since bookmark files have the datetime in the same we can just get a list of files from the VFS
+    // they would be automatically alphabetically ordered based on age due to the naming
+    CString::StringVector files;
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    vfs.GetFileList( files, rootPath, false, true, m_bookmarkFilePostfixFilter, GUCEF_UINT32MAX );
+
+    if ( files.size() > (size_t) m_config.maxNrOfBookmarksToKeep )
+    {    
+        CString::StringVector failedFiles;
+        CString::StringVector deletedFiles;
+        deletedFiles.reserve( files.size() - (size_t) m_config.maxNrOfBookmarksToKeep );
+
+        while ( files.size() > (size_t) m_config.maxNrOfBookmarksToKeep )
+        {
+            const CString& fileToDelete = (*files.begin());
+            if ( vfs.DeleteFile( fileToDelete, true ) )
+            {
+                deletedFiles.push_back( fileToDelete );
+            }
+            else
+            {
+                failedFiles.push_back( fileToDelete );
+            }
+            files.erase( files.begin() );
+        }
+
+        CString::StringVector::iterator i = failedFiles.begin();
+        while ( i != failedFiles.end() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "VfsPubSubBookmarkPersistence: Failed to delete older bookmark file: " + (*i) );
+            ++i;
+        }
+
+        i = deletedFiles.begin();
+        while ( i != deletedFiles.end() )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence: Deleted old bookmark file: " + (*i) );
+            ++i;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVfsPubSubBookmarkPersistence::PerformMaxBookmarkFilesCleanup( const CORE::CString& bookmarkNamespace ,
+                                                               const CPubSubClient& client            ,
+                                                               const CPubSubClientTopic& topic        )
+{GUCEF_TRACE;
+
+    // Is bookmark file max enabled? 
+    if ( m_config.maxNrOfBookmarksToKeep < 1 )
+        return;
+
+    CORE::CString rootPath;
+    if ( !GetBookmarkPersistenceRootPath( bookmarkNamespace ,
+                                          client            ,
+                                          topic             ,
+                                          rootPath          ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsPubSubBookmarkPersistence:PerformMaxBookmarkFilesCleanup: failed to generate path" );
+        return;
+    } 
+
+    PerformMaxBookmarkFilesCleanup( rootPath );
 }
 
 /*-------------------------------------------------------------------------//

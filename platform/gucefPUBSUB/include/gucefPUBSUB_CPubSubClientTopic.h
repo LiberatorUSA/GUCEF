@@ -189,10 +189,19 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
      *  Allows for making a request to the pub-sub backend for throttling the rate at which new messages are received for the topic
      *  This is an optional feature, not all backends may support it. You can query the backend's supported features and check
      *  the "supportsSubscriberRateThrottling" feature flag to verify whether this feature is supported
-     *  Note that a rate that is smaller than 0 is interpreted as "no rate limit"
+     *  Note that a rate that is smaller or equal to 0 is to be interpreted as "no rate limit"
      */
     virtual bool RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPerSec );
 
+    /**
+     *  If a backend has bookmark support then it is required to implement this member function such
+     *  that it returns the bookmark for the currently notified batch of messages received with the bookmark
+     *  representing the begin position of said batch, meaning a retransmission based on said bookmark as a starting position
+     *  would include the entirety of the current batch.
+     *  This garantee is true for the duration of syncronous event handling of the 'MsgsRecievedEvent' event
+     *  This becomes exta important when performing bookmark management for a backend that does not supporting deriving a bookmark
+     *  from a message in which case this becomes the only avenue by which you would know the bookmark to use for a given batch of messages 
+     */ 
     virtual CPubSubBookmark GetCurrentBookmark( void ) = 0;
 
     virtual bool Disconnect( void ) = 0;
@@ -234,7 +243,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
 
     /**
      *  Ack that the given message was successfully received and/or handled by the application
-     *  If the backend does not support ack'ing messages this operation will always fail
+     *  If the backend does not support ack'ing messages this operation should be implement as 
+     *  a no-op returning success (true) accepting it as an fyi.
+     *
+     *  If the backend does support bookmarks but cannot derive bookmarks from messages then the 
+     *  operation should fail because the wrong variant of 'AcknowledgeReceipt' is being used based on
+     *  the advertised backend capabilities. In that case the 'AcknowledgeReceipt' that accepts a 
+     *  bookmark should be used instead.
      *
      *  @return success flag with true on success per backend criterea or false on failure     
      */    
@@ -244,6 +259,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     /**
      *  If supported by the backend implementation this will set the given bookmark
      *  to information that act for said bookmark indicates locality of this message 
+     *  If per the advertised backend features the backend does not support deriving a bookmark from a message
+     *  then this operation will always fail for said backend. 
+     *  In such a case you should be using the GetCurrentBookmark() mechanic instead if bookmarking as a whole is supported
      */
     virtual bool DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const;
 };

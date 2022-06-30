@@ -84,7 +84,8 @@ bool
 CRedisClusterPubSubClientTopicReader::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    m_ownerTopic->RedisRead();
+    if ( GUCEF_NULL != m_ownerTopic )
+        m_ownerTopic->RedisRead();
     return false;
 }
 
