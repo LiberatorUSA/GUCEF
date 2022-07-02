@@ -899,8 +899,11 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:InitQueueInfo: Obtained properties of MSMQ queue with name \"" + q.queueName + 
             "\" as follows: " + q.queueProperties.ToString() );
 
-        if ( !q.queueProperties.queueLabel.IsNULLOrEmpty() )
-            q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.queueLabel );
+        if ( !q.queueProperties.pathName.IsNULLOrEmpty() )
+        {
+            q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName );
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Switched metrics friendly queue name for \"" + q.queueName + "\" to \"" + q.queueProperties.pathName + "\" as \"" + q.metricFriendlyQueueName + "\" for human readability and tracing" );
+        }
     }
 
     return true; // best effort is fine

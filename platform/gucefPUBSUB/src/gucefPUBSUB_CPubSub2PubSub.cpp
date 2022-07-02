@@ -2159,6 +2159,12 @@ CPubSubClientSide::ConnectPubSubClient( void )
     else
         m_bookmarkNamespace = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::CString( m_side ); 
 
+    // Set the pubsub ID prefix automatically if so desired:
+    // Depending on the context in which pubsub is used you'd want a different namespace
+    // In this case we need to take care to account for the channel and side relationship to provide a unique storage area / namespace / prefix or rely on config
+    if ( pubSubConfig.pubsubIdPrefix == "{auto}"  )
+        pubSubConfig.pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::CString( m_side ); 
+
     if ( m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client

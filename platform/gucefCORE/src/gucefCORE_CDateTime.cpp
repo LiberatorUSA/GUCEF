@@ -105,6 +105,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static bool DateTimeToWin32FileTime( const CDateTime& datetime, FILETIME& fileTime )
     {
         ::SYSTEMTIME systemTime;
+        memset( &systemTime, 0, sizeof( systemTime ) );
         DateTimeToWin32SystemTime( datetime, systemTime );
 
         if ( datetime.IsUTC() )
@@ -118,6 +119,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
             tz.Bias = datetime.GetTimeZoneUTCOffsetInMins();
 
             ::SYSTEMTIME utcTime;
+            memset( &utcTime, 0, sizeof( utcTime ) );
             if ( ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime ) == TRUE )
                 return ::SystemTimeToFileTime( &utcTime, &fileTime ) == TRUE;
             else
@@ -140,6 +142,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static void Win32FileTimeToDateTime( const FILETIME& fileTime, CDateTime& datetime )
     {
         ::SYSTEMTIME systemTime;
+        memset( &systemTime, 0, sizeof( systemTime ) );
         ::FileTimeToSystemTime( &fileTime, &systemTime );
 
         Win32SystemTimeToDateTime( systemTime, 0, datetime );
@@ -176,6 +179,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static CDateTime DateTimeToUtc( const CDateTime& datetime )
     {
         ::SYSTEMTIME systemTime;
+        memset( &systemTime, 0, sizeof( systemTime ) );
         DateTimeToWin32SystemTime( datetime, systemTime );
 
         ::TIME_ZONE_INFORMATION tz;
@@ -183,6 +187,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         tz.Bias = datetime.GetTimeZoneUTCOffsetInMins();
 
         ::SYSTEMTIME utcTime;
+        memset( &utcTime, 0, sizeof( utcTime ) );
         ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
 
         CDateTime utcDatetime;
@@ -196,9 +201,11 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static Int32 CompareDateTime( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
         ::FILETIME fileTimeA;
+        memset( &fileTimeA, 0, sizeof( fileTimeA ) );
         DateTimeToWin32FileTime( datetimeA, fileTimeA );
 
         ::FILETIME fileTimeB;
+        memset( &fileTimeB, 0, sizeof( fileTimeB ) );
         DateTimeToWin32FileTime( datetimeB, fileTimeB );
 
         return ::CompareFileTime( &fileTimeA, &fileTimeB );
@@ -228,8 +235,10 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static CDateTime NowLocalDateTime( void )
     {
         ::SYSTEMTIME utcSystemTime;
+        memset( &utcSystemTime, 0, sizeof( utcSystemTime ) );
         ::GetSystemTime( &utcSystemTime );
         ::SYSTEMTIME localSystemTime;
+        memset( &localSystemTime, 0, sizeof( localSystemTime ) );
         ::SystemTimeToTzSpecificLocalTime( NULL, &utcSystemTime, &localSystemTime );
 
         CDateTime localDatetime;
@@ -240,6 +249,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static CDateTime NowUTCDateTime( void )
     {
         ::SYSTEMTIME systemTime;
+        memset( &systemTime, 0, sizeof( systemTime ) );
         ::GetSystemTime( &systemTime );
 
         CDateTime utcDatetime;
@@ -255,7 +265,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ULARGE_INTEGER memoryAllignedUInt64;
         memoryAllignedUInt64.QuadPart = filettimeDt;
 
-        FILETIME filetime;
+        ::FILETIME filetime;
         filetime.dwLowDateTime = memoryAllignedUInt64.LowPart;
         filetime.dwHighDateTime = memoryAllignedUInt64.HighPart;
 
@@ -264,7 +274,8 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
 
     static UInt64 ToUnixEpochBasedTicksInMillisecs( const CDateTime& datetime )
     {
-        FILETIME fileTime;
+        ::FILETIME fileTime;
+        memset( &fileTime, 0, sizeof( fileTime ) );
         DateTimeToWin32FileTime( datetime, fileTime );
 
         ULARGE_INTEGER memoryAllignedUInt64;
@@ -808,6 +819,15 @@ CDateTime::operator<=( const CDateTime& other ) const
 {GUCEF_TRACE;
 
     return (*this) < other || (*this) == other;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 
+CDateTime::Compare( const CDateTime& other ) const
+{GUCEF_TRACE;
+
+    return COSDateTimeUtils::CompareDateTime( *this, other );
 }
 
 /*-------------------------------------------------------------------------*/

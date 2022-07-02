@@ -157,8 +157,8 @@ LoadConfig( const CORE::CString& bootstrapConfigPath   ,
     const CORE::CString bootstrapConfigFile = "MsmqMetrics_bootstrap_d.ini";
     const CORE::CString configFile = "MsmqMetrics_d.ini";
     #else
-    const CORE::CString bootstrapConfigFile = "MsmqMetrics_bootstrap_d.ini";
-    const CORE::CString configFile = "MsmqMetrics_d.ini";
+    const CORE::CString bootstrapConfigFile = "MsmqMetrics_bootstrap.ini";
+    const CORE::CString configFile = "MsmqMetrics.ini";
     #endif
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();

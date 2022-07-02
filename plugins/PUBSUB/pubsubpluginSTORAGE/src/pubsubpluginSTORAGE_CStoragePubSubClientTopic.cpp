@@ -194,6 +194,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_currentBookmarkInfo()
     , m_currentBookmark()
     , m_vfsFilePostfix( GenerateDefaultVfsStorageContainerFileExt() )
+    , m_vfsRootPath()
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
     , m_encodeSizeRatio( -1 )
@@ -669,6 +670,18 @@ CStoragePubSubClientTopic::GenerateMetricsFriendlyTopicName( const CORE::CString
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CStoragePubSubClientTopic::ResolveVfsRootPath( void ) const
+{GUCEF_TRACE;
+
+    CORE::CString vfsRootPath = m_config.vfsStorageRootPath.ReplaceSubstr( "{pubsubIdPrefix}", m_client->GetConfig().pubsubIdPrefix );    
+    vfsRootPath = vfsRootPath.ReplaceSubstr( "{topicName}", m_config.topicName );
+    vfsRootPath = vfsRootPath.ReplaceSubstr( "{metricsFriendlyTopicName}", m_metricFriendlyTopicName );
+    return vfsRootPath;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
@@ -677,7 +690,8 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
 
     m_config = config;
 
-    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
+    m_vfsRootPath = ResolveVfsRootPath();    
 
     return true;
 }
@@ -1007,7 +1021,8 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
     // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. As such it cannot support this
-    return false;
+    // treat as advisory fyi
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1299,7 +1314,7 @@ CStoragePubSubClientTopic::GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 l
 
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
     VFS::CVFS::TStringVector index;
-    vfs.GetFileList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true );
+    vfs.GetFileList( index, m_vfsRootPath, false, true, fileFilter, true );
 
     // The index is already alphabetically ordered and since we use the datetime as the part of filename we can leverage that
     // to get the last produced file
@@ -1582,7 +1597,7 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
 
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
     VFS::CVFS::TStringVector index;
-    vfs.GetFileList( index, m_config.vfsStorageRootPath, false, true, fileFilter, true );
+    vfs.GetFileList( index, m_vfsRootPath, false, true, fileFilter, true );
 
     VFS::CVFS::TStringVector::iterator i = index.begin();
     while ( i != index.end() )
@@ -1676,7 +1691,7 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
             {
                 msgBatchDt.SetMilliseconds( msgBatchDt.GetMilliseconds() + loopIndex );
                 vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
-                vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+                vfsStoragePath = CORE::CombinePath( m_vfsRootPath, vfsFilename );
                 ++loopIndex;
             }
             while ( vfs.FileExists( vfsStoragePath ) );
@@ -1709,7 +1724,7 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
             {
                 msgBatchDt.SetMilliseconds( msgBatchDt.GetMilliseconds() + loopIndex );
                 vfsFilename = firstMsgDt.ToIso8601DateTimeString( false, true ) + '_' + lastMsgDt.ToIso8601DateTimeString( false, true )  + '_' + msgBatchDt.ToIso8601DateTimeString( false, true ) + m_vfsFilePostfix;
-                vfsStoragePath = CORE::CombinePath( m_config.vfsStorageRootPath, vfsFilename );
+                vfsStoragePath = CORE::CombinePath( m_vfsRootPath, vfsFilename );
                 vfsEncodedStoragePath = vfsStoragePath + '.' + m_config.encodeCodecName;  
                 ++loopIndex;
             }

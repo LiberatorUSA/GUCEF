@@ -118,6 +118,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     bool operator<=( const CDateTime& other ) const;
 
+    Int32 Compare( const CDateTime& other ) const;
+
     bool IsWithinRange( const CDateTime& a, const CDateTime& b, bool includingBoundaryItself = true ) const;
 
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;

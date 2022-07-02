@@ -2911,8 +2911,8 @@ CMsmqPubSubClientTopic::InitQueueInfo( MsmqQueue& q, const CMsmqPubSubClientTopi
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:InitQueueInfo: Obtained properties of MSMQ queue with name \"" + q.queueName + 
             "\" as follows: " + q.queueProperties.ToString() );
 
-        if ( !q.queueProperties.queueLabel.IsNULLOrEmpty() && "private" != q.queueProperties.queueLabel )
-            q.metricFriendlyQueueName = GenerateMetricsFriendlyTopicName( q.queueProperties.queueLabel );
+        if ( !q.queueProperties.pathName.IsNULLOrEmpty() && "private" != q.queueProperties.pathName )
+            q.metricFriendlyQueueName = GenerateMetricsFriendlyTopicName( q.queueProperties.pathName );
     }
 
     return true; // best effort is fine

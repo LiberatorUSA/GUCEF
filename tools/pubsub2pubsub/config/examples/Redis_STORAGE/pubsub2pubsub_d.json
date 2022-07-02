@@ -50,7 +50,7 @@
 								"pubsubClientType": "ClusteredRedis",
 								"reconnectDelayInMs": 1000,
 								"CustomConfig": {
-								},
+								},								
 								"Topics": {
 									"0": {
 										"PubSubClientTopicConfig": {
@@ -89,7 +89,8 @@
 									"supportsSubscriberMsgReceivedAck": true,
 									"supportsSubscriberRateThrottling": true,
 									"supportsSubscribing": true,
-									"supportsTopicIndexBasedBookmark": false
+									"supportsTopicIndexBasedBookmark": false,
+									"supportsSubscribingUsingBookmark": true
 								}
 							},
 							"PubSubBookmarkPersistenceConfig": {
@@ -99,9 +100,9 @@
 								"autoPersistIfClientSideBookmarksNeeded": true,
 								"autoPersistIntervalInMs": 1000,
 								"autoPersistMsgInterval": 1000,
-								"maxNrOfBookmarksToKeep": 10,								
+								"maxNrOfBookmarksToKeep": 10,
 								"CustomConfig": {
-									"vfsRootPath": "InstallPath/bookmarks",
+									"vfsRootPath": "InstallPath/pubsub/bookmarks",
 									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}								
@@ -114,13 +115,14 @@
 							"maxMsgPublishRetryAttempts": 20,
 							"maxMsgPublishRetryTotalTimeInMs": 60000,
 							"maxPublishedMsgInFlightTimeInMs": 240000,
-							"maxTotalMsgsInFlight": 500000,
+							"maxTotalMsgsInFlight": 50000,
 							"performPubSubInDedicatedThread": true,
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 							"PubSubClientConfig": {
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
+								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
@@ -129,12 +131,12 @@
 											"needPublishSupport": true,
 											"needSubscribeSupport": true,
 											"preferDedicatedConnection": false,
-											"topicName": "pubsub",
-											"maxTotalMsgsInFlight": 500000,											
+											"topicName": "msgcapture",
+											"maxTotalMsgsInFlight": 50000,											
 											"CustomConfig": {
-												"desiredMinimalSerializedBlockSize": 25600,
+												"desiredMinimalSerializedBlockSize": 52428800,
 												"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-												"vfsStorageRootPath": "InstallPath",
+												"vfsStorageRootPath": "InstallPath/pubsub/storage/{pubsubIdPrefix}/{metricsFriendlyTopicName}",
 												"vfsFileExtention": "pubsubcapture",
 												"encodeCodecFamily": "",
 												"encodeCodecName": "",
@@ -176,7 +178,8 @@
 									"supportsSubscriberMsgReceivedAck": false,
 									"supportsSubscriberRateThrottling": false,
 									"supportsSubscribing": true,
-									"supportsTopicIndexBasedBookmark": false
+									"supportsTopicIndexBasedBookmark": false,
+									"supportsSubscribingUsingBookmark": true
 								}
 							},
 							"PubSubBookmarkPersistenceConfig": {
@@ -185,10 +188,10 @@
 							    "autoPersistAlways": false,
 								"autoPersistIfClientSideBookmarksNeeded": true,
 								"autoPersistIntervalInMs": 1000,
-								"autoPersistMsgInterval": 1000,
-								"maxNrOfBookmarksToKeep": 10,								
+								"autoPersistMsgInterval": 1000,								
+								"maxNrOfBookmarksToKeep": 10,
 								"CustomConfig": {
-									"vfsRootPath": "InstallPath/bookmarks",
+									"vfsRootPath": "InstallPath/pubsub/bookmarks",
 									"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 								}
 							}								

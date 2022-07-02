@@ -313,6 +313,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     void FinalizeWriteBuffer( void );
 
     void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
+
+    CORE::CString ResolveVfsRootPath( void ) const;
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -351,6 +353,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TStorageBookmarkInfo m_currentBookmarkInfo;
     PUBSUB::CPubSubBookmark m_currentBookmark;
     CORE::CString m_vfsFilePostfix;
+    CORE::CString m_vfsRootPath;
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
