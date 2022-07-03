@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
-#define GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -132,11 +132,6 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTOTHERSIDE_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTOTHERSIDE_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H
-#include "gucefPUBSUB_CPubSubClientChannel.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -152,147 +147,48 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class PubSub2PubSub;
-
-class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubInfoResource : public WEB::CCodecBasedHTTPServerResource
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
 {
     public:
 
-    RestApiPubSub2PubSubInfoResource( PubSub2PubSub* app );
+    CPubSubClientChannel( void );
+        
+    virtual ~CPubSubClientChannel();
 
-    virtual ~RestApiPubSub2PubSubInfoResource();
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Serialize( const CORE::CString& resourcePath   ,
-                            CORE::CDataNode& output             ,
-                            const CORE::CString& representation ,
-                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    private:
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
 
-    PubSub2PubSub* m_app;
-};
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
-/*-------------------------------------------------------------------------*/
+    virtual bool LoadConfig( const CPubSubChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
 
-class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubConfigResource : public WEB::CCodecBasedHTTPServerResource
-{
-    public:
+    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
-    RestApiPubSub2PubSubConfigResource( PubSub2PubSub* app, bool appConfig );
-
-    virtual ~RestApiPubSub2PubSubConfigResource();
-
-    virtual bool Serialize( const CORE::CString& resourcePath   ,
-                            CORE::CDataNode& output             ,
-                            const CORE::CString& representation ,
-                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual TDeserializeState Deserialize( const CORE::CString& resourcePath   ,
-                                           const CORE::CDataNode& input        ,
-                                           const CORE::CString& representation ,
-                                           bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
-
-    TDeserializeState UpdateGlobalConfig( const CORE::CDataNode& cfg );
+    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    private:
-
-    PubSub2PubSub* m_app;
-    bool m_appConfig;
-};
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSubClientChannelConfigResource : public WEB::CCodecBasedHTTPServerResource
-{
-    public:
-
-    RestApiPubSubClientChannelConfigResource( PubSub2PubSub* app );
-
-    virtual ~RestApiPubSubClientChannelConfigResource();
-
-    virtual bool Serialize( const CORE::CString& resourcePath   ,
-                            CORE::CDataNode& output             ,
-                            const CORE::CString& representation ,
-                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-
-    PubSub2PubSub* m_app;
-};
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver             ,
-                                              public CORE::CGloballyConfigurable
-{
-    public:
-
-    PubSub2PubSub( void );
-    virtual ~PubSub2PubSub();
-
-    bool Start( void );
-
-    bool SetStandbyMode( bool newMode );
-
-    bool IsGlobalStandbyEnabled( void ) const;
-
-    bool LoadConfig( const CORE::CValueList& appConfig );
-
-    const CORE::CDataNode& GetGlobalConfig( void ) const;
-
-    static const CORE::CDataNode* GetAppConfig( const CORE::CDataNode& globalConfig );
-
-    static CORE::CDataNode* GetAppConfig( CORE::CDataNode& globalConfig );
-
-    const CORE::CDataNode* GetAppConfig( void ) const;
-
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    static const CORE::CDateTime& GetAppCompileDateTime( void );
-
-    CPubSubClientChannelPtr GetChannelByChannelId( CORE::Int32 cid ) const;
-
-    private:
-
-    typedef CORE::CTEventHandlerFunctor< PubSub2PubSub > TEventCallback;
-
-    void
-    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                         const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );
-
-    void
-    OnAppShutdown( CORE::CNotifier* notifier    ,
-                   const CORE::CEvent& eventId  ,
-                   CORE::CICloneable* eventData );
-
-    void RegisterEventHandlers( void );
+    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
     
+    bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
+                                        CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                        CPubSubClientSide* msgReceiverSide );
+    
+    void PublishChannelMetrics( void ) const;
+
     private:
 
-    typedef std::map< CORE::Int32, CPubSubChannelSettings > ChannelSettingsMap;
-    typedef std::map< CORE::Int32, CPubSubClientChannelPtr > PubSubClientChannelMap;
-    typedef std::map< CORE::CString, CORE::CDataNode > TChannelCfgMap;
-    typedef std::set< CORE::Int32 > Int32Set;
-
-    bool m_isInStandby;
-    bool m_globalStandbyEnabled;
-    CORE::UInt16 m_udpStartPort;
-    CORE::UInt16 m_channelCount;
-    CORE::Int32 m_pubSub2PubSubStartChannelID;
-    PubSubClientChannelMap m_channels;
-    ChannelSettingsMap m_channelSettings;
-    CPubSubChannelSettings m_templateChannelSettings;
-    WEB::CHTTPServer m_httpServer;
-    WEB::CDefaultHTTPServerRouter m_httpRouter;
-    CORE::CDataNode m_globalConfig;
-    CORE::CTimer m_metricsTimer;
-    bool m_transmitMetrics;
+    CPubSubClientOtherSidePtr m_sideBPubSub;
+    TPubSubClientSideVector m_sides;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChannelPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -305,5 +201,5 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUB2PUBSUB_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCHANNEL_H ? */
 

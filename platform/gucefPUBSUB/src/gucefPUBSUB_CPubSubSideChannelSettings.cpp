@@ -1,0 +1,329 @@
+/*
+ *  gucefPUBSUB: GUCEF module providing pub-sub communication facilities
+ *
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#include <string.h>
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H */
+
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
+#ifndef GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#include "gucefPUBSUB_CBasicPubSubMsg.h"
+#define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
+#endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
+
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#include "gucefPUBSUB_CPubSubSideChannelSettings.h"
+
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace PUBSUB {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
+#define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
+#define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
+#define GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT                     1000
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
+    : CORE::CIConfigurable()
+    , pubsubClientConfig()
+    , pubsubBookmarkPersistenceConfig()
+    , performPubSubInDedicatedThread( true )                                                            // typically the most performant overall
+    , applyThreadCpuAffinity( false )                                                                   // if we don't have a dedicated host this may cause bigger problems so safer to go with false
+    , cpuAffinityForPubSubThread( 0 )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( true )                                                 // best effort
+    , retryFailedPublishAttempts( true )                                                                // safer default, assume we don't want fire-and-forget but want the extra safegaurds
+    , allowOutOfOrderPublishRetry( false )                                                              // safer default, assume we don't want out-of-order messages. this reduces performance if there are publish errors
+    , maxMsgPublishRetryAttempts( -1 )                                                                  // safer default is no max nr of publish retries
+    , maxMsgPublishRetryTotalTimeInMs( -1 )                                                             // safer default is no max time for publish retries
+    , maxPublishedMsgInFlightTimeInMs( GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS )     // we want a large but not infinite max time on this as a safe default. ensures we dont run out of memory due to in flight messages
+    , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( true )                                         // even though we dont want to send messages out-of-order here we will allow it to avoid losing messages as the bigger evil
+    , maxMsgPublishAckRetryAttempts( -1 )                                                               // safer default is no max nr of ack retries
+    , maxMsgPublishAckRetryTotalTimeInMs( -1 )                                                          // safer default is no max time for ack retries
+    , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT )                                   // for operating in parallel we dont want this too low but also not too high as it increased admin overhead and depending on other settings (acks etc) also risk
+    , needToTrackInFlightPublishedMsgsForAck( false )                                                   // composite cached value: based on backend features plus desired behaviour
+    , metricsPrefix()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src )
+    : CORE::CIConfigurable( src )
+    , pubsubClientConfig( src.pubsubClientConfig )
+    , pubsubBookmarkPersistenceConfig( src.pubsubBookmarkPersistenceConfig )
+    , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
+    , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
+    , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
+    , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
+    , retryFailedPublishAttempts( src.retryFailedPublishAttempts )
+    , allowOutOfOrderPublishRetry( src.allowOutOfOrderPublishRetry )
+    , maxMsgPublishRetryAttempts( src.maxMsgPublishRetryAttempts )
+    , maxMsgPublishRetryTotalTimeInMs( src.maxMsgPublishRetryTotalTimeInMs )
+    , maxPublishedMsgInFlightTimeInMs( src.maxPublishedMsgInFlightTimeInMs )
+    , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
+    , maxMsgPublishAckRetryAttempts( src.maxMsgPublishAckRetryAttempts )
+    , maxMsgPublishAckRetryTotalTimeInMs( src.maxMsgPublishAckRetryTotalTimeInMs )
+    , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
+    , needToTrackInFlightPublishedMsgsForAck( false )
+    , metricsPrefix( src.metricsPrefix )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings&
+CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIConfigurable::operator=( src );
+
+        pubsubClientConfig = src.pubsubClientConfig;
+        pubsubBookmarkPersistenceConfig = src.pubsubBookmarkPersistenceConfig;
+        performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
+        applyThreadCpuAffinity = src.applyThreadCpuAffinity;
+        cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
+        subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
+        retryFailedPublishAttempts = src.retryFailedPublishAttempts;
+        allowOutOfOrderPublishRetry = src.allowOutOfOrderPublishRetry;
+        maxMsgPublishRetryAttempts = src.maxMsgPublishRetryAttempts;
+        maxMsgPublishRetryTotalTimeInMs = src.maxMsgPublishRetryTotalTimeInMs;
+        maxPublishedMsgInFlightTimeInMs = src.maxPublishedMsgInFlightTimeInMs;
+        allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
+        maxMsgPublishAckRetryAttempts = src.maxMsgPublishAckRetryAttempts;
+        maxMsgPublishAckRetryTotalTimeInMs = src.maxMsgPublishAckRetryTotalTimeInMs;
+        maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
+
+        needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
+        metricsPrefix = src.metricsPrefix;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CDataNode* psClientConfig = cfg.Structure( "PubSubClientConfig", '/' );
+    if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
+        return false;
+    }
+
+    CORE::CDataNode* psBookmarkPersistenceConfig = cfg.Structure( "PubSubBookmarkPersistenceConfig", '/' );
+    if ( !pubsubBookmarkPersistenceConfig.SaveConfig( *psBookmarkPersistenceConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save PubSubBookmarkPersistenceConfig section" );
+        return false;
+    }    
+
+    totalSuccess = cfg.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryTotalTimeInMs", maxMsgPublishRetryTotalTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxPublishedMsgInFlightTimeInMs", maxPublishedMsgInFlightTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder", allowTimedOutPublishedInFlightMsgsRetryOutOfOrder ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;
+
+    // Derived settings are advisory outputs only meaning we will save them but we wont load them
+    totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* psClientConfig = cfg.Search( "PubSubClientConfig", '/', false );
+    if ( GUCEF_NULL != psClientConfig )
+    {
+        if ( !pubsubClientConfig.LoadConfig( *psClientConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
+            return false;
+        }
+
+        // There is no sane default of pubsubClientType since it depends on the clients loaded into the application
+        // as such this is a mandatory setting to provide
+        if ( pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
+            return false;
+        }
+
+        // We are fully config driven with no programatically defined topics
+        // As such the config must have yielded at least 1 topic
+        if ( pubsubClientConfig.topics.empty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, having at least one topic configured for the client section is mandatory" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, a PubSubClientConfig section is mandatory" );
+        return false;
+    }
+
+    const CORE::CDataNode* psBookmarkPersistenceConfig = cfg.Search( "PubSubBookmarkPersistenceConfig", '/', false );
+    if ( GUCEF_NULL != psBookmarkPersistenceConfig )
+    {
+        if ( !pubsubBookmarkPersistenceConfig.LoadConfig( *psBookmarkPersistenceConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: failed to load mandatory PubSubBookmarkPersistenceConfig section" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: a PubSubBookmarkPersistenceConfig section is expected, will use defaults" );
+    }
+
+    performPubSubInDedicatedThread = cfg.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
+    applyThreadCpuAffinity = cfg.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
+    cpuAffinityForPubSubThread = cfg.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
+    subscribeWithoutBookmarkIfNoneIsPersisted = cfg.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
+    retryFailedPublishAttempts = cfg.GetAttributeValueOrChildValueByName( "retryFailedPublishAttempts" ).AsBool( retryFailedPublishAttempts, true );
+    allowOutOfOrderPublishRetry = cfg.GetAttributeValueOrChildValueByName( "allowOutOfOrderPublishRetry" ).AsBool( allowOutOfOrderPublishRetry, true );
+    maxMsgPublishRetryAttempts = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryAttempts" ).AsInt32( maxMsgPublishRetryAttempts, true );
+    maxMsgPublishRetryTotalTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryTotalTimeInMs" ).AsInt32( maxMsgPublishRetryTotalTimeInMs, true );
+    maxPublishedMsgInFlightTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxPublishedMsgInFlightTimeInMs" ).AsInt32( maxPublishedMsgInFlightTimeInMs, true );
+    maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
+    allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = cfg.GetAttributeValueOrChildValueByName( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder" ).AsBool( allowTimedOutPublishedInFlightMsgsRetryOutOfOrder, true );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CPubSubSideChannelSettings::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubSideChannelSettings";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopicConfig*
+CPubSubSideChannelSettings::GetTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
+    while ( i != pubsubClientConfig.topics.end() )
+    {
+        if ( topicName == (*i).topicName )
+            return &(*i);
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace PUBSUB */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+

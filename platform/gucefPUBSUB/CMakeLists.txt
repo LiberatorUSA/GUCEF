@@ -21,16 +21,21 @@ set( HEADER_FILES
   include/gucefPUBSUB_CPubSubBookmark.h
   include/gucefPUBSUB_CPubSubBookmarkBinarySerializer.h
   include/gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h
+  include/gucefPUBSUB_CPubSubChannelSettings.h
   include/gucefPUBSUB_CPubSubClient.h
+  include/gucefPUBSUB_CPubSubClientChannel.h
   include/gucefPUBSUB_CPubSubClientConfig.h
   include/gucefPUBSUB_CPubSubClientFactory.h
   include/gucefPUBSUB_CPubSubClientFeatures.h
+  include/gucefPUBSUB_CPubSubClientOtherSide.h
+  include/gucefPUBSUB_CPubSubClientSide.h
   include/gucefPUBSUB_CPubSubClientTopic.h
   include/gucefPUBSUB_CPubSubClientTopicConfig.h
   include/gucefPUBSUB_CPubSubGlobal.h
   include/gucefPUBSUB_CPubSubMsgBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgSerializer.h
+  include/gucefPUBSUB_CPubSubSideChannelSettings.h
   include/gucefPUBSUB_CVfsPubSubBookmarkPersistence.h
   include/gucefPUBSUB_ETypes.h
   include/gucefPUBSUB_config.h
@@ -46,16 +51,21 @@ set( SOURCE_FILES
   src/gucefPUBSUB_CPubSub2PubSub.cpp
   src/gucefPUBSUB_CPubSubBookmark.cpp
   src/gucefPUBSUB_CPubSubBookmarkBinarySerializer.cpp
+  src/gucefPUBSUB_CPubSubChannelSettings.cpp
   src/gucefPUBSUB_CPubSubClient.cpp
+  src/gucefPUBSUB_CPubSubClientChannel.cpp
   src/gucefPUBSUB_CPubSubClientConfig.cpp
   src/gucefPUBSUB_CPubSubClientFactory.cpp
   src/gucefPUBSUB_CPubSubClientFeatures.cpp
+  src/gucefPUBSUB_CPubSubClientOtherSide.cpp
+  src/gucefPUBSUB_CPubSubClientSide.cpp
   src/gucefPUBSUB_CPubSubClientTopic.cpp
   src/gucefPUBSUB_CPubSubClientTopicConfig.cpp
   src/gucefPUBSUB_CPubSubGlobal.cpp
   src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgSerializer.cpp
+  src/gucefPUBSUB_CPubSubSideChannelSettings.cpp
   src/gucefPUBSUB_CVfsPubSubBookmarkPersistence.cpp
 )
 
