@@ -103,7 +103,8 @@ bool
 CPubSubClientTopic::AcknowledgeReceipt( const CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    return false;
+    // default: treat as fyi no-op
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,7 +113,8 @@ bool
 CPubSubClientTopic::AcknowledgeReceipt( const CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    return false;
+    // default: treat as fyi no-op
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,6 +123,17 @@ bool
 CPubSubClientTopic::RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPerSec )
 {GUCEF_TRACE;
 
+    // default: not supported
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs )
+{GUCEF_TRACE;
+
+    // default: not supported
     return false;
 }
 
@@ -139,6 +152,7 @@ bool
 CPubSubClientTopic::DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;
     
+    // default: not supported
     bookmark.SetBookmarkType( CPubSubBookmark::BOOKMARK_TYPE_NOT_APPLICABLE );
     bookmark.SetBookmarkData( CORE::CVariant::Empty );
     return false;

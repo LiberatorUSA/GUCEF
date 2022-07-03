@@ -168,6 +168,7 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsTopicIndexBasedBookmark = false;      // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
 
     return true;
 }
@@ -259,8 +260,7 @@ CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                             const CORE::CString::StringSet& globPatternFilters )
+CWebPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;

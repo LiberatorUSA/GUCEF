@@ -49,6 +49,7 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsSubscribing( false )    
     , supportsAutoReconnect( false )
     , supportsSubscriberRateThrottling( false )
+    , supportsSubscriptionMsgArrivalDelayRequests( false )
     , supportsBinaryPayloads( false )
     , supportsMultiHostSharding( false )
     , supportsPerMsgIds( false )
@@ -96,6 +97,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "supportsSubscribing", supportsSubscribing );
     tree.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect );
     tree.SetAttribute( "supportsSubscriberRateThrottling", supportsSubscriberRateThrottling );    
+    tree.SetAttribute( "supportsSubscriptionMsgArrivalDelayRequests", supportsSubscriptionMsgArrivalDelayRequests );        
     tree.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
     tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
     tree.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
@@ -136,6 +138,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsSubscribing = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ).AsBool( supportsSubscribing, true );
     supportsAutoReconnect = cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ).AsBool( supportsAutoReconnect, true );
     supportsSubscriberRateThrottling = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriberRateThrottling" ).AsBool( supportsSubscriberRateThrottling, true );
+    supportsSubscriptionMsgArrivalDelayRequests = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriptionMsgArrivalDelayRequests" ).AsBool( supportsSubscriptionMsgArrivalDelayRequests, true );
     supportsBinaryPayloads = cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ).AsBool( supportsBinaryPayloads, true );
     supportsMultiHostSharding = cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ).AsBool( supportsMultiHostSharding, true );
     supportsPerMsgIds = cfg.GetAttributeValueOrChildValueByName( "supportsPerMsgIds" ).AsBool( supportsPerMsgIds, true );

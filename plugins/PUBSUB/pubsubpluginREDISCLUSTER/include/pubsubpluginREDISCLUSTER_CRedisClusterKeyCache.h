@@ -49,6 +49,11 @@
 #define GUCEF_CORE_CTHREADPOOL_H
 #endif /* GUCEF_CORE_CTHREADPOOL_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#include "gucefPUBSUB_CPubSubClient.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
+
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 #include "pubsubpluginREDISCLUSTER_macros.h"
 #define PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
@@ -86,7 +91,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterKeyCache : publi
 
         RedisClusterPtr redisCluster;
         CORE::CString keyType;
-        CORE::CString::StringSet newKeys;
+        
+        PUBSUB::CPubSubClient::TopicDiscoveryEventData newKeys;
         CORE::CString::StringSet deletedKeys;
 
         virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;

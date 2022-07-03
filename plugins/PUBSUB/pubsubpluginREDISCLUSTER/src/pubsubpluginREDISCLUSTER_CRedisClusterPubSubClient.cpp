@@ -190,6 +190,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsDerivingBookmarkFromMsg = true;    // The Redis auto-generated msgId acts as a topic index and as such we can derive a bookmark from a message
     features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
     features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
+    features.supportsSubscriptionMsgArrivalDelayRequests = true;    // we support delaying the redis read thread on a per read cycle basis
     return true;
 }
 
@@ -519,11 +520,17 @@ CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                                      const CORE::CString::StringSet& globPatternFilters )
+CRedisClusterPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
-    return CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNameList, "stream", globPatternFilters );
+    TopicDiscoveryEventData topicNames;
+    if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNames, "stream", globPatternFilters ) )
+    {
+        if ( !topicNames.empty() )
+            NotifyObservers( TopicDiscoveryEvent, &topicNames );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1082,6 +1089,12 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):OnRedisKeyCacheUpdate: " +
         CORE::ToString( updateInfo->newKeys.size() ) + " new streams, " + CORE::ToString( updateInfo->deletedKeys.size() ) + " deleted streams" );
 
+    // Generally notify of any new topics that were discovered
+    if ( !updateInfo->newKeys.empty() )
+    {
+        if ( !NotifyObservers( TopicDiscoveryEvent, &updateInfo->newKeys ) ) return;
+    }
+    
     // Build a bulk creation map linking template config to stream names
     // This allows for better batch processing down the line, reducing overhead
     TTopicConfigPtrToStringSetMap bulkCreationMap;

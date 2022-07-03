@@ -144,6 +144,16 @@ CTaskConsumer::GetDelegatorThreadId( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTaskConsumer::RequestTaskCycleDelayInMs( UInt32 requestedDelayInMs )
+{GUCEF_TRACE;
+
+    if ( !m_delegator.IsNULL() )
+        m_delegator->RequestTaskCycleDelayInMs( requestedDelayInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CTaskConsumer::GetTaskId( void ) const
 {GUCEF_TRACE;

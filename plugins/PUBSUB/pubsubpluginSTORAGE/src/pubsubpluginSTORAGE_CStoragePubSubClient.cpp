@@ -165,6 +165,7 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsAutoReconnect = true;              // To the extent it even applies in this case, sure we 'reconnect' to storage
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
     
     // Ack functionality doesnt currently make sense for this backend
     // However in theory we could implement a hard or logical delete of read messages and such functionality could go hand-in-hand with 'server-side' (read backend controlled) bookmark persistance
@@ -276,8 +277,7 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CStoragePubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                                 const CORE::CString::StringSet& globPatternFilters )
+CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;

@@ -194,6 +194,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     virtual bool RequestMaxSubscriptionMsgsPerSecRate( CORE::Int64 maxMsgsPerSec );
 
     /**
+     *  Allows for making a request to the pub-sub backend for throttling the rate at which new messages are received for the topic
+     *  by pausing arrival of new messages to the eventing system. 
+     *  You can query the backend's supported features and check the "supportsSubscriptionMsgArrivalDelayRequests" feature flag to verify whether this feature is supported
+     */ 
+    virtual bool RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs );
+
+    /**
      *  If a backend has bookmark support then it is required to implement this member function such
      *  that it returns the bookmark for the currently notified batch of messages received with the bookmark
      *  representing the begin position of said batch, meaning a retransmission based on said bookmark as a starting position

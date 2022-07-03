@@ -165,6 +165,7 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
     features.supportsMsgDateTimeBasedBookmark = false;   // Since SQS is a queue where you consume the messages: You cannot provide a datetime to resume from a given point in time
     features.supportsDiscoveryOfAvailableTopics = false; // @TODO: need to look into this
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
     return true;
 }
 
@@ -257,8 +258,7 @@ CAwsSqsPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                                const CORE::CString::StringSet& globPatternFilters )
+CAwsSqsPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;

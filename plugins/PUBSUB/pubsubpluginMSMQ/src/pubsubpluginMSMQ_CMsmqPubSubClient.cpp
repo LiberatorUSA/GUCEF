@@ -161,6 +161,7 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
     features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsDiscoveryOfAvailableTopics = false; // We could maybe support this via Active Directory or via scanning for local private queues but right now not supported
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
     
     // For MSMQ 3.0 and above:
     #if ( _WIN32_WINNT >= 0x0501 )
@@ -277,8 +278,7 @@ CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                              const CORE::CString::StringSet& globPatternFilters )
+CMsmqPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;

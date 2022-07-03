@@ -64,6 +64,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurabl
     
     bool supportsAutoReconnect;                 /**< whether the backend is capable of handling disconnects on its own */
     bool supportsSubscriberRateThrottling;      /**< whether the backend is capable of throttling the rate at which messages are received when subscribed */
+    bool supportsSubscriptionMsgArrivalDelayRequests; /**< whether the backend is capable of throttling the rate at which messages are sent to the eventing system by x ms */
     
     bool supportsBinaryPayloads;                /**< if not supported and a binary payload is given it will be converted to base64 */
     bool supportsMultiHostSharding;             /**< if the pub-sub system supports sharding across multiple hosts */

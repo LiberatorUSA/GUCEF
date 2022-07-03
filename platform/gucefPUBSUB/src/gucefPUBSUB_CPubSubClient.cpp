@@ -255,8 +255,7 @@ CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList             ,
-                                          const CORE::CString::StringSet& globPatternFilters  )
+CPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     // By default not supported

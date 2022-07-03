@@ -173,6 +173,7 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsDerivingBookmarkFromMsg = false;   // UDP is fire-and-forget: not supported
     features.supportsDiscoveryOfAvailableTopics = false; // UDP has no such concept 
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
 
     return true;
 }

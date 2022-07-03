@@ -90,7 +90,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     typedef CORE::TCloneableString                         TopicAccessCreatedEventData;            /**< name of the topic is passed as event relevant data */
     typedef CORE::TCloneableString                         TopicAccessDestroyedEventData;          /**< name of the topic is passed as event relevant data */
     typedef CORE::CTCloneableObj< PubSubClientTopicSet >   TopicsAccessAutoCreatedEventData;       /**< access to the topics is passed as event relevant data */
-    typedef CORE::CTCloneableObj< PubSubClientTopicSet >   TopicsAccessAutoDestroyedEventData;     /**< names of the topics are passed as event relevant data */
+    typedef CORE::CTCloneableObj< PubSubClientTopicSet >   TopicsAccessAutoDestroyedEventData;     /**< access to the topics is passed as event relevant data */
+    typedef CORE::CTCloneableExpansion< CORE::CString::StringSet >  TopicDiscoveryEventData;       /**< list of discovered topics */
 
     CPubSubClient( void );
 
@@ -141,8 +142,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
      *  Attempts to get a list of topics available on the backend regardless of whichever topics are known
      *  due to configuration. Thus for some backends this allows one to 'discover' new topics
      */
-    virtual bool GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList                                            ,
-                                            const CORE::CString::StringSet& globPatternFilters = CORE::CString::EmptyStringSet );
+    virtual bool BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters = CORE::CString::EmptyStringSet );
     
     virtual void GetConfiguredTopicNameList( CString::StringSet& topicNameList ) = 0;
 

@@ -158,6 +158,7 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
     features.supportsDerivingBookmarkFromMsg = true;      // Supported via a BSOD on the message's index field currently
     features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
     features.supportsGlobPatternTopicNames = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = false;
     return true;
 }
 
@@ -252,8 +253,7 @@ CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CKafkaPubSubClient::GetAvailableTopicNameList( CORE::CString::StringSet& topicNameList            ,
-                                               const CORE::CString::StringSet& globPatternFilters )
+CKafkaPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;

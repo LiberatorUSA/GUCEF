@@ -86,6 +86,7 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool )
     , m_taskData( GUCEF_NULL )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
+    , m_taskRequestedCycleDelayInMs( 0 )
 {GUCEF_TRACE;
 
     assert( !m_threadPool.IsNULL() );
@@ -110,6 +111,7 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
     , m_taskData( taskData )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
+    , m_taskRequestedCycleDelayInMs( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -274,7 +276,7 @@ CTaskDelegator::OnThreadCycle( void* taskdata )
         m_taskData = GUCEF_NULL;
     }
 
-    // Return false, this is an infinate task worker thread
+    // Return false, this is an infinite task worker thread
     return false;
 }
 
@@ -316,7 +318,15 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
             }
             else
             {
-                m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
+                {
+                    m_pulseGenerator.WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
+                    m_taskRequestedCycleDelayInMs = 0;
+                }
+                else
+                {
+                    m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                }
             }
         }
 
@@ -332,6 +342,15 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     }
     m_consumerBusy = false;
     return returnStatus;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::RequestTaskCycleDelayInMs( UInt32 requestedDelayInMs )
+{GUCEF_TRACE;
+
+    m_taskRequestedCycleDelayInMs = requestedDelayInMs;
 }
 
 /*-------------------------------------------------------------------------*/

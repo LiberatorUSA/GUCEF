@@ -641,6 +641,22 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClientTopic::RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs )
+{GUCEF_TRACE;
+
+    // We create a copy of the shared pointer to garantuee the lifecycle
+    RedisClusterPubSubClientTopicReaderPtr readerThread = m_readerThread;
+    if ( !readerThread.IsNULL() )
+    {
+        readerThread->RequestTaskCycleDelayInMs( minDelayInMs );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CRedisClusterPubSubClientTopic::CleanupRedisReaderThread( void )
 {GUCEF_TRACE;

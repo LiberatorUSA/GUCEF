@@ -125,6 +125,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );

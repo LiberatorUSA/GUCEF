@@ -193,6 +193,13 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
      */
     virtual bool WaitForTaskToFinish( Int32 timeoutInMs );
 
+    /**
+     *  Requests that prior to the next task cycle a minimum delay of 'requestedDelayInMs' is observed
+     *  Note that requests to expedite cycles, contradicting this request, take priority
+     *  This functionality can be used to implement throttling a task and thus the owning thread
+     */
+    void RequestTaskCycleDelayInMs( UInt32 requestedDelayInMs );
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -932,9 +932,23 @@ CThreadPool::WaitForTaskToFinish( const UInt32 taskId ,
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool:WaitForTaskToFinish: Waiting for task with ID " + UInt32ToString( taskId ) + " to finish" );
 
+                UInt32 workerThreadId = delegator->GetThreadID();
+                UInt32 callerThreadId = MT::GetCurrentTaskID();
+                
                 lock.EarlyUnlock();
-                delegator->WaitForThreadToFinish( timeoutInMs );
-                return true;
+
+                if ( workerThreadId != callerThreadId )
+                {
+                    delegator->WaitForThreadToFinish( timeoutInMs );
+                    return true;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( LOGLEVEL_CRITICAL, "ThreadPool:WaitForTaskToFinish: Task with ID " + UInt32ToString( taskId ) + 
+                        " is requested to be waited on from thread " + UInt32ToString( callerThreadId ) + 
+                        " which is also the thread running the task. This is not allowed to prevent deadlocks" );                    
+                    return false;
+                }
             }
             else
             {
