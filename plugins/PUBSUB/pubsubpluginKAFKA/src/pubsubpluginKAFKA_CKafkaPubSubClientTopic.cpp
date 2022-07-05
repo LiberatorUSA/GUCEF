@@ -91,6 +91,8 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_firstPartitionAssignment( true )
     , m_consumerOffsets()
     , m_tickCountAtLastOffsetCommit( 0 )
+    , m_tickCountAtConsumeDelayRequest( 0 )
+    , m_requestedConsumeDelayInMs( 0 )
     , m_msgsReceivedSinceLastOffsetCommit( false )
     , m_consumerOffsetWaitsForExplicitMsgAck( false )
     , m_currentPublishActionId( 1 )
@@ -2148,6 +2150,27 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CKafkaPubSubClientTopic::RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs )
+{GUCEF_TRACE;
+
+    if ( 0 == m_requestedConsumeDelayInMs )
+    {
+        m_tickCountAtConsumeDelayRequest = GetPulseGenerator()->GetTickCount();
+        m_requestedConsumeDelayInMs = minDelayInMs;
+    }
+    else
+    {
+        // We are still working on the last delay
+        // We leave the last request timestamp but merge the requests by adding the remnant time to the newly requested time
+        CORE::UInt32 remainingMs = (CORE::UInt32) GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtConsumeDelayRequest );
+        m_requestedConsumeDelayInMs = minDelayInMs + remainingMs;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CPulseGenerator*
 CKafkaPubSubClientTopic::GetPulseGenerator( void )
 {GUCEF_TRACE;
@@ -2198,35 +2221,41 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
 
     if ( GUCEF_NULL != m_kafkaConsumer )
     {
-        int i=0;
-        for ( ; i<50; ++i )
-        {
-            RdKafka::Message* msg = m_kafkaConsumer->consume( 0 );
-            int errState = msg->err();
-            if ( RdKafka::ERR__TIMED_OUT == errState || RdKafka::ERR__PARTITION_EOF == errState )
+        if ( m_requestedConsumeDelayInMs == 0 || 
+             m_requestedConsumeDelayInMs <= GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtConsumeDelayRequest ) )
+        {        
+            m_requestedConsumeDelayInMs = 0;
+            
+            int i=0;
+            for ( ; i<50; ++i )
             {
+                RdKafka::Message* msg = m_kafkaConsumer->consume( 0 );
+                int errState = msg->err();
+                if ( RdKafka::ERR__TIMED_OUT == errState || RdKafka::ERR__PARTITION_EOF == errState )
+                {
+                    delete msg;
+                    break;
+                }
+
+                consume_cb( *msg, GUCEF_NULL );
                 delete msg;
-                break;
+            }
+            if ( i == 50 )
+            {
+                // We have more work to do. Make sure we dont go to sleep
+                GetPulseGenerator()->RequestImmediatePulse();
             }
 
-            consume_cb( *msg, GUCEF_NULL );
-            delete msg;
-        }
-        if ( i == 50 )
-        {
-            // We have more work to do. Make sure we dont go to sleep
-            GetPulseGenerator()->RequestImmediatePulse();
-        }
-
-        if ( m_msgsReceivedSinceLastOffsetCommit )
-        {
-            // Periodically commit our offsets
-            // This can slow things down so we dont want to do this too often
-            if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
+            if ( m_msgsReceivedSinceLastOffsetCommit )
             {
-                if ( CommitConsumerOffsets() )
+                // Periodically commit our offsets
+                // This can slow things down so we dont want to do this too often
+                if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
                 {
-                    m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();
+                    if ( CommitConsumerOffsets() )
+                    {
+                        m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();
+                    }
                 }
             }
         }

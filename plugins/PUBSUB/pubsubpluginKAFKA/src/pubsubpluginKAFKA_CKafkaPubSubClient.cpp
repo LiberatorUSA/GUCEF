@@ -158,7 +158,7 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
     features.supportsDerivingBookmarkFromMsg = true;      // Supported via a BSOD on the message's index field currently
     features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
     features.supportsGlobPatternTopicNames = false;
-    features.supportsSubscriptionMsgArrivalDelayRequests = false;
+    features.supportsSubscriptionMsgArrivalDelayRequests = true;    // We support a backoff of the consume() event processing
     return true;
 }
 

@@ -122,6 +122,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     virtual bool DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
@@ -286,6 +288,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     bool m_firstPartitionAssignment;
     TInt32ToInt64Map m_consumerOffsets;
     CORE::UInt64 m_tickCountAtLastOffsetCommit;
+    CORE::UInt64 m_tickCountAtConsumeDelayRequest;
+    CORE::UInt32 m_requestedConsumeDelayInMs;
     bool m_msgsReceivedSinceLastOffsetCommit;
     bool m_consumerOffsetWaitsForExplicitMsgAck;
     CORE::UInt64 m_currentPublishActionId;
