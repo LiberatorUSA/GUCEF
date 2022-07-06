@@ -257,7 +257,7 @@ CORE::CString
 MsmqMetrics::MsmqQueueProperties::ToString( void ) const
 {GUCEF_TRACE;
 
-    return "queueLabel=" + queueLabel + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
+    return "queueLabel=" + queueLabel + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -360,6 +360,77 @@ MsmqMetrics::GetMsmqQueueQuota( const std::wstring& queueFormatName ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+MsmqMetrics::GetMsmqQueueType( const std::wstring& queueFormatName ,
+                               CLSID& queueTypeId                  )
+{GUCEF_TRACE;
+
+    // Validate the input string.  
+    if ( queueFormatName.empty() ) 
+        return false;  
+
+    // Define the maximum number of queue properties and a property counter.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId=0;  
+  
+    // Define a queue property structure.  
+    MQQUEUEPROPS   QueueProps;  
+    QUEUEPROPID    aQueuePropId[ NUMBEROFPROPERTIES ];  
+    MQPROPVARIANT  aQueuePropVar[ NUMBEROFPROPERTIES ];  
+    HRESULT        aQueuePropStatus[ NUMBEROFPROPERTIES ];  
+    HRESULT queryResultCode = MQ_OK;  
+  
+    // Specify the PROPID_Q_LABEL property.  
+    aQueuePropId[ cPropId ] = PROPID_Q_TYPE;       // Property ID  
+    aQueuePropVar[ cPropId ].vt = VT_CLSID;        // Type indicator  
+    aQueuePropVar[cPropId].puuid = &queueTypeId;  
+    cPropId++;  
+  
+    // Initialize the MQQUEUEPROPS structure.  
+    QueueProps.cProp = cPropId;  
+    QueueProps.aPropID = aQueuePropId;  
+    QueueProps.aPropVar = aQueuePropVar;  
+    QueueProps.aStatus = aQueuePropStatus;  
+ 
+    // Get the queue properties.  
+    queryResultCode = ::MQGetQueueProperties( queueFormatName.c_str(), &QueueProps );  
+    if ( FAILED( queryResultCode ) )  
+    {  
+        CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueueType: Failed to obtain queue type id for queue format name \"" + 
+            CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+        return false; 
+    } 
+     
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::GetMsmqQueueType( const std::wstring& queueFormatName ,
+                               CORE::CString& queueTypeId          )
+{GUCEF_TRACE;
+
+    CLSID queueTypeIdStruct;
+    memset( &queueTypeIdStruct, 0, sizeof queueTypeIdStruct );
+    if ( GetMsmqQueueType( queueFormatName   ,
+                           queueTypeIdStruct ) )
+    {
+        CORE::CAsciiString queueTypeIdStr;
+        if ( MsmqGUIDToString( queueTypeIdStruct, queueTypeIdStr ) )
+        {
+            queueTypeId = CORE::ToString( queueTypeIdStr );
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 MsmqMetrics::GetMsmqQueueLabel( const std::wstring& queueFormatName  ,
                                 CORE::CString& queueLabel            )
 {GUCEF_TRACE;
@@ -440,7 +511,7 @@ MsmqMetrics::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
   
     // Specify the PROPID_Q_PATHNAME property.  
     aQueuePropId[ cPropId ] = PROPID_Q_PATHNAME;   // Property ID  
-    aQueuePropVar[ cPropId ].vt = VT_NULL;             // Type indicator  
+    aQueuePropVar[ cPropId ].vt = VT_NULL;         // Type indicator  
     cPropId++;  
   
     // Initialize the MQQUEUEPROPS structure.  
@@ -555,6 +626,7 @@ MsmqMetrics::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
     totalSuccess = GetMsmqQueueQuota( queueFormatName, queueProperties.quota ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;
+    totalSuccess = GetMsmqQueueType( queueFormatName, queueProperties.typeId ) && totalSuccess;
 
     return totalSuccess;
 }

@@ -203,6 +203,7 @@ CMsmqPubSubClientTopic::MsmqQueueProperties::MsmqQueueProperties( void )
     , quota( 0 )
     , pathName()
     , pathNameDNS()
+    , typeId()
 {GUCEF_TRACE;
 
 }
@@ -213,7 +214,7 @@ CORE::CString
 CMsmqPubSubClientTopic::MsmqQueueProperties::ToString( void ) const
 {GUCEF_TRACE;
 
-    return "queueLabel=" + queueLabel + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
+    return "queueLabel=" + queueLabel + ", typeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2874,6 +2875,23 @@ CMsmqPubSubClientTopic::GetMsmqQueuePathNameDNS( const std::wstring& queueFormat
 /*-------------------------------------------------------------------------*/
 
 bool 
+CMsmqPubSubClientTopic::GetMsmqQueueType( const std::wstring& queueFormatName ,
+                                          CORE::CString& queueTypeId          )
+{GUCEF_TRACE;
+
+    CORE::CVariant qProperty;
+    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_TYPE, VT_CLSID, qProperty );
+    if ( success )
+    {
+        queueTypeId = qProperty.AsString();
+        return true;
+    }
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CMsmqPubSubClientTopic::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
                                                 MsmqQueueProperties& queueProperties )
 {GUCEF_TRACE;
@@ -2889,6 +2907,7 @@ CMsmqPubSubClientTopic::GetMsmqQueueProperties( const std::wstring& queueFormatN
     // actually dealing with. As such we best effort try to obtain properties, getting whatever we can get
     bool totalSuccess = true;
     totalSuccess = GetMsmqQueueLabel( queueFormatName, queueProperties.queueLabel ) && totalSuccess;
+    totalSuccess = GetMsmqQueueType( queueFormatName, queueProperties.typeId ) && totalSuccess;
     totalSuccess = GetMsmqQueueQuota( queueFormatName, queueProperties.quota ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;

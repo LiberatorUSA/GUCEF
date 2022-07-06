@@ -158,6 +158,7 @@ class MsmqMetrics : public CORE::CObservingNotifier
         UInt64 quota;
         CORE::CString pathName;
         CORE::CString pathNameDNS;
+        CORE::CString typeId;
 
         CORE::CString ToString( void ) const;
 
@@ -211,6 +212,12 @@ class MsmqMetrics : public CORE::CObservingNotifier
 
     static bool GetMsmqQueueQuota( const std::wstring& queueFormatName ,
                                    UInt64& queueQuota                  );
+
+    static bool GetMsmqQueueType( const std::wstring& queueFormatName ,
+                                  CLSID& queueTypeId                  );
+
+    static bool GetMsmqQueueType( const std::wstring& queueFormatName ,
+                                  CORE::CString& queueTypeId          );
 
     static bool GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
                                         MsmqQueueProperties& queueProperties );

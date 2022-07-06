@@ -337,6 +337,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
         UInt64 quota;
         CORE::CString pathName;
         CORE::CString pathNameDNS;
+        CORE::CString typeId;
 
         CORE::CString ToString( void ) const;
 
@@ -388,6 +389,9 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     static bool GetMsmqQueueQuota( const std::wstring& queueFormatName ,
                                    UInt64& queueQuota                  );
+
+    static bool GetMsmqQueueType( const std::wstring& queueFormatName ,
+                                  CORE::CString& queueTypeId          );
 
     static bool GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
                                         MsmqQueueProperties& queueProperties );
