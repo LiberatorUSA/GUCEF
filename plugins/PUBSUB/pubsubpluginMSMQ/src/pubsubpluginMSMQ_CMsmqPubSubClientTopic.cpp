@@ -584,6 +584,26 @@ CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( const std::wstring& p
 /*-------------------------------------------------------------------------*/
 
 bool
+CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( const CORE::CString& pathName   ,
+                                                           CORE::CString& queueFormatName  )
+{GUCEF_TRACE;
+
+    std::wstring wPathName;
+    if ( CORE::Utf8toUtf16( CORE::ToUtf8String( pathName ), wPathName ) )
+    {
+        std::wstring wQueueFormatName;
+        if ( MsmqPathNameToMsmqQueueFormatName( wPathName, wQueueFormatName ) )
+        {
+            queueFormatName = CORE::ToString( wQueueFormatName );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid          ,
                                                             std::wstring& queueFormatName  )
 {GUCEF_TRACE;
@@ -637,6 +657,22 @@ CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString&
 
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:MsmqQueueGUIDToMsmqQueueFormatName: Failed to convert queueGuid string \"" + 
         queueGuid + "\" to a GUID structure" ); 
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                            CORE::CString& queueFormatName )
+{GUCEF_TRACE;
+
+    std::wstring wQueueFormatName;
+    if ( MsmqQueueGUIDToMsmqQueueFormatName( queueGuid, wQueueFormatName ) )
+    {
+        queueFormatName = CORE::ToString( wQueueFormatName );
+        return true;
+    }
     return false;
 }
 

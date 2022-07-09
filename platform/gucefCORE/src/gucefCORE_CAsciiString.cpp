@@ -1517,6 +1517,28 @@ CAsciiString::WildcardEquals( const CAsciiString& strWithWildcards    ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CAsciiString::WildcardEquals( const StringSet& strsWithWildcards     ,
+                              const Int32 wildCardToken /* = '*' */  ,
+                              const bool caseSensitive /* = true */  ,
+                              const bool biDirectional /* = false */ ) const
+{GUCEF_TRACE;
+
+    if ( strsWithWildcards.empty() )
+        return WildcardEquals( Empty, wildCardToken, caseSensitive, biDirectional );
+    
+    StringSet::const_iterator i = strsWithWildcards.begin();
+    while ( i != strsWithWildcards.end() )
+    {
+        if ( WildcardEquals( (*i), wildCardToken, caseSensitive, biDirectional ) ) 
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CAsciiString::Equals( const CAsciiString& otherStr           ,
                       const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;

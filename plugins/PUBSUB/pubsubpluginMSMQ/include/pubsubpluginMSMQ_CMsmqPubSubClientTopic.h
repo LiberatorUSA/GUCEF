@@ -209,6 +209,27 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    static bool MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
+                                                   std::wstring& queueFormatName  );
+
+    static bool MsmqPathNameToMsmqQueueFormatName( const CORE::CString& pathName   ,
+                                                   CORE::CString& queueFormatName  );
+
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid ,
+                                                    std::wstring& queueFormatName  );
+
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                    std::wstring& queueFormatName  );
+
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                    CORE::CString& queueFormatName );
+
+    static bool MsmqGUIDToString( const GUID& guid               ,
+                                  CORE::CAsciiString& guidString );
+
+    static bool StringToMsmqGUID( const CORE::CAsciiString& guidString ,
+                                  GUID& guid                           );
+
     protected:
 
     virtual bool Lock( CORE::UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -273,21 +294,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
 
     bool SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& config );
-
-    static bool MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
-                                                   std::wstring& queueFormatName  );
-
-    static bool MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid ,
-                                                    std::wstring& queueFormatName  );
-
-    static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
-                                                    std::wstring& queueFormatName  );
-
-    static bool MsmqGUIDToString( const GUID& guid               ,
-                                  CORE::CAsciiString& guidString );
-
-    static bool StringToMsmqGUID( const CORE::CAsciiString& guidString ,
-                                  GUID& guid                           );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 

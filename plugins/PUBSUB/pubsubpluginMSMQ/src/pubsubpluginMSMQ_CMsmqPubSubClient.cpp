@@ -159,7 +159,7 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
     features.supportsMsgIdBasedBookmark = false;        // MSMQ does not support this concept. receiving messages removes them from the O/S queue    
     features.supportsMsgIndexBasedBookmark = false;     // MSMQ does not support this concept. receiving messages removes them from the O/S queue
     features.supportsMsgDateTimeBasedBookmark = false;  // MSMQ does not support this concept. receiving messages removes them from the O/S queue
-    features.supportsDiscoveryOfAvailableTopics = false; // We could maybe support this via Active Directory or via scanning for local private queues but right now not supported
+    features.supportsDiscoveryOfAvailableTopics = true; // We support local private queue plus public queue discovery, provided account and AD permissions allow for access
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
     
@@ -278,10 +278,276 @@ CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CMsmqPubSubClient::GetPrivateQueues( const std::wstring& computerName ,
+                                     TWStringVector& queuePathNames   )
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+  
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;                  // Number of properties  
+    DWORD cPropId = 0;                                 // Property counter  
+    DWORD cQ = 0;                                      // Queue counter  
+    HRESULT hr = MQ_OK;                                // Return code  
+  
+    // Define an MQMGMTROPS structure.  
+    MQMGMTPROPS mgmtprops;  
+    MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+  
+    // Specify PROPID_MGMT_MSMQ_PRIVATEQ as a property to be retrieved.  
+    aMgmtPropId[cPropId] = PROPID_MGMT_MSMQ_PRIVATEQ;  // Property ID  
+    aMgmtPropVar[cPropId].vt = VT_NULL;                // Type indicator  
+    cPropId++;  
+  
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;                         // Number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;                   // IDs of the management properties  
+    mgmtprops.aPropVar = aMgmtPropVar;                 // Values of management properties  
+    mgmtprops.aStatus  = NULL;                         // No storage for error codes  
+  
+    // Call MQMgmtGetInfo to retrieve the information.  
+    hr = ::MQMgmtGetInfo( computerName.c_str() ,     // Name of the computer  
+                          MO_MACHINE_TOKEN     ,     // Object name  
+                          &mgmtprops           );    // Management properties structure  
+  
+    if ( FAILED( hr ) )  
+    {  
+        CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPrivateQueues: Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+        return false;  
+    }  
+  
+    // Display the path names of the private queues found.  
+    if ( aMgmtPropVar[ 0 ].calpwstr.cElems > 0 )  
+    {  
+        for ( cQ=0; cQ < aMgmtPropVar[ 0 ].calpwstr.cElems; cQ++)  
+        {  
+            queuePathNames.push_back( aMgmtPropVar[ 0 ].calpwstr.pElems[ cQ ] );
+        }  
+    }  
+  
+    // Free the memory allocated to store the path names.  
+    for ( cQ=0; cQ < aMgmtPropVar[ 0 ].calpwstr.cElems; cQ++ )  
+    {  
+        ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems[ cQ ] );  
+    }  
+    ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems );  
+  
+    return true;  
+
+    #else
+
+    // Not supported in older MSMQ
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClient::GetPrivateQueues( const CORE::CString& computerName           ,
+                                     CORE::CString::StringVector& queuePathNames )
+{GUCEF_TRACE;
+
+    CORE::CUtf8String utf8ComputerName = CORE::ToUtf8String( computerName );
+    std::wstring utf16ComputerName;
+    if ( CORE::Utf8toUtf16( utf8ComputerName, utf16ComputerName ) )
+    {
+        TWStringVector wQueuePathNames;
+        if ( GetPrivateQueues( utf16ComputerName ,
+                               wQueuePathNames   ) )
+        {
+            TWStringVector::iterator i = wQueuePathNames.begin();
+            while ( i != wQueuePathNames.end() )
+            {
+                std::string utf8QueuePathName;
+                if ( CORE::Utf16toUtf8( (*i), utf8QueuePathName ) )
+                {
+                    queuePathNames.push_back( CORE::ToString( utf8QueuePathName ) );
+                }
+                ++i;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClient::GetLocalPrivateQueues( CORE::CString::StringVector& queuePathNames )
+{GUCEF_TRACE;
+
+    // Something of note:
+    //      'The ComputerName and Host Name is limited to 15 characters by MSMQ. 
+    //       If the Host Name contains more than 15 characters, MSMQ will truncate the name. 
+    //       In this case, you must use the truncated Host Name.'    
+    CORE::CString hostName = CORE::GetHostname();
+    if ( hostName.Length() > 15 )
+        hostName = hostName.CutChars( hostName.Length() - 15, false );
+
+    return GetPrivateQueues( hostName, queuePathNames );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClient::GetPublicQueues( CORE::CString::StringVector& queueIDs )
+{GUCEF_TRACE;
+  
+    const int MAX_PROPERTIES = 13;   // 13 possible queue properties  
+    bool totalSuccess = true;
+    
+    // Set a MQCOLUMNSET structure to specify the properties to be returned:           
+    //      PROPID_Q_INSTANCE.  
+    MQCOLUMNSET column;  
+    PROPID aPropId[ 1 ];     // Nr of properties to retrieve  
+    DWORD dwColumnCount = 0;  
+  
+    aPropId[dwColumnCount] = PROPID_Q_INSTANCE;  
+    dwColumnCount++;  
+  
+    column.cCol = dwColumnCount;  
+    column.aCol = aPropId;  
+  
+    // Call MQLocateBegin to start a Active Directory query.  
+    // This won't work if you are not in an Active Directory domain
+    HANDLE hEnum = NULL;  
+    HRESULT hr = ::MQLocateBegin( NULL    ,   // Start search at the top  
+                                  NULL    ,   // Search criteria  (NULL = return everything, no filters)
+                                  &column ,   // Properties to return  
+                                  NULL    ,   // No sort order  
+                                  &hEnum  );  // Enumeration handle  
+  
+    if ( FAILED( hr ) )  
+    {  
+        if ( MQ_ERROR_UNSUPPORTED_OPERATION != hr )
+        {
+            CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+            totalSuccess = false;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPublicQueues: MQLocateBegin Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+            return false; 
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPublicQueues: MQLocateBegin is not a supported operation. Likely this machine is in a workgroup not an AD domain which is a requirement for using public queues" );
+        }
+        
+        // This operation is not supported for Message Queuing installed in workgroup mode.
+        // As such the list we obtained, nothing, actually is the complete list of available public queues since there are none
+        return true;
+    }  
+  
+    // Call MQLocateNext in a loop to examine the  
+    // query results.  
+    MQPROPVARIANT aPropVar[ MAX_PROPERTIES ];  
+    DWORD cProps, i;  
+  
+    do  
+    {  
+        cProps = MAX_PROPERTIES;  
+        hr = ::MQLocateNext( hEnum    ,   // Handle returned by MQLocateBegin  
+                             &cProps  ,   // Size of aPropVar array  
+                             aPropVar );  // An array of MQPROPVARIANT for results  
+                        
+  
+        if ( FAILED( hr ) )  
+        {  
+            CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPublicQueues: MQLocateNext Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+            totalSuccess = false;
+            break;  
+        }  
+  
+        for ( i=0; i < cProps; i += dwColumnCount )    
+        {  
+            if ( VT_CLSID == aPropVar[ i ].vt )
+            {
+                CORE::CAsciiString queueGuid;
+                if ( CMsmqPubSubClientTopic::MsmqGUIDToString( *aPropVar[ i ].puuid, queueGuid ) )
+                {
+                    queueIDs.push_back( queueGuid );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPublicQueues: Found public queue with ID " + queueGuid );  
+                }
+            }
+        }  
+  
+    } 
+    while ( cProps > 0 );  
+  
+    // Call MQLocateEnd to end query.  
+    hr = ::MQLocateEnd( hEnum );   // Handle returned by MQLocateBegin.  
+    if ( FAILED( hr ) )  
+    {  
+        CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:GetPublicQueues: MQLocateEnd Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );  
+        totalSuccess = false;
+    } 
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CMsmqPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
-    return false;
+    TopicDiscoveryEventData discoveredTopics;
+    
+    // For discovery in the MSMQ realm we always use the format name in order to be able to collapse sources into a singular uniform list
+
+    // Let's first check the private local queues as that is most likely to succeed
+    CORE::CString::StringVector localPrivateQueuePathNames;
+    if ( GetLocalPrivateQueues( localPrivateQueuePathNames ) )
+    {
+        CORE::CString::StringVector::iterator i = localPrivateQueuePathNames.begin();
+        while ( i != localPrivateQueuePathNames.end() )
+        {
+            CORE::CString queueFormatName;
+            if ( CMsmqPubSubClientTopic::MsmqPathNameToMsmqQueueFormatName( (*i), queueFormatName ) )
+            {
+                if ( globPatternFilters.empty() || queueFormatName.WildcardEquals( globPatternFilters, '*', true, true ) )
+                {
+                    discoveredTopics.insert( queueFormatName );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:BeginTopicDiscovery: Found private queue: " + queueFormatName );
+                }
+            }
+            ++i;
+        }
+    }
+
+    // Next try our luck at any public queues we have access to
+    CORE::CString::StringVector publicQueueIDs;
+    if ( GetPublicQueues( publicQueueIDs ) )
+    {
+        CORE::CString::StringVector::iterator i = publicQueueIDs.begin();
+        while ( i != publicQueueIDs.end() )
+        {
+            CORE::CString queueFormatName;
+            if ( CMsmqPubSubClientTopic::MsmqQueueGUIDToMsmqQueueFormatName( (*i), queueFormatName ) )
+            {
+                if ( globPatternFilters.empty() || queueFormatName.WildcardEquals( globPatternFilters, '*', true, true ) )
+                {
+                    discoveredTopics.insert( queueFormatName );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:BeginTopicDiscovery: Found public queue: " + queueFormatName );
+                }
+            }
+            ++i;
+        }        
+    }
+
+    NotifyObservers( TopicDiscoveryEvent, &discoveredTopics );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

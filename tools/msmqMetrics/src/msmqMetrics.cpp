@@ -24,6 +24,7 @@
 
 #include <Objbase.h>
 #include <Mq.h>
+#include <sddl.h>
 
 #undef SetPort
 
@@ -247,6 +248,11 @@ MsmqMetrics::MsmqQueueProperties::MsmqQueueProperties( void )
     , quota( 0 )
     , pathName()
     , pathNameDNS()
+    , ownerDomainName()
+    , ownerAccountName()
+    , ownerSID()
+    , ownerAccessMask( 0 )
+    , queuePermissions()
 {GUCEF_TRACE;
 
 }
@@ -257,7 +263,27 @@ CORE::CString
 MsmqMetrics::MsmqQueueProperties::ToString( void ) const
 {GUCEF_TRACE;
 
-    return "queueLabel=" + queueLabel + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
+    CORE::CString ownerAccessPermsStr = ", ownerPermissions=[ " + MsmqMetrics::GetMsmqPermissionsAsString( ownerAccessMask ) + " ]";
+
+    CORE::CString otherAccessPermsStr = ", otherPermissions=[ ";
+    TSIDStrToAccessMaskMap::const_iterator i = queuePermissions.begin();
+    while ( i != queuePermissions.end() )
+    {
+        CORE::CString domainName;
+        CORE::CString accountName;
+        MsmqMetrics::GetAccountInfoForSid( (*i).first, domainName, accountName );
+
+        otherAccessPermsStr += " domainName=" + ownerDomainName + ", accountName=" + ownerAccountName + " permissions=[ " + MsmqMetrics::GetMsmqPermissionsAsString( (*i).second ) + " ]";
+
+        ++i;
+    }
+    otherAccessPermsStr += " ]";
+    
+    CORE::CString propStr = "queueLabel=" + queueLabel + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS +
+           ", ownerDomainName=" + ownerDomainName + ", ownerAccountName=" + ownerAccountName + ", ownerSID=" + ownerSID + ", ownerAccessMask=" + CORE::ToString( (UInt64) ownerAccessMask ) +
+           ownerAccessPermsStr + otherAccessPermsStr;
+    
+    return propStr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -398,7 +424,7 @@ MsmqMetrics::GetMsmqQueueType( const std::wstring& queueFormatName ,
         CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
         std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueueType: Failed to obtain queue type id for queue format name \"" + 
-            CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+            CORE::ToString( queueFormatName ) + "\". HRESULT= 0x" + CORE::Base16Encode( &queryResultCode, sizeof(queryResultCode) ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
         return false; 
     } 
      
@@ -627,7 +653,19 @@ MsmqMetrics::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
     totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;
     totalSuccess = GetMsmqQueueType( queueFormatName, queueProperties.typeId ) && totalSuccess;
+    totalSuccess = GetQueueOwner( CORE::ToString( queueFormatName ), queueProperties.ownerDomainName, queueProperties.ownerAccountName, queueProperties.ownerSID ) && totalSuccess;
+    totalSuccess = GetMsmqPermissionList( CORE::ToString( queueFormatName ), queueProperties.queuePermissions ) && totalSuccess;
 
+    if ( !queueProperties.ownerSID.IsNULLOrEmpty() )
+    {
+        TSIDStrToAccessMaskMap::iterator i = queueProperties.queuePermissions.find( queueProperties.ownerSID );
+        if ( i != queueProperties.queuePermissions.end() )
+        {
+            queueProperties.ownerAccessMask = (*i).second;
+            queueProperties.queuePermissions.erase( i ); // no need to store this redundantly since we call out the owner explicitly
+        }
+    }    
+    
     return totalSuccess;
 }
 
@@ -658,6 +696,58 @@ MsmqMetrics::MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
             CORE::ToString( pathName ) + "\" to MSMQ format name. HRESULT=" + CORE::ToString( formatConversionResult ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
         return false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::MsmqPathNameToMsmqQueueFormatName( const CORE::CString& pathName   ,
+                                                CORE::CString& queueFormatName  )
+{GUCEF_TRACE;
+
+    std::wstring wPathName;
+    if ( CORE::Utf8toUtf16( CORE::ToUtf8String( pathName ), wPathName ) )
+    {
+        std::wstring wQueueFormatName;
+        if ( MsmqPathNameToMsmqQueueFormatName( wPathName, wQueueFormatName ) )
+        {
+            queueFormatName = CORE::ToString( wQueueFormatName );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid          ,
+                                                 CORE::CString& queueFormatName )
+{GUCEF_TRACE;
+
+    std::wstring wQueueFormatName;
+    if ( MsmqQueueGUIDToMsmqQueueFormatName( queueGuid, wQueueFormatName ) )
+    {
+        queueFormatName = CORE::ToString( wQueueFormatName );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                 CORE::CString& queueFormatName )
+{GUCEF_TRACE;
+
+    std::wstring wQueueFormatName;
+    if ( MsmqQueueGUIDToMsmqQueueFormatName( queueGuid, wQueueFormatName ) )
+    {
+        queueFormatName = CORE::ToString( wQueueFormatName );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -983,6 +1073,843 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+MsmqMetrics::GetPrivateQueues( const std::wstring& computerName ,
+                               TWStringVector& queuePathNames   )
+{GUCEF_TRACE;
+
+    // For MSMQ 3.0 and above:
+    #if ( _WIN32_WINNT >= 0x0501 )
+  
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;                  // Number of properties  
+    DWORD cPropId = 0;                                 // Property counter  
+    DWORD cQ = 0;                                      // Queue counter  
+    HRESULT hr = MQ_OK;                                // Return code  
+  
+    // Define an MQMGMTROPS structure.  
+    MQMGMTPROPS mgmtprops;  
+    MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+  
+    // Specify PROPID_MGMT_MSMQ_PRIVATEQ as a property to be retrieved.  
+    aMgmtPropId[cPropId] = PROPID_MGMT_MSMQ_PRIVATEQ;  // Property ID  
+    aMgmtPropVar[cPropId].vt = VT_NULL;                // Type indicator  
+    cPropId++;  
+  
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;                         // Number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;                   // IDs of the management properties  
+    mgmtprops.aPropVar = aMgmtPropVar;                 // Values of management properties  
+    mgmtprops.aStatus  = NULL;                         // No storage for error codes  
+  
+    // Call MQMgmtGetInfo to retrieve the information.  
+    hr = ::MQMgmtGetInfo( computerName.c_str() ,     // Name of the computer  
+                          MO_MACHINE_TOKEN     ,     // Object name  
+                          &mgmtprops           );    // Management properties structure  
+  
+    if ( FAILED( hr ) )  
+    {  
+        CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPrivateQueues: Failed. HRESULT= 0x" + CORE::Base16Encode( &hr, sizeof(hr) ) + " errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+        return false;  
+    }  
+  
+    // Collect the information
+    if ( aMgmtPropVar[ 0 ].calpwstr.cElems > 0 )  
+    {  
+        for ( cQ=0; cQ < aMgmtPropVar[ 0 ].calpwstr.cElems; cQ++)  
+        {  
+            queuePathNames.push_back( aMgmtPropVar[ 0 ].calpwstr.pElems[ cQ ] );
+        }  
+    }  
+  
+    // Free the memory allocated to store the path names.  
+    for ( cQ=0; cQ < aMgmtPropVar[ 0 ].calpwstr.cElems; cQ++ )  
+    {  
+        ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems[ cQ ] );  
+    }  
+    ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems );  
+  
+    return true;  
+
+    #else
+
+    // Not supported in older MSMQ
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::GetPrivateQueues( const CORE::CString& computerName           ,
+                               CORE::CString::StringVector& queuePathNames )
+{GUCEF_TRACE;
+
+    CORE::CUtf8String utf8ComputerName = CORE::ToUtf8String( computerName );
+    std::wstring utf16ComputerName;
+    if ( CORE::Utf8toUtf16( utf8ComputerName, utf16ComputerName ) )
+    {
+        TWStringVector wQueuePathNames;
+        if ( GetPrivateQueues( utf16ComputerName ,
+                               wQueuePathNames   ) )
+        {
+            TWStringVector::iterator i = wQueuePathNames.begin();
+            while ( i != wQueuePathNames.end() )
+            {
+                std::string utf8QueuePathName;
+                if ( CORE::Utf16toUtf8( (*i), utf8QueuePathName ) )
+                {
+                    queuePathNames.push_back( CORE::ToString( utf8QueuePathName ) );
+                }
+                ++i;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::GetLocalPrivateQueues( CORE::CString::StringVector& queuePathNames )
+{GUCEF_TRACE;
+
+    // Something of note:
+    //      'The ComputerName and Host Name is limited to 15 characters by MSMQ. 
+    //       If the Host Name contains more than 15 characters, MSMQ will truncate the name. 
+    //       In this case, you must use the truncated Host Name.'    
+    CORE::CString hostName = CORE::GetHostname();
+    if ( hostName.Length() > 15 )
+        hostName = hostName.CutChars( hostName.Length() - 15, false );
+
+    return GetPrivateQueues( hostName, queuePathNames );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetPublicQueues( CORE::CString::StringVector& queueIDs )
+{GUCEF_TRACE;
+  
+    try
+    {
+        const int MAX_PROPERTIES = 13;   // 13 possible queue properties  
+        bool totalSuccess = true;
+    
+        // Set a MQCOLUMNSET structure to specify the properties to be returned:           
+        //      PROPID_Q_INSTANCE.  
+        MQCOLUMNSET column;  
+        PROPID aPropId[ 1 ];     // Nr of properties to retrieve  
+        DWORD dwColumnCount = 0;  
+  
+        aPropId[dwColumnCount] = PROPID_Q_INSTANCE;  
+        dwColumnCount++;  
+  
+        column.cCol = dwColumnCount;  
+        column.aCol = aPropId;  
+  
+        // Call MQLocateBegin to start a Active Directory query.  
+        // This won't work if you are not in an Active Directory domain
+        HANDLE hEnum = NULL;  
+        HRESULT hr = ::MQLocateBegin( NULL    ,   // Start search at the top  
+                                      NULL    ,   // Search criteria  (NULL = return everything, no filters)
+                                      &column ,   // Properties to return  
+                                      NULL    ,   // No sort order  
+                                      &hEnum  );  // Enumeration handle  
+  
+        if ( FAILED( hr ) )  
+        {  
+            if ( MQ_ERROR_UNSUPPORTED_OPERATION != hr )
+            {
+                CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+                std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+                totalSuccess = false;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPublicQueues: MQLocateBegin Failed. HRESULT= 0x" + CORE::Base16Encode( &hr, sizeof(hr) ) + " errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+                return false; 
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPublicQueues: MQLocateBegin is not a supported operation. Likely this machine is in a workgroup not an AD domain which is a requirement for using public queues" );
+            }
+        
+            // This operation is not supported for Message Queuing installed in workgroup mode.
+            // As such the list we obtained, nothing, actually is the complete list of available public queues since there are none
+            return true;
+        }  
+  
+        // Call MQLocateNext in a loop to examine the  
+        // query results.  
+        MQPROPVARIANT aPropVar[ MAX_PROPERTIES ];  
+        DWORD cProps, i;  
+  
+        do  
+        {  
+            cProps = MAX_PROPERTIES;  
+            hr = ::MQLocateNext( hEnum    ,   // Handle returned by MQLocateBegin  
+                                 &cProps  ,   // Size of aPropVar array  
+                                 aPropVar );  // An array of MQPROPVARIANT for results  
+                        
+  
+            if ( FAILED( hr ) )  
+            {  
+                CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+                std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPublicQueues: MQLocateNext Failed. HRESULT= 0x" + CORE::Base16Encode( &hr, sizeof(hr) ) + " errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+                totalSuccess = false;
+                break;  
+            }  
+  
+            for ( i=0; i < cProps; i += dwColumnCount )    
+            {  
+                if ( VT_CLSID == aPropVar[ i ].vt )
+                {
+                    CORE::CAsciiString queueGuid;
+                    if ( MsmqGUIDToString( *aPropVar[ i ].puuid, queueGuid ) )
+                    {
+                        queueIDs.push_back( queueGuid );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPublicQueues: Found public queue with ID " + queueGuid );  
+                    }
+                }
+            }  
+  
+        } 
+        while ( cProps > 0 );  
+  
+        // Call MQLocateEnd to end query.  
+        hr = ::MQLocateEnd( hEnum );   // Handle returned by MQLocateBegin.  
+        if ( FAILED( hr ) )  
+        {  
+            CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetPublicQueues: MQLocateEnd Failed. HRESULT= 0x" + CORE::Base16Encode( &hr, sizeof(hr) ) + " errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+            totalSuccess = false;
+        } 
+
+        return totalSuccess;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics:GetPublicQueues: STL exception: " + CORE::ToString( e.what() ) );  
+        return false;
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics:GetPublicQueues: Unknown exception" );  
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetQueueSecurityDescriptor( const CORE::CString& formatName          ,
+                                         SECURITY_INFORMATION infoTypeToGet       ,
+                                         CORE::CDynamicBuffer& securityDescriptor )
+{GUCEF_TRACE;
+
+    std::wstring wFormatName;
+    if ( CORE::Utf8toUtf16( CORE::ToUtf8String( formatName ), wFormatName ) )
+    {
+        return GetQueueSecurityDescriptor( wFormatName, infoTypeToGet, securityDescriptor );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetQueueSecurityDescriptor( const std::wstring& formatName           ,
+                                         SECURITY_INFORMATION infoTypeToGet       ,
+                                         CORE::CDynamicBuffer& securityDescriptor )
+{GUCEF_TRACE;
+
+    // We dont know the storage size needed so we make a test call first to get the required storage size
+    securityDescriptor.SetBufferSize( 1 );
+    securityDescriptor.SetBytes( 0 );
+    DWORD dwBufferLengthNeeded = 1;
+    HRESULT hr = ::MQGetQueueSecurity( formatName.c_str()                                       ,   
+                                       DACL_SECURITY_INFORMATION                                ,  // Retrieving only the DACL  
+                                       (PSECURITY_DESCRIPTOR) securityDescriptor.GetBufferPtr() ,  
+                                       (DWORD) securityDescriptor.GetBufferSize()               ,              
+                                       &dwBufferLengthNeeded                                    );  
+    if ( SUCCEEDED( hr ) )  
+    {  
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueSecurityDescriptor: Successfully obtained ( " + CORE::ToString( (CORE::UInt32) dwBufferLengthNeeded ) + 
+                " byte ) security descriptor in buffer for queue: " + CORE::ToString( formatName ) );
+        return true;
+    }  
+    if ( hr == MQ_ERROR_SECURITY_DESCRIPTOR_TOO_SMALL )  
+    {    
+        // Allocate the memory needed for the security descriptor buffer.  
+        if ( securityDescriptor.SetBufferSize( (CORE::UInt32) dwBufferLengthNeeded ) )
+        {
+            // Retrieve the DACL from the queue's security descriptor.  
+            securityDescriptor.SetBytes( 0 );
+            hr = ::MQGetQueueSecurity( formatName.c_str()                                       ,   
+                                       DACL_SECURITY_INFORMATION                                ,  // Retrieving only the DACL  
+                                       (PSECURITY_DESCRIPTOR) securityDescriptor.GetBufferPtr() ,  
+                                       (DWORD) securityDescriptor.GetBufferSize()               ,              
+                                       &dwBufferLengthNeeded                                    );
+        
+            if ( SUCCEEDED( hr ) )  
+            {  
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueSecurityDescriptor: Successfully obtained ( " + CORE::ToString( (CORE::UInt32) dwBufferLengthNeeded ) + 
+                        " byte ) security descriptor in buffer for queue: " + CORE::ToString( formatName ) );
+                return true;
+            }        
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueSecurityDescriptor: Memory ( " + CORE::ToString( (CORE::UInt32) dwBufferLengthNeeded ) + 
+                    " bytes ) could not be allocated for the security descriptor buffer for queue: " + CORE::ToString( formatName ) );
+            return false;
+        }
+    }
+
+    CORE::UInt32 errorCode =  HRESULT_CODE( hr );
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( hr ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueSecurityDescriptor: Failed. HRESULT= 0x" + CORE::Base16Encode( &hr, sizeof(hr) ) + " errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );  
+    return false;
+}  
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetQueueSecurityDescriptorDACL( const CORE::CString& formatName          ,
+                                             CORE::CDynamicBuffer& securityDescriptor )
+{GUCEF_TRACE;
+
+    return GetQueueSecurityDescriptor( formatName, DACL_SECURITY_INFORMATION, securityDescriptor );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetAccountInfoForSid( const CORE::CString& accountSid ,
+                                   CORE::CString& domainName       ,
+                                   CORE::CString& accountName      )
+{GUCEF_TRACE; 
+
+    CORE::CUtf8String utf8AccountSid = CORE::ToUtf8String( accountSid );
+    std::wstring utf16AccountSid;
+    if ( CORE::Utf8toUtf16( utf8AccountSid, utf16AccountSid ) )
+    {
+        std::wstring wDomainName;
+        std::wstring wAccountName;
+        if ( GetAccountInfoForSid( utf16AccountSid ,
+                                   wDomainName     ,
+                                   wAccountName    ) )
+        {
+            domainName = CORE::ToString( wDomainName );
+            accountName = CORE::ToString( wAccountName );
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetAccountInfoForSid( const std::wstring& accountSid ,
+                                   std::wstring& domainName       ,
+                                   std::wstring& accountName      )
+{GUCEF_TRACE;        
+
+    if ( accountSid.empty() )
+        return false;
+    
+    ::PSID pSID = NULL;
+    if ( ::ConvertStringSidToSidW( accountSid.c_str(), &pSID ) == TRUE )
+    {
+        bool result = GetAccountInfoForSid( pSID, domainName, accountName );
+        ::LocalFree( pSID );
+        return result;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetAccountInfoForSid( ::PSID accountSid         ,
+                                   std::wstring& domainName  ,
+                                   std::wstring& accountName )
+{GUCEF_TRACE;
+        
+    // Set a size that may be sufficient for the account name and domain name buffers.  
+    const DWORD INITIAL_SIZE = 256;  
+    DWORD cchAccName = INITIAL_SIZE;  
+    DWORD cchDomainName = INITIAL_SIZE;  
+
+    CORE::CDynamicBuffer accountNameBuffer;
+    CORE::CDynamicBuffer domainNameBuffer;
+
+    // We dont know the storage size needed for the account and domain names so we start at a decent size and grow as needed
+    accountNameBuffer.SetBufferSize( INITIAL_SIZE );
+    accountNameBuffer.SetBytes( 0 );
+    domainNameBuffer.SetBufferSize( INITIAL_SIZE );
+    domainNameBuffer.SetBytes( 0 );
+        
+    ::SID_NAME_USE eSidType;
+    DWORD dwBufferLengthNeeded = 1;
+    if ( ::LookupAccountSidW( NULL                                      ,                                         
+                              accountSid                                ,  
+                              (LPWSTR) accountNameBuffer.GetBufferPtr() ,  
+                              &cchAccName                               ,  
+                              (LPWSTR) domainNameBuffer.GetBufferPtr()  , 
+                              &cchDomainName                            ,  
+                              &eSidType                                 ) == FALSE ) 
+    {
+        bool issueWasResizeNeeded = false;
+        if ( cchAccName < INITIAL_SIZE )
+        {
+            if ( !accountNameBuffer.SetBufferSize( (CORE::UInt32) cchAccName ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: LookupAccountSidW needs " 
+                        + CORE::ToString( (CORE::UInt32) cchAccName ) + " bytes for account name which could not be allocated" );
+                return false;
+            }
+            accountNameBuffer.SetBytes( 0 );
+            issueWasResizeNeeded = true;
+        }
+        if ( cchDomainName < INITIAL_SIZE )
+        {
+            if ( !domainNameBuffer.SetBufferSize( (CORE::UInt32) cchDomainName ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: LookupAccountSidW needs " 
+                        + CORE::ToString( (CORE::UInt32) cchDomainName ) + " bytes for domain name which could not be allocated" );
+                return false;
+            }
+            domainNameBuffer.SetBytes( 0 );
+            issueWasResizeNeeded = true;
+        }
+
+        if ( !issueWasResizeNeeded )
+        {
+            CORE::UInt32 errorCode = ::GetLastError(); 
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: LookupAccountSidW Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+            return false;
+        }
+
+        if ( ::LookupAccountSidW( NULL                                      ,                                         
+                                  accountSid                                ,  
+                                  (LPWSTR) accountNameBuffer.GetBufferPtr() ,  
+                                  &cchAccName                               ,  
+                                  (LPWSTR) domainNameBuffer.GetBufferPtr()  , 
+                                  &cchDomainName                            ,  
+                                  &eSidType                                 ) == FALSE ) 
+        {
+            // Failed again
+            CORE::UInt32 errorCode = ::GetLastError(); 
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: LookupAccountSidW Failed again. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+            return false;
+        }
+    }
+    accountNameBuffer.SetDataSize( (CORE::UInt32) cchAccName );
+    domainNameBuffer.SetDataSize( (CORE::UInt32) cchDomainName  );
+
+    if ( domainNameBuffer.GetDataSize() > 0 )
+        domainName.assign( domainNameBuffer.AsConstTypePtr< wchar_t >(), cchDomainName );
+    if ( accountNameBuffer.GetDataSize() > 0 )
+        accountName.assign( accountNameBuffer.AsConstTypePtr< wchar_t >(), cchAccName );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetQueueOwner( const std::wstring& formatName ,
+                            std::wstring& domainName       ,
+                            std::wstring& accountName      ,
+                            std::wstring& accountSid       )
+{GUCEF_TRACE;                          
+
+    domainName.clear();
+    accountName.clear();
+    accountSid.clear();
+
+    CORE::CDynamicBuffer securityDescriptor;
+    if ( GetQueueSecurityDescriptor( formatName, OWNER_SECURITY_INFORMATION, securityDescriptor ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Obtained OWNER_SECURITY_INFORMATION" );
+
+        // Retrieve the owner's SID from the security descriptor buffer.
+        PSID pSID = NULL;
+        BOOL fOwnerExists = FALSE;  
+        if ( ::GetSecurityDescriptorOwner( (PSECURITY_DESCRIPTOR) securityDescriptor.GetBufferPtr() ,  
+                                           &pSID                                                    ,  
+                                           &fOwnerExists                                            ) == FALSE )
+        {  
+            CORE::UInt32 errorCode =  ::GetLastError(); 
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+            return false;
+        } 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Obtained owner info" );
+
+        if ( fOwnerExists == FALSE )  
+        {  
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner exists" ); 
+            return true;  
+        }   
+        if ( pSID == NULL )  
+        {  
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner information was found" ); 
+            return false;  
+        }  
+
+        bool totalSuccess = true;
+        accountSid = CovertPSIDToWString( pSID );
+        totalSuccess = !accountSid.empty() && totalSuccess;
+        totalSuccess = GetAccountInfoForSid( pSID, domainName, accountName ) && totalSuccess;
+        
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Found that accountName=\"" + CORE::ToString( accountName ) + 
+                "\" and domainName=\"" + CORE::ToString( accountName ) + "\" and sid=\"" + CORE::ToString( accountSid ) + "\"" );              
+        
+        return totalSuccess;
+    }
+    
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptor Failed" );
+    return false;
+} 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MsmqMetrics::GetQueueOwner( const CORE::CString& formatName ,
+                            CORE::CString& domainName       ,
+                            CORE::CString& accountName      ,
+                            CORE::CString& sid              )
+{GUCEF_TRACE;
+
+    std::wstring wFormatName;
+    if ( CORE::Utf8toUtf16( CORE::ToUtf8String( formatName ), wFormatName ) )
+    {
+        std::wstring wDomainName;
+        std::wstring wAccountName;
+        std::wstring wSid;
+        if ( GetQueueOwner( wFormatName, wDomainName, wAccountName, wSid ) )
+        {
+            domainName = CORE::ToString( wDomainName );
+            accountName = CORE::ToString( wAccountName );
+            sid = CORE::ToString( wSid ); 
+            return true;
+        }
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+MsmqMetrics::GetMsmqPermissionsAsString( ::ACCESS_MASK amMask )
+{GUCEF_TRACE;
+  
+    CORE::CString result;
+
+    if ((amMask & MQSEC_QUEUE_GENERIC_ALL) == MQSEC_QUEUE_GENERIC_ALL)  
+    {  
+        result += "Full Control,";  
+    }    
+    if ((amMask & MQSEC_DELETE_QUEUE) == MQSEC_DELETE_QUEUE)  
+    {  
+        result += "Delete Queue,"; 
+    }    
+    if ((amMask & MQSEC_RECEIVE_MESSAGE) == MQSEC_RECEIVE_MESSAGE)  
+    {  
+        result += "Receive Message,";
+    }    
+    if ((amMask & MQSEC_DELETE_MESSAGE) == MQSEC_DELETE_MESSAGE)  
+    {  
+        result += "Delete Message,";
+    }    
+    if ((amMask & MQSEC_PEEK_MESSAGE) == MQSEC_PEEK_MESSAGE)  
+    {  
+        result += "Peek Message,";
+    }    
+    if ((amMask & MQSEC_RECEIVE_JOURNAL_MESSAGE) == MQSEC_RECEIVE_JOURNAL_MESSAGE)  
+    {  
+        result += "Receive Journal Message,";
+    }    
+    if ((amMask & MQSEC_DELETE_JOURNAL_MESSAGE) == MQSEC_DELETE_JOURNAL_MESSAGE)  
+    {  
+        result += "Delete Journal Message,";
+    }    
+    if ((amMask & MQSEC_GET_QUEUE_PROPERTIES) == MQSEC_GET_QUEUE_PROPERTIES)  
+    {  
+        result += "Get Queue Properties,";
+    }    
+    if ((amMask & MQSEC_SET_QUEUE_PROPERTIES) == MQSEC_SET_QUEUE_PROPERTIES)  
+    {  
+        result += "Set Queue Properties,";
+    }    
+    if ((amMask & MQSEC_GET_QUEUE_PERMISSIONS) == MQSEC_GET_QUEUE_PERMISSIONS)  
+    {  
+        result += "Get Queue Permissions,";
+    }    
+    if ((amMask & MQSEC_CHANGE_QUEUE_PERMISSIONS) == MQSEC_CHANGE_QUEUE_PERMISSIONS)  
+    {  
+        result += "Set Queue Permissions,";
+    }   
+    if ((amMask & MQSEC_TAKE_QUEUE_OWNERSHIP) == MQSEC_TAKE_QUEUE_OWNERSHIP)  
+    {  
+        result += "Take Queue Ownership,";
+    }    
+    if ((amMask & MQSEC_WRITE_MESSAGE) == MQSEC_WRITE_MESSAGE)  
+    {  
+        result += "Write Message,";
+    }  
+  
+    return result;  
+}  
+
+/*-------------------------------------------------------------------------*/
+
+std::wstring
+MsmqMetrics::CovertPSIDToWString( ::PSID psid )
+{GUCEF_TRACE;
+
+    LPWSTR sidStr = NULL;
+    if ( ::ConvertSidToStringSidW( psid, &sidStr ) == TRUE )
+    {
+        std::wstring result = sidStr; 
+        ::LocalFree( sidStr );
+        return result;      
+    }
+
+    CORE::UInt32 errorCode =  ::GetLastError(); 
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:CovertPSIDToWString: ConvertSidToStringSidW Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+    return std::wstring();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+MsmqMetrics::CovertPSIDToString( ::PSID psid )
+{GUCEF_TRACE;
+
+    LPWSTR sidStr = NULL;
+    if ( ::ConvertSidToStringSidW( psid, &sidStr ) == TRUE )
+    {
+        CORE::CString result = CORE::ToString( CORE::ToUtf8String( sidStr ) );      
+        ::LocalFree( sidStr );
+        return result;
+    }
+
+    CORE::UInt32 errorCode =  ::GetLastError(); 
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:CovertPSIDToString: ConvertSidToStringSidW Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+    return CORE::CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool 
+MsmqMetrics::GetMsmqPermissionList( const CORE::CString& formatName    ,
+                                    TSIDStrToAccessMaskMap& accessList )
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer securityDescriptor;
+    if ( GetQueueSecurityDescriptorDACL( formatName,
+                                         securityDescriptor ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: Obtained DACL security descriptor for Queue " + formatName );
+        
+        TPSIDToAccessMaskMap pSidAccessList;
+        if ( GetMsmqPermissionList( securityDescriptor ,
+                                    pSidAccessList     ) ) 
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: Obtained Permissions list for Queue " + formatName );
+            
+            // Now convert the struct pointers inside the security descriptor to 
+            // stuff that is easier to store, sort and use, a string and a dword
+            TPSIDToAccessMaskMap::iterator i = pSidAccessList.begin();
+            while ( i != pSidAccessList.end() )
+            {
+                accessList[ CovertPSIDToString( (*i).first ) ] = (*i).second;
+                ++i;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool 
+MsmqMetrics::GetMsmqPermissionList( const CORE::CDynamicBuffer& securityDescriptor  ,
+                                    TPSIDToAccessMaskMap& accessList                )
+{GUCEF_TRACE;        
+                
+    // Retrieve a pointer to the DACL in the security descriptor.  
+    PACL pDacl = NULL; 
+    BOOL fDaclPresent = FALSE;  
+    BOOL fDaclDefaulted = TRUE;  
+    if ( ::GetSecurityDescriptorDacl( (PSECURITY_DESCRIPTOR) securityDescriptor.GetConstBufferPtr() ,  
+                                      &fDaclPresent                                                 ,  
+                                      &pDacl                                                        ,  
+                                      &fDaclDefaulted                                               ) == FALSE )  
+    {  
+        CORE::UInt32 errorCode =  ::GetLastError(); 
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: GetQueueSecurityDescriptorDACL Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+        return false;
+    }          
+  
+    // Check whether no DACL or a NULL DACL was retrieved from the security descriptor buffer.  
+    if ( fDaclPresent == FALSE  )  
+    {  
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: No DACL was found (all access is denied)" );  
+        return true;  
+    }
+    if ( pDacl == NULL ) 
+    {  
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: a NULL DACL (unrestricted access) was found" );  
+        return true;  
+    }
+
+    // Retrieve the ACL_SIZE_INFORMATION structure to find the number of ACEs in the DACL.  
+    ::ACL_SIZE_INFORMATION aclsizeinfo;  
+    memset( &aclsizeinfo, 0, sizeof( aclsizeinfo ) );
+    if ( ::GetAclInformation( pDacl               ,  
+                              &aclsizeinfo        ,  
+                              sizeof(aclsizeinfo) ,  
+                              AclSizeInformation  ) == FALSE)  
+    {   
+        CORE::UInt32 errorCode =  ::GetLastError(); 
+        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: GetAclInformation Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+        return false;
+    }
+        
+    // Loop through the ACEs and display the information.  
+    ::ACCESS_ALLOWED_ACE * pAce = NULL;  
+    for ( DWORD cAce = 0; cAce < aclsizeinfo.AceCount; cAce++ )  
+    {    
+        // Get ACE info  
+        if ( ::GetAce( pDacl           ,  
+                       cAce            ,  
+                       (LPVOID*) &pAce ) == FALSE )  
+        {  
+            CORE::UInt32 errorCode =  ::GetLastError(); 
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: GetAce Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
+            continue;
+        }  
+
+        // The ace struct can hold other info not just access lists
+        // as such we need to check the struct type
+        switch( pAce->Header.AceType )  
+        {  
+            case ACCESS_ALLOWED_ACE_TYPE:
+            {
+                // Permissions granted
+                accessList[ (PSID) &pAce->SidStart ] = pAce->Mask;
+                break;
+            }
+
+            case ACCESS_DENIED_ACE_TYPE:
+            {
+                // Permissions explicitly denied
+                //     ??? accessList[ (PSID) &pAce->SidStart ] = pAce->Mask;
+                // @TODO?
+                std::wstring domainName;
+                std::wstring accountName;
+                GetAccountInfoForSid( (PSID) &pAce->SidStart, domainName, accountName );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: Access explicitly denied for domain=" + 
+                                CORE::ToString( domainName ) + " account=" + CORE::ToString( accountName ) + " mask=" + CORE::ToString( (UInt64) pAce->Mask ) );
+                break;
+            }
+  
+            default:  
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqPermissionList: GetAce Unknown ACE type " + CORE::ToString( pAce->Header.AceType ) );
+                break;
+            }
+        }  
+    }
+    
+    return true;
+}   
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
+                            CORE::CString::StringSet& foundQueues              )
+{GUCEF_TRACE;
+
+    // For discovery in the MSMQ realm we always use the format name in order to be able to collapse sources into a singular uniform list
+    bool totalSuccess = true;
+
+    // Let's first check the private local queues as that is most likely to succeed
+    CORE::CString::StringVector localPrivateQueuePathNames;
+    if ( GetLocalPrivateQueues( localPrivateQueuePathNames ) )
+    {
+        CORE::CString::StringVector::iterator i = localPrivateQueuePathNames.begin();
+        while ( i != localPrivateQueuePathNames.end() )
+        {
+            CORE::CString queueFormatName;
+            if ( MsmqPathNameToMsmqQueueFormatName( (*i), queueFormatName ) )
+            {
+                if ( globPatternFilters.empty() || queueFormatName.WildcardEquals( globPatternFilters, '*', true, true ) )
+                {
+                    foundQueues.insert( queueFormatName );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:FindAllQueues: Found local private queue that passes the filter criterea : " + queueFormatName );
+                }
+            }
+            else
+                totalSuccess = false;
+
+            ++i;
+        }
+    }
+    else
+        totalSuccess = false;
+
+    // Next try our luck at any public queues we have access to
+    CORE::CString::StringVector publicQueueIDs;
+    if ( GetPublicQueues( publicQueueIDs ) )
+    {
+        CORE::CString::StringVector::iterator i = publicQueueIDs.begin();
+        while ( i != publicQueueIDs.end() )
+        {
+            CORE::CString queueFormatName;
+            if ( MsmqQueueGUIDToMsmqQueueFormatName( (*i), queueFormatName ) )
+            {
+                if ( globPatternFilters.empty() || queueFormatName.WildcardEquals( globPatternFilters, '*', true, true ) )
+                {
+                    foundQueues.insert( queueFormatName );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:FindAllQueues: Found public queue that passes the filter criterea : " + queueFormatName );
+                }
+            }
+            else
+                totalSuccess = false;
+
+            ++i;
+        }        
+    }
+    else
+        totalSuccess = false;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventId  ,
@@ -1086,13 +2013,32 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "enableRestApi" ), m_enableRestApi );
     m_metricsPrefix = appConfig.GetValueAlways( "metricsPrefix", m_metricsPrefix );
     m_queueNamesAreMsmqFormatNames = CORE::StringToBool( appConfig.GetValueAlways( "queueNamesAreMsmqFormatNames" ), m_queueNamesAreMsmqFormatNames );
+    bool discoverQueues = CORE::StringToBool( appConfig.GetValueAlways( "discoverQueues" ), false );
+    CORE::CString::StringSet discoverQueueFilters = appConfig.GetValueAlways( "discoverQueueFilters" ).AsString().ParseUniqueElements( ';', false );
 
+    // Set the explicitly configured queues
     CORE::CString::StringVector queuesToWatch = appConfig.GetValueAlways( "queuesToWatch" ).AsString().ParseElements( ';', false );
     CORE::CString::StringVector::iterator i = queuesToWatch.begin();
     while ( i != queuesToWatch.end() )
     {
         m_queues.push_back( MsmqQueue( (*i), m_queueNamesAreMsmqFormatNames ) );
         ++i;                                                          
+    }
+
+    // See if we want to auto find more queues
+    if ( discoverQueues )
+    {
+        CORE::CString::StringSet discoverdQueues;
+        FindAllQueues( discoverQueueFilters, discoverdQueues );
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Discovered " + CORE::ToString( discoverdQueues.size() ) + " queues" );
+
+        CORE::CString::StringSet::iterator n = discoverdQueues.begin();
+        while ( n != discoverdQueues.end() )
+        {
+            // discovered queues are always 'format names'
+            m_queues.push_back( MsmqQueue( (*n), true ) );
+            ++n;                                                          
+        }
     }
 
     // Perform an initial init of the queue information
@@ -1111,7 +2057,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
         m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
-        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "restBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
         m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     }

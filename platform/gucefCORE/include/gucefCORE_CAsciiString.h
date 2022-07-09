@@ -298,6 +298,15 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                          const bool caseSensitive = true       ,
                          const bool biDirectional = false      ) const;
 
+    /**
+     *  It is common for wildcard comparisons to be done against a list
+     *  as such we provide this variant as a convenience
+     */
+    bool WildcardEquals( const StringSet& strsWithWildcards ,
+                         const Int32 wildCardToken = '*'    ,
+                         const bool caseSensitive = true    ,
+                         const bool biDirectional = false   ) const;
+
     bool Equals( const CAsciiString& otherStr    ,
                  const bool caseSensitive = true ) const;
 

@@ -113,6 +113,18 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
 
     private:
 
+    typedef std::vector< std::wstring > TWStringVector;
+
+    static bool GetPrivateQueues( const std::wstring& computerName ,
+                                  TWStringVector& queuePathNames   );
+
+    static bool GetPrivateQueues( const CORE::CString& computerName           ,
+                                  CORE::CString::StringVector& queuePathNames );
+
+    static bool GetLocalPrivateQueues( CORE::CString::StringVector& queuePathNames );
+
+    static bool GetPublicQueues( CORE::CString::StringVector& queueIDs );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,

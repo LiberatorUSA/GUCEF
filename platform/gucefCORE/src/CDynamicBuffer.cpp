@@ -218,6 +218,18 @@ CDynamicBuffer::SetUByte( UInt32 index ,
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CDynamicBuffer::SetBytes( UInt8 byteInitValue )
+{GUCEF_TRACE;
+        
+    SecureLinkBeforeMutation();
+    
+    if ( GUCEF_NULL != _buffer && 0 < _bsize )
+        memset( _buffer, byteInitValue, (size_t) _bsize ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 char&
 CDynamicBuffer::GetChar( UInt32 index )
 {GUCEF_TRACE;

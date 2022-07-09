@@ -114,7 +114,12 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *      Sets the unsigned byte located at the index given.
      */
     void SetUByte( UInt32 index ,
-                    UInt8 data   );
+                   UInt8 data   );
+
+    /**
+     *  Initializes all the bytes in the buffer to the byte value indicated by 'byteInitValue'      
+     */ 
+    void SetBytes( UInt8 byteInitValue );
 
     /**
      *  Returns the signed byte located at the index given.

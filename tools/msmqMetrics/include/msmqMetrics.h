@@ -149,6 +149,53 @@ class MsmqMetrics : public CORE::CObservingNotifier
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    static bool GetQueueSecurityDescriptor( const CORE::CString& formatName          ,
+                                            SECURITY_INFORMATION infoTypeToGet       ,
+                                            CORE::CDynamicBuffer& securityDescriptor );
+
+    static bool GetQueueSecurityDescriptor( const std::wstring& formatName           ,
+                                            SECURITY_INFORMATION infoTypeToGet       ,
+                                            CORE::CDynamicBuffer& securityDescriptor );
+
+    static bool GetQueueSecurityDescriptorDACL( const CORE::CString& formatName          ,
+                                                CORE::CDynamicBuffer& securityDescriptor );
+    
+    static bool GetQueueOwner( const std::wstring& formatName ,
+                               std::wstring& domainName       ,
+                               std::wstring& accountName      ,
+                               std::wstring& accountSid       );
+    
+    static bool GetQueueOwner( const CORE::CString& formatName ,
+                               CORE::CString& domainName       ,
+                               CORE::CString& accountName      ,
+                               CORE::CString& accountSid       );
+    
+    typedef std::map< ::PSID, ::ACCESS_MASK >   TPSIDToAccessMaskMap;    
+    static bool GetMsmqPermissionList( const CORE::CDynamicBuffer& securityDescriptor ,
+                                       TPSIDToAccessMaskMap& accessList               );
+
+    typedef std::map< CORE::CString, ::ACCESS_MASK >   TSIDStrToAccessMaskMap;    
+    static bool GetMsmqPermissionList( const CORE::CString& formatName    ,
+                                       TSIDStrToAccessMaskMap& accessList );
+
+    static CORE::CString CovertPSIDToString( ::PSID psid );
+
+    static std::wstring CovertPSIDToWString( ::PSID psid );
+
+    static CORE::CString GetMsmqPermissionsAsString( ::ACCESS_MASK amMask );
+
+    static bool GetAccountInfoForSid( const std::wstring& accountSid ,
+                                      std::wstring& domainName       ,
+                                      std::wstring& accountName      );
+    
+    static bool GetAccountInfoForSid( const CORE::CString& accountSid ,
+                                      CORE::CString& domainName       ,
+                                      CORE::CString& accountName      );
+
+    static bool GetAccountInfoForSid( ::PSID accountSid         ,
+                                      std::wstring& domainName  ,
+                                      std::wstring& accountName );
     
     class MsmqQueueProperties
     {
@@ -159,6 +206,11 @@ class MsmqMetrics : public CORE::CObservingNotifier
         CORE::CString pathName;
         CORE::CString pathNameDNS;
         CORE::CString typeId;
+        CORE::CString ownerDomainName;
+        CORE::CString ownerAccountName;
+        CORE::CString ownerSID;
+        ::ACCESS_MASK ownerAccessMask;
+        TSIDStrToAccessMaskMap queuePermissions;
 
         CORE::CString ToString( void ) const;
 
@@ -228,8 +280,17 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static bool MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid          ,
                                                     std::wstring& queueFormatName  );
 
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const GUID& queueGuid           ,
+                                                     CORE::CString& queueFormatName );
+
     static bool MsmqPathNameToMsmqQueueFormatName( const std::wstring& pathName   ,
                                                     std::wstring& queueFormatName  );
+
+    static bool MsmqPathNameToMsmqQueueFormatName( const CORE::CString& pathName   ,
+                                                   CORE::CString& queueFormatName  );
+
+    static bool MsmqQueueGUIDToMsmqQueueFormatName( const CORE::CString& queueGuid ,
+                                                    CORE::CString& queueFormatName );
     
     static bool StringToMsmqGUID( const CORE::CAsciiString& guidString, GUID& guid );
     
@@ -238,7 +299,22 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static CORE::CString GenerateMetricsFriendlyQueueName( const CORE::CString& queueName );
 
     static bool InitQueueInfo( MsmqQueue& q );
-    
+
+    typedef std::vector< std::wstring > TWStringVector;
+
+    static bool GetPrivateQueues( const std::wstring& computerName ,
+                                  TWStringVector& queuePathNames   );
+
+    static bool GetPrivateQueues( const CORE::CString& computerName           ,
+                                  CORE::CString::StringVector& queuePathNames );
+
+    static bool GetLocalPrivateQueues( CORE::CString::StringVector& queuePathNames );
+
+    static bool GetPublicQueues( CORE::CString::StringVector& queueIDs );
+
+    static bool FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
+                               CORE::CString::StringSet& foundQueues              );
+        
     private:
 
     typedef CORE::CTEventHandlerFunctor< MsmqMetrics > TEventCallback;
