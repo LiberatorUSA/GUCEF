@@ -164,12 +164,14 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static bool GetQueueOwner( const std::wstring& formatName ,
                                std::wstring& domainName       ,
                                std::wstring& accountName      ,
-                               std::wstring& accountSid       );
+                               std::wstring& accountSid       ,
+                               bool& isOwnerDefaulted         );
     
     static bool GetQueueOwner( const CORE::CString& formatName ,
                                CORE::CString& domainName       ,
                                CORE::CString& accountName      ,
-                               CORE::CString& accountSid       );
+                               CORE::CString& accountSid       ,
+                               bool& isOwnerDefaulted          );
     
     typedef std::map< ::PSID, ::ACCESS_MASK >   TPSIDToAccessMaskMap;    
     static bool GetMsmqPermissionList( const CORE::CDynamicBuffer& securityDescriptor ,
@@ -209,7 +211,8 @@ class MsmqMetrics : public CORE::CObservingNotifier
         CORE::CString ownerDomainName;
         CORE::CString ownerAccountName;
         CORE::CString ownerSID;
-        ::ACCESS_MASK ownerAccessMask;
+        bool ownerIsDefaulted;
+        ::ACCESS_MASK ownerAccessMask;        
         TSIDStrToAccessMaskMap queuePermissions;
 
         CORE::CString ToString( void ) const;

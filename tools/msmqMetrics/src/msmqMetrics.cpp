@@ -251,6 +251,7 @@ MsmqMetrics::MsmqQueueProperties::MsmqQueueProperties( void )
     , ownerDomainName()
     , ownerAccountName()
     , ownerSID()
+    , ownerIsDefaulted( false )
     , ownerAccessMask( 0 )
     , queuePermissions()
 {GUCEF_TRACE;
@@ -273,14 +274,14 @@ MsmqMetrics::MsmqQueueProperties::ToString( void ) const
         CORE::CString accountName;
         MsmqMetrics::GetAccountInfoForSid( (*i).first, domainName, accountName );
 
-        otherAccessPermsStr += " domainName=" + ownerDomainName + ", accountName=" + ownerAccountName + " permissions=[ " + MsmqMetrics::GetMsmqPermissionsAsString( (*i).second ) + " ]";
+        otherAccessPermsStr += " domainName=" + domainName + ", accountName=" + accountName + " permissions=[ " + MsmqMetrics::GetMsmqPermissionsAsString( (*i).second ) + " ]";
 
         ++i;
     }
     otherAccessPermsStr += " ]";
     
     CORE::CString propStr = "queueLabel=" + queueLabel + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS +
-           ", ownerDomainName=" + ownerDomainName + ", ownerAccountName=" + ownerAccountName + ", ownerSID=" + ownerSID + ", ownerAccessMask=" + CORE::ToString( (UInt64) ownerAccessMask ) +
+           ", ownerIsDefaulted=" + CORE::ToString( ownerIsDefaulted ) + ", ownerDomainName=" + ownerDomainName + ", ownerAccountName=" + ownerAccountName + ", ownerSID=" + ownerSID + ", ownerAccessMask=" + CORE::ToString( (UInt64) ownerAccessMask ) +
            ownerAccessPermsStr + otherAccessPermsStr;
     
     return propStr;
@@ -653,7 +654,7 @@ MsmqMetrics::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
     totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;
     totalSuccess = GetMsmqQueueType( queueFormatName, queueProperties.typeId ) && totalSuccess;
-    totalSuccess = GetQueueOwner( CORE::ToString( queueFormatName ), queueProperties.ownerDomainName, queueProperties.ownerAccountName, queueProperties.ownerSID ) && totalSuccess;
+    totalSuccess = GetQueueOwner( CORE::ToString( queueFormatName ), queueProperties.ownerDomainName, queueProperties.ownerAccountName, queueProperties.ownerSID, queueProperties.ownerIsDefaulted ) && totalSuccess;
     totalSuccess = GetMsmqPermissionList( CORE::ToString( queueFormatName ), queueProperties.queuePermissions ) && totalSuccess;
 
     if ( !queueProperties.ownerSID.IsNULLOrEmpty() )
@@ -1431,6 +1432,9 @@ MsmqMetrics::GetAccountInfoForSid( const std::wstring& accountSid ,
     {
         bool result = GetAccountInfoForSid( pSID, domainName, accountName );
         ::LocalFree( pSID );
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetAccountInfoForSid: For SID \"" + CORE::ToString( accountSid ) + 
+                "\" Found domain=\"" + CORE::ToString( domainName ) + "\" Found account=\"" + CORE::ToString( accountName ) + "\"" );  
         return result;
     }
     return false;
@@ -1532,7 +1536,8 @@ bool
 MsmqMetrics::GetQueueOwner( const std::wstring& formatName ,
                             std::wstring& domainName       ,
                             std::wstring& accountName      ,
-                            std::wstring& accountSid       )
+                            std::wstring& accountSid       ,
+                            bool& isOwnerDefaulted         )
 {GUCEF_TRACE;                          
 
     domainName.clear();
@@ -1546,26 +1551,21 @@ MsmqMetrics::GetQueueOwner( const std::wstring& formatName ,
 
         // Retrieve the owner's SID from the security descriptor buffer.
         PSID pSID = NULL;
-        BOOL fOwnerExists = FALSE;  
+        BOOL fOwnerDefaulted = FALSE;  
         if ( ::GetSecurityDescriptorOwner( (PSECURITY_DESCRIPTOR) securityDescriptor.GetBufferPtr() ,  
                                            &pSID                                                    ,  
-                                           &fOwnerExists                                            ) == FALSE )
+                                           &fOwnerDefaulted                                         ) == FALSE )
         {  
             CORE::UInt32 errorCode =  ::GetLastError(); 
             std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner Failed. errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );              
             return false;
         } 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Obtained owner info" );
-
-        if ( fOwnerExists == FALSE )  
-        {  
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner exists" ); 
-            return true;  
-        }   
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Obtained owner info reference into the security descriptor" );
+   
         if ( pSID == NULL )  
         {  
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner information was found" ); 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner information was found in the security descriptor" ); 
             return false;  
         }  
 
@@ -1573,7 +1573,13 @@ MsmqMetrics::GetQueueOwner( const std::wstring& formatName ,
         accountSid = CovertPSIDToWString( pSID );
         totalSuccess = !accountSid.empty() && totalSuccess;
         totalSuccess = GetAccountInfoForSid( pSID, domainName, accountName ) && totalSuccess;
-        
+
+        if ( fOwnerDefaulted == FALSE )  
+        {  
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: GetSecurityDescriptorOwner states that no owner exists" );  
+        }
+        isOwnerDefaulted = fOwnerDefaulted == FALSE;
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueOwner: Found that accountName=\"" + CORE::ToString( accountName ) + 
                 "\" and domainName=\"" + CORE::ToString( accountName ) + "\" and sid=\"" + CORE::ToString( accountSid ) + "\"" );              
         
@@ -1590,7 +1596,8 @@ bool
 MsmqMetrics::GetQueueOwner( const CORE::CString& formatName ,
                             CORE::CString& domainName       ,
                             CORE::CString& accountName      ,
-                            CORE::CString& sid              )
+                            CORE::CString& sid              ,
+                            bool& isOwnerDefaulted          )
 {GUCEF_TRACE;
 
     std::wstring wFormatName;
@@ -1599,7 +1606,7 @@ MsmqMetrics::GetQueueOwner( const CORE::CString& formatName ,
         std::wstring wDomainName;
         std::wstring wAccountName;
         std::wstring wSid;
-        if ( GetQueueOwner( wFormatName, wDomainName, wAccountName, wSid ) )
+        if ( GetQueueOwner( wFormatName, wDomainName, wAccountName, wSid, isOwnerDefaulted ) )
         {
             domainName = CORE::ToString( wDomainName );
             accountName = CORE::ToString( wAccountName );
