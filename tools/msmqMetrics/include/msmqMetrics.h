@@ -150,6 +150,11 @@ class MsmqMetrics : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnQueueActivityCheckTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
+
     static bool GetQueueSecurityDescriptor( const CORE::CString& formatName          ,
                                             SECURITY_INFORMATION infoTypeToGet       ,
                                             CORE::CDynamicBuffer& securityDescriptor );
@@ -214,6 +219,7 @@ class MsmqMetrics : public CORE::CObservingNotifier
         bool ownerIsDefaulted;
         ::ACCESS_MASK ownerAccessMask;        
         TSIDStrToAccessMaskMap queuePermissions;
+        CORE::CString hostname;
 
         CORE::CString ToString( void ) const;
 
@@ -229,9 +235,12 @@ class MsmqMetrics : public CORE::CObservingNotifier
         bool queueNameIsMsmqFormatName;
         CORE::CString metricFriendlyQueueName;
         MsmqQueueProperties queueProperties;
+        bool isActive;
 
         MsmqQueue( const CORE::CString& qName        , 
                    bool queueNamesAreMsmqFormatNames );
+
+        MsmqQueue( const MsmqQueue& src );
     };
     typedef std::vector< MsmqQueue >    MsmqQueueVector;
     
@@ -315,6 +324,16 @@ class MsmqMetrics : public CORE::CObservingNotifier
 
     static bool GetPublicQueues( CORE::CString::StringVector& queueIDs );
 
+    static bool GetMsmqActiveQueues( const CORE::CString& hostname          ,
+                                     CORE::CString::StringSet& activeQueues );
+
+    static bool UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostnames ,
+                                             MsmqQueueVector& queues                   );
+
+    static bool FindPrivateQueues( const CORE::CString::StringSet& hostNames          ,
+                                   const CORE::CString::StringSet& globPatternFilters ,
+                                   CORE::CString::StringSet& foundQueues              );
+
     static bool FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
                                CORE::CString::StringSet& foundQueues              );
         
@@ -327,10 +346,13 @@ class MsmqMetrics : public CORE::CObservingNotifier
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
+    CORE::CTimer m_queueActivityCheckTimer;
     bool m_enableRestApi;
     MsmqQueueVector m_queues;
     bool m_queueNamesAreMsmqFormatNames;
+    bool m_dontSendMetricsForInactiveQueues;
     CORE::CString m_metricsPrefix;
+    CORE::CString::StringSet m_hostnames;
 };
 
 /*-------------------------------------------------------------------------*/

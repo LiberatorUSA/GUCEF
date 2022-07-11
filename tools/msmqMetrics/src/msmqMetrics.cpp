@@ -212,10 +212,12 @@ MsmqMetrics::MsmqMetrics( void )
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
+    , m_queueActivityCheckTimer()
     , m_enableRestApi( true )
     , m_queues()
     , m_queueNamesAreMsmqFormatNames( false )
-    , m_metricsPrefix()
+    , m_dontSendMetricsForInactiveQueues( true )
+    , m_metricsPrefix()    
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -237,6 +239,21 @@ MsmqMetrics::MsmqQueue::MsmqQueue( const CORE::CString& qName        ,
     , msmqQueueFormatName()
     , queueNameIsMsmqFormatName( queueNamesAreMsmqFormatNames )
     , metricFriendlyQueueName()
+    , queueProperties()
+    , isActive( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+MsmqMetrics::MsmqQueue::MsmqQueue( const MsmqQueue& src )
+    : queueName( src.queueName )
+    , msmqQueueFormatName( src.msmqQueueFormatName )
+    , queueNameIsMsmqFormatName( src.queueNameIsMsmqFormatName )
+    , metricFriendlyQueueName( src.metricFriendlyQueueName )
+    , queueProperties( src.queueProperties )
+    , isActive( src.isActive )
 {GUCEF_TRACE;
 
 }
@@ -254,6 +271,7 @@ MsmqMetrics::MsmqQueueProperties::MsmqQueueProperties( void )
     , ownerIsDefaulted( false )
     , ownerAccessMask( 0 )
     , queuePermissions()
+    , hostname()
 {GUCEF_TRACE;
 
 }
@@ -280,7 +298,7 @@ MsmqMetrics::MsmqQueueProperties::ToString( void ) const
     }
     otherAccessPermsStr += " ]";
     
-    CORE::CString propStr = "queueLabel=" + queueLabel + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS +
+    CORE::CString propStr = "queueLabel=" + queueLabel + ", hostname=" + hostname + ", queueTypeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS +
            ", ownerIsDefaulted=" + CORE::ToString( ownerIsDefaulted ) + ", ownerDomainName=" + ownerDomainName + ", ownerAccountName=" + ownerAccountName + ", ownerSID=" + ownerSID + ", ownerAccessMask=" + CORE::ToString( (UInt64) ownerAccessMask ) +
            ownerAccessPermsStr + otherAccessPermsStr;
     
@@ -298,6 +316,11 @@ MsmqMetrics::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
 
+    TEventCallback callback2( this, &MsmqMetrics::OnQueueActivityCheckTimerCycle );
+    SubscribeTo( &m_queueActivityCheckTimer     ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -855,6 +878,133 @@ MsmqMetrics::GetMsmqQueueFormatName( MsmqQueue& q )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+MsmqMetrics::GetMsmqActiveQueues( const CORE::CString& hostname          ,
+                                  CORE::CString::StringSet& activeQueues )
+{GUCEF_TRACE;
+
+    std::wstring wHostname;
+    if ( !CORE::Utf8toUtf16( CORE::ToUtf8String( hostname ), wHostname ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqActiveQueues: Failed to convert hostname to UTF16" );
+        return false;
+    }
+
+    // Define the required constants and variables.  
+    const int NUMBEROFPROPERTIES = 1;  
+    DWORD cPropId = 0;  
+
+    // Define an MQMGMTROPS structure.  
+    ::MQMGMTPROPS mgmtprops;  
+    ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+    ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+
+    aMgmtPropId[ cPropId ] = PROPID_MGMT_MSMQ_ACTIVEQUEUES;  // Property identifier  
+    aMgmtPropVar[ cPropId ].vt = VT_NULL;                    // Type indicator  
+    ++cPropId;
+
+    // Initialize the MQMGMTPROPS structure.  
+    mgmtprops.cProp = cPropId;   // number of management properties  
+    mgmtprops.aPropID = aMgmtPropId;// management property IDs  
+    mgmtprops.aPropVar = aMgmtPropVar;// management property values  
+    mgmtprops.aStatus  = NULL;// no storage for error codes   
+
+    // Now that we formulated the request
+    // actually ask for the info
+    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( wHostname.c_str(), L"MACHINE", &mgmtprops );
+    if ( MQ_OK == queueInfoFetchResult )
+    {
+        UInt64 nrOfActiveQueues = (UInt64) aMgmtPropVar[ 0 ].calpwstr.cElems;
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqActiveQueues: MQMgmtGetInfo returned " + CORE::ToString( nrOfActiveQueues ) + " number of active queues for hostname " + hostname );
+        
+        for ( UInt64 i=0; i<nrOfActiveQueues; ++i )
+        {
+            std::wstring activeQueueFormatName = aMgmtPropVar[ 0 ].calpwstr.pElems[ i ];
+            ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems[ i ] );
+
+            /*  Per MSMQ docs:
+             *      The outgoing queues included in the list of active queues on a specific computer returned in PROPID_MGMT_MSMQ_ACTIVEQUEUES 
+             *      can be identified by obtaining the value of PROPID_MGMT_QUEUE_LOCATION for each queue in the list. Because the format name of 
+             *      an outgoing queue is a format name of the corresponding destination queue, the value of PROPID_MGMT_QUEUE_LOCATION returned 
+             *      for an active outgoing queue residing on the computer specified in the call to MQMgmtGetInfo will refer to the destination queue 
+             *      residing on a different computer and will be MGMT_QUEUE_REMOTE_LOCATION.
+             *
+             *  This means we that the 'activeQueues' are only meaningfull for outgoing queues in the context of the hostname 
+             */ 
+            activeQueues.insert( CORE::ToString( activeQueueFormatName ) );
+        }
+        ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems ); 
+
+        return true;
+    }
+
+    CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
+    std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqActiveQueues: Failed to obtain list of active queues for hostname " + hostname + 
+            ". HRESULT= 0x" + CORE::Base16Encode( &queueInfoFetchResult, sizeof(queueInfoFetchResult) ) + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostnames ,
+                                          MsmqQueueVector& queues                   )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Will attempt to update/refresh the isActive flag for " + 
+            CORE::ToString( queues.size() ) + " queues using a list of " + CORE::ToString( hostnames.size() ) + " hostnames" );
+
+    bool totalSuccess = true;
+    
+    CORE::CString::StringSet::const_iterator i = hostnames.begin();
+    while ( i != hostnames.end() )
+    {
+        const CORE::CString& currentHostname = (*i);
+
+        CORE::CString::StringSet activeQueuesOnHost;
+        if ( GetMsmqActiveQueues( currentHostname    ,
+                                  activeQueuesOnHost ) )
+        {
+            MsmqQueueVector::iterator m  = queues.begin();
+            while ( m != queues.end() )
+            {
+                MsmqQueue& q = (*m);
+                if ( !q.queueProperties.hostname.IsNULLOrEmpty() &&
+                      q.queueProperties.hostname == currentHostname )
+                {
+                    // Active queues are listed as format names so we check against the Q format name
+                    bool queueIsActive = activeQueuesOnHost.find( CORE::ToString( q.msmqQueueFormatName ) ) != activeQueuesOnHost.end();
+                    
+                    if ( q.isActive != queueIsActive )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Determined that Queue " + 
+                                CORE::ToString( q.msmqQueueFormatName ) + " now has an isActive status of \'" + CORE::ToString( queueIsActive ) + "\' on host " + currentHostname );
+                    }                
+                    else
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Determined that Queue " + 
+                                CORE::ToString( q.msmqQueueFormatName ) + " still has an isActive status of \'" + CORE::ToString( queueIsActive ) + "\' on host " + currentHostname );
+                    }
+                    q.isActive = queueIsActive;
+                }                
+                ++m;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Failed to obtain list of active queues for hostname " + 
+                    currentHostname + " as such we will not be able to update/refresh the isActive flag for queues on that host" );
+            totalSuccess = false;
+        }
+        ++i;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::Int64
 MsmqMetrics::GetQueueMetric( MsmqQueue& q                           , 
                              const CORE::CString& metricDescription ,
@@ -909,7 +1059,8 @@ MsmqMetrics::GetQueueMetric( MsmqQueue& q                           ,
 
     CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
     std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueMetric: Failed to obtain " + metricDescription + ". Queue Name: " + q.queueName +". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueMetric: Failed to obtain " + metricDescription + ". Queue Name: " + q.queueName + 
+            " HRESULT= 0x" + CORE::Base16Encode( &queueInfoFetchResult, sizeof(queueInfoFetchResult) ) + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
     return -1;
 }
 
@@ -961,8 +1112,9 @@ MsmqMetrics::GetMsmqComputerMetric( const CORE::CString& metricDescription ,
 
     CORE::UInt32 errorCode =  HRESULT_CODE( computerInfoFetchResult );
     std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( computerInfoFetchResult ) );
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqComputerMetric: Failed to obtain " + metricDescription + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
-    return -1;
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqComputerMetric: Failed to obtain " + metricDescription + 
+            " HRESULT= 0x" + CORE::Base16Encode( &computerInfoFetchResult, sizeof(computerInfoFetchResult) ) + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1067,6 +1219,13 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
             q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Switched metrics friendly queue name for \"" + q.queueName + "\" to \"" + q.queueProperties.pathName + "\" as \"" + q.metricFriendlyQueueName + "\" for human readability and tracing" );
         }
+    }
+
+    if ( !q.queueProperties.pathName.IsNULLOrEmpty() )
+    {
+        CORE::CString hostnamePortion = q.queueProperties.pathName.SubstrToChar( '\\', true, true );
+        if ( !hostnamePortion.IsNULLOrEmpty() )
+            q.queueProperties.hostname = hostnamePortion.Uppercase();
     }
 
     return true; // best effort is fine
@@ -1185,7 +1344,7 @@ MsmqMetrics::GetLocalPrivateQueues( CORE::CString::StringVector& queuePathNames 
     //      'The ComputerName and Host Name is limited to 15 characters by MSMQ. 
     //       If the Host Name contains more than 15 characters, MSMQ will truncate the name. 
     //       In this case, you must use the truncated Host Name.'    
-    CORE::CString hostName = CORE::GetHostname();
+    CORE::CString hostName = CORE::GetHostname().Uppercase();
     if ( hostName.Length() > 15 )
         hostName = hostName.CutChars( hostName.Length() - 15, false );
 
@@ -1543,6 +1702,7 @@ MsmqMetrics::GetQueueOwner( const std::wstring& formatName ,
     domainName.clear();
     accountName.clear();
     accountSid.clear();
+    isOwnerDefaulted = true;
 
     CORE::CDynamicBuffer securityDescriptor;
     if ( GetQueueSecurityDescriptor( formatName, OWNER_SECURITY_INFORMATION, securityDescriptor ) )
@@ -1854,6 +2014,48 @@ MsmqMetrics::GetMsmqPermissionList( const CORE::CDynamicBuffer& securityDescript
 
 /*-------------------------------------------------------------------------*/
 
+bool
+MsmqMetrics::FindPrivateQueues( const CORE::CString::StringSet& hostNames          ,
+                                const CORE::CString::StringSet& globPatternFilters ,
+                                CORE::CString::StringSet& foundQueues              )
+{GUCEF_TRACE;
+    
+    bool totalSuccess = true;
+    
+    CORE::CString::StringSet::iterator m = hostNames.begin();
+    while ( m != hostNames.end() )
+    {
+        CORE::CString::StringVector privateQueuePathNames;
+        if ( GetPrivateQueues( (*m), privateQueuePathNames ) )
+        {
+            CORE::CString::StringVector::iterator i = privateQueuePathNames.begin();
+            while ( i != privateQueuePathNames.end() )
+            {
+                CORE::CString queueFormatName;
+                if ( MsmqPathNameToMsmqQueueFormatName( (*i), queueFormatName ) )
+                {
+                    if ( globPatternFilters.empty() || queueFormatName.WildcardEquals( globPatternFilters, '*', true, true ) )
+                    {
+                        foundQueues.insert( queueFormatName );
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:FindAllQueues: Found private queue on host \"" + (*m) + "\" that passes the filter criterea : " + queueFormatName );
+                    }
+                }
+                else
+                    totalSuccess = false;
+
+                ++i;
+            }
+        }
+        else
+            totalSuccess = false;
+        ++m;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 MsmqMetrics::FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
                             CORE::CString::StringSet& foundQueues              )
@@ -1918,6 +2120,17 @@ MsmqMetrics::FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
 /*-------------------------------------------------------------------------*/
 
 void
+MsmqMetrics::OnQueueActivityCheckTimerCycle( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventId  ,
                                   CORE::CICloneable* eventData )
@@ -1928,30 +2141,48 @@ MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     while ( i != m_queues.end() )
     {
         MsmqQueue& q = (*i);
+        
         CORE::CString metricsPrefix = m_metricsPrefix + q.metricFriendlyQueueName;
 
-        // in order to get this metric you need elevated access to the queue
-        CORE::Int64 msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( q );
-        if ( msmqMsgsInQueue >= 0 )
-            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", msmqMsgsInQueue, 1.0f );
+        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqQueueIsActive", q.isActive ? 1 : 0, 1.0f );
+        
+        // You can only obtain metrics for 'active' queues in MSMQ
+        if ( q.isActive )
+        {
+            // in order to get this metric you need elevated access to the queue
+            CORE::Int64 msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( q );
+            if ( msmqMsgsInQueue >= 0 )
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", msmqMsgsInQueue, 1.0f );
 
-        // in order to get this metric you need elevated access to the queue
-        // You also need MSMQ version 3.0 or later
-        CORE::Int64 msmqMsgsTotalByteCount = GetCurrentByteCountOfMesssagesInQueue( q );
-        if ( msmqMsgsTotalByteCount >= 0 )
-            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", msmqMsgsTotalByteCount, 1.0f );
+            // in order to get this metric you need elevated access to the queue
+            // You also need MSMQ version 3.0 or later
+            CORE::Int64 msmqMsgsTotalByteCount = GetCurrentByteCountOfMesssagesInQueue( q );
+            if ( msmqMsgsTotalByteCount >= 0 )
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", msmqMsgsTotalByteCount, 1.0f );
 
-        // in order to get this metric you need elevated access to the queue
-        // You also need MSMQ version 3.0 or later
-        CORE::Int64 msmqMsgsInQueueJournal = GetCurrentNrOfMessagesInQueueJournal( q );
-        if ( msmqMsgsInQueueJournal >= 0 )
-            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", msmqMsgsInQueueJournal, 1.0f );
+            // in order to get this metric you need elevated access to the queue
+            // You also need MSMQ version 3.0 or later
+            CORE::Int64 msmqMsgsInQueueJournal = GetCurrentNrOfMessagesInQueueJournal( q );
+            if ( msmqMsgsInQueueJournal >= 0 )
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", msmqMsgsInQueueJournal, 1.0f );
 
-        // in order to get this metric you need elevated access to the queue
-        // You also need MSMQ version 3.0 or later
-        CORE::Int64 msmqMsgsInJournalTotalByteCount = GetCurrentByteCountOfMesssagesInQueueJournal( q );
-        if ( msmqMsgsInJournalTotalByteCount >= 0 )
-            GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", msmqMsgsInJournalTotalByteCount, 1.0f );
+            // in order to get this metric you need elevated access to the queue
+            // You also need MSMQ version 3.0 or later
+            CORE::Int64 msmqMsgsInJournalTotalByteCount = GetCurrentByteCountOfMesssagesInQueueJournal( q );
+            if ( msmqMsgsInJournalTotalByteCount >= 0 )
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", msmqMsgsInJournalTotalByteCount, 1.0f );
+        }
+        else
+        {
+            if ( !m_dontSendMetricsForInactiveQueues )
+            {
+                // Because we still want to send something we will send 0 for the stats as our sign of life
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", 0, 1.0f );
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", 0, 1.0f );
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", 0, 1.0f );
+                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", 0, 1.0f );
+            }
+        }
 
         ++i;
     }
@@ -1959,7 +2190,7 @@ MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     // in order to get this metric you need elevated access to the queue
     // You also need MSMQ version 3.0 or later
     CORE::UInt64 msmqTotalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
-    GUCEF_METRIC_GAUGE( m_metricsPrefix + ".msmqTotalMsgBytes", msmqTotalMsgBytes, 1.0f );
+    GUCEF_METRIC_GAUGE( m_metricsPrefix + "msmqTotalMsgBytes", msmqTotalMsgBytes, 1.0f );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1997,6 +2228,7 @@ MsmqMetrics::SetStandbyMode( bool newModeIsStandby )
 {GUCEF_TRACE;
 
     m_metricsTimer.SetEnabled( !newModeIsStandby );
+    m_queueActivityCheckTimer.SetEnabled( !newModeIsStandby );
 
     return true;
 }
@@ -2022,6 +2254,9 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_queueNamesAreMsmqFormatNames = CORE::StringToBool( appConfig.GetValueAlways( "queueNamesAreMsmqFormatNames" ), m_queueNamesAreMsmqFormatNames );
     bool discoverQueues = CORE::StringToBool( appConfig.GetValueAlways( "discoverQueues" ), false );
     CORE::CString::StringSet discoverQueueFilters = appConfig.GetValueAlways( "discoverQueueFilters" ).AsString().ParseUniqueElements( ';', false );
+    m_dontSendMetricsForInactiveQueues = CORE::StringToBool( appConfig.GetValueAlways( "dontSendMetricsForInactiveQueues" ), m_dontSendMetricsForInactiveQueues );
+    CORE::UInt32 metricsIntervalInMs = CORE::StringToUInt32( appConfig.GetValueAlways( "metricsIntervalInMs" ), 1000 );
+    CORE::UInt32 queueActivityCheckIntervalInMs = CORE::StringToUInt32( appConfig.GetValueAlways( "queueActivityCheckIntervalInMs" ), 60000 );
 
     // Set the explicitly configured queues
     CORE::CString::StringVector queuesToWatch = appConfig.GetValueAlways( "queuesToWatch" ).AsString().ParseElements( ';', false );
@@ -2055,7 +2290,56 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         MsmqQueue& q = (*n);
         InitQueueInfo( q );
         ++n;
+    }    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Initialized info for " + CORE::ToString( m_queues.size() ) + " queues" );
+    
+    if ( discoverQueues )
+    {
+        // After init we can use the broader queue info to get a list of hostnames
+        // Regardless of what info was used to identify the queue
+
+        MsmqQueueVector::iterator n = m_queues.begin();
+        while ( n != m_queues.end() )
+        {
+            MsmqQueue& q = (*n);
+            
+            // The init above would have tried to fill in the hostname
+            if ( !q.queueProperties.hostname.IsNULLOrEmpty() )
+                m_hostnames.insert( q.queueProperties.hostname.Uppercase() );
+            ++n;
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: We have " + CORE::ToString( m_hostnames.size() ) + " hostnames related to MSMQ queues" );
+
+        // looking for additional private queues elsewhere, we already gathered the localhost ones
+        CORE::CString nameOfThisHost = CORE::GetHostname().Uppercase();
+        m_hostnames.erase( nameOfThisHost );        
+        CORE::CString::StringSet discoverdQueues;
+        if ( FindPrivateQueues( m_hostnames, discoverQueueFilters, discoverdQueues ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics: Found " + CORE::ToString( discoverdQueues.size() ) + " additional private queues" );
+        }
+        m_hostnames.insert( nameOfThisHost );
+
+        // Add the additional private queues on other hosts
+        CORE::CString::StringSet::iterator w = discoverdQueues.begin();
+        while ( w != discoverdQueues.end() )
+        {
+            // discovered queues are always 'format names'
+            MsmqQueue q( (*w), true ); 
+            InitQueueInfo( q );
+            m_queues.push_back( q );
+            ++w;                                                          
+        }
     }
+
+    // Perform the initial update on queue active status
+    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues );
+    m_queueActivityCheckTimer.SetInterval( queueActivityCheckIntervalInMs );
+                                                                                                                   
+    m_metricsTimer.SetInterval( metricsIntervalInMs );
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics: There are now " + CORE::ToString( m_queues.size() ) + " queues defined to be monitored" );
 
     if ( m_enableRestApi )
     {
