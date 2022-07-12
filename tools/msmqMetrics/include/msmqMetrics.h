@@ -237,8 +237,9 @@ class MsmqMetrics : public CORE::CObservingNotifier
         MsmqQueueProperties queueProperties;
         bool isActive;
 
-        MsmqQueue( const CORE::CString& qName        , 
-                   bool queueNamesAreMsmqFormatNames );
+        MsmqQueue( const CORE::CString& qName                           , 
+                   bool queueNamesAreMsmqFormatNames                    ,
+                   const CORE::CString& hostname = CORE::CString::Empty );
 
         MsmqQueue( const MsmqQueue& src );
     };
@@ -269,6 +270,10 @@ class MsmqMetrics : public CORE::CObservingNotifier
                                    CORE::CString& queueLabel            );
 
     static bool GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
+                                      CORE::CString& queuePathName         );
+
+    static bool GetMsmqQueuePathName( const CORE::CString& hostname        ,
+                                      const std::wstring& queueFormatName  ,                                      
                                       CORE::CString& queuePathName         );
 
     static bool GetMsmqQueuePathNameDNS( const std::wstring& queueFormatName  ,
@@ -328,7 +333,8 @@ class MsmqMetrics : public CORE::CObservingNotifier
                                      CORE::CString::StringSet& activeQueues );
 
     static bool UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostnames ,
-                                             MsmqQueueVector& queues                   );
+                                             MsmqQueueVector& queues                   ,
+                                             bool addNewlyDiscoveredQueues             );
 
     static bool FindPrivateQueues( const CORE::CString::StringSet& hostNames          ,
                                    const CORE::CString::StringSet& globPatternFilters ,
@@ -353,6 +359,7 @@ class MsmqMetrics : public CORE::CObservingNotifier
     bool m_dontSendMetricsForInactiveQueues;
     CORE::CString m_metricsPrefix;
     CORE::CString::StringSet m_hostnames;
+    bool m_discoverQueues;
 };
 
 /*-------------------------------------------------------------------------*/

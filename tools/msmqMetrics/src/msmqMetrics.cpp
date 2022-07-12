@@ -217,7 +217,8 @@ MsmqMetrics::MsmqMetrics( void )
     , m_queues()
     , m_queueNamesAreMsmqFormatNames( false )
     , m_dontSendMetricsForInactiveQueues( true )
-    , m_metricsPrefix()    
+    , m_metricsPrefix()
+    , m_discoverQueues( false )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -234,7 +235,8 @@ MsmqMetrics::~MsmqMetrics()
 /*-------------------------------------------------------------------------*/
 
 MsmqMetrics::MsmqQueue::MsmqQueue( const CORE::CString& qName        ,
-                                   bool queueNamesAreMsmqFormatNames )
+                                   bool queueNamesAreMsmqFormatNames ,
+                                   const CORE::CString& hostname     )
     : queueName( qName )
     , msmqQueueFormatName()
     , queueNameIsMsmqFormatName( queueNamesAreMsmqFormatNames )
@@ -243,6 +245,7 @@ MsmqMetrics::MsmqQueue::MsmqQueue( const CORE::CString& qName        ,
     , isActive( true )
 {GUCEF_TRACE;
 
+    queueProperties.hostname = hostname;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -540,8 +543,9 @@ MsmqMetrics::GetMsmqQueueLabel( const std::wstring& queueFormatName  ,
 /*-------------------------------------------------------------------------*/
 
 bool 
-MsmqMetrics::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
-                                   CORE::CString& queuePathName         )
+MsmqMetrics::GetMsmqQueuePathName( const CORE::CString& hostname       ,
+                                   const std::wstring& queueFormatName ,
+                                   CORE::CString& queuePathName        )
 {GUCEF_TRACE;
 
     // Validate the input string.  
@@ -551,49 +555,135 @@ MsmqMetrics::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
     // Define the maximum number of queue properties and a property counter.  
     const int NUMBEROFPROPERTIES = 1;  
     DWORD cPropId=0;  
-  
-    // Define a queue property structure.  
-    MQQUEUEPROPS   QueueProps;  
-    QUEUEPROPID    aQueuePropId[ NUMBEROFPROPERTIES ];  
-    MQPROPVARIANT  aQueuePropVar[ NUMBEROFPROPERTIES ];  
-    HRESULT        aQueuePropStatus[ NUMBEROFPROPERTIES ];  
+    HRESULT aQueuePropStatus[ NUMBEROFPROPERTIES ];  
     HRESULT queryResultCode = MQ_OK;  
-  
-    // Specify the PROPID_Q_PATHNAME property.  
-    aQueuePropId[ cPropId ] = PROPID_Q_PATHNAME;   // Property ID  
-    aQueuePropVar[ cPropId ].vt = VT_NULL;         // Type indicator  
-    cPropId++;  
-  
-    // Initialize the MQQUEUEPROPS structure.  
-    QueueProps.cProp = cPropId;  
-    QueueProps.aPropID = aQueuePropId;  
-    QueueProps.aPropVar = aQueuePropVar;  
-    QueueProps.aStatus = aQueuePropStatus;  
- 
-    // Get the queue properties.  
-    queryResultCode = ::MQGetQueueProperties( queueFormatName.c_str(), &QueueProps );  
-    if ( FAILED( queryResultCode ) )  
+
+    if ( hostname.IsNULLOrEmpty() )
     {  
-        CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
-        std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueuePathName: Failed to obtain queue path name for queue format name \"" + 
-            CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
-        return false; 
-    }  
+        // Define a queue property structure.  
+        ::MQQUEUEPROPS   QueueProps;  
+        ::QUEUEPROPID    aQueuePropId[ NUMBEROFPROPERTIES ];  
+        ::MQPROPVARIANT  aQueuePropVar[ NUMBEROFPROPERTIES ];  
+
+        // Specify the PROPID_Q_PATHNAME property.  
+        aQueuePropId[ cPropId ] = PROPID_Q_PATHNAME;   // Property ID  
+        aQueuePropVar[ cPropId ].vt = VT_NULL;         // Type indicator  
+        cPropId++;  
   
-    if ( NULL != aQueuePropVar[ 0 ].pwszVal )
-    {
-        std::wstring queuePathNameWs = aQueuePropVar[ 0 ].pwszVal;
-        queuePathName = CORE::ToString( queuePathNameWs );
-        ::MQFreeMemory( aQueuePropVar[ 0 ].pwszVal );
-        aQueuePropVar[ 0 ].pwszVal = NULL;
-        return true;
+        // Initialize the MQQUEUEPROPS structure.  
+        QueueProps.cProp = cPropId;  
+        QueueProps.aPropID = aQueuePropId;  
+        QueueProps.aPropVar = aQueuePropVar;  
+        QueueProps.aStatus = aQueuePropStatus;  
+ 
+        // Get the queue properties.  
+        queryResultCode = ::MQGetQueueProperties( queueFormatName.c_str(), &QueueProps );  
+        if ( FAILED( queryResultCode ) )  
+        {  
+            CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueuePathName: Failed to obtain queue path name for queue format name \"" + 
+                CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+            return false; 
+        }  
+  
+        if ( NULL != aQueuePropVar[ 0 ].pwszVal )
+        {
+            std::wstring queuePathNameWs = aQueuePropVar[ 0 ].pwszVal;
+            queuePathName = CORE::ToString( queuePathNameWs );
+            ::MQFreeMemory( aQueuePropVar[ 0 ].pwszVal );
+            aQueuePropVar[ 0 ].pwszVal = NULL;
+            return true;
+        }
+        else
+        {
+            queuePathName.Clear();
+            return true;
+        }
     }
     else
     {
-        queuePathName.Clear();
+        // Only the MQMgmtGetInfo interface supports obtaining a pathname for a specific host
+        // Note thought that MQMgmtGetInfo only works for Active queues!
+        // Inactive queues will just throw an error
+
+        // Define an MQMGMTROPS structure.  
+        ::MQMGMTPROPS mgmtprops;  
+        ::MGMTPROPID aMgmtPropId[ NUMBEROFPROPERTIES ];  
+        ::MQPROPVARIANT aMgmtPropVar[ NUMBEROFPROPERTIES ];  
+
+        aMgmtPropId[ cPropId ] = PROPID_MGMT_QUEUE_PATHNAME;  // Property identifier  
+        aMgmtPropVar[ cPropId ].vt = VT_NULL;                 // Type indicator  
+        ++cPropId;
+
+        // Initialize the MQMGMTPROPS structure.  
+        mgmtprops.cProp = cPropId;          // number of management properties  
+        mgmtprops.aPropID = aMgmtPropId;    // management property IDs  
+        mgmtprops.aPropVar = aMgmtPropVar;  // management property values  
+        mgmtprops.aStatus  = NULL;          // no storage for error codes   
+
+        // Queue format names are not unique if you take outgoing queues into account
+        // for an outgoing queue you also need the hostname as such we specify the hostname if we have it
+        LPCWSTR computerNamePtr = NULL;
+        std::wstring computerName;
+        if ( !hostname.IsNULLOrEmpty() )
+        {
+            if ( CORE::Utf8toUtf16( CORE::ToUtf8String( hostname ), computerName ) )
+                computerNamePtr = computerName.c_str();
+        }        
+    
+        // Now that we formulated the request
+        // actually ask for the info
+        std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
+        queryResultCode = ::MQMgmtGetInfo( computerNamePtr, queueInfoFormatName.c_str(), &mgmtprops );
+        if ( MQ_OK == queryResultCode )
+        {
+            switch ( aMgmtPropVar[ 0 ].vt )
+            {
+                case VT_LPWSTR: 
+                {
+                    if ( NULL != aMgmtPropVar[ 0 ].pwszVal )
+                    {
+                        std::wstring queuePathNameWs = aMgmtPropVar[ 0 ].pwszVal;
+                        queuePathName = CORE::ToString( queuePathNameWs );
+                        ::MQFreeMemory( aMgmtPropVar[ 0 ].pwszVal );
+                        aMgmtPropVar[ 0 ].pwszVal = NULL;
+                        return true;
+                    }
+                    else
+                    {
+                        queuePathName.Clear();
+                        return true;
+                    }
+                }
+                default:
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueuePathName: MQMgmtGetInfo result vt is unsupported. Change the code! Type=" + CORE::ToString( aMgmtPropVar[ 0 ].vt ) );
+                    return false;
+                }
+            }        
+        }
+        else
+        {
+            CORE::UInt32 errorCode =  HRESULT_CODE( queryResultCode );
+            std::wstring errMsg = RetrieveWin32APIErrorMessage( errorCode );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqQueuePathName: MQMgmtGetInfo Failed to obtain queue path name for queue format name \"" + 
+                CORE::ToString( queueFormatName ) + "\". HRESULT=" + CORE::ToString( queryResultCode ) + " Code Segment= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) ) ; 
+            return false;     
+        }
     }
+
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+MsmqMetrics::GetMsmqQueuePathName( const std::wstring& queueFormatName  ,
+                                   CORE::CString& queuePathName         )
+{GUCEF_TRACE;
+
+    return GetMsmqQueuePathName( CORE::CString::Empty, queueFormatName, queuePathName );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -674,7 +764,7 @@ MsmqMetrics::GetMsmqQueueProperties( const std::wstring& queueFormatName  ,
     bool totalSuccess = true;
     totalSuccess = GetMsmqQueueLabel( queueFormatName, queueProperties.queueLabel ) && totalSuccess;
     totalSuccess = GetMsmqQueueQuota( queueFormatName, queueProperties.quota ) && totalSuccess;
-    totalSuccess = GetMsmqQueuePathName( queueFormatName, queueProperties.pathName ) && totalSuccess;
+    totalSuccess = GetMsmqQueuePathName( queueProperties.hostname, queueFormatName, queueProperties.pathName ) && totalSuccess;
     totalSuccess = GetMsmqQueuePathNameDNS( queueFormatName, queueProperties.pathNameDNS ) && totalSuccess;
     totalSuccess = GetMsmqQueueType( queueFormatName, queueProperties.typeId ) && totalSuccess;
     totalSuccess = GetQueueOwner( CORE::ToString( queueFormatName ), queueProperties.ownerDomainName, queueProperties.ownerAccountName, queueProperties.ownerSID, queueProperties.ownerIsDefaulted ) && totalSuccess;
@@ -919,7 +1009,7 @@ MsmqMetrics::GetMsmqActiveQueues( const CORE::CString& hostname          ,
         
         for ( UInt64 i=0; i<nrOfActiveQueues; ++i )
         {
-            std::wstring activeQueueFormatName = aMgmtPropVar[ 0 ].calpwstr.pElems[ i ];
+            std::wstring wActiveQueueFormatName = aMgmtPropVar[ 0 ].calpwstr.pElems[ i ];
             ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems[ i ] );
 
             /*  Per MSMQ docs:
@@ -929,9 +1019,12 @@ MsmqMetrics::GetMsmqActiveQueues( const CORE::CString& hostname          ,
              *      for an active outgoing queue residing on the computer specified in the call to MQMgmtGetInfo will refer to the destination queue 
              *      residing on a different computer and will be MGMT_QUEUE_REMOTE_LOCATION.
              *
-             *  This means we that the 'activeQueues' are only meaningfull for outgoing queues in the context of the hostname 
+             *  This means we that the 'activeQueues' are only meaningfull for outgoing queues when provided the context of the hostname 
+             *  since without it you would only know about the destination queue itself
              */ 
-            activeQueues.insert( CORE::ToString( activeQueueFormatName ) );
+            CORE::CString activeQueueFormatName = CORE::ToString( wActiveQueueFormatName );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqActiveQueues: host " + hostname + " has active queue " + activeQueueFormatName );
+            activeQueues.insert( activeQueueFormatName );
         }
         ::MQFreeMemory( aMgmtPropVar[ 0 ].calpwstr.pElems ); 
 
@@ -949,7 +1042,8 @@ MsmqMetrics::GetMsmqActiveQueues( const CORE::CString& hostname          ,
 
 bool 
 MsmqMetrics::UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostnames ,
-                                          MsmqQueueVector& queues                   )
+                                          MsmqQueueVector& queues                   ,
+                                          bool addNewlyDiscoveredQueues             )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Will attempt to update/refresh the isActive flag for " + 
@@ -974,7 +1068,13 @@ MsmqMetrics::UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostna
                       q.queueProperties.hostname == currentHostname )
                 {
                     // Active queues are listed as format names so we check against the Q format name
-                    bool queueIsActive = activeQueuesOnHost.find( CORE::ToString( q.msmqQueueFormatName ) ) != activeQueuesOnHost.end();
+                    CORE::CString::StringSet::iterator a = activeQueuesOnHost.find( CORE::ToString( q.msmqQueueFormatName ) );
+                    bool queueIsActive = false;
+                    if ( a != activeQueuesOnHost.end() )
+                    {
+                        queueIsActive = true;
+                        activeQueuesOnHost.erase( a ); // erase so we can check for a remnant below   
+                    }
                     
                     if ( q.isActive != queueIsActive )
                     {
@@ -989,6 +1089,31 @@ MsmqMetrics::UpdateMsmqActiveQueueStatus( const CORE::CString::StringSet& hostna
                     q.isActive = queueIsActive;
                 }                
                 ++m;
+            }
+
+            // If we have any active queues left these could be outgoing queues which AD does not provide
+            if ( !activeQueuesOnHost.empty() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Found " + CORE::ToString( activeQueuesOnHost.size() ) + 
+                        " active queues on the host which are not in our queue list" );
+
+                if ( addNewlyDiscoveredQueues )
+                {
+                    CORE::CString::StringSet::iterator a = activeQueuesOnHost.begin();
+                    while ( a != activeQueuesOnHost.end() )
+                    {
+                        MsmqQueue q( (*a), true, currentHostname );
+                        InitQueueInfo( q );
+                        q.isActive = true;
+
+                        queues.push_back( q );
+                        
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:UpdateMsmqActiveQueueStatus: Auto added newly discovered active queue " + q.queueName + 
+                                " on host " + q.queueProperties.hostname );
+
+                        ++a;
+                    }
+                }
             }
         }
         else
@@ -1037,10 +1162,20 @@ MsmqMetrics::GetQueueMetric( MsmqQueue& q                           ,
     mgmtprops.aPropVar = aMgmtPropVar;// management property values  
     mgmtprops.aStatus  = NULL;// no storage for error codes   
 
+    // Queue format names are not unique if you take outgoing queues into account
+    // for an outgoing queue you also need the hostname as such we specify the hostname if we have it
+    LPCWSTR computerNamePtr = NULL;
+    std::wstring computerName;
+    if ( !q.queueProperties.hostname.IsNULLOrEmpty() )
+    {
+        if ( CORE::Utf8toUtf16( CORE::ToUtf8String( q.queueProperties.hostname ), computerName ) )
+            computerNamePtr = computerName.c_str();
+    }        
+    
     // Now that we formulated the request
     // actually ask for the info
     std::wstring queueInfoFormatName = L"QUEUE=" + queueFormatName;
-    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( NULL, queueInfoFormatName.c_str(), &mgmtprops );
+    HRESULT queueInfoFetchResult = ::MQMgmtGetInfo( computerNamePtr, queueInfoFormatName.c_str(), &mgmtprops );
     if ( MQ_OK == queueInfoFetchResult )
     {
         switch ( propType )
@@ -1059,7 +1194,7 @@ MsmqMetrics::GetQueueMetric( MsmqQueue& q                           ,
 
     CORE::UInt32 errorCode =  HRESULT_CODE( queueInfoFetchResult );
     std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( queueInfoFetchResult ) );
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueMetric: Failed to obtain " + metricDescription + ". Queue Name: " + q.queueName + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetQueueMetric: Failed to obtain " + metricDescription + ". Queue Name: " + q.queueName + 
             " HRESULT= 0x" + CORE::Base16Encode( &queueInfoFetchResult, sizeof(queueInfoFetchResult) ) + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
     return -1;
 }
@@ -1112,7 +1247,7 @@ MsmqMetrics::GetMsmqComputerMetric( const CORE::CString& metricDescription ,
 
     CORE::UInt32 errorCode =  HRESULT_CODE( computerInfoFetchResult );
     std::wstring errMsg = RetrieveWin32APIErrorMessage( HRESULT_CODE( computerInfoFetchResult ) );
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqComputerMetric: Failed to obtain " + metricDescription + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:GetMsmqComputerMetric: Failed to obtain " + metricDescription + 
             " HRESULT= 0x" + CORE::Base16Encode( &computerInfoFetchResult, sizeof(computerInfoFetchResult) ) + ". errorCode= " + CORE::ToString( errorCode ) + ". Error msg: " + CORE::ToString( errMsg ) );
     return 0;
 }
@@ -1211,8 +1346,6 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
     if ( !q.msmqQueueFormatName.empty() )
     {
         GetMsmqQueueProperties( q.msmqQueueFormatName, q.queueProperties );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:InitQueueInfo: Obtained properties of MSMQ queue with name \"" + q.queueName + 
-            "\" as follows: " + q.queueProperties.ToString() );
 
         if ( !q.queueProperties.pathName.IsNULLOrEmpty() )
         {
@@ -1221,12 +1354,47 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
         }
     }
 
+    // Handle the hostname resolution
+    // note that for outgoing queues this sadly resolves to the hostname of the destination machine
+    // as such we need to retain the hostname that was already set on the queue if we have it
     if ( !q.queueProperties.pathName.IsNULLOrEmpty() )
     {
-        CORE::CString hostnamePortion = q.queueProperties.pathName.SubstrToChar( '\\', true, true );
-        if ( !hostnamePortion.IsNULLOrEmpty() )
-            q.queueProperties.hostname = hostnamePortion.Uppercase();
+        CORE::CString hostnamePortionLc = q.queueProperties.pathName.SubstrToChar( '\\', true, true );
+        if ( !hostnamePortionLc.IsNULLOrEmpty() )
+        {
+            // Did we have a predefined (pre-init) hostname?
+            if ( !q.queueProperties.hostname.IsNULLOrEmpty() )
+            {
+                CORE::CString hostnamePortion = hostnamePortionLc.Uppercase();
+                if ( q.queueProperties.hostname != hostnamePortion )  // we always keep hostnames everywhere as uppercase
+                {                       
+                    CORE::CString overrideHostname = q.queueProperties.hostname.Lowercase();
+
+                    CORE::CString oldPathName = q.queueProperties.pathName;
+                    CORE::CString oldPathNameDNS = q.queueProperties.pathNameDNS;
+                    CORE::CString oldMetricFriendlyQueueName = q.metricFriendlyQueueName;
+
+                    q.queueProperties.pathName = oldPathName.ReplaceSubstr( hostnamePortionLc, overrideHostname );
+                    q.queueProperties.pathNameDNS = oldPathNameDNS.ReplaceSubstr( hostnamePortionLc, overrideHostname );
+                    q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName);
+
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: queue \"" + q.queueName + "\" has a pathname of \"" + oldPathName + 
+                            "\" pointing thus at host \"" + hostnamePortion + "\" however the queue was already defined to exist on host " + q.queueProperties.hostname +
+                            " thus this is actually referencing a remote queue. Adjusted accordingly. PathName Old=" + oldPathName + " New=" + q.queueProperties.pathName +
+                            " PathNameDNS Old=" + oldPathNameDNS + " New=" + q.queueProperties.pathNameDNS + 
+                            " MetricFriendlyQueueName Old=" + oldMetricFriendlyQueueName + " New=" + q.metricFriendlyQueueName );                    
+                }
+            }
+            else
+            {
+                // Since no hostname was set yet we just set the property and are done
+                q.queueProperties.hostname = hostnamePortionLc.Uppercase();
+            }
+        }
     }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MsmqMetrics:InitQueueInfo: Obtained properties of MSMQ queue with name \"" + q.queueName + 
+        "\" as follows: " + q.queueProperties.ToString() );
 
     return true; // best effort is fine
 }
@@ -2125,7 +2293,7 @@ MsmqMetrics::OnQueueActivityCheckTimerCycle( CORE::CNotifier* notifier    ,
                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues );
+    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues, m_discoverQueues );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2252,7 +2420,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "enableRestApi" ), m_enableRestApi );
     m_metricsPrefix = appConfig.GetValueAlways( "metricsPrefix", m_metricsPrefix );
     m_queueNamesAreMsmqFormatNames = CORE::StringToBool( appConfig.GetValueAlways( "queueNamesAreMsmqFormatNames" ), m_queueNamesAreMsmqFormatNames );
-    bool discoverQueues = CORE::StringToBool( appConfig.GetValueAlways( "discoverQueues" ), false );
+    m_discoverQueues = CORE::StringToBool( appConfig.GetValueAlways( "discoverQueues" ), m_discoverQueues );
     CORE::CString::StringSet discoverQueueFilters = appConfig.GetValueAlways( "discoverQueueFilters" ).AsString().ParseUniqueElements( ';', false );
     m_dontSendMetricsForInactiveQueues = CORE::StringToBool( appConfig.GetValueAlways( "dontSendMetricsForInactiveQueues" ), m_dontSendMetricsForInactiveQueues );
     CORE::UInt32 metricsIntervalInMs = CORE::StringToUInt32( appConfig.GetValueAlways( "metricsIntervalInMs" ), 1000 );
@@ -2268,7 +2436,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     // See if we want to auto find more queues
-    if ( discoverQueues )
+    if ( m_discoverQueues )
     {
         CORE::CString::StringSet discoverdQueues;
         FindAllQueues( discoverQueueFilters, discoverdQueues );
@@ -2293,7 +2461,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     }    
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Initialized info for " + CORE::ToString( m_queues.size() ) + " queues" );
     
-    if ( discoverQueues )
+    if ( m_discoverQueues )
     {
         // After init we can use the broader queue info to get a list of hostnames
         // Regardless of what info was used to identify the queue
@@ -2334,7 +2502,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     // Perform the initial update on queue active status
-    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues );
+    UpdateMsmqActiveQueueStatus( m_hostnames, m_queues, m_discoverQueues );
     m_queueActivityCheckTimer.SetInterval( queueActivityCheckIntervalInMs );
                                                                                                                    
     m_metricsTimer.SetInterval( metricsIntervalInMs );
