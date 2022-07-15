@@ -427,6 +427,26 @@ PubSub2PubSub::IsGlobalStandbyEnabled( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+PubSub2PubSub::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    PubSubClientChannelMap::const_iterator i = m_channels.begin();
+    while ( i != m_channels.end() )
+    {
+        CPubSubClientChannelPtr channel = (*i).second;
+        if ( !channel->IsHealthy() )
+        {
+            return false;
+        }
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 PubSub2PubSub::Start( void )
 {GUCEF_TRACE;

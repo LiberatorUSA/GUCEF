@@ -432,7 +432,7 @@ CKafkaPubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClient::IsConnected( void )
+CKafkaPubSubClient::IsConnected( void ) const 
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -441,13 +441,34 @@ CKafkaPubSubClient::IsConnected( void )
         return false;
     
     bool fullyConnected = true;
-    TTopicMap::iterator i = m_topicMap.begin();
+    TTopicMap::const_iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
         fullyConnected = (*i).second->IsConnected() && fullyConnected;
         ++i;
     }
     return fullyConnected;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::IsHealthy( void ) const 
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    if ( m_topicMap.empty() )
+        return true;
+    
+    bool fullyHealthy = true;
+    TTopicMap::const_iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        fullyHealthy = (*i).second->IsHealthy() && fullyHealthy;
+        ++i;
+    }
+    return fullyHealthy;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -102,6 +102,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_publishFailureActionIds()
     , m_publishFailureActionEventData()
     , m_metrics()
+    , m_shouldBeConnected( false )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -701,6 +702,8 @@ CKafkaPubSubClientTopic::Disconnect( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+    m_shouldBeConnected = false;
+
     bool totalSuccess = true;
 
     if ( GUCEF_NULL != m_kafkaConsumer )
@@ -769,6 +772,7 @@ CKafkaPubSubClientTopic::Subscribe( void )
     */
 
     MT::CScopeMutex lock( m_lock );
+    m_shouldBeConnected = true;
 
     if ( !IsConnected() )
         if ( !SetupBasedOnConfig() )
@@ -1124,6 +1128,7 @@ CKafkaPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookm
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+    m_shouldBeConnected = true;
 
     if ( !IsConnected() )
         if ( !SetupBasedOnConfig() )
@@ -1269,12 +1274,29 @@ CKafkaPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& book
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::IsConnected( void )
+CKafkaPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     // Snapshot in time as such no lock needed.
     // note that connected is a very relative term here, more like prepared to connect as needed
     return ( m_config.needPublishSupport && GUCEF_NULL != m_kafkaProducer ) || ( m_config.needSubscribeSupport && GUCEF_NULL != m_kafkaConsumer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    if ( m_config.maxKafkaErrorsToBeHealthy >= 0 )
+    {
+        // Current and last metrics cycle error count counts against the max
+        if ( m_kafkaErrorReplies + m_metrics.kafkaErrorReplies > (CORE::UInt32) m_config.maxKafkaErrorsToBeHealthy )
+            return false;
+    }
+
+    // Aside from error count, having to reconnect while we should be connected is also not good
+    return m_shouldBeConnected && IsConnected();
 }
 
 /*-------------------------------------------------------------------------*/

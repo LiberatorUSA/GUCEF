@@ -199,6 +199,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool HasSubscribersNeedingAcks( void ) const;
 
+    virtual bool IsHealthy( void ) const;
+
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
 
     virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) = 0;

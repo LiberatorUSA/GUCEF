@@ -81,6 +81,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( void )
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
     , minPayloadFieldGrowthPercOnBufferTooSmall( DEFAULT_MINIMAL_BUFFER_GROWTH_ON_PAYLOAD_BUFFER_TOO_SMALL )
     , retainMsmqSentTimeAsMetaData( false )
+    , maxMsmqErrorsOnAckToBeHealthy( 0 )
+    , maxMsmqErrorsOnReceiveToBeHealthy( 0 )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -107,6 +109,8 @@ CMsmqPubSubClientTopicConfig::CMsmqPubSubClientTopicConfig( const PUBSUB::CPubSu
     , defaultMsmqMiscBufferSizeInBytes( DEFAULT_MSMQ_MISC_BUFFER_SIZE_IN_BYTES )
     , minPayloadFieldGrowthPercOnBufferTooSmall( DEFAULT_MINIMAL_BUFFER_GROWTH_ON_PAYLOAD_BUFFER_TOO_SMALL )
     , retainMsmqSentTimeAsMetaData( false )
+    , maxMsmqErrorsOnAckToBeHealthy( 0 )
+    , maxMsmqErrorsOnReceiveToBeHealthy( 0 )
 {GUCEF_TRACE;
     
     PopulateDefaultReceivePropIds();
@@ -148,6 +152,8 @@ CMsmqPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     msmqMsgPropIdToMapToMsgIdOnReceive = config.GetAttributeValueOrChildValueByName( "msmqMsgPropIdToMapToMsgIdOnReceive" ).AsUInt64( msmqMsgPropIdToMapToMsgIdOnReceive, true );
     minPayloadFieldGrowthPercOnBufferTooSmall = config.GetAttributeValueOrChildValueByName( "minPayloadFieldGrowthPercOnBufferTooSmall" ).AsUInt16( minPayloadFieldGrowthPercOnBufferTooSmall, true );
     retainMsmqSentTimeAsMetaData = config.GetAttributeValueOrChildValueByName( "retainMsmqSentTimeAsMetaData" ).AsBool( retainMsmqSentTimeAsMetaData, true );
+    maxMsmqErrorsOnAckToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxMsmqErrorsOnAckToBeHealthy" ).AsInt32( maxMsmqErrorsOnAckToBeHealthy, true );
+    maxMsmqErrorsOnReceiveToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxMsmqErrorsOnReceiveToBeHealthy" ).AsInt32( maxMsmqErrorsOnReceiveToBeHealthy, true );
     
     CORE::CString csvPropIds = config.GetAttributeValueOrChildValueByName( "msmqPropIdsToReceive" ).AsString( PropIdsToCsvString( msmqPropIdsToReceive ), true );
     msmqPropIdsToReceive.clear();
@@ -226,6 +232,8 @@ CMsmqPubSubClientTopicConfig::operator=( const CMsmqPubSubClientTopicConfig& src
         defaultMsmqMiscBufferSizeInBytes = src.defaultMsmqMiscBufferSizeInBytes;
         minPayloadFieldGrowthPercOnBufferTooSmall = src.minPayloadFieldGrowthPercOnBufferTooSmall;
         retainMsmqSentTimeAsMetaData = src.retainMsmqSentTimeAsMetaData;
+        maxMsmqErrorsOnAckToBeHealthy = src.maxMsmqErrorsOnAckToBeHealthy;
+        maxMsmqErrorsOnReceiveToBeHealthy = src.maxMsmqErrorsOnReceiveToBeHealthy;
     }
     return *this;
 }

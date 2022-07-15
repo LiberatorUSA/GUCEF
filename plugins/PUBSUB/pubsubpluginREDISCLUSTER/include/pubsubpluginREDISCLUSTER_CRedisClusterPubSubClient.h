@@ -125,7 +125,9 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

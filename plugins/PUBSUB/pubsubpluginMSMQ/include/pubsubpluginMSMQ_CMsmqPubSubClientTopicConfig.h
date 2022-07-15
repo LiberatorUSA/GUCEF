@@ -107,6 +107,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
     CORE::UInt32 defaultMsmqMiscBufferSizeInBytes;
     CORE::UInt16 minPayloadFieldGrowthPercOnBufferTooSmall;
     bool retainMsmqSentTimeAsMetaData;
+    CORE::Int32 maxMsmqErrorsOnAckToBeHealthy;
+    CORE::Int32 maxMsmqErrorsOnReceiveToBeHealthy;
 };
 
 /*--------------------------------------------------------------------------*/

@@ -344,11 +344,21 @@ CUdpPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookma
 /*-------------------------------------------------------------------------*/
 
 bool 
-CUdpPubSubClientTopic::IsConnected( void )
+CUdpPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
     return m_udpSocket.IsActive();           
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CUdpPubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return true;           
 }
 
 /*-------------------------------------------------------------------------*/

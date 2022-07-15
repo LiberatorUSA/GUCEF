@@ -154,7 +154,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual bool Disconnect( void ) = 0;
 
-    virtual bool IsConnected( void ) = 0;
+    virtual bool IsConnected( void ) const = 0;
+
+    virtual bool IsHealthy( void ) const = 0;
 
     /**
      *  Provide ability to get the textual name of the formatter

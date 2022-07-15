@@ -384,13 +384,13 @@ CStoragePubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::IsConnected( void )
+CStoragePubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
     if ( !m_topicMap.empty() )
     {
         bool allConnected = true;
-        TTopicMap::iterator i = m_topicMap.begin();
+        TTopicMap::const_iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
             allConnected = (*i).second->IsConnected() && allConnected;
@@ -399,6 +399,26 @@ CStoragePubSubClient::IsConnected( void )
         return allConnected;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_topicMap.empty() )
+    {
+        bool allHealthy = true;
+        TTopicMap::const_iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            allHealthy = (*i).second->IsHealthy() && allHealthy;
+            ++i;
+        }
+        return allHealthy;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

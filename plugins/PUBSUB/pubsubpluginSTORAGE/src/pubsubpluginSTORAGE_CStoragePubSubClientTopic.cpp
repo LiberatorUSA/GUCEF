@@ -1051,12 +1051,37 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::IsConnected( void )
+CStoragePubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    return false;
+    // @TODO: Add a VFS based access test
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( m_config.maxStorageCorruptionDetectionsToBeHealthy >= 0 )
+    {
+        // Current and last metrics cycle error count counts against the max
+        if ( m_storageCorruptionDetections + m_metrics.storageCorruptionDetections > (CORE::UInt32) m_config.maxStorageCorruptionDetectionsToBeHealthy )
+            return false;
+    }
+    if ( m_config.maxStorageDeserializationFailuresToBeHealthy >= 0 )
+    {
+        // Current and last metrics cycle error count counts against the max
+        if ( m_storageDeserializationFailures + m_metrics.storageDeserializationFailures > (CORE::UInt32) m_config.maxStorageDeserializationFailuresToBeHealthy )
+            return false;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

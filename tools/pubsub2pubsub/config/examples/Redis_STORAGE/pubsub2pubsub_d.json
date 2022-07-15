@@ -153,7 +153,9 @@
 												"autoPushAfterStartupIfStorageToPubSub": true,
 												"youngestStoragePubSubMsgFileToLoad": "",
 												"oldestStoragePubSubMsgFileToLoad": "",
-												"defaultCodecDecodeGrowthRatioExpectation": 6.0
+												"defaultCodecDecodeGrowthRatioExpectation": 6.0,
+												"maxStorageCorruptionDetectionsToBeHealthy": 0,
+												"maxStorageDeserializationFailuresToBeHealthy": 0												
 											}
 										}
 									}

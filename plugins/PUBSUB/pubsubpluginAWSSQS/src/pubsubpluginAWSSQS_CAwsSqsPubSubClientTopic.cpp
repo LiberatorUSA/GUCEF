@@ -638,11 +638,21 @@ CAwsSqsPubSubClientTopic::GetCurrentBookmark( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CAwsSqsPubSubClientTopic::IsConnected( void )
+CAwsSqsPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSqsPubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

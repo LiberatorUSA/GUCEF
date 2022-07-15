@@ -99,7 +99,9 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

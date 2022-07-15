@@ -167,6 +167,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
 
     virtual bool LoadConfig( const CPubSubChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) GUCEF_VIRTUAL_OVERRIDE;

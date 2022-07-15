@@ -351,10 +351,19 @@ CAwsSqsPubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClient::IsConnected( void )
+CAwsSqsPubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClient::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

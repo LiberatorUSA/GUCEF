@@ -101,7 +101,9 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClient : public PUBSUB::CPub
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

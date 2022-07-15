@@ -72,7 +72,9 @@
 												"msmqPropIdsToReceive": "2,8,9,20,21,22,30,31,32,33,34,35,36",
 												"msmqPropIdsToSend": "",
 												"retainMsmqSentTimeAsMetaData": true,
-												"topicNameIsMsmqFormatName": false
+												"topicNameIsMsmqFormatName": false,
+												"maxMsmqErrorsOnAckToBeHealthy": 0,
+												"maxMsmqErrorsOnReceiveToBeHealthy": 0												
 											}
 										}
 									}
@@ -163,6 +165,7 @@
 												"stripPrefixForKvPairs": false,
 												"stripPrefixForMetaDataKvPairs": false,
 												"useKafkaMsgHeadersForConsumerFiltering": false,
+												"maxKafkaErrorsToBeHealthy": 0,
 												"KafkaProducerGlobalConfig": {
 													"auto.offset.reset": "largest",
 													"compression.codec": "inherit",

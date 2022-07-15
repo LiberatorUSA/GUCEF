@@ -78,7 +78,9 @@
 												"autoPushAfterStartupIfStorageToPubSub": true,
 												"youngestStoragePubSubMsgFileToLoad": "",
 												"oldestStoragePubSubMsgFileToLoad": "",
-												"defaultCodecDecodeGrowthRatioExpectation": 6.0
+												"defaultCodecDecodeGrowthRatioExpectation": 6.0,
+												"maxStorageCorruptionDetectionsToBeHealthy": 0,
+												"maxStorageDeserializationFailuresToBeHealthy": 0
 											}
 										}
 									}
@@ -167,6 +169,7 @@
 												"stripPrefixForKvPairs": false,
 												"stripPrefixForMetaDataKvPairs": false,
 												"useKafkaMsgHeadersForConsumerFiltering": false,
+												"maxKafkaErrorsToBeHealthy": 0,
 												"KafkaProducerGlobalConfig": {
 													"auto.offset.reset": "largest",
 													"compression.codec": "inherit",

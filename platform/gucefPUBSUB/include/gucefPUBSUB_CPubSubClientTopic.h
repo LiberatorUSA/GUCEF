@@ -213,7 +213,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
 
     virtual bool Disconnect( void ) = 0;
 
-    virtual bool IsConnected( void ) = 0;
+    virtual bool IsConnected( void ) const = 0;
+
+    virtual bool IsHealthy( void ) const = 0;
 
     virtual bool IsPublishingSupported( void ) = 0;
 

@@ -236,6 +236,8 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
 
     bool IsGlobalStandbyEnabled( void ) const;
 
+    bool IsHealthy( void ) const;
+
     bool LoadConfig( const CORE::CValueList& appConfig );
 
     const CORE::CDataNode& GetGlobalConfig( void ) const;

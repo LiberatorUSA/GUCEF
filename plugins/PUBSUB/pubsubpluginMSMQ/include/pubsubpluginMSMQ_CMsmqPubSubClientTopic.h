@@ -134,7 +134,9 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     bool BeginReconnectSequence( const CORE::CEvent* eventMsg );
 
-    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 

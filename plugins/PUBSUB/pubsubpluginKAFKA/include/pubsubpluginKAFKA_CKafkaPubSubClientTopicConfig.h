@@ -74,6 +74,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
     CORE::CString prefixToAddForKvPairs;
     bool stripPrefixForMetaDataKvPairs;
     bool stripPrefixForKvPairs;
+    CORE::Int32 maxKafkaErrorsToBeHealthy;
     
     CKafkaPubSubClientTopicConfig( void );
     

@@ -722,7 +722,7 @@ Int32
 CUDPSocket::Recieve( void )
 {GUCEF_TRACE;
 
-    return Recieve( nullptr, 0 );
+    return Recieve( GUCEF_NULL, 0 );
 }
 
 /*-------------------------------------------------------------------------*/

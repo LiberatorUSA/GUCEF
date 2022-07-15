@@ -84,6 +84,8 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
     , bestEffortDeserializeIsAllowed( false )
+    , maxStorageCorruptionDetectionsToBeHealthy( 0 )
+    , maxStorageDeserializationFailuresToBeHealthy( 0 )
 {GUCEF_TRACE;
     
 }
@@ -116,6 +118,8 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
     , defaultCodecDecodeGrowthRatioExpectation( src.defaultCodecDecodeGrowthRatioExpectation )
     , bestEffortDeserializeIsAllowed( src.bestEffortDeserializeIsAllowed )
+    , maxStorageCorruptionDetectionsToBeHealthy( src.maxStorageCorruptionDetectionsToBeHealthy )
+    , maxStorageDeserializationFailuresToBeHealthy( src.maxStorageDeserializationFailuresToBeHealthy )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -149,6 +153,8 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
     , bestEffortDeserializeIsAllowed( false )
+    , maxStorageCorruptionDetectionsToBeHealthy( 0 )
+    , maxStorageDeserializationFailuresToBeHealthy( 0 )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -190,6 +196,8 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     defaultCodecDecodeGrowthRatioExpectation = config.GetAttributeValueOrChildValueByName( "defaultCodecDecodeGrowthRatioExpectation" ).AsFloat32( defaultCodecDecodeGrowthRatioExpectation, true );
     bestEffortDeserializeIsAllowed = config.GetAttributeValueOrChildValueByName( "bestEffortDeserializeIsAllowed" ).AsBool( bestEffortDeserializeIsAllowed, true );
+    maxStorageCorruptionDetectionsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageCorruptionDetectionsToBeHealthy" ).AsInt32( maxStorageCorruptionDetectionsToBeHealthy, true );
+    maxStorageDeserializationFailuresToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageDeserializationFailuresToBeHealthy" ).AsInt32( maxStorageDeserializationFailuresToBeHealthy, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -232,6 +240,8 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
     success = config.SetAttribute( "defaultCodecDecodeGrowthRatioExpectation", defaultCodecDecodeGrowthRatioExpectation ) && success;    
     success = config.SetAttribute( "bestEffortDeserializeIsAllowed", bestEffortDeserializeIsAllowed ) && success;    
+    success = config.SetAttribute( "maxStorageCorruptionDetectionsToBeHealthy", maxStorageCorruptionDetectionsToBeHealthy ) && success;        
+    success = config.SetAttribute( "maxStorageDeserializationFailuresToBeHealthy", maxStorageDeserializationFailuresToBeHealthy ) && success;            
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -294,6 +304,8 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
         defaultCodecDecodeGrowthRatioExpectation = src.defaultCodecDecodeGrowthRatioExpectation;
         bestEffortDeserializeIsAllowed = src.bestEffortDeserializeIsAllowed;
+        maxStorageCorruptionDetectionsToBeHealthy = src.maxStorageCorruptionDetectionsToBeHealthy;
+        maxStorageDeserializationFailuresToBeHealthy = src.maxStorageDeserializationFailuresToBeHealthy;
 
         customConfig = src.customConfig;
     }

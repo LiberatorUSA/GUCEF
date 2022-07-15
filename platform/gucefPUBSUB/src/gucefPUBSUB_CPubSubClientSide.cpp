@@ -411,8 +411,28 @@ CPubSubClientSide::CPubSubClientSideMetrics::~CPubSubClientSideMetrics()
 const
 CPubSubClientSide::StringToPubSubClientSideMetricsMap&
 CPubSubClientSide::GetSideMetrics( void ) const
-{
+{GUCEF_TRACE;
+
     return m_metricsMap;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientSide::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    try
+    {
+        if ( !m_pubsubClient.IsNULL() && !m_pubsubClient->IsHealthy() )
+            return false;
+
+        return true;
+    }
+    catch ( const std::exception& )
+    {
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

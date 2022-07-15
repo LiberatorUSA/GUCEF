@@ -58,6 +58,7 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
     , prefixToAddForKvPairs()
     , stripPrefixForMetaDataKvPairs( true )
     , stripPrefixForKvPairs( true )
+    , maxKafkaErrorsToBeHealthy( 1 )
 {GUCEF_TRACE;
 
     consumerGroupName = "0";
@@ -78,6 +79,7 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const PUBSUB::CPub
     , prefixToAddForKvPairs()
     , stripPrefixForMetaDataKvPairs( true )
     , stripPrefixForKvPairs( true )
+    , maxKafkaErrorsToBeHealthy( 1 )
 {GUCEF_TRACE;
 
     consumerGroupName = "0";
@@ -170,6 +172,7 @@ CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     prefixToAddForKvPairs = config.GetAttributeValueOrChildValueByName( "prefixToAddForKvPairs" ).AsString( prefixToAddForKvPairs, true );
     stripPrefixForMetaDataKvPairs = config.GetAttributeValueOrChildValueByName( "stripPrefixForMetaDataKvPairs" ).AsBool( stripPrefixForMetaDataKvPairs, true ); 
     stripPrefixForKvPairs = config.GetAttributeValueOrChildValueByName( "stripPrefixForKvPairs" ).AsBool( stripPrefixForKvPairs, true ); 
+    maxKafkaErrorsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxKafkaErrorsToBeHealthy" ).AsInt32( maxKafkaErrorsToBeHealthy, true ); 
     return true;
 }
 
@@ -208,7 +211,7 @@ CKafkaPubSubClientTopicConfig::operator=( const CKafkaPubSubClientTopicConfig& s
         prefixToAddForKvPairs = src.prefixToAddForKvPairs;
         stripPrefixForMetaDataKvPairs = src.stripPrefixForMetaDataKvPairs;
         stripPrefixForKvPairs = src.stripPrefixForKvPairs;
-
+        maxKafkaErrorsToBeHealthy = src.maxKafkaErrorsToBeHealthy;
     }
     return *this;
 }

@@ -136,6 +136,31 @@ CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CPubSubClientChannel::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    TPubSubClientSideVector::const_iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        if ( this != (*i) )
+        {
+            if ( !(*i)->IsHealthy() )
+                return false;
+        }
+        else
+        {
+            if ( !CPubSubClientSide::IsHealthy() )
+                return false;
+        }
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubClientChannel::PublishChannelMetrics( void ) const
 {GUCEF_TRACE;

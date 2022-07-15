@@ -104,19 +104,9 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    if ( GUCEF_NULL != client->GetConfig().pulseGenerator )
+    if ( client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        if ( client->GetConfig().desiredFeatures.supportsAutoReconnect )
-        {
-            m_redisReconnectTimer = new CORE::CTimer( *client->GetConfig().pulseGenerator, client->GetConfig().reconnectDelayInMs );
-        }
-    }
-    else
-    {
-        if ( client->GetConfig().desiredFeatures.supportsAutoReconnect )
-        {
-            m_redisReconnectTimer = new CORE::CTimer( client->GetConfig().reconnectDelayInMs );
-        }
+        m_redisReconnectTimer = new CORE::CTimer( client->GetConfig().pulseGenerator, client->GetConfig().reconnectDelayInMs );
     }
 
     RegisterEventHandlers();
@@ -804,11 +794,26 @@ CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmar
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::IsConnected( void )
+CRedisClusterPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
     return !m_redisContext.IsNULL() && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    // If we are having to reconnect than we are not healthy
+    if ( GUCEF_NULL != m_redisReconnectTimer && m_redisReconnectTimer->GetEnabled() )
+        return false;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

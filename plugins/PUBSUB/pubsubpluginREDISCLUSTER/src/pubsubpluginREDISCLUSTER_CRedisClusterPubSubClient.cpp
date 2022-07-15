@@ -851,10 +851,30 @@ CRedisClusterPubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::IsConnected( void )
+CRedisClusterPubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
     return !m_redisContext.IsNULL();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_topicMap.empty() )
+    {
+        bool allHealthy = true;
+        TTopicMap::const_iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            allHealthy = (*i).second->IsHealthy() && allHealthy;
+            ++i;
+        }
+        return allHealthy;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

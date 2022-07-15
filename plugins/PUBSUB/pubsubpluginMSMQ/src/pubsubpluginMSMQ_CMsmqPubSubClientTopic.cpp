@@ -1002,7 +1002,7 @@ CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& b
 /*-------------------------------------------------------------------------*/
 
 bool 
-CMsmqPubSubClientTopic::IsConnected( void )
+CMsmqPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -1014,6 +1014,34 @@ CMsmqPubSubClientTopic::IsConnected( void )
         return false;
 
     return ( m_config.needPublishSupport && GUCEF_NULL != m_sendQueueHandle ) && ( m_config.needSubscribeSupport && GUCEF_NULL != m_receiveQueueHandle );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( m_config.maxMsmqErrorsOnAckToBeHealthy >= 0 )
+    {
+        // Current and last metrics cycle error count counts against the max
+        if ( m_msmqErrorsOnAck + m_metrics.msmqErrorsOnAck > (CORE::UInt32) m_config.maxMsmqErrorsOnAckToBeHealthy )
+            return false;
+    }
+    if ( m_config.maxMsmqErrorsOnReceiveToBeHealthy >= 0 )
+    {
+        // Current and last metrics cycle error count counts against the max
+        if ( m_msmqErrorsOnReceive + m_metrics.msmqErrorsOnReceive > (CORE::UInt32) m_config.maxMsmqErrorsOnReceiveToBeHealthy )
+            return false;
+    }
+    
+    // If we are having to 'reconnect' than we are not healthy
+    if ( GUCEF_NULL != m_reconnectTimer && m_reconnectTimer->GetEnabled() )
+        return false;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
