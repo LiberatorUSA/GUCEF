@@ -1327,7 +1327,7 @@ MsmqMetrics::GenerateMetricsFriendlyQueueName( const CORE::CString& queueName )
     CORE::CAsciiString asciiMetricsFriendlyQueueName = queueName.ForceToAscii( '_' );
     
     // Replace special chars
-    static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
+    static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
     asciiMetricsFriendlyQueueName = asciiMetricsFriendlyQueueName.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
 
     // Back to the platform wide string convention format
@@ -1349,7 +1349,7 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
 
         if ( !q.queueProperties.pathName.IsNULLOrEmpty() )
         {
-            q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName );
+            q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName.ReplaceChar( '\\', '.' ) );
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Switched metrics friendly queue name for \"" + q.queueName + "\" to \"" + q.queueProperties.pathName + "\" as \"" + q.metricFriendlyQueueName + "\" for human readability and tracing" );
         }
     }
@@ -1376,7 +1376,7 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
 
                     q.queueProperties.pathName = oldPathName.ReplaceSubstr( hostnamePortionLc, overrideHostname );
                     q.queueProperties.pathNameDNS = oldPathNameDNS.ReplaceSubstr( hostnamePortionLc, overrideHostname );
-                    q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName);
+                    q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName.ReplaceChar( '\\', '.' ) );
 
                     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: queue \"" + q.queueName + "\" has a pathname of \"" + oldPathName + 
                             "\" pointing thus at host \"" + hostnamePortion + "\" however the queue was already defined to exist on host " + q.queueProperties.hostname +
