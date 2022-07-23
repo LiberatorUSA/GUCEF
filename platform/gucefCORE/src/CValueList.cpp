@@ -790,6 +790,28 @@ CValueList::HasKey( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CValueList::HasKeyAndValue( const CString& key   , 
+                            const CString& value ) const
+{GUCEF_TRACE;
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( m_list.end() != i )
+    {
+        const TVariantVector& values = (*i).second;
+        TVariantVector::const_iterator n = values.begin();
+        while ( n != values.end() )
+        {
+            if ( (*n) == value )
+                return true;
+            ++n;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CValueList::TStringVector
 CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr ,
                                          char wildCardChar        ,
@@ -831,10 +853,27 @@ CValueList::DeleteAll( void )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CValueList::GetCount( void ) const
+CValueList::GetKeyCount( void ) const
 {GUCEF_TRACE;
 
     return (UInt32) m_list.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CValueList::GetValueCount( void ) const
+{GUCEF_TRACE;
+
+    size_t totalValues = 0;
+    TValueMap::const_iterator i = m_list.begin();
+    while ( i != m_list.end() )
+    {
+        totalValues += (*i).second.size();
+        ++i;
+    }
+
+    return (UInt32) totalValues;
 }
 
 /*-------------------------------------------------------------------------*/

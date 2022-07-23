@@ -178,7 +178,7 @@ CStdCodecPlugin::LinkCodecSet( void )
                                                    familyRegistry         ,
                                                    true                   ) )
                     {
-                        familyRegistry = new CCodecRegistry::TCodecFamilyRegistry();
+                        familyRegistry = CCodecRegistry::TCodecFamilyRegistryPtr( new CCodecRegistry::TCodecFamilyRegistry() );
                         if ( !codecRegistry.TryRegister( codecLink->codecFamily, familyRegistry ) )
                         {
                             // race condition?
@@ -459,7 +459,7 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Successfully loaded module and invoked Init() using module: " + PointerToString( modulePtr ) );
 
     // Copy the given metadata and update it with info from the actual module
-    m_metaData = new CPluginMetaData( *pluginMetaData );
+    m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );
     m_metaData->SetDescription( GetDescription() );
     m_metaData->SetCopyright( GetCopyright() );
     m_metaData->SetVersion( GetVersion() );

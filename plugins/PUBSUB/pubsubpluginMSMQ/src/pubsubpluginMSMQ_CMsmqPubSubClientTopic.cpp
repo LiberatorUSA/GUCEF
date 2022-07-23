@@ -2944,7 +2944,7 @@ CMsmqPubSubClientTopic::GetMsmqQueueType( const std::wstring& queueFormatName ,
 {GUCEF_TRACE;
 
     CORE::CVariant qProperty;
-    bool success = GetMsmqQueueProperty( queueFormatName, PROPID_Q_TYPE, VT_CLSID, qProperty );
+    bool success = false; /// GetMsmqQueueProperty( queueFormatName, PROPID_Q_TYPE, VT_CLSID, qProperty );
     if ( success )
     {
         queueTypeId = qProperty.AsString();

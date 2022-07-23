@@ -256,7 +256,7 @@ CTRegistry< T, LockType >::TryLookup( const CString& name           ,
             locatedObj = *( (*i).second );
             return true;
         }
-        locatedObj = NULL;
+        locatedObj.Unlink();
         return false;
     }
     else
@@ -271,7 +271,7 @@ CTRegistry< T, LockType >::TryLookup( const CString& name           ,
             }
             ++i;
         }
-        locatedObj = NULL;
+        locatedObj.Unlink();
         return false;
     }
 }

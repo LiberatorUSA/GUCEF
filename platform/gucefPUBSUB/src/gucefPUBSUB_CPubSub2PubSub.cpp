@@ -793,7 +793,7 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
         channelSettings->channelId = channelId;
 
         // Assign CPU affinity
-        CPubSubChannelSettings::TCharToPubSubSideChannelSettingsMap::iterator n = channelSettings->pubSubSideChannelSettingsMap.begin();
+        CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::iterator n = channelSettings->pubSubSideChannelSettingsMap.begin();
         while ( n != channelSettings->pubSubSideChannelSettingsMap.end() )
         {
             CPubSubSideChannelSettings& sideSettings = (*n).second;

@@ -29,20 +29,10 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H */
 
-#ifndef GUCEF_CORE_CONFIGSTORE_H
-#include "CConfigStore.h"
-#define GUCEF_CORE_CONFIGSTORE_H
-#endif /* GUCEF_CORE_CONFIGSTORE_H */
-
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
-
-#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#include "CGUCEFApplication.h"
-#define GUCEF_CORE_CGUCEFAPPLICATION_H
-#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
 #ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #include "gucefPUBSUB_CPubSubGlobal.h"
@@ -53,21 +43,6 @@
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
 #define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
-
-#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefWEB_CDummyHTTPServerResource.h"
-#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
-
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
 
 #include "gucefPUBSUB_CPubSubClientChannel.h"
 
@@ -92,9 +67,6 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
-#define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
-#define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
-#define GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT                     1000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,16 +75,11 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubClientChannel::CPubSubClientChannel( void )
-    : CPubSubClientSide( 'A' )
-    , m_sideBPubSub()
+    : CORE::CTaskConsumer()
     , m_sides()
+    , m_flowRouter()
 {GUCEF_TRACE;
 
-    // for now just work with a and b, we can do more sides later
-    m_sideBPubSub = CPubSubClientOtherSidePtr( new CPubSubClientOtherSide( this, 'B' ) );
-
-    m_sides.push_back( this );
-    m_sides.push_back( m_sideBPubSub.GetPointerAlways() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,18 +87,33 @@ CPubSubClientChannel::CPubSubClientChannel( void )
 CPubSubClientChannel::~CPubSubClientChannel()
 {GUCEF_TRACE;
 
-    m_sideBPubSub.Unlink();
-    m_sides.clear();
+    Clear();
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CPubSubClientChannel::GetAllSides( TPubSubClientSideVector*& sides )
+void
+CPubSubClientChannel::Clear( void )
 {GUCEF_TRACE;
 
-    sides = &m_sides;
-    return true;
+    // First stop all the threads for sides that have their own
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        CPubSubClientSidePtr side = (*i);
+        CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+        if ( sideSettings.performPubSubInDedicatedThread )
+        {
+            side->RequestTaskToStop( true );
+        }
+        ++i;
+    }
+
+    // the flow router has a map with shared pointers to sides so we should clear that first
+    m_flowRouter.ClearRoutes();
+
+    // Now get rid of the actual side providers
+    m_sides.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -140,19 +122,11 @@ bool
 CPubSubClientChannel::IsHealthy( void ) const
 {GUCEF_TRACE;
 
-    TPubSubClientSideVector::const_iterator i = m_sides.begin();
+    TPubSubClientSidePtrVector::const_iterator i = m_sides.begin();
     while ( i != m_sides.end() )
     {
-        if ( this != (*i) )
-        {
-            if ( !(*i)->IsHealthy() )
-                return false;
-        }
-        else
-        {
-            if ( !CPubSubClientSide::IsHealthy() )
-                return false;
-        }
+        if ( !(*i)->IsHealthy() )
+            return false;
         ++i;
     }
 
@@ -165,15 +139,15 @@ void
 CPubSubClientChannel::PublishChannelMetrics( void ) const
 {GUCEF_TRACE;
 
-    TPubSubClientSideVector::const_iterator i = m_sides.begin();
+    TPubSubClientSidePtrVector::const_iterator i = m_sides.begin();
     while ( i != m_sides.end() )
     {
-        const StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
-        StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
+        const CPubSubClientSide::StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
+        CPubSubClientSide::StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
         while ( n != sideMetrics.end() )
         {
             const CORE::CString& metricFriendlyTopicName = (*n).first;
-            const CPubSubClientSideMetrics& metrics = (*n).second;
+            const CPubSubClientSide::CPubSubClientSideMetrics& metrics = (*n).second;
 
             if ( metrics.hasSupportForPublishing )
             {
@@ -194,127 +168,82 @@ CPubSubClientChannel::PublishChannelMetrics( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::IsTrackingInFlightPublishedMsgsForAcksNeeded( void )
+CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    // Right now we dont have config driven data flows yet
-    // every side flows to every side.
-    // As such we need tracking as soon as 1 side needs a subscriber ack
-   
-    TPubSubClientSideVector::const_iterator i = m_sides.begin();
-    while ( i != m_sides.end() )
+    // In case we are retrying we might have state from a previous run
+    // clear it first
+    Clear();
+
+    // Create a side for every side config entry
+    CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::const_iterator c = m_channelSettings.pubSubSideChannelSettingsMap.begin();
+    while ( c != m_channelSettings.pubSubSideChannelSettingsMap.end() )
     {
-        const CPubSubSideChannelSettings* sideSettings = (*i)->GetSideSettings();
-        if ( GUCEF_NULL != sideSettings )
+        const CORE::CString& sideId = (*c).first;
+        CPubSubSideChannelSettings sideSettings = (*c).second;
+        if ( sideSettings.pubsubIdPrefix.IsNULLOrEmpty() )
+            sideSettings.pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId );
+
+        CPubSubClientSidePtr side( new CPubSubClientSide( sideId, &m_flowRouter ) );        
+        if ( !side->LoadConfig( sideSettings ) )
         {
-            if ( (*i)->HasSubscribersNeedingAcks() )
-                return true;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because side with id " + sideId + " failed LoadConfig" );
+            return false;
         }
-        ++i;
+
+        m_sides.push_back( side );
+        ++c;
+    }
+    
+    // Build the flow router's network based on available sides
+    if ( !m_flowRouter.BuildRoutes( m_channelSettings.flowRouterConfig ,
+                                    m_sides                            ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because we failed to build the flow router's routes" );
+        return false;
     }
 
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPubSubClientChannel::AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                 CPubSubClientSide* msgReceiverSide )
-{GUCEF_TRACE;
-
-    return AcknowledgeReceiptForSideImpl( GetDelegatorThreadId(), msg, msgReceiverSide );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPubSubClientChannel::AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
-                                                     CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                     CPubSubClientSide* msgReceiverSide )
-{GUCEF_TRACE;
-
-    // if we only have 2 sides, no need for anything more complicated
-    if ( m_sides.size() <= 2 )
+    // Now get the sides themselves started to kick things off
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
     {
-        CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
-        if ( GUCEF_NULL != originTopic )
+        CPubSubClientSidePtr& side = (*i);
+        if ( !side->IsRunningInDedicatedThread() )
         {
-            CPubSubClient* originClient = originTopic->GetClient();
-            if ( GUCEF_NULL != originClient )
+            if ( !side->OnTaskStart( taskData ) )
             {
-                CPubSubClientSide* originSide = static_cast< CPubSubClientSide* >( originClient->GetOpaqueUserData() );
-                if ( GUCEF_NULL != originSide )
-                {
-                    if ( invokerThreadId != originSide->GetDelegatorThreadId() )
-                        return originSide->AcknowledgeReceiptASync( msg );
-                    else
-                        return originSide->AcknowledgeReceiptSync( msg );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since parent client owning the origin topic provided on the message does not have a link back to the owner pubsub side. This should never happen." );
-                    return false;
-                }
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since no parent client owns the origin topic provided on the message. This should never happen." );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because non-dedicated-thread side with id " + side->GetSideId() + " failed its own OnTaskStart" );
                 return false;
             }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                "):AcknowledgeReceiptForSide: Unable to ack receipt of message to origin topic since no origin topic was provided on the message. Check your config and backend feature compatibility" );
-            return false;
-        }
-    }
-    else
-    {
-        // @TODO: support for more than 2 sides is not implemented yet
-            // The trickyness in this case is that you have to wait to ack until all sides have
-            // acked (or perhaps just 1 based on config?)
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-    if ( CPubSubClientSide::OnTaskStart( taskData ) )
-    {
-        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
-        {
-            return m_sideBPubSub->OnTaskStart( taskData );
-        }
-        else
-        {
             CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
-            if ( !threadPool->StartTask( m_sideBPubSub ) )
+            if ( !threadPool->StartTask( side ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to start dedicated thread for other side. Falling back to a single thread" );
-                CPubSubSideChannelSettings* sideSettings = m_sideBPubSub->GetSideSettings();
-                if ( GUCEF_NULL != sideSettings )
-                    sideSettings->performPubSubInDedicatedThread = false;
-                else
-                    return false;
+                
+                // As a fallback we support trying run as part of the channel thread instead
 
-                return m_sideBPubSub->OnTaskStart( taskData );
+                CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+                sideSettings.performPubSubInDedicatedThread = false;
+
+                if ( !side->OnTaskStart( taskData ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because non-dedicated-thread (fallback mode) side with id " + side->GetSideId() + " failed its own OnTaskStart" );
+                    return false;
+                }
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskStart: Successfully requested the launch of a dedicated thread for other side" );
-                return true;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskStart: Successfully requested the launch of a dedicated thread for side with id " + side->GetSideId() );
             }
         }
+
+        ++i;
     }
-    return false;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -323,18 +252,21 @@ bool
 CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    CPubSubClientSide::OnTaskCycle( taskData );
-
-    if ( !m_sideBPubSub.IsNULL() )
+    bool allDone = false;
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
     {
-        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+        CPubSubClientSidePtr& side = (*i);
+        if ( !side->IsRunningInDedicatedThread() )
         {
-            m_sideBPubSub->OnTaskCycle( taskData );
+            // This side does not have its own thread
+            // we will let it use the channel's thread
+            allDone = side->OnTaskCycle( taskData ) || allDone;
         }
+        ++i;
     }
 
-    // We are never 'done' so return false
-    return false;
+    return allDone;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -344,28 +276,31 @@ CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
                                     bool willBeForced           )
 {GUCEF_TRACE;
 
-    CPubSubClientSide::OnTaskEnding( taskdata, willBeForced );
-
-    if ( !m_sideBPubSub.IsNULL() )
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
     {
-        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
+        CPubSubClientSidePtr& side = (*i);
+        if ( !side->IsRunningInDedicatedThread() )
         {
-            m_sideBPubSub->OnTaskEnding( taskdata, willBeForced );
+            // This side does not have its own thread
+            // we will have let it use the channel's thread so its fate was tied wrt OnTaskEnded timing
+            side->OnTaskEnding( taskdata, willBeForced );
         }
         else
         {
-            // Since we are the ones that launched the dedicated thread for the other sides we should also ask
-            // to have it cleaned up when we are shutting down this thread
+            // Since we are the ones that launched the dedicated thread for this sides we should also ask
+            // to have it cleaned up when we are shutting down the main channel thread
             CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
-            if ( !threadPool->RequestTaskToStop( m_sideBPubSub.StaticCast< CORE::CTaskConsumer >(), false ) )
+            if ( !threadPool->RequestTaskToStop( side.StaticCast< CORE::CTaskConsumer >(), false ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskEnding: Failed to request the dedicated thread for other side to stop" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskEnding: Failed to request the dedicated thread for side " + side->GetSideId() + " to stop" );
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskEnding: Successfully requested the dedicated thread for the other side to stop" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskEnding: Successfully requested the dedicated thread for the side " + side->GetSideId() + " to stop" );
             }
         }
+        ++i;
     }
 }
 
@@ -374,17 +309,31 @@ CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
 void
 CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
                                    bool wasForced              )
+{GUCEF_TRACE;  
+
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        CPubSubClientSidePtr& side = (*i);
+        if ( !side->IsRunningInDedicatedThread() )
+        {
+            // This side does not have its own thread
+            // we will have let it use the channel's thread so its fate was tied wrt OnTaskEnded timing
+            side->OnTaskEnded( taskData, wasForced );
+        }
+        ++i;
+    }
+
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CPubSubClientChannel::GetType( void ) const
 {GUCEF_TRACE;
 
-    CPubSubClientSide::OnTaskEnded( taskData, wasForced );
-
-    if ( !m_sideBPubSub.IsNULL() )
-    {
-        if ( !m_sideBPubSub->IsRunningInDedicatedThread() )
-        {
-            m_sideBPubSub->OnTaskEnded( taskData, wasForced );
-        }
-    }
+    return "PubSubClientChannel";
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,7 +342,17 @@ bool
 CPubSubClientChannel::LoadConfig( const CPubSubChannelSettings& channelSettings )
 {GUCEF_TRACE;
 
-    return CPubSubClientSide::LoadConfig( channelSettings ) && m_sideBPubSub->LoadConfig( channelSettings );
+    m_channelSettings = channelSettings;
+    return m_flowRouter.LoadConfig( m_channelSettings.flowRouterConfig );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CPubSubChannelSettings&
+CPubSubClientChannel::GetChannelSettings( void ) const
+{GUCEF_TRACE;
+
+    return m_channelSettings;
 }
 
 /*-------------------------------------------------------------------------//

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
-#define GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
+#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
+#define GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,20 +25,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
-#include "gucefPUBSUB_CPubSubSideChannelSettings.h"
-#define GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
-#endif /* GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H
-#include "gucefPUBSUB_CPubSubFlowRouterConfig.h"
-#define GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H
-#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H ? */
+#ifndef GUCEF_PUBSUB_MACROS_H
+#include "gucefPUBSUB_macros.h"
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,34 +55,42 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::map< CORE::CString, CPubSubSideChannelSettings > TStringToPubSubSideChannelSettingsMap;
+    typedef std::vector< CPubSubFlowRouteConfig >   PubSubFlowRouteConfigVector;
 
-    CPubSubChannelSettings( void );
-    CPubSubChannelSettings( const CPubSubChannelSettings& src );
-    CPubSubChannelSettings& operator=( const CPubSubChannelSettings& src );
+    enum RouteType : Int32
+    {
+        Disabled        = 0 ,
+        Primary         = 1 , /**< regular flow under normal conditions */
+        Failover        = 2 , /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
+        SpilloverBuffer = 3 , /**< if the primary is unhealthy or is a slow consumer the spill over acts as buffer for the primary route */
+        DeadLetter      = 4   /**< unable to publish on configured channels and remedies exhausted messages go here */
+    };
 
-    CPubSubSideChannelSettings* GetPubSubSideSettings( const CORE::CString& sideId );
+    CORE::CString fromSide;
+    CORE::CString toSide;
+    RouteType routeType;
 
-    void UpdateDerivedSettings( void );
+    static CORE::CString RouteTypeToString( RouteType routeType );
+    static RouteType StringToRouteType( const CORE::CString& routeTypeStr );
 
-    TStringToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
-    CPubSubFlowRouterConfig flowRouterConfig;
+    CPubSubFlowRouteConfig( void );
 
-    CORE::Int32 channelId;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    bool collectMetrics;                                                   
-    CORE::UInt32 metricsIntervalInMs;
-    CORE::CString metricsPrefix;                                          //< this setting is derived and cached from other settings
+    CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& src );
 
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CPubSubFlowRouteConfig();
 
-    virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+    CPubSubFlowRouteConfig& operator=( const CPubSubFlowRouteConfig& src );
 
-    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
 };
 
 /*-------------------------------------------------------------------------//
@@ -96,5 +104,5 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurab
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H ? */
 

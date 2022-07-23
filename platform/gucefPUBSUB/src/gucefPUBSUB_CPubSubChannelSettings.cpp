@@ -34,16 +34,6 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H */
 
-#ifndef GUCEF_CORE_CTASKMANAGER_H
-#include "gucefCORE_CTaskManager.h"
-#define GUCEF_CORE_CTASKMANAGER_H
-#endif /* GUCEF_CORE_CTASKMANAGER_H */
-
-#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#include "CGUCEFApplication.h"
-#define GUCEF_CORE_CGUCEFAPPLICATION_H
-#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
-
 #ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #include "gucefPUBSUB_CPubSubGlobal.h"
 #define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
@@ -53,21 +43,6 @@
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
 #define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
-
-#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefWEB_CDummyHTTPServerResource.h"
-#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
-
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
 
 #include "gucefPUBSUB_CPubSubChannelSettings.h"
 
@@ -105,6 +80,7 @@ namespace PUBSUB {
 CPubSubChannelSettings::CPubSubChannelSettings( void )
     : CORE::CIConfigurable()
     , pubSubSideChannelSettingsMap()
+    , flowRouterConfig()
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , collectMetrics( true )
@@ -119,6 +95,7 @@ CPubSubChannelSettings::CPubSubChannelSettings( void )
 CPubSubChannelSettings::CPubSubChannelSettings( const CPubSubChannelSettings& src )
     : CORE::CIConfigurable( src )
     , pubSubSideChannelSettingsMap( src.pubSubSideChannelSettingsMap )
+    , flowRouterConfig( src.flowRouterConfig )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , collectMetrics( src.collectMetrics )
@@ -137,6 +114,7 @@ CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
     if ( this != &src )
     {
         pubSubSideChannelSettingsMap = src.pubSubSideChannelSettingsMap;
+        flowRouterConfig = src.flowRouterConfig;
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         collectMetrics = src.collectMetrics;
@@ -149,10 +127,10 @@ CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 CPubSubSideChannelSettings*
-CPubSubChannelSettings::GetPubSubSideSettings( char side )
+CPubSubChannelSettings::GetPubSubSideSettings( const CORE::CString& sideId )
 {GUCEF_TRACE;
 
-    TCharToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.find( side );
+    TStringToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.find( sideId );
     if ( i != pubSubSideChannelSettingsMap.end() )
     {
         return &(*i).second;
@@ -163,21 +141,21 @@ CPubSubChannelSettings::GetPubSubSideSettings( char side )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+CPubSubChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    CORE::CDataNode* pubSubSidesCollection = tree.Structure( "PubSubSides", '/' );
+    CORE::CDataNode* pubSubSidesCollection = cfg.Structure( "PubSubSides", '/' );
     pubSubSidesCollection->SetNodeType( GUCEF_DATATYPE_ARRAY );
 
     // We don't want to merge from a potential previous save so we wipe what could be
     // a pre-existing collection
     pubSubSidesCollection->DelSubTree();
 
-    TCharToPubSubSideChannelSettingsMap::const_iterator i = pubSubSideChannelSettingsMap.begin();
+    TStringToPubSubSideChannelSettingsMap::const_iterator i = pubSubSideChannelSettingsMap.begin();
     while ( i != pubSubSideChannelSettingsMap.end() )
     {
         const CPubSubSideChannelSettings& sideSettings = (*i).second;
-        CORE::CDataNode* sideSettingsNode = pubSubSidesCollection->AddChild( "PubSubSideChannelSettings" );
+        CORE::CDataNode* sideSettingsNode = pubSubSidesCollection->FindOrAddChild( "PubSubSideChannelSettings" );
         if ( !sideSettings.SaveConfig( *sideSettingsNode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubSideChannelSettings section" );
@@ -186,12 +164,23 @@ CPubSubChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
         ++i;
     }
 
-    tree.SetAttribute( "channelId", channelId );
-    tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
-    tree.SetAttribute( "collectMetrics", collectMetrics );
+    cfg.SetAttribute( "channelId", channelId );
+    cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
+    cfg.SetAttribute( "collectMetrics", collectMetrics );
 
     // Derived settings are advisory outputs only meaning we will save them but we wont load them
-    tree.SetAttribute( "metricsPrefix", metricsPrefix );
+    cfg.SetAttribute( "metricsPrefix", metricsPrefix );
+
+    CORE::CDataNode* pubSubFlowRouterConfigNode = cfg.FindOrAddChild( "PubSubFlowRouterConfig" );
+    if ( GUCEF_NULL != pubSubFlowRouterConfigNode )
+    {
+        if ( !flowRouterConfig.SaveConfig( *pubSubFlowRouterConfigNode ) )
+            return false;
+    }
+    else
+    {
+        return false;
+    }
 
     return true;
 }
@@ -242,7 +231,7 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
                 return false;
             }
 
-            char sideId = (*n)->GetName()[ 0 ];
+            const CORE::CString& sideId = (*n)->GetName();
             sideSettings.metricsPrefix = metricsPrefix + "side." + sideId + ".";
             pubSubSideChannelSettingsMap[ sideId ] = sideSettings;
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side \'" + CORE::CString( sideId ) + "\' config successfully loaded" );
@@ -254,6 +243,34 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: PubSubSides collection section is mandatory" );
         return false;
+    }
+
+    const CORE::CDataNode* pubSubFlowRouterConfig = cfg.Find( "PubSubFlowRouterConfig" );
+    if ( GUCEF_NULL != pubSubFlowRouterConfig )
+    {
+        // If we have a flow router config it should be well formed and load properly
+        if ( !flowRouterConfig.LoadConfig( *pubSubFlowRouterConfig ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Failed to load flow router config" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: No PubSubFlowRouterConfig was found, will use default implicit config" );
+        
+        // If we do not have a flow router config we take it as allowing * -> * implicitly
+        // this setting matches the historical behaviour
+        flowRouterConfig.Clear();        
+        CPubSubFlowRouteConfig implicitRoute;
+        implicitRoute.fromSide = "*";
+        implicitRoute.toSide = "*";
+        implicitRoute.routeType = CPubSubFlowRouteConfig::RouteType::Primary;
+        flowRouterConfig.routes.push_back( implicitRoute );
+
+        // We also use the safest setting for the ack style
+        // this setting matches the historical behaviour
+        flowRouterConfig.ackStyle = CPubSubFlowRouterConfig::AckStyle::AllOrNothing;
     }
 
     UpdateDerivedSettings();
@@ -269,7 +286,7 @@ CPubSubChannelSettings::UpdateDerivedSettings( void )
 
     metricsPrefix = "channel." + CORE::ToString( channelId ) + ".";
 
-    TCharToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.begin();
+    TStringToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.begin();
     while ( i != pubSubSideChannelSettingsMap.end() )
     {
         CPubSubSideChannelSettings& sideSettings = (*i).second;

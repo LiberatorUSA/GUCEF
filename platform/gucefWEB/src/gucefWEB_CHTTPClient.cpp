@@ -302,18 +302,18 @@ CHTTPClient::Get( const CORE::CString& host                      ,
 
     if ( NULL != valuelist )
     {
-        for ( UInt32 i=0; i<valuelist->GetCount(); ++i )
+        for ( UInt32 i=0; i<valuelist->GetKeyCount(); ++i )
         {
             contentsize += valuelist->GetPair( i ).Length()+1;
         }
 
-        if ( valuelist->GetCount() )
+        if ( valuelist->GetKeyCount() )
         {
             valuepath += '?';
-            for ( UInt32 i=0; i<valuelist->GetCount(); ++i )
+            for ( UInt32 i=0; i<valuelist->GetKeyCount(); ++i )
             {
                 valuepath += valuelist->GetPair( i );
-                if ( i+1 < valuelist->GetCount() )
+                if ( i+1 < valuelist->GetKeyCount() )
                 {
                         valuepath += '&';
                 }

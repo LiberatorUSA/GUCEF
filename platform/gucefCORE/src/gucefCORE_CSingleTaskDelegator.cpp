@@ -75,7 +75,7 @@ CSingleTaskDelegator::OnThreadCycle( void* taskdata )
     {
         bool result = CTaskDelegator::ProcessTask( m_taskConsumer, m_taskData );
         TaskCleanup( m_taskConsumer, m_taskData );
-        m_taskConsumer = GUCEF_NULL;
+        m_taskConsumer.Unlink();
         m_taskData = GUCEF_NULL;
         return result;
     }

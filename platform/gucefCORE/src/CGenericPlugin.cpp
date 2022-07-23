@@ -171,7 +171,7 @@ CGenericPlugin::Link( void* modulePtr                   ,
         {
             // Make the module parameter list
             const char** argv = NULL;
-            UInt32 argc = m_params.GetCount();
+            UInt32 argc = m_params.GetKeyCount();
             if ( argc > 0 )
             {
                 argv = new const char*[ argc ];
@@ -205,7 +205,7 @@ CGenericPlugin::Link( void* modulePtr                   ,
                         Int32ToString( loadStatus  ) + " using module: " + PointerToString( modulePtr ) );
 
                 // Copy the given metadata and update it with info from the actual module
-                m_metaData = new CPluginMetaData( *pluginMetaData );                 
+                m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );                 
                 m_metaData->SetDescription( GetDescription() );
                 m_metaData->SetCopyright( GetCopyright() );
                 m_metaData->SetVersion( GetVersion() );
@@ -251,7 +251,7 @@ CGenericPlugin::Unlink( void )
         // Cleanup recources
         memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );
         m_moduleHandle = NULL;
-        m_metaData = NULL;
+        m_metaData.Unlink();
     }
 
     return true;

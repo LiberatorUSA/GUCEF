@@ -266,11 +266,15 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     bool HasKey( const CString& key ) const;
 
+    bool HasKeyAndValue( const CString& key, const CString& value ) const;
+
     void Delete( const CString& key );
 
     void DeleteAll( void );
 
-    UInt32 GetCount( void ) const;
+    UInt32 GetKeyCount( void ) const;
+
+    UInt32 GetValueCount( void ) const;
 
     void SetAllowDuplicates( const bool allowDuplicates );
 

@@ -314,7 +314,7 @@ bool
 CBasicPubSubMsg::AddLinkedKeyValuePairs( const CORE::CValueList& kvPairs, TKeyValuePairs& kvPairsStorage )
 {GUCEF_TRACE;
 
-    kvPairsStorage.reserve( m_keyValuePairs.size() + (size_t) kvPairs.GetCount() );
+    kvPairsStorage.reserve( m_keyValuePairs.size() + (size_t) kvPairs.GetKeyCount() );
 
     CORE::CValueList::TValueMap::const_iterator i = kvPairs.GetDataBeginIterator();
     while ( i != kvPairs.GetDataEndIterator() )

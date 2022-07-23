@@ -1065,7 +1065,7 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
 
     // Add the metadata
     MT::CObjectScopeLock lock( this );
-    TPluginMetaDataPtr pluginMetaDataCopy = new CPluginMetaData( pluginMetaData );
+    TPluginMetaDataPtr pluginMetaDataCopy( new CPluginMetaData( pluginMetaData ) );
     CPluginGroup& pluginGroup = m_pluginGroups[ groupName ];
     pluginGroup.GetPluginMetaData().insert( pluginMetaDataCopy );
 

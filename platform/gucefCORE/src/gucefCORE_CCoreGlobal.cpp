@@ -326,13 +326,13 @@ CCoreGlobal::Initialize( void )
     /*
      *      Register some default URI handlers
      */
-    m_urlHandlerRegistry->Register( "file", new CFileURLHandler() );
+    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjPtr( new CFileURLHandler() ) );
 
     /*
      *      Register some default codecs
      */    
-    m_dstoreCodecRegistry->Register( "ini", new CIniDataStoreCodec() );
-    m_dstoreCodecRegistry->Register( "dnc", new CDataStoreBinaryCodec() );
+    m_dstoreCodecRegistry->Register( "ini", CDStoreCodecRegistry::TRegisteredObjPtr( new CIniDataStoreCodec() ) );
+    m_dstoreCodecRegistry->Register( "dnc", CDStoreCodecRegistry::TRegisteredObjPtr( new CDataStoreBinaryCodec() ) );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE Global systems initialized" );
 }

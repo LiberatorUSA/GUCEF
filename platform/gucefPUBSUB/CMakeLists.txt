@@ -27,10 +27,12 @@ set( HEADER_FILES
   include/gucefPUBSUB_CPubSubClientConfig.h
   include/gucefPUBSUB_CPubSubClientFactory.h
   include/gucefPUBSUB_CPubSubClientFeatures.h
-  include/gucefPUBSUB_CPubSubClientOtherSide.h
   include/gucefPUBSUB_CPubSubClientSide.h
   include/gucefPUBSUB_CPubSubClientTopic.h
   include/gucefPUBSUB_CPubSubClientTopicConfig.h
+  include/gucefPUBSUB_CPubSubFlowRouteConfig.h
+  include/gucefPUBSUB_CPubSubFlowRouter.h
+  include/gucefPUBSUB_CPubSubFlowRouterConfig.h
   include/gucefPUBSUB_CPubSubGlobal.h
   include/gucefPUBSUB_CPubSubMsgBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h
@@ -57,10 +59,12 @@ set( SOURCE_FILES
   src/gucefPUBSUB_CPubSubClientConfig.cpp
   src/gucefPUBSUB_CPubSubClientFactory.cpp
   src/gucefPUBSUB_CPubSubClientFeatures.cpp
-  src/gucefPUBSUB_CPubSubClientOtherSide.cpp
   src/gucefPUBSUB_CPubSubClientSide.cpp
   src/gucefPUBSUB_CPubSubClientTopic.cpp
   src/gucefPUBSUB_CPubSubClientTopicConfig.cpp
+  src/gucefPUBSUB_CPubSubFlowRouteConfig.cpp
+  src/gucefPUBSUB_CPubSubFlowRouter.cpp
+  src/gucefPUBSUB_CPubSubFlowRouterConfig.cpp
   src/gucefPUBSUB_CPubSubGlobal.cpp
   src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
-#define GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
+#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
+#define GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,20 +25,35 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CREADWRITELOCK_H
+#include "gucefMT_CReadWriteLock.h"
+#define GUCEF_MT_CREADWRITELOCK_H
+#endif /* GUCEF_MT_CREADWRITELOCK_H ? */
+
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
-#include "gucefPUBSUB_CPubSubSideChannelSettings.h"
-#define GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
-#endif /* GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H
+#include "gucefPUBSUB_CPubSubClientSide.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H ? */
 
 #ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H
 #include "gucefPUBSUB_CPubSubFlowRouterConfig.h"
 #define GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H
 #endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H ? */
+
+#ifndef GUCEF_PUBSUB_MACROS_H
+#include "gucefPUBSUB_macros.h"
+#define GUCEF_PUBSUB_MACROS_H
+#endif /* GUCEF_PUBSUB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,34 +70,61 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurable
+/**
+ *  Class which aims to provide a config driven mapping between pubsub sides
+ *  The mapping entails various information flows and behaviour between said sides
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter 
 {
     public:
 
-    typedef std::map< CORE::CString, CPubSubSideChannelSettings > TStringToPubSubSideChannelSettingsMap;
+    CPubSubFlowRouter( void );
 
-    CPubSubChannelSettings( void );
-    CPubSubChannelSettings( const CPubSubChannelSettings& src );
-    CPubSubChannelSettings& operator=( const CPubSubChannelSettings& src );
+    virtual ~CPubSubFlowRouter();
 
-    CPubSubSideChannelSettings* GetPubSubSideSettings( const CORE::CString& sideId );
+    bool SaveConfig( CPubSubFlowRouterConfig& cfg ) const;
 
-    void UpdateDerivedSettings( void );
+    bool LoadConfig( const CPubSubFlowRouterConfig& src );
 
-    TStringToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
-    CPubSubFlowRouterConfig flowRouterConfig;
+    void ClearRoutes( void );
+    
+    bool BuildRoutes( const CPubSubFlowRouterConfig& config ,
+                      TPubSubClientSidePtrVector& sides     );
 
-    CORE::Int32 channelId;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    bool collectMetrics;                                                   
-    CORE::UInt32 metricsIntervalInMs;
-    CORE::CString metricsPrefix;                                          //< this setting is derived and cached from other settings
+    bool IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSide* sideWeAskFor ) const;
 
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+    bool PublishMsgs( CPubSubClientSide* fromSide                          ,
+                      const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                      bool isDeadLetter                                    );
+    
+    bool AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide ,
+                                    CIPubSubMsg::TNoLockSharedPtr& msg );
+    
+    private:
 
-    virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+    typedef std::vector< CPubSubClientSidePtr >   TPubSubClientSideVector;
 
-    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    struct SRouteInfo
+    {
+        TPubSubClientSidePtrVector primaryRoutes;
+        TPubSubClientSidePtrVector failoverRoutes;
+        TPubSubClientSidePtrVector spilloverBufferRoutes;
+        TPubSubClientSidePtrVector deadLetterRoutes;
+    };
+    typedef struct SRouteInfo TRouteInfo;
+
+    typedef std::map< CPubSubClientSide*, TRouteInfo >        TSidePtrToRouteInfoMap;
+    typedef std::map< CORE::CString, CORE::CString >          TStringMap;
+
+    bool NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
+                          TPubSubClientSidePtrVector& sides             ,
+                          CPubSubFlowRouterConfig& normalizedConfig     );
+
+    bool IsTrackingInFlightPublishedMsgsForAcksNeeded( const TPubSubClientSideVector& sides ) const;
+
+    CPubSubFlowRouterConfig m_config;
+    TSidePtrToRouteInfoMap m_routeMap;
+    MT::CReadWriteLock m_lock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -96,5 +138,5 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurab
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H ? */
 

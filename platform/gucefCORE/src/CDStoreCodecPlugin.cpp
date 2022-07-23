@@ -384,7 +384,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
 
             // Copy the given metadata and update it with info from the actual module
-            m_metaData = new CPluginMetaData( *pluginMetaData );
+            m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );
             m_metaData->SetDescription( GetDescription() );
             m_metaData->SetCopyright( GetCopyright() );
             m_metaData->SetVersion( GetVersion() );
@@ -418,7 +418,7 @@ CDStoreCodecPlugin::Unlink( void )
 
         // Cleanup recources
         memset( _fptable, 0, sizeof(anyPointer) * DSTOREPLUG_LASTFPTR );
-        m_metaData = NULL;
+        m_metaData.Unlink();
         _sohandle = NULL;
     }
 

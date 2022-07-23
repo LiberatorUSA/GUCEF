@@ -604,7 +604,7 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
         m_redisPipeline = GUCEF_NULL;
 
         // the parent client owns the context, we just null it
-        m_redisContext = GUCEF_NULL;
+        m_redisContext.Unlink();
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Finished cleanup" );
     }

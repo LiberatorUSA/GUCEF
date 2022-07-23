@@ -54,20 +54,10 @@
 #define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
-#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefWEB_CDummyHTTPServerResource.h"
-#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
-
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
+#include "gucefPUBSUB_CPubSubFlowRouter.h"
+#define GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H ? */
 
 #include "gucefPUBSUB_CPubSubClientSide.h"
 
@@ -102,7 +92,8 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPubSubClientSide::CPubSubClientSide( char side )
+CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
+                                      CPubSubFlowRouter* flowRouter )
     : CORE::CTaskConsumer()
     , m_pubsubClient()
     , m_clientFeatures()
@@ -110,15 +101,15 @@ CPubSubClientSide::CPubSubClientSide( char side )
     , m_bookmarkNamespace()
     , m_topics()
     , m_metricsMap()
-    , m_channelSettings()
-    , m_sideSettings( GUCEF_NULL )
+    , m_sideSettings()
     , m_mailbox()
     , m_metricsTimer( GUCEF_NULL )
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL )
-    , m_side( side )
+    , m_sideId( sideId )
     , m_awaitingFailureReport( false )
     , m_totalMsgsInFlight( 0 )
+    , m_flowRouter( flowRouter )
 {GUCEF_TRACE;
 
 }
@@ -487,7 +478,7 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     CPubSubClient::TopicsAccessAutoCreatedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
-    if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
+    if ( GUCEF_NULL != eData )
     {
         CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
@@ -496,9 +487,9 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
             CPubSubClientTopic* tAccess = (*i);
             if ( GUCEF_NULL != tAccess )
             {
-                if ( ConfigureTopicLink( *m_sideSettings, *tAccess ) )
+                if ( ConfigureTopicLink( m_sideSettings, *tAccess ) )
                 {
-                    ConnectPubSubClientTopic( *tAccess, m_clientFeatures, *m_sideSettings );
+                    ConnectPubSubClientTopic( *tAccess, m_clientFeatures, m_sideSettings );
                 }
             }
             ++i;
@@ -515,7 +506,7 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     CPubSubClient::TopicsAccessAutoDestroyedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoDestroyedEventData* >( eventData );
-    if ( GUCEF_NULL != eData && GUCEF_NULL != m_sideSettings )
+    if ( GUCEF_NULL != eData )
     {
         CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
@@ -525,6 +516,7 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
             if ( GUCEF_NULL != tAccess )
             {
                 // @TODO: What to do about in-flight messages etc? Any special action?
+                //      send them to dead letter ?
                 m_topics.erase( tAccess );
             }
             ++i;
@@ -565,10 +557,10 @@ CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
     MT::CObjectScopeLock lock( this );
     
     // better safe then sorry...
-    if ( m_pubsubClient.IsNULL() || GUCEF_NULL == m_sideSettings )
+    if ( m_pubsubClient.IsNULL() )
         return true;
 
-    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+    const CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
 
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
@@ -614,9 +606,9 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
                 ++topicsToPublishOn;
 
                 topicLink.currentPublishActionIds.clear();
-                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, m_sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
+                if ( topic->Publish( topicLink.currentPublishActionIds, msgs, m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) )
                 {
-                    if ( m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                    if ( m_sideSettings.needToTrackInFlightPublishedMsgsForAck )
                         topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, true );
 
                     ++topicsPublishedOn;
@@ -628,7 +620,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                         "):PublishMsgsSync: Failed to publish messages to topic" );
 
-                    if ( m_sideSettings->retryFailedPublishAttempts )
+                    if ( m_sideSettings.retryFailedPublishAttempts )
                     {
                         topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, false );
                         m_awaitingFailureReport = true;
@@ -673,19 +665,15 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
 
     MT::CObjectScopeLock lock( this );
 
-    if ( GUCEF_NULL != m_sideSettings )
+    // If we are running async from other sides we need to check the mailbox
+    if ( m_sideSettings.performPubSubInDedicatedThread || m_awaitingFailureReport )
     {
-        // If we are running async from other sides we need to check the mailbox
-        if ( m_sideSettings->performPubSubInDedicatedThread || m_awaitingFailureReport )
-        {
-            return PublishMsgsASync( msgs );
-        }
-        else
-        {
-            return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
-        }
+        return PublishMsgsASync( msgs );
     }
-    return false;
+    else
+    {
+        return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -719,7 +707,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
 
         if ( GUCEF_NULL != topic && topic->IsPublishingSupported() )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):OnCheckForTimedOutInFlightMessagesTimerCycle: Topic " + topic->GetTopicName() + " has " + CORE::ToString( topicLink.inFlightMsgs.size() ) + " messages in flight" );
 
             TopicLink::TUInt64Set inFlightDiscardList;
@@ -732,17 +720,17 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                     if ( inFlightEntry.isInFlight && inFlightEntry.waitingForInFlightConfirmation )
                     {
                         CORE::Int64 timeInFlightInMs = inFlightEntry.lastPublishAttempt.GetTimeDifferenceInMillisecondsTowards( cycleNowDt );
-                        if ( timeInFlightInMs > m_sideSettings->maxPublishedMsgInFlightTimeInMs )
+                        if ( timeInFlightInMs > m_sideSettings.maxPublishedMsgInFlightTimeInMs )
                         {
                             // Since the max time elapsed we no longer consider the message in-flight
                             inFlightEntry.isInFlight = false;
 
-                            if ( m_sideSettings->allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
+                            if ( m_sideSettings.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
                             {
                                 // We will act as if we received a notice that publishing failed and will perform the regular
                                 // retry routine
 
-                                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                     "):OnCheckForTimedOutInFlightMessagesTimerCycle: A message on topic " + topic->GetTopicName() + " has exceeded max in-flight time in ms (" + CORE::ToString( timeInFlightInMs ) +
                                     "). Will consider publishing as failed and will retry. First publish attempt was at " + CORE::ToString( inFlightEntry.firstPublishAttempt ) +
                                     " and the last attempt occured at " + CORE::ToString( inFlightEntry.lastPublishAttempt ) +
@@ -760,7 +748,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                             {
                                 inFlightDiscardList.insert( inFlightEntry.publishActionId );
 
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                     "):OnCheckForTimedOutInFlightMessagesTimerCycle: A message on topic " + topic->GetTopicName() + " has exceeded max in-flight time in ms (" + CORE::ToString( timeInFlightInMs ) +
                                     ") Since we do not allow out-of-order retry for these the mesage will be lost! First publish attempt was at " + CORE::ToString( inFlightEntry.firstPublishAttempt ) +
                                     " and the last attempt occured at " + CORE::ToString( inFlightEntry.lastPublishAttempt ) +
@@ -772,7 +760,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                 }
                 else
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):OnCheckForTimedOutInFlightMessagesTimerCycle: A message tracking entry on topic " + topic->GetTopicName() + " has no message associated. We will discard the entry. publishActionId=" + CORE::ToString( inFlightEntry.publishActionId ) );
 
                     inFlightDiscardList.insert( inFlightEntry.publishActionId );
@@ -781,18 +769,54 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                 ++m;
             }
 
-            size_t discardedMsgs = inFlightDiscardList.size();
-            TopicLink::TUInt64Set::iterator n = inFlightDiscardList.begin();
-            while ( n != inFlightDiscardList.end() )
+            size_t nrOfDiscardedMsgs = inFlightDiscardList.size();
+            if ( nrOfDiscardedMsgs > 0 )
             {
-                topicLink.inFlightMsgs.erase( (*n) );
-                ++n;
-            }
-            if ( discardedMsgs > 0 )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( discardedMsgs ) +
-                    " messages due to exceeding the max in-flight time allowed which is configured as " + CORE::ToString( m_sideSettings->maxPublishedMsgInFlightTimeInMs ) );
+                // Before we delete the message in-memory lets send it to the dead letter queue if one is configured for this flow
+                if ( GUCEF_NULL != m_flowRouter )
+                {
+                    // We create a list with all messages instead of trying to send to the dead letter destination on a per message basis
+                    // reason being that this is a localized cost whereas publishing across has a cross-locking blocking cost when running multi-threaded
+                    // hence a batch operation reduces the calling /locking overhead
+                    CPubSubClientTopic::TPubSubMsgsRefVector discardedMsgs;
+                    discardedMsgs.reserve( nrOfDiscardedMsgs );
+
+                    TopicLink::TUInt64Set::iterator n = inFlightDiscardList.begin();
+                    while ( n != inFlightDiscardList.end() )
+                    {               
+                        TopicLink::MsgTrackingEntry& trackingEntry = topicLink.inFlightMsgs[ (*n) ];
+                        CPubSubClientTopic::TPubSubMsgRef msgRef;
+                        msgRef.LinkTo( trackingEntry.msg.GetPointerAlways() );
+                        discardedMsgs.push_back( msgRef );
+                        ++n;
+                    }
+
+                    if ( m_flowRouter->PublishMsgs( this, discardedMsgs, true ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we successfully sent a total of " + CORE::ToString( nrOfDiscardedMsgs ) +
+                            " messages to a dead letter destination" );
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we were unable to send a total of " + CORE::ToString( nrOfDiscardedMsgs ) +
+                            " messages to any dead letter destination" );
+                    }
+                }
+                
+                // end of the road as far as we are concerned here
+                // just delete the relevant tracking entries
+                TopicLink::TUInt64Set::iterator n = inFlightDiscardList.begin();
+                while ( n != inFlightDiscardList.end() )
+                {               
+                    topicLink.inFlightMsgs.erase( (*n) );
+                    ++n;
+                }
+
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( nrOfDiscardedMsgs ) +
+                    " messages due to exceeding the max in-flight time allowed which is configured as " + CORE::ToString( m_sideSettings.maxPublishedMsgInFlightTimeInMs ) );
             }
         }
 
@@ -855,8 +879,8 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     // We are retrying a publish success ack for this message
 
                                     // Check if we are applying a max nr of retries and if we are in violation if so
-                                    if ( m_sideSettings->maxMsgPublishAckRetryAttempts >= 0                                    &&
-                                            retryEntry.retryCount >= (CORE::UInt32) m_sideSettings->maxMsgPublishAckRetryAttempts )
+                                    if ( m_sideSettings.maxMsgPublishAckRetryAttempts >= 0                                    &&
+                                            retryEntry.retryCount >= (CORE::UInt32) m_sideSettings.maxMsgPublishAckRetryAttempts )
                                     {
                                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of ack retries (" + CORE::ToString( retryEntry.retryCount ) +
@@ -870,10 +894,10 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                         continue;
                                     }
                                     else
-                                    if ( m_sideSettings->maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
+                                    if ( m_sideSettings.maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
                                     {
                                         CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
-                                        if ( timeDiffInMs >= m_sideSettings->maxMsgPublishRetryTotalTimeInMs )
+                                        if ( timeDiffInMs >= m_sideSettings.maxMsgPublishRetryTotalTimeInMs )
                                         {
                                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                                                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of ack retry time in ms (" + CORE::ToString( timeDiffInMs ) +
@@ -893,19 +917,22 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     ++retryEntry.retryCount;
                                     retryEntry.lastPublishAttempt = CORE::CDateTime::NowUTCDateTime();
 
-                                    if ( AcknowledgeReceiptForSide( retryEntry.msg, this ) )
+                                    if ( m_flowRouter != GUCEF_NULL )
                                     {
-                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                                            "):RetryPublishFailedMsgs: Signaled receipt of message acknowledgement. publishActionId=" + CORE::ToString( retryEntry.publishActionId ) +
-                                            ". receiveActionId=" + CORE::ToString( retryEntry.msg->GetReceiveActionId() ) + ". Success after " + CORE::ToString( retryEntry.retryCount ) + " ack retry attempts" );
+                                        if ( m_flowRouter->AcknowledgeReceiptForSide( this, retryEntry.msg ) )
+                                        {
+                                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                                "):RetryPublishFailedMsgs: Signaled receipt of message acknowledgement. publishActionId=" + CORE::ToString( retryEntry.publishActionId ) +
+                                                ". receiveActionId=" + CORE::ToString( retryEntry.msg->GetReceiveActionId() ) + ". Success after " + CORE::ToString( retryEntry.retryCount ) + " ack retry attempts" );
 
-                                        topicLink.inFlightMsgs.erase( m );
-                                    }
-                                    else
-                                    {
-                                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                                            "):RetryPublishFailedMsgs: Still failed to signal receipt of message acknowledgement. publishActionId=" + CORE::ToString( retryEntry.publishActionId ) +
-                                            ". receiveActionId=" + CORE::ToString( retryEntry.msg->GetReceiveActionId() ) + ". Currently at " + CORE::ToString( retryEntry.retryCount ) + " ack retry attempts" );
+                                            topicLink.inFlightMsgs.erase( m );
+                                        }
+                                        else
+                                        {
+                                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                                "):RetryPublishFailedMsgs: Still failed to signal receipt of message acknowledgement. publishActionId=" + CORE::ToString( retryEntry.publishActionId ) +
+                                                ". receiveActionId=" + CORE::ToString( retryEntry.msg->GetReceiveActionId() ) + ". Currently at " + CORE::ToString( retryEntry.retryCount ) + " ack retry attempts" );
+                                        }
                                     }
                                 }
                                 else
@@ -913,8 +940,8 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     // We are retrying a backend publish of the message
 
                                     // Check if we are applying a max nr of retries and if we are in violation if so
-                                    if ( m_sideSettings->maxMsgPublishRetryAttempts >= 0                                    &&
-                                            retryEntry.retryCount >= (CORE::UInt32) m_sideSettings->maxMsgPublishRetryAttempts )
+                                    if ( m_sideSettings.maxMsgPublishRetryAttempts >= 0                                    &&
+                                         retryEntry.retryCount >= (CORE::UInt32) m_sideSettings.maxMsgPublishRetryAttempts )
                                     {
                                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of publish retries (" + CORE::ToString( retryEntry.retryCount ) +
@@ -928,10 +955,10 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                         continue;
                                     }
                                     else
-                                    if ( m_sideSettings->maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
+                                    if ( m_sideSettings.maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
                                     {
                                         CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
-                                        if ( timeDiffInMs >= m_sideSettings->maxMsgPublishRetryTotalTimeInMs )
+                                        if ( timeDiffInMs >= m_sideSettings.maxMsgPublishRetryTotalTimeInMs )
                                         {
                                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                                                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of publish retry time in ms (" + CORE::ToString( timeDiffInMs ) +
@@ -954,7 +981,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     CORE::UInt64 publishActionId = retryEntry.publishActionId;
                                     retryEntry.isInFlight = true;
                                     retryEntry.waitingForInFlightConfirmation = true;
-                                    if ( topic->Publish( publishActionId, *retryEntry.msg.GetPointerAlways(), m_sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
+                                    if ( topic->Publish( publishActionId, *retryEntry.msg.GetPointerAlways(), m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) )
                                     {
                                         // It worked this time!
 
@@ -979,7 +1006,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                             ". output publishActionId=" + CORE::ToString( publishActionId ) + ". input PublishActionId=" + CORE::ToString( retryEntry.publishActionId ) + ". " +
                                             GetMsgAttributesForLog( *retryEntry.msg ) );
 
-                                        if ( !m_sideSettings->allowOutOfOrderPublishRetry )
+                                        if ( !m_sideSettings.allowOutOfOrderPublishRetry )
                                         {
                                             break;
                                         }
@@ -1030,9 +1057,9 @@ CPubSubClientSide::PublishMailboxMsgs( void )
 {GUCEF_TRACE;
 
     CORE::Int32 maxMailItemsToGrab = -1;
-    if ( m_sideSettings->maxTotalMsgsInFlight > 0 )
+    if ( m_sideSettings.maxTotalMsgsInFlight > 0 )
     {
-        CORE::Int64 remainingForFlight = m_sideSettings->maxTotalMsgsInFlight - m_totalMsgsInFlight;
+        CORE::Int64 remainingForFlight = m_sideSettings.maxTotalMsgsInFlight - m_totalMsgsInFlight;
         if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
             maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
     }
@@ -1084,30 +1111,18 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s)" );
             
             // We now broadcast the received messages to all other sides which is the purpose of this service
-            TPubSubClientSideVector* sides = GUCEF_NULL;
-            if ( GetAllSides( sides ) && GUCEF_NULL != sides )
+            if ( GUCEF_NULL != m_flowRouter )
             {
-                bool totalSuccess = true;
-                TPubSubClientSideVector::iterator i = sides->begin();
-                while ( i != sides->end() )
+                bool totalSuccess = m_flowRouter->PublishMsgs( this, msgs, false );
+                if ( totalSuccess )
                 {
-                    CPubSubClientSide* side = (*i);
-                    if ( this != side )
-                    {
-                        if ( (*i)->PublishMsgs( msgs ) )
-                        {
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                                "):OnPubSubTopicMsgsReceived: Successfully published message(s) to side " + (*i)->m_side );
-                        }
-                        else
-                        {
-                            // We will rely on that side's retry logic
-                            totalSuccess = false;
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                                "):OnPubSubTopicMsgsReceived: Failed to publish (some?) message(s) to side " + (*i)->m_side );
-                        }
-                    }
-                    ++i;
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnPubSubTopicMsgsReceived: Successfully published message(s) via flow router" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnPubSubTopicMsgsReceived: Failed to publish (some?) message(s) via flow router" );
                 }
 
                 if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept )
@@ -1167,7 +1182,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                                 // As such even if the backend does not support deriving a bookmark from a message we can still use bookmarks
                                 // we just need perform some extra administration to keep track of them. Its the extra admin needs that make
                                 // the derivation of a bookmark directly from a message the preferred route as its likely to be more efficient
-                                if ( m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+                                if ( m_sideSettings.needToTrackInFlightPublishedMsgsForAck )
                                 {
                                     if ( !m_clientFeatures.supportsDerivingBookmarkFromMsg )
                                     {
@@ -1225,8 +1240,8 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
     // Check criterea for our generic bookmark persistance     
     if ( !m_pubsubBookmarkPersistence.IsNULL() && 
             (
-                ( m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval > 0 && topicLink.msgsSinceLastBookmarkPersist >= m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval ) || 
-                ( m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && topicLink.lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= m_sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs ) 
+                ( m_sideSettings.pubsubBookmarkPersistenceConfig.autoPersistMsgInterval > 0 && topicLink.msgsSinceLastBookmarkPersist >= m_sideSettings.pubsubBookmarkPersistenceConfig.autoPersistMsgInterval ) || 
+                ( m_sideSettings.pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && topicLink.lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= m_sideSettings.pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs ) 
             ) )
     {
         if ( m_pubsubBookmarkPersistence->StoreBookmark( m_bookmarkNamespace                , 
@@ -1459,7 +1474,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                                                CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->needToTrackInFlightPublishedMsgsForAck )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings.needToTrackInFlightPublishedMsgsForAck )
         return;
 
     const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
@@ -1486,34 +1501,41 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                 msgTrackingEntry.waitingForInFlightConfirmation = false;
                 CIPubSubMsg::TNoLockSharedPtr msg = msgTrackingEntry.msg;
 
-                if ( AcknowledgeReceiptForSide( msg, this ) )
+                if ( GUCEF_NULL != m_flowRouter )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsPublished: Signaled receipt of message acknowledgement. publishActionId=" + CORE::ToString( msgTrackingEntry.publishActionId ) +
-                        ". receiveActionId=" + CORE::ToString( msg->GetReceiveActionId() ) );
+                    if ( m_flowRouter->AcknowledgeReceiptForSide( this, msg ) )
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):OnPubSubTopicMsgsPublished: Signaled receipt of message acknowledgement. publishActionId=" + CORE::ToString( msgTrackingEntry.publishActionId ) +
+                            ". receiveActionId=" + CORE::ToString( msg->GetReceiveActionId() ) );
 
-                    topicLink.inFlightMsgs.erase( m );
-                    if ( m_totalMsgsInFlight > 0 )
-                        --m_totalMsgsInFlight;
+                        topicLink.inFlightMsgs.erase( m );
+                        if ( m_totalMsgsInFlight > 0 )
+                            --m_totalMsgsInFlight;
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            "):OnPubSubTopicMsgsPublished: Failed to signal receipt of message acknowledgement of message on topic " + topic->GetTopicName() +
+                            ". Will reset entry for PublishAck retries. Publish details: retryCount=" + CORE::ToString( msgTrackingEntry.retryCount ) +
+                            ". First publish attempt was at " + CORE::ToString( msgTrackingEntry.firstPublishAttempt ) +
+                            " and this last attempt was successfull at " + CORE::ToString( msgTrackingEntry.lastPublishAttempt ) +
+                            ". publishActionId=" + CORE::ToString( msgTrackingEntry.publishActionId ) + ". " +
+                            GetMsgAttributesForLog( *msgTrackingEntry.msg ) );
+
+                        // Configure the entry for a different type of retry: Ack retry
+                        // This is a different retry and as such we reset the retry count and time, the log message above will provide the original values for tracing
+                        msgTrackingEntry.readyToAckPublishSuccessButAckFailed = true;
+                        msgTrackingEntry.retryCount = 0;
+                        msgTrackingEntry.firstPublishAttempt = CORE::CDateTime::NowUTCDateTime();
+                        msgTrackingEntry.lastPublishAttempt = msgTrackingEntry.firstPublishAttempt;
+
+                        topicLink.publishFailedMsgs.insert( msgTrackingEntry.publishActionId );
+                    }
                 }
                 else
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsPublished: Failed to signal receipt of message acknowledgement of message on topic " + topic->GetTopicName() +
-                        ". Will reset entry for PublishAck retries. Publish details: retryCount=" + CORE::ToString( msgTrackingEntry.retryCount ) +
-                        ". First publish attempt was at " + CORE::ToString( msgTrackingEntry.firstPublishAttempt ) +
-                        " and this last attempt was successfull at " + CORE::ToString( msgTrackingEntry.lastPublishAttempt ) +
-                        ". publishActionId=" + CORE::ToString( msgTrackingEntry.publishActionId ) + ". " +
-                        GetMsgAttributesForLog( *msgTrackingEntry.msg ) );
-
-                    // Configure the entry for a different type of retry: Ack retry
-                    // This is a different retry and as such we reset the retry count and time, the log message above will provide the original values for tracing
-                    msgTrackingEntry.readyToAckPublishSuccessButAckFailed = true;
-                    msgTrackingEntry.retryCount = 0;
-                    msgTrackingEntry.firstPublishAttempt = CORE::CDateTime::NowUTCDateTime();
-                    msgTrackingEntry.lastPublishAttempt = msgTrackingEntry.firstPublishAttempt;
-
-                    topicLink.publishFailedMsgs.insert( msgTrackingEntry.publishActionId );
+                    // @TODO
                 }
             }
             else
@@ -1538,7 +1560,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier   
                                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings->retryFailedPublishAttempts )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || !m_sideSettings.retryFailedPublishAttempts )
         return;
 
     const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
@@ -1752,39 +1774,28 @@ CPubSubClientSide::ConnectPubSubClient( void )
     if ( !DisconnectPubSubClient() )
         return false;
 
-    if ( GUCEF_NULL == m_sideSettings )
-    {
-        CPubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
-        if ( GUCEF_NULL == pubSubSideSettings )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):ConnectPubSubClient: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );
-            return false;
-        }
-        m_sideSettings = pubSubSideSettings;
-    }
-    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
-    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
 
     // Set the bookmark namespace:
     // Depending on the context in which pubsub is used you'd want a different namespace
     // In this case we need to take care to account for the channel and side relationship to provide a unique storage area or rely on config
-    if ( !m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
-        m_bookmarkNamespace = m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace;
+    if ( !m_sideSettings.pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
+        m_bookmarkNamespace = m_sideSettings.pubsubBookmarkPersistenceConfig.bookmarkNamespace;
     else
-        m_bookmarkNamespace = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::CString( m_side ); 
+        m_bookmarkNamespace = m_sideSettings.pubsubIdPrefix + '.' + m_sideId; 
 
     // Set the pubsub ID prefix automatically if so desired:
     // Depending on the context in which pubsub is used you'd want a different namespace
     // In this case we need to take care to account for the channel and side relationship to provide a unique storage area / namespace / prefix or rely on config
     if ( pubSubConfig.pubsubIdPrefix == "{auto}"  )
-        pubSubConfig.pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId ) + '.' + CORE::CString( m_side ); 
+        pubSubConfig.pubsubIdPrefix = m_sideSettings.pubsubIdPrefix + '.' + m_sideId; 
 
     if ( m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
-        pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
+        pubSubConfig.metricsPrefix = m_sideSettings.metricsPrefix;
         m_pubsubClient = CPubSubGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )
@@ -1812,7 +1823,9 @@ CPubSubClientSide::ConnectPubSubClient( void )
     // Whether we need to track successfull message handoff (garanteed handling) depends on various factors outside the scope of any one side
     // as such we need to ask the overarching infra to come up with a conclusion on this need
     // We will cache the outcome as a side local setting to negate locking needs
-    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = IsTrackingInFlightPublishedMsgsForAcksNeeded();
+    m_sideSettings.needToTrackInFlightPublishedMsgsForAck = false;
+    if ( GUCEF_NULL != m_flowRouter )
+        m_sideSettings.needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
 
     if ( m_pubsubBookmarkPersistence.IsNULL() )
     {
@@ -1862,7 +1875,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 }
                 else
                 {
-                    ConfigureTopicLink( *m_sideSettings, *topic );
+                    ConfigureTopicLink( m_sideSettings, *topic );
                 }
                 ++a;
             }
@@ -1879,7 +1892,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
         
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
                                                              m_clientFeatures ,
-                                                             *m_sideSettings  ) && totalTopicConnectSuccess;
+                                                             m_sideSettings   ) && totalTopicConnectSuccess;
 
         ++t;
     }
@@ -1892,44 +1905,35 @@ bool
 CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    CPubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
-    if ( GUCEF_NULL == pubSubSideSettings )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):OnTaskStart: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );
-        return false;
-    }
-    m_sideSettings = pubSubSideSettings;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
 
-    CPubSubClientConfig& pubSubConfig = pubSubSideSettings->pubsubClientConfig;
+    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_sideSettings.metricsIntervalInMs );
+    m_metricsTimer->SetEnabled( m_sideSettings.collectMetrics );
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.metricsIntervalInMs );
-    m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
+    m_timedOutInFlightMessagesCheckTimer = new CORE::CTimer( *GetPulseGenerator(), (CORE::UInt32) m_sideSettings.maxPublishedMsgInFlightTimeInMs );
+    m_timedOutInFlightMessagesCheckTimer->SetEnabled( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 );
 
-    m_timedOutInFlightMessagesCheckTimer = new CORE::CTimer( *GetPulseGenerator(), (CORE::UInt32) m_sideSettings->maxPublishedMsgInFlightTimeInMs );
-    m_timedOutInFlightMessagesCheckTimer->SetEnabled( m_sideSettings->maxPublishedMsgInFlightTimeInMs > 0 );
-
-    if ( pubSubSideSettings->performPubSubInDedicatedThread )
+    if ( m_sideSettings.performPubSubInDedicatedThread )
     {
         // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
-        GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
+        GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_sideSettings.ticketRefillOnBusyCycle );
 
         // Default smallest pulse delta at 25ms
         GetPulseGenerator()->RequestPeriodicPulses( this, 25 );
 
-        if ( pubSubSideSettings->applyThreadCpuAffinity )
+        if ( m_sideSettings.applyThreadCpuAffinity )
         {
-            if ( SetCpuAffinityByCpuId( pubSubSideSettings->cpuAffinityForPubSubThread ) )
+            if ( SetCpuAffinityByCpuId( m_sideSettings.cpuAffinityForPubSubThread ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( pubSubSideSettings->cpuAffinityForPubSubThread ) );
+                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) );
             }
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( pubSubSideSettings->cpuAffinityForPubSubThread ) +
+                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) +
                     ". Proceeding without affinity");
             }
         }
@@ -1952,9 +1956,7 @@ bool
 CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_sideSettings )
-        return m_sideSettings->performPubSubInDedicatedThread;
-    return false;
+    return m_sideSettings.performPubSubInDedicatedThread;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1963,21 +1965,18 @@ bool
 CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_sideSettings )
+    // If we are running async from other sides we need to check the mailbox
+    if ( m_sideSettings.performPubSubInDedicatedThread )
     {
-        // If we are running async from other sides we need to check the mailbox
-        if ( m_sideSettings->performPubSubInDedicatedThread )
-        {
-            ProcessAcknowledgeReceiptsMailbox();
+        ProcessAcknowledgeReceiptsMailbox();
 
-            // Check if we have a max for messages in-flight, if so dont try to process any more messages right now
-            if ( m_sideSettings->maxTotalMsgsInFlight <= 0 || m_totalMsgsInFlight < (CORE::UInt64) m_sideSettings->maxTotalMsgsInFlight )
+        // Check if we have a max for messages in-flight, if so dont try to process any more messages right now
+        if ( m_sideSettings.maxTotalMsgsInFlight <= 0 || m_totalMsgsInFlight < (CORE::UInt64) m_sideSettings.maxTotalMsgsInFlight )
+        {
+            if ( !m_awaitingFailureReport )
             {
-                if ( !m_awaitingFailureReport )
-                {
-                    if ( RetryPublishFailedMsgs() || m_sideSettings->allowOutOfOrderPublishRetry )
-                        PublishMailboxMsgs();
-                }
+                if ( RetryPublishFailedMsgs() || m_sideSettings.allowOutOfOrderPublishRetry )
+                    PublishMailboxMsgs();
             }
         }
     }
@@ -2024,39 +2023,38 @@ CPubSubClientSide::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::LoadConfig( const CPubSubChannelSettings& channelSettings )
+CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettings& sideSettings )
 {GUCEF_TRACE;
 
-    m_channelSettings = channelSettings;
-
-    CPubSubSideChannelSettings* pubSubSideSettings = m_channelSettings.GetPubSubSideSettings( m_side );
-    if ( GUCEF_NULL == pubSubSideSettings )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):LoadConfig: Unable to obtain settings for configured side \"" + m_side + "\". Cannot proceed" );
-        return false;
-    }
-
-    m_sideSettings = pubSubSideSettings;
+    m_sideSettings = sideSettings;
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CPubSubChannelSettings&
-CPubSubClientSide::GetChannelSettings( void ) const
-{GUCEF_TRACE;
-
-    return m_channelSettings;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubSideChannelSettings*
+CPubSubSideChannelSettings&
 CPubSubClientSide::GetSideSettings( void )
 {GUCEF_TRACE;
 
     return m_sideSettings;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CPubSubSideChannelSettings&
+CPubSubClientSide::GetSideSettings( void ) const
+{GUCEF_TRACE;
+
+    return m_sideSettings;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CPubSubClientSide::GetSideId( void ) const
+{GUCEF_TRACE;
+
+    return m_sideId;
 }
 
 /*-------------------------------------------------------------------------//

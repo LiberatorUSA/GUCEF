@@ -1749,7 +1749,7 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
             return GetRedisStreamInfo( &reply, info, optionalKeyPrefix, statLikeValuesOnly, redisIdsAsFloat );
         }
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Obtained " + CORE::ToString( info.GetCount() ) + " pieces of information" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Obtained " + CORE::ToString( info.GetKeyCount() ) + " pieces of information" );
     }    
     catch ( const sw::redis::MovedError& e )
     {

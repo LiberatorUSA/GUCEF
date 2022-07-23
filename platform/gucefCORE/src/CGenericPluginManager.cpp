@@ -94,11 +94,11 @@ CGenericPluginManager::RegisterPlugin( void* modulePtr                   ,
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
-        return plugin;
+        return TPluginPtr( plugin );
     }
 
     delete plugin;
-    return NULL;
+    return TPluginPtr();
 }
 
 /*-------------------------------------------------------------------------*/

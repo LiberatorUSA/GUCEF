@@ -119,6 +119,10 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
     , maxMsgPublishAckRetryAttempts( -1 )                                                               // safer default is no max nr of ack retries
     , maxMsgPublishAckRetryTotalTimeInMs( -1 )                                                          // safer default is no max time for ack retries
     , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT )                                   // for operating in parallel we dont want this too low but also not too high as it increased admin overhead and depending on other settings (acks etc) also risk
+    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
+    , collectMetrics( true )
+    , metricsIntervalInMs( 1000 )
+    , pubsubIdPrefix()
     , needToTrackInFlightPublishedMsgsForAck( false )                                                   // composite cached value: based on backend features plus desired behaviour
     , metricsPrefix()
 {GUCEF_TRACE;
@@ -144,6 +148,10 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannel
     , maxMsgPublishAckRetryAttempts( src.maxMsgPublishAckRetryAttempts )
     , maxMsgPublishAckRetryTotalTimeInMs( src.maxMsgPublishAckRetryTotalTimeInMs )
     , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
+    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
+    , collectMetrics( src.collectMetrics )
+    , metricsIntervalInMs( src.metricsIntervalInMs )
+    , pubsubIdPrefix( src.pubsubIdPrefix )
     , needToTrackInFlightPublishedMsgsForAck( false )
     , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
@@ -175,6 +183,10 @@ CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
         maxMsgPublishAckRetryAttempts = src.maxMsgPublishAckRetryAttempts;
         maxMsgPublishAckRetryTotalTimeInMs = src.maxMsgPublishAckRetryTotalTimeInMs;
         maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
+        ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
+        collectMetrics = src.collectMetrics;
+        metricsIntervalInMs = src.metricsIntervalInMs;
+        pubsubIdPrefix = src.pubsubIdPrefix;
 
         needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
         metricsPrefix = src.metricsPrefix;
@@ -216,6 +228,10 @@ CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "collectMetrics", collectMetrics ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "metricsIntervalInMs", metricsIntervalInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "pubsubIdPrefix", pubsubIdPrefix ) && totalSuccess;    
 
     // Derived settings are advisory outputs only meaning we will save them but we wont load them
     totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck ) && totalSuccess;
@@ -286,6 +302,10 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     maxPublishedMsgInFlightTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxPublishedMsgInFlightTimeInMs" ).AsInt32( maxPublishedMsgInFlightTimeInMs, true );
     maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = cfg.GetAttributeValueOrChildValueByName( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder" ).AsBool( allowTimedOutPublishedInFlightMsgsRetryOutOfOrder, true );
+    ticketRefillOnBusyCycle = cfg.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
+    collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
+    metricsIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "metricsIntervalInMs" ).AsUInt32( metricsIntervalInMs, true );
+    pubsubIdPrefix = cfg.GetAttributeValueOrChildValueByName( "pubsubIdPrefix" ).AsString( pubsubIdPrefix, true );
 
     return true;
 }

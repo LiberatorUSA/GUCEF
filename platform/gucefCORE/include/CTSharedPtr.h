@@ -106,8 +106,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 
     explicit CTSharedPtr( const int NULLvalue );
 
-    CTSharedPtr( T* ptr                                                      ,
-                 CTDynamicDestructorBase< T >* objectDestructor = GUCEF_NULL );
+    explicit CTSharedPtr( T* ptr                                                      ,
+                          CTDynamicDestructorBase< T >* objectDestructor = GUCEF_NULL );
 
     /**
      *  Conversion constructor making it possible to pass

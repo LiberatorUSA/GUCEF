@@ -155,6 +155,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CORE::CIConfig
     CORE::Int32 maxMsgPublishAckRetryAttempts;
     CORE::Int32 maxMsgPublishAckRetryTotalTimeInMs;
     CORE::Int64 maxTotalMsgsInFlight;
+    CORE::UInt32 ticketRefillOnBusyCycle;
+    bool collectMetrics;                                                   
+    CORE::UInt32 metricsIntervalInMs;
+    CORE::CString pubsubIdPrefix;
     
     bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
     CORE::CString metricsPrefix;                       //< this setting is derived and cached from other settings   

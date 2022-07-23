@@ -52,11 +52,6 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
-#include "gucefCORE_CGloballyConfigurable.h"
-#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
-#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
-
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
@@ -87,16 +82,6 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
-#include "gucefPUBSUB_CPubSubMsgBinarySerializer.h"
-#define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
-#endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#include "gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h"
-#define GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H
-#endif /* GUCEF_PUBSUB_CPUBSUBMSGCONTAINERBINARYSERIALIZER_H ? */
-
 #ifndef GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
 #include "gucefPUBSUB_CPubSubSideChannelSettings.h"
 #define GUCEF_PUBSUB_CPUBSUBSIDECHANNELSETTINGS_H
@@ -106,26 +91,6 @@
 #include "gucefPUBSUB_CPubSubChannelSettings.h"
 #define GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H ? */
-
-#ifndef GUCEF_WEB_CHTTPSERVER_H
-#include "gucefWEB_CHTTPServer.h"
-#define GUCEF_WEB_CHTTPSERVER_H
-#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
-
-#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
-#include "gucefWEB_CDefaultHTTPServerRouter.h"
-#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
-#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
-
-#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefWEB_CCodecBasedHTTPServerResource.h"
-#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
-
-#ifndef GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
-#include "gucefWEB_CTConfigurableMapHttpServerResource.h"
-#define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -141,6 +106,8 @@ namespace PUBSUB {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+class CPubSubFlowRouter;
 
 class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 {
@@ -167,7 +134,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     };
     typedef std::map< CORE::CString, CPubSubClientSideMetrics > StringToPubSubClientSideMetricsMap;
 
-    CPubSubClientSide( char side );
+    CPubSubClientSide( const CORE::CString& sideId                ,
+                       CPubSubFlowRouter* flowRouter = GUCEF_NULL );
     
     virtual ~CPubSubClientSide();
 
@@ -183,11 +151,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const CPubSubChannelSettings& channelSettings );
+    virtual bool LoadConfig( const CPubSubSideChannelSettings& sideSettings );
 
-    const CPubSubChannelSettings& GetChannelSettings( void ) const;
+    CPubSubSideChannelSettings& GetSideSettings( void );
 
-    CPubSubSideChannelSettings* GetSideSettings( void );
+    const CPubSubSideChannelSettings& GetSideSettings( void ) const;
+
+    CORE::CString GetSideId( void ) const;
 
     const StringToPubSubClientSideMetricsMap& GetSideMetrics( void ) const;
 
@@ -199,14 +169,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool HasSubscribersNeedingAcks( void ) const;
 
+    bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+
     virtual bool IsHealthy( void ) const;
-
-    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) = 0;
-
-    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) = 0;
-
-    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                            CPubSubClientSide* msgReceiverSide ) = 0;
 
     bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
@@ -262,8 +227,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier    ,
                                         const CORE::CEvent& eventId  ,
                                         CORE::CICloneable* eventData );
-
-    bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
     bool ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
                              CPubSubClientTopic& topic                            );
@@ -382,15 +345,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CString m_bookmarkNamespace;
     TopicMap m_topics;
     StringToPubSubClientSideMetricsMap m_metricsMap;
-    CPubSubChannelSettings m_channelSettings;
-    CPubSubSideChannelSettings* m_sideSettings;
+    CPubSubSideChannelSettings m_sideSettings;
     TPubSubMsgMailbox m_mailbox;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CORE::CTimer* m_timedOutInFlightMessagesCheckTimer;
-    char m_side;
+    CORE::CString m_sideId;
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;
+    CPubSubFlowRouter* m_flowRouter;
 
     private:
 
@@ -399,7 +362,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex > CPubSubClientSidePtr;
+typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex >  CPubSubClientSidePtr;
+typedef std::vector< CPubSubClientSidePtr >                 TPubSubClientSidePtrVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

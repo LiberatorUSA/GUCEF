@@ -127,10 +127,10 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTOTHERSIDE_H
-#include "gucefPUBSUB_CPubSubClientOtherSide.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTOTHERSIDE_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTOTHERSIDE_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
+#include "gucefPUBSUB_CPubSubFlowRouter.h"
+#define GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H
+#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -147,7 +147,13 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
+/**
+ *  A 'channel' represents an isolated and potentially multi-threaded network of 'sides'  
+ *  The channel coordinates and maintains the lifespan of the configured sides
+ *  (partly through delegation to the PubSubFlowRouter)
+ *
+ */ 
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
 {
     public:
 
@@ -165,27 +171,25 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CPubSubClientSide
     virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
                                bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const CPubSubChannelSettings& channelSettings ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool GetAllSides( TPubSubClientSideVector*& sides ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool IsTrackingInFlightPublishedMsgsForAcksNeeded( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool AcknowledgeReceiptForSide( CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                            CPubSubClientSide* msgReceiverSide ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    bool AcknowledgeReceiptForSideImpl( CORE::UInt32 invokerThreadId       ,
-                                        CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                        CPubSubClientSide* msgReceiverSide );
+    virtual bool LoadConfig( const CPubSubChannelSettings& channelSettings );
+
+    virtual bool IsHealthy( void ) const;
+
+    const CPubSubChannelSettings& GetChannelSettings( void ) const;
     
     void PublishChannelMetrics( void ) const;
 
+    void Clear( void );
+
     private:
 
-    CPubSubClientOtherSidePtr m_sideBPubSub;
-    TPubSubClientSideVector m_sides;
+    typedef std::vector< CPubSubClientSidePtr > TPubSubClientSidePtrVector;
+
+    TPubSubClientSidePtrVector m_sides;
+    CPubSubFlowRouter m_flowRouter;
+    CPubSubChannelSettings m_channelSettings;
 };
 
 /*-------------------------------------------------------------------------*/

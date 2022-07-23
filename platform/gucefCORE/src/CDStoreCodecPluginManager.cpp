@@ -124,7 +124,7 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return TDStoreCodecPluginPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
-        TDStoreCodecPluginPtr pointerToPlugin = plugin;
+        TDStoreCodecPluginPtr pointerToPlugin( plugin );
         if ( CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryRegister( plugin->GetTypeName(), pointerToPlugin ) )
         {
             return pointerToPlugin;
@@ -146,7 +146,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
     }
 
     delete plugin;
-    return NULL;
+    return TPluginPtr();
 }
 
 /*-------------------------------------------------------------------------*/
