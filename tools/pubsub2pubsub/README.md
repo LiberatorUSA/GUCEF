@@ -8,16 +8,18 @@ The service as a whole ties together various building blocks to tie together var
 and managed across multiple different instantiations of said abstractions.
 The overall roles & responsibilities hierarchy is as follows:
 
+```
 +----------------+         +---------+        +------+        +---------------+        +---------------------+
 | pubsub2pubsub  |  1 -> N | channel | 1 -> M | side | 1 -> 1 | pubsub client | 1 -> X | pubsub client topic |
 +----------------+         +---------+        +------+        +---------------+        +---------------------+
+```
 
 ## What is a 'channel'?
 A channel is the concept used to manage the 1:N relationship between the host processs and the value-added services running in said processs.
 For dedicated node scenarios it provides a convenient single (1) command & control API for multiple (N) pubsub2pubsub routing networks
 Every channel has completly independent "sides" which determine what data flows from where to where. Pinning threads to logical CPUs occurs at the per-channel level, if one choses to avail themselves of that feature.
 It is possible to have one channel do UDP->Kafka and another Redis->STORAGE or any other combination of supported backends. However its recommended to keep the combinations homogenous across the host application 
-as this helps to keep the load profile more homogenous as well resulting in more predictable bahavior across the entire process.
+as this helps to keep the load profile more homogenous as well resulting in more predictable behavior across the entire process.
 Channels also provide a convenient way of creating N channels from a single channel template, reducing the configuration burden on a per channel basis.
 Note that every channel has at minimum its own thread, this is not optional, contrary to many other areas where the threading model can be altered config time.
 
