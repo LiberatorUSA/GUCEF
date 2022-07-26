@@ -156,6 +156,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_metrics()
     , m_msmqMsgSentToArriveLatencies()
     , m_msmqLastLookupId( 0 )
+    , m_isHealthy( true )
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -1024,24 +1025,60 @@ CMsmqPubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
+    bool newIsHealthyState = true;
+    
     if ( m_config.maxMsmqErrorsOnAckToBeHealthy >= 0 )
     {
         // Current and last metrics cycle error count counts against the max
         if ( m_msmqErrorsOnAck + m_metrics.msmqErrorsOnAck > (CORE::UInt32) m_config.maxMsmqErrorsOnAckToBeHealthy )
-            return false;
+            newIsHealthyState = false;
     }
-    if ( m_config.maxMsmqErrorsOnReceiveToBeHealthy >= 0 )
+    if ( newIsHealthyState && m_config.maxMsmqErrorsOnReceiveToBeHealthy >= 0 )
     {
         // Current and last metrics cycle error count counts against the max
         if ( m_msmqErrorsOnReceive + m_metrics.msmqErrorsOnReceive > (CORE::UInt32) m_config.maxMsmqErrorsOnReceiveToBeHealthy )
-            return false;
+            newIsHealthyState = false;
     }
     
     // If we are having to 'reconnect' than we are not healthy
-    if ( GUCEF_NULL != m_reconnectTimer && m_reconnectTimer->GetEnabled() )
-        return false;
+    if ( newIsHealthyState && GUCEF_NULL != m_reconnectTimer && m_reconnectTimer->GetEnabled() )
+        newIsHealthyState = false;
 
-    return true;
+    if ( newIsHealthyState != m_isHealthy )
+    {
+        m_isHealthy = newIsHealthyState;
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::IsHealthy: Topic " + m_config.topicName + " is now healthy" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic::IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( newIsHealthyState ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    }
+    
+    return newIsHealthyState;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
+{GUCEF_TRACE;
+
+    // See if this is a change from the current persisted state
+    if ( newStatus != m_isHealthy )
+    {
+        // Make sure we use the same consistent logic to determine health
+        // the caller might only know about one aspect of health
+        // The IsHealthy check itself will update the status and perform eventing if needed
+        newStatus = IsHealthy();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2004,6 +2041,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgStorage( TMsmqMsg& msg, MSGPROPIDVector& msmq
     }
     catch ( const std::bad_alloc& )
     {
+        UpdateIsHealthyStatus( false );
         return false;
     }
     return true;
@@ -2048,6 +2086,7 @@ CMsmqPubSubClientTopic::PrepMsmqMsgsStorage( void )
     }
     catch ( const std::bad_alloc& )
     {
+        UpdateIsHealthyStatus( false );
         return false;
     }
     return true;
@@ -2366,6 +2405,9 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
         {
             case (CORE::UInt64) MQ_OK:
             {
+                // We will consider the ability to receive and process messages as healthy
+                UpdateIsHealthyStatus( true );
+                
                 // Successfully received a message
                 // Since we are doing a sync cycle we can use linking
                 OnMsmqMsgReceived( m_msmqReceiveMsgs[ i ].msgprops, i, true );
@@ -2379,6 +2421,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
             case (CORE::UInt64) MQ_ERROR_PROPERTY:         // this means: "One or more message properties specified in m_msmqReceiveMsgs[ i ].msgprops resulted in an error."
             case (CORE::UInt64) MQ_INFORMATION_PROPERTY:
             {
+                bool hasError = false;
                 const MQMSGPROPS& msg = m_msmqReceiveMsgs[ i ].msgprops;
                 for ( CORE::UInt32 s=0; s<msg.cProp; ++s )
                 {
@@ -2388,6 +2431,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                         case TMsmqHresultSeverityCode::Error:
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "MsmqPubSubClientTopic::OnSyncReadTimerCycle: MSMQ message property with ID " + CORE::ToString( (CORE::UInt32) msg.aPropID[ s ] ) + " was flagged as having an error status" );
+                            hasError = true;
                             break;
                         }
                         case TMsmqHresultSeverityCode::Warning:
@@ -2405,6 +2449,9 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                             break;
                     } 
                 }
+
+                // We will consider the ability to receive and process messages as healthy
+                UpdateIsHealthyStatus( !hasError );
 
                 // Received a message but some warnings were triggered
                 // Since we are doing a sync cycle we can use linking
@@ -2467,6 +2514,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
 
                 #endif
 
+                UpdateIsHealthyStatus( false );
+
                 --i; // retry the same message slot, hopefully this time obtaining all the payloads properly
                 break;
             }
@@ -2493,6 +2542,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                     ". Win32 Error " + CORE::ToString( win32ErrorCode ) + " with message: " + CORE::ToString( RetrieveWin32APIErrorMessage( win32ErrorCode ) ) );
 
                 lock.EarlyUnlock();
+
+                UpdateIsHealthyStatus( false );
                 BeginReconnectSequence( &ConnectionErrorEvent );
                 break;
             }
@@ -2521,6 +2572,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
                 //  As a result we have to 'reset' our MSMQ access as a safety precaution. Its always better if its something that can be coded for explcitly in one of
                 //  the above cases
                 lock.EarlyUnlock();
+                UpdateIsHealthyStatus( false );
                 BeginReconnectSequence( &ConnectionErrorEvent );  
                 break;
             }

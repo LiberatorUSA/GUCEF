@@ -317,6 +317,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
 
     CORE::CString ResolveVfsRootPath( void ) const;
+
+    void UpdateIsHealthyStatus( bool newStatus );
     
     void
     OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -349,6 +351,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
+    mutable bool m_isHealthy;
 
     CORE::CDynamicBuffer* m_currentReadBuffer;
     CORE::CDynamicBuffer* m_currentWriteBuffer;

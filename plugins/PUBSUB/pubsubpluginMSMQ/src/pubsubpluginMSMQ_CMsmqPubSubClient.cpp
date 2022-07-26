@@ -81,6 +81,8 @@ CMsmqPubSubClient::CMsmqPubSubClient( const PUBSUB::CPubSubClientConfig& config 
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_isHealthy( true )
+    , m_lock()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -112,6 +114,8 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     
     Disconnect();
 
+    MT::CScopeMutex lock( m_lock );
+
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
@@ -139,6 +143,8 @@ CMsmqPubSubClient::GetConfig( void )
 bool
 CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     features.supportsBinaryPayloads = true;             // The MSMQ body property supports a binary payload
     features.supportsPerMsgIds = true;                  // MSMQ has the concept of a message ID which is unique and an additional non-unique label
@@ -199,12 +205,13 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
 
     CMsmqPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        MT::CObjectScopeLock lock( this );
+        MT::CScopeMutex lock( m_lock );
 
         topicAccess = new CMsmqPubSubClientTopic( this );
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
-            m_topicMap[ topicConfig.topicName ] = topicAccess;
+            m_topicMap[ topicConfig.topicName ] = topicAccess;            
+            RegisterTopicEventHandlers( topicAccess );
         }
         else
         {
@@ -228,6 +235,8 @@ PUBSUB::CPubSubClientTopic*
 CMsmqPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -262,6 +271,8 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 const PUBSUB::CPubSubClientTopicConfig* 
 CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
@@ -556,6 +567,8 @@ void
 CMsmqPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -569,6 +582,8 @@ CMsmqPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNa
 void
 CMsmqPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -593,6 +608,7 @@ bool
 CMsmqPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     return m_config.SaveConfig( cfgNode );
 }
 
@@ -607,7 +623,9 @@ CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
     CMsmqPubSubClientConfig cfg;
     if ( cfg.LoadConfig( cfgRoot ) )
     {
+        MT::CScopeMutex lock( m_lock );
         m_config = cfg;
+        return true;
     }
     return false;
 }
@@ -617,6 +635,8 @@ CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 bool
 CMsmqPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     bool totalSuccess = true;
     TTopicMap::iterator i = m_topicMap.begin();
@@ -633,6 +653,8 @@ CMsmqPubSubClient::Disconnect( void )
 bool
 CMsmqPubSubClient::Connect( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     if ( !m_topicMap.empty() )
     {
@@ -654,6 +676,8 @@ bool
 CMsmqPubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     if ( !m_topicMap.empty() )
     {
         bool allConnected = true;
@@ -674,8 +698,11 @@ bool
 CMsmqPubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     if ( !m_topicMap.empty() )
     {
+        // Aggregate the health status of all topics
         bool allHealthy = true;
         TTopicMap::const_iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
@@ -683,6 +710,26 @@ CMsmqPubSubClient::IsHealthy( void ) const
             allHealthy = (*i).second->IsHealthy() && allHealthy;
             ++i;
         }
+
+        // Notify if there was a change in status
+        if ( allHealthy != m_isHealthy )
+        {
+            m_isHealthy = allHealthy;        
+
+            if ( m_isHealthy )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:IsHealthy: overall health is now Ok" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClient:IsHealthy: overall health status is now unhealthy" );         
+            }
+
+            lock.EarlyUnlock();
+            THealthStatusChangeEventData eData( allHealthy ); 
+            NotifyObservers( HealthStatusChangeEvent, &eData );         
+        }
+
         return allHealthy;
     }
     return true;
@@ -701,6 +748,33 @@ CMsmqPubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CMsmqPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topic )
+    {
+        TEventCallback callback( this, &CMsmqPubSubClient::OnTopicHealthStatusChange );
+        SubscribeTo( topic                                           ,
+                     CMsmqPubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                        );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the aggregate health status
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -843,6 +917,24 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::UInt64 msmqGlobalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
         GUCEF_METRIC_GAUGE( m_config.metricsPrefix + "msmqGlobalMsgBytes", msmqGlobalMsgBytes, 1.0f );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClient::Unlock( void ) const 
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

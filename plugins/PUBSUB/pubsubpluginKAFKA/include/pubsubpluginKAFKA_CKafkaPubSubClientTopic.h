@@ -231,6 +231,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     void NotifyOfReceivedMsg( RdKafka::Message& message );
 
+    void UpdateIsHealthyStatus( bool newStatus );
+
     virtual void event_cb( RdKafka::Event& event ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void dr_cb( RdKafka::Message& message ) GUCEF_VIRTUAL_OVERRIDE;
@@ -302,6 +304,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     bool m_shouldBeConnected;
+    mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };
 

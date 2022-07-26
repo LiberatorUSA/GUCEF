@@ -219,6 +219,12 @@ MsmqMetrics::MsmqMetrics( void )
     , m_dontSendMetricsForInactiveQueues( true )
     , m_metricsPrefix()
     , m_discoverQueues( false )
+    , m_gatherMsgsInQueueMetric( true )
+    , m_gatherMsgsTotalByteCountMetric( true )
+    , m_gatherMsgsInQueueJournalMetric( true )
+    , m_gatherMsgsInJournalTotalByteCountMetric( true )
+    , m_gatherTotalMsgBytesMetric( false )
+    , m_gatherMetricsFromOutgoingQueues( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -243,6 +249,7 @@ MsmqMetrics::MsmqQueue::MsmqQueue( const CORE::CString& qName        ,
     , metricFriendlyQueueName()
     , queueProperties()
     , isActive( true )
+    , isOutgoingQueue( false )
 {GUCEF_TRACE;
 
     queueProperties.hostname = hostname;
@@ -257,6 +264,7 @@ MsmqMetrics::MsmqQueue::MsmqQueue( const MsmqQueue& src )
     , metricFriendlyQueueName( src.metricFriendlyQueueName )
     , queueProperties( src.queueProperties )
     , isActive( src.isActive )
+    , isOutgoingQueue( src.isOutgoingQueue )
 {GUCEF_TRACE;
 
 }
@@ -1377,6 +1385,7 @@ MsmqMetrics::InitQueueInfo( MsmqQueue& q )
                     q.queueProperties.pathName = oldPathName.ReplaceSubstr( hostnamePortionLc, overrideHostname );
                     q.queueProperties.pathNameDNS = oldPathNameDNS.ReplaceSubstr( hostnamePortionLc, overrideHostname );
                     q.metricFriendlyQueueName = GenerateMetricsFriendlyQueueName( q.queueProperties.pathName.ReplaceChar( '\\', '.' ) );
+                    q.isOutgoingQueue = true;
 
                     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: queue \"" + q.queueName + "\" has a pathname of \"" + oldPathName + 
                             "\" pointing thus at host \"" + hostnamePortion + "\" however the queue was already defined to exist on host " + q.queueProperties.hostname +
@@ -2314,51 +2323,75 @@ MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
         GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqQueueIsActive", q.isActive ? 1 : 0, 1.0f );
         
-        // You can only obtain metrics for 'active' queues in MSMQ
-        if ( q.isActive )
+        if ( !q.isOutgoingQueue || m_gatherMetricsFromOutgoingQueues )
         {
-            // in order to get this metric you need elevated access to the queue
-            CORE::Int64 msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( q );
-            if ( msmqMsgsInQueue >= 0 )
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", msmqMsgsInQueue, 1.0f );
-
-            // in order to get this metric you need elevated access to the queue
-            // You also need MSMQ version 3.0 or later
-            CORE::Int64 msmqMsgsTotalByteCount = GetCurrentByteCountOfMesssagesInQueue( q );
-            if ( msmqMsgsTotalByteCount >= 0 )
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", msmqMsgsTotalByteCount, 1.0f );
-
-            // in order to get this metric you need elevated access to the queue
-            // You also need MSMQ version 3.0 or later
-            CORE::Int64 msmqMsgsInQueueJournal = GetCurrentNrOfMessagesInQueueJournal( q );
-            if ( msmqMsgsInQueueJournal >= 0 )
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", msmqMsgsInQueueJournal, 1.0f );
-
-            // in order to get this metric you need elevated access to the queue
-            // You also need MSMQ version 3.0 or later
-            CORE::Int64 msmqMsgsInJournalTotalByteCount = GetCurrentByteCountOfMesssagesInQueueJournal( q );
-            if ( msmqMsgsInJournalTotalByteCount >= 0 )
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", msmqMsgsInJournalTotalByteCount, 1.0f );
-        }
-        else
-        {
-            if ( !m_dontSendMetricsForInactiveQueues )
+            // You can only obtain metrics for 'active' queues in MSMQ
+            if ( q.isActive )
             {
-                // Because we still want to send something we will send 0 for the stats as our sign of life
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", 0, 1.0f );
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", 0, 1.0f );
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", 0, 1.0f );
-                GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", 0, 1.0f );
+                if ( m_gatherMsgsInQueueMetric )
+                {
+                    // in order to get this metric you need elevated access to the queue
+                    CORE::Int64 msmqMsgsInQueue = GetCurrentNrOfMessagesInQueue( q );
+                    if ( msmqMsgsInQueue >= 0 )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", msmqMsgsInQueue, 1.0f );
+                }
+
+                if ( m_gatherMsgsTotalByteCountMetric )
+                {
+                    // in order to get this metric you need elevated access to the queue
+                    // You also need MSMQ version 3.0 or later
+                    CORE::Int64 msmqMsgsTotalByteCount = GetCurrentByteCountOfMesssagesInQueue( q );
+                    if ( msmqMsgsTotalByteCount >= 0 )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", msmqMsgsTotalByteCount, 1.0f );
+                }
+
+                if ( m_gatherMsgsInQueueJournalMetric )
+                {
+                    // in order to get this metric you need elevated access to the queue
+                    // You also need MSMQ version 3.0 or later
+                    CORE::Int64 msmqMsgsInQueueJournal = GetCurrentNrOfMessagesInQueueJournal( q );
+                    if ( msmqMsgsInQueueJournal >= 0 )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", msmqMsgsInQueueJournal, 1.0f );
+                }
+
+                if ( m_gatherMsgsInJournalTotalByteCountMetric )
+                {
+                    // in order to get this metric you need elevated access to the queue
+                    // You also need MSMQ version 3.0 or later
+                    CORE::Int64 msmqMsgsInJournalTotalByteCount = GetCurrentByteCountOfMesssagesInQueueJournal( q );
+                    if ( msmqMsgsInJournalTotalByteCount >= 0 )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", msmqMsgsInJournalTotalByteCount, 1.0f );
+                }
+            }
+            else
+            {
+                if ( !m_dontSendMetricsForInactiveQueues )
+                {
+                    // Because we still want to send something we will send 0 for the stats as our sign of life
+                    if ( m_gatherMsgsInQueueMetric )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueue", 0, 1.0f );
+
+                    if ( m_gatherMsgsTotalByteCountMetric )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsTotalByteCount", 0, 1.0f );
+
+                    if ( m_gatherMsgsInQueueJournalMetric )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInQueueJournal", 0, 1.0f );
+
+                    if ( m_gatherMsgsInJournalTotalByteCountMetric )
+                        GUCEF_METRIC_GAUGE( metricsPrefix + ".msmqMsgsInJournalTotalByteCount", 0, 1.0f );
+                }
             }
         }
-
         ++i;
     }
 
-    // in order to get this metric you need elevated access to the queue
-    // You also need MSMQ version 3.0 or later
-    CORE::UInt64 msmqTotalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
-    GUCEF_METRIC_GAUGE( m_metricsPrefix + "msmqTotalMsgBytes", msmqTotalMsgBytes, 1.0f );
+    if ( m_gatherTotalMsgBytesMetric )
+    {
+        // in order to get this metric you need elevated access to the queue
+        // You also need MSMQ version 3.0 or later
+        CORE::UInt64 msmqTotalMsgBytes = GetComputerGlobalTotalBytesOfAllMessagesOfAllQueues();
+        GUCEF_METRIC_GAUGE( m_metricsPrefix + "msmqTotalMsgBytes", msmqTotalMsgBytes, 1.0f );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2421,6 +2454,13 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_metricsPrefix = appConfig.GetValueAlways( "metricsPrefix", m_metricsPrefix );
     m_queueNamesAreMsmqFormatNames = CORE::StringToBool( appConfig.GetValueAlways( "queueNamesAreMsmqFormatNames" ), m_queueNamesAreMsmqFormatNames );
     m_discoverQueues = CORE::StringToBool( appConfig.GetValueAlways( "discoverQueues" ), m_discoverQueues );
+    m_gatherMsgsInQueueMetric = CORE::StringToBool( appConfig.GetValueAlways( "gatherMsgsInQueueMetric" ), m_gatherMsgsInQueueMetric );
+    m_gatherMsgsTotalByteCountMetric = CORE::StringToBool( appConfig.GetValueAlways( "gatherMsgsTotalByteCountMetric" ), m_gatherMsgsTotalByteCountMetric );
+    m_gatherMsgsInQueueJournalMetric = CORE::StringToBool( appConfig.GetValueAlways( "gatherMsgsInQueueJournalMetric" ), m_gatherMsgsInQueueJournalMetric );
+    m_gatherMsgsInJournalTotalByteCountMetric = CORE::StringToBool( appConfig.GetValueAlways( "gatherMsgsInJournalTotalByteCountMetric" ), m_gatherMsgsInJournalTotalByteCountMetric );
+    m_gatherTotalMsgBytesMetric = CORE::StringToBool( appConfig.GetValueAlways( "gatherTotalMsgBytesMetric" ), m_gatherTotalMsgBytesMetric );
+    m_gatherMetricsFromOutgoingQueues = CORE::StringToBool( appConfig.GetValueAlways( "gatherMetricsFromOutgoingQueues" ), m_gatherMetricsFromOutgoingQueues );
+
     CORE::CString::StringSet discoverQueueFilters = appConfig.GetValueAlways( "discoverQueueFilters" ).AsString().ParseUniqueElements( ';', false );
     m_dontSendMetricsForInactiveQueues = CORE::StringToBool( appConfig.GetValueAlways( "dontSendMetricsForInactiveQueues" ), m_dontSendMetricsForInactiveQueues );
     CORE::UInt32 metricsIntervalInMs = CORE::StringToUInt32( appConfig.GetValueAlways( "metricsIntervalInMs" ), 1000 );

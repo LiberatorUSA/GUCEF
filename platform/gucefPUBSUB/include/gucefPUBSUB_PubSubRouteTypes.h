@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
-#define GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
+#ifndef GUCEF_PUBSUB_PUBSUBROUTETYPES_H
+#define GUCEF_PUBSUB_PUBSUBROUTETYPES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,18 +25,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CDATANODE_H
-#include "CDataNode.h"
-#define GUCEF_CORE_CDATANODE_H
-#endif /* GUCEF_CORE_CDATANODE_H ? */
-
 #ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"
+#include "gucefPUBSUB_macros.h"    
 #define GUCEF_PUBSUB_MACROS_H
 #endif /* GUCEF_PUBSUB_MACROS_H ? */
 
@@ -51,37 +41,32 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
+enum RouteType : CORE::Int32
 {
-    public:
-
-    typedef std::vector< CPubSubFlowRouteConfig >   PubSubFlowRouteConfigVector;
-
-    CORE::CString fromSide;             /**< primary 'from' side for this route */
-    CORE::CString toSide;               /**< primary 'to' side for this route */
-    CORE::CString failoverSide;         /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
-    CORE::CString spilloverBufferSide;  /**< if the primary and failover is unhealthy or is a slow consumer the spill over acts as buffer for the route publishing/subscribing to said side */
-    CORE::CString deadLetterSide;       /**< unable-to-publish messages on configured channels with no remaining remedies go here */
-
-    CPubSubFlowRouteConfig( void );
-
-    CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& src );
-
-    virtual ~CPubSubFlowRouteConfig();
-
-    CPubSubFlowRouteConfig& operator=( const CPubSubFlowRouteConfig& src );
-
-    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
+    Disabled        = 0 ,
+    Primary         = 1 , /**< regular flow under normal conditions */
+    Failover        = 2 , /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
+    SpilloverBuffer = 3 , /**< if the primary is unhealthy or is a slow consumer the spill over acts as buffer for the primary route */
+    DeadLetter      = 4   /**< unable to publish on configured channels and remedies exhausted messages go here */
 };
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+GUCEF_PUBSUB_EXPORT_CPP
+CORE::CString RouteTypeToString( RouteType routeType );
+
+inline CORE::CString ToString( RouteType routeType ) { return RouteTypeToString( routeType ); }
+
+GUCEF_PUBSUB_EXPORT_CPP RouteType 
+StringToRouteType( const CORE::CString& routeTypeStr );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,5 +79,5 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H ? */
+#endif /* GUCEF_PUBSUB_PUBSUBROUTETYPES_H ? */
 

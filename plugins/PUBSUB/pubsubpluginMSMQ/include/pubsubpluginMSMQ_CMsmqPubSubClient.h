@@ -113,6 +113,12 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
 
     CMsmqPubSubClientConfig& GetConfig( void );
 
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     typedef std::vector< std::wstring > TWStringVector;
@@ -132,7 +138,14 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnTopicHealthStatusChange( CORE::CNotifier* notifier   ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+    
     void RegisterEventHandlers( void );
+
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
     
     CMsmqPubSubClient( void ); /**< not implemented */
 
@@ -150,6 +163,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
     CMsmqPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
+    mutable bool m_isHealthy;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

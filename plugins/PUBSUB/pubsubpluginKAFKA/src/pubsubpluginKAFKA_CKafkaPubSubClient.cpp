@@ -75,6 +75,8 @@ CKafkaPubSubClient::CKafkaPubSubClient( const PUBSUB::CPubSubClientConfig& confi
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_isHealthy( true )
+    , m_lock()
 {GUCEF_TRACE;
 
     SetupBasedOnConfig();
@@ -94,6 +96,8 @@ void
 CKafkaPubSubClient::Clear( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
@@ -170,12 +174,13 @@ CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& t
 
     CKafkaPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        MT::CObjectScopeLock lock( this );
+        MT::CScopeMutex lock( m_lock );
 
         topicAccess = new CKafkaPubSubClientTopic( this );
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
+            RegisterTopicEventHandlers( topicAccess );
         }
         else
         {
@@ -199,7 +204,7 @@ PUBSUB::CPubSubClientTopic*
 CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
@@ -215,7 +220,7 @@ void
 CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
@@ -236,7 +241,7 @@ const PUBSUB::CPubSubClientTopicConfig*
 CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
@@ -265,7 +270,7 @@ void
 CKafkaPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
@@ -281,7 +286,7 @@ void
 CKafkaPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -306,6 +311,7 @@ bool
 CKafkaPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     return m_config.SaveConfig( cfgNode );
 }
 
@@ -350,6 +356,7 @@ CKafkaPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& config )
 
     Clear();
 
+    MT::CScopeMutex lock( m_lock );
     m_config = config;
     return SetupBasedOnConfig();
 }
@@ -365,6 +372,7 @@ CKafkaPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
     if ( config.LoadConfig( cfg  ) )
     {
         // make the new config the active config
+        MT::CScopeMutex lock( m_lock );
         m_config = config;
         return true;
     }
@@ -378,7 +386,7 @@ bool
 CKafkaPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     if ( IsConnected() )
     {
@@ -407,7 +415,8 @@ CKafkaPubSubClient::Connect( void )
 
     Disconnect();
     
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic connect" );
         
     bool totalSuccess = true;
@@ -435,7 +444,7 @@ bool
 CKafkaPubSubClient::IsConnected( void ) const 
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     if ( m_topicMap.empty() )
         return false;
@@ -456,11 +465,12 @@ bool
 CKafkaPubSubClient::IsHealthy( void ) const 
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     if ( m_topicMap.empty() )
         return true;
     
+    // Aggregate the health status of all topics
     bool fullyHealthy = true;
     TTopicMap::const_iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -468,6 +478,26 @@ CKafkaPubSubClient::IsHealthy( void ) const
         fullyHealthy = (*i).second->IsHealthy() && fullyHealthy;
         ++i;
     }
+    
+    // Notify if there was a change in status
+    if ( fullyHealthy != m_isHealthy )
+    {
+        m_isHealthy = fullyHealthy;        
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient:IsHealthy: overall health is now Ok" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient:IsHealthy: overall health status is now unhealthy" );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( fullyHealthy ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData );         
+    }
+    
     return fullyHealthy;
 }
 
@@ -484,6 +514,33 @@ CKafkaPubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CKafkaPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topic )
+    {
+        TEventCallback callback( this, &CKafkaPubSubClient::OnTopicHealthStatusChange );
+        SubscribeTo( topic                                            ,
+                     CKafkaPubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                         );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the aggregate health status
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -516,6 +573,24 @@ CKafkaPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::Unlock( void ) const 
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

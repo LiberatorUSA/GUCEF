@@ -119,6 +119,12 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     void Clear( void );
     
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     void
@@ -126,7 +132,14 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+
     void RegisterEventHandlers( void );
+
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
 
     CKafkaPubSubClient( void ); /**< not implemented */
 
@@ -141,6 +154,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
+    mutable bool m_isHealthy;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

@@ -55,7 +55,8 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CPubSubFlowRouter( void )
-    : m_config()
+    : CORE::CObservingNotifier()
+    , m_config()
     , m_routeMap()
     , m_lock( true )
 {GUCEF_TRACE;
@@ -72,11 +73,35 @@ CPubSubFlowRouter::~CPubSubFlowRouter()
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
+    : toSide( GUCEF_NULL )
+    , toSideIsHealthy( true )
+    , failoverSide( GUCEF_NULL )
+    , failoverSideIsHealthy( true )
+    , spilloverBufferSide( GUCEF_NULL )
+    , spilloverBufferSideIsHealthy( true )
+    , deadLetterSide( GUCEF_NULL )
+    , deadLetterSideIsHealthy( true )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubFlowRouter::ClearRoutes( void )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_lock );
+
+    // Unsubscribe the event handlers for each side we have routes for
+    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        UnsubscribeFrom( (*r).first );
+        ++r;
+    }
+
     m_routeMap.clear();
 }
 
@@ -130,7 +155,8 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
             normalizedConfig.routes.push_back( (*n) );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: We have an explicit route from \"" + 
-                    (*n).fromSide + "\" to \"" + (*n).toSide + "\" with route type " + CPubSubFlowRouteConfig::RouteTypeToString( (*n).routeType ) );
+                    (*n).fromSide + "\" to \"" + (*n).toSide + "\" with failover side \"" + (*n).failoverSide + "\" and spillover side \"" +
+                    (*n).spilloverBufferSide + "\" and deadletter side \"" + (*n).deadLetterSide + "\"" );
         }
         ++n;
     }
@@ -161,7 +187,8 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                         explicitRoutes.Set( route.fromSide, route.toSide );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSide + "\" to \"" + route.toSide + "\" with route type " + CPubSubFlowRouteConfig::RouteTypeToString( route.routeType ) );
+                                route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
+                                route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
                     }                
                 }
                 ++m;
@@ -187,7 +214,8 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                         explicitRoutes.Set( route.fromSide, route.toSide );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSide + "\" to \"" + route.toSide + "\" with route type " + CPubSubFlowRouteConfig::RouteTypeToString( route.routeType ) );
+                                route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
+                                route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
                     }                
                 }
                 ++m;
@@ -229,7 +257,8 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                                 explicitRoutes.Set( route.fromSide, route.toSide );
 
                                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated catch-all route from \"" + 
-                                        route.fromSide + "\" to \"" + route.toSide + "\" with route type " + CPubSubFlowRouteConfig::RouteTypeToString( route.routeType ) );
+                                        route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
+                                        route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
                             }
                         }
                         ++k;
@@ -271,7 +300,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     }
     
     // Now we generate the pointer map based on the normalized config
-    
+    UInt32 totalPossibleRoutes = 0;
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::const_iterator i = normalizedConfig.routes.begin();
     while ( i != normalizedConfig.routes.end() )
     {
@@ -279,58 +308,61 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
 
         // Try to find actual side objects to match against the IDs in the config
         // Note that based on how sloppy the config is we may not find any matches
+        UInt32 possibleRoutes = 0;
         CPubSubClientSidePtr fromSide;
         CPubSubClientSidePtr toSide;
+        CPubSubClientSidePtr failoverSide;
+        CPubSubClientSidePtr spilloverSide;
+        CPubSubClientSidePtr deadletterSide;
         TPubSubClientSidePtrVector::iterator n = sides.begin();
         while ( n != sides.end() )
         {
             CORE::CString sideId = (*n)->GetSideId();
-
-            if ( routeConfig.fromSide == sideId )
-                fromSide = (*n);
-            else
-            if ( routeConfig.toSide == sideId )
-                toSide = (*n);
-
+            if ( !sideId.IsNULLOrEmpty() )
+            {
+                if ( routeConfig.fromSide == sideId )
+                    fromSide = (*n);
+                else
+                if ( routeConfig.toSide == sideId )
+                {
+                    toSide = (*n);
+                    ++possibleRoutes;
+                }
+                else
+                if ( routeConfig.failoverSide == sideId )
+                {
+                    failoverSide = (*n);
+                    ++possibleRoutes;
+                }
+                else
+                if ( routeConfig.spilloverBufferSide == sideId )
+                {
+                    spilloverSide = (*n);
+                    ++possibleRoutes;
+                }
+                else
+                if ( routeConfig.deadLetterSide == sideId )
+                {
+                    deadletterSide = (*n);
+                    ++possibleRoutes;
+                }
+            }
             ++n;
         }        
 
+        // The minimum you need is from and to sides, the rest is optional
         if ( !fromSide.IsNULL() && !toSide.IsNULL() )
         {
             // We found the side combo for which we have a route config
-            TRouteInfo& routeInfo = m_routeMap[ fromSide.GetPointerAlways() ];
-            switch ( routeConfig.routeType )
-            {
-                case CPubSubFlowRouteConfig::RouteType::Primary:
-                {
-                    routeInfo.primaryRoutes.push_back( toSide );
-                    break;
-                }
-                case CPubSubFlowRouteConfig::RouteType::Failover:
-                {
-                    routeInfo.failoverRoutes.push_back( toSide );
-                    break;
-                }
-                case CPubSubFlowRouteConfig::RouteType::SpilloverBuffer:
-                {
-                    routeInfo.spilloverBufferRoutes.push_back( toSide );
-                    break;
-                }
-                case CPubSubFlowRouteConfig::RouteType::DeadLetter:
-                {
-                    routeInfo.deadLetterRoutes.push_back( toSide );
-                    break;
-                }
-                case CPubSubFlowRouteConfig::RouteType::Disabled:
-                {                    
-                    break;
-                }
-                default:
-                {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Unknown route type " + CPubSubFlowRouteConfig::RouteTypeToString( routeConfig.routeType ) + ". Route has no effect"  );
-                    break;
-                }
-            }             
+            TRouteInfoVector& multiRouteInfo = m_routeMap[ fromSide.GetPointerAlways() ]; 
+            multiRouteInfo.push_back( CRouteInfo() );
+            CRouteInfo& routeInfo = multiRouteInfo.back();
+            routeInfo.toSide = toSide.GetPointerAlways();
+            routeInfo.failoverSide = failoverSide.GetPointerAlways();
+            routeInfo.spilloverBufferSide = spilloverSide.GetPointerAlways();
+            routeInfo.deadLetterSide = deadletterSide.GetPointerAlways();           
+
+            totalPossibleRoutes += possibleRoutes;
         }
         else
         {
@@ -342,8 +374,16 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     }
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Routes are now defined for " +
-        CORE::ToString( m_routeMap.size() ) + " source sides" );    
+        CORE::ToString( m_routeMap.size() ) + " source sides, with a total of " + CORE::ToString( totalPossibleRoutes ) + " possible routes" );    
     
+    // Now set up all the event handlers for each side
+    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        RegisterSideEventHandlers( (*r).first );
+        ++r;
+    }
+
     return true;
 }
 
@@ -428,90 +468,143 @@ CPubSubFlowRouter::AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide
 bool 
 CPubSubFlowRouter::PublishMsgs( CPubSubClientSide* fromSide                          , 
                                 const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                                bool isDeadLetter                                    )
+                                RouteType routeType                                  )
 {GUCEF_TRACE;
     
     MT::CScopeReaderLock lock( m_lock );
     
-    TSidePtrToRouteInfoMap::iterator i = m_routeMap.find( fromSide );
+    bool publishIstotalSuccess = true;
+    TSidePtrToRouteInfoVectorMap::iterator i = m_routeMap.find( fromSide );
     if ( i != m_routeMap.end() )
     {
-        TRouteInfo& routeInfo = (*i).second;
+        TRouteInfoVector& multiRouteInfo = (*i).second; 
+        switch ( routeType )
+        {            
+            case RouteType::Primary:
+            {                
+                TRouteInfoVector::iterator n = multiRouteInfo.begin();
+                while ( n != multiRouteInfo.end() )
+                {            
+                    CRouteInfo& routeInfo = (*n);
+                    bool publishSuccess = true;
 
-        if ( !isDeadLetter )
-        {
-            // Try our primary routes first
-            // This is the normal 99% (hopefully) case 
-            if ( !routeInfo.primaryRoutes.empty() )
-            {
-                bool primaryRouteIstotalSuccess = true;
-                TPubSubClientSideVector::iterator n = routeInfo.primaryRoutes.begin();
-                while ( n != routeInfo.primaryRoutes.end() )
-                {
-                    primaryRouteIstotalSuccess = (*n)->PublishMsgs( msgs ) && primaryRouteIstotalSuccess;
+                    // Try our primary 'to' route first
+                    // This is the normal 99% (hopefully) case
+                    if ( GUCEF_NULL != routeInfo.toSide && routeInfo.toSideIsHealthy )
+                    {                    
+                        if ( !routeInfo.toSide->PublishMsgs( msgs ) )
+                        {
+                            // Primary 'to' route failed
+                            // Try the failover route if one is available
+                            if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
+                                publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
+                            else
+                                publishSuccess = false;
+                        }
+                    }   
+                    else
+                    {
+                        // Primary 'to' route is not available
+                        // Try the failover route if one is available
+                        if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
+                            publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
+                        else
+                            publishSuccess = false;
+                    }                
+
+                    if ( !publishSuccess )
+                    {
+                        // It seems the primary and failover routes have failed us
+                        // If there is a spillover available we can try using that route as a different type of failover
+                        if ( GUCEF_NULL != routeInfo.spilloverBufferSide && routeInfo.spilloverBufferSideIsHealthy )
+                            publishSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs );
+                        else
+                            publishSuccess = false;
+                    }
+
+                    publishIstotalSuccess = publishSuccess && publishIstotalSuccess;
                     ++n;
                 }
-
-                // If the primary route worked there is nothing more to do
-                if ( primaryRouteIstotalSuccess )
-                    return true;
+                break;
             }
-
-            // If we get here its time to try our failover route if we have any
-            if ( !routeInfo.failoverRoutes.empty() )
+            case RouteType::Failover:
             {
-                bool failoverRouteIstotalSuccess = true;
-                TPubSubClientSideVector::iterator n = routeInfo.failoverRoutes.begin();
-                while ( n != routeInfo.failoverRoutes.end() )
-                {
-                    failoverRouteIstotalSuccess = (*n)->PublishMsgs( msgs ) && failoverRouteIstotalSuccess;
+                TRouteInfoVector::iterator n = multiRouteInfo.begin();
+                while ( n != multiRouteInfo.end() )
+                { 
+                    CRouteInfo& routeInfo = (*n);
+                    bool publishSuccess = true;
+                    
+                    // Try the failover route if one is available
+                    if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
+                        publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
+                    else
+                        publishSuccess = false;
+
+                    if ( !publishSuccess )
+                    {
+                        // It seems the failover route has failed us
+                        // If there is a spillover available we can try using that route as a different type of failover
+                        if ( GUCEF_NULL != routeInfo.spilloverBufferSide && routeInfo.spilloverBufferSideIsHealthy )
+                            publishSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs );
+                        else
+                            publishSuccess = false;
+                    } 
+
+                    publishIstotalSuccess = publishSuccess && publishIstotalSuccess;
+                    ++n;
+                }                    
+                break;
+            }
+            case RouteType::SpilloverBuffer:
+            {
+                bool spilloverRouteIstotalSuccess = true;
+                TRouteInfoVector::iterator n = multiRouteInfo.begin();
+                while ( n != multiRouteInfo.end() )
+                { 
+                    CRouteInfo& routeInfo = (*n);                
+                    if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+                    {
+                        if ( routeInfo.spilloverBufferSideIsHealthy )
+                            spilloverRouteIstotalSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs ) && spilloverRouteIstotalSuccess;
+                        else
+                            spilloverRouteIstotalSuccess = false;    
+                    }                
                     ++n;
                 }
-
-                // If the failover route worked there is nothing more to do
-                if ( failoverRouteIstotalSuccess )
-                    return true;
+                publishIstotalSuccess = spilloverRouteIstotalSuccess; 
+                break;
             }
-
-            // If we get here its time to try our spillover route if we have any
-            // Note that the spillover is not an equivelant of primary or failover routes, its merely a temporary detour
-            if ( !routeInfo.spilloverBufferRoutes.empty() )
+            case RouteType::DeadLetter:
             {
-                bool spilloverBufferRouteIstotalSuccess = true;
-                TPubSubClientSideVector::iterator n = routeInfo.spilloverBufferRoutes.begin();
-                while ( n != routeInfo.spilloverBufferRoutes.end() )
-                {
-                    spilloverBufferRouteIstotalSuccess = (*n)->PublishMsgs( msgs ) && spilloverBufferRouteIstotalSuccess;
-                    ++n;
-                }
-
-                // If the spillover buffer route worked there is nothing more to do
-                if ( spilloverBufferRouteIstotalSuccess )
-                    return true;
-            }
-        }
-        else
-        {
-            // If we get here clearly nothing else worked
-            // Since the deadletter flag was passed we have exhausted all retry attempts etc
-            if ( !routeInfo.deadLetterRoutes.empty() )
-            {
+                // If we get here clearly nothing else worked
+                // Since the deadletter flag was passed we have exhausted all retry attempts etc
                 bool deadLetterRouteIstotalSuccess = true;
-                TPubSubClientSideVector::iterator n = routeInfo.deadLetterRoutes.begin();
-                while ( n != routeInfo.deadLetterRoutes.end() )
-                {
-                    deadLetterRouteIstotalSuccess = (*n)->PublishMsgs( msgs ) && deadLetterRouteIstotalSuccess;
+                TRouteInfoVector::iterator n = multiRouteInfo.begin();
+                while ( n != multiRouteInfo.end() )
+                { 
+                    CRouteInfo& routeInfo = (*n);                
+                    if ( GUCEF_NULL != routeInfo.deadLetterSide )
+                    {
+                        if ( routeInfo.deadLetterSideIsHealthy )
+                            deadLetterRouteIstotalSuccess = routeInfo.deadLetterSide->PublishMsgs( msgs ) && deadLetterRouteIstotalSuccess;
+                        else
+                            deadLetterRouteIstotalSuccess = false;    
+                    }                
                     ++n;
                 }
-
-                // If the dead letter route worked there is nothing more to do
-                if ( deadLetterRouteIstotalSuccess )
-                    return true;
+                publishIstotalSuccess = deadLetterRouteIstotalSuccess;                
+                break;
             }
         }
     }
+    else
+    {
+        // no route from this side
+        publishIstotalSuccess = false;
+    }
         
-    return false;
+    return publishIstotalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -522,15 +615,25 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSi
 
     MT::CScopeReaderLock lock( m_lock );
     
-    TSidePtrToRouteInfoMap::const_iterator i = m_routeMap.find( sideWeAskFor );
+    TSidePtrToRouteInfoVectorMap::const_iterator i = m_routeMap.find( sideWeAskFor );
     if ( i != m_routeMap.end() )
     {
-        const TRouteInfo& routeInfo = (*i).second;
-        bool trackingNeeded = IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.primaryRoutes ) ||
-                              IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.failoverRoutes ) ||
-                              IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.deadLetterRoutes ) ||
-                              IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.spilloverBufferRoutes );
-        return trackingNeeded;
+        const TRouteInfoVector& multiRouteInfo = (*i).second;
+        TRouteInfoVector::const_iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            const CRouteInfo& routeInfo = (*n);
+        
+            // We need tracking as soon as 1 side anywhere needs a subscriber ack
+            bool trackingNeeded = IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.toSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.failoverSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.deadLetterSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.spilloverBufferSide );
+            
+            if ( trackingNeeded )
+                return trackingNeeded;
+            ++n;
+        }
     }
         
     return false;
@@ -539,21 +642,43 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSi
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( const TPubSubClientSideVector& sides ) const
+CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( const CPubSubClientSide* side ) const
 {GUCEF_TRACE;
 
-    // We need tracking as soon as 1 side needs a subscriber ack
-   
-    TPubSubClientSideVector::const_iterator i = sides.begin();
-    while ( i != sides.end() )
+    if ( GUCEF_NULL != side )
     {
-        const CPubSubSideChannelSettings& sideSettings = (*i)->GetSideSettings();
-        if ( (*i)->HasSubscribersNeedingAcks() )
+        const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+        if ( side->HasSubscribersNeedingAcks() )
             return true;
-        ++i;
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != side ) 
+    {
+        TEventCallback callback( this, &CPubSubFlowRouter::OnSideHealthStatusChange );
+        SubscribeTo( side                                       ,
+                     CPubSubClientSide::HealthStatusChangeEvent ,
+                     callback                                   );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
 }
 
 /*-------------------------------------------------------------------------//

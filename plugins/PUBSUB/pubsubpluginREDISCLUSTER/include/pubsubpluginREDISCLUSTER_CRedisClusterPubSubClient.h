@@ -143,6 +143,12 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     RedisClusterPtr GetRedisContext( void ) const;
 
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
@@ -161,6 +167,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
                          CORE::CICloneable* eventData );
 
     void
+    OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+
+    void
     OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
@@ -176,6 +187,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
                            CORE::CICloneable* eventData );
 
     void RegisterEventHandlers( void );
+
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
     
     CRedisClusterPubSubClient( void ); /**< not implemented */
 
@@ -193,6 +206,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     CORE::CTimer* m_streamIndexingTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
+    mutable bool m_isHealthy;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

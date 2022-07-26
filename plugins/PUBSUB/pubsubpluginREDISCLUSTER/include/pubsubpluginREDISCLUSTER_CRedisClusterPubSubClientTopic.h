@@ -179,11 +179,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     void RegisterEventHandlers( void );
 
-    void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+    bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
     bool SubscribeImpl( const std::string& readOffset );
 
     void CleanupRedisReaderThread( void );
+
+    void UpdateIsHealthyStatus( bool newStatus );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
@@ -234,6 +236,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
+    mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };
 

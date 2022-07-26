@@ -49,15 +49,16 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CPubSubClientTopic::ConnectedEvent = "GUCEF::COMCORE::CPubSubClientTopic::ConnectedEvent";
-const CORE::CEvent CPubSubClientTopic::DisconnectedEvent = "GUCEF::COMCORE::CPubSubClientTopic::DisconnectedEvent";
-const CORE::CEvent CPubSubClientTopic::ConnectionErrorEvent = "GUCEF::COMCORE::CPubSubClientTopic::ConnectionErrorEvent";
-const CORE::CEvent CPubSubClientTopic::InternalErrorEvent = "GUCEF::COMCORE::CPubSubClientTopic::InternalErrorEvent";
-const CORE::CEvent CPubSubClientTopic::MsgsRecievedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsRecievedEvent";
-const CORE::CEvent CPubSubClientTopic::MsgsPublishedEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsPublishedEvent";
-const CORE::CEvent CPubSubClientTopic::MsgsPublishFailureEvent = "GUCEF::COMCORE::CPubSubClientTopic::MsgsPublishFailureEvent";
-const CORE::CEvent CPubSubClientTopic::LocalPublishQueueFullEvent = "GUCEF::COMCORE::CPubSubClientTopic::LocalPublishQueueFullEvent";
-const CORE::CEvent CPubSubClientTopic::PublishThrottleEvent = "GUCEF::COMCORE::CPubSubClientTopic::PublishThrottleEvent";
+const CORE::CEvent CPubSubClientTopic::ConnectedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::ConnectedEvent";
+const CORE::CEvent CPubSubClientTopic::DisconnectedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::DisconnectedEvent";
+const CORE::CEvent CPubSubClientTopic::ConnectionErrorEvent = "GUCEF::PUBSUB::CPubSubClientTopic::ConnectionErrorEvent";
+const CORE::CEvent CPubSubClientTopic::InternalErrorEvent = "GUCEF::PUBSUB::CPubSubClientTopic::InternalErrorEvent";
+const CORE::CEvent CPubSubClientTopic::MsgsRecievedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsRecievedEvent";
+const CORE::CEvent CPubSubClientTopic::MsgsPublishedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsPublishedEvent";
+const CORE::CEvent CPubSubClientTopic::MsgsPublishFailureEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsPublishFailureEvent";
+const CORE::CEvent CPubSubClientTopic::LocalPublishQueueFullEvent = "GUCEF::PUBSUB::CPubSubClientTopic::LocalPublishQueueFullEvent";
+const CORE::CEvent CPubSubClientTopic::PublishThrottleEvent = "GUCEF::PUBSUB::CPubSubClientTopic::PublishThrottleEvent";
+const CORE::CEvent CPubSubClientTopic::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClientTopic::HealthStatusChangeEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,6 +79,7 @@ CPubSubClientTopic::RegisterEvents( void )
     MsgsPublishFailureEvent.Initialize();
     LocalPublishQueueFullEvent.Initialize();
     PublishThrottleEvent.Initialize();
+    HealthStatusChangeEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

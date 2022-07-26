@@ -40,6 +40,7 @@ set( HEADER_FILES
   include/gucefPUBSUB_CPubSubSideChannelSettings.h
   include/gucefPUBSUB_CVfsPubSubBookmarkPersistence.h
   include/gucefPUBSUB_ETypes.h
+  include/gucefPUBSUB_PubSubRouteTypes.h
   include/gucefPUBSUB_config.h
   include/gucefPUBSUB_macros.h
 )
@@ -71,6 +72,7 @@ set( SOURCE_FILES
   src/gucefPUBSUB_CPubSubMsgSerializer.cpp
   src/gucefPUBSUB_CPubSubSideChannelSettings.cpp
   src/gucefPUBSUB_CVfsPubSubBookmarkPersistence.cpp
+  src/gucefPUBSUB_PubSubRouteTypes.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

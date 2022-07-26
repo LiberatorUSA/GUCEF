@@ -146,9 +146,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     typedef CORE::CTLinkedCloneable< CIPubSubMsg >                          TPubSubMsgRef;
     typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef > >      TPubSubMsgsRefVector;    
     typedef UInt64                                                          TPublishActionId;
-    typedef CORE::CTCloneableExpansion< std::vector< TPublishActionId > >   TPublishActionIdVector;
-    
-
+    typedef CORE::CTCloneableExpansion< std::vector< TPublishActionId > >   TPublishActionIdVector;        
 
     static const CORE::CEvent ConnectedEvent;
     static const CORE::CEvent DisconnectedEvent;
@@ -159,10 +157,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     static const CORE::CEvent MsgsPublishFailureEvent;          /**< event msg sent when the backend has failed to successfully publish messages */
     static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
     static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
+    static const CORE::CEvent HealthStatusChangeEvent;          /**< event msg sent if the health status changes for the topic */
 
     typedef TPubSubMsgsRefVector                                    TMsgsRecievedEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishFailureEventData;
     typedef CORE::CTLinkedCloneable< TPublishActionIdVector >       TMsgsPublishedEventData;
+    typedef CORE::TCloneableBool                                    THealthStatusChangeEventData;   /**< boolean flag indicating the health status */
 
     static void RegisterEvents( void );
 

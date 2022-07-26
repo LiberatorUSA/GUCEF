@@ -84,6 +84,8 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     , m_streamIndexingTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
+    , m_isHealthy( true )
+    , m_lock()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_config.pulseGenerator )
@@ -116,6 +118,8 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
 CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     if ( !m_threadPool.IsNULL() )
         m_threadPool->RequestAllThreadsToStop( true, false );
 
@@ -427,7 +431,7 @@ CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     {
-        MT::CObjectScopeLock lock( this );
+        MT::CScopeMutex lock( m_lock );
 
         TTopicMap::iterator i = m_topicMap.find( topicName );
         if ( i != m_topicMap.end() )
@@ -453,7 +457,7 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
 
     PubSubClientTopicSet topicAccess;
     {
-        MT::CObjectScopeLock lock( this );
+        MT::CScopeMutex lock( m_lock );
 
         CORE::CString::StringSet::const_iterator t = topicNames.begin();
         while ( t != topicNames.end() )
@@ -505,6 +509,7 @@ const PUBSUB::CPubSubClientTopicConfig*
 CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -523,6 +528,7 @@ bool
 CRedisClusterPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     TopicDiscoveryEventData topicNames;
     if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNames, "stream", globPatternFilters ) )
     {
@@ -539,6 +545,7 @@ void
 CRedisClusterPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -742,6 +749,7 @@ CRedisClusterPubSubClient::Disconnect( void )
 
     try
     {
+        MT::CScopeMutex lock( m_lock );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
         TTopicMap::iterator i = m_topicMap.begin();
@@ -786,6 +794,8 @@ CRedisClusterPubSubClient::Connect( void )
 
     try
     {
+        MT::CScopeMutex lock( m_lock );
+
         if ( m_config.remoteAddresses.empty() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: No remote address was specified" );
@@ -863,8 +873,11 @@ bool
 CRedisClusterPubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     if ( !m_topicMap.empty() )
     {
+        // Aggregate the health status of all topics
         bool allHealthy = true;
         TTopicMap::const_iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
@@ -872,9 +885,57 @@ CRedisClusterPubSubClient::IsHealthy( void ) const
             allHealthy = (*i).second->IsHealthy() && allHealthy;
             ++i;
         }
+
+        // Notify if there was a change in status
+        if ( allHealthy != m_isHealthy )
+        {
+            m_isHealthy = allHealthy;        
+
+            if ( m_isHealthy )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient:IsHealthy: overall health is now Ok" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient:IsHealthy: overall health status is now unhealthy" );         
+            }
+
+            lock.EarlyUnlock();
+            THealthStatusChangeEventData eData( allHealthy ); 
+            NotifyObservers( HealthStatusChangeEvent, &eData );         
+        }
+
         return allHealthy;
     }
+
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CRedisClusterPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topic )
+    {
+        TEventCallback callback( this, &CRedisClusterPubSubClient::OnTopicHealthStatusChange );
+        SubscribeTo( topic                                                   ,
+                     CRedisClusterPubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                                );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the aggregate health status
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1013,7 +1074,7 @@ const PUBSUB::CPubSubClientTopicConfig*
 CRedisClusterPubSubClient::FindTemplateConfigForTopicName( const CORE::CString& topicName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
 
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
@@ -1140,6 +1201,24 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
         // Bulk Auto delete topics for deleted Redis keys
         AutoDestroyTopicAccess( updateInfo->deletedKeys );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::Unlock( void ) const 
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

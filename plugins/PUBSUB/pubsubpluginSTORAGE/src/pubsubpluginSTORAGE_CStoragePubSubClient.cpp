@@ -81,23 +81,14 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
+    , m_isHealthy( true )
+    , m_lock()
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != config.pulseGenerator )
+    if ( config.desiredFeatures.supportsMetrics )
     {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-    }
-    else
-    {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
+        m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
     m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", true );
@@ -113,6 +104,8 @@ CStoragePubSubClient::~CStoragePubSubClient()
 {GUCEF_TRACE;
     
     Disconnect();
+
+    MT::CScopeMutex lock( m_lock );
 
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -198,12 +191,13 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
 
     CStoragePubSubClientTopic* topicAccess = GUCEF_NULL;
     {
-        MT::CObjectScopeLock lock( this );
+        MT::CScopeMutex lock( m_lock );
 
         topicAccess = new CStoragePubSubClientTopic( this );
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
+            RegisterTopicEventHandlers( topicAccess );
         }
         else
         {
@@ -227,6 +221,8 @@ PUBSUB::CPubSubClientTopic*
 CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -241,7 +237,7 @@ void
 CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeMutex lock( m_lock );
     
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
@@ -249,6 +245,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         CStoragePubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
 
+        lock.EarlyUnlock();
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
@@ -261,6 +258,8 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 const PUBSUB::CPubSubClientTopicConfig* 
 CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
@@ -289,6 +288,8 @@ void
 CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -302,6 +303,8 @@ CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topi
 void
 CStoragePubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -326,6 +329,7 @@ bool
 CStoragePubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
     return m_config.SaveConfig( cfgNode );
 }
 
@@ -340,7 +344,10 @@ CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
     CStoragePubSubClientConfig cfg;
     if ( cfg.LoadConfig( cfgRoot ) )
     {
+        MT::CScopeMutex lock( m_lock );
+
         m_config = cfg;
+        return true;
     }
     return false;
 }
@@ -350,6 +357,8 @@ CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 bool
 CStoragePubSubClient::Disconnect( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     bool totalSuccess = true;
     TTopicMap::iterator i = m_topicMap.begin();
@@ -366,6 +375,8 @@ CStoragePubSubClient::Disconnect( void )
 bool
 CStoragePubSubClient::Connect( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
 
     if ( !m_topicMap.empty() )
     {
@@ -387,6 +398,8 @@ bool
 CStoragePubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     if ( !m_topicMap.empty() )
     {
         bool allConnected = true;
@@ -407,8 +420,11 @@ bool
 CStoragePubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     if ( !m_topicMap.empty() )
     {
+        // Aggregate the health status of all topics
         bool allHealthy = true;
         TTopicMap::const_iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
@@ -416,6 +432,26 @@ CStoragePubSubClient::IsHealthy( void ) const
             allHealthy = (*i).second->IsHealthy() && allHealthy;
             ++i;
         }
+
+        // Notify if there was a change in status
+        if ( allHealthy != m_isHealthy )
+        {
+            m_isHealthy = allHealthy;        
+
+            if ( m_isHealthy )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:IsHealthy: overall health is now Ok" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:IsHealthy: overall health status is now unhealthy" );         
+            }
+
+            lock.EarlyUnlock();
+            THealthStatusChangeEventData eData( allHealthy ); 
+            NotifyObservers( HealthStatusChangeEvent, &eData );         
+        }
+
         return allHealthy;
     }
     return true;
@@ -438,10 +474,37 @@ CStoragePubSubClient::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CStoragePubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topic )
+    {
+        TEventCallback callback( this, &CStoragePubSubClient::OnTopicHealthStatusChange );
+        SubscribeTo( topic                                         ,
+                     CStoragePubSubClient::HealthStatusChangeEvent ,
+                     callback                                      );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                                                 const CORE::CEvent& eventId  ,
+                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the aggregate health status
+    IsHealthy();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                        const CORE::CEvent& eventId  ,
-                                        CORE::CICloneable* eventData )
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     // Quickly grab a snapshot of metric values for all topics 
@@ -482,6 +545,24 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }        
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::Unlock( void ) const 
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

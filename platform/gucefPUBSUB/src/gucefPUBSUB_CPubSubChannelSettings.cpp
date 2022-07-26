@@ -260,12 +260,11 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: No PubSubFlowRouterConfig was found, will use default implicit config" );
         
         // If we do not have a flow router config we take it as allowing * -> * implicitly
-        // this setting matches the historical behaviour
+        // this setting matches the historical behaviour, this route wont have any failover or spillover or dead letter
         flowRouterConfig.Clear();        
         CPubSubFlowRouteConfig implicitRoute;
         implicitRoute.fromSide = "*";
         implicitRoute.toSide = "*";
-        implicitRoute.routeType = CPubSubFlowRouteConfig::RouteType::Primary;
         flowRouterConfig.routes.push_back( implicitRoute );
 
         // We also use the safest setting for the ack style

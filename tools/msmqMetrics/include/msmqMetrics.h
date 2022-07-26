@@ -236,6 +236,7 @@ class MsmqMetrics : public CORE::CObservingNotifier
         CORE::CString metricFriendlyQueueName;
         MsmqQueueProperties queueProperties;
         bool isActive;
+        bool isOutgoingQueue;
 
         MsmqQueue( const CORE::CString& qName                           , 
                    bool queueNamesAreMsmqFormatNames                    ,
@@ -360,6 +361,12 @@ class MsmqMetrics : public CORE::CObservingNotifier
     CORE::CString m_metricsPrefix;
     CORE::CString::StringSet m_hostnames;
     bool m_discoverQueues;
+    bool m_gatherMsgsInQueueMetric;
+    bool m_gatherMsgsTotalByteCountMetric;
+    bool m_gatherMsgsInQueueJournalMetric;
+    bool m_gatherMsgsInJournalTotalByteCountMetric;
+    bool m_gatherTotalMsgBytesMetric;
+    bool m_gatherMetricsFromOutgoingQueues;
 };
 
 /*-------------------------------------------------------------------------*/

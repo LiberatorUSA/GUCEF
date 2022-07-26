@@ -189,6 +189,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_metricFriendlyTopicName()
+    , m_isHealthy( true )
     , m_currentReadBuffer( GUCEF_NULL )
     , m_currentWriteBuffer( GUCEF_NULL )
     , m_currentBookmarkInfo()
@@ -1068,20 +1069,63 @@ CStoragePubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
+    bool newIsHealthyState = true;
+    
     if ( m_config.maxStorageCorruptionDetectionsToBeHealthy >= 0 )
     {
         // Current and last metrics cycle error count counts against the max
         if ( m_storageCorruptionDetections + m_metrics.storageCorruptionDetections > (CORE::UInt32) m_config.maxStorageCorruptionDetectionsToBeHealthy )
-            return false;
+            newIsHealthyState = false;
     }
-    if ( m_config.maxStorageDeserializationFailuresToBeHealthy >= 0 )
+
+    if ( newIsHealthyState && m_config.maxStorageDeserializationFailuresToBeHealthy >= 0 )
     {
         // Current and last metrics cycle error count counts against the max
         if ( m_storageDeserializationFailures + m_metrics.storageDeserializationFailures > (CORE::UInt32) m_config.maxStorageDeserializationFailuresToBeHealthy )
-            return false;
+            newIsHealthyState = false;
     }
 
-    return true;
+    if ( newIsHealthyState && GUCEF_NULL != m_reconnectTimer && m_reconnectTimer->GetEnabled() )
+    {
+        // running a reconnect timer cannot be good
+        newIsHealthyState = false;
+    }
+
+    if ( newIsHealthyState != m_isHealthy )
+    {
+        m_isHealthy = newIsHealthyState;
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now healthy" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( newIsHealthyState ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    }
+    
+    return newIsHealthyState;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
+{GUCEF_TRACE;
+
+    // See if this is a change from the current persisted state
+    if ( newStatus != m_isHealthy )
+    {
+        // Make sure we use the same consistent logic to determine health
+        // the caller might only know about one aspect of health
+        // The IsHealthy check itself will update the status and perform eventing if needed
+        newStatus = IsHealthy();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

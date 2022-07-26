@@ -50,6 +50,11 @@
 #define GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H
 #endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTERCONFIG_H ? */
 
+#ifndef GUCEF_PUBSUB_PUBSUBROUTETYPES_H
+#include "gucefPUBSUB_PubSubRouteTypes.h"
+#define GUCEF_PUBSUB_PUBSUBROUTETYPES_H
+#endif /* GUCEF_PUBSUB_PUBSUBROUTETYPES_H ? */
+
 #ifndef GUCEF_PUBSUB_MACROS_H
 #include "gucefPUBSUB_macros.h"
 #define GUCEF_PUBSUB_MACROS_H
@@ -74,7 +79,7 @@ namespace PUBSUB {
  *  Class which aims to provide a config driven mapping between pubsub sides
  *  The mapping entails various information flows and behaviour between said sides
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter 
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifier
 {
     public:
 
@@ -95,35 +100,52 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter
 
     bool PublishMsgs( CPubSubClientSide* fromSide                          ,
                       const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                      bool isDeadLetter                                    );
+                      RouteType routeType = RouteType::Primary             );
     
     bool AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide ,
                                     CIPubSubMsg::TNoLockSharedPtr& msg );
     
     private:
 
-    typedef std::vector< CPubSubClientSidePtr >   TPubSubClientSideVector;
+    typedef CORE::CTEventHandlerFunctor< CPubSubFlowRouter >    TEventCallback;
+    typedef std::vector< CPubSubClientSidePtr >                 TPubSubClientSideVector;
 
-    struct SRouteInfo
+    class CRouteInfo
     {
-        TPubSubClientSidePtrVector primaryRoutes;
-        TPubSubClientSidePtrVector failoverRoutes;
-        TPubSubClientSidePtrVector spilloverBufferRoutes;
-        TPubSubClientSidePtrVector deadLetterRoutes;
-    };
-    typedef struct SRouteInfo TRouteInfo;
+        public:
+        CPubSubClientSide* toSide;
+        bool toSideIsHealthy;
+        CPubSubClientSide* failoverSide;
+        bool failoverSideIsHealthy;
+        CPubSubClientSide* spilloverBufferSide;
+        bool spilloverBufferSideIsHealthy;
+        CPubSubClientSide* deadLetterSide;
+        bool deadLetterSideIsHealthy;
 
-    typedef std::map< CPubSubClientSide*, TRouteInfo >        TSidePtrToRouteInfoMap;
+        CRouteInfo( void );
+    };
+    typedef std::vector< CRouteInfo >   TRouteInfoVector;
+
+    typedef std::map< CPubSubClientSide*, TRouteInfoVector >  TSidePtrToRouteInfoVectorMap;
     typedef std::map< CORE::CString, CORE::CString >          TStringMap;
 
     bool NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
                           TPubSubClientSidePtrVector& sides             ,
                           CPubSubFlowRouterConfig& normalizedConfig     );
 
-    bool IsTrackingInFlightPublishedMsgsForAcksNeeded( const TPubSubClientSideVector& sides ) const;
-
+    bool IsTrackingInFlightPublishedMsgsForAcksNeeded( const CPubSubClientSide* side ) const;
+    
+    void
+    OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+    
+    void RegisterSideEventHandlers( CPubSubClientSide* side );
+    
+    private:
+    
     CPubSubFlowRouterConfig m_config;
-    TSidePtrToRouteInfoMap m_routeMap;
+    TSidePtrToRouteInfoVectorMap m_routeMap;
     MT::CReadWriteLock m_lock;
 };
 

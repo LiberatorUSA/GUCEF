@@ -103,6 +103,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_shouldBeConnected( false )
+    , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -1288,16 +1289,39 @@ bool
 CKafkaPubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    bool newHealthyState = true;
+
     if ( m_config.maxKafkaErrorsToBeHealthy >= 0 )
     {
         // Current and last metrics cycle error count counts against the max
         if ( m_kafkaErrorReplies + m_metrics.kafkaErrorReplies > (CORE::UInt32) m_config.maxKafkaErrorsToBeHealthy )
-            return false;
+            newHealthyState = false;
     }
 
     // Aside from error count, having to reconnect while we should be connected is also not good
-    return m_shouldBeConnected && IsConnected();
-}
+    if ( newHealthyState && m_shouldBeConnected && !IsConnected() )
+        newHealthyState = false;
+
+    // See if this is a change from the current persisted state
+    if ( newHealthyState != m_isHealthy )
+    {
+        m_isHealthy = newHealthyState;
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now healthy" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );         
+        }
+
+        THealthStatusChangeEventData eData( newHealthyState ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    }
+
+    return newHealthyState;
+}            
 
 /*-------------------------------------------------------------------------*/
 
@@ -1699,6 +1723,22 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
 /*-------------------------------------------------------------------------*/
 
 void
+CKafkaPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
+{GUCEF_TRACE;
+
+    // See if this is a change from the current persisted state
+    if ( newStatus != m_isHealthy )
+    {
+        // Make sure we use the same consistent logic to determine health
+        // the caller might only know about one aspect of health
+        // The IsHealthy check itself will update the status and perform eventing if needed
+        newStatus = IsHealthy();
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
 {GUCEF_TRACE;
 
@@ -1805,6 +1845,7 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         case RdKafka::ERR__TIMED_OUT:
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: TIMED_OUT: " + message.errstr() );
+            UpdateIsHealthyStatus( false );
             break;
         }
         case RdKafka::ERR_NO_ERROR:
@@ -1882,6 +1923,9 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
                 }
                 NotifyOfReceivedMsg( message );
             }
+            
+            // We will consider the ability to receive and process messages as healthy
+            UpdateIsHealthyStatus( true );
             break;
         }
         case RdKafka::ERR__PARTITION_EOF:
@@ -1893,11 +1937,13 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         case RdKafka::ERR__UNKNOWN_PARTITION:
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_PARTITION: " + message.errstr() );
+            UpdateIsHealthyStatus( false );
             break;
         }
         case RdKafka::ERR__UNKNOWN_TOPIC:
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_TOPIC: " + message.errstr() );
+            UpdateIsHealthyStatus( false );
             break;
         }
         case RdKafka::ERR__MAX_POLL_EXCEEDED:
@@ -1908,6 +1954,7 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         default:
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: " + message.errstr() );
+            UpdateIsHealthyStatus( false );
             break;
         }
     }
@@ -1940,6 +1987,7 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName +
                         "\". Wrong DNS? event msg=\"" + event.str() + "\". error as string =\"" + RdKafka::err2str( event.err() ) + "\"" );
                     if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
+                    UpdateIsHealthyStatus( false );
                     break;
                 }
                 case RdKafka::ERR__TRANSPORT:
@@ -1949,6 +1997,7 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + 
                         "\". event msg=\"" + event.str() + "\". error as string =\"" + RdKafka::err2str( event.err() ) + "\"" );
                     if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
+                    UpdateIsHealthyStatus( false );
                     break;
                 }
                 default:
@@ -2152,6 +2201,7 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
             {
                 std::string errStr = RdKafka::err2str( err );
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
+                UpdateIsHealthyStatus( false );
                 return false;
             }
         }
@@ -2166,6 +2216,7 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
     {
         std::string errStr = RdKafka::err2str( err );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to obtain current partition assignment. ErrorCode : " + errStr );
+        UpdateIsHealthyStatus( false );
         return false;
     }
 }

@@ -16,29 +16,18 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
-#define GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_CORE_CDATANODE_H
-#include "CDataNode.h"
-#define GUCEF_CORE_CDATANODE_H
-#endif /* GUCEF_CORE_CDATANODE_H ? */
-
-#ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"
-#define GUCEF_PUBSUB_MACROS_H
-#endif /* GUCEF_PUBSUB_MACROS_H ? */
+#include "gucefPUBSUB_PubSubRouteTypes.h"    
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,37 +40,41 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
-{
-    public:
+CORE::CString
+RouteTypeToString( RouteType routeType )
+{GUCEF_TRACE;
 
-    typedef std::vector< CPubSubFlowRouteConfig >   PubSubFlowRouteConfigVector;
+    switch ( routeType )
+    {
+        case Disabled:          return "Disabled";
+        case Primary:           return "Primary";
+        case Failover:          return "Failover";
+        case SpilloverBuffer:   return "SpilloverBuffer";
+        case DeadLetter:        return "DeadLetter";
+        default:                return CString::Empty;
+    }
+}
 
-    CORE::CString fromSide;             /**< primary 'from' side for this route */
-    CORE::CString toSide;               /**< primary 'to' side for this route */
-    CORE::CString failoverSide;         /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
-    CORE::CString spilloverBufferSide;  /**< if the primary and failover is unhealthy or is a slow consumer the spill over acts as buffer for the route publishing/subscribing to said side */
-    CORE::CString deadLetterSide;       /**< unable-to-publish messages on configured channels with no remaining remedies go here */
+/*-------------------------------------------------------------------------*/
 
-    CPubSubFlowRouteConfig( void );
+RouteType 
+StringToRouteType( const CORE::CString& routeTypeStr )
+{GUCEF_TRACE;
 
-    CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& src );
+    CORE::CString routeTypeStrLc = routeTypeStr.Lowercase();
+    if ( "disabled" == routeTypeStrLc ) return Disabled;
+    if ( "primary" == routeTypeStrLc ) return Primary;
+    if ( "failover" == routeTypeStrLc ) return Failover;
+    if ( "spilloverbuffer" == routeTypeStrLc ) return SpilloverBuffer;
+    if ( "deadletter" == routeTypeStrLc ) return DeadLetter;
 
-    virtual ~CPubSubFlowRouteConfig();
-
-    CPubSubFlowRouteConfig& operator=( const CPubSubFlowRouteConfig& src );
-
-    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-};
+    // If we get here treat it as an int
+    return (RouteType) CORE::StringToInt32( routeTypeStrLc, Disabled );
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -93,6 +86,3 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PUBSUB_CPUBSUBFLOWROUTECONFIG_H ? */
-

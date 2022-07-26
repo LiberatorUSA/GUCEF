@@ -48,7 +48,9 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
     : CORE::CIConfigurable() 
     , fromSide()
     , toSide()
-    , routeType( RouteType::Disabled )
+    , failoverSide()
+    , spilloverBufferSide()
+    , deadLetterSide()
 {GUCEF_TRACE;
 
 }
@@ -59,7 +61,9 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& sr
     : CORE::CIConfigurable( src ) 
     , fromSide( src.fromSide )
     , toSide( src.toSide )
-    , routeType( src.routeType )
+    , failoverSide( src.failoverSide )
+    , spilloverBufferSide( src.spilloverBufferSide )
+    , deadLetterSide( src.deadLetterSide )
 {GUCEF_TRACE;
 
 }
@@ -82,43 +86,11 @@ CPubSubFlowRouteConfig::operator=( const CPubSubFlowRouteConfig& src )
         CORE::CIConfigurable::operator=( src ) ;
         fromSide = src.fromSide;
         toSide = src.toSide;
-        routeType = src.routeType;
+        failoverSide = src.failoverSide;
+        spilloverBufferSide = src.spilloverBufferSide;
+        deadLetterSide = src.deadLetterSide;
     }
     return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-CPubSubFlowRouteConfig::RouteTypeToString( RouteType routeType )
-{GUCEF_TRACE;
-
-    switch ( routeType )
-    {
-        case Disabled:          return "Disabled";
-        case Primary:           return "Primary";
-        case Failover:          return "Failover";
-        case SpilloverBuffer:   return "SpilloverBuffer";
-        case DeadLetter:        return "DeadLetter";
-        default:                return CString::Empty;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPubSubFlowRouteConfig::RouteType 
-CPubSubFlowRouteConfig::StringToRouteType( const CORE::CString& routeTypeStr )
-{GUCEF_TRACE;
-
-    CORE::CString routeTypeStrLc = routeTypeStr.Lowercase();
-    if ( "disabled" == routeTypeStrLc ) return Disabled;
-    if ( "primary" == routeTypeStrLc ) return Primary;
-    if ( "failover" == routeTypeStrLc ) return Failover;
-    if ( "spilloverbuffer" == routeTypeStrLc ) return SpilloverBuffer;
-    if ( "deadletter" == routeTypeStrLc ) return DeadLetter;
-
-    // If we get here treat it as an int
-    return (RouteType) CORE::StringToInt32( routeTypeStrLc, Disabled );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -130,7 +102,10 @@ CPubSubFlowRouteConfig::SaveConfig( CORE::CDataNode& cfg ) const
     bool totalSuccess = true;
     totalSuccess = cfg.SetAttribute( "fromSide", fromSide ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "toSide", toSide ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "routeType", RouteTypeToString( routeType ) ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "failoverSide", failoverSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "spilloverBufferSide", spilloverBufferSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "deadLetterSide", deadLetterSide ) && totalSuccess;
+    
     return totalSuccess;
 }
 
@@ -142,7 +117,10 @@ CPubSubFlowRouteConfig::LoadConfig( const CORE::CDataNode& cfg )
 
     fromSide = cfg.GetAttributeValueOrChildValueByName( "fromSide" ).AsString( fromSide, true ); 
     toSide = cfg.GetAttributeValueOrChildValueByName( "toSide" ).AsString( toSide, true ); 
-    routeType = StringToRouteType( cfg.GetAttributeValueOrChildValueByName( "routeType" ).AsString( RouteTypeToString( routeType ), true ) );
+    failoverSide = cfg.GetAttributeValueOrChildValueByName( "failoverSide" ).AsString( failoverSide, true ); 
+    spilloverBufferSide = cfg.GetAttributeValueOrChildValueByName( "spilloverBufferSide" ).AsString( spilloverBufferSide, true ); 
+    deadLetterSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSide" ).AsString( deadLetterSide, true ); 
+
     return true;
 }
 

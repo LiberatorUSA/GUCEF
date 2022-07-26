@@ -115,6 +115,12 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     CORE::ThreadPoolPtr GetThreadPool( void );
 
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     void
@@ -122,7 +128,14 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+    
     void RegisterEventHandlers( void );
+
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
     
     CStoragePubSubClient( void ); /**< not implemented */
 
@@ -135,6 +148,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
+    mutable bool m_isHealthy;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

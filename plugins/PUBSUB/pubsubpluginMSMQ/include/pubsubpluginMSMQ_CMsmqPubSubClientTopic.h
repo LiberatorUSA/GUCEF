@@ -300,6 +300,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
     void NotifyOfReceivedMsgs( void );
+
+    void UpdateIsHealthyStatus( bool newStatus );
     
     void
     OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
@@ -437,6 +439,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     TopicMetrics m_metrics;
     UInt32Vector m_msmqMsgSentToArriveLatencies;
     CORE::UInt64 m_msmqLastLookupId;
+    mutable bool m_isHealthy;
 };
 
 /*--------------------------------------------------------------------------*/

@@ -98,6 +98,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_publishFailureActionIds()
     , m_publishFailureActionEventData()
     , m_metrics()
+    , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -331,6 +332,9 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
                 }
             }
         }
+
+        // We will count the ability (or lack thereof) to send messages as proof of health
+        UpdateIsHealthyStatus( totalSuccess );
     }
     catch ( const sw::redis::MovedError& e )
     {
@@ -386,22 +390,31 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 {GUCEF_TRACE;
 
-    // reset size, note this does not dealloc the underlying memory
-    m_pubsubMsgs.clear();
-    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
-    msgRefs.clear();
-
-    if ( msgCount > m_pubsubMsgs.capacity() )
+    try
     {
-        // Grow the actual storage, this is allowed to become larger than msgCount to limit
-        // the nr of dynamic allocations
-        m_pubsubMsgs.reserve( msgCount );
-        msgRefs.reserve( msgCount );
+        // reset size, note this does not dealloc the underlying memory
+        m_pubsubMsgs.clear();
+        TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
+        msgRefs.clear();
+
+        if ( msgCount > m_pubsubMsgs.capacity() )
+        {
+            // Grow the actual storage, this is allowed to become larger than msgCount to limit
+            // the nr of dynamic allocations
+            m_pubsubMsgs.reserve( msgCount );
+            msgRefs.reserve( msgCount );
+        }
     }
+    catch ( const std::bad_alloc& )
+    {
+        UpdateIsHealthyStatus( false );
+        return false;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -503,6 +516,9 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
             }
         }
 
+        // We will count the ability to read messages as proof of good health
+        UpdateIsHealthyStatus( true );
+        
         totalSuccess = true;
     }
     catch ( const sw::redis::OomError& e )
@@ -535,10 +551,12 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
         Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
+        UpdateIsHealthyStatus( false );
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        UpdateIsHealthyStatus( false );
     }
 
     if ( totalSuccess )
@@ -809,11 +827,47 @@ CRedisClusterPubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
     
+    bool newIsHealthyState = true;
+    
     // If we are having to reconnect than we are not healthy
     if ( GUCEF_NULL != m_redisReconnectTimer && m_redisReconnectTimer->GetEnabled() )
-        return false;
+        newIsHealthyState = false;
 
-    return true;
+    if ( newIsHealthyState != m_isHealthy )
+    {
+        m_isHealthy = newIsHealthyState;
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now healthy" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( newIsHealthyState ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    }
+    
+    return newIsHealthyState;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
+{GUCEF_TRACE;
+
+    // See if this is a change from the current persisted state
+    if ( newStatus != m_isHealthy )
+    {
+        // Make sure we use the same consistent logic to determine health
+        // the caller might only know about one aspect of health
+        // The IsHealthy check itself will update the status and perform eventing if needed
+        newStatus = IsHealthy();
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

@@ -49,11 +49,12 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CEvent CPubSubClient::TopicAccessCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessCreatedEvent";
-const CORE::CEvent CPubSubClient::TopicAccessDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicAccessDestroyedEvent";
-const CORE::CEvent CPubSubClient::TopicsAccessAutoCreatedEvent = "GUCEF::COMCORE::CPubSubClient::TopicsAccessAutoCreatedEvent";
-const CORE::CEvent CPubSubClient::TopicsAccessAutoDestroyedEvent = "GUCEF::COMCORE::CPubSubClient::TopicsAccessAutoDestroyedEvent";
-const CORE::CEvent CPubSubClient::TopicDiscoveryEvent = "GUCEF::COMCORE::CPubSubClient::TopicDiscoveryEvent";
+const CORE::CEvent CPubSubClient::TopicAccessCreatedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicAccessCreatedEvent";
+const CORE::CEvent CPubSubClient::TopicAccessDestroyedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicAccessDestroyedEvent";
+const CORE::CEvent CPubSubClient::TopicsAccessAutoCreatedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicsAccessAutoCreatedEvent";
+const CORE::CEvent CPubSubClient::TopicsAccessAutoDestroyedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicsAccessAutoDestroyedEvent";
+const CORE::CEvent CPubSubClient::TopicDiscoveryEvent = "GUCEF::PUBSUB::CPubSubClient::TopicDiscoveryEvent";
+const CORE::CEvent CPubSubClient::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClient::HealthStatusChangeEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

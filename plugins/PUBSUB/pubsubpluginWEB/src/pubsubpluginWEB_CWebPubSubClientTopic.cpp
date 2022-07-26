@@ -579,6 +579,7 @@ bool
 CWebPubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    // @TODO
     MT::CScopeMutex lock( m_lock );
     return true;           
 }

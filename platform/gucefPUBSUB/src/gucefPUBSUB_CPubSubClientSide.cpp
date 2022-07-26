@@ -81,6 +81,8 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CORE::CEvent CPubSubClientSide::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClientSide::HealthStatusChangeEvent";
+
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
 #define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
@@ -110,6 +112,7 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_awaitingFailureReport( false )
     , m_totalMsgsInFlight( 0 )
     , m_flowRouter( flowRouter )
+    , m_isHealthy( true )
 {GUCEF_TRACE;
 
 }
@@ -168,7 +171,7 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopic* t )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId                ,
+CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId       ,
                                               CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
@@ -180,7 +183,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsg( CORE::UInt64 publishActionId      
 void
 CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                                                const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
-                                               bool inFlightDefaultState                                                   )
+                                               bool inFlightDefaultState                                          )
 {GUCEF_TRACE;
 
     // this variation gets called during async flow
@@ -318,6 +321,11 @@ CPubSubClientSide::RegisterEventHandlers( void )
     SubscribeTo( m_pubsubClient.GetPointerAlways()             ,
                  CPubSubClient::TopicsAccessAutoDestroyedEvent ,
                  callback4                                     );
+
+    TEventCallback callback5( this, &CPubSubClientSide::OnClientHealthStatusChanged );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()      ,
+                 CPubSubClient::HealthStatusChangeEvent ,
+                 callback5                              );
     
     if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
     {
@@ -413,17 +421,53 @@ bool
 CPubSubClientSide::IsHealthy( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
+    // Aggregate the health status across all concerns
+    bool fullyHealthy = true;
+
     try
     {
         if ( !m_pubsubClient.IsNULL() && !m_pubsubClient->IsHealthy() )
-            return false;
-
-        return true;
+            fullyHealthy = false;
     }
     catch ( const std::exception& )
     {
-        return false;
+        fullyHealthy = false;
     }
+
+    // Notify if there was a change in status
+    if ( fullyHealthy != m_isHealthy )
+    {
+        m_isHealthy = fullyHealthy;        
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide:IsHealthy: overall health is now Ok for side with id " + m_sideId );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide:IsHealthy: overall health status is now unhealthy for side with id " + m_sideId );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( fullyHealthy ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData );         
+    }
+    
+    return fullyHealthy;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnClientHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the overall health status
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -791,7 +835,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
                         ++n;
                     }
 
-                    if ( m_flowRouter->PublishMsgs( this, discardedMsgs, true ) )
+                    if ( m_flowRouter->PublishMsgs( this, discardedMsgs, RouteType::DeadLetter ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                             "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we successfully sent a total of " + CORE::ToString( nrOfDiscardedMsgs ) +
@@ -1113,7 +1157,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             // We now broadcast the received messages to all other sides which is the purpose of this service
             if ( GUCEF_NULL != m_flowRouter )
             {
-                bool totalSuccess = m_flowRouter->PublishMsgs( this, msgs, false );
+                bool totalSuccess = m_flowRouter->PublishMsgs( this, msgs, RouteType::Primary );
                 if ( totalSuccess )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +

@@ -113,6 +113,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 {
     public:
 
+    static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the topic */
+
+    typedef CORE::TCloneableBool            THealthStatusChangeEventData;   /**< boolean flag indicating the health status */
+
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
     typedef std::vector< CPubSubClientSide* >                TPubSubClientSideVector;
     
@@ -188,6 +192,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnClientHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
+    
     void
     OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
                                const CORE::CEvent& eventId  ,
@@ -354,6 +363,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;
     CPubSubFlowRouter* m_flowRouter;
+    mutable bool m_isHealthy;
 
     private:
 
