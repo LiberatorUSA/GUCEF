@@ -99,6 +99,7 @@ CPubSubClient::RegisterEvents( void )
     TopicsAccessAutoCreatedEvent.Initialize();
     TopicsAccessAutoDestroyedEvent.Initialize();
     TopicDiscoveryEvent.Initialize();
+    HealthStatusChangeEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

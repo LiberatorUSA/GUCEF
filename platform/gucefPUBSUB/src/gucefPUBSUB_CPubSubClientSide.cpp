@@ -94,6 +94,15 @@ const CORE::CEvent CPubSubClientSide::HealthStatusChangeEvent = "GUCEF::PUBSUB::
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void 
+CPubSubClientSide::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    HealthStatusChangeEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
                                       CPubSubFlowRouter* flowRouter )
     : CORE::CTaskConsumer()
@@ -115,6 +124,7 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_isHealthy( true )
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/

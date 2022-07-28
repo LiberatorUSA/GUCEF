@@ -171,8 +171,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     
     void* GetOpaqueUserData( void ) const;
 
-    private:
-
     static void RegisterEvents( void );
     
     private:

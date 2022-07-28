@@ -92,6 +92,11 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
 #ifndef GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
 #include "gucefPUBSUB_CPubSub2PubSub.h"
 #define GUCEF_PUBSUB_CPUBSUB2PUBSUB_H
@@ -267,6 +272,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
     COM::CComGlobal::Instance();
     VFS::CVfsGlobal::Instance();
     WEB::CWebGlobal::Instance();
+    PUBSUB::CPubSubGlobal::Instance();
 
     CORE::CPlatformNativeConsoleLogger console;
     if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )

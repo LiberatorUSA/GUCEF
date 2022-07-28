@@ -62,6 +62,16 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTC_H
+#include "gucefPUBSUB_CPubSubClient.h"    
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
+
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H
+#include "gucefPUBSUB_CPubSubClientSide.h"    
+#define GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTSIDE_H ? */
+
 #ifndef GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
 #include "gucefPUBSUB_CVfsPubSubBookmarkPersistence.h"
 #define GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
@@ -124,6 +134,8 @@ CPubSubGlobal::Initialize( void )
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPUBSUB Global systems initializing" );
 
     CPubSubClientTopic::RegisterEvents();
+    CPubSubClient::RegisterEvents();
+    CPubSubClientSide::RegisterEvents();
 
     m_pubsubClientFactory = new CPubSubClientFactory();
     m_pubsubBookmarkPersistenceFactory = new CPubSubBookmarkPersistenceFactory();

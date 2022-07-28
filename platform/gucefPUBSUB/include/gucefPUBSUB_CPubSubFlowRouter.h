@@ -124,10 +124,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
 
         CRouteInfo( void );
     };
-    typedef std::vector< CRouteInfo >   TRouteInfoVector;
+    typedef std::vector< CRouteInfo >    TRouteInfoVector;
+    typedef std::vector< CRouteInfo* >   TRouteInfoPtrVector;
+    typedef std::set< CRouteInfo* >      TRouteInfoPtrSet;
 
-    typedef std::map< CPubSubClientSide*, TRouteInfoVector >  TSidePtrToRouteInfoVectorMap;
-    typedef std::map< CORE::CString, CORE::CString >          TStringMap;
+    typedef std::map< CPubSubClientSide*, TRouteInfoVector >     TSidePtrToRouteInfoVectorMap;
+    typedef std::map< CPubSubClientSide*, TRouteInfoPtrVector >  TSidePtrToRouteInfoPtrVectorMap;
+    typedef std::map< CPubSubClientSide*, TRouteInfoPtrSet >     TSidePtrToRouteInfoPtrSetMap;
+    typedef std::map< CORE::CString, CORE::CString >             TStringMap;
 
     bool NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
                           TPubSubClientSidePtrVector& sides             ,
@@ -141,11 +145,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
                               CORE::CICloneable* eventData );
     
     void RegisterSideEventHandlers( CPubSubClientSide* side );
+
+    void 
+    UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
+                                         bool isHealthy          );
     
     private:
     
     CPubSubFlowRouterConfig m_config;
     TSidePtrToRouteInfoVectorMap m_routeMap;
+    TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
     MT::CReadWriteLock m_lock;
 };
 

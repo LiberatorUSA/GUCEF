@@ -180,6 +180,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
     bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+    static void RegisterEvents( void );
     
     private:
 

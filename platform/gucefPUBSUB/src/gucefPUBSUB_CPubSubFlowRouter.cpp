@@ -58,6 +58,7 @@ CPubSubFlowRouter::CPubSubFlowRouter( void )
     : CORE::CObservingNotifier()
     , m_config()
     , m_routeMap()
+    , m_usedInRouteMap()
     , m_lock( true )
 {GUCEF_TRACE;
 
@@ -376,8 +377,48 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Routes are now defined for " +
         CORE::ToString( m_routeMap.size() ) + " source sides, with a total of " + CORE::ToString( totalPossibleRoutes ) + " possible routes" );    
     
-    // Now set up all the event handlers for each side
+    // Now set up the reverse lookup map for efficient updates to routes
+    TSidePtrToRouteInfoPtrSetMap sideUsedInMap;
     TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+
+            if ( GUCEF_NULL != routeInfo.toSide )
+                sideUsedInMap[ routeInfo.toSide ].insert( &routeInfo );
+            if ( GUCEF_NULL != routeInfo.failoverSide )
+                sideUsedInMap[ routeInfo.failoverSide ].insert( &routeInfo );
+            if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+                sideUsedInMap[ routeInfo.spilloverBufferSide ].insert( &routeInfo );
+            if ( GUCEF_NULL != routeInfo.deadLetterSide )
+                sideUsedInMap[ routeInfo.deadLetterSide ].insert( &routeInfo );
+
+            ++n;
+        }
+        ++r;
+    }
+    // Sets are slower than vectors so we convert to a vector for runtime efficiency
+    // The set already got rid of duplicate links and this will remain static going forward
+    TSidePtrToRouteInfoPtrSetMap::iterator s = sideUsedInMap.begin();
+    while ( s != sideUsedInMap.end() )
+    {
+        TRouteInfoPtrSet& ptrSet = (*s).second;
+        TRouteInfoPtrSet::iterator s2 = ptrSet.begin();
+        while ( s2 != ptrSet.end() )
+        {
+            m_usedInRouteMap[ (*s).first ].push_back( (*s2) );
+            ++s2;
+        }
+        ++s;
+    }
+    
+    // Now set up all the event handlers for each side
+    r = m_routeMap.begin();
     while ( r != m_routeMap.end() )
     {
         RegisterSideEventHandlers( (*r).first );
@@ -673,12 +714,70 @@ CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
 /*-------------------------------------------------------------------------*/
 
 void
+CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
+                                                        bool isHealthy          )
+{GUCEF_TRACE;
+
+    // Since this function is the only one update the health flag and since its just a bool flag
+    // we will use a reader lock as long as we can get away with it instead of a writer lock
+    MT::CScopeReaderLock lock( m_lock );
+    
+    TSidePtrToRouteInfoPtrVectorMap::iterator i = m_usedInRouteMap.find( side );
+    if ( i != m_usedInRouteMap.end() )
+    {
+        TRouteInfoPtrVector& multiRouteInfo = (*i).second;
+
+        CORE::UInt32 flagsUpdated = 0;
+        TRouteInfoPtrVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo* routeInfo = (*n);
+        
+            if ( side == routeInfo->toSide )
+            {
+                routeInfo->toSideIsHealthy = isHealthy;
+                ++flagsUpdated;
+            }
+            if ( side == routeInfo->failoverSide )
+            {
+                routeInfo->failoverSideIsHealthy = isHealthy;
+                ++flagsUpdated;
+            }
+            if ( side == routeInfo->toSide )
+            {
+                routeInfo->deadLetterSideIsHealthy = isHealthy;
+                ++flagsUpdated;
+            }
+            if ( side == routeInfo->spilloverBufferSide )
+            {
+                routeInfo->spilloverBufferSideIsHealthy = isHealthy;
+                ++flagsUpdated;
+            }
+
+            ++n;
+        }
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+            "):UpdateRoutesBasedOnSideHealthStatus: Updated " + CORE::ToString( multiRouteInfo.size() ) + " routes that have side \"" + 
+            side->GetSideId() + "\" for a total of " + CORE::ToString( flagsUpdated ) + " health status updates. Healthy=" + CORE::ToString( isHealthy ) );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPubSubFlowRouter::OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
                                              const CORE::CEvent& eventId  ,
                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    CPubSubClientSide* side = static_cast< CPubSubClientSide* >( notifier ); 
+    CPubSubClientSide::THealthStatusChangeEventData* healthStatus = static_cast< CPubSubClientSide::THealthStatusChangeEventData* >( eventData );
 
+    if ( GUCEF_NULL == side || GUCEF_NULL == healthStatus )
+        return;
+
+    UpdateRoutesBasedOnSideHealthStatus( side, *healthStatus );
 }
 
 /*-------------------------------------------------------------------------//
