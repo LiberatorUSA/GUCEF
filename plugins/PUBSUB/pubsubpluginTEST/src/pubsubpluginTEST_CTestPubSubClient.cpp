@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginTEST: Generic GUCEF PUBSUB plugin for adding integration/system tests
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -44,12 +44,12 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
-#include "pubsubpluginSTORAGE_CStoragePubSubClientConfig.h"
-#define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
-#endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginTEST_CTestPubSubClientConfig.h"
+#define PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H ? */
 
-#include "pubsubpluginSTORAGE_CStoragePubSubClient.h"
+#include "pubsubpluginTEST_CTestPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +59,7 @@
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
-namespace STORAGE {
+namespace TEST {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,7 +67,7 @@ namespace STORAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CStoragePubSubClient::TypeName = "STORAGE";
+const CORE::CString CTestPubSubClient::TypeName = "TEST";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,7 +75,7 @@ const CORE::CString CStoragePubSubClient::TypeName = "STORAGE";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& config )
+CTestPubSubClient::CTestPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
@@ -85,22 +85,24 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     , m_lock()
 {GUCEF_TRACE;
 
+    m_isHealthy = m_config.defaultIsHealthyStatus;
+    
     if ( config.desiredFeatures.supportsMetrics )
     {
         m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
-    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", true );
+    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "TestPubSubClient(" + CORE::ToString( this ) + ")", true );
 
-    m_config.metricsPrefix += "storage.";
+    m_config.metricsPrefix += "test.";
 
     RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CStoragePubSubClient::~CStoragePubSubClient()
+CTestPubSubClient::~CTestPubSubClient()
 {GUCEF_TRACE;
     
     Disconnect();
@@ -122,8 +124,8 @@ CStoragePubSubClient::~CStoragePubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-CStoragePubSubClientConfig& 
-CStoragePubSubClient::GetConfig( void )
+CTestPubSubClientConfig& 
+CTestPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
     return m_config;
@@ -132,7 +134,7 @@ CStoragePubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 CORE::ThreadPoolPtr 
-CStoragePubSubClient::GetThreadPool( void )
+CTestPubSubClient::GetThreadPool( void )
 {GUCEF_TRACE;
 
     return m_threadPool;
@@ -141,7 +143,7 @@ CStoragePubSubClient::GetThreadPool( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
+CTestPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // The storage backend with the natively compatible pub-sub serializers can always support everything
@@ -187,14 +189,14 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopic*
-CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CStoragePubSubClientTopic* topicAccess = GUCEF_NULL;
+    CTestPubSubClientTopic* topicAccess = GUCEF_NULL;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = new CStoragePubSubClientTopic( this );
+        topicAccess = new CTestPubSubClientTopic( this );
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -219,7 +221,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopic* 
-CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
+CTestPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -235,7 +237,7 @@ CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
+CTestPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -243,7 +245,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CStoragePubSubClientTopic* topicAccess = (*i).second;
+        CTestPubSubClientTopic* topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         lock.EarlyUnlock();
@@ -257,7 +259,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 const PUBSUB::CPubSubClientTopicConfig* 
-CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
+CTestPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -277,7 +279,7 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
+CTestPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
     return false;
@@ -286,7 +288,7 @@ CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globP
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
+CTestPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -302,7 +304,7 @@ CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topi
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
+CTestPubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -318,7 +320,7 @@ CStoragePubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& t
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString& 
-CStoragePubSubClient::GetType( void ) const
+CTestPubSubClient::GetType( void ) const
 {GUCEF_TRACE;
 
     return TypeName;
@@ -327,7 +329,7 @@ CStoragePubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CStoragePubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+CTestPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -337,12 +339,12 @@ CStoragePubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+CTestPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CStoragePubSubClientConfig cfg;
+    CTestPubSubClientConfig cfg;
     if ( cfg.LoadConfig( cfgRoot ) )
     {
         MT::CScopeMutex lock( m_lock );
@@ -356,7 +358,7 @@ CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::Disconnect( void )
+CTestPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -374,7 +376,7 @@ CStoragePubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::Connect( void )
+CTestPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -396,7 +398,7 @@ CStoragePubSubClient::Connect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::IsConnected( void ) const
+CTestPubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -418,7 +420,7 @@ CStoragePubSubClient::IsConnected( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::IsHealthy( void ) const
+CTestPubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -461,12 +463,12 @@ CStoragePubSubClient::IsHealthy( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::RegisterEventHandlers( void )
+CTestPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_metricsTimer )
     {
-        TEventCallback callback( this, &CStoragePubSubClient::OnMetricsTimerCycle );
+        TEventCallback callback( this, &CTestPubSubClient::OnMetricsTimerCycle );
         SubscribeTo( m_metricsTimer                 ,
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
@@ -476,14 +478,14 @@ CStoragePubSubClient::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CStoragePubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+CTestPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != topic )
     {
-        TEventCallback callback( this, &CStoragePubSubClient::OnTopicHealthStatusChange );
+        TEventCallback callback( this, &CTestPubSubClient::OnTopicHealthStatusChange );
         SubscribeTo( topic                                         ,
-                     CStoragePubSubClient::HealthStatusChangeEvent ,
+                     CTestPubSubClient::HealthStatusChangeEvent ,
                      callback                                      );
     }
 }
@@ -491,7 +493,7 @@ CStoragePubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* to
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+CTestPubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
                                                  const CORE::CEvent& eventId  ,
                                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
@@ -503,7 +505,7 @@ CStoragePubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+CTestPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                            const CORE::CEvent& eventId  ,
                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
@@ -523,24 +525,24 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CStoragePubSubClientTopic* topic = (*i).second;
-        const CStoragePubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
+        CTestPubSubClientTopic* topic = (*i).second;
+        const CTestPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
-        const CStoragePubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        const CTestPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
         CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
         
         GUCEF_METRIC_GAUGE( metricsPrefix + ".queuedReadyToReadBuffers", topicMetrics.queuedReadyToReadBuffers, 1.0f );
         GUCEF_METRIC_GAUGE( metricsPrefix + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
         GUCEF_METRIC_GAUGE( metricsPrefix + ".largestBufferSizeInBytes", topicMetrics.largestBufferSizeInBytes, 1.0f );
         
-        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_STORAGE_TO_PUBSUB == topicConfig.mode )
+        if ( CTestPubSubClientTopicConfig::CHANNELMODE_TEST_TO_PUBSUB == topicConfig.mode )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
         }
         else
-        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_STORAGE == topicConfig.mode )
+        if ( CTestPubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_TEST == topicConfig.mode )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsWrittenToStorage", topicMetrics.msgsWrittenToStorage, 1.0f );
         }        
@@ -551,7 +553,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
+CTestPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     return m_lock.Lock( lockWaitTimeoutInMs );
@@ -560,7 +562,7 @@ CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::Unlock( void ) const 
+CTestPubSubClient::Unlock( void ) const 
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
@@ -572,7 +574,7 @@ CStoragePubSubClient::Unlock( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace STORAGE */
+}; /* namespace TEST */
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 

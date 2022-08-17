@@ -165,9 +165,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     const StringToPubSubClientSideMetricsMap& GetSideMetrics( void ) const;
 
+    bool PerformPubSubClientSetup( bool hardReset = false );
+    
     bool ConnectPubSubClient( void );
 
     bool DisconnectPubSubClient( bool destroyClient = false );
+
+    bool GetPubSubClientSupportedFeatures( CPubSubClientFeatures& features ) const;
 
     bool IsRunningInDedicatedThread( void ) const;
 

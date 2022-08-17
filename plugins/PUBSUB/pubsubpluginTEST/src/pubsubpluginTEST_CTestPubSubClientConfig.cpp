@@ -1,7 +1,7 @@
 /*
- *  gucefPUBSUB: GUCEF module providing pub-sub communication facilities
+ *  pubsubpluginTEST: Generic GUCEF PUBSUB plugin for adding integration/system tests
  *
- *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"
-#define GUCEF_CORE_DVCPPSTRINGUTILS_H
-#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
-#include "gucefPUBSUB_PubSubRouteTypes.h"    
+#include "pubsubpluginTEST_CTestPubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,7 +36,8 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PUBSUB {
+namespace PUBSUBPLUGIN {
+namespace TEST {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,38 +45,69 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::CString
-RouteTypeToString( RouteType routeType )
+CTestPubSubClientConfig::CTestPubSubClientConfig( void )
+    : PUBSUB::CPubSubClientConfig()
+    , defaultIsHealthyStatus( true )
 {GUCEF_TRACE;
 
-    switch ( routeType )
-    {
-        case Disabled:          return "Disabled";
-        case Active:            return "Active";
-        case Primary:           return "Primary";
-        case Failover:          return "Failover";
-        case SpilloverBuffer:   return "SpilloverBuffer";
-        case DeadLetter:        return "DeadLetter";
-        default:                return CString::Empty;
-    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-RouteType 
-StringToRouteType( const CORE::CString& routeTypeStr )
+CTestPubSubClientConfig::CTestPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig )
+    : PUBSUB::CPubSubClientConfig( genericConfig )
+    , defaultIsHealthyStatus( true )
 {GUCEF_TRACE;
 
-    CORE::CString routeTypeStrLc = routeTypeStr.Lowercase();
-    if ( "disabled" == routeTypeStrLc ) return Disabled;
-    if ( "active" == routeTypeStrLc ) return Active;
-    if ( "primary" == routeTypeStrLc ) return Primary;
-    if ( "failover" == routeTypeStrLc ) return Failover;
-    if ( "spilloverbuffer" == routeTypeStrLc ) return SpilloverBuffer;
-    if ( "deadletter" == routeTypeStrLc ) return DeadLetter;
+    LoadCustomConfig( genericConfig.customConfig );  
+}
 
-    // If we get here treat it as an int
-    return (RouteType) CORE::StringToInt32( routeTypeStrLc, Disabled );
+/*-------------------------------------------------------------------------*/
+
+CTestPubSubClientConfig::~CTestPubSubClientConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+    
+    defaultIsHealthyStatus = config.GetAttributeValueOrChildValueByName( "defaultIsHealthyStatus" ).AsBool( defaultIsHealthyStatus, true );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTestPubSubClientConfig& 
+CTestPubSubClientConfig::operator=( const PUBSUB::CPubSubClientConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientConfig::operator=( src );
+        LoadCustomConfig( src.customConfig );    
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTestPubSubClientConfig& 
+CTestPubSubClientConfig::operator=( const CTestPubSubClientConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientConfig::operator=( src );
+
+        defaultIsHealthyStatus = src.defaultIsHealthyStatus;
+
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +116,8 @@ StringToRouteType( const CORE::CString& routeTypeStr )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PUBSUB */
+}; /* namespace KAFKA */
+}; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

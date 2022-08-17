@@ -1,7 +1,7 @@
 /*
- *  gucefPUBSUB: GUCEF module providing pub-sub communication facilities
+ *  pubsubpluginTEST: Generic GUCEF PUBSUB plugin for adding integration/system tests
  *
- *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_PUBSUBROUTETYPES_H
-#define GUCEF_PUBSUB_PUBSUBROUTETYPES_H
+#ifndef PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H
+#define PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"    
-#define GUCEF_PUBSUB_MACROS_H
-#endif /* GUCEF_PUBSUB_MACROS_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#include "gucefPUBSUB_CPubSubClientConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
+
+#ifndef PUBSUBPLUGIN_TEST_MACROS_H
+#include "pubsubpluginTEST_macros.h"
+#define PUBSUBPLUGIN_TEST_MACROS_H
+#endif /* PUBSUBPLUGIN_TEST_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,38 +42,40 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PUBSUB {
+namespace PUBSUBPLUGIN {
+namespace TEST {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-enum RouteType : CORE::Int32
+class CTestPubSubClient;
+
+/**
+ *  Standard pub-sub client config with some custom specifcs added for this
+ *  specific pub-sub backend
+ */
+class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientConfig : public PUBSUB::CPubSubClientConfig
 {
-    Disabled        = 0 , /**< not a runtime active route */
-    Active          = 1 , /**< the active route this varies between the available routes and the logic applied */
+    public:
 
-    Primary         = 2 , /**< regular flow under normal conditions */
-    Failover        = 3 , /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
-    SpilloverBuffer = 4 , /**< if the primary is unhealthy or is a slow consumer the spill over acts as buffer for the primary route */
-    DeadLetter      = 5   /**< unable to publish on configured channels and remedies exhausted messages go here */
+    bool defaultIsHealthyStatus;
+
+    
+    CTestPubSubClientConfig( void );
+    
+    CTestPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig );
+
+    virtual ~CTestPubSubClientConfig() GUCEF_VIRTUAL_OVERRIDE;
+
+    CTestPubSubClientConfig& operator=( const PUBSUB::CPubSubClientConfig& src );
+
+    CTestPubSubClientConfig& operator=( const CTestPubSubClientConfig& src );
+
+    bool LoadCustomConfig( const CORE::CDataNode& config );
 };
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-GUCEF_PUBSUB_EXPORT_CPP
-CORE::CString RouteTypeToString( RouteType routeType );
-
-inline CORE::CString ToString( RouteType routeType ) { return RouteTypeToString( routeType ); }
-
-GUCEF_PUBSUB_EXPORT_CPP RouteType 
-StringToRouteType( const CORE::CString& routeTypeStr );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,10 +83,10 @@ StringToRouteType( const CORE::CString& routeTypeStr );
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PUBSUB */
+}; /* namespace TEST */
+}; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_PUBSUBROUTETYPES_H ? */
-
+#endif /* PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTCONFIG_H ? */

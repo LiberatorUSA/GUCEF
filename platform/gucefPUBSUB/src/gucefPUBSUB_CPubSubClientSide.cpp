@@ -428,6 +428,26 @@ CPubSubClientSide::GetSideMetrics( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubClientSide::GetPubSubClientSupportedFeatures( CPubSubClientFeatures& features ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    try
+    {
+        if ( !m_pubsubClient.IsNULL() && m_pubsubClient->GetSupportedFeatures( features ) )
+            return true;
+    }
+    catch ( const std::exception& )
+    {
+        
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubClientSide::IsHealthy( void ) const
 {GUCEF_TRACE;
 
@@ -1164,10 +1184,10 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
                 "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s)" );
             
-            // We now broadcast the received messages to all other sides which is the purpose of this service
+            // We now broadcast the received messages to all other sides which is the purpose of this class
             if ( GUCEF_NULL != m_flowRouter )
             {
-                bool totalSuccess = m_flowRouter->PublishMsgs( this, msgs, RouteType::Primary );
+                bool totalSuccess = m_flowRouter->PublishMsgs( this, msgs, RouteType::Active );
                 if ( totalSuccess )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
@@ -1686,6 +1706,8 @@ bool
 CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+
     if ( m_pubsubClient.IsNULL() )
         return true;
 
@@ -1822,11 +1844,13 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConnectPubSubClient( void )
+CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 {GUCEF_TRACE;
 
-    if ( !DisconnectPubSubClient() )
+    if ( !DisconnectPubSubClient( hardReset ) )
         return false;
+    
+    MT::CObjectScopeLock lock( this );
 
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
@@ -1845,6 +1869,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     if ( pubSubConfig.pubsubIdPrefix == "{auto}"  )
         pubSubConfig.pubsubIdPrefix = m_sideSettings.pubsubIdPrefix + '.' + m_sideId; 
 
+    bool clientSetupWasNeeded = false;
     if ( m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client
@@ -1855,7 +1880,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
         if ( m_pubsubClient.IsNULL() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):ConnectPubSubClient: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );
+                "):PerformPubSubClientSetup: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );
             return false;
         }
 
@@ -1863,17 +1888,50 @@ CPubSubClientSide::ConnectPubSubClient( void )
         // This allows getting all the way from:
         //      a message -> a topic -> a client -> a pubsub side
         m_pubsubClient->SetOpaqueUserData( this );
+        
+        clientSetupWasNeeded = true;
     }
 
     // Refresh our client features cache
-    m_pubsubClient->GetSupportedFeatures( m_clientFeatures );
+    if ( !m_pubsubClient->GetSupportedFeatures( m_clientFeatures ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):PerformPubSubClientSetup: Failed to obtain supported a pub-sub client supported features" );
+        return false;
+    }
 
     if ( !m_clientFeatures.supportsAutoReconnect )
     {
         if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
             m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
+        else
+            m_pubsubClientReconnectTimer->SetInterval( pubSubConfig.reconnectDelayInMs );
     }
 
+    if ( clientSetupWasNeeded )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):PerformPubSubClientSetup: Setup completed for pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\" for side with id " +
+            GetSideId() );
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::ConnectPubSubClient( void )
+{GUCEF_TRACE;
+
+    // Make sure setup was completed before connecting
+    if ( !PerformPubSubClientSetup( false ) )
+        return false;
+
+    MT::CObjectScopeLock lock( this );
+
+    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
+    
     // Whether we need to track successfull message handoff (garanteed handling) depends on various factors outside the scope of any one side
     // as such we need to ask the overarching infra to come up with a conclusion on this need
     // We will cache the outcome as a side local setting to negate locking needs

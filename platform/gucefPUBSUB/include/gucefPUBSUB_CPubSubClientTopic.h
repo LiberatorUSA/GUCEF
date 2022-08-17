@@ -92,7 +92,7 @@ class CPubSubClient;
  *  One of the problemsets when dealing with providing a generic interface to a plethora of different pubsub
  *  style backends is that each of the dependencies have their own limits in what they can or cannot achieve
  *  The ability to use an eventing approach, a mainstay in these libraries, to async be notified of the publish 
- *  success or failure of your earlier publish action is thus something that is hard to standardize in any meaningful way
+ *  success or failure of your earlier publish action is thus something that is hard to standardize in any meaningful way.
  *  In order the allow tracing between the cause and effect, the Publish() action and the eventual resulting 
  *  success or failure indicator on a per-message basis the publishActionId concept was introduced.
  *  It is backend agnostic and simplistic enough that regardless of backend capabilities every backend should be able to
@@ -155,6 +155,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     static const CORE::CEvent MsgsRecievedEvent;                /**< event msg sent when the backend has received 1-N messages from the pubsub system as a subscriber */
     static const CORE::CEvent MsgsPublishedEvent;               /**< event msg sent when the backend has successfully published messages */
     static const CORE::CEvent MsgsPublishFailureEvent;          /**< event msg sent when the backend has failed to successfully publish messages */
+    static const CORE::CEvent SubscriptionEndOfDataEvent;       /**< event msg sent when all available data as subscribed has been recieved, provided the backend supports this feature */
     static const CORE::CEvent LocalPublishQueueFullEvent;       /**< if the backend supports queuing messages locally then we have to deal with the possibility of said queue reaching a max capacity */
     static const CORE::CEvent PublishThrottleEvent;             /**< if you overload the backend system as a published you may receive a throttle event msg. In such a case you should back off your publish rate if possible */
     static const CORE::CEvent HealthStatusChangeEvent;          /**< event msg sent if the health status changes for the topic */

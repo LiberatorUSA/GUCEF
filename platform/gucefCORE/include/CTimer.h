@@ -89,6 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     {
         UInt64 tickCount;
         Float64 updateDeltaInMilliSecs;
+        void* opaqueUserData;
     };
     typedef struct STimerUpdateData TTimerUpdateData;
     typedef CTCloneableObj< TTimerUpdateData > TimerUpdateEventData;
@@ -177,6 +178,19 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
 
+	/**
+	 *  Unlinks from the current pulse generator and links to the new given one
+	 *
+	 *  Note that the caller is responsible for ensuring associated threads are not activing timer
+     *  internals at the time you are calling this function as it is NOT threadsafe
+	 *  Use with great care
+	 */
+    void SetPulseGenerator( CPulseGenerator* newPulseGenerator );    
+    
+    void SetOpaqueUserData( void* opaqueUserData );
+
+    void* GetOpaqueUserData( void ) const;
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -204,6 +218,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     bool m_enabled;
     bool m_immediateTriggerRequested;
     CPulseGenerator* m_pulseGenerator;
+    void* m_opaqueUserData;
 };
 
 /*-------------------------------------------------------------------------//
@@ -215,17 +230,6 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added this section.
-        - Dinand: Converted class from callback interface based mechanics to
-          notification
-
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTIMER_H  ? */

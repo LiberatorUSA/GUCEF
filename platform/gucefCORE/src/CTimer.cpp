@@ -83,6 +83,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     , m_enabled( false )
     , m_immediateTriggerRequested( false )
     , m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -116,6 +117,7 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
     , m_enabled( false )
     , m_immediateTriggerRequested( false )
     , m_pulseGenerator( &pulseGenerator )
+    , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_pulseGenerator )
@@ -151,6 +153,7 @@ CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
     , m_enabled( false )
     , m_immediateTriggerRequested( false )
     , m_pulseGenerator( pulseGenerator )
+    , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_pulseGenerator )
@@ -185,6 +188,7 @@ CTimer::CTimer( const CTimer& src )
     , m_enabled( false )
     , m_immediateTriggerRequested( false )
     , m_pulseGenerator( src.m_pulseGenerator )
+    , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -228,6 +232,7 @@ CTimer::operator=( const CTimer& src )
         m_lastTimerCycle = src.m_lastTimerCycle;
         m_enabled = src.m_enabled;
         m_tickCount = src.m_tickCount;
+        m_opaqueUserData = GUCEF_NULL;
     }
     return *this;
 }
@@ -314,6 +319,24 @@ CTimer::GetEnabled( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CTimer::SetOpaqueUserData( void* opaqueUserData )
+{GUCEF_TRACE;
+
+    m_opaqueUserData = opaqueUserData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void* 
+CTimer::GetOpaqueUserData( void ) const
+{GUCEF_TRACE;
+
+    return m_opaqueUserData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTimer::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
                                      const CEvent& eventid               ,
                                      CICloneable* eventdata /* = NULL */ )
@@ -350,6 +373,7 @@ CTimer::OnPulse( CNotifier* notifier                 ,
             TTimerUpdateData& updateData = cuData.GetData();
             updateData.tickCount = m_tickCount;
             updateData.updateDeltaInMilliSecs = deltaMilliSecs;
+            updateData.opaqueUserData = m_opaqueUserData;
             NotifyObservers( TimerUpdateEvent, &cuData );
         }
     }
@@ -475,6 +499,22 @@ CTimer::Unlock( void ) const
 {GUCEF_TRACE;
     
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTimer::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
+{GUCEF_TRACE;
+    
+    bool wasEnabled = m_enabled;
+
+    SetEnabled( false );
+    Reset();
+
+    m_pulseGenerator = newPulseGenerator;
+    if ( wasEnabled )
+        SetEnabled( wasEnabled );
 }
 
 /*-------------------------------------------------------------------------//

@@ -166,6 +166,7 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
     features.supportsDiscoveryOfAvailableTopics = false; // @TODO: need to look into this
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
+    features.supportsSubscriptionEndOfDataEvent = false;
     return true;
 }
 

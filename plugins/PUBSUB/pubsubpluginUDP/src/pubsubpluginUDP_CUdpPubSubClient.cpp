@@ -174,6 +174,7 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsDiscoveryOfAvailableTopics = false; // UDP has no such concept 
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
+    features.supportsSubscriptionEndOfDataEvent = false;
 
     return true;
 }

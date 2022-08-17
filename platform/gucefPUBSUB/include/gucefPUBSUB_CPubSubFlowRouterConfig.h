@@ -65,6 +65,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouterConfig : public CORE::CIConfigura
 
     AckStyle ackStyle;
     PubSubFlowRouteConfigVector routes;
+    CORE::UInt32 minBadHealthDurationBeforeFailoverInMs;
+    CORE::UInt32 minBadHealthDurationBeforeSpilloverInMs;
+    CORE::UInt32 minPrimarySideGoodHealthDurationBeforeActivationInMs;
+    CORE::UInt32 minFailoverSideGoodHealthDurationBeforeActivationInMs;
+    CORE::UInt32 minSpilloverSideGoodHealthDurationBeforeActivationInMs;
 
     static CORE::CString AckStyleToString( AckStyle ackStyle );
     static AckStyle StringToAckStyle( const CORE::CString& ackStyleStr );

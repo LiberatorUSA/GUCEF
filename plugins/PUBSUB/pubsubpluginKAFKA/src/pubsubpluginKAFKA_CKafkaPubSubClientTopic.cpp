@@ -584,8 +584,11 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         m_kafkaConsumerConf = kafkaConf;
 
         #ifdef GUCEF_DEBUG_MODE
-        m_kafkaConsumerConf->set( "enable.partition.eof", "true", errStr );
+        bool tracePartitionEof = true;
+        #else
+        bool tracePartitionEof = clientConfig.desiredFeatures.supportsSubscriptionEndOfDataEvent;
         #endif
+        m_kafkaConsumerConf->set( "enable.partition.eof", tracePartitionEof ? "true" : "false", errStr );
 
         // Apply default client level topic config as an overlay
         RdKafka::Conf* kafkaConsumerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
@@ -1932,6 +1935,13 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         {
             // Last message that was available has been read
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic: Kafka topic \"" + m_config.topicName + "\" doesnt have any new messages waiting to be consumed" );
+
+            if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+            {
+                // We need to see if we have reached EOF across all partitions not just the partition for which the RdKafka event was sent.
+                // @TODO
+            }
+
             break;
         }
         case RdKafka::ERR__UNKNOWN_PARTITION:

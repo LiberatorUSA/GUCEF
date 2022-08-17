@@ -56,6 +56,7 @@ const CORE::CEvent CPubSubClientTopic::InternalErrorEvent = "GUCEF::PUBSUB::CPub
 const CORE::CEvent CPubSubClientTopic::MsgsRecievedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsRecievedEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsPublishedEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsPublishedEvent";
 const CORE::CEvent CPubSubClientTopic::MsgsPublishFailureEvent = "GUCEF::PUBSUB::CPubSubClientTopic::MsgsPublishFailureEvent";
+const CORE::CEvent CPubSubClientTopic::SubscriptionEndOfDataEvent = "GUCEF::PUBSUB::CPubSubClientTopic::SubscriptionEndOfDataEvent";
 const CORE::CEvent CPubSubClientTopic::LocalPublishQueueFullEvent = "GUCEF::PUBSUB::CPubSubClientTopic::LocalPublishQueueFullEvent";
 const CORE::CEvent CPubSubClientTopic::PublishThrottleEvent = "GUCEF::PUBSUB::CPubSubClientTopic::PublishThrottleEvent";
 const CORE::CEvent CPubSubClientTopic::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClientTopic::HealthStatusChangeEvent";
@@ -77,6 +78,7 @@ CPubSubClientTopic::RegisterEvents( void )
     MsgsRecievedEvent.Initialize();
     MsgsPublishedEvent.Initialize();
     MsgsPublishFailureEvent.Initialize();
+    SubscriptionEndOfDataEvent.Initialize();
     LocalPublishQueueFullEvent.Initialize();
     PublishThrottleEvent.Initialize();
     HealthStatusChangeEvent.Initialize();

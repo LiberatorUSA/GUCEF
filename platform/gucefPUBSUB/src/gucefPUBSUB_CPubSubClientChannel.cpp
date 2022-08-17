@@ -191,9 +191,18 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
             return false;
         }
 
+        if ( !side->PerformPubSubClientSetup() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because side with id " + sideId + " failed to setup pubsub client" );
+            return false;
+        }
+
         m_sides.push_back( side );
         ++c;
     }
+
+    // Hook up the flow router to the channel's pulse generator thus sharing the thread
+    m_flowRouter.SetPulseGenerator( GetPulseGenerator() );
     
     // Build the flow router's network based on available sides
     if ( !m_flowRouter.BuildRoutes( m_channelSettings.flowRouterConfig ,

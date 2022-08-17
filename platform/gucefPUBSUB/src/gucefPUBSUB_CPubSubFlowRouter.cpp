@@ -59,6 +59,8 @@ CPubSubFlowRouter::CPubSubFlowRouter( void )
     , m_config()
     , m_routeMap()
     , m_usedInRouteMap()
+    , m_spilloverInfoMap()
+    , m_pulseGenerator( GUCEF_NULL )
     , m_lock( true )
 {GUCEF_TRACE;
 
@@ -75,16 +77,89 @@ CPubSubFlowRouter::~CPubSubFlowRouter()
 /*-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
-    : toSide( GUCEF_NULL )
+    : activeSide( GUCEF_NULL )
+    , toSide( GUCEF_NULL )
     , toSideIsHealthy( true )
+    , toSideLastHealthStatusChange( CORE::CDateTime::PastMax )
     , failoverSide( GUCEF_NULL )
     , failoverSideIsHealthy( true )
+    , failoverSideLastHealthStatusChange( CORE::CDateTime::PastMax )
     , spilloverBufferSide( GUCEF_NULL )
     , spilloverBufferSideIsHealthy( true )
+    , spilloverBufferSideLastHealthStatusChange( CORE::CDateTime::PastMax )
+    , flowingIntoSpillover( true )
     , deadLetterSide( GUCEF_NULL )
     , deadLetterSideIsHealthy( true )
+    , deadLetterSideLastHealthStatusChange( CORE::CDateTime::PastMax )
+    , routeSwitchingTimer()
 {GUCEF_TRACE;
     
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouter::CRouteInfo::CRouteInfo( const CRouteInfo& src )
+    : activeSide( src.activeSide )
+    , toSide( src.toSide )
+    , toSideIsHealthy( src.toSideIsHealthy )
+    , toSideLastHealthStatusChange( src.toSideLastHealthStatusChange )
+    , failoverSide( src.failoverSide )
+    , failoverSideIsHealthy( src.failoverSideIsHealthy )
+    , failoverSideLastHealthStatusChange( src.failoverSideLastHealthStatusChange )
+    , spilloverBufferSide( src.spilloverBufferSide )
+    , spilloverBufferSideIsHealthy( src.spilloverBufferSideIsHealthy )
+    , spilloverBufferSideLastHealthStatusChange( src.spilloverBufferSideLastHealthStatusChange )
+    , flowingIntoSpillover( src.flowingIntoSpillover )
+    , deadLetterSide( src.deadLetterSide )
+    , deadLetterSideIsHealthy( src.deadLetterSideIsHealthy )
+    , deadLetterSideLastHealthStatusChange( src.deadLetterSideLastHealthStatusChange )
+    , routeSwitchingTimer( src.routeSwitchingTimer )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouter::CSpilloverInfo::CSpilloverInfo( void )
+    : spilledOverMsgs( 0 )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+    
+    return m_lock.WriterStart( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubFlowRouter::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return m_lock.WriterStop();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+    
+    return m_lock.ReaderStart( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubFlowRouter::ReadOnlyUnlock( void ) const
+{GUCEF_TRACE;
+    
+    return m_lock.ReaderStop();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -377,9 +452,215 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Routes are now defined for " +
         CORE::ToString( m_routeMap.size() ) + " source sides, with a total of " + CORE::ToString( totalPossibleRoutes ) + " possible routes" );    
     
+    // Validate side capabilities relative to the assigned roles
+    CORE::UInt32 sideClientCapabilityErrors = 0;
+    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        CPubSubClientSide* fromSide = (*r).first;
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+
+            if ( GUCEF_NULL != routeInfo.toSide )
+            {
+                CPubSubClientFeatures features;
+                if ( routeInfo.toSide->GetPubSubClientSupportedFeatures( features ) )
+                {
+                    // the 'to' side must be capable of:
+                    //      - receiving messages from the 'from' side and thus for the client that means capable of publishing
+
+                    bool isValid = true;
+                    if ( !features.supportsPublishing )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: 'to' side's client does not support publishing. This is invalid, disabling route: \"" +
+                            fromSide->GetSideId() + "\" -> \"" + routeInfo.toSide->GetSideId() );                        
+                        isValid = false; 
+                        ++sideClientCapabilityErrors;                       
+                    }
+                    
+                    if ( !isValid )
+                        routeInfo.toSide = GUCEF_NULL;
+                }
+            }
+            if ( GUCEF_NULL != routeInfo.deadLetterSide )
+            {
+                CPubSubClientFeatures features;
+                if ( routeInfo.deadLetterSide->GetPubSubClientSupportedFeatures( features ) )
+                {
+                    // the 'dead letter' side must be capable of:
+                    //      - receiving messages from the 'from' side and thus for the client that means capable of publishing
+
+                    bool isValid = true;
+                    if ( !features.supportsPublishing )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: 'dead letter' side's client does not support publishing. This is invalid, disabling route: \"" +
+                            fromSide->GetSideId() + "\" -> \"" + routeInfo.deadLetterSide->GetSideId() );                        
+                        isValid = false;
+                        ++sideClientCapabilityErrors;
+                    }
+                    
+                    if ( !isValid )
+                        routeInfo.deadLetterSide = GUCEF_NULL;
+                }
+            }
+            if ( GUCEF_NULL != routeInfo.failoverSide )
+            {
+                CPubSubClientFeatures features;
+                if ( routeInfo.failoverSide->GetPubSubClientSupportedFeatures( features ) )
+                {
+                    // the 'failover' side must be capable of:
+                    //      - receiving messages from the 'from' side and thus for the client that means capable of publishing
+
+                    bool isValid = true;
+                    if ( !features.supportsPublishing )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: 'failover' side's client does not support publishing. This is invalid, disabling route: \"" +
+                            fromSide->GetSideId() + "\" -> \"" + routeInfo.failoverSide->GetSideId() );                        
+                        isValid = false;                        
+                        ++sideClientCapabilityErrors;
+                    }
+                    
+                    if ( !isValid )
+                        routeInfo.failoverSide = GUCEF_NULL;
+                }
+            }
+            if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+            {
+                bool isValid = true;
+
+                // The spillover only works if you also have a surviving 'to' or 'failover' side
+                // since its not a final destination in of itself
+                if ( GUCEF_NULL != routeInfo.toSide || GUCEF_NULL != routeInfo.failoverSide )
+                {                
+                    CPubSubClientFeatures features;
+                    if ( routeInfo.spilloverBufferSide->GetPubSubClientSupportedFeatures( features ) )
+                    {
+                        // the 'spill over' side must be capable of:
+                        //      - receiving messages from the 'from' side and thus for the client that means capable of publishing
+                        //      - read back messages from the 'spillover' side and thus for the client that means capable of subscribing
+                    
+                        if ( !features.supportsPublishing )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: 'spillover' side's client does not support publishing. This is invalid, disabling route: \"" +
+                                fromSide->GetSideId() + "\" -> \"" + routeInfo.spilloverBufferSide->GetSideId() );                        
+                            isValid = false;                        
+                            ++sideClientCapabilityErrors;
+                        }
+                        if ( !features.supportsSubscribing )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: 'spillover' side's client does not support subscribing. This is invalid, disabling route: \"" +
+                                fromSide->GetSideId() + "\" -> \"" + routeInfo.spilloverBufferSide->GetSideId() );                        
+                            isValid = false;                        
+                            ++sideClientCapabilityErrors;
+                        }
+                    }
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: having a 'spillover' side requires also having a surviving 'to' or 'failover' side. Having neither is invalid, disabling route: \"" +
+                        fromSide->GetSideId() + "\" -> \"" + routeInfo.spilloverBufferSide->GetSideId() );
+                    isValid = false;
+                }
+
+                // We now also check if its unique, which is a requirement, and add it to a lookup map for faster ack management
+                TSidePtrToSpilloverInfoMap::iterator s = m_spilloverInfoMap.find( routeInfo.spilloverBufferSide );
+                if ( s == m_spilloverInfoMap.end() )
+                {
+                    // Add this one to the lookup map as part of the validation
+                    // this is both initialization as it is uniqueness validation
+                    CSpilloverInfo newSpilloverInfo;
+                    m_spilloverInfoMap[ routeInfo.spilloverBufferSide ] = newSpilloverInfo;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Spillover buffers must be unique to a given route, they cannot be shared. The configuration is invalid for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                        "\" with 'from' side \"" + fromSide->GetSideId() + "\". Removing spillover buffer feature from this route as a best-effort fallback" );
+                    isValid = false;
+                }
+
+                if ( !isValid )
+                    routeInfo.spilloverBufferSide = GUCEF_NULL;
+            }
+
+            // Check if the route is still partially viable even with errors
+            // This requires at least 1 surviving pathway
+            if ( GUCEF_NULL == routeInfo.toSide              &&
+                 GUCEF_NULL == routeInfo.failoverSide        &&
+                 GUCEF_NULL == routeInfo.spilloverBufferSide )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: No surviving viable pathways for side " + fromSide->GetSideId() + " post client capability verification" );
+                return false;                
+            }
+
+            ++n;
+        }
+        ++r;
+    }
+
+    if ( 0 == sideClientCapabilityErrors )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:BuildRoutes: No issues were detected with pubsub client capabilities for the assigned roles on the configured routes" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: A total of " + CORE::ToString( sideClientCapabilityErrors ) + " issues were detected with pubsub client capabilities for the assigned roles on the configured routes" );
+    }
+
+    // For any valid spillovers we will need to auto generate, if it was not explicitly specified, a route from that spillover to the intended 'to' destination
+    // since the originally intended traffic was 'from' -> 'to' but it will really at times flow 'from' -> 'spillover' -> 'to'
+    // hence we need the 'spillover' -> 'to' route defined for proper flow to occur
+    r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        CPubSubClientSide* fromSide = (*r).first;
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+
+            if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+            {
+                // We found a validated spillover side
+                // now lets make sure we have an egress route for it
+                TSidePtrToRouteInfoVectorMap::iterator r2 = m_routeMap.find( routeInfo.spilloverBufferSide );
+                if ( r2 != m_routeMap.end() )
+                {
+                    CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Egress route for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                        "\" to side \"" + toSide->GetSideId() + "\" exists as an explicitly provided configured route. No such route will be auto-generated" );
+                }
+                else
+                {
+                    // We are lacking an egress route
+                    // Since this is a spillover its pretty clear what the intent is and as such we can auto-generate this route
+                    // Doing so cuts down on the complexity of the config that needs to be provided while retaining the option to explicitly configure should it be needed
+                    TRouteInfoVector& spilloverMultiRouteInfo = m_routeMap[ routeInfo.spilloverBufferSide ];
+
+                    // The same destinations still apply coming out of the spillover
+                    // we do need to get rid of the spillover itself to make sure we dont create an endless loop
+                    CRouteInfo newSpilloverBypassRoute( routeInfo );
+                    newSpilloverBypassRoute.spilloverBufferSide = GUCEF_NULL;
+
+                    spilloverMultiRouteInfo.push_back( newSpilloverBypassRoute );
+
+                    CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Auto-generated egress route for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                        "\" to side \"" + toSide->GetSideId() + "\"" );
+                }
+            }
+
+            ++n;
+        }
+        ++r;
+    }
+
     // Now set up the reverse lookup map for efficient updates to routes
     TSidePtrToRouteInfoPtrSetMap sideUsedInMap;
-    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    r = m_routeMap.begin();
     while ( r != m_routeMap.end() )
     {
         TRouteInfoVector& multiRouteInfo = (*r).second;
@@ -417,15 +698,72 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
         ++s;
     }
     
-    // Now set up all the event handlers for each side
+    // Now set up all the event handlers 
     r = m_routeMap.begin();
     while ( r != m_routeMap.end() )
     {
         RegisterSideEventHandlers( (*r).first );
+
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+            RegisterRouteEventHandlers( routeInfo );
+            DetermineActiveRoute( routeInfo );
+            ++n;
+        }
+
         ++r;
     }
 
+    UpdatePulseGeneratorUsage();
+
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::RegisterRouteEventHandlers( CRouteInfo& routeInfo )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CPubSubFlowRouter::OnRouteSwitchTimerCycle );
+    SubscribeTo( &routeInfo.routeSwitchingTimer ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback                       );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::UpdatePulseGeneratorUsage( void )
+{GUCEF_TRACE;
+    
+    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+            routeInfo.routeSwitchingTimer.SetPulseGenerator( m_pulseGenerator );
+            ++n;
+        }
+        ++r;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator )
+{GUCEF_TRACE;
+    
+    MT::CScopeWriterLock lock( m_lock );
+    m_pulseGenerator = pulseGenerator;
+    UpdatePulseGeneratorUsage();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -457,15 +795,29 @@ CPubSubFlowRouter::AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide
                                               CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    CORE::UInt32 invokerThreadId = MT::GetCurrentTaskID();
+    {
+        // since spillover buffers are unique for a given route, garanteed by route building validation, logically only 1 thread would be 
+        // updating the spillover info, we just need the mapping to remain in existance.
+        // as such a read lock will suffice
+        MT::CScopeReaderLock lock( m_lock );
+
+        TSidePtrToSpilloverInfoMap::iterator i = m_spilloverInfoMap.find( msgReceiverSide );
+        if ( i != m_spilloverInfoMap.end() )
+        {
+            CSpilloverInfo& spilloverInfo = (*i).second;
+            ++spilloverInfo.spilledOverMsgs;
+        }
+    }
 
     // Right now we dont use the route info but instead use the source location
     // we can revisit this later but it is fragile due to reliance on GetOpaqueUserData()
-    // Due to this we right now dont need a lock here
+    // Due to this we right now dont need a lock here for the ack portion
 
     // Note that acks are always ONLY to the side that originated the message since that side is the only
     // one that knows about that specific message and whatever conventions its abstracting wrt the underlying message format
 
+    CORE::UInt32 invokerThreadId = MT::GetCurrentTaskID();
+    
     CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
     if ( GUCEF_NULL != originTopic )
     {
@@ -519,124 +871,34 @@ CPubSubFlowRouter::PublishMsgs( CPubSubClientSide* fromSide                     
     if ( i != m_routeMap.end() )
     {
         TRouteInfoVector& multiRouteInfo = (*i).second; 
-        switch ( routeType )
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
         {            
-            case RouteType::Primary:
-            {                
-                TRouteInfoVector::iterator n = multiRouteInfo.begin();
-                while ( n != multiRouteInfo.end() )
-                {            
-                    CRouteInfo& routeInfo = (*n);
-                    bool publishSuccess = true;
+            CRouteInfo& routeInfo = (*n);
+            CPubSubClientSide* targetSide = GUCEF_NULL;
 
-                    // Try our primary 'to' route first
-                    // This is the normal 99% (hopefully) case
-                    if ( GUCEF_NULL != routeInfo.toSide && routeInfo.toSideIsHealthy )
-                    {                    
-                        if ( !routeInfo.toSide->PublishMsgs( msgs ) )
-                        {
-                            // Primary 'to' route failed
-                            // Try the failover route if one is available
-                            if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
-                                publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
-                            else
-                                publishSuccess = false;
-                        }
-                    }   
-                    else
-                    {
-                        // Primary 'to' route is not available
-                        // Try the failover route if one is available
-                        if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
-                            publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
-                        else
-                            publishSuccess = false;
-                    }                
+            switch ( routeType )
+            {            
+                case RouteType::Active: { targetSide = routeInfo.activeSide; break; }
+                case RouteType::Primary: { targetSide = routeInfo.toSide; break; }
+                case RouteType::Failover: { targetSide = routeInfo.failoverSide; break; }
+                case RouteType::SpilloverBuffer: { targetSide = routeInfo.spilloverBufferSide; break; }
+                case RouteType::DeadLetter: { targetSide = routeInfo.deadLetterSide; break; }
+                default: { break; }
+            }
 
-                    if ( !publishSuccess )
-                    {
-                        // It seems the primary and failover routes have failed us
-                        // If there is a spillover available we can try using that route as a different type of failover
-                        if ( GUCEF_NULL != routeInfo.spilloverBufferSide && routeInfo.spilloverBufferSideIsHealthy )
-                            publishSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs );
-                        else
-                            publishSuccess = false;
-                    }
-
-                    publishIstotalSuccess = publishSuccess && publishIstotalSuccess;
-                    ++n;
+            if ( GUCEF_NULL != targetSide )
+            {                    
+                if ( !targetSide->PublishMsgs( msgs ) )
+                {
+                    publishIstotalSuccess = false;
                 }
-                break;
-            }
-            case RouteType::Failover:
+            }   
+            else
             {
-                TRouteInfoVector::iterator n = multiRouteInfo.begin();
-                while ( n != multiRouteInfo.end() )
-                { 
-                    CRouteInfo& routeInfo = (*n);
-                    bool publishSuccess = true;
-                    
-                    // Try the failover route if one is available
-                    if ( GUCEF_NULL != routeInfo.failoverSide && routeInfo.failoverSideIsHealthy )
-                        publishSuccess = routeInfo.failoverSide->PublishMsgs( msgs );
-                    else
-                        publishSuccess = false;
-
-                    if ( !publishSuccess )
-                    {
-                        // It seems the failover route has failed us
-                        // If there is a spillover available we can try using that route as a different type of failover
-                        if ( GUCEF_NULL != routeInfo.spilloverBufferSide && routeInfo.spilloverBufferSideIsHealthy )
-                            publishSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs );
-                        else
-                            publishSuccess = false;
-                    } 
-
-                    publishIstotalSuccess = publishSuccess && publishIstotalSuccess;
-                    ++n;
-                }                    
-                break;
+                publishIstotalSuccess = false;
             }
-            case RouteType::SpilloverBuffer:
-            {
-                bool spilloverRouteIstotalSuccess = true;
-                TRouteInfoVector::iterator n = multiRouteInfo.begin();
-                while ( n != multiRouteInfo.end() )
-                { 
-                    CRouteInfo& routeInfo = (*n);                
-                    if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
-                    {
-                        if ( routeInfo.spilloverBufferSideIsHealthy )
-                            spilloverRouteIstotalSuccess = routeInfo.spilloverBufferSide->PublishMsgs( msgs ) && spilloverRouteIstotalSuccess;
-                        else
-                            spilloverRouteIstotalSuccess = false;    
-                    }                
-                    ++n;
-                }
-                publishIstotalSuccess = spilloverRouteIstotalSuccess; 
-                break;
-            }
-            case RouteType::DeadLetter:
-            {
-                // If we get here clearly nothing else worked
-                // Since the deadletter flag was passed we have exhausted all retry attempts etc
-                bool deadLetterRouteIstotalSuccess = true;
-                TRouteInfoVector::iterator n = multiRouteInfo.begin();
-                while ( n != multiRouteInfo.end() )
-                { 
-                    CRouteInfo& routeInfo = (*n);                
-                    if ( GUCEF_NULL != routeInfo.deadLetterSide )
-                    {
-                        if ( routeInfo.deadLetterSideIsHealthy )
-                            deadLetterRouteIstotalSuccess = routeInfo.deadLetterSide->PublishMsgs( msgs ) && deadLetterRouteIstotalSuccess;
-                        else
-                            deadLetterRouteIstotalSuccess = false;    
-                    }                
-                    ++n;
-                }
-                publishIstotalSuccess = deadLetterRouteIstotalSuccess;                
-                break;
-            }
+            ++n;
         }
     }
     else
@@ -713,14 +975,183 @@ CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover )
+{GUCEF_TRACE;
+
+    // pull a copy of the config
+    CPubSubSideChannelSettings sideSettings = spilloverSide->GetSideSettings();
+
+    // (Re)Configure for the intended flow direction
+    if ( flowIntoSpillover ) 
+    {
+        // Configure for ingress aka publishing
+        sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = true;
+        sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = false;
+        
+        CPubSubClientConfig::TPubSubClientTopicConfigVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator t = topicConfigs.begin();
+        while ( t != topicConfigs.end() )
+        {
+            CPubSubClientTopicConfig& topicConfig = (*t);
+
+            topicConfig.needPublishSupport = true;
+            topicConfig.needSubscribeSupport = false;
+
+            ++t;
+        }
+    }
+    else
+    {
+        // Configure for egress aka subscribing
+        sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = false;
+        sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = true;
+
+        CPubSubClientConfig::TPubSubClientTopicConfigVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator t = topicConfigs.begin();
+        while ( t != topicConfigs.end() )
+        {
+            CPubSubClientTopicConfig& topicConfig = (*t);
+
+            topicConfig.needPublishSupport = false;
+            topicConfig.needSubscribeSupport = true;
+
+            ++t;
+        }
+    }
+
+    if ( spilloverSide->DisconnectPubSubClient() )
+    {
+        if ( spilloverSide->LoadConfig( sideSettings ) )
+        {
+            return spilloverSide->ConnectPubSubClient();
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock lock( m_lock );
+    
+    CPubSubClientSide* newActiveSide = GUCEF_NULL;
+    
+    CORE::UInt64 primarySideHealthDurationInMs = (CORE::UInt64) routeInfo.toSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow();
+    
+    // Try our primary 'to' route first
+    // This is the normal 99% (hopefully) case
+    if ( GUCEF_NULL != routeInfo.toSide && 
+         routeInfo.toSideIsHealthy && 
+         primarySideHealthDurationInMs > m_config.minPrimarySideGoodHealthDurationBeforeActivationInMs )
+    {                    
+        if ( routeInfo.activeSide != routeInfo.toSide )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):DetermineActiveRoute: Switching active route to the Primary side" );
+        
+            routeInfo.activeSide = routeInfo.toSide;
+        }
+    }   
+    else
+    {
+        // Primary 'to' route is not available
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+            "):DetermineActiveRoute: The Primary route is not available. Its health status last changed " + CORE::ToString( primarySideHealthDurationInMs ) +
+            "ms ago" );
+
+        if ( primarySideHealthDurationInMs > m_config.minBadHealthDurationBeforeSpilloverInMs )
+        {        
+            CORE::UInt64 failoverSideHealthDurationInMs = (CORE::UInt64) routeInfo.failoverSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow();
+            
+            // Try the failover route if one is available
+            if ( GUCEF_NULL != routeInfo.failoverSide && 
+                 routeInfo.failoverSideIsHealthy && 
+                 failoverSideHealthDurationInMs > m_config.minFailoverSideGoodHealthDurationBeforeActivationInMs )
+            {
+                if ( routeInfo.activeSide != routeInfo.failoverSide )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                        "):DetermineActiveRoute: Switching active route to the Failover side" );
+        
+                    routeInfo.activeSide = routeInfo.failoverSide;
+                }
+            }
+            else
+            {            
+                // It seems the primary and failover routes have failed us
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                    "):DetermineActiveRoute: The Primary and Failover sides for the route are not available. Failover health status last changed " + CORE::ToString( failoverSideHealthDurationInMs ) +
+                    "ms ago" );
+                
+                // If there is a spillover available we can try using that route as a different type of failover
+                if ( GUCEF_NULL != routeInfo.spilloverBufferSide && 
+                     routeInfo.spilloverBufferSideIsHealthy && 
+                     routeInfo.spilloverBufferSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow() > m_config.minSpilloverSideGoodHealthDurationBeforeActivationInMs )
+                {
+                    // At this point the spillover is healthy and the primary and failover are not
+                    if ( primarySideHealthDurationInMs > m_config.minBadHealthDurationBeforeSpilloverInMs ||
+                         failoverSideHealthDurationInMs > m_config.minBadHealthDurationBeforeSpilloverInMs )
+                    {
+                        // At this point we also know we waited the configured time before failing over to the spillover
+                        // this is important because for a quick flickering connection its not worth the overhead to fail over to the spillover buffer which likely involves setup cost
+                        // plus the ongoing headache of having to read back from the spillover once the primary or failover routes are restored.
+                        // Thus if a simple retry saves the day between 'from' and 'to' you should favor that instead of the spillover mechanism
+                        if ( routeInfo.activeSide != routeInfo.spilloverBufferSide )
+                        {
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                                "):DetermineActiveRoute: Switching active route to the Spillover buffer side" );
+        
+                            routeInfo.activeSide = routeInfo.spilloverBufferSide;
+                            if ( !routeInfo.flowingIntoSpillover )
+                            {
+                                if ( ConfigureSpillover( routeInfo.spilloverBufferSide, true ) )
+                                {
+                                    routeInfo.flowingIntoSpillover = true;
+                                }
+                                else
+                                {
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }                
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnRouteSwitchTimerCycle( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CTimer* routeSwitchTimer = static_cast< CORE::CTimer* >( notifier );
+    if ( GUCEF_NULL != routeSwitchTimer )
+    {
+        CRouteInfo* routeInfo = static_cast< CRouteInfo* >( routeSwitchTimer->GetOpaqueUserData() );
+        if ( GUCEF_NULL != routeInfo )
+        {
+            DetermineActiveRoute( *routeInfo );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
                                                         bool isHealthy          )
 {GUCEF_TRACE;
 
-    // Since this function is the only one update the health flag and since its just a bool flag
-    // we will use a reader lock as long as we can get away with it instead of a writer lock
-    MT::CScopeReaderLock lock( m_lock );
+    MT::CScopeWriterLock lock( m_lock );
     
     TSidePtrToRouteInfoPtrVectorMap::iterator i = m_usedInRouteMap.find( side );
     if ( i != m_usedInRouteMap.end() )
@@ -735,23 +1166,43 @@ CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side 
         
             if ( side == routeInfo->toSide )
             {
-                routeInfo->toSideIsHealthy = isHealthy;
-                ++flagsUpdated;
+                if ( routeInfo->toSideIsHealthy != isHealthy )
+                {
+                    routeInfo->toSideIsHealthy = isHealthy;                    
+                    routeInfo->toSideLastHealthStatusChange = CORE::CDateTime::NowUTCDateTime();
+                    ++flagsUpdated;
+                    routeInfo->routeSwitchingTimer.SetEnabled( true );
+                }
             }
             if ( side == routeInfo->failoverSide )
             {
-                routeInfo->failoverSideIsHealthy = isHealthy;
-                ++flagsUpdated;
+                if ( routeInfo->failoverSideIsHealthy != isHealthy )
+                {
+                    routeInfo->failoverSideIsHealthy = isHealthy;                    
+                    routeInfo->failoverSideLastHealthStatusChange = CORE::CDateTime::NowUTCDateTime();
+                    ++flagsUpdated;
+                    routeInfo->routeSwitchingTimer.SetEnabled( true );
+                }
             }
             if ( side == routeInfo->toSide )
             {
-                routeInfo->deadLetterSideIsHealthy = isHealthy;
-                ++flagsUpdated;
+                if ( routeInfo->deadLetterSideIsHealthy != isHealthy )
+                {
+                    routeInfo->deadLetterSideIsHealthy = isHealthy;                    
+                    routeInfo->deadLetterSideLastHealthStatusChange = CORE::CDateTime::NowUTCDateTime();
+                    ++flagsUpdated;
+                    routeInfo->routeSwitchingTimer.SetEnabled( true );
+                }
             }
             if ( side == routeInfo->spilloverBufferSide )
             {
-                routeInfo->spilloverBufferSideIsHealthy = isHealthy;
-                ++flagsUpdated;
+                if ( routeInfo->spilloverBufferSideIsHealthy != isHealthy )
+                {
+                    routeInfo->spilloverBufferSideIsHealthy = isHealthy;                    
+                    routeInfo->spilloverBufferSideLastHealthStatusChange = CORE::CDateTime::NowUTCDateTime();
+                    ++flagsUpdated;
+                    routeInfo->routeSwitchingTimer.SetEnabled( true );
+                }
             }
 
             ++n;

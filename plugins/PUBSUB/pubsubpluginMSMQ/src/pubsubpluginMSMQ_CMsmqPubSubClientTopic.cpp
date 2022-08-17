@@ -888,7 +888,8 @@ CMsmqPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 
     #else
 
-    return false; 
+    // Since we read messages in a destructive manner, no peeking, treat as FYI no-op
+    return true; 
 
     #endif
 }
@@ -995,9 +996,14 @@ CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& b
         }
     }
 
-    #endif
-
     return false;
+
+    #else
+
+    // Since we read messages in a destructive manner, no peeking, treat as FYI no-op
+    return true;
+
+    #endif 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2354,6 +2360,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     // For MSMQ 3.0 and above:
     const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
     bool supportLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
+    bool endOfData = false;
 
     CORE::UInt32 msgsRead = 0; bool isRetry = false;
     for ( CORE::Int32 i=0; i<(CORE::Int32)m_config.maxMsmqMsgsToReadPerSyncCycle; ++i )
@@ -2470,6 +2477,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
             {
                 // No more messages are available, stop trying to read more
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
+                endOfData = true;
                 break; 
             }
 
@@ -2478,6 +2486,7 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
             {
                 // No more messages are available, stop trying to read more
                 i = m_config.maxMsmqMsgsToReadPerSyncCycle; 
+                endOfData = true;
                 break; 
             }
 
@@ -2580,10 +2589,16 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     }
 
     NotifyOfReceivedMsgs();
+    
     if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: max msgs per cycle reached, asking for immediate pulse cycle" );
         m_syncReadTimer->RequestImmediateTrigger();
+    }
+    else
+    if ( endOfData && clientConfig.desiredFeatures.supportsSubscriptionEndOfDataEvent )
+    {
+        NotifyObservers( SubscriptionEndOfDataEvent );
     }
 }
 

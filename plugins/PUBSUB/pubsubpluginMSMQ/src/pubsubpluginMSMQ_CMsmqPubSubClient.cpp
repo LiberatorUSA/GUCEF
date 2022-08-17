@@ -168,6 +168,7 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
     features.supportsDiscoveryOfAvailableTopics = true; // We support local private queue plus public queue discovery, provided account and AD permissions allow for access
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
+    features.supportsSubscriptionEndOfDataEvent = true; // We support notifying that we did not find any additional messages to read from the queue
     
     // For MSMQ 3.0 and above:
     #if ( _WIN32_WINNT >= 0x0501 )

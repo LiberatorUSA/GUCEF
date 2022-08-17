@@ -163,6 +163,7 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
     features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // We support a backoff of the consume() event processing
+    features.supportsSubscriptionEndOfDataEvent = false;  // @TODO: needs work
     return true;
 }
 

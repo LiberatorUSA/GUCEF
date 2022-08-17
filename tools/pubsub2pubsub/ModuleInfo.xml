@@ -29,6 +29,7 @@
 			<RuntimeDependency Name="pubsubpluginUDP" />
 			<RuntimeDependency Name="pubsubpluginSTORAGE" />
 			<RuntimeDependency Name="pubsubpluginWEB" />
+			<RuntimeDependency Name="pubsubpluginTEST" />
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >

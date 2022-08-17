@@ -169,6 +169,7 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
+    features.supportsSubscriptionEndOfDataEvent = false;
 
     return true;
 }

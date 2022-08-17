@@ -53,6 +53,11 @@ CPubSubFlowRouterConfig::CPubSubFlowRouterConfig( void )
     : CORE::CIConfigurable()
     , ackStyle( AckStyle::AllOrNothing )
     , routes()
+    , minBadHealthDurationBeforeFailoverInMs( 1000 )
+    , minBadHealthDurationBeforeSpilloverInMs( 5000 )
+    , minPrimarySideGoodHealthDurationBeforeActivationInMs( 1000 )
+    , minFailoverSideGoodHealthDurationBeforeActivationInMs( 1000 )
+    , minSpilloverSideGoodHealthDurationBeforeActivationInMs( 5000 )
 {GUCEF_TRACE;
 
 }
@@ -63,6 +68,11 @@ CPubSubFlowRouterConfig::CPubSubFlowRouterConfig( const CPubSubFlowRouterConfig&
     : CORE::CIConfigurable( src )
     , ackStyle( src.ackStyle )
     , routes( src.routes )
+    , minBadHealthDurationBeforeFailoverInMs( src.minBadHealthDurationBeforeFailoverInMs )
+    , minBadHealthDurationBeforeSpilloverInMs( src.minBadHealthDurationBeforeSpilloverInMs )
+    , minPrimarySideGoodHealthDurationBeforeActivationInMs( src.minPrimarySideGoodHealthDurationBeforeActivationInMs )
+    , minFailoverSideGoodHealthDurationBeforeActivationInMs( src.minFailoverSideGoodHealthDurationBeforeActivationInMs )
+    , minSpilloverSideGoodHealthDurationBeforeActivationInMs( src.minSpilloverSideGoodHealthDurationBeforeActivationInMs )
 {GUCEF_TRACE;
 
 }
@@ -84,6 +94,11 @@ CPubSubFlowRouterConfig::operator=( const CPubSubFlowRouterConfig& src )
         CORE::CIConfigurable::operator=( src );
         ackStyle = src.ackStyle;
         routes = src.routes;
+        minBadHealthDurationBeforeFailoverInMs = src.minBadHealthDurationBeforeFailoverInMs;
+        minBadHealthDurationBeforeSpilloverInMs = src.minBadHealthDurationBeforeSpilloverInMs;
+        minPrimarySideGoodHealthDurationBeforeActivationInMs = src.minPrimarySideGoodHealthDurationBeforeActivationInMs;
+        minFailoverSideGoodHealthDurationBeforeActivationInMs = src.minFailoverSideGoodHealthDurationBeforeActivationInMs;
+        minSpilloverSideGoodHealthDurationBeforeActivationInMs = src.minSpilloverSideGoodHealthDurationBeforeActivationInMs;
     }
     return *this;
 }
@@ -96,6 +111,11 @@ CPubSubFlowRouterConfig::Clear( void )
 
     ackStyle = AckStyle::AllOrNothing;
     routes.clear();
+    minBadHealthDurationBeforeFailoverInMs = 1000;
+    minBadHealthDurationBeforeSpilloverInMs = 5000;
+    minPrimarySideGoodHealthDurationBeforeActivationInMs = 1000;
+    minFailoverSideGoodHealthDurationBeforeActivationInMs = 1000;
+    minSpilloverSideGoodHealthDurationBeforeActivationInMs = 5000;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,6 +156,12 @@ CPubSubFlowRouterConfig::SaveConfig( CORE::CDataNode& cfg ) const
 
     bool totalSuccess = true;
     totalSuccess = cfg.SetAttribute( "ackStyle", AckStyleToString( ackStyle ) ) && totalSuccess;
+    
+    totalSuccess = cfg.SetAttribute( "minBadHealthDurationBeforeFailoverInMs", minBadHealthDurationBeforeFailoverInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "minBadHealthDurationBeforeSpilloverInMs", minBadHealthDurationBeforeSpilloverInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "minPrimarySideGoodHealthDurationBeforeActivationInMs", minPrimarySideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "minFailoverSideGoodHealthDurationBeforeActivationInMs", minFailoverSideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "minSpilloverSideGoodHealthDurationBeforeActivationInMs", minSpilloverSideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
 
     CORE::CDataNode* routesParentNode = cfg.FindOrAddChild( "routes" );
     if ( GUCEF_NULL != routesParentNode )
@@ -173,6 +199,12 @@ CPubSubFlowRouterConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     ackStyle = StringToAckStyle( cfg.GetAttributeValueOrChildValueByName( "ackStyle" ).AsString( AckStyleToString( ackStyle ), true ) );
+
+    minBadHealthDurationBeforeFailoverInMs = cfg.GetAttributeValueOrChildValueByName( "minBadHealthDurationBeforeFailoverInMs" ).AsUInt32( minBadHealthDurationBeforeFailoverInMs, true );
+    minBadHealthDurationBeforeSpilloverInMs = cfg.GetAttributeValueOrChildValueByName( "minBadHealthDurationBeforeSpilloverInMs" ).AsUInt32( minBadHealthDurationBeforeSpilloverInMs, true );
+    minPrimarySideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minPrimarySideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minPrimarySideGoodHealthDurationBeforeActivationInMs, true );
+    minFailoverSideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minFailoverSideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minFailoverSideGoodHealthDurationBeforeActivationInMs, true );
+    minSpilloverSideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minSpilloverSideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minSpilloverSideGoodHealthDurationBeforeActivationInMs, true );
 
     const CORE::CDataNode* routesParentNode = cfg.Find( "routes" );
     if ( GUCEF_NULL != routesParentNode )

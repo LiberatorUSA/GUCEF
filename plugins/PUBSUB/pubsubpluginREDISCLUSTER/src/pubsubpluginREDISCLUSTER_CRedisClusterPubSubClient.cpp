@@ -195,6 +195,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
     features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // we support delaying the redis read thread on a per read cycle basis
+    features.supportsSubscriptionEndOfDataEvent = false;
     return true;
 }
 

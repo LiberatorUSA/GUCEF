@@ -105,6 +105,18 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     bool AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide ,
                                     CIPubSubMsg::TNoLockSharedPtr& msg );
     
+    void SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator );
+    
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+
+    virtual bool ReadOnlyUnlock( void ) const;
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CPubSubFlowRouter >    TEventCallback;
@@ -113,24 +125,47 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     class CRouteInfo
     {
         public:
+        CPubSubClientSide* activeSide;
+        
         CPubSubClientSide* toSide;
         bool toSideIsHealthy;
+        CORE::CDateTime toSideLastHealthStatusChange;        
+
         CPubSubClientSide* failoverSide;
         bool failoverSideIsHealthy;
+        CORE::CDateTime failoverSideLastHealthStatusChange;
+
         CPubSubClientSide* spilloverBufferSide;
-        bool spilloverBufferSideIsHealthy;
+        bool spilloverBufferSideIsHealthy;        
+        CORE::CDateTime spilloverBufferSideLastHealthStatusChange;
+        bool flowingIntoSpillover;
+
         CPubSubClientSide* deadLetterSide;
         bool deadLetterSideIsHealthy;
+        CORE::CDateTime deadLetterSideLastHealthStatusChange;
+
+        CORE::CTimer routeSwitchingTimer;
 
         CRouteInfo( void );
+        CRouteInfo( const CRouteInfo& src );
     };
-    typedef std::vector< CRouteInfo >    TRouteInfoVector;
-    typedef std::vector< CRouteInfo* >   TRouteInfoPtrVector;
-    typedef std::set< CRouteInfo* >      TRouteInfoPtrSet;
+    typedef std::vector< CRouteInfo >       TRouteInfoVector;
+    typedef std::vector< CRouteInfo* >      TRouteInfoPtrVector;
+    typedef std::set< CRouteInfo* >         TRouteInfoPtrSet;
+    typedef std::set< CPubSubClientSide* >  TPubSubClientSidePtrSet;
+
+    class CSpilloverInfo
+    {
+        public:
+        CORE::UInt64 spilledOverMsgs;
+
+        CSpilloverInfo( void );
+    };
 
     typedef std::map< CPubSubClientSide*, TRouteInfoVector >     TSidePtrToRouteInfoVectorMap;
     typedef std::map< CPubSubClientSide*, TRouteInfoPtrVector >  TSidePtrToRouteInfoPtrVectorMap;
     typedef std::map< CPubSubClientSide*, TRouteInfoPtrSet >     TSidePtrToRouteInfoPtrSetMap;
+    typedef std::map< CPubSubClientSide*, CSpilloverInfo >       TSidePtrToSpilloverInfoMap;
     typedef std::map< CORE::CString, CORE::CString >             TStringMap;
 
     bool NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
@@ -146,15 +181,29 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     
     void RegisterSideEventHandlers( CPubSubClientSide* side );
 
+    void UpdatePulseGeneratorUsage( void );
+
+    void DetermineActiveRoute( CRouteInfo& routeInfo );
+
+    void OnRouteSwitchTimerCycle( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+
+    void RegisterRouteEventHandlers( CRouteInfo& routeInfo );
+    
     void 
     UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
                                          bool isHealthy          );
+    
+    bool ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover );
     
     private:
     
     CPubSubFlowRouterConfig m_config;
     TSidePtrToRouteInfoVectorMap m_routeMap;
     TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
+    TSidePtrToSpilloverInfoMap m_spilloverInfoMap;
+    CORE::CPulseGenerator* m_pulseGenerator;
     MT::CReadWriteLock m_lock;
 };
 
