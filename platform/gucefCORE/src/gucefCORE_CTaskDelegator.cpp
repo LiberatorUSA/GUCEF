@@ -117,6 +117,11 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
     RegisterEvents();
 
     m_pulseGenerator.SetPulseGeneratorDriver( this );
+
+    // If we are being handed the task consumer already we can already establish the bi-directional link
+    // this delegator is going to be the one to execute this task
+    // This means the task is now assigned to the thread which is represented by this delegator
+    m_taskConsumer->SetTaskDelegator( CreateBasicSharedPtr() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -294,53 +299,77 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     // This means the task is now assigned to the thread which is represented by this delegator
     taskConsumer->SetTaskDelegator( CreateBasicSharedPtr() );
 
-    // Now we go through the execution sequence within a cycle as if this
-    // where a thread sequence
-    m_consumerBusy = true;
-    if ( taskConsumer->OnTaskStart( taskData ) )
+    // Now that the consumer is linked to the delegator wait until we are
+    // given the signal that we are ready to begin operations
+    while ( taskConsumer->GetIsInPhasedSetup() )
     {
-        taskConsumer->OnTaskStarted( taskData );
-
-        // cycle the task as long as it is not "done"
-        while ( !IsDeactivationRequested() )
+        if ( !IsDeactivationRequested() )
         {
-            // Perform a cycle directly and ask the task if we are done
-            if ( taskConsumer->OnTaskCycle( taskData ) )
-            {
-                // Task says we are done
-                break;
-            }
+            m_pulseGenerator.WaitTillNextPulseWindow( 25 );
+        }
+        else
+        {
+            break;
+        }
+    }
+    
+    if ( !IsDeactivationRequested() )
+    {
+        // Now we go through the execution sequence within a cycle as if this
+        // where a thread sequence
+        m_consumerBusy = true;
+        if ( taskConsumer->OnTaskStart( taskData ) )
+        {
+            taskConsumer->OnTaskStarted( taskData );
 
-            SendDriverPulse( m_pulseGenerator );
-            if ( m_immediatePulseTickets > 0 )
+            // cycle the task as long as it is not "done"
+            while ( !IsDeactivationRequested() )
             {
-                --m_immediatePulseTickets;
-            }
-            else
-            {
-                if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
+                // Perform a cycle directly and ask the task if we are done
+                if ( taskConsumer->OnTaskCycle( taskData ) )
                 {
-                    m_pulseGenerator.WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
-                    m_taskRequestedCycleDelayInMs = 0;
+                    // Task says we are done
+                    break;
+                }
+
+                SendDriverPulse( m_pulseGenerator );
+                if ( m_immediatePulseTickets > 0 )
+                {
+                    --m_immediatePulseTickets;
                 }
                 else
                 {
-                    m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                    if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
+                    {
+                        m_pulseGenerator.WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
+                        m_taskRequestedCycleDelayInMs = 0;
+                    }
+                    else
+                    {
+                        m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                    }
                 }
             }
-        }
 
-        taskConsumer->OnTaskEnding( taskData, false );
-        taskConsumer->OnTaskEnded( taskData, false );
-        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
-        returnStatus = true;
+            taskConsumer->OnTaskEnding( taskData, false );
+            taskConsumer->OnTaskEnded( taskData, false );
+            m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+            returnStatus = true;
+        }
+        else
+        {
+            taskConsumer->OnTaskStartupFailed( taskData );
+            m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+        }
+        m_consumerBusy = false;    
     }
     else
     {
-        taskConsumer->OnTaskStartupFailed( taskData );
+        // We never even got to start the consumer's work
+        // not an error, just an efficiency thing so we still return success
         m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+        returnStatus = true;
     }
-    m_consumerBusy = false;
     return returnStatus;
 }
 

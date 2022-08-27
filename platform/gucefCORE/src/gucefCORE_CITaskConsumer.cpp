@@ -83,6 +83,7 @@ CTaskConsumer::CTaskConsumer( void )
     , m_threadPool()
     , m_delegator()
     , m_ownedByThreadPool( false )
+    , m_inPhasedSetup( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -95,6 +96,24 @@ CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
     CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskConsumer::SetIsInPhasedSetup( bool inPhasedSetup )
+{GUCEF_TRACE;
+
+    m_inPhasedSetup = inPhasedSetup;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::GetIsInPhasedSetup( void ) const
+{GUCEF_TRACE;
+
+    return m_inPhasedSetup;
 }
 
 /*-------------------------------------------------------------------------*/

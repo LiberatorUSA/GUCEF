@@ -655,28 +655,28 @@ CThreadPool::GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
+CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
                         CICloneable* taskData         )
 {GUCEF_TRACE;
 
     if ( taskConsumer.IsNULL() )
     {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot start task because a nullptr is passed as the taskConsumer" );
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot setup task because a nullptr is passed as the taskConsumer" );
         return false;
     }
 
     MT::CObjectScopeLock lock( this );
 
-    if ( !taskConsumer->GetTaskDelegator().IsNULL() )
+    if ( !m_acceptNewWork )
     {
-        UInt32 threadId = taskConsumer->GetTaskDelegator()->GetThreadID();
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot start task because the taskConsumer given already has a delegator (thread: " + ToString( threadId ) + ") assigned" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Refusing to setup task immediatly of type \"" + taskConsumer->GetType() + "\" because the task manager is not accepting new work" );
         return false;
     }
 
-    if ( !m_acceptNewWork )
+    if ( !taskConsumer->GetTaskDelegator().IsNULL() )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Refusing to start task immediatly of type \"" + taskConsumer->GetType() + "\" because the task manager is not accepting new work" );
+        UInt32 threadId = taskConsumer->GetTaskDelegator()->GetThreadID();
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot setup task because the taskConsumer given already has a delegator (thread: " + ToString( threadId ) + ") assigned" );
         return false;
     }
 
@@ -684,8 +684,12 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
     // Keep in mind we support both task consumers who's life cycle is managed by the pool but also
     // externalized consumers which have an independent life cycle. As such we need to keep track of which is
     // which so we don't assume life cycle ownership when in fact we have none
-    taskConsumer->SetIsOwnedByThreadPool( false );
+    taskConsumer->SetIsOwnedByThreadPool( false );    
     taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
+
+    // IMPORTANT: We set the flag to signal to the thread on startup that we wish to perform a phased setup
+    //            This causes the consumer to be linked but no OnTaskStart or the like will yet be invoked on the consumer 
+    taskConsumer->SetIsInPhasedSetup( true );
 
     // We proxy event messages
     SubscribeTo( taskConsumer.GetPointerAlways() );
@@ -695,7 +699,7 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
     m_taskConsumerMap[ taskConsumer->m_taskId ] = taskConsumer;
 
     // Just spawn a task delegator, it will auto register as an active task
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
     CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
     m_taskDelegators.insert( delegator );
@@ -714,6 +718,34 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
             "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() )  + " and thread ID " + ToString( delegator->GetThreadID() )  );
         return false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
+                        CICloneable* taskData         )
+{GUCEF_TRACE;
+
+    if ( taskConsumer.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Cannot start task because a nullptr is passed as the taskConsumer" );
+        return false;
+    }
+
+    // Check to see if setup has been performed yet
+    // If it was not explictly invoked yet we will just incorporate the setup step here
+    if ( !taskConsumer->GetIsInPhasedSetup() )
+    {
+        if ( !SetupTask( taskConsumer, taskData ) )
+        {
+            return false;            
+        }
+    }
+
+    // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
+    taskConsumer->SetIsInPhasedSetup( false );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

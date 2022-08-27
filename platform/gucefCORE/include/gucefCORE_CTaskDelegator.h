@@ -130,8 +130,6 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >     TBasicThreadPoolPtr;
     
-    bool SetTaskConsumer( CTaskConsumerPtr taskConsumer );
-
     CTaskConsumerPtr GetTaskConsumer( void );
 
     CPulseGenerator& GetPulseGenerator( void );

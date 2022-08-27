@@ -106,6 +106,12 @@ CPubSubClientChannel::Clear( void )
         {
             side->RequestTaskToStop( true );
         }
+        else
+        {
+            // The side is linked to our task delegator
+            // lets make sure we decouple it
+            side->SetTaskDelegator( TTaskDelegatorBasicPtr() );
+        }
         ++i;
     }
 
@@ -175,6 +181,8 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     // clear it first
     Clear();
 
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+
     // Create a side for every side config entry
     CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::const_iterator c = m_channelSettings.pubSubSideChannelSettingsMap.begin();
     while ( c != m_channelSettings.pubSubSideChannelSettingsMap.end() )
@@ -189,6 +197,27 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because side with id " + sideId + " failed LoadConfig" );
             return false;
+        }
+        
+        // Ensure pulse generator access ahead of client setup        
+        if ( side->IsRunningInDedicatedThread() )
+        {            
+            // Perform task setup
+            // This causes a thread delegator to be associated and as such a pulse generator made accessible
+            if ( !threadPool->SetupTask( side ) )
+            {
+                // As a fallback we support trying run as part of the channel thread instead
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to setup dedicated thread for side with id " + side->GetSideId() + ". Falling back to using main channel thread" );
+                CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+                sideSettings.performPubSubInDedicatedThread = false;
+                side->SetTaskDelegator( GetTaskDelegator() );
+            }
+        }
+        else
+        {
+            // run as part of the channel thread
+            // we need to make the channel's delegator available to correctly link up 
+            side->SetTaskDelegator( GetTaskDelegator() );
         }
 
         if ( !side->PerformPubSubClientSetup() )
@@ -227,7 +256,6 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         }
         else
         {
-            CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
             if ( !threadPool->StartTask( side ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to start dedicated thread for other side. Falling back to a single thread" );

@@ -128,10 +128,27 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
                     CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
-     *  Immediatly starts executing a task using the task
-     *  consumer provided.
+     *  Immediatly starts executing a task using the task consumer provided.
+     *
+     *  Note that any task that was setup using SetupTask() still requires to be started via a call to
+     *  StartTask()
      */
     bool StartTask( CTaskConsumerPtr task              ,
+                    CICloneable* taskData = GUCEF_NULL );
+
+    /**
+     *  Performs setup for a task (thread association) but does not start the task yet
+     *  starts executing the task via an additional call to StartTask()
+     *
+     *  If you have an interdepency between threads and their associated tasks you 
+     *  might need the thread to already be available and linked to the consumer without actually
+     *  starting the consumer just to perform initial setup between said tasks.
+     *  A typical case is needing a PulseGenerator during setup, which is provided by the to-be-associated 
+     *  delegator.
+     *
+     *  This functionality allows you to break out thread association into an independent step
+     */
+    bool SetupTask( CTaskConsumerPtr task              ,
                     CICloneable* taskData = GUCEF_NULL );
 
     bool PauseTask( const UInt32 taskID                 ,
