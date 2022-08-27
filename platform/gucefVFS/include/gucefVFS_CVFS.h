@@ -414,14 +414,14 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     bool DeleteFile( const CString& filePath ,
                      bool okIfItDoesNotExist );
 
-    virtual void GetFileList( TStringVector& outputList                       ,
+    virtual bool GetFileList( TStringVector& outputList                       ,
                               const CString& location                         ,
                               bool recursive = false                          ,
                               bool includePathInFilename = false              ,
                               const VFS::CString& nameFilter = CString::Empty ,
                               UInt32 maxListEntries = GUCEF_UINT16MAX         ) const;
 
-    virtual void GetDirList( TStringVector& outputList                  ,
+    virtual bool GetDirList( TStringVector& outputList                  ,
                              const CString& location                    ,
                              bool recursive = false                     ,
                              bool includeParentDirInName = false        ,

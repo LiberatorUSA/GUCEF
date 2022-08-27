@@ -1510,7 +1510,7 @@ CVFS::GetEligableMounts( const CString& location                ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CVFS::GetFileList( TStringVector& outputList      ,
                    const CString& location        , 
                    bool recursive                 ,
@@ -1519,8 +1519,9 @@ CVFS::GetFileList( TStringVector& outputList      ,
                    UInt32 maxListEntries          ) const
 {GUCEF_TRACE;
 
+    bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
-
+    
     MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
@@ -1541,11 +1542,13 @@ CVFS::GetFileList( TStringVector& outputList      ,
                                                     maxListEntries                  );
         ++i;
     }
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CVFS::GetDirList( TStringVector& outputList  ,
                   const CString& location    ,
                   bool recursive             ,
@@ -1554,6 +1557,7 @@ CVFS::GetDirList( TStringVector& outputList  ,
                   UInt32 maxListEntries      ) const
 {GUCEF_TRACE;
 
+    bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
 
     MT::CObjectScopeLock lock( this );
@@ -1576,6 +1580,8 @@ CVFS::GetDirList( TStringVector& outputList  ,
                                                    maxListEntries                  );
         ++i;
     }
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

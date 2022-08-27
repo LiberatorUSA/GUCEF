@@ -86,6 +86,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , bestEffortDeserializeIsAllowed( false )
     , maxStorageCorruptionDetectionsToBeHealthy( 0 )
     , maxStorageDeserializationFailuresToBeHealthy( 0 )
+    , treatEveryFullfilledRequestAsEODEvent( false )
 {GUCEF_TRACE;
     
 }
@@ -120,6 +121,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , bestEffortDeserializeIsAllowed( src.bestEffortDeserializeIsAllowed )
     , maxStorageCorruptionDetectionsToBeHealthy( src.maxStorageCorruptionDetectionsToBeHealthy )
     , maxStorageDeserializationFailuresToBeHealthy( src.maxStorageDeserializationFailuresToBeHealthy )
+    , treatEveryFullfilledRequestAsEODEvent( src.treatEveryFullfilledRequestAsEODEvent )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -155,6 +157,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , bestEffortDeserializeIsAllowed( false )
     , maxStorageCorruptionDetectionsToBeHealthy( 0 )
     , maxStorageDeserializationFailuresToBeHealthy( 0 )
+    , treatEveryFullfilledRequestAsEODEvent( false )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -198,6 +201,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     bestEffortDeserializeIsAllowed = config.GetAttributeValueOrChildValueByName( "bestEffortDeserializeIsAllowed" ).AsBool( bestEffortDeserializeIsAllowed, true );
     maxStorageCorruptionDetectionsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageCorruptionDetectionsToBeHealthy" ).AsInt32( maxStorageCorruptionDetectionsToBeHealthy, true );
     maxStorageDeserializationFailuresToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageDeserializationFailuresToBeHealthy" ).AsInt32( maxStorageDeserializationFailuresToBeHealthy, true );
+    treatEveryFullfilledRequestAsEODEvent = config.GetAttributeValueOrChildValueByName( "treatEveryFullfilledRequestAsEODEvent" ).AsBool( treatEveryFullfilledRequestAsEODEvent, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -242,6 +246,7 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "bestEffortDeserializeIsAllowed", bestEffortDeserializeIsAllowed ) && success;    
     success = config.SetAttribute( "maxStorageCorruptionDetectionsToBeHealthy", maxStorageCorruptionDetectionsToBeHealthy ) && success;        
     success = config.SetAttribute( "maxStorageDeserializationFailuresToBeHealthy", maxStorageDeserializationFailuresToBeHealthy ) && success;            
+    success = config.SetAttribute( "treatEveryFullfilledRequestAsEODEvent", treatEveryFullfilledRequestAsEODEvent ) && success;                
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -306,6 +311,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         bestEffortDeserializeIsAllowed = src.bestEffortDeserializeIsAllowed;
         maxStorageCorruptionDetectionsToBeHealthy = src.maxStorageCorruptionDetectionsToBeHealthy;
         maxStorageDeserializationFailuresToBeHealthy = src.maxStorageDeserializationFailuresToBeHealthy;
+        treatEveryFullfilledRequestAsEODEvent = src.treatEveryFullfilledRequestAsEODEvent;
 
         customConfig = src.customConfig;
     }

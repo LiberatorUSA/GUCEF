@@ -110,16 +110,23 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( void 
     : startDt()
     , endDt()
     , vfsPubSubMsgContainersToPush()
+    , okIfZeroContainersAreFound( true )
+    , isPersistentRequest( false )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt )
+CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( const CORE::CDateTime& startDt         , 
+                                                                           const CORE::CDateTime& endDt           , 
+                                                                           bool okIfZeroContainersAreFoundDefault ,
+                                                                           bool isPersistentRequestDefault        )
     : startDt( startDt )
     , endDt( endDt )
     , vfsPubSubMsgContainersToPush()
+    , okIfZeroContainersAreFound( okIfZeroContainersAreFoundDefault ) 
+    , isPersistentRequest( isPersistentRequestDefault )
 {GUCEF_TRACE;
 
 }
@@ -130,6 +137,8 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( const
     : startDt( src.startDt )
     , endDt( src.endDt )
     , vfsPubSubMsgContainersToPush( src.vfsPubSubMsgContainersToPush )
+    , okIfZeroContainersAreFound( src.okIfZeroContainersAreFound )
+    , isPersistentRequest( src.isPersistentRequest )
 {GUCEF_TRACE;
 
 }
@@ -190,6 +199,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_metrics()
     , m_metricFriendlyTopicName()
     , m_isHealthy( true )
+    , m_subscriptionIsAtEndOfData( false )
     , m_currentReadBuffer( GUCEF_NULL )
     , m_currentWriteBuffer( GUCEF_NULL )
     , m_currentBookmarkInfo()
@@ -199,6 +209,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
     , m_encodeSizeRatio( -1 )
+    , m_stage0StorageToPubSubRequests()
     , m_stage1StorageToPubSubRequests()
     , m_stage2StorageToPubSubRequests()
     , m_buffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
@@ -210,7 +221,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_msgsWrittenToStorage( 0 )
     , m_msgBytesWrittenToStorage( 0 )
     , m_storageCorruptionDetections( 0 )
-    , m_storageDeserializationFailures( 0 )
+    , m_storageDeserializationFailures( 0 )    
 {GUCEF_TRACE;
 
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -827,7 +838,7 @@ CStoragePubSubClientTopic::Subscribe( void )
     MT::CScopeMutex lock( m_lock );
     if ( ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
     {
-        AddStorageToPubSubRequest( StorageToPubSubRequest( m_config.oldestStoragePubSubMsgFileToLoad, m_config.youngestStoragePubSubMsgFileToLoad ) );
+        AddStorageToPubSubRequest( StorageToPubSubRequest( m_config.oldestStoragePubSubMsgFileToLoad, m_config.youngestStoragePubSubMsgFileToLoad, true, true ) );
     }
 
     bool success = BeginVfsOps();
@@ -857,7 +868,7 @@ CStoragePubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime
     MT::CScopeMutex lock( m_lock );
     if ( ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
     {
-        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad ) ) )
+        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad, true, false ) ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to add publish request. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
             return false;
@@ -1661,32 +1672,41 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
                                                          CORE::CString::StringSet& files ) const
 {GUCEF_TRACE;
 
-
+    bool totalSuccess = true;
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
     CORE::CString fileFilter = '*' + m_vfsFilePostfix;
     VFS::CVFS::TStringVector index;
-    vfs.GetFileList( index, m_vfsRootPath, false, true, fileFilter, true );
-
-    VFS::CVFS::TStringVector::iterator i = index.begin();
-    while ( i != index.end() )
+    if ( vfs.GetFileList( index, m_vfsRootPath, false, true, fileFilter, true ) )
     {
-        CORE::CDateTime containerFileFirstMsgDt;
-        CORE::CDateTime containerFileLastMsgDt;
-        CORE::CDateTime containerFileCaptureDt;
-        if ( GetTimestampsFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
+        VFS::CVFS::TStringVector::iterator i = index.begin();
+        while ( i != index.end() )
         {
-            // Check the container first messgage dt against the our time range
-            // It is assumed here that the containers have messages chronologically ordered
-            if ( containerFileFirstMsgDt.IsWithinRange( startDt, endDt ) || containerFileLastMsgDt.IsWithinRange( startDt, endDt ) )
+            CORE::CDateTime containerFileFirstMsgDt;
+            CORE::CDateTime containerFileLastMsgDt;
+            CORE::CDateTime containerFileCaptureDt;
+            if ( GetTimestampsFromContainerFilename( (*i), containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
             {
-                files.insert( (*i) );
+                // Check the container first messgage dt against the our time range
+                // It is assumed here that the containers have messages chronologically ordered
+                if ( containerFileFirstMsgDt.IsWithinRange( startDt, endDt ) || containerFileLastMsgDt.IsWithinRange( startDt, endDt ) )
+                {
+                    files.insert( (*i) );
+                }
             }
+            else
+            {
+                totalSuccess = false;
+            }
+            ++i;
         }
-        ++i;
     }
-
-    return true;
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:GetPathsToPubSubStorageFiles: VFS failure obtaining container list" );
+        totalSuccess = false;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1847,7 +1867,7 @@ CStoragePubSubClientTopic::LocateFilesForStorageToPubSubRequest( void )
 
         if ( GetPathsToPubSubStorageFiles( queuedRequest.startDt                      ,
                                            queuedRequest.endDt                        ,
-                                           queuedRequest.vfsPubSubMsgContainersToPush ) )
+                                           queuedRequest.vfsPubSubMsgContainersToPush ) && !queuedRequest.vfsPubSubMsgContainersToPush.empty() )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:LocateFilesForStorageToPubSubRequest: Available data in the request range spans " +
                 CORE::ToString( queuedRequest.vfsPubSubMsgContainersToPush.size() ) + " containers" );
@@ -1857,12 +1877,19 @@ CStoragePubSubClientTopic::LocateFilesForStorageToPubSubRequest( void )
         }
         else
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:LocateFilesForStorageToPubSubRequest: Did not obtain any storage paths for time range " +
-                queuedRequest.startDt.ToIso8601DateTimeString( true, true ) + " to " + queuedRequest.endDt.ToIso8601DateTimeString( true, true ) );
+            if ( !queuedRequest.okIfZeroContainersAreFound )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:LocateFilesForStorageToPubSubRequest: Did not obtain any storage paths for time range " +
+                    queuedRequest.startDt.ToIso8601DateTimeString( true, true ) + " to " + queuedRequest.endDt.ToIso8601DateTimeString( true, true ) );
 
-            OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
+                OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
+                totalSuccess = false;
+            }
+            if ( !queuedRequest.isPersistentRequest )
+            {
+                m_stage0StorageToPubSubRequests.push_front( queuedRequest );
+            }
             m_stage1StorageToPubSubRequests.pop_back();
-            totalSuccess = false;
         }
     }
 
@@ -1875,6 +1902,7 @@ bool
 CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
 {GUCEF_TRACE;
 
+    bool endOfData = false;
     bool totalSuccess = true;
     StorageToPubSubRequestDeque::iterator i = m_stage2StorageToPubSubRequests.begin();
     if ( i != m_stage2StorageToPubSubRequests.end() )
@@ -2059,18 +2087,38 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
         {
             OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
         }
-
+       
         // Check to see if we are done with this request
         if ( queuedRequest.vfsPubSubMsgContainersToPush.empty() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Completed storage request. Start=" +
                 CORE::ToString( queuedRequest.startDt ) + ", End=" + CORE::ToString( queuedRequest.endDt ) +
                 " Proccessed " + CORE::ToString( containersProcessed ) + "/" + CORE::ToString( containersToProcess ) + " files successfully" );
-
+                        
             m_stage2StorageToPubSubRequests.pop_front();
+            
+            // Are end-of-data (EOD) event messages desired?
+            if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+            {
+                if ( m_config.treatEveryFullfilledRequestAsEODEvent )
+                {
+                    m_subscriptionIsAtEndOfData = endOfData = true;
+                    NotifyObservers( SubscriptionEndOfDataEvent );
+                }
+                else
+                {
+                    // Only send end of data event if all requests have been fullfilled
+                    if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.empty() )
+                    {
+                        m_subscriptionIsAtEndOfData = endOfData = true;
+                        NotifyObservers( SubscriptionEndOfDataEvent );    
+                    }
+                }
+            }
         }
     }
 
+    m_subscriptionIsAtEndOfData = endOfData;
     return totalSuccess;
 }
 
@@ -2254,6 +2302,15 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     m_buffers.SignalEndOfReading();
     m_currentReadBuffer = GUCEF_NULL;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStoragePubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    return m_subscriptionIsAtEndOfData;
 }
 
 /*-------------------------------------------------------------------------//

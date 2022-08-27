@@ -179,7 +179,7 @@ rwl_reader_start( TRWLock *rwlock )
                  *	that may be queued. After that we increase the reader
                  *	counter.
                  */
-                while ( rwlock->wcount )
+                while ( rwlock->wcount > 0 )
                 {
                     PrecisionDelay( 25 );
                 }
@@ -234,7 +234,8 @@ rwl_writer_start( TRWLock *rwlock )
          *	First we check if destroy has not been called.
          *	In a propper design this test should never fail.
          */
-	if ( rwlock->delflag ) return 0;
+	if ( rwlock->delflag ) 
+        return 0;
 
 	rwlock->wcount++;
 
@@ -269,9 +270,11 @@ rwl_writer_start( TRWLock *rwlock )
 void
 rwl_writer_stop( TRWLock *rwlock )
 {
-	rwlock->wcount--;
-        rwlock->wflag = 0;
-        MutexUnlock( rwlock->datalock );
+    GUCEF_BEGIN;
+    rwlock->wcount--;
+    rwlock->wflag = 0;
+    MutexUnlock( rwlock->datalock );
+    GUCEF_END;
 }
 
 /*--------------------------------------------------------------------------*/

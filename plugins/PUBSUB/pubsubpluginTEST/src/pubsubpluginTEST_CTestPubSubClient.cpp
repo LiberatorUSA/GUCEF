@@ -236,6 +236,22 @@ CTestPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTestPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+        
+    MT::CScopeMutex lock( m_lock );
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicAccess.insert( (*i).second );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTestPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;

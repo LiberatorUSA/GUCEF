@@ -118,9 +118,9 @@ rwl_writer_overrules( const TRWLock *rwlock );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Returns the current amount of writers. Note that this function
- *      is meant for output to humans. It has no use in relation with
- *      the other rwl_ functions.
+ *  Returns the current amount of writers. 
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
  */
 GUCEF_MT_PUBLIC_C UInt32
 rwl_writers( const TRWLock *rwlock );
@@ -128,9 +128,9 @@ rwl_writers( const TRWLock *rwlock );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Returns the current amount of readers. Note that this function
- *      is meant for output to humans. It has no use in relation with
- *      the other rwl_ functions.
+ *  Returns the current amount of readers. 
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
  */
 GUCEF_MT_PUBLIC_C UInt32
 rwl_readers( const TRWLock *rwlock );

@@ -85,6 +85,16 @@ namespace STORAGE {
 
 class CStoragePubSubClient;
 
+/**
+ *
+ *  Storage requests are handled in a phased approach to allow some degree of interweaving
+ *  requests. Managing storage -> pubsub requests is broken down into the following phases:
+ *      Phase 1: Obtain a listing of container files that match the request range
+ *      Phase 2: Process each container file of a request and translate to 'received' pubsub messages
+ *  In addition there is a Phase 0 specific to persistent storage requests. Such requests never go away after
+ *  data has been served but rather revert to a holding area where we wait for more data that matches the request
+ *  Once data is found that matches the persitent request it starts progressing through the phases again.
+ */
 class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public PUBSUB::CPubSubClientTopic
 {
     public:
@@ -117,6 +127,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -205,9 +217,16 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::CDateTime startDt;
         CORE::CDateTime endDt;
         CORE::CString::StringSet vfsPubSubMsgContainersToPush;
+        bool okIfZeroContainersAreFound;
+        bool isPersistentRequest;
 
         StorageToPubSubRequest( void );
-        StorageToPubSubRequest( const CORE::CDateTime& startDt, const CORE::CDateTime& endDt );
+
+        StorageToPubSubRequest( const CORE::CDateTime& startDt  , 
+                                const CORE::CDateTime& endDt    , 
+                                bool okIfZeroContainersAreFound ,
+                                bool isPersistentRequest        );
+        
         StorageToPubSubRequest( const StorageToPubSubRequest& src );
 
         virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -352,6 +371,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
     mutable bool m_isHealthy;
+    bool m_subscriptionIsAtEndOfData;
 
     CORE::CDynamicBuffer* m_currentReadBuffer;
     CORE::CDynamicBuffer* m_currentWriteBuffer;
@@ -362,6 +382,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
+    StorageToPubSubRequestDeque m_stage0StorageToPubSubRequests;
     StorageToPubSubRequestDeque m_stage1StorageToPubSubRequests;
     StorageToPubSubRequestDeque m_stage2StorageToPubSubRequests;
    

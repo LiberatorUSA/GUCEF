@@ -159,7 +159,7 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
-    features.supportsSubscriptionEndOfDataEvent = false;
+    features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill
     
     // Ack functionality doesnt currently make sense for this backend
     // However in theory we could implement a hard or logical delete of read messages and such functionality could go hand-in-hand with 'server-side' (read backend controlled) bookmark persistance
@@ -230,6 +230,22 @@ CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
         return (*i).second;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CStoragePubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+        
+    MT::CScopeMutex lock( m_lock );
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicAccess.insert( (*i).second );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

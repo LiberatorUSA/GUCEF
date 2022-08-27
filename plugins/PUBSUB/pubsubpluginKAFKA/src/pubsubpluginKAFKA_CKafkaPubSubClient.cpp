@@ -217,6 +217,22 @@ CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CKafkaPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+        
+    MT::CObjectScopeLock lock( this );
+
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicAccess.insert( (*i).second );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;

@@ -210,6 +210,10 @@ CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
     , m_msgBytesWrittenToStorage( 0 )
     , m_storageCorruptionDetections( 0 )
     , m_storageDeserializationFailures( 0 )
+
+
+    , m_hasFakeHealthIssue( false )
+    , m_healthyStatusToggleTimer()
 {GUCEF_TRACE;
 
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -226,6 +230,8 @@ CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
     {
         m_bufferContentTimeWindowCheckTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
     }
+           
+    m_healthyStatusToggleTimer.SetPulseGenerator( m_client->GetConfig().pulseGenerator );
     
     RegisterEventHandlers();
 }
@@ -290,6 +296,17 @@ CTestPubSubClientTopic::RegisterEventHandlers( void )
     SubscribeTo( m_client->GetConfig().pulseGenerator ,
                  CORE::CPulseGenerator::PulseEvent    ,
                  callback                             );
+
+
+
+
+
+    TEventCallback callback2( this, &CTestPubSubClientTopic::OnReconnectTimerCycle );
+    SubscribeTo( &m_healthyStatusToggleTimer    ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );
+
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -692,6 +709,13 @@ CTestPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& conf
 
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
     m_vfsRootPath = ResolveVfsRootPath();    
+    
+    m_healthyStatusToggleTimer.SetEnabled( m_config.toggleHealthyStatus );
+    CORE::UInt32 jitterMs = 0;
+    if ( m_config.healthyStatusToggleIntervalJitter > 0 )
+        jitterMs = (CORE::UInt32) (rand()/RAND_MAX) * m_config.healthyStatusToggleIntervalJitter;
+
+    m_healthyStatusToggleTimer.SetInterval( m_config.healthyStatusToggleIntervalInMs + jitterMs ); 
 
     return true;
 }
@@ -1035,10 +1059,21 @@ CTestPubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
-    bool newIsHealthyState = m_config.defaultIsHealthyStatus;
+    bool newIsHealthyState = m_config.defaultIsHealthyStatus && m_hasFakeHealthIssue;
 
-    THealthStatusChangeEventData eData( newIsHealthyState ); 
-    NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    if ( m_isHealthy != newIsHealthyState )
+    {
+        m_isHealthy = newIsHealthyState;
+
+        CORE::UInt32 jitterMs = 0;
+        if ( m_config.healthyStatusToggleIntervalJitter > 0 )
+            jitterMs = (CORE::UInt32) (rand()/RAND_MAX) * m_config.healthyStatusToggleIntervalJitter;
+
+        m_healthyStatusToggleTimer.SetInterval( m_config.healthyStatusToggleIntervalInMs + jitterMs ); 
+
+        THealthStatusChangeEventData eData( newIsHealthyState ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+    }
     
     return newIsHealthyState;
 }
@@ -1100,6 +1135,18 @@ CTestPubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
         totalSuccess = Subscribe() && totalSuccess;
 
     m_reconnectTimer->SetEnabled( !totalSuccess );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTestPubSubClientTopic::OnHealthyStatusToggleTimerCycle( CORE::CNotifier* notifier    ,
+                                                         const CORE::CEvent& eventId  ,
+                                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    m_hasFakeHealthIssue = !m_hasFakeHealthIssue;
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/

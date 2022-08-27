@@ -328,6 +328,29 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public PUBSU
     CORE::UInt32 GetStorageCorruptionDetectionCounter( bool resetCounter );
     CORE::UInt32 GetStorageDeserializationFailuresCounter( bool resetCounter );
 
+
+
+
+
+
+
+
+
+    void
+    OnHealthyStatusToggleTimerCycle( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
+
+
+
+
+
+
+
+
+
+
     private:
 
     CTestPubSubClient* m_client;
@@ -370,6 +393,11 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public PUBSU
     CORE::UInt32 m_msgBytesWrittenToStorage;
     CORE::UInt32 m_storageCorruptionDetections;
     CORE::UInt32 m_storageDeserializationFailures;
+
+
+
+    mutable bool m_hasFakeHealthIssue;
+    mutable CORE::CTimer m_healthyStatusToggleTimer;
 };
 
 /*-------------------------------------------------------------------------//

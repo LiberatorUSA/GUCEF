@@ -418,6 +418,15 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TPu
     return totalSuccess;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

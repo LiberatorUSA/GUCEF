@@ -283,6 +283,61 @@ CPubSubClient::GetOpaqueUserData( void ) const
     return m_opaqueUserData;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicConstSet& topicAccess ) const
+{GUCEF_TRACE;
+
+    // Since this is just a const correctness helper function we can abuse the non-const version
+    // for efficiency the backend should really implement its own version if supported.
+    CPubSubClient* thisObj = const_cast< CPubSubClient* >( this );
+    
+    PubSubClientTopicSet topics;
+    thisObj->GetAllCreatedTopicAccess( topics );
+
+    PubSubClientTopicSet::iterator i = topics.begin();
+    while ( i != topics.end() )
+    {
+        topicAccess.insert( (*i) );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    // First get a list of all available topics from the backend
+    // for efficiency the backend should really implement its own version if supported as we need to pull a list copy
+    // the backend likely already has said list
+    PubSubClientTopicConstSet topics;
+    GetAllCreatedTopicAccess( topics );
+
+    if ( !topics.empty() )
+    {
+        bool allAtEnd = true;
+
+        PubSubClientTopicConstSet::iterator i = topics.begin();
+        while ( i != topics.end() )
+        {
+            if ( (*i)->IsSubscriptionAtEndOfData() )
+            {
+                allAtEnd = false;
+                break;
+            }
+            ++i;
+        }
+
+        return allAtEnd;
+    }
+
+    // default is in all cases 'false'
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

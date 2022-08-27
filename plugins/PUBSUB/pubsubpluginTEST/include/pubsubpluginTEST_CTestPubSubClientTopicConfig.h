@@ -118,6 +118,9 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopicConfig : public
 
 
     bool defaultIsHealthyStatus;
+    bool toggleHealthyStatus;
+    CORE::UInt32 healthyStatusToggleIntervalInMs;
+    CORE::UInt32 healthyStatusToggleIntervalJitter;
 
 
 

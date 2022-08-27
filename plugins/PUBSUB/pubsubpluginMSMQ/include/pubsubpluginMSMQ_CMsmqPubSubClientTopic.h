@@ -138,6 +138,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
@@ -440,6 +442,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     UInt32Vector m_msmqMsgSentToArriveLatencies;
     CORE::UInt64 m_msmqLastLookupId;
     mutable bool m_isHealthy;
+    bool m_subscriptionIsAtEndOfData;
 };
 
 /*--------------------------------------------------------------------------*/

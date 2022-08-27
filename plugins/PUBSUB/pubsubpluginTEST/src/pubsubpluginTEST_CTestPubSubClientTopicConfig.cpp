@@ -88,6 +88,9 @@ CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( void )
     , maxStorageDeserializationFailuresToBeHealthy( 0 )
 
     , defaultIsHealthyStatus( true )
+    , toggleHealthyStatus( false )
+    , healthyStatusToggleIntervalInMs( 5000 )
+    , healthyStatusToggleIntervalJitter( 100 )
 {GUCEF_TRACE;
     
 }
@@ -125,6 +128,9 @@ CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( const CTestPubSubCli
 
 
     , defaultIsHealthyStatus( src.defaultIsHealthyStatus )
+    , toggleHealthyStatus( src.toggleHealthyStatus )
+    , healthyStatusToggleIntervalInMs( src.healthyStatusToggleIntervalInMs )
+    , healthyStatusToggleIntervalJitter( src.healthyStatusToggleIntervalJitter )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -163,6 +169,9 @@ CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( const PUBSUB::CPubSu
 
 
     , defaultIsHealthyStatus( true )
+    , toggleHealthyStatus( false )
+    , healthyStatusToggleIntervalInMs( 5000 )
+    , healthyStatusToggleIntervalJitter( 100 )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -218,6 +227,9 @@ CTestPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 
 
     defaultIsHealthyStatus = config.GetAttributeValueOrChildValueByName( "defaultIsHealthyStatus" ).AsBool( defaultIsHealthyStatus, true );
+    toggleHealthyStatus  = config.GetAttributeValueOrChildValueByName( "toggleHealthyStatus" ).AsBool( toggleHealthyStatus, true );
+    healthyStatusToggleIntervalInMs = config.GetAttributeValueOrChildValueByName( "healthyStatusToggleIntervalInMs" ).AsUInt32( healthyStatusToggleIntervalInMs, true );
+    healthyStatusToggleIntervalJitter = config.GetAttributeValueOrChildValueByName( "healthyStatusToggleIntervalJitter" ).AsUInt32( healthyStatusToggleIntervalJitter, true );
 
     return success;
 }
@@ -267,8 +279,9 @@ CTestPubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) const
     
     
     success = config.SetAttribute( "defaultIsHealthyStatus", defaultIsHealthyStatus ) && success;            
-    
-        
+    success = config.SetAttribute( "toggleHealthyStatus", toggleHealthyStatus ) && success;            
+    success = config.SetAttribute( "healthyStatusToggleIntervalInMs", healthyStatusToggleIntervalInMs ) && success;            
+    success = config.SetAttribute( "healthyStatusToggleIntervalJitter", healthyStatusToggleIntervalJitter ) && success;            
     
     
     return success;
@@ -334,6 +347,10 @@ CTestPubSubClientTopicConfig::operator=( const CTestPubSubClientTopicConfig& src
 
 
         defaultIsHealthyStatus = src.defaultIsHealthyStatus;
+        toggleHealthyStatus = src.toggleHealthyStatus;
+        healthyStatusToggleIntervalInMs = src.healthyStatusToggleIntervalInMs;
+        healthyStatusToggleIntervalJitter = src.healthyStatusToggleIntervalJitter;
+
 
         customConfig = src.customConfig;
     }

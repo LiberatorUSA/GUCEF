@@ -60,6 +60,7 @@ CPubSubFlowRouter::CPubSubFlowRouter( void )
     , m_routeMap()
     , m_usedInRouteMap()
     , m_spilloverInfoMap()
+    , m_spilloverInfoForTargetsMap()
     , m_pulseGenerator( GUCEF_NULL )
     , m_lock( true )
 {GUCEF_TRACE;
@@ -92,6 +93,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     , deadLetterSideIsHealthy( true )
     , deadLetterSideLastHealthStatusChange( CORE::CDateTime::PastMax )
     , routeSwitchingTimer()
+    , spilloverInfo( GUCEF_NULL )
 {GUCEF_TRACE;
     
 }
@@ -114,16 +116,96 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( const CRouteInfo& src )
     , deadLetterSideIsHealthy( src.deadLetterSideIsHealthy )
     , deadLetterSideLastHealthStatusChange( src.deadLetterSideLastHealthStatusChange )
     , routeSwitchingTimer( src.routeSwitchingTimer )
+    , spilloverInfo( src.spilloverInfo )
 {GUCEF_TRACE;
     
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubFlowRouter::CSpilloverInfo::CSpilloverInfo( void )
-    : spilledOverMsgs( 0 )
+bool 
+CPubSubFlowRouter::CRouteInfo::IsSpilloverEgressOngoing( void ) const
 {GUCEF_TRACE;
     
+    if ( GUCEF_NULL != spilloverInfo )
+        return spilloverInfo->IsEgressOngoing();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::CRouteInfo::IsSpilloverIngressOngoing( void ) const
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != spilloverInfo )
+        return spilloverInfo->IsIngressOngoing();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::CRouteInfo::IsSpilloverInActiveUse( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != spilloverInfo )
+        return spilloverInfo->IsInActiveUse();
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouter::CSpilloverInfo::CSpilloverInfo( void )
+    : spilloverIngressMsgCount( 0 )
+    , spilloverEgressMsgCount( 0 )
+    , endOfDataEventOccured( false )
+    , endOfDataEventSupported( false )
+    , route( GUCEF_NULL )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::CSpilloverInfo::IsEgressOngoing( void ) const
+{GUCEF_TRACE;
+    
+    // Is the spillover active and in egress mode?
+    if ( GUCEF_NULL != route && route->activeSide == route->spilloverBufferSide && !route->flowingIntoSpillover )
+    {    
+        // did any messages flow into the spillover to begin with?
+        if ( spilloverIngressMsgCount > 0 )
+        {
+            // Favor the end-of-data mechanism if supported
+            if ( endOfDataEventSupported )
+                return !endOfDataEventOccured;
+
+            // Alternatively rely on the ingress vs egress message count
+            return spilloverEgressMsgCount < spilloverIngressMsgCount;
+        }
+    }
+    return false; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::CSpilloverInfo::IsIngressOngoing( void ) const
+{GUCEF_TRACE;
+
+    // Is the spillover active and in ingress mode?
+    return GUCEF_NULL != route && route->activeSide == route->spilloverBufferSide && route->flowingIntoSpillover;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouter::CSpilloverInfo::IsInActiveUse( void ) const
+{GUCEF_TRACE;
+
+    return IsIngressOngoing() || IsEgressOngoing();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -178,6 +260,9 @@ CPubSubFlowRouter::ClearRoutes( void )
         ++r;
     }
 
+    m_spilloverInfoForTargetsMap.clear();
+    m_spilloverInfoMap.clear();
+    m_usedInRouteMap.clear();
     m_routeMap.clear();
 }
 
@@ -533,9 +618,9 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
 
                 // The spillover only works if you also have a surviving 'to' or 'failover' side
                 // since its not a final destination in of itself
+                CPubSubClientFeatures features;
                 if ( GUCEF_NULL != routeInfo.toSide || GUCEF_NULL != routeInfo.failoverSide )
-                {                
-                    CPubSubClientFeatures features;
+                {                                    
                     if ( routeInfo.spilloverBufferSide->GetPubSubClientSupportedFeatures( features ) )
                     {
                         // the 'spill over' side must be capable of:
@@ -571,8 +656,18 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                 {
                     // Add this one to the lookup map as part of the validation
                     // this is both initialization as it is uniqueness validation
-                    CSpilloverInfo newSpilloverInfo;
-                    m_spilloverInfoMap[ routeInfo.spilloverBufferSide ] = newSpilloverInfo;
+                    CSpilloverInfo& newSpilloverInfo = m_spilloverInfoMap[ routeInfo.spilloverBufferSide ];
+                    newSpilloverInfo.route = &routeInfo;
+                    newSpilloverInfo.endOfDataEventSupported = features.supportsSubscriptionEndOfDataEvent;
+                    routeInfo.spilloverInfo = &newSpilloverInfo;
+
+                    // We also add the non-spillover sides for the return flow
+                    // this will be used to link back acks from the spillover's egress
+                    if ( GUCEF_NULL != routeInfo.toSide )
+                        m_spilloverInfoForTargetsMap[ routeInfo.toSide ] = &newSpilloverInfo;
+                    if ( GUCEF_NULL != routeInfo.failoverSide )
+                        m_spilloverInfoForTargetsMap[ routeInfo.failoverSide ] = &newSpilloverInfo;
+
                 }
                 else
                 {
@@ -644,6 +739,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                     // we do need to get rid of the spillover itself to make sure we dont create an endless loop
                     CRouteInfo newSpilloverBypassRoute( routeInfo );
                     newSpilloverBypassRoute.spilloverBufferSide = GUCEF_NULL;
+                    newSpilloverBypassRoute.spilloverInfo = GUCEF_NULL;
 
                     spilloverMultiRouteInfo.push_back( newSpilloverBypassRoute );
 
@@ -801,11 +897,24 @@ CPubSubFlowRouter::AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide
         // as such a read lock will suffice
         MT::CScopeReaderLock lock( m_lock );
 
-        TSidePtrToSpilloverInfoMap::iterator i = m_spilloverInfoMap.find( msgReceiverSide );
-        if ( i != m_spilloverInfoMap.end() )
+        // Check if msgReceiverSide is a spillover target
+        TSidePtrToSpilloverInfoPtrMap::iterator i = m_spilloverInfoForTargetsMap.find( msgReceiverSide );
+        if ( i != m_spilloverInfoForTargetsMap.end() )
         {
-            CSpilloverInfo& spilloverInfo = (*i).second;
-            ++spilloverInfo.spilledOverMsgs;
+            // Check if this is normal flow or spillover egress
+            CSpilloverInfo* spilloverInfo = (*i).second;
+            if ( spilloverInfo->IsEgressOngoing() )
+                --spilloverInfo->spilloverIngressMsgCount;
+        }
+        else
+        {
+            // Check if msgReceiverSide is a spillover
+            TSidePtrToSpilloverInfoMap::iterator n = m_spilloverInfoMap.find( msgReceiverSide );
+            if ( i != m_spilloverInfoForTargetsMap.end() )
+            {
+                CSpilloverInfo& spilloverInfo = (*n).second;
+                ++spilloverInfo.spilloverIngressMsgCount;
+            }
         }
     }
 
@@ -877,14 +986,20 @@ CPubSubFlowRouter::PublishMsgs( CPubSubClientSide* fromSide                     
             CRouteInfo& routeInfo = (*n);
             CPubSubClientSide* targetSide = GUCEF_NULL;
 
-            switch ( routeType )
-            {            
-                case RouteType::Active: { targetSide = routeInfo.activeSide; break; }
-                case RouteType::Primary: { targetSide = routeInfo.toSide; break; }
-                case RouteType::Failover: { targetSide = routeInfo.failoverSide; break; }
-                case RouteType::SpilloverBuffer: { targetSide = routeInfo.spilloverBufferSide; break; }
-                case RouteType::DeadLetter: { targetSide = routeInfo.deadLetterSide; break; }
-                default: { break; }
+            // Make sure we are not in spillover egress mode
+            // if spillover egress is active the route cannot be published to from the 'from' side
+            if ( !routeInfo.IsSpilloverEgressOngoing() )
+            {
+                switch ( routeType )
+                {                                
+                    case RouteType::Active: { targetSide = routeInfo.activeSide; break; } 
+
+                    case RouteType::Primary: { targetSide = routeInfo.toSide; break; }
+                    case RouteType::Failover: { targetSide = routeInfo.failoverSide; break; }
+                    case RouteType::SpilloverBuffer: { targetSide = routeInfo.spilloverBufferSide; break; }
+                    case RouteType::DeadLetter: { targetSide = routeInfo.deadLetterSide; break; }
+                    default: { break; }
+                }
             }
 
             if ( GUCEF_NULL != targetSide )
@@ -970,6 +1085,77 @@ CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
         SubscribeTo( side                                       ,
                      CPubSubClientSide::HealthStatusChangeEvent ,
                      callback                                   );
+
+        TEventCallback callback2( this, &CPubSubFlowRouter::OnSidePubSubClientInstantiation );
+        SubscribeTo( side                                              ,
+                     CPubSubClientSide::PubSubClientInstantiationEvent ,
+                     callback2                                         );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubFlowRouter::RegisterSidePubSubClientEventHandlers( CPubSubClientPtr& client )
+{GUCEF_TRACE;
+
+    if ( !client.IsNULL() ) 
+    {
+        CPubSubClientFeatures clientFeatures;
+        client->GetSupportedFeatures( clientFeatures );
+        
+        // client and topic level subscriptions are currently only used for EOD
+        // if we have another use-case later remove this check
+        if ( clientFeatures.supportsSubscriptionEndOfDataEvent )
+        {
+            TEventCallback callback( this, &CPubSubFlowRouter::OnSidePubSubClientTopicCreation );
+            SubscribeTo( client.GetPointerAlways()              ,
+                         CPubSubClient::TopicAccessCreatedEvent ,
+                         callback                               );
+
+            TEventCallback callback2( this, &CPubSubFlowRouter::OnSidePubSubClientTopicsAutoCreation );
+            SubscribeTo( client.GetPointerAlways()                   ,
+                         CPubSubClient::TopicsAccessAutoCreatedEvent ,
+                         callback2                                   );
+
+            // register event handlers for all already existing topics (if any)
+            RegisterSidePubSubClientTopicEventHandlers( client );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopic* topicAccess )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topicAccess ) 
+    {
+        TEventCallback callback( this, &CPubSubFlowRouter::OnSidePubSubClientTopicCreation );
+        SubscribeTo( topicAccess                                    ,
+                     CPubSubClientTopic::SubscriptionEndOfDataEvent ,
+                     callback                                       );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientPtr& client )
+{GUCEF_TRACE;
+
+    if ( !client.IsNULL() ) 
+    {
+        CPubSubClient::PubSubClientTopicSet topics;
+        client->GetAllCreatedTopicAccess( topics );
+        
+        CPubSubClient::PubSubClientTopicSet::iterator i = topics.begin();
+        while ( i != topics.end() )
+        {
+            RegisterSidePubSubClientTopicEventHandlers( (*i) );
+            ++i;
+        }
     }
 }
 
@@ -1037,7 +1223,7 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_lock );
-    
+       
     CPubSubClientSide* newActiveSide = GUCEF_NULL;
     
     CORE::UInt64 primarySideHealthDurationInMs = (CORE::UInt64) routeInfo.toSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow();
@@ -1049,11 +1235,42 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
          primarySideHealthDurationInMs > m_config.minPrimarySideGoodHealthDurationBeforeActivationInMs )
     {                    
         if ( routeInfo.activeSide != routeInfo.toSide )
-        {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
-                "):DetermineActiveRoute: Switching active route to the Primary side" );
-        
-            routeInfo.activeSide = routeInfo.toSide;
+        {        
+            // Before (re)activating the primary route check to make sure we didnt use the spillover
+            // if so need we need to egress those messages first before restoring the normal route
+            if ( !routeInfo.IsSpilloverInActiveUse() )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                    "):DetermineActiveRoute: Switching active route to the Primary side" );
+
+                routeInfo.activeSide = routeInfo.toSide;
+                routeInfo.routeSwitchingTimer.SetEnabled( false );
+            }
+            else
+            {                
+                if ( !routeInfo.IsSpilloverEgressOngoing() )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                        "):DetermineActiveRoute: Primary side health is restored but spillover was used. Commencing spillover egress" );
+
+                    // Switch from ingress to egress
+                    if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false ) )
+                    {
+                        routeInfo.flowingIntoSpillover = false;
+                    }
+                    else
+                    {
+                        // rely on timer cycle to try again, nothing we can do
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                            "):DetermineActiveRoute: Primary side health is restored but spillover was used. Failed to reconfigure spillover for egress" );
+                    }
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                        "):DetermineActiveRoute: Primary side health is Ok and spillover egress is in-progress" );
+                }
+            }
         }
     }   
     else
@@ -1074,10 +1291,41 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
             {
                 if ( routeInfo.activeSide != routeInfo.failoverSide )
                 {
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
-                        "):DetermineActiveRoute: Switching active route to the Failover side" );
+                    // Before (re)activating the failover route check to make sure we didnt use the spillover
+                    // if so need we need to egress those messages first before restoring the normal route
+                    if ( !routeInfo.IsSpilloverInActiveUse() )
+                    {
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                            "):DetermineActiveRoute: Switching active route to the Failover side" );
         
-                    routeInfo.activeSide = routeInfo.failoverSide;
+                        routeInfo.activeSide = routeInfo.failoverSide;
+                        routeInfo.routeSwitchingTimer.SetEnabled( false );
+                    }
+                    else
+                    {                
+                        if ( !routeInfo.IsSpilloverEgressOngoing() )
+                        {
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                                "):DetermineActiveRoute: Failover side health is restored but spillover was used. Commencing spillover egress" );
+
+                            // Switch from ingress to egress                            
+                            if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false ) )
+                            {
+                                routeInfo.flowingIntoSpillover = false;
+                            }
+                            else
+                            {
+                                // rely on timer cycle to try again, nothing we can do
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                                    "):DetermineActiveRoute: Failover side health is restored but spillover was used. Failed to reconfigure spillover for egress" );
+                            }
+                        }
+                        else
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                                "):DetermineActiveRoute: Failover side health is Ok and spillover egress is in-progress" );
+                        }
+                    }
                 }
             }
             else
@@ -1106,15 +1354,32 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
                                 "):DetermineActiveRoute: Switching active route to the Spillover buffer side" );
         
                             routeInfo.activeSide = routeInfo.spilloverBufferSide;
+                            routeInfo.routeSwitchingTimer.SetEnabled( false );
+
+                            // If the spillover is configured for egress instead of ingress we need to either wait of egress to finish 
+                            // or if its finished we need to reconfigure for ingress
                             if ( !routeInfo.flowingIntoSpillover )
                             {
-                                if ( ConfigureSpillover( routeInfo.spilloverBufferSide, true ) )
-                                {
-                                    routeInfo.flowingIntoSpillover = true;
-                                }
-                                else
-                                {
-                                    
+                                CSpilloverInfo& spilloverInfo = m_spilloverInfoMap[ routeInfo.spilloverBufferSide ];
+                                
+                                // If the spillover is performing egress we need to let it complete first                               
+                                if ( !spilloverInfo.IsEgressOngoing()  )
+                                {                                
+                                    // reconfigure the spillover for data ingress
+                                    // this is an expensive operation 
+                                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                                        "):DetermineActiveRoute: Reconfiguring spillover side " + routeInfo.spilloverBufferSide->GetSideId() + " for data ingress" );
+
+                                    if ( ConfigureSpillover( routeInfo.spilloverBufferSide, true ) )
+                                    {
+                                        routeInfo.flowingIntoSpillover = true;
+                                    }
+                                    else
+                                    {
+                                        // Something went wrong, abort and try again next cycle
+                                        routeInfo.activeSide = GUCEF_NULL;
+                                        routeInfo.routeSwitchingTimer.SetEnabled( true );
+                                    }
                                 }
                             }
                         }
@@ -1229,6 +1494,105 @@ CPubSubFlowRouter::OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
         return;
 
     UpdateRoutesBasedOnSideHealthStatus( side, *healthStatus );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier    ,
+                                                     const CORE::CEvent& eventId  ,
+                                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier ); 
+    if ( GUCEF_NULL == topic )
+        return;
+
+    CPubSubClient* client = topic->GetClient();
+    if ( GUCEF_NULL == client )
+        return;
+        
+    CPubSubClientSide* side = static_cast< CPubSubClientSide* >( client->GetOpaqueUserData() );
+    if ( GUCEF_NULL == side )
+        return;
+    
+    MT::CScopeReaderLock readLock( m_lock );
+    
+    // Check if this side is a spillover and in doing so get the spillover info
+    TSidePtrToSpilloverInfoMap::iterator i = m_spilloverInfoMap.find( side );
+    if ( i != m_spilloverInfoMap.end() )
+    {
+        // The end-of-data side is a spillover side
+
+        // Now we will perform the next check since it might be worth it...
+        // We really care about the aggregate status in the router, not per topic
+        if ( client->AreAllSubscriptionsAtEndOfData() )
+        {
+            CSpilloverInfo& spilloverInfo = (*i).second;
+            spilloverInfo.endOfDataEventOccured = true;
+
+            readLock.EarlyUnlock(); // @TODO: reader to writer transition support            
+            
+            // if an entire client and thus a side (since its a 1:1 relationship) has reached EOD
+            // we check to see if we need to update the active route            
+            DetermineActiveRoute( *spilloverInfo.route );
+        }
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSidePubSubClientInstantiation( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventId  ,
+                                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClientPtr* pubsubClientPtr = static_cast< CPubSubClientPtr* >( eventData ); 
+    if ( GUCEF_NULL == pubsubClientPtr )
+        return;
+    RegisterSidePubSubClientEventHandlers( *pubsubClientPtr );   
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSidePubSubClientTopicCreation( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventId  ,
+                                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClient* pubsubClient = static_cast< CPubSubClient* >( notifier ); 
+    if ( GUCEF_NULL == pubsubClient || GUCEF_NULL == eventData )
+        return;
+
+    CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
+    CPubSubClientTopic* topicAccess = pubsubClient->GetTopicAccess( topicName );
+    if ( GUCEF_NULL != topicAccess ) 
+    {
+        RegisterSidePubSubClientTopicEventHandlers( topicAccess );   
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSidePubSubClientTopicsAutoCreation( CORE::CNotifier* notifier    ,
+                                                         const CORE::CEvent& eventId  ,
+                                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClient* pubsubClient = static_cast< CPubSubClient* >( notifier ); 
+    if ( GUCEF_NULL == pubsubClient || GUCEF_NULL == eventData )
+        return;
+
+    CPubSubClient::PubSubClientTopicSet& topics = *static_cast< CPubSubClient::TopicsAccessAutoCreatedEventData* >( eventData );
+    CPubSubClient::PubSubClientTopicSet::iterator i = topics.begin();
+    while ( i != topics.end() )
+    {
+        RegisterSidePubSubClientTopicEventHandlers( (*i) );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------//

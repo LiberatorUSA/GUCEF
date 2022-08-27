@@ -157,6 +157,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     , m_msmqMsgSentToArriveLatencies()
     , m_msmqLastLookupId( 0 )
     , m_isHealthy( true )
+    , m_subscriptionIsAtEndOfData( false )
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -2589,7 +2590,8 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     }
 
     NotifyOfReceivedMsgs();
-    
+    m_subscriptionIsAtEndOfData = endOfData;
+
     if ( msgsRead == m_config.maxMsmqMsgsToReadPerSyncCycle )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "MsmqPubSubClientTopic:OnSyncReadTimerCycle: max msgs per cycle reached, asking for immediate pulse cycle" );
@@ -3132,6 +3134,15 @@ CMsmqPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsmqPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    return m_subscriptionIsAtEndOfData;
 }
 
 /*-------------------------------------------------------------------------//

@@ -122,6 +122,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     typedef CORE::CTEventHandlerFunctor< CPubSubFlowRouter >    TEventCallback;
     typedef std::vector< CPubSubClientSidePtr >                 TPubSubClientSideVector;
 
+    class CSpilloverInfo;
+    
     class CRouteInfo
     {
         public:
@@ -145,6 +147,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
         CORE::CDateTime deadLetterSideLastHealthStatusChange;
 
         CORE::CTimer routeSwitchingTimer;
+        CSpilloverInfo* spilloverInfo;
+
+        bool IsSpilloverEgressOngoing( void ) const;
+        bool IsSpilloverIngressOngoing( void ) const;
+        bool IsSpilloverInActiveUse( void ) const;
 
         CRouteInfo( void );
         CRouteInfo( const CRouteInfo& src );
@@ -157,15 +164,24 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     class CSpilloverInfo
     {
         public:
-        CORE::UInt64 spilledOverMsgs;
+        CORE::UInt64 spilloverIngressMsgCount;
+        CORE::UInt64 spilloverEgressMsgCount;
+        bool endOfDataEventOccured;
+        bool endOfDataEventSupported;
+        CRouteInfo* route;
 
         CSpilloverInfo( void );
+
+        bool IsEgressOngoing( void ) const;
+        bool IsIngressOngoing( void ) const;
+        bool IsInActiveUse( void ) const;
     };
 
     typedef std::map< CPubSubClientSide*, TRouteInfoVector >     TSidePtrToRouteInfoVectorMap;
     typedef std::map< CPubSubClientSide*, TRouteInfoPtrVector >  TSidePtrToRouteInfoPtrVectorMap;
     typedef std::map< CPubSubClientSide*, TRouteInfoPtrSet >     TSidePtrToRouteInfoPtrSetMap;
     typedef std::map< CPubSubClientSide*, CSpilloverInfo >       TSidePtrToSpilloverInfoMap;
+    typedef std::map< CPubSubClientSide*, CSpilloverInfo* >      TSidePtrToSpilloverInfoPtrMap;
     typedef std::map< CORE::CString, CORE::CString >             TStringMap;
 
     bool NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
@@ -175,12 +191,40 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     bool IsTrackingInFlightPublishedMsgsForAcksNeeded( const CPubSubClientSide* side ) const;
     
     void
+    OnSidePubSubClientInstantiation( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
+    void
+    OnSidePubSubClientTopicCreation( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
+    void
+    OnSidePubSubClientTopicsAutoCreation( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData );    
+    
+    void
+    OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData );
+
+    void
     OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
                               const CORE::CEvent& eventId  ,
                               CORE::CICloneable* eventData );
     
     void RegisterSideEventHandlers( CPubSubClientSide* side );
 
+    void RegisterSidePubSubClientEventHandlers( CPubSubClientPtr& client );
+
+    void RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopic* topicAccess );
+
+    void RegisterSidePubSubClientTopicEventHandlers( CPubSubClientPtr& client );
+
+    void RegisterRouteEventHandlers( CRouteInfo& routeInfo );
+    
     void UpdatePulseGeneratorUsage( void );
 
     void DetermineActiveRoute( CRouteInfo& routeInfo );
@@ -189,8 +233,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
                                   const CORE::CEvent& eventId  ,
                                   CORE::CICloneable* eventData );
 
-    void RegisterRouteEventHandlers( CRouteInfo& routeInfo );
-    
     void 
     UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
                                          bool isHealthy          );
@@ -203,6 +245,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     TSidePtrToRouteInfoVectorMap m_routeMap;
     TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
     TSidePtrToSpilloverInfoMap m_spilloverInfoMap;
+    TSidePtrToSpilloverInfoPtrMap m_spilloverInfoForTargetsMap;
     CORE::CPulseGenerator* m_pulseGenerator;
     MT::CReadWriteLock m_lock;
 };

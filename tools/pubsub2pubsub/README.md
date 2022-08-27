@@ -12,6 +12,11 @@ The overall roles & responsibilities hierarchy is as follows:
 +----------------+         +---------+        +------+        +---------------+        +---------------------+
 | pubsub2pubsub  |  1 -> N | channel | 1 -> M | side | 1 -> 1 | pubsub client | 1 -> X | pubsub client topic |
 +----------------+         +---------+        +------+        +---------------+        +---------------------+
+                                | 1              /\ M
+                                | 1               | 
+                           +-------------+ 1      |
+                           | flow router |<-------|
+                           +-------------+						   
 ```
 
 ## What is a 'channel'?
@@ -33,6 +38,15 @@ So really a side is just whatever you have defined it to be on that logical side
 A side acts as the glue that ties the pubsub client abstraction into the larger context with more specific behavior appropriote, in this case, for the pubsub2pubsub context.
 Note that every side can have its own thread if so desired per the config. If one uses that ability for very side then the total number of generic application threads would be (main(1) + nrOfChannels(x) * nrOfSides(y)) so threads=x*y+1
 
+## What is a 'flow router'?
+As the name might suggest a flow router is intended to direct traffic between sides in a config driven manner. It takes routes defined in config and builds from those a flow network along which to route traffic.
+The simplest route is 'any' to 'any' denoted using wildcards which does not impose any restrictions on how traffic flows between sides. 
+As part of routing the message flow the routes you define allow you to identify sides with special purpose beyond just the regular 'from' -> 'to' style routing.
+You can also specify a side to act as a failover side for a route or a dead letter destination. Lastly you can also define a side to act as a special route called a 'spillover bufffer'
+A spillover buffer is a concept that is intended to act as an emergency buffer between sides to prevent messages getting backed up in the 'from' side during an outage of regular primary and failover routes.
+In such a case the spillover will act as a temporary holding area for messages that is not just in-memory but acts as a real interim destination. The critical difference with a 'failover' is that
+contrary to a failover the spillover is not a 'final' destination but merely a stop along the route. Once the primary or failover route is reestablished the spillover will act as a 'from' side
+and it will empty its data towards the reestablished primary or failover routes, after which regular flow resumes.
 
 ## The pubsub 'STORAGE' backend
 The storage backend was designed to allow for block based recording and replay of any messages from any of the other backends

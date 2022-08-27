@@ -218,6 +218,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
 
     virtual bool IsHealthy( void ) const = 0;
 
+    /**
+     *  Provides a snapshot-in-time state of whether the subscription has reached a point where no more data is known to be 
+     *  available. Not all backends will support this as it is tied with the 'supportsSubscriptionEndOfDataEvent' feature toggle.
+     *  If the feature is supported but we are not subscribed the return value is to be 'false'
+     *
+     *  Default implementation always returns 'false'
+     *  If the feature 'supportsSubscriptionEndOfDataEvent' is supported the backend should provide an overriding implementation 
+     */
+    virtual bool IsSubscriptionAtEndOfData( void ) const;
+
     virtual bool IsPublishingSupported( void ) = 0;
 
     virtual bool IsSubscribingSupported( void ) = 0;

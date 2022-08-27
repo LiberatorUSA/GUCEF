@@ -114,6 +114,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     bool bestEffortDeserializeIsAllowed;
     CORE::Int32 maxStorageCorruptionDetectionsToBeHealthy;
     CORE::Int32 maxStorageDeserializationFailuresToBeHealthy;
+    bool treatEveryFullfilledRequestAsEODEvent;
 
     CStoragePubSubClientTopicConfig( void );
 

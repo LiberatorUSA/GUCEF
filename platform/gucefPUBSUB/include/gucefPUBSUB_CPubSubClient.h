@@ -88,6 +88,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the topic */
 
     typedef std::set< CPubSubClientTopic* >                         PubSubClientTopicSet;
+    typedef std::set< const CPubSubClientTopic* >                   PubSubClientTopicConstSet;
     typedef CORE::TCloneableString                                  TopicAccessCreatedEventData;            /**< name of the topic is passed as event relevant data */
     typedef CORE::TCloneableString                                  TopicAccessDestroyedEventData;          /**< name of the topic is passed as event relevant data */
     typedef CORE::CTCloneableObj< PubSubClientTopicSet >            TopicsAccessAutoCreatedEventData;       /**< access to the topics is passed as event relevant data */
@@ -150,6 +151,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual void GetCreatedTopicAccessNameList( CString::StringSet& topicNameList ) = 0;
 
+    virtual void GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) = 0;
+    
+    virtual void GetAllCreatedTopicAccess( PubSubClientTopicConstSet& topicAccess ) const;
+
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 
     virtual bool Connect( void ) = 0;
@@ -159,6 +164,18 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     virtual bool IsConnected( void ) const = 0;
 
     virtual bool IsHealthy( void ) const = 0;
+
+    /**
+     *  Provides a snapshot-in-time state of whether as an aggregate status for all topics the subscriptions have 
+     *  reached a point where no more data is known to be available. Not all backends will support this as it is 
+     *  tied with the 'supportsSubscriptionEndOfDataEvent' feature toggle.
+     *  If the feature is supported but we are not subscribed the return value is to be 'false'
+     *
+     *  Default implementation acts as a helper function using the other member functions available to perform the aggregation 
+     *  of the snapshot-in-time state. A more efficient version could be implemented by backends if so desired or if a more
+     *  transactional/atomic state determination is required.
+     */
+    virtual bool AreAllSubscriptionsAtEndOfData( void ) const;
 
     /**
      *  Provide ability to get the textual name of the formatter

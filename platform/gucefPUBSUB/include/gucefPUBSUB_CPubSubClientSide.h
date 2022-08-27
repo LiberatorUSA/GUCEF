@@ -113,9 +113,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 {
     public:
 
-    static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the topic */
+    static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the side which provides an aggregate health state */
+    static const CORE::CEvent PubSubClientInstantiationEvent;          /**< event msg sent when a new pubsub client is instantiated thus invalidating previous references to the underlying client */
 
-    typedef CORE::TCloneableBool            THealthStatusChangeEventData;   /**< boolean flag indicating the health status */
+    typedef CORE::TCloneableBool            THealthStatusChangeEventData;           /**< boolean flag indicating the health status */
+    typedef CPubSubClientPtr                TPubSubClientInstantiationEventData;    /**< shared pointer to the pubsub client */
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
     typedef std::vector< CPubSubClientSide* >                TPubSubClientSideVector;
@@ -184,6 +186,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
     bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+    /**
+     *  Provides access to the current instantiation of the underlying pubsub client for this side
+     *  Note that the lifecycle of the client is controlled by the side hence it the active side instance could be replaced
+     */
+    CPubSubClientPtr GetCurrentUnderlyingPubSubClient( void );
 
     static void RegisterEvents( void );
     

@@ -82,6 +82,7 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CPubSubClientSide::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClientSide::HealthStatusChangeEvent";
+const CORE::CEvent CPubSubClientSide::PubSubClientInstantiationEvent = "GUCEF::PUBSUB::CPubSubClientSide::PubSubClientInstantiationEvent";
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
@@ -99,6 +100,7 @@ CPubSubClientSide::RegisterEvents( void )
 {GUCEF_TRACE;
 
     HealthStatusChangeEvent.Initialize();
+    PubSubClientInstantiationEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,6 +144,15 @@ CPubSubClientSide::~CPubSubClientSide()
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientPtr
+CPubSubClientSide::GetCurrentUnderlyingPubSubClient( void )
+{GUCEF_TRACE;
+
+    return m_pubsubClient;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1913,6 +1924,8 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):PerformPubSubClientSetup: Setup completed for pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\" for side with id " +
             GetSideId() );
+
+        NotifyObservers( PubSubClientInstantiationEvent, &m_pubsubClient );
     }
     return true;
 }

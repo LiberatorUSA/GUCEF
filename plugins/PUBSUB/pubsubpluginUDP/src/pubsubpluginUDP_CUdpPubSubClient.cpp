@@ -216,12 +216,30 @@ PUBSUB::CPubSubClientTopic*
 CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
         return (*i).second;
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CUdpPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+        
+    TTopicMap::iterator i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
+        topicAccess.insert( (*i).second );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
