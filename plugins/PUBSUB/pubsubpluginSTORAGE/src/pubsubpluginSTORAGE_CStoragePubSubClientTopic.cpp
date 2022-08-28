@@ -426,10 +426,10 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                                               bool notify                              )
 {GUCEF_TRACE;
 
-    if ( CStoragePubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_STORAGE != m_config.mode )
+    if ( !m_config.needPublishSupport )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-            "):PublishViaMsgPtrs: Attempt to publish messages on a topic that is not configured as CHANNELMODE_PUBSUB_TO_STORAGE" );
+            "):PublishViaMsgPtrs: Attempt to publish messages on a topic that is not configured for publishing" );
         return false;
     }
 
@@ -698,10 +698,21 @@ bool
 CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
 
+    // Sanity check the config
+    if ( config.needPublishSupport && config.needSubscribeSupport )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: This backend does not support publishing and subscribing on the same topic. Both are currently selected" );
+        return false;
+    }
+    if ( !config.needPublishSupport && !config.needSubscribeSupport )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: Neither publishing nor subscribing is selected for the topic, this is invalid" );
+        return false;
+    }
+    
     MT::CScopeMutex lock( m_lock );
 
     m_config = config;
-
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
     m_vfsRootPath = ResolveVfsRootPath();    
 
@@ -817,10 +828,10 @@ bool
 CStoragePubSubClientTopic::AddStorageToPubSubRequest( const StorageToPubSubRequest& request )
 {GUCEF_TRACE;
 
-    if ( CStoragePubSubClientTopicConfig::CHANNELMODE_STORAGE_TO_PUBSUB != m_config.mode )
+    if ( m_config.needSubscribeSupport )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-            "):PublishViaMsgPtrs: Attempt to source messages from storage on a topic that is not configured as CHANNELMODE_STORAGE_TO_PUBSUB" );
+            "):PublishViaMsgPtrs: Attempt to source messages from storage on a topic that is not configured got subscriptions" );
         return false;
     }
 
@@ -836,7 +847,7 @@ CStoragePubSubClientTopic::Subscribe( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    if ( ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
+    if ( m_config.needSubscribeSupport && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
     {
         AddStorageToPubSubRequest( StorageToPubSubRequest( m_config.oldestStoragePubSubMsgFileToLoad, m_config.youngestStoragePubSubMsgFileToLoad, true, true ) );
     }
@@ -866,7 +877,7 @@ CStoragePubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    if ( ( m_config.mode == TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB ) && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
+    if ( m_config.needSubscribeSupport && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
     {
         if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad, true, false ) ) )
         {
@@ -1188,21 +1199,13 @@ void
 CStoragePubSubClientTopic::OnEndOfASyncVfsWork( void )
 {GUCEF_TRACE;
 
-    switch ( m_config.mode )
+    if ( m_config.needPublishSupport )
     {
-        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
-        {
-            return;
-        }
-        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
-        {
-            // Finalize the write buffer content, there wont be any additional content at this time
-            FinalizeWriteBuffer();
+        // Finalize the write buffer content, there wont be any additional content at this time
+        FinalizeWriteBuffer();
 
-            // Persist next ready to read buffer
-            StoreNextReceivedPubSubBuffer();
-            return;
-        }
+        // Persist next ready to read buffer
+        StoreNextReceivedPubSubBuffer();
     }
 }
 
@@ -1212,20 +1215,15 @@ void
 CStoragePubSubClientTopic::PerformASyncVfsWork( void )
 {GUCEF_TRACE;
 
-    switch ( m_config.mode )
+    if ( m_config.needPublishSupport )
     {
-        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
-        {
-            LocateFilesForStorageToPubSubRequest();
-            ProcessNextPubSubRequestRelatedFile();
-            TransmitNextPubSubMsgBuffer();
-            return;
-        }
-        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
-        {
-            StoreNextReceivedPubSubBuffer();
-            return;
-        }
+        StoreNextReceivedPubSubBuffer();
+    }
+    else
+    {
+        LocateFilesForStorageToPubSubRequest();
+        ProcessNextPubSubRequestRelatedFile();
+        TransmitNextPubSubMsgBuffer();
     }
 }
 
@@ -1237,20 +1235,15 @@ CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    
                                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    switch ( m_config.mode )
+    if ( m_config.needPublishSupport )
     {
-        case TChannelMode::CHANNELMODE_STORAGE_TO_PUBSUB:
-        {
-            LocateFilesForStorageToPubSubRequest();
-            ProcessNextPubSubRequestRelatedFile();
-            TransmitNextPubSubMsgBuffer();
-            return;
-        }
-        case TChannelMode::CHANNELMODE_PUBSUB_TO_STORAGE:
-        {
-            StoreNextReceivedPubSubBuffer();
-            return;
-        }
+        StoreNextReceivedPubSubBuffer();
+    }
+    else
+    {
+        LocateFilesForStorageToPubSubRequest();
+        ProcessNextPubSubRequestRelatedFile();
+        TransmitNextPubSubMsgBuffer();
     }
 }
 

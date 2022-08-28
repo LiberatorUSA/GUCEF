@@ -184,6 +184,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
+            RegisterTopicEventHandlers( topicAccess );
         }
         else
         {
@@ -396,6 +397,33 @@ CAwsSqsPubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CAwsSqsPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != topic )
+    {
+        TEventCallback callback( this, &CAwsSqsPubSubClient::OnTopicHealthStatusChange );
+        SubscribeTo( topic                                             ,
+                     CAwsSqsPubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                          );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsSqsPubSubClient::OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // (Re)determine the aggregate health status
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/

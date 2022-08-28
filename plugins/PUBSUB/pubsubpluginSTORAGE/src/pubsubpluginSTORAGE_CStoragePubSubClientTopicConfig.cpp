@@ -77,7 +77,6 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , applyDedicatedVfsOpsThreadCpuAffinity( false )
     , cpuAffinityForDedicatedVfsOpsThread( 0 )
     , collectMetrics( true )
-    , mode( CHANNELMODE_PUBSUB_TO_STORAGE )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
@@ -112,7 +111,6 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , applyDedicatedVfsOpsThreadCpuAffinity( src.applyDedicatedVfsOpsThreadCpuAffinity )
     , cpuAffinityForDedicatedVfsOpsThread( src.cpuAffinityForDedicatedVfsOpsThread )
     , collectMetrics( src.collectMetrics )
-    , mode( src.mode )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
     , autoPushAfterStartupIfStorageToPubSub( src.autoPushAfterStartupIfStorageToPubSub )
     , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
@@ -148,7 +146,6 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , applyDedicatedVfsOpsThreadCpuAffinity( false )
     , cpuAffinityForDedicatedVfsOpsThread( 0 )
     , collectMetrics( true )
-    , mode( CHANNELMODE_PUBSUB_TO_STORAGE )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
@@ -192,7 +189,6 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     applyDedicatedVfsOpsThreadCpuAffinity = config.GetAttributeValueOrChildValueByName( "applyDedicatedVfsOpsThreadCpuAffinity" ).AsBool( applyDedicatedVfsOpsThreadCpuAffinity, true );
     cpuAffinityForDedicatedVfsOpsThread = config.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedVfsOpsThread" ).AsUInt32( cpuAffinityForDedicatedVfsOpsThread, true );
     collectMetrics = config.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
-    mode = (TChannelMode) config.GetAttributeValueOrChildValueByName( "mode" ).AsInt32( mode, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = config.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
     autoPushAfterStartupIfStorageToPubSub = config.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIfStorageToPubSub" ).AsBool( autoPushAfterStartupIfStorageToPubSub, true ); 
     youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
@@ -237,7 +233,6 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "applyDedicatedVfsOpsThreadCpuAffinity", applyDedicatedVfsOpsThreadCpuAffinity ) && success;
     success = config.SetAttribute( "cpuAffinityForDedicatedVfsOpsThread", cpuAffinityForDedicatedVfsOpsThread ) && success;
     success = config.SetAttribute( "collectMetrics", collectMetrics ) && success;
-    success = config.SetAttribute( "mode", mode ) && success;
     success = config.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && success;
     success = config.SetAttribute( "autoPushAfterStartupIfStorageToPubSub", autoPushAfterStartupIfStorageToPubSub ) && success;
     success = config.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
@@ -302,7 +297,6 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         applyDedicatedVfsOpsThreadCpuAffinity = src.applyDedicatedVfsOpsThreadCpuAffinity;
         cpuAffinityForDedicatedVfsOpsThread = src.cpuAffinityForDedicatedVfsOpsThread;
         collectMetrics = src.collectMetrics;
-        mode = src.mode;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
         autoPushAfterStartupIfStorageToPubSub = src.autoPushAfterStartupIfStorageToPubSub;
         youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;

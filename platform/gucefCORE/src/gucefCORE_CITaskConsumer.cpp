@@ -149,7 +149,8 @@ CPulseGenerator*
 CTaskConsumer::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return !m_delegator.IsNULL() ? &m_delegator->GetPulseGenerator() : GUCEF_NULL;
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    return !delegator.IsNULL() ? &delegator->GetPulseGenerator() : GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -158,7 +159,8 @@ UInt32
 CTaskConsumer::GetDelegatorThreadId( void ) const
 {GUCEF_TRACE;
 
-    return !m_delegator.IsNULL() ? m_delegator->GetThreadID() : 0;
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    return !delegator.IsNULL() ? delegator->GetThreadID() : 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,8 +169,9 @@ void
 CTaskConsumer::RequestTaskCycleDelayInMs( UInt32 requestedDelayInMs )
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
-        m_delegator->RequestTaskCycleDelayInMs( requestedDelayInMs );
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
+        delegator->RequestTaskCycleDelayInMs( requestedDelayInMs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -186,7 +189,8 @@ bool
 CTaskConsumer::WaitForTaskToFinish( Int32 timeoutInMs )
 {GUCEF_TRACE;
 
-    return !m_threadPool.IsNULL() ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false;
+    TBasicThreadPoolPtr threadPool = m_threadPool;
+    return !threadPool.IsNULL() ? threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -279,9 +283,10 @@ bool
 CTaskConsumer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
     {
-        return m_delegator->Lock( lockWaitTimeoutInMs );
+        return delegator->Lock( lockWaitTimeoutInMs );
     }
     return false;
 }
@@ -292,9 +297,10 @@ bool
 CTaskConsumer::Unlock( void ) const
 {GUCEF_TRACE;
 
-    if ( !m_delegator.IsNULL() )
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
     {
-        return m_delegator->Unlock();
+        return delegator->Unlock();
     }
     return false;
 }

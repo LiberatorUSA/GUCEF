@@ -162,48 +162,49 @@ UInt32
 rwl_reader_start( TRWLock *rwlock )
 {
 	/*
-         *	First we check if destroy has not been called.
-         *	In a propper design this test should never fail.
-         */
-	if ( rwlock->delflag ) return 0;
+     *	First we check if destroy has not been called.
+     *	In a propper design this test should never fail.
+     */
+	if ( rwlock->delflag ) 
+        return 0;
 
+    /*
+     *	How we behave depends on wheter readers have priority or
+     *	wheter writers have priority.
+     */
+    if ( rwlock->wpriority )
+    {
         /*
-         *	How we behave depends on wheter readers have priority or
-         *	wheter writers have priority.
+         *	If writers have priority we will wait for all writers
+         *	to finish this means the current writer and any writer
+         *	that may be queued. After that we increase the reader
+         *	counter.
          */
-        if ( rwlock->wpriority )
+        while ( rwlock->wcount > 0 )
         {
-        	/*
-                 *	If writers have priority we will wait for all writers
-                 *	to finish this means the current writer and any writer
-                 *	that may be queued. After that we increase the reader
-                 *	counter.
-                 */
-                while ( rwlock->wcount > 0 )
-                {
-                    PrecisionDelay( 25 );
-                }
-                rwlock->rcount++;
+            PrecisionDelay( 25 );
         }
-        else
+        rwlock->rcount++;
+    }
+    else
+    {
+        /*
+         *	If readers have priority then we will increase
+         *	the readers count first. This causes any new writer
+         *	to wait for the readers to finish. After that we wait
+         *	for any writer that may already be busy to finish.
+         */
+        rwlock->rcount++;
+        while ( rwlock->wflag )
         {
-        	/*
-                 *	If readers have priority then we will increase
-                 *	the readers count first. This causes any new writer
-                 *	to wait for the readers to finish. After that we wait
-                 *	for any writer that may already be busy to finish.
-                 */
-        	rwlock->rcount++;
-                while ( rwlock->wflag )
-                {
-                    PrecisionDelay( 25 );
-                }
+            PrecisionDelay( 25 );
         }
+    }
 
-        /*
-         *	Start reading
-         */
-        return 1;
+    /*
+        *	Start reading
+        */
+    return 1;
 }
 
 /*--------------------------------------------------------------------------*/

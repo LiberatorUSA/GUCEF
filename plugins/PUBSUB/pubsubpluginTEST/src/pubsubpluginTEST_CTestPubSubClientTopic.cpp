@@ -301,7 +301,7 @@ CTestPubSubClientTopic::RegisterEventHandlers( void )
 
 
 
-    TEventCallback callback2( this, &CTestPubSubClientTopic::OnReconnectTimerCycle );
+    TEventCallback callback2( this, &CTestPubSubClientTopic::OnHealthyStatusToggleTimerCycle );
     SubscribeTo( &m_healthyStatusToggleTimer    ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback2                      );
@@ -713,7 +713,10 @@ CTestPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& conf
     m_healthyStatusToggleTimer.SetEnabled( m_config.toggleHealthyStatus );
     CORE::UInt32 jitterMs = 0;
     if ( m_config.healthyStatusToggleIntervalJitter > 0 )
-        jitterMs = (CORE::UInt32) (rand()/RAND_MAX) * m_config.healthyStatusToggleIntervalJitter;
+    {
+        Float64 jitterFactor = rand() / ( RAND_MAX * 1.0 );
+        jitterMs = (CORE::UInt32) ( jitterFactor * (CORE::Float32) m_config.healthyStatusToggleIntervalJitter );
+    }
 
     m_healthyStatusToggleTimer.SetInterval( m_config.healthyStatusToggleIntervalInMs + jitterMs ); 
 
@@ -1059,7 +1062,7 @@ CTestPubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
-    bool newIsHealthyState = m_config.defaultIsHealthyStatus && m_hasFakeHealthIssue;
+    bool newIsHealthyState = m_config.defaultIsHealthyStatus && !m_hasFakeHealthIssue;
 
     if ( m_isHealthy != newIsHealthyState )
     {
@@ -1067,7 +1070,10 @@ CTestPubSubClientTopic::IsHealthy( void ) const
 
         CORE::UInt32 jitterMs = 0;
         if ( m_config.healthyStatusToggleIntervalJitter > 0 )
-            jitterMs = (CORE::UInt32) (rand()/RAND_MAX) * m_config.healthyStatusToggleIntervalJitter;
+        {
+            Float64 jitterFactor = rand() / ( RAND_MAX * 1.0 );
+            jitterMs = (CORE::UInt32) ( jitterFactor * (CORE::Float32) m_config.healthyStatusToggleIntervalJitter );
+        }
 
         m_healthyStatusToggleTimer.SetInterval( m_config.healthyStatusToggleIntervalInMs + jitterMs ); 
 

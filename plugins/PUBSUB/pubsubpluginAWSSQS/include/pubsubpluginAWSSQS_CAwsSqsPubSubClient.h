@@ -122,7 +122,14 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+
     void RegisterEventHandlers( void );
+
+    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
     
     CAwsSqsPubSubClient( void ); /**< not implemented */
 

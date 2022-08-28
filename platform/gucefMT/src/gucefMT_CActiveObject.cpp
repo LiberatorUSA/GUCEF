@@ -334,7 +334,6 @@ CActiveObject::Resume( void )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-
     if ( GUCEF_NULL != _td && _suspend )
     {
         _active = true;

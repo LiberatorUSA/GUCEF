@@ -500,9 +500,9 @@ CTestPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic
     if ( GUCEF_NULL != topic )
     {
         TEventCallback callback( this, &CTestPubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                         ,
-                     CTestPubSubClient::HealthStatusChangeEvent ,
-                     callback                                      );
+        SubscribeTo( topic                                           ,
+                     CTestPubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                        );
     }
 }
 

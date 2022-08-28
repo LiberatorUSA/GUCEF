@@ -99,7 +99,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 {
     public:
 
-    typedef enum CStoragePubSubClientTopicConfig::EChannelMode  TChannelMode;
     typedef std::vector< CORE::UInt32 >                         UInt32Vector;
 
     #pragma pack(push, 1)  // No structure packing

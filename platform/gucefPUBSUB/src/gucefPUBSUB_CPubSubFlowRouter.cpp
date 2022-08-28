@@ -798,8 +798,6 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     r = m_routeMap.begin();
     while ( r != m_routeMap.end() )
     {
-        RegisterSideEventHandlers( (*r).first );
-
         TRouteInfoVector& multiRouteInfo = (*r).second;
         TRouteInfoVector::iterator n = multiRouteInfo.begin();
         while ( n != multiRouteInfo.end() )
@@ -823,11 +821,24 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
 void
 CPubSubFlowRouter::RegisterRouteEventHandlers( CRouteInfo& routeInfo )
 {GUCEF_TRACE;
-
+    
     TEventCallback callback( this, &CPubSubFlowRouter::OnRouteSwitchTimerCycle );
     SubscribeTo( &routeInfo.routeSwitchingTimer ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
+    
+    // For efficiency to avoid an additional lookup we use the user data facility
+    // to link back to the parent route info for the timer handler
+    routeInfo.routeSwitchingTimer.SetOpaqueUserData( &routeInfo );
+
+    if ( GUCEF_NULL != routeInfo.toSide )
+        RegisterSideEventHandlers( routeInfo.toSide );
+    if ( GUCEF_NULL != routeInfo.failoverSide )
+        RegisterSideEventHandlers( routeInfo.failoverSide );
+    if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+        RegisterSideEventHandlers( routeInfo.spilloverBufferSide );
+    if ( GUCEF_NULL != routeInfo.deadLetterSide )
+        RegisterSideEventHandlers( routeInfo.deadLetterSide );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1090,6 +1101,10 @@ CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
         SubscribeTo( side                                              ,
                      CPubSubClientSide::PubSubClientInstantiationEvent ,
                      callback2                                         );
+   
+        CPubSubClientPtr currentClient = side->GetCurrentUnderlyingPubSubClient();
+        if ( !currentClient.IsNULL() )
+            RegisterSidePubSubClientEventHandlers( currentClient );    
     }
 }
 
@@ -1449,7 +1464,7 @@ CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side 
                     routeInfo->routeSwitchingTimer.SetEnabled( true );
                 }
             }
-            if ( side == routeInfo->toSide )
+            if ( side == routeInfo->deadLetterSide )
             {
                 if ( routeInfo->deadLetterSideIsHealthy != isHealthy )
                 {

@@ -498,9 +498,9 @@ CStoragePubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* to
     if ( GUCEF_NULL != topic )
     {
         TEventCallback callback( this, &CStoragePubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                         ,
-                     CStoragePubSubClient::HealthStatusChangeEvent ,
-                     callback                                      );
+        SubscribeTo( topic                                              ,
+                     CStoragePubSubClientTopic::HealthStatusChangeEvent ,
+                     callback                                           );
     }
 }
 
@@ -549,14 +549,14 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_METRIC_GAUGE( metricsPrefix + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
         GUCEF_METRIC_GAUGE( metricsPrefix + ".largestBufferSizeInBytes", topicMetrics.largestBufferSizeInBytes, 1.0f );
         
-        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_STORAGE_TO_PUBSUB == topicConfig.mode )
+        if ( topicConfig.needSubscribeSupport )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
         }
         else
-        if ( CStoragePubSubClientTopicConfig::CHANNELMODE_PUBSUB_TO_STORAGE == topicConfig.mode )
+        if ( topicConfig.needPublishSupport )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsWrittenToStorage", topicMetrics.msgsWrittenToStorage, 1.0f );
         }        

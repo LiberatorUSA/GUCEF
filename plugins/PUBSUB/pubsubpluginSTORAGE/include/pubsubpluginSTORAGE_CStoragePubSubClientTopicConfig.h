@@ -79,14 +79,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     public:
 
     typedef std::vector< PUBSUB::CPubSubClientTopicConfig > TTopicConfigVector;
-    enum EChannelMode : CORE::Int32
-    {
-        CHANNELMODE_UNKNOWN = 0 ,
-
-        CHANNELMODE_PUBSUB_TO_STORAGE = 1,
-        CHANNELMODE_STORAGE_TO_PUBSUB = 2
-    };
-    typedef enum EChannelMode TChannelMode;
 
     PUBSUB::CPubSubMsgBinarySerializerOptions pubsubBinarySerializerOptions;
     PUBSUB::CPubSubMsgSerializerOptions pubsubSerializerOptions;
@@ -105,7 +97,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     bool applyDedicatedVfsOpsThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForDedicatedVfsOpsThread;
     bool collectMetrics;
-    TChannelMode mode;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
     bool autoPushAfterStartupIfStorageToPubSub;
     CORE::CDateTime youngestStoragePubSubMsgFileToLoad;

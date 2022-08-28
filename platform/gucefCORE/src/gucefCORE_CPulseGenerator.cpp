@@ -346,6 +346,7 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
 {GUCEF_TRACE;
    
     MT::CObjectScopeLock lock( this );
+
     Float64 deltaInMs = GetActualPulseDeltaInMilliSecs();
     Int32 timeLeftToWaitInMs = (Int32) ( m_updateDeltaInMilliSecs - deltaInMs );
 
@@ -365,6 +366,7 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
     if ( timeLeftToWaitInMs <= 0 )
         return; // Time's up already
 
+    lock.EarlyUnlock();
     MT::PrecisionDelay( timeLeftToWaitInMs );
 }
 
