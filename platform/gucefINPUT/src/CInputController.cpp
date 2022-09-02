@@ -251,7 +251,7 @@ CInputController::OnPumpedNotify( CORE::CNotifier* notifier                 ,
         #ifdef GUCEF_MSWIN_BUILD
         CORE::CGUCEFApplication::TAppInitEventData* initData = static_cast< CORE::CGUCEFApplication::TAppInitEventData* >( eventdata );
         #pragma warning( disable: 4311 ) // pointer truncation warning
-        m_hinstance = reinterpret_cast<UInt32>( initData->GetData().hinstance );
+        m_hinstance = reinterpret_cast<UInt64>( initData->GetData().hinstance );
         #endif /* GUCEF_MSWIN_BUILD ? */
     }
 }
@@ -633,7 +633,7 @@ CInputController::GetDriverByName( const CString& driverName )
     {
         return (*i).second;
     }
-    return NULL;
+    return TInputDriverPtr();
 }
 
 /*-------------------------------------------------------------------------//

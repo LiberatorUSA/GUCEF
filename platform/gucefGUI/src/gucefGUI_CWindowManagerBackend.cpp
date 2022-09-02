@@ -148,7 +148,7 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
                                     fullscreen    ,                                                       
                                     valuelist     );                                          
     }
-    return NULL;          
+    return TWindowContextPtr();          
 }
 
 /*-------------------------------------------------------------------------*/

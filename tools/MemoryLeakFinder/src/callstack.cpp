@@ -459,7 +459,7 @@ GUCEF_PrintCallstack( void )
 {
     if ( isInitialized == 1 )
     {
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
 
         PrintCallstack( stdout );
 
@@ -476,7 +476,7 @@ GUCEF_DumpCallstack( const char* filename )
     {
         FILE* fptr = NULL;
 
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
 
         fptr = fopen( filename, "wb" );
         if ( fptr )
@@ -496,7 +496,7 @@ GUCEF_ShutdowntCallstackUtility( void )
 {
     if ( isInitialized == 1 )
     {
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
             fclose( logFile );
@@ -516,7 +516,7 @@ GUCEF_SetStackLogging( const UInt32 logStackBool )
 {
     if ( isInitialized == 1 )
     {
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
         logStack = logStackBool;
         if ( logStack == 1 )
         {
@@ -552,7 +552,7 @@ GUCEF_LogStackToStdOut( void )
 {
     if ( isInitialized == 1 )
     {
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( ( logFile != NULL )  &&
              ( logFile != stdout ) )
         {
@@ -570,7 +570,7 @@ GUCEF_LogStackToStdOut( void )
 void
 GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool )
 {
-    MT::MutexLock( mutex );
+    MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
     logInCvsFormatBool = logAsCvsBool;
     MT::MutexUnlock( mutex );
 }
@@ -580,7 +580,7 @@ GUCEF_SetStackLoggingInCvsFormat( const UInt32 logAsCvsBool )
 void
 GUCEF_SetStackPushCallback( TStackPushCallback cBack )
 {
-    MT::MutexLock( mutex );
+    MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
     pushCallback = cBack;
     MT::MutexUnlock( mutex );
 }
@@ -590,7 +590,7 @@ GUCEF_SetStackPushCallback( TStackPushCallback cBack )
 void
 GUCEF_SetStackPopCallback( TStackPopCallback cBack )
 {
-    MT::MutexLock( mutex );
+    MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
     popCallback = cBack;
     MT::MutexUnlock( mutex );
 }
@@ -604,7 +604,7 @@ GUCEF_LogStackTo( const char* filename )
     {
         UInt32 strLen;
 
-        MT::MutexLock( mutex );
+        MT::MutexLock( mutex, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( ( logFile != stdout ) && ( logFile != NULL ) )
         {
             fclose( logFile );

@@ -1,6 +1,6 @@
 /*
- *  gucefMT: GUCEF module providing multithreading solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefMT_TestApp: GUCEF test application for the MT module
+ *  Copyright (C) 2002 - 2022.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,11 @@
 #define GUCEF_MT_H
 #endif /* GUCEF_MT_H ? */
 
+#ifndef GUCEF_MT_TESTAPP_TESTREADERWRITERLOCK_H
+#include "TestReaderWriterLock.h"
+#define GUCEF_MT_TESTAPP_TESTREADERWRITERLOCK_H
+#endif /* GUCEF_MT_TESTAPP_TESTREADERWRITERLOCK_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -41,8 +46,7 @@ GUCEF_OSMAIN_BEGIN
 {               
     try 
     {                               
-        
-        // @TODO add tests here
+        PerformReaderWriterLockTests();
 
         return 1;                                                                            
     }
@@ -54,13 +58,4 @@ GUCEF_OSMAIN_BEGIN
 }
 GUCEF_OSMAIN_END
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 10-12-2006
-        - Dinand: Added this comment section
-
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

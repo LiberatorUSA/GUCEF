@@ -70,58 +70,109 @@ CReadWriteLock::~CReadWriteLock()
 
 /*--------------------------------------------------------------------------*/
 
-bool
+CReadWriteLock::TRWLockStates
+CReadWriteLock::RwLockIntStateToEnum( UInt32 intState )
+{GUCEF_TRACE;
+
+    switch ( intState )
+    {
+        case GUCEF_RWLOCK_OPERATION_FAILED:     return ERWLockStates::RWLOCK_OPERATION_FAILED;
+        case GUCEF_RWLOCK_OPERATION_SUCCESS:    return ERWLockStates::RWLOCK_OPERATION_SUCCESS;        
+        case GUCEF_RWLOCK_WAIT_TIMEOUT:         return ERWLockStates::RWLOCK_WAIT_TIMEOUT;
+        case GUCEF_RWLOCK_ABANDONED:            return ERWLockStates::RWLOCK_ABANDONED;
+        default: 
+            return ERWLockStates::RWLOCK_OPERATION_FAILED;
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+CReadWriteLock::TRWLockStates
 CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return rwl_writer_start( _rwlock ) != 0;
+    return RwLockIntStateToEnum( rwl_writer_start( _rwlock ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool
+CReadWriteLock::TRWLockStates
 CReadWriteLock::WriterStop( void ) const
 {GUCEF_TRACE;
 
-    rwl_writer_stop( _rwlock );
-    return true;
+    return RwLockIntStateToEnum( rwl_writer_stop( _rwlock ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
 UInt32
-CReadWriteLock::WriterCount( void ) const
+CReadWriteLock::ActiveWriterCount( void ) const
 {GUCEF_TRACE;
 
-    return rwl_writers( _rwlock );
+    return rwl_active_writers( _rwlock );
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool
+UInt32 
+CReadWriteLock::ActiveWriterReentrancyDepth( void ) const
+{GUCEF_TRACE;
+
+    return rwl_active_writer_reentrancy_depth( _rwlock );
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CReadWriteLock::QueuedWriterCount( void ) const
+{GUCEF_TRACE;
+
+    return rwl_queued_writers( _rwlock );
+}
+
+/*--------------------------------------------------------------------------*/
+
+CReadWriteLock::TRWLockStates
 CReadWriteLock::ReaderStart( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return rwl_reader_start( _rwlock ) != 0;
+    return RwLockIntStateToEnum( rwl_reader_start( _rwlock ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool
+CReadWriteLock::TRWLockStates
 CReadWriteLock::ReaderStop( void ) const
 {GUCEF_TRACE;
 
-    rwl_reader_stop( _rwlock );
-    return true;
+    return RwLockIntStateToEnum( rwl_reader_stop( _rwlock ) );
+}
+
+/*--------------------------------------------------------------------------*/
+
+CReadWriteLock::TRWLockStates 
+CReadWriteLock::TransitionReaderToWriter( void ) const
+{GUCEF_TRACE;
+
+    return RwLockIntStateToEnum( rwl_reader_transition_to_writer( _rwlock ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
 UInt32
-CReadWriteLock::ReaderCount( void ) const
+CReadWriteLock::ActiveReaderCount( void ) const
 {GUCEF_TRACE;
 
-    return rwl_readers( _rwlock );
+    return rwl_active_readers( _rwlock );
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CReadWriteLock::QueuedReaderCount( void ) const
+{GUCEF_TRACE;
+
+    return rwl_queued_readers( _rwlock );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -148,7 +199,7 @@ bool
 CReadWriteLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return WriterStart();
+    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == WriterStart( lockWaitTimeoutInMs );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -157,7 +208,7 @@ bool
 CReadWriteLock::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return WriterStop();
+    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == WriterStop();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -166,8 +217,8 @@ bool
 CReadWriteLock::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return ReaderStart();
-}
+    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == ReaderStart( lockWaitTimeoutInMs );
+}                                                                                  
 
 /*--------------------------------------------------------------------------*/
 
@@ -175,7 +226,7 @@ bool
 CReadWriteLock::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
-    return ReaderStop();
+    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == ReaderStop();
 }
 
 /*------------------------------------------------------------------------//

@@ -18,17 +18,10 @@
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
-			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
-			<RuntimeDependency Name="pubsubpluginKAFKA" />
-			<RuntimeDependency Name="pubsubpluginUDP" />
-			<RuntimeDependency Name="pubsubpluginSTORAGE" />
-			<RuntimeDependency Name="pubsubpluginWEB" />
 		</RuntimeDependencies>
     </Module>
 	<Module Platform="mswin" >
 		<RuntimeDependencies>
-			<RuntimeDependency Name="pubsubpluginMSMQ" />
-			<RuntimeDependency Name="pubsubpluginAWSSQS" />
 			<RuntimeDependency Name="MemoryLeakFinder" />
 		</RuntimeDependencies>
 	</Module>	

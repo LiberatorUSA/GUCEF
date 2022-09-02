@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+    <Module Name="gucefWEB_TestApp" Platform="All" Type="Executable" Tags="test" >
+		<Dependencies>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Linker>
+            <Define String="GUCEF_WEB_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+		<RuntimeDependencies>
+		</RuntimeDependencies>
+    </Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="MemoryLeakFinder" />
+		</RuntimeDependencies>
+	</Module>	
+</ModuleInfoEntry>

@@ -272,7 +272,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CTSGNotifier
     TMouseMap m_mouseMap;    
     CORE::CPulseGenerator* m_pulseGenerator;    
     #ifdef GUCEF_MSWIN_BUILD
-    UInt32 m_hinstance;
+    UInt64 m_hinstance;
     #endif    
     CInputDriverPluginManager m_inputDriverPluginManager;
     CString m_defaultDriver;

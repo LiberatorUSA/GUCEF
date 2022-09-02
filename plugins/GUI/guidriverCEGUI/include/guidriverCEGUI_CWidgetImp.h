@@ -613,7 +613,7 @@ CWidgetImp< BaseClass >::SetProperties( const GUCEF::CORE::CValueList& list )
 {GUCEF_TRACE;
 
     bool success = true;
-    for ( UInt32 i=0; i < list.GetCount(); ++i )
+    for ( UInt32 i=0; i < list.GetKeyCount(); ++i )
     {
         try
         {

@@ -92,7 +92,7 @@ CGUIManager::CreateGUIContext( const CString& guiDriverName    ,
         CGUIDriver* guiDriver = (*i).second;
         return guiDriver->CreateGUIContext( windowContext );
     }
-    return NULL;
+    return TGuiContextPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,7 +217,7 @@ void
 CGUIManager::DestroyGenericForm( CForm* genericForm )
 {GUCEF_TRACE;
 
-    m_genericFormFactory.Destroy( genericForm );
+    m_genericFormFactory.DestroyObject( genericForm );
 }
 
 /*-------------------------------------------------------------------------*/

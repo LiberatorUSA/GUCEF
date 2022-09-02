@@ -111,7 +111,7 @@ CImageGlobal::Initialize( void )
         
     if ( !codecRegistry.IsRegistered( "ImageCodec" ) )
     {
-        registry = new CORE::CCodecRegistry::TCodecFamilyRegistry();
+        registry = CORE::CCodecRegistry::TCodecFamilyRegistryPtr( new CORE::CCodecRegistry::TCodecFamilyRegistry() );
         codecRegistry.Register( "ImageCodec", registry );
     }
     else
@@ -120,7 +120,7 @@ CImageGlobal::Initialize( void )
     }
 
     // Register the dummy codec for our native format
-    registry->Register( "gui", new CGUIImageCodec() );
+    registry->Register( "gui", CORE::CCodecRegistry::TICodecPtr( new CGUIImageCodec() ) );
 
     m_imageCodecRegistry = new CImageCodecRegistry();
     m_imageCodecPluginManager = new CImageCodecPluginManager();

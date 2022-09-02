@@ -50,27 +50,50 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+// Forward declarations for mutual friendship
+class CScopeReaderLock;
+class CScopeWriterLock;
+
+/*--------------------------------------------------------------------------*/
+
 class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
 {
     public:
+
+    typedef CReadWriteLock::TRWLockStates   TRWLockStates;
 
     CScopeReaderLock( const CReadWriteLock& rwLock );
 
     ~CScopeReaderLock();
 
-    bool IsReadLocked( void ) const;
+    /**
+     *  Provides a snapshot-in-time state of active readers existing for the referenced lock
+     *  This cannot be used for coordination across threads or to drive any logic.
+     *  Its advisory only for human consuption or at most a unit test under controlled conditions
+     */
+    bool HasActiveReaders( void ) const;
 
-    bool IsWriteLocked( void ) const;
+    /**
+     *  Provides a snapshot-in-time state of active writers existing for the referenced lock
+     *  This cannot be used for coordination across threads or to drive any logic.
+     *  Its advisory only for human consuption or at most a unit test under controlled conditions
+     */
+    bool HasActiveWriters( void ) const;
+    
+    bool IsScopeReadLocked( void ) const;    
 
     /**
      *  Allows you to unlock before the scope lock triggers destruction of the CScopeMutex object
      *  Useful for more complex code flows where in most code paths you want to retain the lock except for
      *  a small subset of code path(s)
      */
-    bool EarlyUnlock( void );
+    TRWLockStates EarlyUnlock( void );
 
     private:
+    friend class CScopeWriterLock;
+
     const CReadWriteLock* m_rwLock;
+    TRWLockStates m_lockState;
     bool m_isReadLocked;
 
     CScopeReaderLock( void );                                     /* can't use */
@@ -84,23 +107,50 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
 {
     public:
 
+    typedef CReadWriteLock::TRWLockStates   TRWLockStates;
+    
     CScopeWriterLock( const CReadWriteLock& rwLock );
+
+    /**
+     *  Performs a secure handoff from a read lock into a write lock for the given scope
+     *  If successfull the scoped read lock will no longer be considered locked similar to an EarlyUnlock()
+     *
+     *  If you unlock your read lock to then independently attain a write lock you may find
+     *  that your data references in your scope have become invalid leading to access violations and the like
+     *  since the code could be shutting down and be cleaning up if the lock is not kept or similar scenarios.
+     */
+    CScopeWriterLock( CScopeReaderLock& readerToTransition );
 
     ~CScopeWriterLock();
 
-    bool IsReadLocked( void ) const;
+    /**
+     *  Provides a snapshot-in-time state of active readers existing for the referenced lock
+     *  This cannot be used for coordination across threads or to drive any logic.
+     *  Its advisory only for human consuption or at most a unit test under controlled conditions
+     */
+    bool HasActiveReaders( void ) const;
 
-    bool IsWriteLocked( void ) const;
+    /**
+     *  Provides a snapshot-in-time state of active writers existing for the referenced lock
+     *  This cannot be used for coordination across threads or to drive any logic.
+     *  Its advisory only for human consuption or at most a unit test under controlled conditions
+     */
+    bool HasActiveWriters( void ) const;
+
+    bool IsScopeWriteLocked( void ) const;
 
     /**
      *  Allows you to unlock before the scope lock triggers destruction of the CScopeMutex object
      *  Useful for more complex code flows where in most code paths you want to retain the lock except for
      *  a small subset of code path(s)
      */
-    bool EarlyUnlock( void );
+    TRWLockStates EarlyUnlock( void );
 
     private:
+    friend class CScopeReaderLock;
+
     const CReadWriteLock* m_rwLock;
+    TRWLockStates m_lockState;
     bool m_isWriteLocked;
 
     CScopeWriterLock( void );                                     /* can't use */

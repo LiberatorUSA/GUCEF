@@ -1546,7 +1546,9 @@ CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier  
             CSpilloverInfo& spilloverInfo = (*i).second;
             spilloverInfo.endOfDataEventOccured = true;
 
-            readLock.EarlyUnlock(); // @TODO: reader to writer transition support            
+            // transition our read lock to a write lock
+            // we want to make sure the data references we obtained above do not become invalid
+            MT::CScopeWriterLock writeLock( readLock ); 
             
             // if an entire client and thus a side (since its a 1:1 relationship) has reached EOD
             // we check to see if we need to update the active route            

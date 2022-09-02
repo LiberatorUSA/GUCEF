@@ -119,10 +119,10 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this            ,
-                                                           &m_renderManager ,
-                                                           windowContext    ,
-                                                           inputContext     );
+    GUI::TGuiContextPtr guiContextPtr( new CGUIContextGL( *this            ,
+                                                          &m_renderManager ,
+                                                          windowContext    ,
+                                                          inputContext     ) );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;

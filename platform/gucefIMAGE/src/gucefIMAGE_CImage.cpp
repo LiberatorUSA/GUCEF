@@ -166,7 +166,7 @@ CImage::Assign( const TImage& cStyleImage )
         for ( UInt32 n=0; n<mipMapCount; ++n )
         {
             const TImageMipMapLevel* mipMapLevel = &frame->mipmapLevel[ n ];
-            TPixelMapPtr pixelMap = new CPixelMap( *mipMapLevel );
+            TPixelMapPtr pixelMap( new CPixelMap( *mipMapLevel ) );
             mipmapList.push_back( pixelMap );
         }
 

@@ -36,7 +36,6 @@
 #include "TestCode_PingTest.h"
 #include "TestCode_ClientServer.h"
 #include "TestCode_SimpleTCPClient.h"
-#include "TestCode_PubSubMsgBinaryStorageTest.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,10 +66,9 @@ GUCEF_OSMAIN_BEGIN
         
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
-        PerformPubSubMsgBinaryStorageTest();
-        //PerformPingTest();
-        //SetupClientServerTest();
-        //SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
+        PerformPingTest();
+        SetupClientServerTest();
+        SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
         
         return 1;                                                                            
     }

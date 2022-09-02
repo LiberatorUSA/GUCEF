@@ -54,6 +54,13 @@ namespace MT {
 
 struct SMutex;
 
+#define GUCEF_MUTEX_OPERATION_FAILED        0
+#define GUCEF_MUTEX_OPERATION_SUCCESS       1
+#define GUCEF_MUTEX_WAIT_TIMEOUT            2
+#define GUCEF_MUTEX_ABANDONED               3
+
+#define GUCEF_MUTEX_INFINITE_TIMEOUT        GUCEF_MT_INFINITE_LOCK_TIMEOUT
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -72,23 +79,27 @@ struct SMutex;
 /**
  *      Creates the initial unlocked mutex.
  */
-GUCEF_MT_PUBLIC_C struct SMutex* MutexCreate( void );
+GUCEF_MT_PUBLIC_C struct SMutex* 
+MutexCreate( void );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *      Deallocates/destroys a mutex created with MutexCreate()
  */
-GUCEF_MT_PUBLIC_C void MutexDestroy( struct SMutex* mutex );
+GUCEF_MT_PUBLIC_C void 
+MutexDestroy( struct SMutex* mutex );
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Lock the mutex. If the mutex is already locked the calling
- *      process will have to wait for the mutex to allow a lock.
- *      The boolean return value indicates wheter the lock failed or succeeded.
+ *  Lock the mutex. If the mutex is already locked the calling
+ *  process will have to wait for the mutex to allow a lock.
+ *
+ *  @return one of the GUCEF_MUTEX_* values
  */
-GUCEF_MT_PUBLIC_C UInt32 MutexLock( struct SMutex* mutex );
+GUCEF_MT_PUBLIC_C UInt32 
+MutexLock( struct SMutex* mutex, UInt32 timeoutInMs );
 
 /*-------------------------------------------------------------------------*/
 
@@ -96,9 +107,13 @@ GUCEF_MT_PUBLIC_C UInt32 MutexLock( struct SMutex* mutex );
  *  Returns wheter or not the mutex is currently locked.
  *  0 is not locked.
  *  non-zero is locked.
- *  The value if locked is the thread ID of the thread holding the lock
+ *  The value if non-zero and thus locked is the thread ID of the thread holding the lock
+ *
+ *  Note that this is subject to race conditions and it only intended as a snapshot-in-time
+ *  Its for human consumption and test code under controlled cisrumstances only
  */
-GUCEF_MT_PUBLIC_C UInt32 MutexLocked( struct SMutex* mutex );
+GUCEF_MT_PUBLIC_C UInt32 
+MutexLocked( struct SMutex* mutex );
 
 /*-------------------------------------------------------------------------*/
 
@@ -107,7 +122,8 @@ GUCEF_MT_PUBLIC_C UInt32 MutexLocked( struct SMutex* mutex );
  *      will have the ability to get a mutex lock after this call.
  *      The boolean return value indicates wheter the unlock failed or succeeded.
  */
-GUCEF_MT_PUBLIC_C UInt32 MutexUnlock( struct SMutex* mutex );
+GUCEF_MT_PUBLIC_C UInt32 
+MutexUnlock( struct SMutex* mutex );
 
 /*--------------------------------------------------------------------------*/
 

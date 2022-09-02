@@ -88,7 +88,7 @@ CIMGCodec::CIMGCodec( const CCodecPtr& codecPtr )
 
     if ( m_codecPtr->GetFamilyName() != "ImageCodec" )
     {
-        m_codecPtr = NULL;
+        m_codecPtr.Unlink();
         GUCEF_EMSGTHROW( EInvalidCodec, "CIMGCodec::CIMGCodec(): Invalid codec type given" );
     }
 }

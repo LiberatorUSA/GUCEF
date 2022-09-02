@@ -438,7 +438,7 @@ CInputDriverPlugin::Link( void* modulePtr                         ,
     DestroyArgMatrix( argv, argc );
 
     // Fill in the plugin metadata based on what the actual module can tell us
-    CORE::CPluginMetaData* metaData = new CORE::CPluginMetaData( *pluginMetaData );
+    CORE::TPluginMetaDataStoragePtr metaData = CORE::TPluginMetaDataStoragePtr( new CORE::CPluginMetaData( *pluginMetaData ) );
     metaData->SetDescription( ( (TINPUTDRIVERPLUGFPTR_Name) m_fptable[ INPUTDRIVERPLUG_NAME ] )( m_plugdata ) );
     metaData->SetCopyright( ( (TINPUTDRIVERPLUGFPTR_Copyright) m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] )( m_plugdata ) );
     metaData->SetVersion( *( ( (TINPUTDRIVERPLUGFPTR_Version) m_fptable[ INPUTDRIVERPLUG_VERSION ] )( m_plugdata ) ) );
@@ -458,7 +458,7 @@ CInputDriverPlugin::Unlink( void )
     {
         ( (TINPUTDRIVERPLUGFPTR_Shutdown) m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] )( m_plugdata );
     }
-    m_metaData = NULL;
+    m_metaData.Unlink();
     memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
     m_sohandle = NULL;
 }
@@ -484,19 +484,19 @@ void
 CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params, char**& argv, int& argc )
 {GUCEF_TRACE;
 
-    if ( 0 == params.GetCount() )
+    if ( 0 == params.GetKeyCount() )
     {
         argc = 0;
         argv = 0;
         return;
     }
 
-    argc = params.GetCount()*2;
+    argc = params.GetKeyCount()*2;
     argv = new char*[ argc ];
 
     UInt32 n=0;
     CORE::CString value, key;
-    for ( UInt32 i=0; i<params.GetCount(); ++i )
+    for ( UInt32 i=0; i<params.GetKeyCount(); ++i )
     {
         value = params.GetValue( i );
         key = params.GetKey( i );

@@ -402,7 +402,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData       ,
 
         // There is a palette per frame but we inflate that right away, not worth the effort
         int pixelCount = flicHeader.width * flicHeader.height;
-        mipmapLevel.mipLevelInfo.pixelComponentDataType = MT::DATATYPE_UINT8;
+        mipmapLevel.mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
         mipmapLevel.mipLevelInfo.pixelStorageFormat = PSF_RGB;
         mipmapLevel.pixelData = malloc( pixelCount * 3 );
         int m=0;

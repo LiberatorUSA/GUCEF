@@ -74,6 +74,15 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 {
     public:
 
+    enum ERWLockStates
+    {
+        RWLOCK_OPERATION_FAILED     = 0,
+        RWLOCK_OPERATION_SUCCESS    = 1,
+        RWLOCK_WAIT_TIMEOUT         = 2,
+        RWLOCK_ABANDONED            = 3
+    };
+    typedef enum ERWLockStates TRWLockStates;
+
     /**
      *      Creates the readers/writers lock with the given priority setting
      *      @param writers_overrule Wheter writers or readers have priority.
@@ -81,7 +90,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
     CReadWriteLock( bool writers_overrule );
 
     /**
-     *      Creates a new reader writer lock but copies the settings from the existing one
+     *      Creates a new independent reader writer lock but copies the settings from the existing one
      */
     CReadWriteLock( const CReadWriteLock& src );
 
@@ -99,20 +108,36 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *      In case of failure it returns imediatly and the return value
      *      will be false. In such a case the lock should no longer be used.
      */
-    bool WriterStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+    TRWLockStates WriterStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     /**
      *      Use when a writer task finished using data/code that is
      *      protected by this lock.
      */
-    bool WriterStop( void ) const;
+    TRWLockStates WriterStop( void ) const;
+
+    /**
+     *  Returns the current number of active writers. Note that this function
+     *  is meant for output to humans. Race conditions ect. make it
+     *  useless for any control code.
+     *
+     *  Note that bugs aside this should logically always return 0 or 1
+     */
+    UInt32 ActiveWriterCount( void ) const;
+
+    /**
+     *  Returns the current number of active writers. Note that this function
+     *  is meant for output to humans. Race conditions ect. make it
+     *  useless for any control code.    
+     */
+    UInt32 ActiveWriterReentrancyDepth( void ) const;
 
     /**
      *      Returns the current number of writers. Note that this function
      *      is meant for output to humans. Race conditions ect. make it
      *      useless for any control code.
      */
-    UInt32 WriterCount( void ) const;
+    UInt32 QueuedWriterCount( void ) const;
 
     /**
      *      Use when a reader task needs access to the data protected by
@@ -121,20 +146,29 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *      In case of failure it returns imediatly and the return value
      *      will be false. In such a case the lock should no longer be used.
      */
-    bool ReaderStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+    TRWLockStates ReaderStart( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     /**
      *      Use when a reader task finished using data/code that is
      *      protected by this lock.
      */
-    bool ReaderStop( void ) const;
+    TRWLockStates ReaderStop( void ) const;
+
+    TRWLockStates TransitionReaderToWriter( void ) const;
 
     /**
-     *      Returns the current number of readers. Note that this function
+     *      Returns the current number of active readers. Note that this function
      *      is meant for output to humans. Race conditions ect. make it
      *      useless for any control code.
      */
-    UInt32 ReaderCount( void ) const;
+    UInt32 ActiveReaderCount( void ) const;
+
+    /**
+     *      Returns the current number of queued readers. Note that this function
+     *      is meant for output to humans. Race conditions ect. make it
+     *      useless for any control code.
+     */
+    UInt32 QueuedReaderCount( void ) const;
 
     /**
      *      Returns wheter readers or writers have prioritity.
@@ -144,6 +178,8 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
     bool DoWritersOverrule( void ) const;
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static TRWLockStates RwLockIntStateToEnum( UInt32 intState );
 
     protected:
 
@@ -180,7 +216,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
     CReadWriteLock& operator=( const CReadWriteLock& );  /* copy's arent allowed */
 };
 
-/*------------------------------------------------------------------------//
+/*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
@@ -189,17 +225,6 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_CREADWRITELOCK_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-10-2004 :
-       - Designed and implemented this class.
-
----------------------------------------------------------------------------*/

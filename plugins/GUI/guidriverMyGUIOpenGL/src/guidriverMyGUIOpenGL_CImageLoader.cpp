@@ -180,11 +180,11 @@ CImageLoader::saveImage( int _width                   ,
 
     if ( 0 != filePtr )
     {
-        IMAGE::TPixelMapPtr pixelMap = new IMAGE::CPixelMap( _texture                         , 
-                                                             _width                           ,
-                                                             _height                          ,
-                                                             TranslatePixelFormat( _format )  ,
-                                                             DATATYPE_UINT8                   );
+        IMAGE::TPixelMapPtr pixelMap( new IMAGE::CPixelMap( _texture                         , 
+                                                            _width                           ,
+                                                            _height                          ,
+                                                            TranslatePixelFormat( _format )  ,
+                                                            DATATYPE_UINT8                   ) );
         
         IMAGE::CImage image;
         image.Assign( pixelMap );

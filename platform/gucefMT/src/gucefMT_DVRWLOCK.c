@@ -22,6 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
 #include <malloc.h>                   /* memory management */
 
 #ifndef GUCEF_MT_MUTEX_H
@@ -48,11 +49,17 @@
 struct SRWLock
 {
     UInt8  delflag;
-    UInt8  wflag;
-    UInt32 rcount;
-    UInt32 wcount;
+    Int32 activeReaderCount;
+    Int32 queuedReaderCount;
+    Int32 activeWriterCount;
+    Int32 activeWriterReentrancyCount;
+    Int32 queuedWriterCount;
+    UInt8 writeLockAquisitionInProgress;
+    UInt32 writeLockAquisitionThreadId;
     UInt32 wpriority;
+    UInt32 lastWriterThreadId;
     struct SMutex* datalock;
+    struct SMutex* writerlock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -74,208 +81,1124 @@ rwl_create( UInt32 writer_overrules )
     if ( GUCEF_NULL != rwlock )
     {
         rwlock->delflag = 0;
-        rwlock->rcount = 0;
-        rwlock->wcount = 0;
-        rwlock->wflag = 0;
+        rwlock->activeReaderCount = 0;
+        rwlock->queuedReaderCount = 0;
+        rwlock->activeWriterCount = 0;
+        rwlock->activeWriterReentrancyCount = 0;
+        rwlock->queuedWriterCount = 0;
+        rwlock->writeLockAquisitionInProgress = 0;
+        rwlock->writeLockAquisitionThreadId = 0;
         rwlock->wpriority = writer_overrules;
+        rwlock->lastWriterThreadId = 0;
         rwlock->datalock = MutexCreate();
+        rwlock->writerlock = MutexCreate();
     }
     return rwlock;
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Cleanup a readers/writers lock.
- */
 void
-rwl_destroy( TRWLock *rwlock )
+rwl_destroy( TRWLock* rwlock )
 {
-	/*
-         *	Set the delete flag.
-         */
-	rwlock->delflag = 1;
-
-        /*
-         *	Wait for all readers and all writers to finish
-         */
-        while ( rwlock->rcount || rwlock->wcount )
+	if ( GUCEF_NULL != rwlock )
+    {
+        do 
         {
-        	PrecisionDelay( 25 );
-        }
+            if  ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                /*
+                 *	Set the delete flag.
+                 */
+                rwlock->delflag = 1;
 
-        /*
-         *	Cleanup allocated storage
-         */
-        MutexDestroy( rwlock->datalock );
-        free( rwlock );
+                if ( MutexUnlock( rwlock->datalock ) > 0 )
+                {                
+                    do
+                    {
+                        /*
+                         *	Wait data lock free for all readers and all writers to finish
+                         */
+                        while ( rwlock->activeReaderCount > 0              || 
+                                rwlock->activeWriterCount > 0              ||
+                                rwlock->queuedReaderCount > 0              ||
+                                rwlock->queuedWriterCount > 0              ||
+                                0 != rwlock->writeLockAquisitionInProgress  )
+                        {
+                            PrecisionDelay( 25 );
+                        }
+
+                        /*
+                         *	Re-verify with the data lock that all readers and all writers are finished
+                         *  If this comes to a different conclusion just go for another round
+                         */
+                        if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                        {
+                            if ( 0 == rwlock->activeReaderCount             &&
+                                 0 == rwlock->activeWriterCount             &&
+                                 0 == rwlock->queuedReaderCount             &&
+                                 0 == rwlock->queuedWriterCount             &&
+                                 0 == rwlock->writeLockAquisitionInProgress )
+                            {
+                                /*
+                                 *	Cleanup allocated storage
+                                 */
+                                MutexDestroy( rwlock->writerlock );
+                                MutexDestroy( rwlock->datalock );
+                                free( rwlock );
+                                return;
+                            }
+                            else
+                            {
+                                MutexUnlock( rwlock->datalock );
+                            }
+                        }
+                    }
+                    while ( 1 > 0 );
+                }
+            }            
+        }
+        while ( 1 > 0 );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *	Returns a boolean value. 1 if writers have priority and 0 if readers
- *	have priority.
- */
 UInt32
-rwl_writer_overrules( const TRWLock *rwlock )
+rwl_writer_overrules( const TRWLock* rwlock )
 {
-	/*
-         *	Atomic, just return the priority 'bool'
-         */
-	return rwlock->wpriority;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *	Returns the current amount of writers. Note that this function
- *	is meant for output to humans. It has no use in relation with
- *	the other rwl_ functions.
- */
-UInt32
-rwl_writers( const TRWLock *rwlock )
-{
-	return rwlock->wcount;
-}
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *	Returns the current amount of readers. Note that this function
- *	is meant for output to humans. It has no use in relation with
- *	the other rwl_ functions.
- */
-UInt32
-rwl_readers( const TRWLock *rwlock )
-{
-	return rwlock->rcount;
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *	Call this function when a reader task needs access to the data
- *	protected by the given rwlock.
- */
-UInt32
-rwl_reader_start( TRWLock *rwlock )
-{
-	/*
-     *	First we check if destroy has not been called.
-     *	In a propper design this test should never fail.
-     */
-	if ( rwlock->delflag ) 
-        return 0;
-
-    /*
-     *	How we behave depends on wheter readers have priority or
-     *	wheter writers have priority.
-     */
-    if ( rwlock->wpriority )
+	if ( GUCEF_NULL != rwlock )
     {
-        /*
-         *	If writers have priority we will wait for all writers
-         *	to finish this means the current writer and any writer
-         *	that may be queued. After that we increase the reader
-         *	counter.
-         */
-        while ( rwlock->wcount > 0 )
+        do
         {
-            PrecisionDelay( 25 );
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 wpriority = rwlock->wpriority;
+                MutexUnlock( rwlock->datalock );
+                return wpriority;
+            }
         }
-        rwlock->rcount++;
+        while ( 0 == rwlock->delflag );
     }
-    else
-    {
-        /*
-         *	If readers have priority then we will increase
-         *	the readers count first. This causes any new writer
-         *	to wait for the readers to finish. After that we wait
-         *	for any writer that may already be busy to finish.
-         */
-        rwlock->rcount++;
-        while ( rwlock->wflag )
-        {
-            PrecisionDelay( 25 );
-        }
-    }
-
-    /*
-        *	Start reading
-        */
     return 1;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *	Call this function when a reader task finished using data that is
- *	protected by the given rwlock.
- */
-void
-rwl_reader_stop( TRWLock *rwlock )
+UInt32
+rwl_active_writers( const TRWLock* rwlock )
 {
-	/*
-         *	Atomic, decrement readers count
-         */
-	rwlock->rcount--;
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 activeWriterCount = rwlock->activeWriterCount;
+                MutexUnlock( rwlock->datalock );
+                return activeWriterCount;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return 0;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *	Call this function when a writer task needs access to the data
- *	protected by the given rwlock.
- */
+UInt32
+rwl_active_writer_reentrancy_depth( const TRWLock *rwlock )
+{
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 activeWriterReentrancyCount = rwlock->activeWriterReentrancyCount;
+                MutexUnlock( rwlock->datalock );
+                return activeWriterReentrancyCount;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+rwl_queued_writers( const TRWLock* rwlock )
+{
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 queuedWriterCount = rwlock->queuedWriterCount;
+                MutexUnlock( rwlock->datalock );
+                return queuedWriterCount;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+rwl_active_readers( const TRWLock *rwlock )
+{
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 activeReaderCount = rwlock->activeReaderCount;
+                MutexUnlock( rwlock->datalock );
+                return activeReaderCount;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+rwl_queued_readers( const TRWLock *rwlock )
+{
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                UInt32 queuedReaderCount = rwlock->queuedReaderCount;
+                MutexUnlock( rwlock->datalock );
+                return queuedReaderCount;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+rwl_reader_start( TRWLock *rwlock )
+{
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+	            /*
+                 *	First we check if destroy has not been called.
+                 */
+	            if ( 0 != rwlock->delflag )
+                {                
+                    MutexUnlock( rwlock->datalock );
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+
+                if ( 0 == rwlock->activeWriterCount && 0 == rwlock->queuedWriterCount && 0 == rwlock->writeLockAquisitionInProgress )
+                {
+                    /*
+                     *  There are no active writers so regardless who takes priority we can proceed
+                     */
+                    rwlock->activeReaderCount++;        
+                    MutexUnlock( rwlock->datalock );
+                    return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
+                }
+
+                if ( 0 == rwlock->wpriority && 0 == rwlock->activeWriterCount && 0 == rwlock->writeLockAquisitionInProgress )
+                {
+                    /*
+                     *  There are no active writers and readers are taking priority so any queued writers will have to wait
+                     */
+                    rwlock->activeReaderCount++;        
+                    MutexUnlock( rwlock->datalock );
+                    return GUCEF_RWLOCK_OPERATION_SUCCESS; 
+                }
+
+                if ( rwlock->activeWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress )
+                {
+                    /*
+                     *  The currently active writer could actually be the same thread
+                     *  trying to obtain a read lock in another scope, acting as a reader.
+                     *  We have to check for this or the thread can self-deadlock
+                     */
+                    if ( rwlock->lastWriterThreadId == GetCurrentTaskID() )
+                    {
+                        /*
+                         *  The reader thread is also the writer thread
+                         *  allow it to proceed since we already have write access anyway
+                         *  Note that we do not increase any counters. Its a no-op
+                         */
+                        ++rwlock->activeWriterReentrancyCount;
+                        MutexUnlock( rwlock->datalock );
+                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                    }
+                }                    
+                    
+                /*
+                 *	How we behave depends on wheter readers have priority or
+                 *	wheter writers have priority.
+                 */
+                if ( rwlock->wpriority > 0 )
+                {
+                    rwlock->queuedReaderCount++;
+                    MutexUnlock( rwlock->datalock );
+
+                    do
+                    {
+                        /*
+                         *	If writers have priority we will wait for all writers
+                         *	to finish this means the current writer and any writer
+                         *	that may be queued. After that we increase the reader
+                         *	counter.
+                         */
+                        while ( rwlock->activeWriterCount > 0 || rwlock->queuedWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress )
+                        {
+                            PrecisionDelay( 25 );
+                        }
+
+                        /*
+                         *	Re-verify with the data lock that all writers are finished
+                         *  If this comes to a different conclusion just go for another round
+                         */
+                        if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                        {
+                            if ( 0 == rwlock->activeWriterCount && 0 == rwlock->queuedWriterCount && 0 == rwlock->writeLockAquisitionInProgress )
+                            {
+                                /*
+                                 *  The writers are finished and readers can now proceed
+                                 */
+                                rwlock->activeReaderCount++;        
+                                rwlock->queuedReaderCount--;
+                                MutexUnlock( rwlock->datalock );
+                                return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                            }
+                            else
+                            {
+                                MutexUnlock( rwlock->datalock );
+                            }
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to become an active reader
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedReaderCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+                else
+                {
+                    rwlock->queuedReaderCount++;
+                    MutexUnlock( rwlock->datalock );
+
+                    do
+                    {
+                        /*
+                         *	If readers have priority we will wait for all active writers
+                         *	to finish but not queued writers
+                         */
+                        while ( rwlock->activeWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress )
+                        {
+                            PrecisionDelay( 25 );
+                        }
+
+                        /*
+                         *	Re-verify with the data lock that all active writers are finished
+                         *  If this comes to a different conclusion just go for another round
+                         */
+                        if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                        {
+                            if ( 0 == rwlock->activeWriterCount && 0 == rwlock->writeLockAquisitionInProgress )
+                            {
+                                /*
+                                 *  The active writers are finished and readers can now proceed
+                                 */
+                                rwlock->activeReaderCount++;        
+                                rwlock->queuedReaderCount--;
+                                MutexUnlock( rwlock->datalock );
+                                return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                            }
+                            else
+                            {
+                                MutexUnlock( rwlock->datalock );
+                            }
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to become an active reader
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedReaderCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
+    return GUCEF_RWLOCK_OPERATION_FAILED;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+rwl_reader_stop( TRWLock *rwlock )
+{
+	GUCEF_BEGIN;
+    if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                rwlock->activeReaderCount--;
+                MutexUnlock( rwlock->datalock );
+                GUCEF_END_RET( UInt32, 1 );
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }    
+    GUCEF_END_RET( UInt32, 0 );
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+rwl_reader_transition_to_writer( TRWLock *rwlock )
+{
+	GUCEF_BEGIN;
+    if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+	            /*
+                 *	First we check if destroy has not been called.
+                 */
+	            if ( 0 != rwlock->delflag )
+                {                
+                    MutexUnlock( rwlock->datalock );
+                    return 0;
+                }
+
+                rwlock->queuedWriterCount++;
+                rwlock->activeReaderCount--;
+                
+                if ( 0 == rwlock->activeWriterCount && 0 == rwlock->activeReaderCount )
+                {
+                    /*
+                     *  There are no active writers or readers so we can make this quick
+                     */
+                    rwlock->activeWriterCount++;        
+                    rwlock->queuedWriterCount--;
+
+                    while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
+
+                    MutexUnlock( rwlock->datalock );
+                    return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
+                }
+
+                if ( rwlock->wpriority > 0 )
+                {
+                    MutexUnlock( rwlock->datalock );
+                    
+                    do
+                    {
+                        if ( 0 == rwlock->activeReaderCount             &&
+                             0 == rwlock->writeLockAquisitionInProgress )
+                        {
+                            /*
+                             *  Reverify with a data lock
+                             *  We have to hurry and a new reader may slip in
+                             */
+                            UInt8 reverifyFailed = 0;
+                            do
+                            {
+                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                {
+                                    if ( 0 == rwlock->activeReaderCount             &&
+                                         0 == rwlock->writeLockAquisitionInProgress )
+                                    {
+                                        /*
+                                         *  We found a moment without any active readers at all
+                                         *  Now we just have to wait for other writers if any
+                                         *
+                                         *  The 'queuedWriterCount' already blocks new active readers but for consistency we also
+                                         *  set the writeLockAquisitionInProgress flag 
+                                         */
+                                        rwlock->writeLockAquisitionInProgress = 1;
+                                        MutexUnlock( rwlock->datalock );
+                    
+                                        do
+                                        {
+                                            if ( MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                            {
+                                                /*
+                                                 *  Now that we have the write lock we need to still go back and update the administration
+                                                 *  our queued writer is now an active writer
+                                                 */
+                                                UInt32 dataLockResult = 0;
+                                                do
+                                                {
+                                                    dataLockResult = MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT );
+                                                    if ( GUCEF_MUTEX_OPERATION_SUCCESS == dataLockResult )
+                                                    {                            
+                                                        /*
+                                                         *  We have successfully turned our active reader into a queued writer and 
+                                                         *  after that turned the queued writer into the active writer
+                                                         */
+                                                        rwlock->activeWriterCount++;
+                                                        rwlock->lastWriterThreadId = GetCurrentTaskID();
+                                                        rwlock->writeLockAquisitionInProgress = 0;
+                                                        rwlock->queuedWriterCount--;
+                                                        MutexUnlock( rwlock->datalock );
+                                                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                                                    }
+                                                }
+                                                while ( GUCEF_MUTEX_OPERATION_SUCCESS != dataLockResult );
+
+                                                /*
+                                                 *  Logically we should never get here
+                                                 */
+                                                GUCEF_ASSERT_ALWAYS;
+                                                rwlock->writeLockAquisitionInProgress = 0;
+                                                rwlock->queuedWriterCount--;
+                                                MutexUnlock( rwlock->writerlock );
+                                                return GUCEF_RWLOCK_OPERATION_FAILED;
+                                            }
+                                        }
+                                        while ( 0 == rwlock->delflag );
+                                        if ( 0 != rwlock->delflag )
+                                        {
+                                            do
+                                            {
+                                                /*
+                                                 *  Lock destruction started while we were waiting to grab the lock
+                                                 *  Unregister as queued and give up
+                                                 */
+                                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                {                                                        
+                                                    --rwlock->queuedWriterCount;
+                                                    rwlock->writeLockAquisitionInProgress = 0;
+                                                    MutexUnlock( rwlock->datalock );
+                                                    break;
+                                                }
+                                            }
+                                            while ( 1 > 0 );
+                                        }
+                                        return GUCEF_RWLOCK_OPERATION_FAILED;
+                                    }
+                                    else
+                                    {
+                                        reverifyFailed = 1;
+                                        MutexUnlock( rwlock->datalock );
+                                    }
+                                }
+                            }
+                            while ( 0 == rwlock->delflag && 0 == reverifyFailed );
+                        }
+                        else
+                        {
+                            PrecisionDelay( 25 );
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to grab the lock
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedWriterCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+                else
+                {
+                    /*
+                     *  First wait for all the active and queued readers to finish
+                     *  We need to grab the moment that happens via constant monitoring
+                     */
+                    MutexUnlock( rwlock->datalock );
+                    
+                    do
+                    {
+                        if ( 0 == rwlock->activeReaderCount             && 
+                             0 == rwlock->queuedReaderCount             &&
+                             0 == rwlock->writeLockAquisitionInProgress )
+                        {
+                            /*
+                             *  Reverify with a data lock
+                             *  We have to hurry and a new reader may slip in
+                             */
+                            UInt8 reverifyFailed = 0;
+                            do
+                            {
+                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                {
+                                    if ( 0 == rwlock->activeReaderCount            && 
+                                         0 == rwlock->queuedReaderCount            &&
+                                         0 == rwlock->writeLockAquisitionInProgress )
+                                    {
+                                        /*
+                                         *  We found a moment without any readers at all
+                                         *  Now we just have to wait for other writers if any
+                                         *
+                                         *  Here we cheat a little to have a chance:
+                                         *  The writeLockAquisitionInProgress flag blocks new active readers
+                                         *  It temporarly overrules the reader priority while we grab the other lock
+                                         */
+                                        rwlock->writeLockAquisitionInProgress = 1;
+                                        MutexUnlock( rwlock->datalock );
+                    
+                                        do
+                                        {
+                                            if ( MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                            {
+                                                /*
+                                                 *  Now that we have the write lock we need to still go back and update the administration
+                                                 *  our queued writer is now an active writer
+                                                 */
+                                                UInt32 dataLockResult = 0;
+                                                do
+                                                {
+                                                    dataLockResult = MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT );
+                                                    if ( GUCEF_MUTEX_OPERATION_SUCCESS == dataLockResult )
+                                                    {                            
+                                                        /*
+                                                         *  We have successfully turned our active reader into a queued writer and 
+                                                         *  after that turned the queued writer into the active writer
+                                                         */
+                                                        rwlock->activeWriterCount++;
+                                                        rwlock->lastWriterThreadId = GetCurrentTaskID();
+                                                        rwlock->writeLockAquisitionInProgress = 0;
+                                                        rwlock->queuedWriterCount--;
+                                                        MutexUnlock( rwlock->datalock );
+                                                        return GUCEF_RWLOCK_OPERATION_SUCCESS;                                    
+                                                    }
+                                                }
+                                                while ( GUCEF_MUTEX_OPERATION_SUCCESS != dataLockResult );
+                                                
+                                                /*
+                                                 *  Logically we should never get here
+                                                 */
+                                                GUCEF_ASSERT_ALWAYS;
+                                                rwlock->writeLockAquisitionInProgress = 0;
+                                                rwlock->queuedWriterCount--;
+                                                MutexUnlock( rwlock->writerlock );
+                                                return GUCEF_RWLOCK_OPERATION_FAILED;
+                                            }
+                                        }
+                                        while ( 0 == rwlock->delflag );
+                                        if ( 0 != rwlock->delflag )
+                                        {
+                                            do
+                                            {
+                                                /*
+                                                 *  Lock destruction started while we were waiting to grab the lock
+                                                 *  Unregister as queued and give up
+                                                 */
+                                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                {                                                        
+                                                    --rwlock->queuedWriterCount;
+                                                    rwlock->writeLockAquisitionInProgress = 0;
+                                                    MutexUnlock( rwlock->datalock );
+                                                    break;
+                                                }
+                                            }
+                                            while ( 1 > 0 );
+                                        }
+                                        return GUCEF_RWLOCK_OPERATION_FAILED;
+                                    }
+                                    else
+                                    {
+                                        reverifyFailed = 1;
+                                        MutexUnlock( rwlock->datalock );
+                                    }
+                                }
+                            }
+                            while ( 0 == rwlock->delflag && 0 == reverifyFailed );
+                        }
+                        else
+                        {
+                            PrecisionDelay( 25 );
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to grab the lock
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedWriterCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }    
+    GUCEF_END;
+    return GUCEF_RWLOCK_OPERATION_FAILED;
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 rwl_writer_start( TRWLock *rwlock )
 {
-	/*
-         *	First we check if destroy has not been called.
-         *	In a propper design this test should never fail.
-         */
-	if ( rwlock->delflag ) 
-        return 0;
-
-	rwlock->wcount++;
-
-        /*
-	 *	We will wait for all readers to finish.
-         *	A writer must have exclusive access.
-         */
-        while ( rwlock->rcount )
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
         {
-            PrecisionDelay( 25 );
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+	            /*
+                 *	First we check if destroy has not been called.
+                 */
+	            if ( 0 != rwlock->delflag )
+                {                
+                    MutexUnlock( rwlock->datalock );
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+
+                ++rwlock->queuedWriterCount;
+                if ( 0 < rwlock->activeWriterCount )
+                {
+                    /*
+                     *  The currently active writer could actually be the same thread
+                     *  trying to obtain another write lock in another scope
+                     *  We have to check for this or the thread can self-deadlock
+                     */
+                    if ( rwlock->lastWriterThreadId == GetCurrentTaskID() )
+                    {
+                        /*
+                         *  The caller is already the currently active writer thread
+                         *  allow it to proceed since we already have write access anyway
+                         */
+                        ++rwlock->activeWriterReentrancyCount;
+                        --rwlock->queuedWriterCount;
+                        MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT );
+                        MutexUnlock( rwlock->datalock );
+                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                    }                    
+                }
+
+                /*
+                 *  Check for a cheaper early out 
+                 */
+                if ( 0 == rwlock->activeReaderCount            && 
+                     0 == rwlock->queuedReaderCount            && 
+                     0 == rwlock->activeWriterCount            && 
+                     0 == rwlock->writeLockAquisitionInProgress )
+                {
+                    /*
+                     *  There are no active readers or writers so regardless who takes priority we can proceed
+                     */
+                    rwlock->activeWriterCount++;                    
+                    rwlock->lastWriterThreadId = GetCurrentTaskID();
+                    rwlock->queuedWriterCount--;
+                    MutexUnlock( rwlock->datalock );
+
+                    while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
+                    return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
+                }
+
+                if ( 0 != rwlock->wpriority )
+                {
+                    MutexUnlock( rwlock->datalock );
+                    
+                    /*
+                     *  Wait for a moment with no active readers
+                     *  We dont care about queued readers since writers take priority
+                     */
+                    do
+                    {
+                        if ( 0 == rwlock->activeReaderCount             &&
+                             0 == rwlock->writeLockAquisitionInProgress )
+                        {
+                            /*
+                             *  Reverify with a data lock
+                             *  We have to hurry and a new reader may slip in
+                             */
+                            UInt8 reverifyFailed = 0;
+                            do
+                            {
+                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                {
+                                    if ( 0 == rwlock->activeReaderCount             &&
+                                         0 == rwlock->writeLockAquisitionInProgress )
+                                    {
+                                        /*
+                                         *  We found a moment without any active readers at all
+                                         *  Now we just have to wait for other writers if any
+                                         *
+                                         *  The 'queuedWriterCount' already blocks new active readers but for consistency we also
+                                         *  set the writeLockAquisitionInProgress flag 
+                                         */
+                                        rwlock->writeLockAquisitionInProgress = 1;
+                                        rwlock->writeLockAquisitionThreadId = GetCurrentTaskID(); 
+                                        MutexUnlock( rwlock->datalock );
+                    
+                                        do
+                                        {
+                                            if ( MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                            {
+                                                /*
+                                                 *  Now that we have the write lock we need to still go back and update the administration
+                                                 *  our queued writer is now an active writer
+                                                 */
+                                                UInt32 dataLockResult = 0;
+                                                do
+                                                {
+                                                    dataLockResult = MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT );
+                                                    if ( dataLockResult == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                    {                            
+                                                        /*
+                                                         *  Perform one last check for the delete flag
+                                                         *  We dont want to wait for all the queued writers to slowly process which could be a lot of them
+                                                         */
+                                                        if ( 0 != rwlock->delflag )
+                                                        {
+                                                            /*
+                                                             *  Destruction started while we were waiting to get the lock
+                                                             *  Undo grabbing the writer lock
+                                                             */
+                                                            MutexUnlock( rwlock->writerlock );
+                                                            rwlock->writeLockAquisitionInProgress = 0;
+                                                            rwlock->queuedWriterCount--;
+                                                            MutexUnlock( rwlock->datalock );
+                                                            return GUCEF_RWLOCK_OPERATION_FAILED;                                                                                                
+                                                        }
+                                                        else
+                                                        {
+                                                            /*
+                                                             *  We have successfully turned our queued writer into the active writer
+                                                             */
+                                                            rwlock->activeWriterCount++;
+                                                            rwlock->lastWriterThreadId = GetCurrentTaskID();
+                                                            rwlock->writeLockAquisitionInProgress = 0;
+                                                            rwlock->queuedWriterCount--;
+                                                            MutexUnlock( rwlock->datalock );
+                                                            return GUCEF_RWLOCK_OPERATION_SUCCESS;                                    
+                                                        }
+                                                    }
+                                                }
+                                                while ( GUCEF_MUTEX_OPERATION_SUCCESS != dataLockResult );
+
+                                                /*
+                                                 *  We should never get here logically
+                                                 */
+                                                GUCEF_ASSERT_ALWAYS;
+                                                rwlock->writeLockAquisitionInProgress = 0;
+                                                MutexUnlock( rwlock->writerlock );
+                                                return GUCEF_RWLOCK_OPERATION_FAILED;
+                                            }
+                                        }
+                                        while ( 0 == rwlock->delflag );
+                                        if ( 0 != rwlock->delflag )
+                                        {
+                                            do
+                                            {
+                                                /*
+                                                 *  Lock destruction started while we were waiting to grab the lock
+                                                 *  Unregister as queued and give up
+                                                 */
+                                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                {                                                        
+                                                    --rwlock->queuedWriterCount;
+                                                    rwlock->writeLockAquisitionInProgress = 0;
+                                                    MutexUnlock( rwlock->datalock );
+                                                    break;
+                                                }
+                                            }
+                                            while ( 1 > 0 );
+                                        }
+                                        return GUCEF_RWLOCK_OPERATION_FAILED;
+                                    }
+                                    else
+                                    {
+                                        reverifyFailed = 1;
+                                        MutexUnlock( rwlock->datalock );
+                                    }
+                                }
+                            }
+                            while ( 0 == rwlock->delflag && 0 == reverifyFailed );
+                        }
+                        else
+                        {
+                            PrecisionDelay( 25 );
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to grab the lock
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedWriterCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }                                                                 
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+
+                }
+                else
+                {
+                    /*
+                     *  First wait for all the active and queued readers to finish
+                     *  We need to grab the moment that happens via constant monitoring
+                     */
+                    MutexUnlock( rwlock->datalock );
+                    
+                    do
+                    {
+                        if ( 0 == rwlock->activeReaderCount            && 
+                             0 == rwlock->queuedReaderCount            &&
+                             0 == rwlock->writeLockAquisitionInProgress )
+                        {
+                            /*
+                             *  Reverify with a data lock
+                             *  We have to hurry and a new reader may slip in
+                             */
+                            UInt8 reverifyFailed = 0;
+                            do
+                            {
+                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                {
+                                    if ( 0 == rwlock->activeReaderCount            && 
+                                         0 == rwlock->queuedReaderCount            &&
+                                         0 == rwlock->writeLockAquisitionInProgress )
+                                    {
+                                        /*
+                                         *  We found a moment without any readers at all
+                                         *  Now we just have to wait for other writers if any
+                                         *
+                                         *  Here we cheat a little to have a chance:
+                                         *  The writeLockAquisitionInProgress flag blocks new active readers
+                                         *  It temporarly overrules the reader priority while we grab the other lock
+                                         */
+                                        rwlock->writeLockAquisitionInProgress = 1;
+                                        rwlock->writeLockAquisitionThreadId = GetCurrentTaskID();
+                                        MutexUnlock( rwlock->datalock );
+                    
+                                        do
+                                        {
+                                            if ( MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                            {
+                                                /*
+                                                 *  Now that we have the write lock we need to still go back and update the administration.
+                                                 *  Our queued writer is now an active writer
+                                                 */
+                                                do
+                                                {
+                                                    if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                    {
+                                                        /*
+                                                         *  Perform one last check for the delete flag
+                                                         *  We dont want to wait for all the queued writers to slowly process which could be a lot of them
+                                                         */
+                                                        if ( 0 != rwlock->delflag )
+                                                        {
+                                                            /*
+                                                             *  Destruction started while we were waiting to get the writer lock
+                                                             *  Undo grabbing the writer lock
+                                                             */
+                                                            MutexUnlock( rwlock->writerlock );
+                                                            rwlock->writeLockAquisitionInProgress = 0;
+                                                            rwlock->queuedWriterCount--;
+                                                            MutexUnlock( rwlock->datalock );
+                                                            return GUCEF_RWLOCK_OPERATION_FAILED;                                                                                                
+                                                        }
+                                                        else
+                                                        {
+                                                            /*
+                                                             *  We have successfully turned our queued writer into the active writer
+                                                             */
+                                                            rwlock->activeWriterCount++;
+                                                            rwlock->lastWriterThreadId = GetCurrentTaskID();
+                                                            rwlock->writeLockAquisitionInProgress = 0;
+                                                            rwlock->queuedWriterCount--;
+                                                            MutexUnlock( rwlock->datalock );
+                                                            return GUCEF_RWLOCK_OPERATION_SUCCESS;                                    
+                                                        }
+                                                    }
+                                                }
+                                                while ( 0 == rwlock->delflag );
+
+                                                /*
+                                                 *  We should never get here logically
+                                                 */
+                                                GUCEF_ASSERT_ALWAYS;
+                                                rwlock->writeLockAquisitionInProgress = 0;
+                                                MutexUnlock( rwlock->writerlock );
+                                                return GUCEF_RWLOCK_OPERATION_FAILED;
+                                            }
+                                        }
+                                        while ( 0 == rwlock->delflag );
+                                        if ( 0 != rwlock->delflag )
+                                        {
+                                            do
+                                            {
+                                                /*
+                                                 *  Lock destruction started while we were waiting to grab the lock
+                                                 *  Unregister as queued and give up
+                                                 */
+                                                if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                                                {                                                        
+                                                    --rwlock->queuedWriterCount;
+                                                    rwlock->writeLockAquisitionInProgress = 0;
+                                                    MutexUnlock( rwlock->datalock );
+                                                    break;
+                                                }
+                                            }
+                                            while ( 1 > 0 );
+                                            return GUCEF_RWLOCK_OPERATION_FAILED;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        reverifyFailed = 1;
+                                        MutexUnlock( rwlock->datalock );
+                                    }
+                                }
+                            }
+                            while ( 0 == rwlock->delflag && 0 == reverifyFailed );
+                        }
+                        else
+                        {
+                            PrecisionDelay( 25 );
+                        }
+                    }
+                    while ( 0 == rwlock->delflag );
+                    if ( 0 != rwlock->delflag )
+                    {
+                        do
+                        {
+                            /*
+                             *  Lock destruction started while we were waiting to grab the lock
+                             *  Unregister as queued and give up
+                             */
+                            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                            {                                                        
+                                --rwlock->queuedWriterCount;
+                                MutexUnlock( rwlock->datalock );
+                                break;
+                            }
+                        }
+                        while ( 1 > 0 );
+                    }
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+            }
         }
-
-        /*
-         *	Lock mutex for exclusive access and set the writer in progress
-         *	flag.
-         */
-        rwlock->wflag = 1;
-        MutexLock( rwlock->datalock );
-
-        /*
-         *	Start writing
-         */
-        return 1;
+        while ( 0 == rwlock->delflag );
+    }
+    return GUCEF_RWLOCK_OPERATION_FAILED;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *	Call this function when a writer task finished using data that is
- *	protected by the given rwlock.
- */
-void
+UInt32
 rwl_writer_stop( TRWLock *rwlock )
 {
     GUCEF_BEGIN;
-    rwlock->wcount--;
-    rwlock->wflag = 0;
-    MutexUnlock( rwlock->datalock );
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+                if ( rwlock->lastWriterThreadId == GetCurrentTaskID() )
+                {
+                    /*
+                     *  The caller is the currently active writer thread
+                     *  This should always be the case
+                     *  allow it to proceed since we already have write access anyway
+                     */
+                    
+                    if ( rwlock->activeWriterReentrancyCount > 0 )
+                        --rwlock->activeWriterReentrancyCount;
+                    else
+                        --rwlock->activeWriterCount;
+
+                    MutexUnlock( rwlock->writerlock );
+                }               
+                                
+                MutexUnlock( rwlock->datalock );
+                GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }    
     GUCEF_END;
+    return GUCEF_RWLOCK_OPERATION_FAILED;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -163,8 +163,9 @@ CActiveObject::OnActivate( void* thisobject )
             }
         }
 
-        tao->OnThreadEnded( taskdata, false );
+        tao->OnThreadEnding( taskdata, false );
     }
+    
     tao->_active = false;
     return 1;
 }
@@ -253,13 +254,13 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
         Lock();
         if ( _active )
         {
-            // Lets give the thread 5 seconds to shut down
-            // If it refuses we kill it
-            m_isDeactivationRequested = true;
-            OnThreadEnding( m_threadData, false );
+            // Set the flag to allow the thread to exit the run cycle gracefully
+            m_isDeactivationRequested = true;            
             Unlock();
 
-            ThreadWait( _td, 5000 );
+            // Lets give the thread up to 5 seconds to shut down
+            // If it refuses we kill it
+            UInt32 waitResult = ThreadWait( _td, 5000 );
 
             Lock();
             if ( _active )
@@ -282,17 +283,11 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
     }
     else
     {
+        m_isDeactivationRequested = true;
+        if ( _active && callerShouldWait )
         {
-            CObjectScopeLock lock( this );
-            if ( _active )
-            {
-                m_isDeactivationRequested = true;
-                OnThreadEnding( m_threadData, false );
-            }
-        }
-        if ( callerShouldWait )
-        {
-            ThreadWait( _td, 15000 );
+            UInt32 waitResult = ThreadWait( _td, 15000 );
+            OnThreadEnded( m_threadData, false );
         }
     }
 }
@@ -441,11 +436,11 @@ CActiveObject::Unlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+UInt32 
 CActiveObject::WaitForThreadToFinish( Int32 timeoutInMs ) const
 {GUCEF_TRACE;
 
-    ThreadWait( _td, timeoutInMs );
+    return ThreadWait( _td, timeoutInMs );
 }
 
 /*-------------------------------------------------------------------------//

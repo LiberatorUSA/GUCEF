@@ -113,7 +113,7 @@ CProdManGlobal::Initialize( void )
     CProductManager::RegisterEvents();
     CProductInfoListProvider::RegisterEvents();
 
-    m_productInfoListProviderRegistry->RegisterProvider( "CodecBased", new CCodecBasedProductInfoListProvider() );
+    m_productInfoListProviderRegistry->RegisterProvider( "CodecBased", CProductInfoListProviderPtr( new CCodecBasedProductInfoListProvider() ) );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPRODMAN Global systems initialized" );
 }

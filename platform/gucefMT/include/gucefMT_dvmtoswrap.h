@@ -56,6 +56,11 @@ struct TThreadData;
 
 typedef UInt32 ( GUCEF_CALLSPEC_PREFIX *TThreadFunc)( void* ) GUCEF_CALLSPEC_SUFFIX;
 
+#define GUCEF_THREAD_WAIT_FAILED        0
+#define GUCEF_THREAD_WAIT_OK            1
+#define GUCEF_THREAD_WAIT_TIMEOUT       2
+#define GUCEF_THREAD_WAIT_ABANDONEND    3
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -138,6 +143,9 @@ ThreadKill( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  @return 0 on error, 1 on success, 2 on timeout, 3 on abandoned lock
+ */
 GUCEF_MT_PUBLIC_C UInt32
 ThreadWait( struct SThreadData* td ,
             Int32 timeoutInMs      );

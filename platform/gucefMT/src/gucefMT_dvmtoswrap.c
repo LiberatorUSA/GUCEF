@@ -346,19 +346,20 @@ ThreadWait( struct SThreadData* td ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     if ( NULL != td && NULL != td->threadhandle )
     {
-        if ( timeoutInMs >= 0 )
+        DWORD result = WaitForSingleObject( td->threadhandle, timeoutInMs >= 0 ? (DWORD) timeoutInMs : INFINITE );
+        switch ( result )
         {
-            if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                       timeoutInMs      ) )
-                return 1;
-            else
-                return 0;
-        }
-        if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                   INFINITE         ) )
-            return 1;
-        else
-            return 0;
+            case WAIT_OBJECT_0:
+                return GUCEF_THREAD_WAIT_OK;
+            case WAIT_TIMEOUT:
+                return GUCEF_THREAD_WAIT_TIMEOUT;
+            case WAIT_ABANDONED:
+                return GUCEF_THREAD_WAIT_ABANDONEND;
+                
+            case WAIT_FAILED: 
+            default:
+                return GUCEF_THREAD_WAIT_FAILED;
+        }            
     }
     return 0;
 
@@ -371,9 +372,9 @@ ThreadWait( struct SThreadData* td ,
         timeout.tv_nsec = 1000000 * timeoutInMs;
         int errorCode = pthread_timedjoin_np( td->thread, GUCEF_NULL, &timeout );
         if ( 0 == errorCode )
-            return 1;
+            return GUCEF_THREAD_WAIT_OK;
     }
-    return 0;
+    return GUCEF_THREAD_WAIT_FAILED;
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 
@@ -384,9 +385,9 @@ ThreadWait( struct SThreadData* td ,
         timeout.tv_nsec = 1000000 * timeoutInMs;        
         int errorCode = pthread_cond_timedwait( &td->exitSignal, GUCEF_NULL, &timeout );
         if ( 0 == errorCode )
-            return 1;
+            return GUCEF_THREAD_WAIT_OK;
     }
-    return 0;
+    return GUCEF_THREAD_WAIT_FAILED;
 
     #else
     

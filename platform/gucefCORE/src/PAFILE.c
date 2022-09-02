@@ -181,7 +181,7 @@ padestroy( TPAFILEControl *control )
          *      attempt to access control evn though it no longer exists.
          */
         PAFILE *tmp;
-        MutexLock( control->controllock );
+        MutexLock( control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         tmp = control->refs;
         while ( tmp )
         {
@@ -245,7 +245,7 @@ palinkchunktocontrol( TPAFILEControl *control ,
          */
         PAFILE *tmp;
         if ( !control ) return NULL;
-        MutexLock( control->controllock );
+        MutexLock( control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( control->fsize < start_offset+chunk_size )
         {
                 MutexUnlock( control->controllock );
@@ -313,7 +313,7 @@ paunlink( PAFILE *pafile )
                 return;
         }
         control = pafile->control;
-        MutexLock( control->controllock );
+        MutexLock( control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         --control->refcount;
         if ( pafile->next )
         {
@@ -372,7 +372,7 @@ pafseek( PAFILE *pafile ,
         Int32 retval;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         switch( origin )
         {
                 case SEEK_SET :
@@ -438,7 +438,7 @@ pafsetpos( PAFILE *pafile ,
         Int32 retval;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( offset > pafile->csize )
         {
                 /*
@@ -464,7 +464,7 @@ pafgetc( PAFILE *pafile )
         Int32 retval;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
         retval = fgetc( pafile->control->fptr );
         MutexUnlock( pafile->control->controllock );
@@ -495,7 +495,7 @@ pafeof( PAFILE *pafile )
         Int32 retval;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
         retval = feof( pafile->control->fptr );
         MutexUnlock( pafile->control->controllock );
@@ -518,7 +518,7 @@ pafread( void *dest      ,
         UInt32 retval;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( ( pafile->coffset + pafile->offset != pafile->control->offset ) )
         {
                  fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET );
@@ -546,7 +546,7 @@ pafreadl( char **dest    ,
         char c;
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
 
         c = 1;
@@ -592,7 +592,7 @@ pafreads( char **dest    ,
         
         if ( !pafile->control ) return 0;
 
-        MutexLock( pafile->control->controllock );
+        MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
 
         c = 1;

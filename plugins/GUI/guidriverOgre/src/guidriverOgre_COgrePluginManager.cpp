@@ -90,15 +90,14 @@ COgrePluginManager::RegisterPlugin( void* modulePtr                         ,
                                     CORE::TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    COgrePluginAdapter* plugin = new COgrePluginAdapter();
+    TCOgrePluginAdapterPtr plugin( new COgrePluginAdapter() );
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
         return plugin;
     }
 
-    delete plugin;
-    return NULL;
+    return CORE::TPluginPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,8 +106,8 @@ void
 COgrePluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
-    COgrePluginAdapter* ogrePlugin = static_cast< COgrePluginAdapter* >( plugin.GetPointerAlways() );
-    if ( NULL != ogrePlugin )
+    TCOgrePluginAdapterPtr ogrePlugin = plugin.StaticCast< COgrePluginAdapter >();
+    if ( !ogrePlugin.IsNULL() )
     {
         ogrePlugin->Unlink();
     }

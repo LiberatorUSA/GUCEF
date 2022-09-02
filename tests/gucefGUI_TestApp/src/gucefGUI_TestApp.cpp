@@ -482,8 +482,8 @@ GUCEF_OSMAIN_BEGIN
     catch ( ... )
     {
         #ifdef GUCEF_GUI_DEBUG_MODE
-        CORE::GUCEF_PrintCallstack();
-        CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
+        //CORE::GUCEF_PrintCallstack();
+        //CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
         #endif /* GUCEF_GUI_DEBUG_MODE ? */
 
         try

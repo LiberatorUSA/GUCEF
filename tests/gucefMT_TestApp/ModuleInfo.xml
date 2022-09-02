@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+    <Module Name="gucefMT_TestApp" Platform="All" Type="Executable" Tags="test" >
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />
+        <Preprocessor>
+            <Define String="GUCEF_MT_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+		<RuntimeDependencies>
+		</RuntimeDependencies>
+    </Module>
+	<Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="MemoryLeakFinder" />
+		</RuntimeDependencies>
+	</Module>	
+</ModuleInfoEntry>

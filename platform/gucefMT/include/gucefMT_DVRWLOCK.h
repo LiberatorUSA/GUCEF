@@ -74,6 +74,19 @@ namespace MT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_RWLOCK_OPERATION_FAILED       0
+#define GUCEF_RWLOCK_OPERATION_SUCCESS      1
+#define GUCEF_RWLOCK_WAIT_TIMEOUT           2
+#define GUCEF_RWLOCK_ABANDONED              3
+
+#define GUCEF_RWLOCK_INFINITE_TIMEOUT       GUCEF_MT_INFINITE_LOCK_TIMEOUT
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -118,22 +131,53 @@ rwl_writer_overrules( const TRWLock *rwlock );
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Returns the current amount of writers. 
+ *  Returns the current amount of active writers. 
  *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
  *  It has no use in relation with the other rwl_ functions.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_writers( const TRWLock *rwlock );
+rwl_active_writers( const TRWLock *rwlock );
 
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Returns the current amount of readers. 
+ *  Returns the current reentrancy depth of the currently active writer.
+ *  If there is no active writer 0 is always returned
  *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
  *  It has no use in relation with the other rwl_ functions.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_readers( const TRWLock *rwlock );
+rwl_active_writer_reentrancy_depth( const TRWLock *rwlock );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the current amount of queued writers. 
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_queued_writers( const TRWLock *rwlock );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the current amount of active readers. 
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_active_readers( const TRWLock *rwlock );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the current amount of queued readers. 
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_queued_readers( const TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
 
@@ -149,11 +193,22 @@ rwl_reader_start( TRWLock *rwlock );
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Call this function when a reader task finished using data that is
- *      protected by the given rwlock.
+ *  Call this function when a reader task finished using data that is
+ *  protected by the given rwlock.
+ *  A return value of 1 indicates success and 0 failure.
  */
-GUCEF_MT_PUBLIC_C void
+GUCEF_MT_PUBLIC_C UInt32
 rwl_reader_stop( TRWLock *rwlock );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Call this function when a reader task now needs write access to the data
+ *  protected by the given rwlock. You should have already aquired the read lock
+ *  using rwl_reader_start before using this.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_reader_transition_to_writer( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/
 
@@ -169,10 +224,11 @@ rwl_writer_start( TRWLock *rwlock );
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Call this function when a writer task finished using data that is
- *      protected by the given rwlock.
+ *  Call this function when a writer task finished using data that is
+ *  protected by the given rwlock.
+ *  A return value of 1 indicates success and 0 failure.
  */
-GUCEF_MT_PUBLIC_C void
+GUCEF_MT_PUBLIC_C UInt32
 rwl_writer_stop( TRWLock *rwlock );
 
 /*--------------------------------------------------------------------------*/

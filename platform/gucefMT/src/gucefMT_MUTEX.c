@@ -50,7 +50,7 @@
 
 struct SMutex
 {
-    UInt32 locked;
+    UInt32 lockedByThread;
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
@@ -81,12 +81,12 @@ MutexCreate( void )
     TMutex* mutex = malloc( sizeof( TMutex ) );
     if ( GUCEF_NULL != mutex )
     {
-        mutex->locked = 0;
+        mutex->lockedByThread = 0;
         mutex->id = CreateMutex( NULL, FALSE, NULL );
         if ( !mutex->id )
         {
-                free( mutex );
-                return NULL;
+            free( mutex );
+            return GUCEF_NULL;
         }
     }
     return mutex;
@@ -98,12 +98,12 @@ MutexCreate( void )
     pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE_NP );
 
     TMutex* mutex = malloc( sizeof( TMutex ) );
-    mutex->locked = 0;
+    mutex->lockedByThread = 0;
 
     if ( pthread_mutex_init( &mutex->id, &attr ) != 0 )
     {
-            free( mutex );
-            return NULL;
+        free( mutex );
+        return GUCEF_NULL;
     }
     return mutex;
     
@@ -131,19 +131,34 @@ MutexDestroy( struct SMutex* mutex )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-MutexLock( struct SMutex* mutex )
+MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    if ( WaitForSingleObject( mutex->id, INFINITE  ) == WAIT_FAILED ) 
-        return 0;
-    mutex->locked = (UInt32) GetCurrentThreadId();
-    return 1;
+    UInt32 result = GUCEF_MUTEX_OPERATION_FAILED;
+    DWORD waitResult = WaitForSingleObject( mutex->id, (DWORD) timeoutInMs );
+    switch ( waitResult )
+    {
+        case WAIT_OBJECT_0:
+        {
+            mutex->lockedByThread = (UInt32) GetCurrentThreadId();
+            return GUCEF_MUTEX_OPERATION_SUCCESS;
+        }
+        case WAIT_TIMEOUT:
+            return GUCEF_MUTEX_WAIT_TIMEOUT;
+        case WAIT_ABANDONED:
+            return GUCEF_MUTEX_ABANDONED;
+        default:
+            return GUCEF_MUTEX_OPERATION_FAILED;
+
+    }
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
-    if ( pthread_mutex_lock( &mutex->id ) < 0 ) return 0;
-    mutex->locked = (UInt32) pthread_self();
+    if ( pthread_mutex_lock( &mutex->id ) < 0 ) 
+        return 0;
+    
+    mutex->lockedByThread = (UInt32) pthread_self();
     return 1;
     
     #endif
@@ -156,15 +171,23 @@ MutexUnlock( struct SMutex* mutex )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    mutex->locked = 0;
-    if ( ReleaseMutex( mutex->id ) == FALSE ) 
+    if ( mutex->lockedByThread == (UInt32) GetCurrentThreadId() )
+        mutex->lockedByThread = 0;
+
+    if ( 0 == ReleaseMutex( mutex->id ) )
+    {
+        mutex->lockedByThread = (UInt32) GetCurrentThreadId();
         return 0;
+    }
     return 1;
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
-    if ( pthread_mutex_unlock( &mutex->id ) < 0 ) return 0;
-    mutex->locked = 0;
+    if ( mutex->lockedByThread == (UInt32) pthread_self() )
+        mutex->lockedByThread = 0;
+
+    if ( pthread_mutex_unlock( &mutex->id ) < 0 ) 
+        return 0;
     return 1;
     
     #endif
@@ -175,7 +198,7 @@ MutexUnlock( struct SMutex* mutex )
 UInt32
 MutexLocked( struct SMutex* mutex )
 {
-    return mutex->locked;
+    return mutex->lockedByThread;
 }
 
 /*--------------------------------------------------------------------------*/

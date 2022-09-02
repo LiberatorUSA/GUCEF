@@ -70,6 +70,8 @@
 
 #include "gucef_dynnewon.h"
 
+#if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && !defined( GUCEF_DYNNEWON_DISABLED )
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -127,8 +129,8 @@ GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    CORE::GUCEF_LogStackToStdOut();
-    CORE::GUCEF_SetStackLogging( 1 );
+    //MEMMAN_LogStackToStdOut();
+    //MEMMAN_SetStackLogging( 1 );
     #endif /* GUCEF_DEBUG_MODE ? */
 
     try
@@ -158,7 +160,7 @@ GUCEF_OSMAIN_BEGIN
         bool errorOccured = false;
 
         // Since this is a test we will explicitly invoke the loader
-        LazyLoadMemoryManager();
+        MEMMAN_LazyLoadMemoryManager();
         
         fp_MEMMAN_Initialize();
         
@@ -189,8 +191,8 @@ GUCEF_OSMAIN_BEGIN
     catch ( ... )
     {
         #ifdef GUCEF_DEBUG_MODE
-        CORE::GUCEF_PrintCallstack();
-        CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
+        //CORE::GUCEF_PrintCallstack();
+        //CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
         #endif /* GUCEF_DEBUG_MODE ? */
 
         CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
@@ -200,13 +202,15 @@ GUCEF_OSMAIN_BEGIN
 }
 GUCEF_OSMAIN_END
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
+/*-------------------------------------------------------------------------*/
 
-- 10-12-2006
-        - Dinand: Added this comment section
+#else
 
----------------------------------------------------------------------------*/
+GUCEF_OSMAIN_BEGIN
+{GUCEF_TRACE;
+}
+GUCEF_OSMAIN_END
+
+#endif
+
+/*-------------------------------------------------------------------------*/

@@ -210,7 +210,7 @@ PerformBasicSharedPtrSanityTests( void )
         d2 = new Derived();
         Base* d2b = static_cast< Base* >( d2 ); 
 
-        bptr2 = d2;
+        bptr2 = TBasePtr( d2 );
         
         TESTASSERT( (bptr2.GetReferenceCount() == 1) );
         TESTASSERT( (dptr2.GetReferenceCount() == 1) );

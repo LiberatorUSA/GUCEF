@@ -192,7 +192,7 @@ bool
 CPixelMap::NormalizeAsPercentage( TPixelMapPtr& resultImage ) const
 {GUCEF_TRACE;
 
-    TPixelMapPtr conversionImage = new CPixelMap( *this );
+    TPixelMapPtr conversionImage( new CPixelMap( *this ) );
     if ( conversionImage->NormalizeAsPercentage() )
     {
         resultImage = conversionImage;
@@ -317,7 +317,7 @@ bool
 CPixelMap::ApplyContrast( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const
 {GUCEF_TRACE;
 
-    TPixelMapPtr conversionImage = new CPixelMap( *this );    
+    TPixelMapPtr conversionImage( new CPixelMap( *this ) );    
     if ( conversionImage->ApplyContrast( adjustmentPercentage ) )
     {
         resultImage = conversionImage;
@@ -331,7 +331,7 @@ CPixelMap::ApplyContrast( Float32 adjustmentPercentage, TPixelMapPtr& resultImag
 bool
 CPixelMap::ApplyBrightness( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const
 {
-    TPixelMapPtr conversionImage = new CPixelMap( *this );    
+    TPixelMapPtr conversionImage( new CPixelMap( *this ) );    
     if ( conversionImage->ApplyBrightness( adjustmentPercentage ) )
     {
         resultImage = conversionImage;
@@ -460,7 +460,7 @@ bool
 CPixelMap::ApplyGamma( Float32 gamma, TPixelMapPtr& resultImage ) const
 {
     // Allocate a duplicate pixelmap
-    resultImage = new CPixelMap( *this );
+    resultImage = TPixelMapPtr( new CPixelMap( *this ) );
     
     // Apply the gamma to the duplicate
     return resultImage->ApplyGamma( gamma );
@@ -483,7 +483,7 @@ CPixelMap::ApplyGamma( Float32 gamma )
             for ( UInt32 n=0; n<valueCount; ++n )
             {
                 Float32* value = (Float32*) ( m_pixelMapData + ( sizeof(Float32) * n ) );
-                *value = std::numeric_limits< Float32 >::max() * pow( *value / std::numeric_limits< Float32 >::max(), gammaPow );
+                *value = std::numeric_limits< Float32 >::max() * (Float32) pow( *value / std::numeric_limits< Float32 >::max(), gammaPow );
             }
             break;
         }                            
@@ -582,7 +582,7 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
     if ( m_pixelStorageFormat == PSF_PALETTE_INDICES )
     {
         // Allocate a new blank pixelmap with the right dimensions
-        resultImage = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, palette->GetPixelStorageFormat(), palette->GetPixelComponentDataType() );
+        resultImage = TPixelMapPtr( new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, palette->GetPixelStorageFormat(), palette->GetPixelComponentDataType() ) );
         
         UInt32 totalPaletteBytes = palette->GetTotalSizeInBytes();
         UInt32 maxPaletteIndex = palette->GetPixelCount()-1;
@@ -992,7 +992,7 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                                TPixelMapPtr& newMap                          )
 {
     // create new pixelmap with enough space
-    newMap = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, pixelStorageFormat, pixelComponentDataType );
+    newMap = TPixelMapPtr( new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, pixelStorageFormat, pixelComponentDataType ) );
     
     UInt32 pixelCount = GetPixelCount();
     UInt32 channelCount = GetNumberOfChannelsPerPixel();
@@ -1898,7 +1898,7 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
         }
     }   
 
-    newMap = NULL;
+    newMap.Unlink();
     return false;
 }
 
@@ -2037,7 +2037,7 @@ CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  ,
     else
     {
         // no change needed
-        newMap = NULL;
+        newMap.Unlink();
         return true;
     }        
 }
@@ -2187,7 +2187,7 @@ CPixelMap::DetermineActualColorCount( void ) const
     TColorCounters colorCounters;
     if ( GetColorCounters( colorCounters ) )
     {
-        return colorCounters.size();
+        return (UInt32) colorCounters.size();
     }
     return 0;
 }

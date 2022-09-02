@@ -99,7 +99,7 @@ CCodecBasedProductInfoListProvider::OnAllDataRetrieved( void )
         if ( codec->BuildDataTree( &rootNode, m_dataRetriever.GetIOAccess() ) )
         {
             // Now try to load the product info list data
-            CProductInfoListPtr productInfoList = new CProductInfoList();
+            CProductInfoListPtr productInfoList( new CProductInfoList() );
             if ( productInfoList->LoadConfig( rootNode ) )
             {
                 rootNode.Clear();

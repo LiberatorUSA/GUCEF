@@ -84,18 +84,14 @@ CInputDriverPluginManager::RegisterPlugin( void* modulePtr                      
                                            CORE::TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    CInputDriverPlugin* plugin = new CInputDriverPlugin();
+    TInputDriverPluginPtr plugin( new CInputDriverPlugin() );
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
-        TInputDriverPluginPtr pointerToPlugin = plugin;
-        CInputGlobal::Instance()->GetInputController().RegisterDriver( pointerToPlugin );
-        
-        return pointerToPlugin;
+        CInputGlobal::Instance()->GetInputController().RegisterDriver( plugin );        
+        return plugin;
     }
-    
-    delete plugin;
-    return NULL; 
+    return TInputDriverPluginPtr(); 
 }
 
 /*-------------------------------------------------------------------------*/

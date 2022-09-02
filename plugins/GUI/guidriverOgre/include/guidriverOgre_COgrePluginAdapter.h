@@ -120,6 +120,10 @@ class COgrePluginAdapter : public CORE::CIPlugin
     CORE::TPluginMetaDataStoragePtr m_metaData;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< COgrePluginAdapter, MT::CMutex > TCOgrePluginAdapterPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -132,14 +136,3 @@ class COgrePluginAdapter : public CORE::CIPlugin
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUIDRIVEROGRE_COGREPLUGINADAPTER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

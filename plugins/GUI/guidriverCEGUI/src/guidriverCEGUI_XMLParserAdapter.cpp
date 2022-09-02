@@ -151,7 +151,7 @@ void
 XMLParserAdapter::cleanupImpl( void )
 {GUCEF_TRACE;
 
-    m_codec = nullptr;
+    m_codec.Unlink();
 }
 
 /*-------------------------------------------------------------------------//

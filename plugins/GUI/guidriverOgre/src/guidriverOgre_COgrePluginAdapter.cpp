@@ -140,7 +140,7 @@ COgrePluginAdapter::Link( void* modulePtr                         ,
     if ( IsLoaded() ) return false;
     
     m_moduleHandle = modulePtr;
-    if ( NULL != m_moduleHandle )
+    if ( GUCEF_NULL != m_moduleHandle )
     {
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "COgrePluginAdapter: Linking API using module pointer: " + CORE::PointerToString( modulePtr ) );
             
@@ -164,7 +164,7 @@ COgrePluginAdapter::Link( void* modulePtr                         ,
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "COgrePluginAdapterCORE::: Successfully loaded module and invoked dllStartPlugin() using module: " + CORE::PointerToString( modulePtr ) );
 
             // Copy the given metadata 
-            m_metaData = new CORE::CPluginMetaData( *pluginMetaData );                
+            m_metaData = CORE::TPluginMetaDataPtr( new CORE::CPluginMetaData( *pluginMetaData ) );                
 
             return true;                
         }
@@ -175,7 +175,7 @@ COgrePluginAdapter::Link( void* modulePtr                         ,
 
         // We failed to link the functions :(
         memset( m_funcPointers, 0, OGREPLUGINFUNCPTR_COUNT );
-        m_moduleHandle = NULL;
+        m_moduleHandle = GUCEF_NULL;
         return false;
     }
 
@@ -196,8 +196,8 @@ COgrePluginAdapter::Unlink( void )
 
         // Cleanup recources
         memset( m_funcPointers, 0, OGREPLUGINFUNCPTR_COUNT );
-        m_moduleHandle = NULL;
-        m_metaData = NULL;
+        m_moduleHandle = GUCEF_NULL;
+        m_metaData.Unlink();
     }
 
     return true;
@@ -209,7 +209,7 @@ bool
 COgrePluginAdapter::IsLoaded( void ) const
 {GUCEF_TRACE;
 
-    return NULL != m_moduleHandle;
+    return GUCEF_NULL != m_moduleHandle;
 }
 
 /*-------------------------------------------------------------------------*/

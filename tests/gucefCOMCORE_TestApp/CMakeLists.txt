@@ -14,14 +14,12 @@
 set( HEADER_FILES 
   include/TestCode_ClientServer.h
   include/TestCode_PingTest.h
-  include/TestCode_PubSubMsgBinaryStorageTest.h
   include/TestCode_SimpleTCPClient.h
 )
 
 set( SOURCE_FILES 
   src/TestCode_ClientServer.cpp
   src/TestCode_PingTest.cpp
-  src/TestCode_PubSubMsgBinaryStorageTest.cpp
   src/TestCode_SimpleTCPClient.cpp
   src/gucefCOMCORE_TestApp.cpp
 )

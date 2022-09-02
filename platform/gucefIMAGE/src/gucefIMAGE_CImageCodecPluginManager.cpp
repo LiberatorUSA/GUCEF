@@ -85,7 +85,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
                                           CORE::TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    TImageCodecPluginPtr plugin = new CImageCodecPlugin();
+    TImageCodecPluginPtr plugin( new CImageCodecPlugin() );
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
@@ -115,7 +115,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
                     registry.Unregister( *n );
                 }
                 
-                TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
+                TPluginImageCodecItemPtr codecItem( new CPluginImageCodecItem( plugin, (*n) ) );
                 if ( !registry.TryRegister( codecItem->GetType(), codecItem ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to register image codec " + codecItem->GetType() );
@@ -126,7 +126,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
 
         return plugin;
     }
-    return NULL;
+    return CORE::TPluginPtr();
 }
 
 /*-------------------------------------------------------------------------*/

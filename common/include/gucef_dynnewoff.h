@@ -85,6 +85,26 @@
 #define GUCEF_CHECKMEM( addr, size )
 #define GUCEF_CHECKMEMSEG( addr, chunk, size )
 
+/*
+#define MEMMAN_LazyLoadMemoryManager()
+#define MEMMAN_malloc( file, line, size )
+#define MEMMAN_calloc( file, line, num, sz )
+#define MEMMAN_realloc( file, line, ptr, sz )
+#define MEMMAN_free( file, line, ptr )
+#define MEMMAN_SysAllocString( file, line, wcharStr )
+#define MEMMAN_SysAllocStringByteLen( file, line, psz, len )
+#define MEMMAN_SysAllocStringLen( file, line, strIn, ui )
+#define MEMMAN_SysFreeString( file, line, bstrString )
+#define MEMMAN_SysReAllocString( file, line, pbstr, psz )
+#define MEMMAN_SysReAllocStringLen( file, line, pbstr, psz, len )
+#define fp_MEMMAN_Initialize()
+#define fp_MEMMAN_DumpMemoryAllocations()
+#define fp_MEMMAN_DumpLogReport()
+#define fp_MEMMAN_ValidateKnownAllocPtr( addr, file, line  )
+#define fp_MEMMAN_Validate( addr, size, file, line )
+#define fp_MEMMAN_ValidateChunk( addr, chunk, size, file, line )
+*/
+
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_DYNNEWOFF_H ? */

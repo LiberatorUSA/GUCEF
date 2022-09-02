@@ -39,16 +39,6 @@
 #define GUCEF_COM_H
 #endif /* GUCEF_COM_H ? */
 
-#ifndef TESTCODE_CHTTPCLIENT_H
-#include "TestCode_CHTTPClient.h"
-#define TESTCODE_CHTTPCLIENT_H
-#endif /* TESTCODE_CHTTPCLIENT_H ? */
-
-#ifndef TESTCODE_CHTTPSERVER_H
-#include "TestCode_CHTTPServer.h"
-#define TESTCODE_CHTTPSERVER_H
-#endif /* TESTCODE_CHTTPSERVER_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -64,17 +54,14 @@ GUCEF_OSMAIN_BEGIN
             
     try 
     {                               
-       // SetupHTTPClientTest();
-
-        RunHTTPServerTest( argc, argv );
         
         return 1;                                                                            
     }
     catch ( ... )
     {
         #ifdef DEBUG_MODE
-        GUCEF_PrintCallstack();
-        GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
+        //GUCEF_PrintCallstack();
+        //GUCEF_DumpCallstack( "GUCEFCallstack.txt" );
         #endif
         
         ShowErrorMessage( "Unknown exception"                                                                 ,
