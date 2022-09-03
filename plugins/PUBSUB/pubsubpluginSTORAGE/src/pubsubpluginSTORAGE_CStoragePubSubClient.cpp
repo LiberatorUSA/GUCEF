@@ -77,13 +77,18 @@ const CORE::CString CStoragePubSubClient::TypeName = "STORAGE";
 
 CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
+
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClient: Failed to load config at construction" );
+    }
 
     if ( config.desiredFeatures.supportsMetrics )
     {
@@ -342,28 +347,55 @@ CStoragePubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CStoragePubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+bool
+CStoragePubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    return m_config.SaveConfig( cfgNode );
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+bool
+CStoragePubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CStoragePubSubClientConfig cfg;
-    if ( cfg.LoadConfig( cfgRoot ) )
+    CStoragePubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
+        return true;
+    }
+    return false;
+}
 
-        m_config = cfg;
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CStoragePubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
         return true;
     }
     return false;

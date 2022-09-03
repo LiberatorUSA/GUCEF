@@ -70,6 +70,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouterConfig : public CORE::CIConfigura
     CORE::UInt32 minPrimarySideGoodHealthDurationBeforeActivationInMs;
     CORE::UInt32 minFailoverSideGoodHealthDurationBeforeActivationInMs;
     CORE::UInt32 minSpilloverSideGoodHealthDurationBeforeActivationInMs;
+    CORE::UInt32 routeSwitchingTimerIntervalInMs;
 
     static CORE::CString AckStyleToString( AckStyle ackStyle );
     static AckStyle StringToAckStyle( const CORE::CString& ackStyleStr );

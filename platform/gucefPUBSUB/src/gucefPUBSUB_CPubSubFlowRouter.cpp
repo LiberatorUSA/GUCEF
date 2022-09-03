@@ -96,6 +96,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     , spilloverInfo( GUCEF_NULL )
 {GUCEF_TRACE;
     
+    routeSwitchingTimer.SetInterval( 1000 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -747,6 +748,9 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Auto-generated egress route for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
                         "\" to side \"" + toSide->GetSideId() + "\"" );
                 }
+
+                // Always init the spillover for ingress as a startup default
+                ConfigureSpillover( routeInfo.spilloverBufferSide, true );
             }
 
             ++n;
@@ -803,6 +807,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
         while ( n != multiRouteInfo.end() )
         {
             CRouteInfo& routeInfo = (*n);
+            routeInfo.routeSwitchingTimer.SetInterval( normalizedConfig.routeSwitchingTimerIntervalInMs );
             RegisterRouteEventHandlers( routeInfo );
             DetermineActiveRoute( routeInfo );
             ++n;

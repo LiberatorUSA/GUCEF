@@ -77,13 +77,18 @@ const CORE::CString CTestPubSubClient::TypeName = "TEST";
 
 CTestPubSubClient::CTestPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
+
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TestPubSubClient: Failed to load config at construction" );
+    }
 
     m_isHealthy = m_config.defaultIsHealthyStatus;
     
@@ -342,30 +347,58 @@ CTestPubSubClient::GetType( void ) const
     return TypeName;
 }
 
+
 /*-------------------------------------------------------------------------*/
 
-bool 
-CTestPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+bool
+CTestPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    return m_config.SaveConfig( cfgNode );
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CTestPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+bool
+CTestPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CTestPubSubClientConfig cfg;
-    if ( cfg.LoadConfig( cfgRoot ) )
+    CTestPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
+        return true;
+    }
+    return false;
+}
 
-        m_config = cfg;
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CTestPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
         return true;
     }
     return false;

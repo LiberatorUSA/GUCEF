@@ -30,6 +30,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
@@ -707,7 +712,7 @@ CNotifierImplementor::GetSubscriptionCountForObserver( CObserver* observer ) con
         return 0;
 
     UInt32 subscriptionCount( 0 );
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     TObserverList::const_iterator i = m_observers.find( observer );
     if ( i != m_observers.end() )

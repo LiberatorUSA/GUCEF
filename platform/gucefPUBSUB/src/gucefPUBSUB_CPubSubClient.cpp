@@ -338,6 +338,34 @@ CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    CPubSubClientConfig parsedGenericCfg;
+    if ( parsedGenericCfg.SaveConfig( cfg ) )
+    {       
+        return SaveConfig( parsedGenericCfg );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    CPubSubClientConfig parsedGenericCfg;
+    if ( parsedGenericCfg.LoadConfig( cfg ) )
+    {       
+        return LoadConfig( parsedGenericCfg );
+    }    
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

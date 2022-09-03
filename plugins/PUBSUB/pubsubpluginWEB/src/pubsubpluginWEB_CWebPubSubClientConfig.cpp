@@ -72,6 +72,16 @@ CWebPubSubClientConfig::~CWebPubSubClientConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
+CWebPubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
+{GUCEF_TRACE;
+    
+    // @TODO
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CWebPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
@@ -86,11 +96,7 @@ CWebPubSubClientConfig&
 CWebPubSubClientConfig::operator=( const PUBSUB::CPubSubClientConfig& src )
 {GUCEF_TRACE;
 
-    if ( &src != this )
-    {
-        PUBSUB::CPubSubClientConfig::operator=( src );
-        LoadCustomConfig( src.customConfig );    
-    }
+    LoadConfig( src );  
     return *this;
 }
 
@@ -106,6 +112,70 @@ CWebPubSubClientConfig::operator=( const CWebPubSubClientConfig& src )
         simulateReceiveAckFeatureViaLookupId = src.simulateReceiveAckFeatureViaLookupId;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CWebPubSubClientConfig::SerializeCustomConfigToGenericConfig( void )
+{GUCEF_TRACE;
+
+    return SaveCustomConfig( customConfig ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClientConfig::LoadConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    if ( PUBSUB::CPubSubClientConfig::LoadConfig( config ) )
+    {
+        return LoadCustomConfig( customConfig ); 
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClientConfig::SaveConfig( CORE::CDataNode& config ) const
+{GUCEF_TRACE;
+
+    PUBSUB::CPubSubClientConfig cfgCopy( *this );
+    if ( SaveCustomConfig( cfgCopy.customConfig ) )
+    {
+        // Now that the custom config is re-integrated we can just use the base class to save the config
+        return cfgCopy.SaveConfig( config ); 
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClientConfig::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg )
+{GUCEF_TRACE;
+
+    // For the base class portion there is nothing to parse as its a simple
+    // assignment. Its the custom config where the actual parsed loading occurs
+    if ( &cfg != this )
+    {
+        PUBSUB::CPubSubClientConfig::operator=( cfg );
+    }
+    return LoadCustomConfig( cfg.customConfig ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClientConfig::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    // For the base class portion there is nothing to do except a simple
+    // assignment. Its the custom config where the actual config serialization occurs
+    cfg = *this;
+    return SaveCustomConfig( cfg.customConfig );
 }
 
 /*-------------------------------------------------------------------------//

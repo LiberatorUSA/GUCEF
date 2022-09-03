@@ -85,6 +85,31 @@ CPubSubClientConfig::~CPubSubClientConfig()
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientConfig& 
+CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        // copy the config elements
+        pubsubClientType = src.pubsubClientType;
+        desiredFeatures = src.desiredFeatures;
+        customConfig = src.customConfig;
+        reconnectDelayInMs = src.reconnectDelayInMs;
+        remoteAddresses = src.remoteAddresses;
+        topics = src.topics;
+        metricsPrefix = src.metricsPrefix;
+        pubsubIdPrefix = src.pubsubIdPrefix;
+
+        // copy the runtime aspects
+        pulseGenerator = src.pulseGenerator;
+        bookmarkPersistence = src.bookmarkPersistence;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;

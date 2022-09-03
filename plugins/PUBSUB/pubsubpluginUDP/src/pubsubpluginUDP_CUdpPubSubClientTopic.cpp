@@ -368,6 +368,8 @@ bool
 CUdpPubSubClientTopic::InitializeConnectivity( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     if ( GUCEF_NULL == m_client )
         return false;
 

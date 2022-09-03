@@ -24,6 +24,16 @@
 
 #include <string.h>
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"       /* wrappers for threading related O/S functionality */
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H */
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -120,6 +130,7 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_pubsubClientReconnectTimer( GUCEF_NULL )
     , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL )
     , m_sideId( sideId )
+    , m_threadIdOfSide( 0 )
     , m_awaitingFailureReport( false )
     , m_totalMsgsInFlight( 0 )
     , m_flowRouter( flowRouter )
@@ -747,17 +758,27 @@ CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVec
 bool
 CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
 {GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    // If we are running async from other sides we need to check the mailbox
-    if ( m_sideSettings.performPubSubInDedicatedThread || m_awaitingFailureReport )
+    
+    // We need to determine if the caller is running in the same thread
+    // We only want to take the hit of using the mailbox if we are multi-threaded as its a performance trade-off
+    if ( m_threadIdOfSide == MT::GetCurrentTaskID() )
     {
-        return PublishMsgsASync( msgs );
+        if ( !m_awaitingFailureReport )
+        {
+            return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+        }
+        else
+        {
+            // The pipe is jammed up due to a failure
+            // use the mailbox as a queue while we wait to resolve the issue
+            return PublishMsgsASync( msgs );
+        }
     }
     else
     {
-        return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+        // caller is in a different thread from this side
+        // always use the mailbox
+        return PublishMsgsASync( msgs );
     }
 }
 
@@ -2030,6 +2051,11 @@ bool
 CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    // IMPORTANT: For thread safety we need to capture the ID of the thread running this side (consumer)
+    //            We allow for running sides in their own dedicated thread or in the channel thread depending on config
+    //            to tune the performance trade-offs based on the needs. This does mean we need to keep in mind a varried threading model
+    m_threadIdOfSide = MT::GetCurrentTaskID();
+
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_sideSettings.metricsIntervalInMs );
@@ -2151,8 +2177,15 @@ bool
 CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettings& sideSettings )
 {GUCEF_TRACE;
 
-    m_sideSettings = sideSettings;
-    return true;
+    // (re)loading the side settings could have many reprecussions for the pubsub client it uses
+    // as such we get rid of the client if we need to (re)load the config
+    MT::CObjectScopeLock lock( this );
+    if ( DisconnectPubSubClient( true ) )
+    {
+        m_sideSettings = sideSettings;
+        return  true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

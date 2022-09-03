@@ -83,6 +83,11 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& con
     , m_sqsClient( PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()->GetDefaultAwsClientConfig() )
 {GUCEF_TRACE;
 
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSqsPubSubClient: Failed to load config at construction" );
+    }
+
     if ( GUCEF_NULL != config.pulseGenerator )
     {
         if ( config.desiredFeatures.supportsMetrics )
@@ -330,20 +335,52 @@ CAwsSqsPubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CAwsSqsPubSubClient::SaveConfig( CORE::CDataNode& tree ) const
+bool
+CAwsSqsPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
+    //MT::CScopeMutex lock( m_lock );
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    //MT::CScopeMutex lock( m_lock );
+    cfg = m_config;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    PUBSUB::CPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        //MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
+        return true;
+    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CAwsSqsPubSubClient::LoadConfig( const CORE::CDataNode& treeroot )
+bool
+CAwsSqsPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
 {GUCEF_TRACE;
 
-    return false;
+    //MT::CScopeMutex lock( m_lock );
+    m_config = cfg;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

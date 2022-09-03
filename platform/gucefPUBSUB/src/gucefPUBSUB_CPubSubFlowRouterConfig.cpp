@@ -58,6 +58,7 @@ CPubSubFlowRouterConfig::CPubSubFlowRouterConfig( void )
     , minPrimarySideGoodHealthDurationBeforeActivationInMs( 1000 )
     , minFailoverSideGoodHealthDurationBeforeActivationInMs( 1000 )
     , minSpilloverSideGoodHealthDurationBeforeActivationInMs( 5000 )
+    , routeSwitchingTimerIntervalInMs( 1000 )
 {GUCEF_TRACE;
 
 }
@@ -73,6 +74,7 @@ CPubSubFlowRouterConfig::CPubSubFlowRouterConfig( const CPubSubFlowRouterConfig&
     , minPrimarySideGoodHealthDurationBeforeActivationInMs( src.minPrimarySideGoodHealthDurationBeforeActivationInMs )
     , minFailoverSideGoodHealthDurationBeforeActivationInMs( src.minFailoverSideGoodHealthDurationBeforeActivationInMs )
     , minSpilloverSideGoodHealthDurationBeforeActivationInMs( src.minSpilloverSideGoodHealthDurationBeforeActivationInMs )
+    , routeSwitchingTimerIntervalInMs( src.routeSwitchingTimerIntervalInMs )
 {GUCEF_TRACE;
 
 }
@@ -99,6 +101,7 @@ CPubSubFlowRouterConfig::operator=( const CPubSubFlowRouterConfig& src )
         minPrimarySideGoodHealthDurationBeforeActivationInMs = src.minPrimarySideGoodHealthDurationBeforeActivationInMs;
         minFailoverSideGoodHealthDurationBeforeActivationInMs = src.minFailoverSideGoodHealthDurationBeforeActivationInMs;
         minSpilloverSideGoodHealthDurationBeforeActivationInMs = src.minSpilloverSideGoodHealthDurationBeforeActivationInMs;
+        routeSwitchingTimerIntervalInMs = src.routeSwitchingTimerIntervalInMs;
     }
     return *this;
 }
@@ -116,6 +119,7 @@ CPubSubFlowRouterConfig::Clear( void )
     minPrimarySideGoodHealthDurationBeforeActivationInMs = 1000;
     minFailoverSideGoodHealthDurationBeforeActivationInMs = 1000;
     minSpilloverSideGoodHealthDurationBeforeActivationInMs = 5000;
+    routeSwitchingTimerIntervalInMs = 1000;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,6 +166,7 @@ CPubSubFlowRouterConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "minPrimarySideGoodHealthDurationBeforeActivationInMs", minPrimarySideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "minFailoverSideGoodHealthDurationBeforeActivationInMs", minFailoverSideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "minSpilloverSideGoodHealthDurationBeforeActivationInMs", minSpilloverSideGoodHealthDurationBeforeActivationInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "routeSwitchingTimerIntervalInMs", routeSwitchingTimerIntervalInMs ) && totalSuccess;    
 
     CORE::CDataNode* routesParentNode = cfg.FindOrAddChild( "routes" );
     if ( GUCEF_NULL != routesParentNode )
@@ -205,6 +210,7 @@ CPubSubFlowRouterConfig::LoadConfig( const CORE::CDataNode& cfg )
     minPrimarySideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minPrimarySideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minPrimarySideGoodHealthDurationBeforeActivationInMs, true );
     minFailoverSideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minFailoverSideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minFailoverSideGoodHealthDurationBeforeActivationInMs, true );
     minSpilloverSideGoodHealthDurationBeforeActivationInMs = cfg.GetAttributeValueOrChildValueByName( "minSpilloverSideGoodHealthDurationBeforeActivationInMs" ).AsUInt32( minSpilloverSideGoodHealthDurationBeforeActivationInMs, true );
+    routeSwitchingTimerIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "routeSwitchingTimerIntervalInMs" ).AsUInt32( routeSwitchingTimerIntervalInMs, true );    
 
     const CORE::CDataNode* routesParentNode = cfg.Find( "routes" );
     if ( GUCEF_NULL != routesParentNode )

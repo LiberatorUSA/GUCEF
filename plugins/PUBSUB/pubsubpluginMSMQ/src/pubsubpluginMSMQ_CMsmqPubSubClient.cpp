@@ -78,12 +78,17 @@ const CORE::CString CMsmqPubSubClient::TypeName = "MSMQ";
 
 CMsmqPubSubClient::CMsmqPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
+
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqPubSubClient: Failed to load config at construction" );
+    }
 
     if ( GUCEF_NULL != config.pulseGenerator )
     {
@@ -621,27 +626,55 @@ CMsmqPubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CMsmqPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+bool
+CMsmqPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    return m_config.SaveConfig( cfgNode );
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+bool
+CMsmqPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CMsmqPubSubClientConfig cfg;
-    if ( cfg.LoadConfig( cfgRoot ) )
+    CMsmqPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
-        m_config = cfg;
+        m_config = parsedCfg;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMsmqPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CMsmqPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
         return true;
     }
     return false;

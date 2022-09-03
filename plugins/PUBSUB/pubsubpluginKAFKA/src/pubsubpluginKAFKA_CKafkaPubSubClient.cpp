@@ -72,12 +72,17 @@ const CORE::CString CKafkaPubSubClient::TypeName = "Kafka";
 
 CKafkaPubSubClient::CKafkaPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
+
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient: Failed to load config at construction" );
+    }
 
     SetupBasedOnConfig();
 }
@@ -324,16 +329,6 @@ CKafkaPubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CKafkaPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
-{GUCEF_TRACE;
-
-    MT::CScopeMutex lock( m_lock );
-    return m_config.SaveConfig( cfgNode );
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CKafkaPubSubClient::SetupBasedOnConfig( void )
 {GUCEF_TRACE;
@@ -368,33 +363,61 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& config )
+CKafkaPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    Clear();
-
     MT::CScopeMutex lock( m_lock );
-    m_config = config;
-    return SetupBasedOnConfig();
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
+CKafkaPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CKafkaPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    // Make sure we can actually load the config before overwriting anything
-    CKafkaPubSubClientConfig config;
-    if ( config.LoadConfig( cfg  ) )
+    Clear();
+    
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CKafkaPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
-        // make the new config the active config
         MT::CScopeMutex lock( m_lock );
-        m_config = config;
-        return true;
+        m_config = parsedCfg;
+        return SetupBasedOnConfig();
     }
-    else        
-        return false;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    Clear();
+    
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CKafkaPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        MT::CScopeMutex lock( m_lock );
+        m_config = parsedCfg;
+        return SetupBasedOnConfig();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

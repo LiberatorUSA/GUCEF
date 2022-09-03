@@ -55,7 +55,15 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
 #include "gucefPUBSUB_CPubSubClientTopicConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
+
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#include "gucefPUBSUB_CPubSubClientConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -140,6 +148,30 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
                                          PubSubClientTopicSet& topicAccess );
 
     virtual const CPubSubClientTopicConfig* GetTopicConfig( const CString& topicName ) = 0;
+
+    /**
+     *      @param cfg the data node structure where you'd like to serialize the config to
+     *      @return wheter storing the config was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const;
+
+    /**
+     *      @param cfg the config storage object where you'd like to serialize the config to
+     *      @return wheter storing the config was successfull
+     */
+    virtual bool SaveConfig( CPubSubClientConfig& cfg ) const = 0;
+
+    /**
+     *      @param cfg pertinent node in the config document from which to load the config
+     *      @return success or failure to load all required settings correctly from the given config
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& cfg );
+
+    /**
+     *      @param cfg the config storage object from which to load the config
+     *      @return success or failure to load all required settings correctly from the given config
+     */
+    virtual bool LoadConfig( const CPubSubClientConfig& cfg ) = 0;
 
     /**
      *  Attempts to get a list of topics available on the backend regardless of whichever topics are known

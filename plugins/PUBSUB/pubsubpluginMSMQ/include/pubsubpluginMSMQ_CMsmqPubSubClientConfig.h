@@ -75,6 +75,18 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientConfig : public PUBS
     CMsmqPubSubClientConfig& operator=( const CMsmqPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool SaveCustomConfig( CORE::CDataNode& config ) const;
+
+    bool SerializeCustomConfigToGenericConfig( void );
+
+    bool LoadConfig( const CORE::CDataNode& config );
+
+    bool SaveConfig( CORE::CDataNode& config ) const;
+
+    bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg );
+
+    bool SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const;
 };
 
 /*-------------------------------------------------------------------------//

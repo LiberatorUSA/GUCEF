@@ -279,14 +279,17 @@ dvsocket_send( SOCKET s        ,
                int flags       ,
                int* error      )
 {
-    int retval;
-    if ( ( retval = send( s       ,
-                          buf     ,
-                          len     ,
-                          flags   ) ) == SOCKET_ERROR )
+    int retval = 0;
+    if ( len > 0 && GUCEF_NULL != buf )
     {
-        *error = LastSocketError;
-        return retval;
+        if ( ( retval = send( s       ,
+                              buf     ,
+                              len     ,
+                              flags   ) ) == SOCKET_ERROR )
+        {
+            *error = LastSocketError;
+            return retval;
+        }
     }
     *error = 0;
     return retval;
@@ -303,16 +306,19 @@ dvsocket_sendto( SOCKET s                  ,
                  int tolen                 ,
                  int* error                )
 {
-    int retval;
-    if ( ( retval = sendto( s     ,
-                            buf   ,
-                            len   ,
-                            flags ,
-                            to    ,
-                            tolen ) ) == SOCKET_ERROR )
+    int retval = 0;
+    if ( len > 0 && GUCEF_NULL != buf )
     {
-        *error = LastSocketError;
-        return retval;
+        if ( ( retval = sendto( s     ,
+                                buf   ,
+                                len   ,
+                                flags ,
+                                to    ,
+                                tolen ) ) == SOCKET_ERROR )
+        {
+            *error = LastSocketError;
+            return retval;
+        }
     }
     *error = 0;
     return retval;

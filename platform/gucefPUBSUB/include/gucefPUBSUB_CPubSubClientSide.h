@@ -374,6 +374,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CTimer* m_pubsubClientReconnectTimer;    
     CORE::CTimer* m_timedOutInFlightMessagesCheckTimer;
     CORE::CString m_sideId;
+    CORE::UInt32 m_threadIdOfSide;
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;
     CPubSubFlowRouter* m_flowRouter;

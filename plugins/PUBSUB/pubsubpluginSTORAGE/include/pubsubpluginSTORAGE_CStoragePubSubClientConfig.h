@@ -72,6 +72,18 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientConfig : publi
     CStoragePubSubClientConfig& operator=( const CStoragePubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool SaveCustomConfig( CORE::CDataNode& config ) const;
+
+    bool SerializeCustomConfigToGenericConfig( void );
+
+    bool LoadConfig( const CORE::CDataNode& config );
+
+    bool SaveConfig( CORE::CDataNode& config ) const;
+
+    bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg );
+
+    bool SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const;
 };
 
 /*-------------------------------------------------------------------------//

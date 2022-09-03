@@ -109,9 +109,29 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
 
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+    /**
+     *      @param cfg the data node structure where you'd like to serialize the config to
+     *      @return wheter storing the config was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+    /**
+     *      @param cfg the config storage object where you'd like to serialize the config to
+     *      @return wheter storing the config was successfull
+     */
+    virtual bool SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *      @param cfg pertinent node in the config document from which to load the config
+     *      @return success or failure to load all required settings correctly from the given config
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *      @param cfg the config storage object from which to load the config
+     *      @return success or failure to load all required settings correctly from the given config
+     */
+    virtual bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
     CMsmqPubSubClientConfig& GetConfig( void );
 

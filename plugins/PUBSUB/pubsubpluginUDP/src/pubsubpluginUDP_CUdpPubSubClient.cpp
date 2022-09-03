@@ -77,11 +77,16 @@ const CORE::CString CUdpPubSubClient::TypeName = "UDP";
 
 CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_testUdpSocket( GUCEF_NULL )
 {GUCEF_TRACE;
+
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClient: Failed to load config at construction" );
+    }
 
     if ( GUCEF_NULL == m_config.pulseGenerator )
         m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
@@ -320,25 +325,52 @@ CUdpPubSubClient::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CUdpPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+bool
+CUdpPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    return m_config.SaveConfig( cfgNode );
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CUdpPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+bool
+CUdpPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUdpPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CUdpPubSubClientConfig cfg;
-    if ( cfg.LoadConfig( cfgRoot ) )
+    CUdpPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
-        m_config = cfg;
+        m_config = parsedCfg;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUdpPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CUdpPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        m_config = parsedCfg;
+        return true;
     }
     return false;
 }

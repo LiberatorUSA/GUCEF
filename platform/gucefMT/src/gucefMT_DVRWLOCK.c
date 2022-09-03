@@ -365,7 +365,7 @@ rwl_reader_start( TRWLock *rwlock )
                          *	that may be queued. After that we increase the reader
                          *	counter.
                          */
-                        while ( rwlock->activeWriterCount > 0 || rwlock->queuedWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress )
+                        while ( ( rwlock->activeWriterCount > 0 || rwlock->queuedWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress ) && 0 == rwlock->delflag )
                         {
                             PrecisionDelay( 25 );
                         }
@@ -489,14 +489,39 @@ rwl_reader_stop( TRWLock *rwlock )
         {
             if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
             {
+                if ( rwlock->activeWriterCount > 0 )
+                {
+                    if ( rwlock->lastWriterThreadId == GetCurrentTaskID() )
+                    {
+                        /*
+                         *  The caller is the currently active writer thread who also grabbed a read lock
+                         *  this is considered a no-op since the write lock is read-write access and already covered the read access
+                         */
+                        --rwlock->activeWriterReentrancyCount;
+                        MutexUnlock( rwlock->datalock );
+                        GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
+                    }
+                    else
+                    {
+                        /*
+                         *  Something is wrong here.
+                         *  How could you have gotten a read lock in the first place if there is an active writer?
+                         *  Placing a call to rwl_reader_stop() without a successfull call to rwl_reader_start() ?
+                         */
+                        MutexUnlock( rwlock->datalock );
+                        assert( 0 );
+                        GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_FAILED );
+                    }
+                }               
+
                 rwlock->activeReaderCount--;
                 MutexUnlock( rwlock->datalock );
-                GUCEF_END_RET( UInt32, 1 );
+                GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
             }
         }
         while ( 0 == rwlock->delflag );
     }    
-    GUCEF_END_RET( UInt32, 0 );
+    GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_FAILED );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1182,6 +1207,7 @@ rwl_writer_stop( TRWLock *rwlock )
                      *  This should always be the case
                      *  allow it to proceed since we already have write access anyway
                      */
+                    assert( rwlock->activeWriterCount > 0 );
                     
                     if ( rwlock->activeWriterReentrancyCount > 0 )
                         --rwlock->activeWriterReentrancyCount;
@@ -1190,6 +1216,10 @@ rwl_writer_stop( TRWLock *rwlock )
 
                     MutexUnlock( rwlock->writerlock );
                 }               
+                else
+                {
+                    GUCEF_UNREACHABLE;
+                }
                                 
                 MutexUnlock( rwlock->datalock );
                 GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );

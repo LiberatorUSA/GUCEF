@@ -99,7 +99,7 @@ CScopeReaderLock::EarlyUnlock( void )
     if ( m_isReadLocked )
     {        
         m_lockState = m_rwLock->ReaderStop();
-        m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+        m_isReadLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
     }
     return TRWLockStates::RWLOCK_OPERATION_SUCCESS;
 }
@@ -156,7 +156,7 @@ CScopeWriterLock::~CScopeWriterLock()
         do
         {
             m_lockState = m_rwLock->WriterStop();
-            m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+            m_isWriteLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
         }
         while ( m_isWriteLocked );
     }

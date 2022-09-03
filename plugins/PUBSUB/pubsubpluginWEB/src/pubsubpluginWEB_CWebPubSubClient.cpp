@@ -77,11 +77,16 @@ const CORE::CString CWebPubSubClient::TypeName = "WEB";
 
 CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
-    , m_config( config )
+    , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
 {GUCEF_TRACE;
 
+    if ( !LoadConfig( config ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WebPubSubClient: Failed to load config at construction" );
+    }
+    
     if ( GUCEF_NULL != config.pulseGenerator )
     {
         if ( config.desiredFeatures.supportsMetrics )
@@ -325,24 +330,51 @@ CWebPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClient::SaveConfig( CORE::CDataNode& cfgNode ) const
+CWebPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    return m_config.SaveConfig( cfgNode );
+    return m_config.SaveConfig( cfg );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClient::LoadConfig( const CORE::CDataNode& cfgRoot )
+CWebPubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
+{GUCEF_TRACE;
+
+    return m_config.SaveConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     // Try to see if we can properly load the entire config before
     // applying it. If not stick with old config vs corrupt config
-    CWebPubSubClientConfig cfg;
-    if ( cfg.LoadConfig( cfgRoot ) )
+    CWebPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
     {
-        m_config = cfg;
+        m_config = parsedCfg;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWebPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
+{GUCEF_TRACE;
+
+    // Try to see if we can properly load the entire config before
+    // applying it. If not stick with old config vs corrupt config
+    CWebPubSubClientConfig parsedCfg;
+    if ( parsedCfg.LoadConfig( cfg ) )
+    {
+        m_config = parsedCfg;
+        return true;
     }
     return false;
 }
