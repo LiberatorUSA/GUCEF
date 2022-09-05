@@ -258,9 +258,9 @@ CIOAccess::ReadUntill( void *dest            ,
         }
         if ( !delimsize )
         {
-                GUCEF_END_RET( UInt32, Read( dest  ,
-                                                bsize ,
-                                                1     ) );
+                GUCEF_END_RET( Read( dest  ,
+                                     bsize ,
+                                     1     ) );
         }
 
         char* buffer = new char[ delimsize ];
@@ -366,11 +366,11 @@ CIOAccess::SkipUntill( const void* delimiter ,
                 if ( memcmp( buffer, delimiter, delimsize ) == 0 )
                 {
                         delete []buffer;
-                        GUCEF_END_RET( UInt32, Tell() - pos );
+                        GUCEF_END_RET( Tell() - pos );
                 }
         }
         delete []buffer;
-        GUCEF_END_RET( UInt32, Tell() - pos );
+        GUCEF_END_RET( Tell() - pos );
 }
 
 /*-------------------------------------------------------------------------*/

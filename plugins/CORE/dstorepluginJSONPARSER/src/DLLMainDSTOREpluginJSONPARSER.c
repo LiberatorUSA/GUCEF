@@ -138,7 +138,8 @@ int
 Base64Encode( const void* inByteBuffer , 
               UInt32 inBufferSize      ,
               TDestFileData* fd        )
-{GUCEF_TRACE;
+{
+    GUCEF_BEGIN;
 
     UInt32 base64StrLength = ( ( inBufferSize + 2 ) / 3 ) * 4;
     char* str = GetBase64EncodeBuffer( fd, base64StrLength+1 );         
@@ -149,8 +150,10 @@ Base64Encode( const void* inByteBuffer ,
     // Base64 encoding can really add up wrt size requirements
     // We need to sanity check that we were able to allocate enough memory
     if ( GUCEF_NULL == str )
+    {
+        GUCEF_END;
         return 0;
-
+    }
     memset( str, '=', base64StrLength );    
 
     for ( size_t i = 0; i < last; i+=3 )
@@ -174,6 +177,7 @@ Base64Encode( const void* inByteBuffer ,
     }
 
     str[ base64StrLength ] = '\0';
+    GUCEF_END;
     return 1;
 }
 

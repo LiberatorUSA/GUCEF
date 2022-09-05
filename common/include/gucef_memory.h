@@ -118,7 +118,22 @@
         /* macros for C code usage of callstack tracking. Please use ScopeStackTracer via the GUCEF_TRACE macro for C++ code */
         #define GUCEF_BEGIN { MEMMAN_CallstackScopeBegin( __FILE__, __LINE__ ); }
         #define GUCEF_END { MEMMAN_CallstackScopeEnd(); }
-        #define GUCEF_END_RET( retvaltype, retval ) { retvaltype var( retval ); MEMMAN_CallstackScopeEnd(); return var; }
+        #define GUCEF_END_RET( retval ) { MEMMAN_CallstackScopeEnd(); return retval; }
+
+        #if defined( GUCEF_USE_PLATFORM_LOCK_TRACER ) && !defined( GUCEF_PLATFORM_LOCK_TRACER_DISABLED )
+
+            /*
+             *  Platform lock tracing is dependent on platform callstack tracing
+             */
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId ) { MEMMAN_ExclusiveLockObtained( lockId ); }
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId ) { MEMMAN_ExclusiveLockReleased( lockId ); }
+
+        #else
+
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
+        
+        #endif /* GUCEF_USE_PLATFORM_LOCK_TRACER ? */
 
     #else
 
@@ -127,8 +142,10 @@
          */
         #define GUCEF_BEGIN
         #define GUCEF_END
-        #define GUCEF_END_RET( retvaltype, retval ) return (retval);
+        #define GUCEF_END_RET( retval ) return (retval);
         #define GUCEF_TRACE
+        #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
+        #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
     
     #endif /* GUCEF_USE_PLATFORM_CALLSTACK_TRACING ? */
 
@@ -136,8 +153,10 @@
 
   #define GUCEF_BEGIN
   #define GUCEF_END
-  #define GUCEF_END_RET( retvaltype, retval ) return (retval);
+  #define GUCEF_END_RET( retval ) return (retval);
   #define GUCEF_TRACE
+  #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
+  #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
 
 #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && !defined( GUCEF_CALLSTACK_TRACING_DISABLED ) ? */
 

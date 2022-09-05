@@ -2011,6 +2011,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                             "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                        DisconnectPubSubClient( true );
                         return false;
                     }
                     else
@@ -2026,6 +2027,22 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 ++a;
             }
         }
+        else
+        {
+            if ( !(*i).isOptional )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                DisconnectPubSubClient( true );
+                return false;
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+            }
+        }
+
         ++i;
     }
 

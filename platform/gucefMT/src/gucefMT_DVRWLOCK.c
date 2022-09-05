@@ -499,7 +499,8 @@ rwl_reader_stop( TRWLock *rwlock )
                          */
                         --rwlock->activeWriterReentrancyCount;
                         MutexUnlock( rwlock->datalock );
-                        GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
+                        GUCEF_END;
+                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
                     }
                     else
                     {
@@ -510,18 +511,21 @@ rwl_reader_stop( TRWLock *rwlock )
                          */
                         MutexUnlock( rwlock->datalock );
                         assert( 0 );
-                        GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_FAILED );
+                        GUCEF_END;
+                        return GUCEF_RWLOCK_OPERATION_FAILED;
                     }
                 }               
 
                 rwlock->activeReaderCount--;
                 MutexUnlock( rwlock->datalock );
-                GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
+                GUCEF_END;
+                return GUCEF_RWLOCK_OPERATION_SUCCESS;
             }
         }
         while ( 0 == rwlock->delflag );
     }    
-    GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_FAILED );
+    GUCEF_END;
+    return GUCEF_RWLOCK_OPERATION_FAILED;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1222,7 +1226,8 @@ rwl_writer_stop( TRWLock *rwlock )
                 }
                                 
                 MutexUnlock( rwlock->datalock );
-                GUCEF_END_RET( UInt32, GUCEF_RWLOCK_OPERATION_SUCCESS );
+                GUCEF_END;
+                return GUCEF_RWLOCK_OPERATION_SUCCESS;
             }
         }
         while ( 0 == rwlock->delflag );

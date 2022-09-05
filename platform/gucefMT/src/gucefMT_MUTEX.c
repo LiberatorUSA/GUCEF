@@ -142,6 +142,7 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
         case WAIT_OBJECT_0:
         {
             mutex->lockedByThread = (UInt32) GetCurrentThreadId();
+            GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( mutex->id );
             return GUCEF_MUTEX_OPERATION_SUCCESS;
         }
         case WAIT_TIMEOUT:
@@ -159,6 +160,7 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
         return 0;
     
     mutex->lockedByThread = (UInt32) pthread_self();
+    GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &mutex->id );
     return 1;
     
     #endif
@@ -172,11 +174,15 @@ MutexUnlock( struct SMutex* mutex )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
     if ( mutex->lockedByThread == (UInt32) GetCurrentThreadId() )
+    {
         mutex->lockedByThread = 0;
+        GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( mutex->id );
+    }
 
     if ( 0 == ReleaseMutex( mutex->id ) )
     {
         mutex->lockedByThread = (UInt32) GetCurrentThreadId();
+        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( mutex->id );
         return 0;
     }
     return 1;
@@ -184,10 +190,17 @@ MutexUnlock( struct SMutex* mutex )
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
     if ( mutex->lockedByThread == (UInt32) pthread_self() )
+    {
         mutex->lockedByThread = 0;
+        GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( &mutex->id );
+    }
 
     if ( pthread_mutex_unlock( &mutex->id ) < 0 ) 
+    {
+        mutex->lockedByThread = (UInt32) GetCurrentThreadId();
+        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &mutex->id );
         return 0;
+    }
     return 1;
     
     #endif

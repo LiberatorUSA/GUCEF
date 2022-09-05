@@ -170,12 +170,30 @@ typedef int ( *TFP_MEMMAN_SysReAllocStringLen )( const char *file, int line, wch
 
 /*-------------------------------------------------------------------------*/
 
+/*
+ *  Platform callstack tracing functions
+ */
+
 typedef void ( *TFP_MEMMAN_CallstackScopeBegin )( const char *file, int line );
 typedef void ( *TFP_MEMMAN_CallstackScopeEnd )( void );
 
 /*-------------------------------------------------------------------------*/
 
 #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+#if defined( GUCEF_USE_PLATFORM_LOCK_TRACER )
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  Platform lock tracing functions
+ */
+
+typedef void ( *TFP_MEMMAN_ExclusiveLockObtained )( void* lockId );
+typedef void ( *TFP_MEMMAN_ExclusiveLockReleased )( void* lockId );
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_PLATFORM_LOCK_TRACER ) ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -243,6 +261,20 @@ static TFP_MEMMAN_CallstackScopeEnd fp_MEMMAN_CallstackScopeEnd = 0;
 /*-------------------------------------------------------------------------*/
 
 #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+#if defined( GUCEF_USE_PLATFORM_LOCK_TRACER )
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  Platform lock tracing functions
+ */
+
+static TFP_MEMMAN_ExclusiveLockObtained fp_MEMMAN_ExclusiveLockObtained = 0;
+static TFP_MEMMAN_ExclusiveLockReleased fp_MEMMAN_ExclusiveLockReleased = 0;
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_PLATFORM_LOCK_TRACER ) ? */
 #if ( defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) ) || ( defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) )
 
 /*-------------------------------------------------------------------------*/
@@ -427,6 +459,20 @@ MEMMAN_LazyLoadMemoryManager( void )
     }
 
     #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+    #if defined( GUCEF_USE_PLATFORM_LOCK_TRACER )
+
+    fp_MEMMAN_ExclusiveLockObtained = (TFP_MEMMAN_ExclusiveLockObtained) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockObtained" );
+    fp_MEMMAN_ExclusiveLockReleased = (TFP_MEMMAN_ExclusiveLockReleased) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockReleased" );
+
+    if ( 0 == fp_MEMMAN_ExclusiveLockObtained ||
+         0 == fp_MEMMAN_ExclusiveLockReleased )
+    {
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+        return 0;
+    }
+
+    #endif /* defined( GUCEF_USE_PLATFORM_LOCK_TRACER ) ? */
 
     if ( 1 == fp_MEMMAN_Initialize() )
     {        
@@ -644,6 +690,31 @@ MEMMAN_CallstackScopeEnd( void )
 /*-------------------------------------------------------------------------*/
 
 #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
+#if defined( GUCEF_USE_PLATFORM_LOCK_TRACER )
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_ExclusiveLockObtained( void* lockId )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ExclusiveLockObtained( lockId ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_ExclusiveLockReleased( void* lockId )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ExclusiveLockReleased( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* defined( GUCEF_USE_PLATFORM_LOCK_TRACER ) ? */
 #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
 
 /*-------------------------------------------------------------------------*/

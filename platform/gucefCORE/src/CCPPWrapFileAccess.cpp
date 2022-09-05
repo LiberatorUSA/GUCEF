@@ -86,7 +86,7 @@ bool
 CCPPWrapFileAccess::Opened( void ) const
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( bool, _access->opened( _access ) == 1 );
+        GUCEF_END_RET( _access->opened( _access ) == 1 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -151,10 +151,10 @@ CCPPWrapFileAccess::Read( void *dest      ,
                           UInt32 elements )
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _access->read( _access  ,
-                                              dest     ,
-                                              esize    ,
-                                              elements ) );
+        GUCEF_END_RET( _access->read( _access  ,
+                                      dest     ,
+                                      esize    ,
+                                      elements ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -163,7 +163,7 @@ UInt32
 CCPPWrapFileAccess::Tell( void ) const
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _access->tell( _access ) );
+        GUCEF_END_RET( _access->tell( _access ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,9 +173,9 @@ CCPPWrapFileAccess::Seek( Int32 offset ,
                           Int32 origin )
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( Int32, _access->seek( _access ,
-                                             offset  ,
-                                             origin  ) );
+        GUCEF_END_RET( _access->seek( _access ,
+                                      offset  ,
+                                      origin  ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -184,8 +184,8 @@ UInt32
 CCPPWrapFileAccess::Setpos( UInt32 position )
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( UInt32, _access->setpos( _access  ,
-                                                position ) );
+        GUCEF_END_RET( _access->setpos( _access  ,
+                                        position ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -203,7 +203,7 @@ bool
 CCPPWrapFileAccess::Eof( void ) const
 {
         GUCEF_BEGIN;
-        GUCEF_END_RET( bool, _access->eof( _access ) == 1 );
+        GUCEF_END_RET( _access->eof( _access ) == 1 );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -55,14 +55,16 @@ namespace MT {
 
 struct SMutexData
 {
-    UInt32 threadOwningLock;
+    bool isLocked;
+    UInt32 threadLastOwningLock;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE id;
 
     SMutexData( void )
-        : threadOwningLock( 0 )
+        : isLocked( false )
+        , threadLastOwningLock( 0 )
         , id( 0 )
     {GUCEF_TRACE;
     }
@@ -72,7 +74,8 @@ struct SMutexData
     pthread_mutex_t id;
 
     SMutexData( void )
-        : threadOwningLock( 0 )
+        : isLocked( false )
+        , threadLastOwningLock( 0 )
         , id()
     {GUCEF_TRACE;
     }
@@ -158,12 +161,21 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
     if ( GUCEF_NULL == _mutexdata )
         return false;    
     
-    ((TMutexData*)_mutexdata)->threadOwningLock = (UInt32) ::GetCurrentThreadId();
+    ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+    ((TMutexData*)_mutexdata)->isLocked = true;
+    GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
+    if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) 
+    {
+        return false;
+    }
+    
+    ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+    ((TMutexData*)_mutexdata)->isLocked = true;
+    GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &((TMutexData*)_mutexdata)->id );
     return true;
 
     #endif
@@ -180,15 +192,28 @@ CMutex::Unlock( void ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    ((TMutexData*)_mutexdata)->isLocked = false;
+    GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( ((TMutexData*)_mutexdata)->id );
+
     if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE )
     {
+        ((TMutexData*)_mutexdata)->isLocked = true;
+        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
         return false;
     }
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) return false;
+    ((TMutexData*)_mutexdata)->isLocked = false;
+    GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( ((TMutexData*)_mutexdata)->id );
+
+    if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) 
+    {
+        ((TMutexData*)_mutexdata)->isLocked = true;
+        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
+        return false;
+    }
     return true;
 
     #endif
@@ -212,7 +237,7 @@ CMutex::GetThreadIdOfThreadLastHoldingTheLock( void ) const
     if ( GUCEF_NULL == _mutexdata )
         return 0;
 
-    return ((TMutexData*)_mutexdata)->threadOwningLock;
+    return ((TMutexData*)_mutexdata)->threadLastOwningLock;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -255,4 +280,4 @@ CMutex::IsLocked( void ) const
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

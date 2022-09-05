@@ -31,8 +31,9 @@ if (ANDROID)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
@@ -56,8 +57,9 @@ elseif (EMSCRIPTEN)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
@@ -81,8 +83,9 @@ elseif (GLX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -106,8 +109,9 @@ elseif (GTK)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -131,8 +135,9 @@ elseif (IOS)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "IOS" )
@@ -156,8 +161,9 @@ elseif (LINUX32)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -181,8 +187,9 @@ elseif (LINUX64)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
@@ -206,8 +213,9 @@ elseif (NACL)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "NACL" )
@@ -231,8 +239,9 @@ elseif (OSX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -256,8 +265,9 @@ elseif (POSIX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "POSIX" )
@@ -281,8 +291,9 @@ elseif (SDL)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -306,8 +317,9 @@ elseif (SYMBIAN)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -331,8 +343,9 @@ elseif (UNIX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -345,10 +358,11 @@ elseif (WIN32)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
-    include/MemoryManager.h
-    include/callstack.h
     include/gucefMLF_ETypes.h
+    include/gucefMLF_MemoryManager.h
+    include/gucefMLF_callstack.h
     include/gucefMLF_config.h
+    include/gucefMLF_locktrace.h
     include/gucefMLF_macros.h
   )
 
@@ -361,8 +375,9 @@ elseif (WIN32)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -375,10 +390,11 @@ elseif (WIN64)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
-    include/MemoryManager.h
-    include/callstack.h
     include/gucefMLF_ETypes.h
+    include/gucefMLF_MemoryManager.h
+    include/gucefMLF_callstack.h
     include/gucefMLF_config.h
+    include/gucefMLF_locktrace.h
     include/gucefMLF_macros.h
   )
 
@@ -391,8 +407,9 @@ elseif (WIN64)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
-    src/MemoryManager.cpp
-    src/callstack.cpp
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -417,12 +434,12 @@ endif()
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} Winmm )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CALLSTACK_TRACING_DISABLED;GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CALLSTACK_TRACING_DISABLED;GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;GUCEF_PLATFORM_LOCK_TRACER_DISABLED;GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" )
 endif( WIN32 )
 
 if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Winmm )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CALLSTACK_TRACING_DISABLED;GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CALLSTACK_TRACING_DISABLED;GUCEF_CORE_EMBED_CODE;GUCEF_DYNNEWON_DISABLED;GUCEF_MLF_BUILD_MODULE;GUCEF_MT_EMBED_CODE;GUCEF_PLATFORM_LOCK_TRACER_DISABLED;GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" )
 endif( WIN64 )
 
 include_directories( ../../common/include )

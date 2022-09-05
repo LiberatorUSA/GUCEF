@@ -75,8 +75,15 @@
 /*
  *  Switches to enable/disable callstack tracking
  */
-/* #define GUCEF_RELEASE_CALLSTACK_TRACKING */
-/* #define GUCEF_DEBUG_CALLSTACK_TRACKING */
+#define GUCEF_USE_CALLSTACK_TRACING
+#define GUCEF_USE_PLATFORM_CALLSTACK_TRACING
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  Switches to enable/disable lock tracing
+ */
+#define GUCEF_USE_PLATFORM_LOCK_TRACER
 
 /*-------------------------------------------------------------------------*/
 
@@ -90,17 +97,3 @@
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CONFIG_H */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 30-09-2006 :
-       - Logan: Modified to remove GUCEF_MANUAL_* defines, cleaned up
-                Lets keep this simple :)
-- 29-09-2006 :
-       - Dinand: Initial version of this file.
-
------------------------------------------------------------------------------*/

@@ -11,6 +11,7 @@
 			<Define String="GUCEF_PLATFORM_MEMORY_LEAK_CHECKER_INCLUDES_OLEAPI" />
 			<Define String="GUCEF_DYNNEWON_DISABLED" />
 			<Define String="GUCEF_CALLSTACK_TRACING_DISABLED" />
+			<Define String="GUCEF_PLATFORM_LOCK_TRACER_DISABLED" />
 			<Define String="GUCEF_MT_EMBED_CODE" />
 			<Define String="GUCEF_CORE_EMBED_CODE" />
         </Preprocessor>

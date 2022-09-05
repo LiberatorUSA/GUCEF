@@ -626,7 +626,7 @@ CDataNode::FindRoot( void ) const
                 GUCEF_END;
                 return (CDataNode*)this;
         }        
-        GUCEF_END_RET( CDataNode*, _pparent->FindRoot() );
+        GUCEF_END_RET( _pparent->FindRoot() );
 }
 
 /*-------------------------------------------------------------------------*/
