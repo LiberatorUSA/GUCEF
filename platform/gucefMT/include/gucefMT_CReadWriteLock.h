@@ -156,6 +156,8 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 
     TRWLockStates TransitionReaderToWriter( void ) const;
 
+    TRWLockStates TransitionWriterToReader( void ) const;
+
     /**
      *      Returns the current number of active readers. Note that this function
      *      is meant for output to humans. Race conditions ect. make it

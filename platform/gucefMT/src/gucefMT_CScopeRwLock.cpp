@@ -44,11 +44,23 @@ namespace MT {
 CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
+    , m_isReadLocked( false )
 {GUCEF_TRACE;
 
     assert( m_rwLock );
     m_lockState = m_rwLock->ReaderStart();
     m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+}
+
+/*--------------------------------------------------------------------------*/
+
+CScopeReaderLock::CScopeReaderLock( CScopeWriterLock& writerToTransition )
+    : m_rwLock( writerToTransition.m_rwLock )
+    , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
+    , m_isReadLocked( false )
+{GUCEF_TRACE;
+
+    writerToTransition.TransitionToReader( *this );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -106,6 +118,44 @@ CScopeReaderLock::EarlyUnlock( void )
 
 /*--------------------------------------------------------------------------*/
 
+bool 
+CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter )
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != m_rwLock );
+    assert( !targetWriter.IsScopeWriteLocked() );
+
+    if ( !targetWriter.IsScopeWriteLocked() )
+    {
+        if ( m_isReadLocked )
+        {
+            do
+            {
+                m_lockState = m_rwLock->TransitionReaderToWriter();
+                m_isReadLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
+                if ( !m_isReadLocked )
+                {
+                    targetWriter.m_rwLock = m_rwLock;
+                    targetWriter.m_isWriteLocked = true;
+                    targetWriter.m_lockState = m_lockState;
+                    return true;
+                }
+            }
+            while ( m_isReadLocked );
+        }
+        else
+        {
+            targetWriter.m_rwLock = m_rwLock;
+            targetWriter.m_lockState = m_rwLock->WriterStart();
+            targetWriter.m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
 CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
     : m_rwLock( &rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
@@ -125,25 +175,10 @@ CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
 CScopeWriterLock::CScopeWriterLock( CScopeReaderLock& readerToTransition )
     : m_rwLock( readerToTransition.m_rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
+    , m_isWriteLocked( false )
 {GUCEF_TRACE;
 
-    assert( m_rwLock );
-    do
-    {
-        if ( readerToTransition.m_isReadLocked )
-        {
-            m_lockState = m_rwLock->TransitionReaderToWriter();
-            m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
-            if ( m_isWriteLocked )
-                readerToTransition.m_isReadLocked = false;
-        }
-        else
-        {
-            m_lockState = m_rwLock->WriterStart();
-            m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
-        }
-    }
-    while ( !m_isWriteLocked );
+    readerToTransition.TransitionToWriter( *this );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -191,6 +226,15 @@ CScopeWriterLock::IsScopeWriteLocked( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+UInt32 
+CScopeWriterLock::GetWriterReentrancyDepth( void ) const
+{GUCEF_TRACE;
+
+    return m_rwLock->ActiveWriterReentrancyDepth();
+}
+
+/*--------------------------------------------------------------------------*/
+
 CScopeReaderLock::TRWLockStates
 CScopeWriterLock::EarlyUnlock( void )
 {GUCEF_TRACE;
@@ -202,6 +246,45 @@ CScopeWriterLock::EarlyUnlock( void )
         return m_lockState;
     }
     return TRWLockStates::RWLOCK_OPERATION_SUCCESS;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CScopeWriterLock::TransitionToReader( CScopeReaderLock& targetReader )
+{GUCEF_TRACE;
+    
+    assert( GUCEF_NULL != m_rwLock );
+    assert( !targetReader.IsScopeReadLocked() );
+    
+    if ( !targetReader.IsScopeReadLocked() )
+    {
+        if ( m_isWriteLocked )
+        {
+            do
+            {
+                m_lockState = m_rwLock->TransitionWriterToReader();
+                m_isWriteLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
+            
+                if ( !m_isWriteLocked && ( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState ) )
+                {
+                    targetReader.m_rwLock = m_rwLock;
+                    targetReader.m_isReadLocked = true;
+                    targetReader.m_lockState = m_lockState;
+                    return true;
+                }
+            }
+            while ( m_isWriteLocked );
+        }
+        else
+        {
+            targetReader.m_rwLock = m_rwLock;
+            targetReader.m_lockState = m_rwLock->ReaderStart();
+            targetReader.m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+            return true;
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

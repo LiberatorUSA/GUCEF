@@ -17,7 +17,10 @@ if (ANDROID)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -28,7 +31,10 @@ if (ANDROID)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -43,7 +49,10 @@ elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -54,7 +63,10 @@ elseif (EMSCRIPTEN)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -69,7 +81,10 @@ elseif (GLX)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -80,7 +95,10 @@ elseif (GLX)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -95,7 +113,10 @@ elseif (GTK)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -106,7 +127,10 @@ elseif (GTK)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -121,7 +145,10 @@ elseif (IOS)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -132,7 +159,10 @@ elseif (IOS)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -147,7 +177,10 @@ elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -158,7 +191,10 @@ elseif (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -173,7 +209,10 @@ elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -184,7 +223,10 @@ elseif (LINUX64)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -199,7 +241,10 @@ elseif (NACL)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -210,7 +255,10 @@ elseif (NACL)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -225,7 +273,10 @@ elseif (OSX)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -236,7 +287,10 @@ elseif (OSX)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -251,7 +305,10 @@ elseif (POSIX)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -262,7 +319,10 @@ elseif (POSIX)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -277,7 +337,10 @@ elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -288,7 +351,10 @@ elseif (SDL)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -303,7 +369,10 @@ elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -314,7 +383,10 @@ elseif (SYMBIAN)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -329,7 +401,10 @@ elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -340,7 +415,10 @@ elseif (UNIX)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -355,7 +433,10 @@ elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
     include/gucefMLF_ETypes.h
@@ -372,7 +453,10 @@ elseif (WIN32)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
@@ -387,7 +471,10 @@ elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
     ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
     include/gucefMLF_ETypes.h
@@ -404,7 +491,10 @@ elseif (WIN64)
   set( PLATFORM_SOURCE_FILES 
     ../../platform/gucefMT/src/gucefMT_CILockable.cpp
     ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp

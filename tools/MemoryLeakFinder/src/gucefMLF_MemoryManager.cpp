@@ -1227,6 +1227,7 @@ MEMMAN_Initialize( void )
             else 
             {
                 g_manager.initialize();            
+                GUCEF_InitCallstackUtility();
                 MEMMAN_LockTraceInit();
                 //atexit( MEMMAN_Shutdown );    // Log this function to be called upon program shut down.
                 return 1;
@@ -1260,6 +1261,7 @@ MEMMAN_Shutdown( void )
         if ( g_manager.m_initialized ) 
         {
             NumAllocations = g_manager.m_numAllocations;
+            GUCEF_ShutdowntCallstackUtility();
             MEMMAN_LockTraceShutdown();
             g_manager.release();  // Dump the log report and free remaining memory.
         }

@@ -98,11 +98,13 @@ static double highPerfTimerFrequencyTicksPerMs = 0;
 void
 ThreadDelay( UInt32 delay )
 {
+    GUCEF_BEGIN;
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     Sleep( delay );
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     sleep( delay );
     #endif
+    GUCEF_END;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -112,7 +114,9 @@ ThreadDelay( UInt32 delay )
 static UInt32 GUCEF_CALLSPEC_STD_PREFIX
 ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 {
+    GUCEF_BEGIN;
     ((TThreadData*)tdvptr)->returnValue = (UInt32) ( (TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
+    GUCEF_END;
     return ((TThreadData*)tdvptr)->returnValue;
 }
 
@@ -121,10 +125,12 @@ ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 void*
 ThreadMain( void* tdvptr )
 {
+    GUCEF_BEGIN;
     TThreadData* td = (TThreadData*) tdvptr;
     td->threadId = gettid();
     td->returnValue = td->func( td->data );
     pthread_cond_signal( &td->exitSignal );
+    GUCEF_END;
     return GUCEF_NULL;
 }
 

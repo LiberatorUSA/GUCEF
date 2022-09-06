@@ -213,6 +213,16 @@ rwl_reader_transition_to_writer( TRWLock *rwlock );
 /*--------------------------------------------------------------------------*/
 
 /**
+ *  Call this function when a writer task no longer needs write access to the data
+ *  protected by the given rwlock but would like to retain read-only access. 
+ *  You should have already aquired the write lock from the calling thread before using this.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_writer_transition_to_reader( TRWLock *rwlock );
+
+/*--------------------------------------------------------------------------*/
+
+/**
  *      Call this function when a writer task needs access to the data
  *      protected by the given rwlock. Fails if destroy has been called for
  *      the given rwlock. If it fails you should no longer access the given

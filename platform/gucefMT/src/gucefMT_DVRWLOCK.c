@@ -549,6 +549,25 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                     return 0;
                 }
 
+	            /*
+                 *	Sanity check
+                 */
+                if ( rwlock->activeWriterCount > 0            ||
+                     rwlock->activeWriterReentrancyCount > 0  ||
+                     rwlock->activeReaderCount <= 0           )
+                {
+                    /*
+                     *  You should not get here
+                     *  We have not met the prerequisite conditions to transition a reader
+                     *      - There must be no active writer because presumably you already have an active reader
+                     *      - There must be an active reader because how else can you transition it
+                     */
+                    GUCEF_ASSERT_ALWAYS;
+                    MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+
                 rwlock->queuedWriterCount++;
                 rwlock->activeReaderCount--;
                 
@@ -557,12 +576,12 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                     /*
                      *  There are no active writers or readers so we can make this quick
                      */
+                    while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
                     rwlock->activeWriterCount++;        
                     rwlock->queuedWriterCount--;
-
-                    while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
-
+                    rwlock->lastWriterThreadId = GetCurrentTaskID(); 
                     MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
                     return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
                 }
 
@@ -595,6 +614,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                          *  set the writeLockAquisitionInProgress flag 
                                          */
                                         rwlock->writeLockAquisitionInProgress = 1;
+                                        rwlock->writeLockAquisitionThreadId = GetCurrentTaskID();
                                         MutexUnlock( rwlock->datalock );
                     
                                         do
@@ -620,6 +640,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                                         rwlock->writeLockAquisitionInProgress = 0;
                                                         rwlock->queuedWriterCount--;
                                                         MutexUnlock( rwlock->datalock );
+                                                        GUCEF_END;
                                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
                                                     }
                                                 }
@@ -632,6 +653,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                                 rwlock->writeLockAquisitionInProgress = 0;
                                                 rwlock->queuedWriterCount--;
                                                 MutexUnlock( rwlock->writerlock );
+                                                GUCEF_END;
                                                 return GUCEF_RWLOCK_OPERATION_FAILED;
                                             }
                                         }
@@ -654,6 +676,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                             }
                                             while ( 1 > 0 );
                                         }
+                                        GUCEF_END;
                                         return GUCEF_RWLOCK_OPERATION_FAILED;
                                     }
                                     else
@@ -688,6 +711,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                         }
                         while ( 1 > 0 );
                     }
+                    GUCEF_END;
                     return GUCEF_RWLOCK_OPERATION_FAILED;
                 }
                 else
@@ -726,6 +750,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                          *  It temporarly overrules the reader priority while we grab the other lock
                                          */
                                         rwlock->writeLockAquisitionInProgress = 1;
+                                        rwlock->writeLockAquisitionThreadId = GetCurrentTaskID();
                                         MutexUnlock( rwlock->datalock );
                     
                                         do
@@ -751,6 +776,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                                         rwlock->writeLockAquisitionInProgress = 0;
                                                         rwlock->queuedWriterCount--;
                                                         MutexUnlock( rwlock->datalock );
+                                                        GUCEF_END;
                                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;                                    
                                                     }
                                                 }
@@ -763,6 +789,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                                 rwlock->writeLockAquisitionInProgress = 0;
                                                 rwlock->queuedWriterCount--;
                                                 MutexUnlock( rwlock->writerlock );
+                                                GUCEF_END;
                                                 return GUCEF_RWLOCK_OPERATION_FAILED;
                                             }
                                         }
@@ -785,6 +812,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                                             }
                                             while ( 1 > 0 );
                                         }
+                                        GUCEF_END;
                                         return GUCEF_RWLOCK_OPERATION_FAILED;
                                     }
                                     else
@@ -819,6 +847,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                         }
                         while ( 1 > 0 );
                     }
+                    GUCEF_END;
                     return GUCEF_RWLOCK_OPERATION_FAILED;
                 }
             }
@@ -870,25 +899,26 @@ rwl_writer_start( TRWLock *rwlock )
                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
                     }                    
                 }
-
-                /*
-                 *  Check for a cheaper early out 
-                 */
-                if ( 0 == rwlock->activeReaderCount            && 
-                     0 == rwlock->queuedReaderCount            && 
-                     0 == rwlock->activeWriterCount            && 
-                     0 == rwlock->writeLockAquisitionInProgress )
+                else
                 {
                     /*
-                     *  There are no active readers or writers so regardless who takes priority we can proceed
+                     *  Check for a cheaper early out 
                      */
-                    rwlock->activeWriterCount++;                    
-                    rwlock->lastWriterThreadId = GetCurrentTaskID();
-                    rwlock->queuedWriterCount--;
-                    MutexUnlock( rwlock->datalock );
-
-                    while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
-                    return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
+                    if ( 0 == rwlock->activeReaderCount            && 
+                         0 == rwlock->queuedReaderCount            && 
+                         0 == rwlock->activeWriterCount            && 
+                         0 == rwlock->writeLockAquisitionInProgress )
+                    {
+                        /*
+                         *  There are no active writers or readers so we can make this quick
+                         */
+                        while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
+                        rwlock->activeWriterCount++;        
+                        rwlock->queuedWriterCount--;
+                        rwlock->lastWriterThreadId = GetCurrentTaskID(); 
+                        MutexUnlock( rwlock->datalock );
+                        return GUCEF_RWLOCK_OPERATION_SUCCESS;                   
+                    }
                 }
 
                 if ( 0 != rwlock->wpriority )
@@ -1232,6 +1262,71 @@ rwl_writer_stop( TRWLock *rwlock )
         }
         while ( 0 == rwlock->delflag );
     }    
+    GUCEF_END;
+    return GUCEF_RWLOCK_OPERATION_FAILED;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+rwl_writer_transition_to_reader( TRWLock *rwlock )
+{
+	GUCEF_BEGIN;
+	if ( GUCEF_NULL != rwlock )
+    {
+        do
+        {
+            if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+            {
+	            UInt32 callerThreadId = GetCurrentTaskID();
+                
+                /*
+                 *	Sanity check
+                 */
+                if ( rwlock->activeWriterCount != 1               ||
+                     rwlock->activeReaderCount > 0                ||
+                     rwlock->lastWriterThreadId != callerThreadId  )
+                {
+                    /*
+                     *  You should not get here
+                     *  We have not met the prerequisite conditions to transition a writer
+                     *      - There must be no active reader because presumably you already have an active writer
+                     *      - There must be an active writer because how else can you transition it
+                     */
+                    GUCEF_ASSERT_ALWAYS;
+                    MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }                
+                
+                /*
+                 *  The caller is the currently active writer thread
+                 *  This should always be the case
+                 *  allow it to proceed since we already have write access anyway
+                 */
+                assert( rwlock->activeWriterCount == 1 );                    
+                if ( rwlock->activeWriterReentrancyCount > 0 )
+                {
+                    /*
+                     *  You cannot transition a write lock that still had outstanding reentrant write levels
+                     *  Check your code flow
+                     */
+                    GUCEF_UNREACHABLE;
+                    MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_FAILED;                        
+                }
+
+                ++rwlock->activeReaderCount;
+                --rwlock->activeWriterCount;
+                MutexUnlock( rwlock->writerlock );
+                MutexUnlock( rwlock->datalock );
+                GUCEF_END;
+                return GUCEF_RWLOCK_OPERATION_SUCCESS;
+            }
+        }
+        while ( 0 == rwlock->delflag );
+    }
     GUCEF_END;
     return GUCEF_RWLOCK_OPERATION_FAILED;
 }

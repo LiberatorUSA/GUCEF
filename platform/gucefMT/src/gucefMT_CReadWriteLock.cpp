@@ -159,6 +159,15 @@ CReadWriteLock::TransitionReaderToWriter( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+CReadWriteLock::TRWLockStates
+CReadWriteLock::TransitionWriterToReader( void ) const
+{GUCEF_TRACE;
+
+    return RwLockIntStateToEnum( rwl_writer_transition_to_reader( _rwlock ) );
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 CReadWriteLock::ActiveReaderCount( void ) const
 {GUCEF_TRACE;

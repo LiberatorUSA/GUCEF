@@ -64,6 +64,12 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
 
     CScopeReaderLock( const CReadWriteLock& rwLock );
 
+    /**
+     *  Performs a secure handoff from a write lock into a read lock for the given scope
+     *  If successfull the scoped write lock will no longer be considered locked similar to an EarlyUnlock()
+     */
+    CScopeReaderLock( CScopeWriterLock& writerToTransition );
+
     ~CScopeReaderLock();
 
     /**
@@ -88,6 +94,15 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
      *  a small subset of code path(s)
      */
     TRWLockStates EarlyUnlock( void );
+
+    /**
+     *  Allows you to release the read lock before the end of the scope but do so in a manner that transfers
+     *  the active scope lock to the given write lock by escalating to a write lock. This particular scope lock object will be considered unlocked after success.
+     *
+     *  Using these types of transitions allows one to signal that threads are accessing protected data in a read or read-write
+     *  fashion without having a potential time window where the accounting would suggest no threads are looking at protected data at all anymore
+     */
+    bool TransitionToWriter( CScopeWriterLock& targetWriter );
 
     private:
     friend class CScopeWriterLock;
@@ -139,12 +154,23 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
 
     bool IsScopeWriteLocked( void ) const;
 
+    UInt32 GetWriterReentrancyDepth( void ) const;
+
     /**
      *  Allows you to unlock before the scope lock triggers destruction of the CScopeMutex object
      *  Useful for more complex code flows where in most code paths you want to retain the lock except for
      *  a small subset of code path(s)
      */
     TRWLockStates EarlyUnlock( void );
+
+    /**
+     *  Allows you to release the write lock before the end of the scope but do so in a manner that transfers
+     *  The active scope lock to the given read-only lock. This particular scope lock object will be considered unlocked after success.
+     *
+     *  Using these types of transitions allows one to signal that threads are accessing protected data in a read or read-write
+     *  fashion without having a potential time window where the accounting would suggest no threads are looking at protected data at all anymore
+     */
+    bool TransitionToReader( CScopeReaderLock& targetReader );
 
     private:
     friend class CScopeReaderLock;
