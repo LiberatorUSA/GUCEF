@@ -148,6 +148,14 @@ GUCEF_PrintCallstack( void );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *      Prints the current call stack to stdout
+ */
+GUCEF_MLF_PUBLIC_C void
+GUCEF_PrintCallstackCopy( TCallStack* stackToPrint );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      Dumps the current call stack to the file with the given name
  *
  *      @param filename path and name of the output file.

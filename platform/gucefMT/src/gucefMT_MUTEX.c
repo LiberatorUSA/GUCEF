@@ -83,11 +83,12 @@ MutexCreate( void )
     {
         mutex->lockedByThread = 0;
         mutex->id = CreateMutex( NULL, FALSE, NULL );
-        if ( !mutex->id )
+        if ( 0 == mutex->id )
         {
             free( mutex );
             return GUCEF_NULL;
         }
+        GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( mutex->id );
     }
     return mutex;
     
@@ -105,6 +106,8 @@ MutexCreate( void )
         free( mutex );
         return GUCEF_NULL;
     }
+    
+    GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( &mutex->id );
     return mutex;
     
     #endif
@@ -117,11 +120,13 @@ MutexDestroy( struct SMutex* mutex )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( mutex->id );
     CloseHandle( mutex->id );
     free( mutex );
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &mutex->id );
     pthread_mutex_destroy( &mutex->id );
     free( mutex );
     
@@ -135,7 +140,6 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    UInt32 result = GUCEF_MUTEX_OPERATION_FAILED;
     DWORD waitResult = WaitForSingleObject( mutex->id, (DWORD) timeoutInMs );
     switch ( waitResult )
     {
@@ -148,7 +152,10 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
         case WAIT_TIMEOUT:
             return GUCEF_MUTEX_WAIT_TIMEOUT;
         case WAIT_ABANDONED:
+        {
+            GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( mutex->id );
             return GUCEF_MUTEX_ABANDONED;
+        }
         default:
             return GUCEF_MUTEX_OPERATION_FAILED;
 

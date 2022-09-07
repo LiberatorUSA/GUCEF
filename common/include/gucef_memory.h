@@ -125,13 +125,19 @@
             /*
              *  Platform lock tracing is dependent on platform callstack tracing
              */
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( lockId ) { MEMMAN_ExclusiveLockCreated( lockId ); }
             #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId ) { MEMMAN_ExclusiveLockObtained( lockId ); }
             #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId ) { MEMMAN_ExclusiveLockReleased( lockId ); }
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( lockId ) { MEMMAN_ExclusiveLockAbandoned( lockId ); }
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( lockId ) { MEMMAN_ExclusiveLockDestroy( lockId ); }
 
         #else
 
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( lockId )
             #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
             #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( lockId )
+            #define GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( lockId )
         
         #endif /* GUCEF_USE_PLATFORM_LOCK_TRACER ? */
 
@@ -144,8 +150,11 @@
         #define GUCEF_END
         #define GUCEF_END_RET( retval ) return (retval);
         #define GUCEF_TRACE
+        #define GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( lockId )
         #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
         #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
+        #define GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( lockId )
+        #define GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( lockId )
     
     #endif /* GUCEF_USE_PLATFORM_CALLSTACK_TRACING ? */
 
@@ -155,8 +164,11 @@
   #define GUCEF_END
   #define GUCEF_END_RET( retval ) return (retval);
   #define GUCEF_TRACE
+  #define GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( lockId )
   #define GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( lockId )
   #define GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( lockId )
+  #define GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( lockId )
+  #define GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( lockId )
 
 #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && !defined( GUCEF_CALLSTACK_TRACING_DISABLED ) ? */
 

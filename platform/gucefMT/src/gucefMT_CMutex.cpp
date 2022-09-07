@@ -103,6 +103,7 @@ CMutex::CMutex( void )
         GUCEF_ASSERT_ALWAYS;
         return;
     }
+    GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( _mutexdata->id );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -118,6 +119,7 @@ CMutex::CMutex( void )
         GUCEF_ASSERT_ALWAYS;
         return;
     }
+    GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( &_mutexdata->id );
 
     #endif
 }
@@ -129,12 +131,14 @@ CMutex::~CMutex()
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( ((TMutexData*)_mutexdata)->id );
     CloseHandle( ((TMutexData*)_mutexdata)->id );
     delete (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &((TMutexData*)_mutexdata->id );
     pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
     delete (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
@@ -153,18 +157,35 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
-                              lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs ) == WAIT_FAILED ) 
-        return false;
-
-    // In case we are being cleaned up while waiting for the lock
-    if ( GUCEF_NULL == _mutexdata )
-        return false;    
-    
-    ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
-    ((TMutexData*)_mutexdata)->isLocked = true;
-    GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
-    return true;
+    DWORD timeoutInMs = lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs;
+    DWORD waitResult = WaitForSingleObject( ((TMutexData*)_mutexdata)->id, timeoutInMs );
+    switch ( waitResult )
+    {
+        case WAIT_OBJECT_0:
+        {
+            ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+            ((TMutexData*)_mutexdata)->isLocked = true;
+            GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
+            return true;
+        }
+        case WAIT_TIMEOUT:
+        {
+            return false;
+        }
+        case WAIT_ABANDONED:
+        {
+            ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+            ((TMutexData*)_mutexdata)->isLocked = true;
+            GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( ((TMutexData*)_mutexdata)->id );
+            return false;
+        }
+        default:
+        {
+            // we should never get here since we handled all the cases
+            GUCEF_ASSERT_ALWAYS;
+            return false;
+        }
+    }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

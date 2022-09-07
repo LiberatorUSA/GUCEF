@@ -129,6 +129,7 @@ class GUCEF_HIDDEN StackInventory
               UInt32 ticksSpent   );
 
     void PrintCallstack( FILE* dest );    
+    void PrintCallstackCopy( TCallStack& stackToPrint, FILE* dest );    
     void SetIsStackLoggingEnabled( bool isEnabled );
     void SetIsStackLoggingInCsvFormat( bool isInCsv );
     void SetLogFilename( const char* filename );
@@ -150,9 +151,10 @@ class GUCEF_HIDDEN StackInventory
         static void Pop( TCallStack* stack );
 
         void PrintCallstack( FILE* dest );
+        static void PrintCallstack( TCallStack& stackToPrint, FILE* dest );
         void CallstackScopeBegin( const char* file , Int32 line );
         void CallstackScopeEnd( void );
-        Int32 GetCallstackForCurrentThread( TCallStack** outStack );
+        bool GetCallstackForCurrentThread( TCallStack** outStack );
         Int32 GetCallstackCopyForCurrentThread( TCallStack** outStack, bool alsoCopyStatics );
 
         StackTraceInfo( void );
@@ -309,6 +311,14 @@ StackInventory::FreeCallstackCopy( TCallStack* stackCopy )
 /*-------------------------------------------------------------------------*/
 
 void 
+StackInventory::PrintCallstackCopy( TCallStack& stackToPrint, FILE* dest )
+{
+    StackTraceInfo::PrintCallstack( stackToPrint, dest );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
 StackInventory::SetIsStackLoggingEnabled( bool isEnabled )
 {
     MT::CScopeWriterLock writeLock( m_datalock );
@@ -440,17 +450,17 @@ StackInventory::StackTraceInfo::~StackTraceInfo()
 /*-------------------------------------------------------------------------*/
 
 void
-StackInventory::StackTraceInfo::PrintCallstack( FILE* dest )
+StackInventory::StackTraceInfo::PrintCallstack( TCallStack& stackToPrint, FILE* dest )
 {
     fprintf( dest, "------------------------------%s", EOL );
-    fprintf( dest, "Callstack for thread %d:%s%s", m_callstack.threadid, EOL, EOL );
-    fprintf( dest, "stack size = %d%s", m_callstack.items, EOL );
+    fprintf( dest, "Callstack for thread %d:%s%s", stackToPrint.threadid, EOL, EOL );
+    fprintf( dest, "stack size = %d%s", stackToPrint.items, EOL );
     fprintf( dest, "------------------------------%s%s", EOL, EOL );
-    if ( m_callstack.items > 0 )
+    if ( stackToPrint.items > 0 )
     {
-        for ( UInt32 n=0; n<m_callstack.items; ++n )
+        for ( UInt32 n=0; n<stackToPrint.items; ++n )
         {
-            fprintf( dest, "%d: %s(%d)%s", n+1, m_callstack.file[ n ], m_callstack.linenr[ n ], EOL );
+            fprintf( dest, "%d: %s(%d)%s", n+1, stackToPrint.file[ n ], stackToPrint.linenr[ n ], EOL );
         }
         fprintf( dest, "%s%s------------------------------%s%s", EOL, EOL, EOL, EOL );
     }
@@ -459,6 +469,14 @@ StackInventory::StackTraceInfo::PrintCallstack( FILE* dest )
         fprintf( dest, ">>> no items on stack <<<%s%s", EOL, EOL );
         fprintf( dest, "------------------------------%s%s", EOL, EOL );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+StackInventory::StackTraceInfo::PrintCallstack( FILE* dest )
+{
+    PrintCallstack( m_callstack, dest );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -540,13 +558,13 @@ StackInventory::StackTraceInfo::CallstackScopeEnd( void )
 
 /*-------------------------------------------------------------------------*/
 
-Int32
+bool
 StackInventory::StackTraceInfo::GetCallstackForCurrentThread( TCallStack** outStack )
 {
     if ( GUCEF_NULL == outStack )
-        return -1;
+        return false;
     *outStack = &m_callstack;
-    return 0;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -555,8 +573,7 @@ Int32
 StackInventory::StackTraceInfo::GetCallstackCopyForCurrentThread( TCallStack** outStack, bool alsoCopyStatics )
 {
     TCallStack* scopeStack = GUCEF_NULL;
-    Int32 result = GetCallstackForCurrentThread( &scopeStack );
-    if ( 1 == result )
+    if ( GetCallstackForCurrentThread( &scopeStack ) )
     {
         TCallStack* stackCopy = (TCallStack*) malloc( sizeof( TCallStack ) );
         if ( GUCEF_NULL != stackCopy )
@@ -640,7 +657,7 @@ StackInventory::StackTraceInfo::GetCallstackCopyForCurrentThread( TCallStack** o
         *outStack = GUCEF_NULL;
         return -2;
     }
-    return result;
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -681,6 +698,10 @@ StackInventory::GetStackTraceInfoForCallingThread( MT::CScopeReaderLock& readLoc
         StackTraceInfo& newStack = m_inventory[ threadid ];
         newStack.m_callstack.threadid = threadid;
 
+        if ( writeLock.GetWriterReentrancyDepth() > 0 )
+        {
+            PrintCallstack( stdout );
+        }
         assert( 0 == writeLock.GetWriterReentrancyDepth() );
 
         // Now degrade back to a read lock
@@ -716,7 +737,7 @@ StackInventory::GetCallstackForCurrentThread( TCallStack** outStack )
 {
     MT::CScopeReaderLock readLock( m_datalock );
     StackTraceInfo* stackTraceInfo = GetStackTraceInfoForCallingThread( readLock );
-    return stackTraceInfo->GetCallstackForCurrentThread( outStack );
+    return stackTraceInfo->GetCallstackForCurrentThread( outStack ) ? 0 : -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -798,6 +819,15 @@ void
 GUCEF_PrintCallstack( void )
 {
     StackInventory::Instance()->PrintCallstack( stdout );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+GUCEF_PrintCallstackCopy( TCallStack* stackToPrint )
+{
+    if ( GUCEF_NULL != stackToPrint )
+        StackInventory::Instance()->PrintCallstackCopy( *stackToPrint, stdout );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -71,7 +71,7 @@ CScopeReaderLock::~CScopeReaderLock()
     if ( m_isReadLocked )
     {
         m_lockState = m_rwLock->ReaderStop();
-        m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+        m_isReadLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
     }
 }
 

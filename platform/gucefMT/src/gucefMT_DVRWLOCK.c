@@ -328,7 +328,7 @@ rwl_reader_start( TRWLock *rwlock )
                     return GUCEF_RWLOCK_OPERATION_SUCCESS; 
                 }
 
-                if ( rwlock->activeWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress )
+                if ( rwlock->activeWriterCount > 0 )
                 {
                     /*
                      *  The currently active writer could actually be the same thread
@@ -516,10 +516,25 @@ rwl_reader_stop( TRWLock *rwlock )
                     }
                 }               
 
-                rwlock->activeReaderCount--;
-                MutexUnlock( rwlock->datalock );
-                GUCEF_END;
-                return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                if ( rwlock->activeReaderCount > 0 )
+                {
+                    rwlock->activeReaderCount--;
+                    MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                }
+                else
+                {
+                    /*
+                     *  Something is wrong here.
+                     *  Most likely you have a mismatched calling pattern to lock vs unlock
+                     *  It is required to call unlock exactly as many times as you call lock
+                     */   
+                    GUCEF_ASSERT_ALWAYS;
+                    MutexUnlock( rwlock->datalock );
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_FAILED;                     
+                }
             }
         }
         while ( 0 == rwlock->delflag );
@@ -536,6 +551,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
 	GUCEF_BEGIN;
     if ( GUCEF_NULL != rwlock )
     {
+        UInt32 callerThreadId = GetCurrentTaskID();
         do
         {
             if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
@@ -545,8 +561,28 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
                  */
 	            if ( 0 != rwlock->delflag )
                 {                
+                    /*
+                     *  Refusing request because we have to prep for deletion
+                     */
                     MutexUnlock( rwlock->datalock );
-                    return 0;
+                    GUCEF_END;
+                    return GUCEF_RWLOCK_OPERATION_FAILED;
+                }
+
+                if ( rwlock->activeWriterCount > 0               &&
+                     rwlock->activeWriterReentrancyCount > 0     &&
+                     rwlock->lastWriterThreadId == callerThreadId )
+                {
+                    /*
+                     *  We are actually in the scenario of a writer which 
+                     *  called code that took a reader lock as a reentrancy no-op
+                     *  Said reader doesnt itself know this and thinks it has a proper read lock
+                     *  when now asking to be turned into a write lock its actually just moving said 
+                     *  write reentrancy to the write lock 
+                     */
+                    MutexUnlock( rwlock->datalock ); 
+                    GUCEF_END;
+                    return GUCEF_MUTEX_OPERATION_SUCCESS;
                 }
 
 	            /*

@@ -67,6 +67,15 @@ namespace MLF {
 //-------------------------------------------------------------------------*/
 
 /**
+ *  Should be called right after an exclusive lock is created but not yet locked
+ *  or in any way used yet across threads. Its the constructor essentially.
+ */
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_ExclusiveLockCreated( void* lockId );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Should be called right after an exclusive lock is obtained
  */
 GUCEF_MLF_PUBLIC_C void
@@ -79,6 +88,23 @@ MEMMAN_ExclusiveLockObtained( void* lockId );
  */
 GUCEF_MLF_PUBLIC_C void
 MEMMAN_ExclusiveLockReleased( void* lockId );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Should be called when obtaining an abandoned lock
+ */
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_ExclusiveLockAbandoned( void* lockId );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Should be called right before an exclusive lock is destroyed.
+ *  Its the destructor essentially.
+ */
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_ExclusiveLockDestroy( void* lockId );
 
 /*-------------------------------------------------------------------------*/
 

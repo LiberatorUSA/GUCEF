@@ -85,6 +85,18 @@ namespace MLF {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_MSWIN_BUILD
+  #define EOL                   "\r\n"
+#else
+  #define EOL                   "\n"
+#endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -99,9 +111,17 @@ class GUCEF_HIDDEN LockInventory
     static LockInventory* Instance( void );
     static void Deinstance( void );
 
+    void RegisterExclusiveLockCreation( void* lockId );
+    
     void RegisterExclusiveLockObtained( void* lockId );
 
     void RegisterExclusiveLockReleased( void* lockId );
+
+    void RegisterExclusiveLockAbandonment( void* lockId );
+
+    void RegisterExclusiveLockDestruction( void* lockId );
+
+    void PrintLockStacks( void* lockId );
 
     private:
 
@@ -109,13 +129,20 @@ class GUCEF_HIDDEN LockInventory
     {
         public:
 
+        TCallStack* m_callstackAtLockCreation;
         TCallStack* m_callstackAtLockObtainment;
         TCallStack* m_callstackAtLockRelease;
+        UInt32 m_threadIdAtLockCreation;
         UInt32 m_lastCallerThreadIdAtLockObtainment;
         UInt32 m_lastCallerThreadIdAtLockRelease;
         Int32 m_lockReentrancyDepth;
+        UInt32 m_abandonmentCounter;
+        TCallStack* m_lastAbandonedCallstackAtLockObtainment;
+        UInt32 m_lastAbandonedCallerThreadIdAtLockObtainment; 
         bool m_isLocked;
         bool m_isExclusivelyLocked;
+        UInt32 m_surplusLockReleases;
+        TCallStack* m_callstackAtLastSurplusLockRelease;
 
         LockTraceInfo( void );
         ~LockTraceInfo();
@@ -124,6 +151,8 @@ class GUCEF_HIDDEN LockInventory
     typedef std::map< void*, LockTraceInfo >    TLockIdToLockTraceInfoMap;
     
     LockTraceInfo* GetLockTraceInfo( MT::CScopeReaderLock& readLock, void* lockId );
+    
+    void PrintLockStacks( void* lockId, LockTraceInfo* lockTrace, FILE* dest );
     
     TLockIdToLockTraceInfoMap m_inventory;
     MT::CReadWriteLock m_datalock;
@@ -203,13 +232,20 @@ LockInventory::~LockInventory()
 /*-------------------------------------------------------------------------*/
 
 LockInventory::LockTraceInfo::LockTraceInfo( void )
-    : m_callstackAtLockObtainment( GUCEF_NULL )
+    : m_callstackAtLockCreation( GUCEF_NULL )
+    , m_callstackAtLockObtainment( GUCEF_NULL )
     , m_callstackAtLockRelease( GUCEF_NULL )
+    , m_threadIdAtLockCreation( 0 )
     , m_lastCallerThreadIdAtLockObtainment( 0 )
     , m_lastCallerThreadIdAtLockRelease( 0 )
     , m_lockReentrancyDepth( 0 )
+    , m_abandonmentCounter( 0 )
+    , m_lastAbandonedCallstackAtLockObtainment( GUCEF_NULL )
+    , m_lastAbandonedCallerThreadIdAtLockObtainment( 0 )
     , m_isLocked( false )
     , m_isExclusivelyLocked( false )
+    , m_surplusLockReleases( 0 )
+    , m_callstackAtLastSurplusLockRelease( GUCEF_NULL )
 {
 }
 
@@ -217,10 +253,16 @@ LockInventory::LockTraceInfo::LockTraceInfo( void )
 
 LockInventory::LockTraceInfo::~LockTraceInfo()
 {
+    MEMMAN_FreeCallstackCopy( m_callstackAtLockCreation );
+    m_callstackAtLockCreation = GUCEF_NULL;
     MEMMAN_FreeCallstackCopy( m_callstackAtLockObtainment );
     m_callstackAtLockObtainment = GUCEF_NULL;
     MEMMAN_FreeCallstackCopy( m_callstackAtLockRelease );
     m_callstackAtLockRelease = GUCEF_NULL;
+    MEMMAN_FreeCallstackCopy( m_lastAbandonedCallstackAtLockObtainment );
+    m_lastAbandonedCallstackAtLockObtainment = GUCEF_NULL;
+    MEMMAN_FreeCallstackCopy( m_callstackAtLastSurplusLockRelease );
+    m_callstackAtLastSurplusLockRelease = GUCEF_NULL;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,6 +286,36 @@ LockInventory::GetLockTraceInfo( MT::CScopeReaderLock& readLock, void* lockId )
         writeLock.TransitionToReader( readLock );
         return &newLockTrace;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+LockInventory::RegisterExclusiveLockCreation( void* lockId )
+{
+    MT::CScopeReaderLock readLock( m_datalock );
+
+    // We rely on the fact that any caller would be the one creating the lock in a given scope and as such only 1 thread at a time will access the lock trace information
+    // so as long as protect the lock administration itself the lock info updates can safely be done in paralell
+    // hence the reader lock
+
+    UInt32 callerThreadId = MT::GetCurrentTaskID(); 
+    LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
+    
+    assert( GUCEF_NULL != lockTrace );
+    assert( GUCEF_NULL == lockTrace->m_callstackAtLockCreation );
+    assert( GUCEF_NULL == lockTrace->m_callstackAtLockObtainment );
+    assert( 0 == lockTrace->m_threadIdAtLockCreation );
+    assert( 0 == lockTrace->m_lockReentrancyDepth );
+    assert( !lockTrace->m_isLocked );
+    assert( !lockTrace->m_isExclusivelyLocked );
+
+    // setup information on the new lock
+    MEMMAN_FreeCallstackCopy( lockTrace->m_callstackAtLockCreation );
+    MEMMAN_GetCallstackCopyForCurrentThread( &lockTrace->m_callstackAtLockCreation, 0 );
+    lockTrace->m_threadIdAtLockCreation = callerThreadId;
+    lockTrace->m_isLocked = false;
+    lockTrace->m_isExclusivelyLocked = false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -274,6 +346,76 @@ LockInventory::RegisterExclusiveLockObtained( void* lockId )
             // If means there is a race condition on the lock trace information
             // or your calls to RegisterExclusiveLockObtained() vs RegisterExclusiveLockReleased() are not matched up properly
             // Check your caller code
+                        
+            // freeze everything
+            MT::CScopeWriterLock writeLock( readLock );
+            
+            // print all current stacks
+            GUCEF_PrintCallstack();
+
+            // print lock stacks
+            PrintLockStacks( lockId, lockTrace, stdout );
+
+            GUCEF_UNREACHABLE;
+        }
+    }
+
+    // Retain information on the new lock session
+    MEMMAN_FreeCallstackCopy( lockTrace->m_callstackAtLockObtainment );
+    MEMMAN_GetCallstackCopyForCurrentThread( &lockTrace->m_callstackAtLockObtainment, 0 );
+    lockTrace->m_lastCallerThreadIdAtLockObtainment = callerThreadId;
+    lockTrace->m_isLocked = true;
+    lockTrace->m_isExclusivelyLocked = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+LockInventory::RegisterExclusiveLockAbandonment( void* lockId )
+{
+    MT::CScopeReaderLock readLock( m_datalock );
+
+    // We rely on the fact that any caller would have already obtained a lock on an exclusive access lock
+    // as such, if true, we know that only 1 thread at a time will access the lock trace information
+    // so as long as protect the lock administration itself the lock info updates can safely be done in paralell
+    // hence the reader lock
+
+    UInt32 callerThreadId = MT::GetCurrentTaskID(); 
+    LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
+    assert( GUCEF_NULL != lockTrace );
+
+
+    if ( lockTrace->m_isLocked )
+    {
+        // Since the lock is abandoned we'd expect our administration here to still show the lock 
+        // as being locked by another thread. A thread that is presumably no longer around and who will not be contacting us to release said lock
+        // instead the caller now has ownership of the lock
+        
+        if ( callerThreadId != lockTrace->m_lastCallerThreadIdAtLockObtainment )
+        {
+            // move information over the abandonment tracking
+            ++lockTrace->m_abandonmentCounter;
+            MEMMAN_FreeCallstackCopy( lockTrace->m_lastAbandonedCallstackAtLockObtainment );
+            lockTrace->m_lastAbandonedCallstackAtLockObtainment = lockTrace->m_callstackAtLockObtainment;
+            lockTrace->m_lastAbandonedCallerThreadIdAtLockObtainment = lockTrace->m_lastCallerThreadIdAtLockObtainment;
+
+            // reset 
+            lockTrace->m_lockReentrancyDepth = 0;
+        }
+        else
+        {
+            // You should not be able to get here
+            // How can the lock be abandoned by the very thread we are in right now???
+                        
+            // freeze everything
+            MT::CScopeWriterLock writeLock( readLock );
+            
+            // print all current stacks
+            GUCEF_PrintCallstack();
+
+            // print lock stacks
+            PrintLockStacks( lockId, lockTrace, stdout );
+
             GUCEF_UNREACHABLE;
         }
     }
@@ -301,11 +443,31 @@ LockInventory::RegisterExclusiveLockReleased( void* lockId )
     UInt32 callerThreadId = MT::GetCurrentTaskID(); 
     LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
     assert( GUCEF_NULL != lockTrace );
-    assert( lockTrace->m_isLocked );
-    assert( callerThreadId == lockTrace->m_lastCallerThreadIdAtLockObtainment );
-    
+
     lockTrace->m_lastCallerThreadIdAtLockRelease = callerThreadId;
 
+    if ( !lockTrace->m_isLocked || !lockTrace->m_isExclusivelyLocked )
+    {
+        // How can you release the lock if its not locked?
+        // you likely have a lock-unlock mismatch in your code
+        // Check your caller code
+        ++lockTrace->m_surplusLockReleases;
+        MEMMAN_FreeCallstackCopy( lockTrace->m_callstackAtLastSurplusLockRelease );
+        MEMMAN_GetCallstackCopyForCurrentThread( &lockTrace->m_callstackAtLastSurplusLockRelease, 0 );
+
+        MT::CScopeWriterLock writeLock( readLock );
+            
+        // print all current stacks
+        GUCEF_PrintCallstack();
+
+        // print lock stacks
+        PrintLockStacks( lockId, lockTrace, stdout );
+
+        GUCEF_UNREACHABLE;
+    }
+    
+    assert( lockTrace->m_isLocked );
+    assert( callerThreadId == lockTrace->m_lastCallerThreadIdAtLockObtainment );
     if ( callerThreadId == lockTrace->m_lastCallerThreadIdAtLockObtainment )
     {
         if ( lockTrace->m_lockReentrancyDepth > 0 )
@@ -327,7 +489,100 @@ LockInventory::RegisterExclusiveLockReleased( void* lockId )
         // If means there is a race condition on the lock trace information
         // or your calls to RegisterExclusiveLockObtained() vs RegisterExclusiveLockReleased() are not matched up properly
         // Check your caller code
+
+        // freeze everything
+        MT::CScopeWriterLock writeLock( readLock );
+            
+        // print all current stacks
+        GUCEF_PrintCallstack();
+
+        // print lock stacks
+        PrintLockStacks( lockId, lockTrace, stdout );
+
         GUCEF_UNREACHABLE;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+LockInventory::RegisterExclusiveLockDestruction( void* lockId )
+{
+    MT::CScopeReaderLock readLock( m_datalock );
+
+    UInt32 callerThreadId = MT::GetCurrentTaskID(); 
+    LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
+    assert( GUCEF_NULL != lockTrace );
+
+    // A lock being destroyed should not be in use by other threads
+    if ( lockTrace->m_isLocked && callerThreadId != lockTrace->m_lastCallerThreadIdAtLockObtainment )
+    {
+        // We should not have any lock still active by another thread while you are destroying said lock
+
+        // freeze everything
+        MT::CScopeWriterLock writeLock( readLock );
+            
+        // print all current stacks
+        GUCEF_PrintCallstack();
+
+        // print lock stacks
+        PrintLockStacks( lockId, lockTrace, stdout );
+
+        GUCEF_UNREACHABLE;
+    }
+
+    MT::CScopeWriterLock writeLock( readLock );
+    m_inventory.erase( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+LockInventory::PrintLockStacks( void* lockId )
+{
+    MT::CScopeReaderLock readLock( m_datalock );
+    LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
+    PrintLockStacks( lockId, lockTrace, stdout );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+LockInventory::PrintLockStacks( void* lockId, LockTraceInfo* lockTrace, FILE* dest )
+{
+    fprintf( dest, "------------------------------%s", EOL );
+    fprintf( dest, "Trace for lock %p:%s%s", lockId, EOL, EOL );
+    fprintf( dest, "   threadIdAtLockCreation: %d%s", lockTrace->m_threadIdAtLockCreation, EOL );
+    fprintf( dest, "   isExclusivelyLocked: %d%s", lockTrace->m_isExclusivelyLocked ? 1 : 0, EOL );
+    fprintf( dest, "   isLocked: %d%s", lockTrace->m_isLocked ? 1 : 0, EOL );
+    fprintf( dest, "   lastCallerThreadIdAtLockObtainment: %d%s", lockTrace->m_lastCallerThreadIdAtLockObtainment, EOL );
+    fprintf( dest, "   lastCallerThreadIdAtLockRelease: %d%s", lockTrace->m_lastCallerThreadIdAtLockRelease, EOL );
+    fprintf( dest, "   lockReentrancyDepth: %d%s", lockTrace->m_lockReentrancyDepth, EOL );
+    fprintf( dest, "   surplusLockReleases: %d%s", lockTrace->m_surplusLockReleases, EOL );    
+    fprintf( dest, "   abandonmentCounter: %d%s", lockTrace->m_abandonmentCounter, EOL );    
+    fprintf( dest, "   lastAbandonedCallerThreadIdAtLockObtainment: %d%s", lockTrace->m_lastAbandonedCallerThreadIdAtLockObtainment, EOL );
+    fprintf( dest, "------------------------------%s%s", EOL, EOL );
+    fprintf( dest, "Stack at lock creation: %s%s", EOL, EOL );
+    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockCreation );
+    fprintf( dest, "------------------------------%s%s", EOL, EOL );
+    fprintf( dest, "Stack at lock obtainment: %s%s", EOL, EOL );
+    fprintf( dest, "------------------------%s%s", EOL, EOL );
+    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockObtainment );
+    fprintf( dest, "Stack at lock release: %s%s", EOL, EOL );
+    fprintf( dest, "------------------------%s%s", EOL, EOL );    
+    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockRelease );
+    fprintf( dest, "------------------------------%s%s", EOL, EOL );    
+    if ( lockTrace->m_abandonmentCounter > 0 )
+    {
+        fprintf( dest, "Stack at lock obtainment from last lock abandonment: %s%s", EOL, EOL );
+        fprintf( dest, "------------------------%s%s", EOL, EOL );    
+        GUCEF_PrintCallstackCopy( lockTrace->m_lastAbandonedCallstackAtLockObtainment );
+    }
+    if ( lockTrace->m_surplusLockReleases > 0 )
+    {
+        fprintf( dest, "Stack at last surplus lock release call: %s%s", EOL, EOL );
+        fprintf( dest, "------------------------%s%s", EOL, EOL );    
+        GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLastSurplusLockRelease );    
     }
 }
 
@@ -336,6 +591,14 @@ LockInventory::RegisterExclusiveLockReleased( void* lockId )
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+MEMMAN_ExclusiveLockCreated( void* lockId )
+{
+    LockInventory::Instance()->RegisterExclusiveLockCreation( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
 
 void
 MEMMAN_ExclusiveLockObtained( void* lockId )
@@ -349,6 +612,22 @@ void
 MEMMAN_ExclusiveLockReleased( void* lockId )
 {
     LockInventory::Instance()->RegisterExclusiveLockReleased( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MEMMAN_ExclusiveLockAbandoned( void* lockId )
+{
+    LockInventory::Instance()->RegisterExclusiveLockAbandonment( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MEMMAN_ExclusiveLockDestroy( void* lockId )
+{
+    LockInventory::Instance()->RegisterExclusiveLockDestruction( lockId );
 }
 
 /*-------------------------------------------------------------------------*/

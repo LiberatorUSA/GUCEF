@@ -30,6 +30,11 @@
 #define GUCEF_CONFIG_H
 #endif /* GUCEF_CONFIG_H ? */
 
+#ifndef GUCEF_BASICHELPERS_H
+#include "gucef_basichelpers.h"
+#define GUCEF_BASICHELPERS_H
+#endif /* GUCEF_BASICHELPERS_H ? */
+
 #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER )
 
 #ifndef GUCEF_DYNNEWOFF_H 
@@ -188,8 +193,11 @@ typedef void ( *TFP_MEMMAN_CallstackScopeEnd )( void );
  *  Platform lock tracing functions
  */
 
+typedef void ( *TFP_MEMMAN_ExclusiveLockCreated )( void* lockId );
 typedef void ( *TFP_MEMMAN_ExclusiveLockObtained )( void* lockId );
 typedef void ( *TFP_MEMMAN_ExclusiveLockReleased )( void* lockId );
+typedef void ( *TFP_MEMMAN_ExclusiveLockAbandoned )( void* lockId );
+typedef void ( *TFP_MEMMAN_ExclusiveLockDestroy )( void* lockId );
 
 /*-------------------------------------------------------------------------*/
 
@@ -255,8 +263,8 @@ static TFP_MEMMAN_SysReAllocStringLen fp_MEMMAN_SysReAllocStringLen = 0;
 
 /*-------------------------------------------------------------------------*/
 
-static TFP_MEMMAN_CallstackScopeBegin fp_MEMMAN_CallstackScopeBegin = 0;
-static TFP_MEMMAN_CallstackScopeEnd fp_MEMMAN_CallstackScopeEnd = 0;
+static TFP_MEMMAN_CallstackScopeBegin   fp_MEMMAN_CallstackScopeBegin = 0;
+static TFP_MEMMAN_CallstackScopeEnd     fp_MEMMAN_CallstackScopeEnd = 0;
 
 /*-------------------------------------------------------------------------*/
 
@@ -269,8 +277,11 @@ static TFP_MEMMAN_CallstackScopeEnd fp_MEMMAN_CallstackScopeEnd = 0;
  *  Platform lock tracing functions
  */
 
-static TFP_MEMMAN_ExclusiveLockObtained fp_MEMMAN_ExclusiveLockObtained = 0;
-static TFP_MEMMAN_ExclusiveLockReleased fp_MEMMAN_ExclusiveLockReleased = 0;
+static TFP_MEMMAN_ExclusiveLockCreated      fp_MEMMAN_ExclusiveLockCreated = 0;
+static TFP_MEMMAN_ExclusiveLockObtained     fp_MEMMAN_ExclusiveLockObtained = 0;
+static TFP_MEMMAN_ExclusiveLockReleased     fp_MEMMAN_ExclusiveLockReleased = 0;
+static TFP_MEMMAN_ExclusiveLockAbandoned    fp_MEMMAN_ExclusiveLockAbandoned = 0;
+static TFP_MEMMAN_ExclusiveLockDestroy      fp_MEMMAN_ExclusiveLockDestroy = 0;
 
 /*-------------------------------------------------------------------------*/
 
@@ -461,11 +472,17 @@ MEMMAN_LazyLoadMemoryManager( void )
     #endif /* defined( GUCEF_USE_CALLSTACK_TRACING ) && defined( GUCEF_USE_PLATFORM_CALLSTACK_TRACING ) ? */
     #if defined( GUCEF_USE_PLATFORM_LOCK_TRACER )
 
+    fp_MEMMAN_ExclusiveLockCreated = (TFP_MEMMAN_ExclusiveLockCreated) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockCreated" );
     fp_MEMMAN_ExclusiveLockObtained = (TFP_MEMMAN_ExclusiveLockObtained) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockObtained" );
     fp_MEMMAN_ExclusiveLockReleased = (TFP_MEMMAN_ExclusiveLockReleased) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockReleased" );
+    fp_MEMMAN_ExclusiveLockAbandoned = (TFP_MEMMAN_ExclusiveLockAbandoned) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockAbandoned" );
+    fp_MEMMAN_ExclusiveLockDestroy = (TFP_MEMMAN_ExclusiveLockDestroy) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ExclusiveLockDestroy" );
 
-    if ( 0 == fp_MEMMAN_ExclusiveLockObtained ||
-         0 == fp_MEMMAN_ExclusiveLockReleased )
+    if ( 0 == fp_MEMMAN_ExclusiveLockCreated   ||
+         0 == fp_MEMMAN_ExclusiveLockObtained  ||
+         0 == fp_MEMMAN_ExclusiveLockReleased  ||
+         0 == fp_MEMMAN_ExclusiveLockAbandoned ||
+         0 == fp_MEMMAN_ExclusiveLockDestroy    )
     {
         FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
         g_memoryManagerModulePtr = 0;
@@ -696,6 +713,16 @@ MEMMAN_CallstackScopeEnd( void )
 
 inline
 void 
+MEMMAN_ExclusiveLockCreated( void* lockId )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ExclusiveLockCreated( lockId ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
 MEMMAN_ExclusiveLockObtained( void* lockId )
 {
     if ( 1 == MEMMAN_LazyLoadMemoryManager() )
@@ -710,6 +737,26 @@ MEMMAN_ExclusiveLockReleased( void* lockId )
 {
     if ( 1 == MEMMAN_LazyLoadMemoryManager() )
         fp_MEMMAN_ExclusiveLockReleased( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_ExclusiveLockAbandoned( void* lockId )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ExclusiveLockAbandoned( lockId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_ExclusiveLockDestroy( void* lockId )
+{
+    if ( 1 == MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ExclusiveLockDestroy( lockId ); 
 }
 
 /*-------------------------------------------------------------------------*/
