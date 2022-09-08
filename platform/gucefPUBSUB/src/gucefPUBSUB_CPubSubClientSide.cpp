@@ -126,16 +126,21 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_metricsMap()
     , m_sideSettings()
     , m_mailbox()
-    , m_metricsTimer( GUCEF_NULL )
-    , m_pubsubClientReconnectTimer( GUCEF_NULL )
-    , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL )
+    , m_metricsTimer()
+    , m_pubsubClientReconnectTimer()
+    , m_timedOutInFlightMessagesCheckTimer()
     , m_sideId( sideId )
     , m_threadIdOfSide( 0 )
     , m_awaitingFailureReport( false )
     , m_totalMsgsInFlight( 0 )
     , m_flowRouter( flowRouter )
     , m_isHealthy( true )
+    , m_connectOnTaskStart( true )
 {GUCEF_TRACE;
+
+    m_pubsubClientReconnectTimer.SetInterval( 1000 );
+    m_timedOutInFlightMessagesCheckTimer.SetInterval( 5000 );
+    m_metricsTimer.SetInterval( 1000 );
 
     RegisterEvents();
 }
@@ -146,15 +151,6 @@ CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
     DisconnectPubSubClient( true );
-
-    delete m_timedOutInFlightMessagesCheckTimer;
-    m_timedOutInFlightMessagesCheckTimer = GUCEF_NULL;
-
-    delete m_pubsubClientReconnectTimer;
-    m_pubsubClientReconnectTimer = GUCEF_NULL;
-
-    delete m_metricsTimer;
-    m_metricsTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -335,14 +331,14 @@ CPubSubClientSide::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPubSubClientSide::OnMetricsTimerCycle );
-    SubscribeTo( m_metricsTimer                 ,
+    SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
 
     TEventCallback callback2( this, &CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle );
-    SubscribeTo( m_timedOutInFlightMessagesCheckTimer ,
-                 CORE::CTimer::TimerUpdateEvent       ,
-                 callback2                            );
+    SubscribeTo( &m_timedOutInFlightMessagesCheckTimer ,
+                 CORE::CTimer::TimerUpdateEvent        ,
+                 callback2                             );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
     SubscribeTo( m_pubsubClient.GetPointerAlways()           ,
@@ -359,13 +355,10 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  CPubSubClient::HealthStatusChangeEvent ,
                  callback5                              );
     
-    if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
-    {
-        TEventCallback callback( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
-        SubscribeTo( m_pubsubClientReconnectTimer   ,
-                     CORE::CTimer::TimerUpdateEvent ,
-                     callback                       );
-    }
+    TEventCallback callback6( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
+    SubscribeTo( &m_pubsubClientReconnectTimer  ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback6                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -629,7 +622,7 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
 {GUCEF_TRACE;
 
     // stop the timer, reconnect time itself should not count towards the reconnect interval
-    m_pubsubClientReconnectTimer->SetEnabled( false );
+    m_pubsubClientReconnectTimer.SetEnabled( false );
 
     // Since the client does not support reconnects we will destructively reconnnect
     // Meaning we wipe out any previous client as we cannot rely on the client implementation
@@ -641,7 +634,7 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
     }
 
     // no joy, start the timer again
-    m_pubsubClientReconnectTimer->SetEnabled( false );
+    m_pubsubClientReconnectTimer.SetEnabled( false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1934,10 +1927,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 
     if ( !m_clientFeatures.supportsAutoReconnect )
     {
-        if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
-            m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), pubSubConfig.reconnectDelayInMs );
-        else
-            m_pubsubClientReconnectTimer->SetInterval( pubSubConfig.reconnectDelayInMs );
+        m_pubsubClientReconnectTimer.SetInterval( pubSubConfig.reconnectDelayInMs );
     }
 
     if ( clientSetupWasNeeded )
@@ -2073,13 +2063,22 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     //            to tune the performance trade-offs based on the needs. This does mean we need to keep in mind a varried threading model
     m_threadIdOfSide = MT::GetCurrentTaskID();
 
+
+    CORE::CPulseGenerator* pulseGenerator = GetPulseGenerator();
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), m_sideSettings.metricsIntervalInMs );
-    m_metricsTimer->SetEnabled( m_sideSettings.collectMetrics );
+    m_pubsubClientReconnectTimer.SetPulseGenerator( pulseGenerator );
+    
+    m_metricsTimer.SetInterval( m_sideSettings.metricsIntervalInMs );
+    m_metricsTimer.SetPulseGenerator( pulseGenerator );
+    m_metricsTimer.SetEnabled( m_sideSettings.collectMetrics );
 
-    m_timedOutInFlightMessagesCheckTimer = new CORE::CTimer( *GetPulseGenerator(), (CORE::UInt32) m_sideSettings.maxPublishedMsgInFlightTimeInMs );
-    m_timedOutInFlightMessagesCheckTimer->SetEnabled( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 );
+    m_timedOutInFlightMessagesCheckTimer.SetPulseGenerator( pulseGenerator );
+    if ( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 )
+    {
+        m_timedOutInFlightMessagesCheckTimer.SetInterval( (CORE::UInt32) m_sideSettings.maxPublishedMsgInFlightTimeInMs );
+        m_timedOutInFlightMessagesCheckTimer.SetEnabled( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 );
+    }
 
     if ( m_sideSettings.performPubSubInDedicatedThread )
     {
@@ -2107,10 +2106,14 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
         }
     }
 
-    if ( !ConnectPubSubClient() )
+    if ( m_connectOnTaskStart )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
+        if ( !ConnectPubSubClient() )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
+            m_pubsubClientReconnectTimer.SetEnabled( true );
+        }
     }
 
     RegisterEventHandlers();
@@ -2125,6 +2128,15 @@ CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
     return m_sideSettings.performPubSubInDedicatedThread;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::SetPerformConnectOnTaskStart( bool performConnectOnStart )
+{GUCEF_TRACE;
+
+    m_connectOnTaskStart = performConnectOnStart;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2175,15 +2187,6 @@ void
 CPubSubClientSide::OnTaskEnded( CORE::CICloneable* taskData ,
                                 bool wasForced              )
 {GUCEF_TRACE;
-
-    delete m_metricsTimer;
-    m_metricsTimer = GUCEF_NULL;
-
-    delete m_pubsubClientReconnectTimer;
-    m_pubsubClientReconnectTimer = GUCEF_NULL;
-
-    delete m_timedOutInFlightMessagesCheckTimer;
-    m_timedOutInFlightMessagesCheckTimer = GUCEF_NULL;
 
     CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }

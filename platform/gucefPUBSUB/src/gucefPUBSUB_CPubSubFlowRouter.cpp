@@ -750,6 +750,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                 }
 
                 // Always init the spillover for ingress as a startup default
+                routeInfo.spilloverBufferSide->SetPerformConnectOnTaskStart( false );
                 ConfigureSpillover( routeInfo.spilloverBufferSide, true );
             }
 
@@ -1226,6 +1227,9 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
         }
     }
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+        "):ConfigureSpillover: Side \"" + spilloverSide->GetSideId() + "\" is being reconfigured for " + ( flowIntoSpillover ? CORE::CString( "ingress" ) : CORE::CString( "egress" ) ) );
+
     if ( spilloverSide->DisconnectPubSubClient() )
     {
         if ( spilloverSide->LoadConfig( sideSettings ) )
@@ -1535,6 +1539,10 @@ CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier  
     CPubSubClientSide* side = static_cast< CPubSubClientSide* >( client->GetOpaqueUserData() );
     if ( GUCEF_NULL == side )
         return;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+        "):OnSidePubSubClientTopicEndOfData: Side \"" + side->GetSideId() + "\" has client of type \"" + client->GetType() +
+        "\" which notified that topic \"" + topic->GetTopicName() + "\" has observed an 'end of data' event" );
     
     MT::CScopeReaderLock readLock( m_lock );
     
@@ -1548,6 +1556,10 @@ CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier  
         // We really care about the aggregate status in the router, not per topic
         if ( client->AreAllSubscriptionsAtEndOfData() )
         {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):OnSidePubSubClientTopicEndOfData: Spillover Side \"" + side->GetSideId() + "\" has client of type \"" + client->GetType() +
+                "\" is determined to have reached an 'end of data' event for all subscriptions" );
+
             CSpilloverInfo& spilloverInfo = (*i).second;
             spilloverInfo.endOfDataEventOccured = true;
 
@@ -1573,6 +1585,10 @@ CPubSubFlowRouter::OnSidePubSubClientInstantiation( CORE::CNotifier* notifier   
     CPubSubClientPtr* pubsubClientPtr = static_cast< CPubSubClientPtr* >( eventData ); 
     if ( GUCEF_NULL == pubsubClientPtr )
         return;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+        "):OnSidePubSubClientInstantiation: Adding event handlers for new pubsub client of type " + (*pubsubClientPtr)->GetType() );
+
     RegisterSidePubSubClientEventHandlers( *pubsubClientPtr );   
 }
 
@@ -1592,6 +1608,9 @@ CPubSubFlowRouter::OnSidePubSubClientTopicCreation( CORE::CNotifier* notifier   
     CPubSubClientTopic* topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( GUCEF_NULL != topicAccess ) 
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+            "):OnSidePubSubClientTopicCreation: Adding event handlers for new topic " + topicAccess->GetTopicName() );
+
         RegisterSidePubSubClientTopicEventHandlers( topicAccess );   
     }
 }
@@ -1612,6 +1631,9 @@ CPubSubFlowRouter::OnSidePubSubClientTopicsAutoCreation( CORE::CNotifier* notifi
     CPubSubClient::PubSubClientTopicSet::iterator i = topics.begin();
     while ( i != topics.end() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+            "):OnSidePubSubClientTopicsAutoCreation: Adding event handlers for new auto created topic " + (*i)->GetTopicName() );
+
         RegisterSidePubSubClientTopicEventHandlers( (*i) );
         ++i;
     }

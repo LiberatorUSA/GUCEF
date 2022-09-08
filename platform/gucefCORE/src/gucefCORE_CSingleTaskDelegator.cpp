@@ -71,11 +71,13 @@ bool
 CSingleTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( !m_taskConsumer.IsNULL() )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    
+    if ( !taskConsumer.IsNULL() )
     {
-        bool result = CTaskDelegator::ProcessTask( m_taskConsumer, m_taskData );
-        TaskCleanup( m_taskConsumer, m_taskData );
-        m_taskConsumer.Unlink();
+        bool result = CTaskDelegator::ProcessTask( taskConsumer, m_taskData );
+        TaskCleanup( taskConsumer, m_taskData );
+        taskConsumer.Unlink();
         m_taskData = GUCEF_NULL;
         return result;
     }

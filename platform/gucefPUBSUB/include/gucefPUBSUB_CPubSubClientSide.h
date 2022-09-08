@@ -193,6 +193,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
      */
     CPubSubClientPtr GetCurrentUnderlyingPubSubClient( void );
 
+    void SetPerformConnectOnTaskStart( bool performConnectOnStart );
+
     static void RegisterEvents( void );
     
     private:
@@ -370,15 +372,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     StringToPubSubClientSideMetricsMap m_metricsMap;
     CPubSubSideChannelSettings m_sideSettings;
     TPubSubMsgMailbox m_mailbox;
-    CORE::CTimer* m_metricsTimer;
-    CORE::CTimer* m_pubsubClientReconnectTimer;    
-    CORE::CTimer* m_timedOutInFlightMessagesCheckTimer;
+    CORE::CTimer m_metricsTimer;
+    CORE::CTimer m_pubsubClientReconnectTimer;    
+    CORE::CTimer m_timedOutInFlightMessagesCheckTimer;
     CORE::CString m_sideId;
     CORE::UInt32 m_threadIdOfSide;
     bool m_awaitingFailureReport;
     CORE::UInt64 m_totalMsgsInFlight;
     CPubSubFlowRouter* m_flowRouter;
     mutable bool m_isHealthy;
+    bool m_connectOnTaskStart;
 
     private:
 

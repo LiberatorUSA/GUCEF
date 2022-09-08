@@ -828,7 +828,7 @@ bool
 CStoragePubSubClientTopic::AddStorageToPubSubRequest( const StorageToPubSubRequest& request )
 {GUCEF_TRACE;
 
-    if ( m_config.needSubscribeSupport )
+    if ( m_config.needPublishSupport || !m_config.needSubscribeSupport )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
             "):PublishViaMsgPtrs: Attempt to source messages from storage on a topic that is not configured got subscriptions" );

@@ -22,6 +22,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+#include <exception>
+
 #ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"         /* OS wrappers for threading functionality */
 #define GUCEF_MT_DVMTOSWRAP_H
@@ -119,55 +122,70 @@ CActiveObject::OnActivate( void* thisobject )
 {GUCEF_TRACE;
 
     CActiveObject* tao = (CActiveObject*) thisobject;
-    void* taskdata = tao->GetThreadData();
-
-    if ( tao->OnThreadStart( taskdata ) )
+    try
     {
-        tao->OnThreadStarted( taskdata );
-       
-        Float64 ticksPerMs = PrecisionTimerResolution() / 1000.0;
-        UInt64 tickCount = PrecisionTickCount();
-        UInt64 newTickCount = tickCount;
-        Float64 timeDeltaInMs = 0;
+        void* taskdata = tao->GetThreadData();
 
-        bool taskfinished = false;
-        while ( !taskfinished && !tao->m_isDeactivationRequested )
+        if ( tao->OnThreadStart( taskdata ) )
         {
-            // Check if the order has been given to suspend the thread
-            if ( tao->_suspend )
+            tao->OnThreadStarted( taskdata );
+       
+            Float64 ticksPerMs = PrecisionTimerResolution() / 1000.0;
+            UInt64 tickCount = PrecisionTickCount();
+            UInt64 newTickCount = tickCount;
+            Float64 timeDeltaInMs = 0;
+
+            bool taskfinished = false;
+            while ( !taskfinished && !tao->m_isDeactivationRequested )
             {
-                ThreadSuspend( tao->_td );
+                // Check if the order has been given to suspend the thread
+                if ( tao->_suspend )
+                {
+                    ThreadSuspend( tao->_td );
+                }
+
+                // We can do a cycle
+                taskfinished = tao->OnThreadCycle( taskdata );
+
+                // check if we are finished
+                if ( !taskfinished )
+                {
+                    // If we are going to do another cycle then make sure we
+                    // stay within the time slice range requested.
+                    // Here we calculate the time that has passed in seconds
+                    newTickCount = PrecisionTickCount();
+                    timeDeltaInMs = ( newTickCount - tickCount ) / ticksPerMs;
+
+                    if ( timeDeltaInMs < tao->m_minimalCycleDeltaInMilliSecs )
+                    {
+                        PrecisionDelay( tao->m_delayInMilliSecs );
+                        tickCount = PrecisionTickCount();
+                    }
+                    else
+                    {
+                        tickCount = newTickCount;
+                    }
+                }
             }
 
-            // We can do a cycle
-            taskfinished = tao->OnThreadCycle( taskdata );
-
-            // check if we are finished
-            if ( !taskfinished )
-            {
-                // If we are going to do another cycle then make sure we
-                // stay within the time slice range requested.
-                // Here we calculate the time that has passed in seconds
-                newTickCount = PrecisionTickCount();
-                timeDeltaInMs = ( newTickCount - tickCount ) / ticksPerMs;
-
-                if ( timeDeltaInMs < tao->m_minimalCycleDeltaInMilliSecs )
-                {
-                    PrecisionDelay( tao->m_delayInMilliSecs );
-                    tickCount = PrecisionTickCount();
-                }
-                else
-                {
-                    tickCount = newTickCount;
-                }
-            }
+            tao->OnThreadEnding( taskdata, false );
         }
-
-        tao->OnThreadEnding( taskdata, false );
-    }
     
-    tao->_active = false;
-    return 1;
+        tao->_active = false;
+        return 1;
+    }
+    catch ( const std::exception& e )
+    {
+        tao->_active = false;
+        GUCEF_ASSERT_ALWAYS;
+        return -1;
+    }
+    catch ( ... )
+    {
+        tao->_active = false;
+        GUCEF_ASSERT_ALWAYS;
+        return GUCEF_INT32MIN;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

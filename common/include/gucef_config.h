@@ -75,15 +75,15 @@
 /*
  *  Switches to enable/disable callstack tracking
  */
-#define GUCEF_USE_CALLSTACK_TRACING
-#define GUCEF_USE_PLATFORM_CALLSTACK_TRACING
+/* #define GUCEF_USE_CALLSTACK_TRACING */
+/* #define GUCEF_USE_PLATFORM_CALLSTACK_TRACING */
 
 /*-------------------------------------------------------------------------*/
 
 /*
  *  Switches to enable/disable lock tracing
  */
-#define GUCEF_USE_PLATFORM_LOCK_TRACER
+/* #define GUCEF_USE_PLATFORM_LOCK_TRACER */
 
 /*-------------------------------------------------------------------------*/
 

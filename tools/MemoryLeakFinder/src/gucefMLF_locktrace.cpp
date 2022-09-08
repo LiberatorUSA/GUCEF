@@ -443,9 +443,7 @@ LockInventory::RegisterExclusiveLockReleased( void* lockId )
     UInt32 callerThreadId = MT::GetCurrentTaskID(); 
     LockTraceInfo* lockTrace = GetLockTraceInfo( readLock, lockId );
     assert( GUCEF_NULL != lockTrace );
-
-    lockTrace->m_lastCallerThreadIdAtLockRelease = callerThreadId;
-
+    
     if ( !lockTrace->m_isLocked || !lockTrace->m_isExclusivelyLocked )
     {
         // How can you release the lock if its not locked?
@@ -464,12 +462,13 @@ LockInventory::RegisterExclusiveLockReleased( void* lockId )
         PrintLockStacks( lockId, lockTrace, stdout );
 
         GUCEF_UNREACHABLE;
-    }
-    
+    }    
     assert( lockTrace->m_isLocked );
-    assert( callerThreadId == lockTrace->m_lastCallerThreadIdAtLockObtainment );
+
     if ( callerThreadId == lockTrace->m_lastCallerThreadIdAtLockObtainment )
     {
+        lockTrace->m_lastCallerThreadIdAtLockRelease = callerThreadId;
+        
         if ( lockTrace->m_lockReentrancyDepth > 0 )
         {
             --lockTrace->m_lockReentrancyDepth;
