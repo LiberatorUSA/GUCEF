@@ -665,6 +665,80 @@ CFileSystemArchive::IsDirectoryWatchingSupported( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString 
+CFileSystemArchive::GetVfsPathForFileSystemPath( const CORE::CString& fsPath )
+{GUCEF_TRACE;
+
+    return fsPath.CutChars( m_rootDir.Length(), true, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFileSystemArchive::OnDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventid  ,
+                                             CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    // Archives are also DirectoryWatcher's so we pretend the event msg came from us
+    // we do need to translate the paths first
+
+    if ( IsDirectoryWatcherDirEvent( eventid ) )
+    {
+        if ( eventid == CORE::CDirectoryWatcherEvents::DirRenamedEvent )
+        {
+            CORE::CDirectoryWatcherEvents::TDirRenamedEventData* dirRenameInfo = static_cast< CORE::CDirectoryWatcherEvents::TDirRenamedEventData* >( eventdata );
+            if ( GUCEF_NULL != dirRenameInfo )
+            {
+                CORE::CDirectoryWatcherEvents::TDirRenamedEventData vfsAdjusted;
+                vfsAdjusted.GetData().newDirName = GetVfsPathForFileSystemPath( dirRenameInfo->GetData().newDirName );
+                vfsAdjusted.GetData().oldDirName = GetVfsPathForFileSystemPath( dirRenameInfo->GetData().oldDirName );
+                NotifyObservers( eventid, &vfsAdjusted );
+            }              
+        }
+        else
+        {
+            CORE::TCloneableString* dirPath = static_cast< CORE::TCloneableString* >( eventdata );
+            if ( GUCEF_NULL != dirPath )
+            {
+                CORE::TCloneableString vfsPath( GetVfsPathForFileSystemPath( *dirPath ) );
+                NotifyObservers( eventid, &vfsPath );
+            }
+        }
+    }
+    else
+    if ( IsDirectoryWatcherFileEvent( eventid ) )
+    {
+        if ( eventid == CORE::CDirectoryWatcherEvents::FileRenamedEvent )
+        {
+            CORE::CDirectoryWatcherEvents::TFileRenamedEventData* fileRenameInfo = static_cast< CORE::CDirectoryWatcherEvents::TFileRenamedEventData* >( eventdata );
+            if ( GUCEF_NULL != fileRenameInfo )
+            {
+                CORE::CDirectoryWatcherEvents::TFileRenamedEventData vfsAdjusted;
+                vfsAdjusted.GetData().newFilename = GetVfsPathForFileSystemPath( fileRenameInfo->GetData().newFilename );
+                vfsAdjusted.GetData().oldFilename = GetVfsPathForFileSystemPath( fileRenameInfo->GetData().oldFilename );
+                NotifyObservers( eventid, &vfsAdjusted );
+            }
+        }
+        else
+        {
+            CORE::TCloneableString* filePath = static_cast< CORE::TCloneableString* >( eventdata );
+            if ( GUCEF_NULL != filePath )
+            {
+                CORE::TCloneableString vfsPath( GetVfsPathForFileSystemPath( *filePath ) );
+                NotifyObservers( eventid, &vfsPath );
+            }                
+        }
+    }
+    else
+    {
+        // adminstrative event
+        NotifyObservers( eventid );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CFileSystemArchive::OnNotify( CORE::CNotifier* notifier    ,
                               const CORE::CEvent& eventId  ,
@@ -676,7 +750,8 @@ CFileSystemArchive::OnNotify( CORE::CNotifier* notifier    ,
     if ( notifier == &m_fsWatcher )
     {
         // Archives are also DirectoryWatcher's so we pretend the event msg came from us
-        NotifyObservers( eventId, eventdata );
+        // we do need to translate the paths first
+        OnDirectoryWatcherEvent( notifier, eventId, eventdata );
     }
 }
 

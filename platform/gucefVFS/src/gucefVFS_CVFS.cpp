@@ -206,6 +206,7 @@ CVFS::UnmountAllArchives( void )
         TArchiveUnmountedEventData eData( mountEntry.mountPath ); 
         if ( mountEntry.archive->UnloadArchive() )
         {
+            m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
             m_mountList.erase( m_mountList.begin() );
             NotifyObservers( ArchiveUnmountedEvent, &eData );  
         }
@@ -265,6 +266,88 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings    ,
 /*-------------------------------------------------------------------------*/
 
 void
+CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventid  ,
+                                      CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    VFS::CArchive* archive = static_cast< VFS::CArchive* >( notifier );
+        
+    if ( IsDirectoryWatcherDirEvent( eventid ) )
+    {
+        TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
+        if ( i != m_archivePtrToMountEntryLookup.end() )
+        {
+            TMountEntry* mountEntry = (*i).second;
+
+            if ( eventid == CORE::CDirectoryWatcherEvents::DirRenamedEvent )
+            {
+                CORE::CDirectoryWatcherEvents::TDirRenamedEventData* dirRenameInfo = static_cast< CORE::CDirectoryWatcherEvents::TDirRenamedEventData* >( eventdata );
+                if ( GUCEF_NULL != dirRenameInfo )
+                {
+                    CORE::CDirectoryWatcherEvents::TDirRenamedEventData vfsAdjusted;
+                    vfsAdjusted.GetData().newDirName = mountEntry->mountPath + '/' + dirRenameInfo->GetData().newDirName;
+                    vfsAdjusted.GetData().oldDirName = mountEntry->mountPath + '/' + dirRenameInfo->GetData().oldDirName;
+                    vfsAdjusted.GetData().newDirName = ConformVfsDirPath( vfsAdjusted.GetData().newDirName );
+                    vfsAdjusted.GetData().oldDirName = ConformVfsDirPath( vfsAdjusted.GetData().oldDirName );
+                    NotifyObservers( eventid, &vfsAdjusted );
+                }              
+            }
+            else
+            {
+                CORE::TCloneableString* dirPath = static_cast< CORE::TCloneableString* >( eventdata );
+                if ( GUCEF_NULL != dirPath )
+                {
+                    CORE::TCloneableString vfsPath( mountEntry->mountPath + '/' + *dirPath );
+                    vfsPath = ConformVfsDirPath( vfsPath );
+                    NotifyObservers( eventid, &vfsPath );
+                }
+            }
+        }
+    }
+    else
+    if ( IsDirectoryWatcherFileEvent( eventid ) )
+    {
+        TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
+        if ( i != m_archivePtrToMountEntryLookup.end() )
+        {            
+            TMountEntry* mountEntry = (*i).second;
+                
+            if ( eventid == CORE::CDirectoryWatcherEvents::FileRenamedEvent )
+            {
+                CORE::CDirectoryWatcherEvents::TFileRenamedEventData* fileRenameInfo = static_cast< CORE::CDirectoryWatcherEvents::TFileRenamedEventData* >( eventdata );
+                if ( GUCEF_NULL != fileRenameInfo )
+                {
+                    CORE::CDirectoryWatcherEvents::TFileRenamedEventData vfsAdjusted;
+                    vfsAdjusted.GetData().newFilename = mountEntry->mountPath + '/' + fileRenameInfo->GetData().newFilename;
+                    vfsAdjusted.GetData().oldFilename = mountEntry->mountPath + '/' + fileRenameInfo->GetData().oldFilename;
+                    vfsAdjusted.GetData().newFilename = ConformVfsFilePath( vfsAdjusted.GetData().newFilename );
+                    vfsAdjusted.GetData().oldFilename = ConformVfsFilePath( vfsAdjusted.GetData().oldFilename );
+                    NotifyObservers( eventid, &vfsAdjusted );
+                }
+            }
+            else
+            {
+                CORE::TCloneableString* filePath = static_cast< CORE::TCloneableString* >( eventdata );
+                if ( GUCEF_NULL != filePath )
+                {
+                    CORE::TCloneableString vfsPath( mountEntry->mountPath + '/' + *filePath );
+                    vfsPath = ConformVfsFilePath( vfsPath );
+                    NotifyObservers( eventid, &vfsPath );
+                }                
+            }
+        }
+    }
+    else
+    {
+        // adminstrative event
+        NotifyObservers( eventid );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
                       const CORE::CEvent& eventid  ,
                       CORE::CICloneable* eventdata )
@@ -272,8 +355,15 @@ CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
 
     if ( CAsyncVfsOperation::AsyncVfsOperationCompletedEvent == eventid )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:OnPumpedNotify: Async operation completed, passing on event notification" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "VFS:OnPumpedNotify: Async operation completed, passing on event notification" );
         NotifyObservers( AsyncVfsOperationCompletedEvent, eventdata );
+    }
+
+    if ( IsDirectoryWatcherEvent( eventid ) )
+    {
+        OnArchiveDirectoryWatcherEvent( notifier  ,
+                                        eventid   ,
+                                        eventdata );
     }
 }
 
@@ -283,6 +373,7 @@ void
 CVFS::MountAllDelayMountedArchives( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     while ( !m_delayMountedArchiveSettings.empty() )
     {
         TArchiveSettingsVector::iterator i = m_delayMountedArchiveSettings.begin();
@@ -914,6 +1005,7 @@ CVFS::ConformVfsDirPath( const VFS::CString& originalDirPath ) const
         return "/";
 
     VFS::CString resultStr = originalDirPath.ReplaceChar( '\\', '/' );
+    resultStr = resultStr.CompactRepeatingChar( '/' );
 
     if ( resultStr[ 0 ] != '/' )
         resultStr = '/' + resultStr;
@@ -937,6 +1029,7 @@ CVFS::ConformVfsFilePath( const VFS::CString& originalFilePath ) const
         return CString::Empty;
 
     VFS::CString resultStr = originalFilePath.ReplaceChar( '\\', '/' );
+    resultStr = resultStr.CompactRepeatingChar( '/' );
 
     if ( resultStr[ 0 ] != '/' )
         resultStr = '/' + resultStr;
@@ -998,6 +1091,10 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 archiveEntry.mountPath = updatedSettings.GetMountPath();
 
                 m_mountList.push_back( archiveEntry );
+                TMountEntry* pushedMountEntry = &m_mountList.back();
+                m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = pushedMountEntry;
+
+                SubscribeTo( archive.GetPointerAlways() );
 
                 TArchiveMountedEventData eData( archiveEntry.mountPath );
                 NotifyObservers( ArchiveMountedEvent, &eData );
@@ -1046,6 +1143,13 @@ CVFS::MountArchive( const CString& archiveName    ,
             archiveEntry.mountPath = ConformVfsDirPath( mountPoint );
 
             m_mountList.push_back( archiveEntry );
+            TMountEntry* pushedMountEntry = &m_mountList.back();
+            m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = pushedMountEntry;
+
+            SubscribeTo( archive.GetPointerAlways() );
+
+            TArchiveMountedEventData eData( archiveEntry.mountPath );
+            NotifyObservers( ArchiveMountedEvent, &eData );
             return true;
         }
     }
@@ -1266,6 +1370,7 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
             if ( mountEntry.archive->UnloadArchive() )
             {
                 TArchiveUnmountedEventData eData( mountEntry.mountPath );                
+                m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
                 m_mountList.erase( i );
 
                 lock.EarlyUnlock();

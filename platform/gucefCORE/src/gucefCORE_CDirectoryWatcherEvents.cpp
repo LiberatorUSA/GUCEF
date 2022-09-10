@@ -76,6 +76,48 @@ CDirectoryWatcherEvents::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDirectoryWatcherEvents::IsDirectoryWatcherEvent( const CEvent& eventId )
+{GUCEF_TRACE;
+
+    return eventId == StartedWatchingDirectoryEvent ||
+           eventId == StoppedWatchingDirectoryEvent ||
+           eventId == FileCreatedEvent ||
+           eventId == FileModifiedEvent ||
+           eventId == FileRenamedEvent ||
+           eventId == FileDeletedEvent ||
+           eventId == DirCreatedEvent ||
+           eventId == DirModifiedEvent ||
+           eventId == DirRenamedEvent ||
+           eventId == DirDeletedEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDirectoryWatcherEvents::IsDirectoryWatcherFileEvent( const CEvent& eventId )
+{GUCEF_TRACE;
+
+    return eventId == FileCreatedEvent ||
+           eventId == FileModifiedEvent ||
+           eventId == FileRenamedEvent ||
+           eventId == FileDeletedEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDirectoryWatcherEvents::IsDirectoryWatcherDirEvent( const CEvent& eventId )
+{GUCEF_TRACE;
+
+    return eventId == DirCreatedEvent ||
+           eventId == DirModifiedEvent ||
+           eventId == DirRenamedEvent ||
+           eventId == DirDeletedEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDirectoryWatcherEvents::CDirectoryWatcherEvents( void )
 {GUCEF_TRACE;
 

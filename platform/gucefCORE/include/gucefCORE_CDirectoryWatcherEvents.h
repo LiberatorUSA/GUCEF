@@ -98,6 +98,10 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcherEvents
 
     static void RegisterEvents( void );
 
+    static bool IsDirectoryWatcherEvent( const CEvent& eventId );
+    static bool IsDirectoryWatcherFileEvent( const CEvent& eventId );
+    static bool IsDirectoryWatcherDirEvent( const CEvent& eventId );
+
     CDirectoryWatcherEvents( void );
     CDirectoryWatcherEvents( const CDirectoryWatcherEvents& src );
     virtual ~CDirectoryWatcherEvents();

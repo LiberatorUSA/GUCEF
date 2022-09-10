@@ -542,6 +542,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     typedef std::vector< TConstMountLink >                           TConstMountLinkVector;
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex >    TDynamicBufferPtr;
     typedef std::vector< CArchiveSettings >                          TArchiveSettingsVector;
+    typedef std::map< VFS::CArchive*, TMountEntry* >                 TArchivePtrToMountEntryMap;
 
     typedef CORE::CTEventHandlerFunctor< CVFS >          TEventCallback;
     
@@ -563,6 +564,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     VFS::CString ConformVfsDirPath( const VFS::CString& originalDirPath ) const;
 
     VFS::CString ConformVfsFilePath( const VFS::CString& originalFilePath ) const;
+
+    void OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventid  ,
+                                         CORE::CICloneable* eventdata );
     
     private:    
     
@@ -571,6 +576,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     TAbstractArchiveFactory m_abstractArchiveFactory;
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
     TArchiveSettingsVector m_delayMountedArchiveSettings;
+    TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
 };
 
 /*-------------------------------------------------------------------------//

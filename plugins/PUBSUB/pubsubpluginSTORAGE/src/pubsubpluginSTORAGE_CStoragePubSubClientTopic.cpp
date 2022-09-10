@@ -980,7 +980,7 @@ CStoragePubSubClientTopic::AddStorageToPubSubRequest( const StorageToPubSubReque
 
     if ( request.isPersistentRequest )
     {
-        bool hadPersistentRequests = m_stage0StorageToPubSubRequests.empty();
+        bool hadPersistentRequests = !m_stage0StorageToPubSubRequests.empty();
 
         // persistent requests get 'refills' from new files being dropped in monitored
         // request root paths

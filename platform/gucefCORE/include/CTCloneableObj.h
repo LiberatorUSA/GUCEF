@@ -60,6 +60,8 @@ class CTCloneableObj : public CICloneable
     virtual ~CTCloneableObj() GUCEF_VIRTUAL_OVERRIDE;
     
     CTCloneableObj& operator=( const CTCloneableObj& src );
+
+    T& operator=( const T& src );
     
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;    
     
@@ -127,6 +129,17 @@ CTCloneableObj< T >::operator=( const CTCloneableObj< T >& src )
     {
         m_data = src.m_data;
     }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T& 
+CTCloneableObj< T >::operator=( const T& src )
+{GUCEF_TRACE;
+
+    m_data = src;
     return *this;
 }
 

@@ -151,6 +151,12 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     
     private:
 
+    CORE::CString GetVfsPathForFileSystemPath( const CORE::CString& fsPath );
+
+    void OnDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventid  ,
+                                  CORE::CICloneable* eventdata );
+    
     void GetListFromRoot( const CORE::CString& actualFsDir  , 
                           const CString& vfsMountLocation   , 
                           const CString& vfsArchiveLocation ,
