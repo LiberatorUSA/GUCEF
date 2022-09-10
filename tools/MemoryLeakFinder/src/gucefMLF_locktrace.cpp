@@ -123,6 +123,8 @@ class GUCEF_HIDDEN LockInventory
 
     void PrintLockStacks( void* lockId );
 
+    void PrintAllLockStacks( void );
+
     private:
 
     class GUCEF_HIDDEN LockTraceInfo
@@ -153,10 +155,14 @@ class GUCEF_HIDDEN LockInventory
     LockTraceInfo* GetLockTraceInfo( MT::CScopeReaderLock& readLock, void* lockId );
     
     void PrintLockStacks( void* lockId, LockTraceInfo* lockTrace, FILE* dest );
+
+    static Int32 GUCEF_CALLSPEC_STD_PREFIX SnapshotThreadMain( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
     
     TLockIdToLockTraceInfoMap m_inventory;
     MT::CReadWriteLock m_datalock;
+    struct MT::SThreadData* m_snapshotThread;
 
+    static bool g_shutdownRequested;
     static MT::CMutex g_instanceLock;
     static LockInventory* g_instance;
 };
@@ -167,6 +173,7 @@ class GUCEF_HIDDEN LockInventory
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+bool LockInventory::g_shutdownRequested = false;
 MT::CMutex LockInventory::g_instanceLock;
 LockInventory* LockInventory::g_instance = GUCEF_NULL;
 
@@ -184,6 +191,7 @@ LockInventory::Instance( void )
         MT::CScopeMutex lock( g_instanceLock );
         if ( GUCEF_NULL == g_instance )
         {
+            g_shutdownRequested = false;
             g_instance = new LockInventory();
         }
     }
@@ -200,6 +208,7 @@ LockInventory::Deinstance( void )
         MT::CScopeMutex lock( g_instanceLock );
         if ( GUCEF_NULL != g_instance )
         {
+            g_shutdownRequested = true;
             delete g_instance;
             g_instance = GUCEF_NULL;
         }
@@ -211,7 +220,10 @@ LockInventory::Deinstance( void )
 LockInventory::LockInventory( void )
     : m_inventory()
     , m_datalock( true )
+    , m_snapshotThread( GUCEF_NULL )
 {
+    m_snapshotThread = MT::ThreadDataReserve();
+    MT::ThreadCreate( m_snapshotThread, (MT::TThreadFunc) SnapshotThreadMain, this );  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -227,6 +239,9 @@ LockInventory::~LockInventory()
         ++i;
     }
     m_inventory.clear();
+
+    MT::ThreadDataCleanup( m_snapshotThread );
+    m_snapshotThread = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -263,6 +278,20 @@ LockInventory::LockTraceInfo::~LockTraceInfo()
     m_lastAbandonedCallstackAtLockObtainment = GUCEF_NULL;
     MEMMAN_FreeCallstackCopy( m_callstackAtLastSurplusLockRelease );
     m_callstackAtLastSurplusLockRelease = GUCEF_NULL;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+LockInventory::SnapshotThreadMain( void* thisVoidObject )
+{
+    LockInventory* thisObj = static_cast< LockInventory* >( thisVoidObject );
+    while ( !g_shutdownRequested )
+    {
+        MT::PrecisionDelay( 10000 );
+        thisObj->PrintAllLockStacks();
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -562,26 +591,55 @@ LockInventory::PrintLockStacks( void* lockId, LockTraceInfo* lockTrace, FILE* de
     fprintf( dest, "   lastAbandonedCallerThreadIdAtLockObtainment: %d%s", lockTrace->m_lastAbandonedCallerThreadIdAtLockObtainment, EOL );
     fprintf( dest, "------------------------------%s%s", EOL, EOL );
     fprintf( dest, "Stack at lock creation: %s%s", EOL, EOL );
-    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockCreation );
+    GUCEF_PrintCallstackCopyTo( lockTrace->m_callstackAtLockCreation, dest );
     fprintf( dest, "------------------------------%s%s", EOL, EOL );
     fprintf( dest, "Stack at lock obtainment: %s%s", EOL, EOL );
     fprintf( dest, "------------------------%s%s", EOL, EOL );
-    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockObtainment );
+    GUCEF_PrintCallstackCopyTo( lockTrace->m_callstackAtLockObtainment, dest );
     fprintf( dest, "Stack at lock release: %s%s", EOL, EOL );
     fprintf( dest, "------------------------%s%s", EOL, EOL );    
-    GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLockRelease );
+    GUCEF_PrintCallstackCopyTo( lockTrace->m_callstackAtLockRelease, dest );
     fprintf( dest, "------------------------------%s%s", EOL, EOL );    
     if ( lockTrace->m_abandonmentCounter > 0 )
     {
         fprintf( dest, "Stack at lock obtainment from last lock abandonment: %s%s", EOL, EOL );
         fprintf( dest, "------------------------%s%s", EOL, EOL );    
-        GUCEF_PrintCallstackCopy( lockTrace->m_lastAbandonedCallstackAtLockObtainment );
+        GUCEF_PrintCallstackCopyTo( lockTrace->m_lastAbandonedCallstackAtLockObtainment, dest );
     }
     if ( lockTrace->m_surplusLockReleases > 0 )
     {
         fprintf( dest, "Stack at last surplus lock release call: %s%s", EOL, EOL );
         fprintf( dest, "------------------------%s%s", EOL, EOL );    
-        GUCEF_PrintCallstackCopy( lockTrace->m_callstackAtLastSurplusLockRelease );    
+        GUCEF_PrintCallstackCopyTo( lockTrace->m_callstackAtLastSurplusLockRelease, dest );    
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+LockInventory::PrintAllLockStacks( void )
+{
+    long long int tickCount = (long long int) MT::PrecisionTickCount();
+    char snapshotFilename[ 128 ];
+    sprintf( snapshotFilename, "LockInventorySnapshot_%lld.txt", tickCount );
+
+    FILE* outSnapshotFile = fopen( snapshotFilename, "w" );
+    if ( NULL != outSnapshotFile )
+    {
+        // freeze everything
+        MT::CScopeWriterLock writeLock( m_datalock );
+
+        // iterate through all locks and print the info as a snapshot
+        TLockIdToLockTraceInfoMap::iterator i = m_inventory.begin();
+        while ( i != m_inventory.end() )
+        {
+            void* lockId = (*i).first;
+            LockTraceInfo& lockTrace = (*i).second;    
+            PrintLockStacks( lockId, &lockTrace, outSnapshotFile ); 
+            ++i;
+        }
+
+        fclose( outSnapshotFile );
     }
 }
 

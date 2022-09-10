@@ -93,15 +93,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
         m_updateDeltaInMilliSecs = 1;
     }
 
-    TEventCallback callback( this, &CTimer::OnPulse );
-    SubscribeTo( m_pulseGenerator            ,
-                 CPulseGenerator::PulseEvent ,
-                 callback                    );
-    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CPulseGenerator::DestructionEvent ,
-                 callback2                         );
-
+    RegisterPulseGeneratorEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,9 +112,7 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_pulseGenerator )
-        m_pulseGenerator = &CCoreGlobal::Instance()->GetPulseGenerator();
-    
+    assert( GUCEF_NULL != m_pulseGenerator );    
     RegisterEvents();
 
     if ( 0 == m_updateDeltaInMilliSecs )
@@ -130,14 +120,7 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
         m_updateDeltaInMilliSecs = 1;
     }
 
-    TEventCallback callback( this, &CTimer::OnPulse );
-    SubscribeTo( m_pulseGenerator            ,
-                 CPulseGenerator::PulseEvent ,
-                 callback                    );
-    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CPulseGenerator::DestructionEvent ,
-                 callback2                         );
+    RegisterPulseGeneratorEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,9 +139,6 @@ CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_pulseGenerator )
-        m_pulseGenerator = &CCoreGlobal::Instance()->GetPulseGenerator();
-
     RegisterEvents();
 
     if ( 0 == m_updateDeltaInMilliSecs )
@@ -166,14 +146,7 @@ CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
         m_updateDeltaInMilliSecs = 1;
     }
 
-    TEventCallback callback( this, &CTimer::OnPulse );
-    SubscribeTo( m_pulseGenerator            ,
-                 CPulseGenerator::PulseEvent ,
-                 callback                    );
-    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CPulseGenerator::DestructionEvent ,
-                 callback2                         );
+    RegisterPulseGeneratorEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,6 +220,26 @@ CTimer::RegisterEvents( void )
     TimerUpdateEvent.Initialize();
     TimerStoppedEvent.Initialize();
     TimerIntervalChangedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTimer::RegisterPulseGeneratorEventHandlers( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_pulseGenerator )
+    {
+        TEventCallback callback( this, &CTimer::OnPulse );
+        SubscribeTo( m_pulseGenerator            ,
+                     CPulseGenerator::PulseEvent ,
+                     callback                    );
+        TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
+        SubscribeTo( m_pulseGenerator                  ,
+                     CPulseGenerator::DestructionEvent ,
+                     callback2                         );
+
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -508,11 +501,14 @@ CTimer::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
 {GUCEF_TRACE;
     
     bool wasEnabled = m_enabled;
+    UnsubscribeFrom( m_pulseGenerator );
 
     SetEnabled( false );
     Reset();
 
     m_pulseGenerator = newPulseGenerator;
+    RegisterPulseGeneratorEventHandlers();
+
     if ( wasEnabled )
         SetEnabled( wasEnabled );
 }

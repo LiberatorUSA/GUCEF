@@ -27,6 +27,11 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
+#ifndef GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
+#include "gucefPUBSUB_CVfsPubSubBookmarkPersistence.h"
+#define GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H
+#endif /* GUCEF_PUBSUB_CVFSPUBSUBBOOKMARKPERSISTENCE_H ? */
+
 #include "pubsubpluginSTORAGE_CStoragePubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
@@ -73,6 +78,13 @@ bool
 CStoragePubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
     
+    CORE::CDataNode* psBookmarkPersistenceConfig = config.Structure( "PubSubBookmarkPersistenceConfig", '/' );
+    if ( !pubsubBookmarkPersistenceConfig.SaveConfig( *psBookmarkPersistenceConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientConfig:SaveCustomConfig: config is malformed, failed to save PubSubBookmarkPersistenceConfig section" );
+        return false;
+    }  
+
     return true;
 }
 
@@ -82,6 +94,28 @@ bool
 CStoragePubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
+    bool psPersistanceConfigLoaded = false;
+    const CORE::CDataNode* psBookmarkPersistenceConfig = config.Search( "PubSubBookmarkPersistenceConfig", '/', false );
+    if ( GUCEF_NULL != psBookmarkPersistenceConfig )
+    {
+        if ( pubsubBookmarkPersistenceConfig.LoadConfig( *psBookmarkPersistenceConfig ) )
+        {
+            psPersistanceConfigLoaded = true;
+        }
+    }
+
+    if ( !psPersistanceConfigLoaded )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientConfig:LoadCustomConfig: No PubSubBookmarkPersistenceConfig section found, will fall back to VFS based default" );
+
+        PUBSUB::CVfsPubSubBookmarkPersistenceConfig defaultBmPersistenceCfg;
+        defaultBmPersistenceCfg.vfsRootPath = "InstallPath";
+        defaultBmPersistenceCfg.bookmarkNamespace = pubsubIdPrefix + "/internal_bookmarks/";
+        defaultBmPersistenceCfg.SaveCustomConfig( defaultBmPersistenceCfg.customConfig );
+
+        pubsubBookmarkPersistenceConfig = defaultBmPersistenceCfg;
+    }
+
     return true;
 }
 
@@ -108,7 +142,7 @@ CStoragePubSubClientConfig::operator=( const CStoragePubSubClientConfig& src )
     if ( &src != this )
     {
         PUBSUB::CPubSubClientConfig::operator=( src );
-
+        pubsubBookmarkPersistenceConfig = src.pubsubBookmarkPersistenceConfig;
     }
     return *this;
 }

@@ -99,6 +99,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     bool collectMetrics;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
     bool autoPushAfterStartupIfStorageToPubSub;
+    bool autoPushAfterStartupIsPersistent;
     CORE::CDateTime youngestStoragePubSubMsgFileToLoad;
     CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
     CORE::Float32 defaultCodecDecodeGrowthRatioExpectation;

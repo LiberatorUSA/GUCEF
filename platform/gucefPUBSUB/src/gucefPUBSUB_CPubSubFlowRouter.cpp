@@ -92,11 +92,10 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     , deadLetterSide( GUCEF_NULL )
     , deadLetterSideIsHealthy( true )
     , deadLetterSideLastHealthStatusChange( CORE::CDateTime::PastMax )
-    , routeSwitchingTimer()
+    , routeSwitchingTimer( GUCEF_NULL, 1000 )
     , spilloverInfo( GUCEF_NULL )
 {GUCEF_TRACE;
     
-    routeSwitchingTimer.SetInterval( 1000 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1493,6 +1492,8 @@ CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side 
                     routeInfo->routeSwitchingTimer.SetEnabled( true );
                 }
             }
+
+            DetermineActiveRoute( *routeInfo );
 
             ++n;
         }

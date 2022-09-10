@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
 #ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
 #include "pubsubpluginSTORAGE_CStoragePubSubClientConfig.h"
 #define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
@@ -80,6 +85,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_pubsubBookmarkPersistence()
     , m_threadPool()
     , m_isHealthy( true )
     , m_lock()
@@ -120,6 +126,8 @@ CStoragePubSubClient::~CStoragePubSubClient()
         ++i;
     }
     m_topicMap.clear();
+
+    m_pubsubBookmarkPersistence.Unlink();
     
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -164,16 +172,7 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
-    features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill
-    
-    // Ack functionality doesnt currently make sense for this backend
-    // However in theory we could implement a hard or logical delete of read messages and such functionality could go hand-in-hand with 'server-side' (read backend controlled) bookmark persistance
-    // Right now we dont have that though so lets get the basics working first
-    features.supportsAbsentMsgReceivedAck = false;      
-    features.supportsAckUsingLastMsgInBatch = false;    
-    features.supportsAutoMsgReceivedAck = false;         
-    features.supportsSubscriberMsgReceivedAck = false;     
-    features.supportsAckUsingBookmark = false;                 
+    features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill              
 
     features.supportsBookmarkingConcept = true;         // We can create a reference to the storage location plus offset        
     features.supportsAutoBookmarking = false;           // Currently we do 'forget' where we are if the app crashes    
@@ -183,9 +182,17 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsMsgDateTimeBasedBookmark = false;      // In this context we have no idea what the message datetime is, as such we cannot use it as a bookmark since we cannot garantee anything    
     features.supportsServerSideBookmarkPersistance = false; // Currently we do 'forget' where we are if the app crashes. @TODO? Maybe we can add storage backend opinionated bookmark storage    
     features.supportsSubscribingUsingBookmark = true;       // We can create a reference to the storage location plus offset and then use that to resume the reading from that location
-    features.supportsDerivingBookmarkFromMsg = false;   // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. As such it cannot support this
     
+    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. 
+    // As such it can only support this runtime via the receiveActionId
+    features.supportsDerivingBookmarkFromMsg = m_config.desiredFeatures.supportsSubscribing && m_config.desiredFeatures.supportsDerivingBookmarkFromMsg;       
     
+    features.supportsAbsentMsgReceivedAck = m_config.desiredFeatures.supportsAbsentMsgReceivedAck;      
+    features.supportsAckUsingLastMsgInBatch = m_config.desiredFeatures.supportsAckUsingLastMsgInBatch;    
+    features.supportsAutoMsgReceivedAck = m_config.desiredFeatures.supportsAutoMsgReceivedAck;         
+    features.supportsSubscriberMsgReceivedAck = m_config.desiredFeatures.supportsSubscribing;     
+    features.supportsAckUsingBookmark = features.supportsDerivingBookmarkFromMsg;  
+
     return true;
 }
 
@@ -367,6 +374,36 @@ CStoragePubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
 
 /*-------------------------------------------------------------------------*/
 
+PUBSUB::TIPubSubBookmarkPersistenceBasicPtr 
+CStoragePubSubClient::GetBookmarkPersistence( void ) const
+{GUCEF_TRACE;
+
+    return m_pubsubBookmarkPersistence;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::ConfigureBookmarkPersistance( void )
+{GUCEF_TRACE;
+
+    m_pubsubBookmarkPersistence.Unlink();    
+
+    // Create and configure the pub-sub bookmark persistence
+    m_pubsubBookmarkPersistence = PUBSUB::CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( m_config.pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, m_config.pubsubBookmarkPersistenceConfig );
+
+    if ( m_pubsubBookmarkPersistence.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClient(" + CORE::PointerToString( this ) +
+            "):ConfigureBookmarkPersistance: Failed to create bookmark persistance access of type \"" + m_config.pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
@@ -377,8 +414,9 @@ CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfg )
     if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
+        
         m_config = parsedCfg;
-        return true;
+        return ConfigureBookmarkPersistance();
     }
     return false;
 }
@@ -395,8 +433,9 @@ CStoragePubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
     if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
+
         m_config = parsedCfg;
-        return true;
+        return ConfigureBookmarkPersistance();
     }
     return false;
 }

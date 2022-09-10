@@ -79,6 +79,7 @@ CVfsPubSubBookmarkPersistenceConfig::CVfsPubSubBookmarkPersistenceConfig( void )
     , persistenceStructure( "clientType/{clientType}/topicName/{topicName}" )
 {GUCEF_TRACE;
  
+    bookmarkPersistenceType = CVfsPubSubBookmarkPersistence::BookmarkPersistenceType;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,6 +129,20 @@ CVfsPubSubBookmarkPersistenceConfig::LoadConfig( const CORE::CDataNode& cfg )
         return LoadCustomConfig( customConfig );
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVfsPubSubBookmarkPersistenceConfig::SaveCustomConfig( CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    bool success = true;
+    
+    success = cfg.SetAttribute( "vfsRootPath", vfsRootPath ) && success;
+    success = cfg.SetAttribute( "persistenceStructure", persistenceStructure ) && success;
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/

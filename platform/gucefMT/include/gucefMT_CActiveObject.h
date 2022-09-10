@@ -195,7 +195,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 
     private:
     CActiveObject& operator=( const CActiveObject& src );
-    static UInt32 GUCEF_CALLSPEC_STD_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
+    static Int32 GUCEF_CALLSPEC_STD_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
 
     struct SThreadData* _td;
     void* m_threadData;

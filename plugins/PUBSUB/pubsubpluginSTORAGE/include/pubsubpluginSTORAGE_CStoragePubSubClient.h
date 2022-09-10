@@ -137,6 +137,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     CORE::ThreadPoolPtr GetThreadPool( void );
 
+    PUBSUB::TIPubSubBookmarkPersistenceBasicPtr GetBookmarkPersistence( void ) const;
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -158,6 +160,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     void RegisterEventHandlers( void );
 
     void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
+
+    bool ConfigureBookmarkPersistance( void );
     
     CStoragePubSubClient( void ); /**< not implemented */
 
@@ -169,6 +173,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     CStoragePubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
+    PUBSUB::TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::ThreadPoolPtr m_threadPool;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;

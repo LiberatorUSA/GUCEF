@@ -123,7 +123,13 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     typedef CArchive::TStringSet                                        TStringSet;
     
     static const CORE::CString FileSystemArchiveTypeName;
+
     static const CORE::CEvent AsyncVfsOperationCompletedEvent;
+    static const CORE::CEvent ArchiveMountedEvent;
+    static const CORE::CEvent ArchiveUnmountedEvent;
+
+    typedef CORE::TCloneableString      TArchiveMountedEventData; 
+    typedef CORE::TCloneableString      TArchiveUnmountedEventData;
 
     /**
      *  Adds a filesystem root to the VFS 

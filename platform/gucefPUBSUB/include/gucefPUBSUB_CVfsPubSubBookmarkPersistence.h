@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #ifndef GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
 #include "gucefPUBSUB_CIPubSubBookmarkPersistence.h"
 #define GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
@@ -58,6 +63,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CVfsPubSubBookmarkPersistenceConfig : public CPubS
 
     virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
+    bool SaveCustomConfig( CORE::CDataNode& cfg );
+    
     bool LoadCustomConfig( const CORE::CDataNode& cfg );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;   

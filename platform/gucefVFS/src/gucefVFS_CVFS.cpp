@@ -128,6 +128,8 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CVFS::AsyncVfsOperationCompletedEvent = "GUCEF::VFS::CVFS::AsyncVfsOperationCompletedEvent";
+const CORE::CEvent CVFS::ArchiveMountedEvent = "GUCEF::VFS::CVFS::ArchiveMountedEvent";
+const CORE::CEvent CVFS::ArchiveUnmountedEvent = "GUCEF::VFS::CVFS::ArchiveUnmountedEvent";
 const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 
 /*-------------------------------------------------------------------------//
@@ -141,6 +143,8 @@ CVFS::RegisterEvents( void )
 {GUCEF_TRACE;
 
     AsyncVfsOperationCompletedEvent.Initialize();
+    ArchiveMountedEvent.Initialize();
+    ArchiveUnmountedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,8 +203,12 @@ CVFS::UnmountAllArchives( void )
     while ( !m_mountList.empty() )
     {
         TMountEntry& mountEntry = *m_mountList.begin();
-        mountEntry.archive->UnloadArchive();
-        m_mountList.erase( m_mountList.begin() );
+        TArchiveUnmountedEventData eData( mountEntry.mountPath ); 
+        if ( mountEntry.archive->UnloadArchive() )
+        {
+            m_mountList.erase( m_mountList.begin() );
+            NotifyObservers( ArchiveUnmountedEvent, &eData );  
+        }
     }
 }
 
@@ -581,7 +589,6 @@ CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
 
     return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -991,6 +998,9 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 archiveEntry.mountPath = updatedSettings.GetMountPath();
 
                 m_mountList.push_back( archiveEntry );
+
+                TArchiveMountedEventData eData( archiveEntry.mountPath );
+                NotifyObservers( ArchiveMountedEvent, &eData );
                 return true;
             }
         }
@@ -1255,7 +1265,11 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
         {
             if ( mountEntry.archive->UnloadArchive() )
             {
+                TArchiveUnmountedEventData eData( mountEntry.mountPath );                
                 m_mountList.erase( i );
+
+                lock.EarlyUnlock();
+                NotifyObservers( ArchiveUnmountedEvent, &eData );              
                 return true;
             }
             return false;
@@ -1736,7 +1750,28 @@ CVFS::AddDirToWatch( const CString& dirToWatch       ,
                      const CDirWatchOptions& options )
 {GUCEF_TRACE;
 
-    return false;
+    CString path = ConformVfsFilePath( dirToWatch );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Add the path as monitored for all relevant mounted archives
+    bool totalSuccess = true;
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        TArchivePtr archiveToWatch = mountLink.mountEntry->archive;
+
+        if ( !archiveToWatch->AddDirToWatch( mountLink.remainder, options ) )
+            totalSuccess = false;
+        ++i;
+    }
+    
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1745,7 +1780,28 @@ bool
 CVFS::RemoveDirToWatch( const CString& dirToWatch )
 {GUCEF_TRACE;
 
-    return false;
+    CString path = ConformVfsFilePath( dirToWatch );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Remove the path as monitored for all relevant mounted archives
+    bool totalSuccess = true;
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        TArchivePtr archiveToWatch = mountLink.mountEntry->archive;
+
+        if ( !archiveToWatch->RemoveDirToWatch( mountLink.remainder ) )
+            totalSuccess = false;
+        ++i;
+    }
+    
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1754,7 +1810,19 @@ bool
 CVFS::RemoveAllWatches( void )
 {GUCEF_TRACE;
 
-    return false;
+    MT::CObjectScopeLock lock( this );
+    
+    bool totalSuccess = true;
+    TMountVector::iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        TMountEntry& mountEntry = (*i);
+        if ( !mountEntry.archive->RemoveAllWatches() )
+            totalSuccess = false;
+        ++i;
+    }
+    
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

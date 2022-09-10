@@ -45,16 +45,16 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( void )
+CIDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( bool watchDefault )
     : watchSubTree( false )
-    , watchForFileCreation( true )
-    , watchForFileDeletion( true )
-    , watchForFileRenames( true )
-    , watchForFileModifications( true )
-    , watchForDirCreation( true )
-    , watchForDirDeletion( true )
-    , watchForDirRenames( true )
-    , watchForDirModifications( true )
+    , watchForFileCreation( watchDefault )
+    , watchForFileDeletion( watchDefault )
+    , watchForFileRenames( watchDefault )
+    , watchForFileModifications( watchDefault )
+    , watchForDirCreation( watchDefault )
+    , watchForDirDeletion( watchDefault )
+    , watchForDirRenames( watchDefault )
+    , watchForDirModifications( watchDefault )
 {GUCEF_TRACE;
 
 }

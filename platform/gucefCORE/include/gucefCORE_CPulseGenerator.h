@@ -159,7 +159,8 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
     bool m_forcedStopOfPeriodPulses;
     TPeriodicPulseRequestorMap m_periodicUpdateRequestors;
     CIPulseGeneratorDriver* m_driver;
-    MT::CMutex m_mutex;
+    MT::CMutex m_objLock;
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -171,17 +172,6 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-11-2004 :
-        - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

@@ -153,6 +153,15 @@ GUCEF_PrintCallstack( void );
 GUCEF_MLF_PUBLIC_C void
 GUCEF_PrintCallstackCopy( TCallStack* stackToPrint );
 
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Prints the current call stack to the given file
+ */
+GUCEF_MLF_PUBLIC_C void
+GUCEF_PrintCallstackCopyTo( TCallStack* stackToPrint, FILE* dest );
+
 /*-------------------------------------------------------------------------*/
 
 /**

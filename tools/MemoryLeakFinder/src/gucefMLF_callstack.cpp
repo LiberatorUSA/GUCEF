@@ -833,6 +833,15 @@ GUCEF_PrintCallstackCopy( TCallStack* stackToPrint )
 /*-------------------------------------------------------------------------*/
 
 void
+GUCEF_PrintCallstackCopyTo( TCallStack* stackToPrint, FILE* dest )
+{
+    if ( GUCEF_NULL != stackToPrint )
+        StackInventory::Instance()->PrintCallstackCopy( *stackToPrint, dest );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 GUCEF_DumpCallstack( const char* filename )
 {
     FILE* fptr = NULL;

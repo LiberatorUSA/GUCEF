@@ -126,9 +126,9 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_metricsMap()
     , m_sideSettings()
     , m_mailbox()
-    , m_metricsTimer()
-    , m_pubsubClientReconnectTimer()
-    , m_timedOutInFlightMessagesCheckTimer()
+    , m_metricsTimer( GUCEF_NULL, 1000 )
+    , m_pubsubClientReconnectTimer( GUCEF_NULL, 1000 )
+    , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL, 5000 )
     , m_sideId( sideId )
     , m_threadIdOfSide( 0 )
     , m_awaitingFailureReport( false )
@@ -137,10 +137,6 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_isHealthy( true )
     , m_connectOnTaskStart( true )
 {GUCEF_TRACE;
-
-    m_pubsubClientReconnectTimer.SetInterval( 1000 );
-    m_timedOutInFlightMessagesCheckTimer.SetInterval( 5000 );
-    m_metricsTimer.SetInterval( 1000 );
 
     RegisterEvents();
 }

@@ -79,6 +79,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , collectMetrics( true )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
+    , autoPushAfterStartupIsPersistent( true )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
@@ -113,6 +114,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , collectMetrics( src.collectMetrics )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
     , autoPushAfterStartupIfStorageToPubSub( src.autoPushAfterStartupIfStorageToPubSub )
+    , autoPushAfterStartupIsPersistent( src.autoPushAfterStartupIsPersistent )
     , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
     , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
     , defaultCodecDecodeGrowthRatioExpectation( src.defaultCodecDecodeGrowthRatioExpectation )
@@ -148,6 +150,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , collectMetrics( true )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )
     , autoPushAfterStartupIfStorageToPubSub( true )
+    , autoPushAfterStartupIsPersistent( true )
     , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
     , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
     , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
@@ -191,6 +194,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     collectMetrics = config.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = config.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
     autoPushAfterStartupIfStorageToPubSub = config.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIfStorageToPubSub" ).AsBool( autoPushAfterStartupIfStorageToPubSub, true ); 
+    autoPushAfterStartupIsPersistent = config.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIsPersistent" ).AsBool( autoPushAfterStartupIsPersistent, true ); 
     youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
     defaultCodecDecodeGrowthRatioExpectation = config.GetAttributeValueOrChildValueByName( "defaultCodecDecodeGrowthRatioExpectation" ).AsFloat32( defaultCodecDecodeGrowthRatioExpectation, true );
@@ -235,6 +239,7 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "collectMetrics", collectMetrics ) && success;
     success = config.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && success;
     success = config.SetAttribute( "autoPushAfterStartupIfStorageToPubSub", autoPushAfterStartupIfStorageToPubSub ) && success;
+    success = config.SetAttribute( "autoPushAfterStartupIsPersistent", autoPushAfterStartupIsPersistent ) && success;    
     success = config.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
     success = config.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
     success = config.SetAttribute( "defaultCodecDecodeGrowthRatioExpectation", defaultCodecDecodeGrowthRatioExpectation ) && success;    
@@ -299,6 +304,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         collectMetrics = src.collectMetrics;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
         autoPushAfterStartupIfStorageToPubSub = src.autoPushAfterStartupIfStorageToPubSub;
+        autoPushAfterStartupIsPersistent = src.autoPushAfterStartupIsPersistent;
         youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;
         oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
         defaultCodecDecodeGrowthRatioExpectation = src.defaultCodecDecodeGrowthRatioExpectation;

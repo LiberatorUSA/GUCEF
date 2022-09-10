@@ -208,6 +208,8 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
                                       const CEvent& eventid         ,
                                       CICloneable* eventdata = NULL );
 
+    void RegisterPulseGeneratorEventHandlers( void );
+    
     private:
 
     Float64 m_timerFreq;

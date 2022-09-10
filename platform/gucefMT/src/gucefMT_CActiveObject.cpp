@@ -117,7 +117,7 @@ CActiveObject::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Int32
 CActiveObject::OnActivate( void* thisobject )
 {GUCEF_TRACE;
 
@@ -174,7 +174,7 @@ CActiveObject::OnActivate( void* thisobject )
         tao->_active = false;
         return 1;
     }
-    catch ( const std::exception& e )
+    catch ( const std::exception& )
     {
         tao->_active = false;
         GUCEF_ASSERT_ALWAYS;

@@ -35,6 +35,11 @@
 #define PUBSUBPLUGIN_STORAGE_MACROS_H
 #endif /* PUBSUBPLUGIN_STORAGE_MACROS_H ? */
 
+#ifndef GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
+#include "gucefPUBSUB_CIPubSubBookmarkPersistence.h"
+#define GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -60,6 +65,9 @@ class CStoragePubSubClient;
 class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientConfig : public PUBSUB::CPubSubClientConfig
 {
     public:
+    
+    PUBSUB::CPubSubBookmarkPersistenceConfig pubsubBookmarkPersistenceConfig;
+
     
     CStoragePubSubClientConfig( void );
     

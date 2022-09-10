@@ -57,6 +57,11 @@
 #define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 #endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
+#include "gucefPUBSUB_CIPubSubBookmarkPersistence.h"
+#define GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H ? */
+
 #ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H
 #include "pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h"
 #define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H
@@ -158,7 +163,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
-    bool AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& bookmark, CORE::UInt64 receiveActionId );
 
     virtual bool DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -200,6 +204,18 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventid               ,
+                           CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+
+    void OnVfsFileCreated( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventid  ,
+                           CORE::CICloneable* eventdata );
+    
+    void OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventid  ,
+                              CORE::CICloneable* eventdata );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CStoragePubSubClientTopic > TEventCallback;
@@ -234,20 +250,24 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     };
     typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
     
-    struct SStorageBufferMetaData
+    class StorageBufferMetaData
     {
+        public:
+
         PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
-        TPublishActionIdVector publishActionIds; 
+        TPublishActionIdVector actionIds; 
         CORE::CString relatedStorageFile;
+        StorageToPubSubRequest* linkedRequest;
+
+        StorageBufferMetaData( void );
     };
-    typedef struct SStorageBufferMetaData TStorageBufferMetaData;
-    typedef std::map< CORE::CDynamicBuffer*, TStorageBufferMetaData > TStorageBufferMetaDataMap;
+    typedef std::map< CORE::CDynamicBuffer*, StorageBufferMetaData > TStorageBufferMetaDataMap;
 
-    bool SyncBookmarkInfoToBookmark( const TStorageBookmarkInfo& info  , 
-                                     PUBSUB::CPubSubBookmark& bookmark );
+    static bool SyncBookmarkInfoToBookmark( const TStorageBookmarkInfo& info  , 
+                                            PUBSUB::CPubSubBookmark& bookmark );
 
-    bool SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
-                                     TStorageBookmarkInfo& info              );
+    static bool SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
+                                            TStorageBookmarkInfo& info              );
     
     void RegisterEventHandlers( void );
 
@@ -259,6 +279,19 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     template < typename T >
     bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds, const std::vector< T >& msgs, bool notify );
 
+    bool AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark  ,
+                                 const StorageBufferMetaData* metaData );
+
+    bool GetBookmarkForReceiveActionId( CORE::UInt64 receiveActionId      , 
+                                        PUBSUB::CPubSubBookmark& bookmark ) const;
+
+    bool GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId           , 
+                                            const StorageBufferMetaData** metaData ,
+                                            TStorageBookmarkInfo& bookmarkInfo     ) const;
+    
+    bool GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId           , 
+                                                        const StorageBufferMetaData** metaData ) const;
+    
     bool GetPersistedBookmark( CORE::Int32 channelId              , 
                                const CORE::CString& topicName     , 
                                PUBSUB::CPubSubBookmark& bookmark );
@@ -281,6 +314,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                                   CORE::CString::StringSet& files ) const;
 
     bool AddStorageToPubSubRequest( const StorageToPubSubRequest& request );
+
+    bool SubscribeToVfsTopicPathEvents( void );
 
     void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
 
@@ -329,7 +364,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool BeginVfsOps( void );
     bool StopVfsOps( void );
 
-    void FinalizeWriteBuffer( TStorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset );
+    void FinalizeWriteBuffer( StorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset );
     void FinalizeWriteBuffer( void );
 
     void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
@@ -376,6 +411,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CDynamicBuffer* m_currentWriteBuffer;
     TStorageBookmarkInfo m_currentBookmarkInfo;
     PUBSUB::CPubSubBookmark m_currentBookmark;
+    PUBSUB::TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::CString m_vfsFilePostfix;
     CORE::CString m_vfsRootPath;
     CORE::CVariant m_lastPersistedMsgId;

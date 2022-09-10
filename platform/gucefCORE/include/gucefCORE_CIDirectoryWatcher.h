@@ -69,7 +69,7 @@ class GUCEF_CORE_PUBLIC_CPP CIDirectoryWatcher : public CDirectoryWatcherEvents
         bool watchForDirRenames;
         bool watchForDirModifications;
 
-        CDirWatchOptions( void );
+        CDirWatchOptions( bool watchDefault = true );
         CDirWatchOptions( const CDirWatchOptions& src );
         CDirWatchOptions& operator=( const CDirWatchOptions& src );
     };

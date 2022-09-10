@@ -49,6 +49,11 @@
 #define GUCEF_MT_MUTEX_H
 #endif /* GUCEF_MT_MUTEX_H ? */
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h" 
 #define GUCEF_MT_CMUTEX_H
@@ -1226,6 +1231,7 @@ MEMMAN_Initialize( void )
             }
             else 
             {
+                MT::PrecisionTimerInit();
                 g_manager.initialize();            
                 GUCEF_InitCallstackUtility();
                 MEMMAN_LockTraceInit();
