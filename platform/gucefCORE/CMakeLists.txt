@@ -207,6 +207,7 @@ set( HEADER_FILES
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTDataNodeSerializableObj.h
   include/gucefCORE_CTEventHandlerFunctor.h
+  include/gucefCORE_CTEventHandlerFunctorProxy.h
   include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTMailboxForSharedCloneables.h
   include/gucefCORE_CTMultiRegistry.h
@@ -424,6 +425,7 @@ set( SOURCE_FILES
   src/gucefCORE_CSingleTaskDelegator.cpp
   src/gucefCORE_CSubFileAccess.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
+  src/gucefCORE_CTEventHandlerFunctorProxy.cpp
   src/gucefCORE_CTMultiRegistry.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp

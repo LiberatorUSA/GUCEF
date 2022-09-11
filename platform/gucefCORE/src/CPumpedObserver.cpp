@@ -79,19 +79,30 @@ namespace CORE {
 class CMailElement : public CICloneable
 {
     private:
+
+    CICloneable* m_eventdata;
+    CNotifier* m_notifier;
+    CIEventHandlerFunctorBase* m_callback;
+
+    CMailElement( void ); /**< dummy, dont use */
+
+    private:
     friend class CPumpedObserver;
 
-    CMailElement( CNotifier* notifier ,
-                  CICloneable* eventdata )
-        : m_notifier( notifier )  ,
-          m_eventdata( eventdata )
+    CMailElement( CNotifier* notifier                              ,
+                  CICloneable* eventdata                           ,
+                  CIEventHandlerFunctorBase* callback = GUCEF_NULL )
+        : m_notifier( notifier )  
+        , m_eventdata( eventdata )
+        , m_callback( callback )
     {GUCEF_TRACE;
 
     }
 
     CMailElement( const CMailElement& src )
-        : m_notifier( src.m_notifier )  ,
-          m_eventdata( src.m_eventdata )
+        : m_notifier( src.m_notifier )  
+        , m_eventdata( src.m_eventdata )
+        , m_callback( src.m_callback )
     {GUCEF_TRACE;
 
     }
@@ -108,6 +119,7 @@ class CMailElement : public CICloneable
         {
             m_notifier = src.m_notifier;
             m_eventdata = src.m_eventdata;
+            m_callback = src.m_callback;
         }
         return *this;
     }
@@ -124,23 +136,17 @@ class CMailElement : public CICloneable
         return m_eventdata;
     }
 
+    inline CIEventHandlerFunctorBase* GetCallback( void ) const
+    {GUCEF_TRACE;
+
+        return m_callback;
+    }
+
     virtual CICloneable* Clone( void ) const
     {GUCEF_TRACE;
 
         return new CMailElement( *this );
     }
-
-    private:
-
-    CMailElement( void )
-    {GUCEF_TRACE;
-
-        assert( 0 );
-        /* dummy, do not use */
-    }
-
-    CICloneable* m_eventdata;
-    CNotifier* m_notifier;
 };
 
 /*-------------------------------------------------------------------------//
@@ -291,9 +297,22 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                                &dataptr    ) )
     {
         maildata = static_cast< CMailElement* >( dataptr );
-        OnPumpedNotify( maildata->GetNotifier() ,
-                        mailEventID             ,
-                        maildata->GetData()     );
+        CIEventHandlerFunctorBase* callback = maildata->GetCallback();
+        if ( GUCEF_NULL == callback )
+        {
+            OnPumpedNotify( maildata->GetNotifier() ,
+                            mailEventID             ,
+                            maildata->GetData()     );
+        }
+        else
+        {
+            OnPumpedFunctorNotify( maildata->GetNotifier() ,
+                                   mailEventID             ,
+                                   maildata->GetData()     ,
+                                   callback                );
+        
+            delete callback;
+        }
 
         delete maildata->GetData();
         delete maildata;
@@ -341,8 +360,9 @@ CPumpedObserver::OnNotify( CNotifier* notifier                       ,
                            CICloneable* eventdata /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    if ( ( GUCEF_NULL != m_pulseGenerator ) && 
-         ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
+    if ( ( GUCEF_NULL != m_pulseGenerator )                                       && 
+         m_allowSameThreadEventsToFlowThrough                                     &&
+         ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )                                               
     {
         // We are already in the thread that will pump the events
         OnPumpedNotify( notifier  , 
@@ -366,6 +386,44 @@ CPumpedObserver::OnNotify( CNotifier* notifier                       ,
 /*-------------------------------------------------------------------------*/
 
 void
+CPumpedObserver::OnFunctorNotify( CNotifier* notifier                 ,
+                                  const CEvent& eventid               ,
+                                  CICloneable* eventdata              ,
+                                  CIEventHandlerFunctorBase* callback )
+{GUCEF_TRACE;
+
+    if ( ( GUCEF_NULL != m_pulseGenerator )                                       && 
+         m_allowSameThreadEventsToFlowThrough                                     &&
+         ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )                                               
+    {
+        // We are already in the thread that will pump the events
+        OnPumpedFunctorNotify( notifier  , 
+                               eventid   ,
+                               eventdata ,
+                               callback  );
+        return;
+    }
+    
+    if ( GUCEF_NULL != eventdata )
+    {
+        eventdata = eventdata->Clone();
+    }
+    if ( GUCEF_NULL != callback )
+    {
+        callback = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+    }    
+
+    CMailElement maildata( notifier  ,
+                           eventdata ,
+                           callback  );
+
+    m_mailbox.AddMail( eventid   ,
+                       &maildata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPumpedObserver::OnPumpedNotify( CNotifier* notifier                       ,
                                  const CEvent& eventid                     ,
                                  CICloneable* eventdata /* = GUCEF_NULL */ )
@@ -373,6 +431,40 @@ CPumpedObserver::OnPumpedNotify( CNotifier* notifier                       ,
 {GUCEF_TRACE;
 
     // dummy, override in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::OnPumpedFunctorNotify( CNotifier* notifier                 ,
+                                        const CEvent& eventId               ,
+                                        CICloneable* eventdData             ,
+                                        CIEventHandlerFunctorBase* callback )
+
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != callback )    
+    {
+        callback->OnNotify( notifier   ,
+                            eventId    ,
+                            eventdData );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::ProxySubscribeTo( CNotifier* threadedNotifier         ,
+                                   const CEvent& eventid               ,
+                                   CIEventHandlerFunctorBase& callback )
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != &callback );
+
+    TEventCallbackProxy callbackProxy( this, &CPumpedObserver::OnFunctorNotify, &callback );
+    threadedNotifier->Subscribe( this           ,
+                                 eventid        ,
+                                 &callbackProxy );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -129,9 +129,9 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CINotifier
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    virtual void Subscribe( CObserver* observer                        ,
-                            const CEvent& eventid                      ,
-                            CIEventHandlerFunctorBase* callback = NULL ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Subscribe( CObserver* observer                              ,
+                            const CEvent& eventid                            ,
+                            CIEventHandlerFunctorBase* callback = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Detaches the given observer from the notifier.

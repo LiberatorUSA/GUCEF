@@ -63,6 +63,7 @@ namespace CORE {
 
 class CNotifierImplementor;
 class CNotifier;
+class CPumpedObserver;
 class CEvent;
 
 /*-------------------------------------------------------------------------*/
@@ -86,6 +87,7 @@ class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
 
     protected:
     friend class CNotifierImplementor;
+    friend class CPumpedObserver;
 
     /**
      *  Event callback member function.

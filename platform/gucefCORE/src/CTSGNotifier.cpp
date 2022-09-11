@@ -43,7 +43,7 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -161,9 +161,9 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier         ,
 {GUCEF_TRACE;
 
     assert( GUCEF_NULL != &callback );
-    threadedNotifier->Subscribe( &m_tsgObserver ,
-                                 eventid        ,
-                                 &callback      );
+    m_tsgObserver.ProxySubscribeTo( threadedNotifier ,
+                                    eventid          ,
+                                    callback         );
 }
 
 /*-------------------------------------------------------------------------*/

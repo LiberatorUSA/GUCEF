@@ -36,6 +36,11 @@
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTORPROXY_H
+#include "gucefCORE_CTEventHandlerFunctorProxy.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTORPROXY_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTORPROXY_H ? */
+
 #ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #include "gucefCORE_CTEventHandlerFunctor.h"
 #define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
@@ -130,6 +135,23 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      *  Note: DO NOT OVERRIDE !!!
      *
      *  @param notifier the notifier that sent the notification
+     *  @param eventId the unique event id for an event
+     *  @param eventData optional notifier defined userdata
+     *  @param callback the functor callback to be invoked
+     */
+    void OnFunctorNotify( CNotifier* notifier                 ,
+                          const CEvent& eventId               ,
+                          CICloneable* eventData              ,
+                          CIEventHandlerFunctorBase* callback );
+
+    /**
+     *  Event callback member function.
+     *  Places the given event in the mailbox where is awaits
+     *  the next pump cycle.
+     *
+     *  Note: DO NOT OVERRIDE !!!
+     *
+     *  @param notifier the notifier that sent the notification
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
@@ -137,12 +159,31 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
+    void ProxySubscribeTo( CNotifier* threadedNotifier         ,
+                           const CEvent& eventid               ,
+                           CIEventHandlerFunctorBase& callback );
+
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;
+    typedef CTEventHandlerFunctorProxy< CPumpedObserver > TEventCallbackProxy;
+
+    /**
+     *  Event callback member function.
+     *  Invokes the functor callback from the pumped thread
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventId the unique event id for an event
+     *  @param eventData optional notifier defined userdata
+     *  @param callback the functor callback to be invoked
+     */
+    void OnPumpedFunctorNotify( CNotifier* notifier                 ,
+                                const CEvent& eventId               ,
+                                CICloneable* eventData              ,
+                                CIEventHandlerFunctorBase* callback );
 
     void OnPulse( CNotifier* notifier           ,
                   const CEvent& eventid         ,

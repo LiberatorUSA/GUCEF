@@ -80,10 +80,12 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool )
     , CNotifier()
     , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
     , CIPulseGeneratorDriver()
-    , m_threadPool( threadPool )
     , m_pulseGenerator()
     , m_taskConsumer()
     , m_taskData( GUCEF_NULL )
+    , m_threadPool( threadPool )
+    , m_consumerBusy( false )
+    , m_sendRegularPulses( false )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
     , m_taskRequestedCycleDelayInMs( 0 )
@@ -105,10 +107,12 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
     , CNotifier()
     , CTSharedPtrCreator< CTaskDelegator, MT::CMutex >( this )
     , CIPulseGeneratorDriver()
-    , m_threadPool( threadPool )
     , m_pulseGenerator()
     , m_taskConsumer( taskConsumer )
     , m_taskData( taskData )
+    , m_threadPool( threadPool )
+    , m_consumerBusy( false )
+    , m_sendRegularPulses( false )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
     , m_taskRequestedCycleDelayInMs( 0 )
@@ -129,7 +133,9 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
 CTaskDelegator::~CTaskDelegator()
 {GUCEF_TRACE;
 
-    if ( !NotifyObservers( DestructionEvent ) ) return;
+    if ( !NotifyObservers( DestructionEvent ) ) 
+        return;
+
     UnsubscribeAllFromNotifier();
     m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );
     m_threadPool.Unlink();
@@ -179,6 +185,7 @@ CTaskDelegator::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGen
             m_immediatePulseTicketMax = requestedPulsesPerImmediatePulseRequest;
         else
             m_immediatePulseTicketMax = 1;
+        m_sendRegularPulses = true;
     }
 }
 
@@ -193,7 +200,7 @@ CTaskDelegator::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
     if ( &pulseGenerator == &m_pulseGenerator )
     {
         m_delayInMilliSecs = pulseDeltaInMilliSecs;
-        Resume();
+        m_sendRegularPulses = true;
     }
 }
 
@@ -207,6 +214,7 @@ CTaskDelegator::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
     if ( &pulseGenerator == &m_pulseGenerator )
     {
         m_delayInMilliSecs = pulseDeltaInMilliSecs;
+        m_sendRegularPulses = true;
     }
 }
 
@@ -218,7 +226,7 @@ CTaskDelegator::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
 
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        Pause( false );
+        m_sendRegularPulses = false;
     }
 }
 
@@ -332,7 +340,9 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                     break;
                 }
 
-                SendDriverPulse( m_pulseGenerator );
+                if ( m_sendRegularPulses || m_immediatePulseTickets > 0 )
+                    SendDriverPulse( m_pulseGenerator );
+
                 if ( m_immediatePulseTickets > 0 )
                 {
                     --m_immediatePulseTickets;

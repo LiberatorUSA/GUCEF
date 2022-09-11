@@ -88,7 +88,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     void AddEventToMailbox( CNotifier* notifier           ,
                             const CEvent& eventid         ,
                             CICloneable* eventdata = NULL );
-
+    
     private:
 
     CTSGObserver( void );

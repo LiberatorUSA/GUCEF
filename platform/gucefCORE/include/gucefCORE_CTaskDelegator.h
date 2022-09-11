@@ -234,6 +234,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     TBasicThreadPoolPtr m_threadPool;
     bool m_consumerBusy;
+    bool m_sendRegularPulses;
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;
     UInt32 m_taskRequestedCycleDelayInMs;
