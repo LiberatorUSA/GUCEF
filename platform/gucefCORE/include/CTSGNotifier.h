@@ -79,13 +79,16 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 {
     public:
 
-    CTSGNotifier( bool allowSameThreadEventsToFlowThrough = true );
+    CTSGNotifier( bool allowSameThreadEventsToFlowThrough = true  ,
+                  bool forwardAllNotifications            = false );
 
-    CTSGNotifier( CPulseGenerator& pulsGenerator                 ,
-                  bool allowSameThreadEventsToFlowThrough = true );
+    CTSGNotifier( CPulseGenerator& pulsGenerator                  ,
+                  bool allowSameThreadEventsToFlowThrough = true  ,
+                  bool forwardAllNotifications            = false );
 
-    CTSGNotifier( CPulseGenerator* pulsGenerator                 ,
-                  bool allowSameThreadEventsToFlowThrough = true );
+    CTSGNotifier( CPulseGenerator* pulsGenerator                  ,
+                  bool allowSameThreadEventsToFlowThrough = true  ,
+                  bool forwardAllNotifications            = false );
 
     CTSGNotifier( const CTSGNotifier& src );
 
@@ -197,6 +200,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
     private:
 
     CTSGObserver m_tsgObserver;
+    bool m_forwardAllNotifications;
     MT::CMutex m_dataLock;
 };
 

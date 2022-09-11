@@ -78,6 +78,7 @@ CPubSubClientChannel::CPubSubClientChannel( void )
     : CORE::CTaskConsumer()
     , m_sides()
     , m_flowRouter()
+    , m_metricsTimer( GUCEF_NULL, 1000 )
 {GUCEF_TRACE;
 
 }
@@ -88,6 +89,19 @@ CPubSubClientChannel::~CPubSubClientChannel()
 {GUCEF_TRACE;
 
     Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    m_metricsTimer.SetPulseGenerator( GetPulseGenerator() );
+    TEventCallback callback( this, &CPubSubClientChannel::OnMetricsTimerCycle );
+    SubscribeTo( &m_metricsTimer                ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback                       );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,38 +155,6 @@ CPubSubClientChannel::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPubSubClientChannel::PublishChannelMetrics( void ) const
-{GUCEF_TRACE;
-
-    TPubSubClientSidePtrVector::const_iterator i = m_sides.begin();
-    while ( i != m_sides.end() )
-    {
-        const CPubSubClientSide::StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
-        CPubSubClientSide::StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
-        while ( n != sideMetrics.end() )
-        {
-            const CORE::CString& metricFriendlyTopicName = (*n).first;
-            const CPubSubClientSide::CPubSubClientSideMetrics& metrics = (*n).second;
-
-            if ( metrics.hasSupportForPublishing )
-            {
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishedMsgsInFlight", metrics.publishedMsgsInFlight, 1.0f );
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishOrAckFailedMsgs", metrics.publishOrAckFailedMsgs, 1.0f );
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "lastPublishBatchSize", metrics.lastPublishBatchSize, 1.0f );
-            }
-            if ( metrics.hasSupportForSubscribing )
-            {
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "queuedReceiveSuccessAcks", metrics.queuedReceiveSuccessAcks, 1.0f );
-            }
-            ++n;
-        }
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
@@ -180,6 +162,11 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     // In case we are retrying we might have state from a previous run
     // clear it first
     Clear();
+    
+    RegisterEventHandlers();
+
+    m_metricsTimer.SetInterval( m_channelSettings.metricsIntervalInMs );
+    m_metricsTimer.SetEnabled( m_channelSettings.collectMetrics );
 
     CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
@@ -300,6 +287,7 @@ CPubSubClientChannel::OnTaskCycle( CORE::CICloneable* taskData )
             // we will let it use the channel's thread
             allDone = side->OnTaskCycle( taskData ) || allDone;
         }
+
         ++i;
     }
 
@@ -362,6 +350,41 @@ CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
     }
 
     Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
+    while ( i != m_sides.end() )
+    {
+        const CPubSubClientSide::StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
+        CPubSubClientSide::StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
+        while ( n != sideMetrics.end() )
+        {
+            const CORE::CString& metricFriendlyTopicName = (*n).first;
+            const CPubSubClientSide::CPubSubClientSideMetrics& metrics = (*n).second;
+
+            if ( metrics.hasSupportForPublishing )
+            {
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishedMsgsInFlight", metrics.publishedMsgsInFlight, 1.0f );
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishOrAckFailedMsgs", metrics.publishOrAckFailedMsgs, 1.0f );
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "lastPublishBatchSize", metrics.lastPublishBatchSize, 1.0f );
+            }
+            if ( metrics.hasSupportForSubscribing )
+            {
+                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "queuedReceiveSuccessAcks", metrics.queuedReceiveSuccessAcks, 1.0f );
+            }
+            ++n;
+        }
+
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

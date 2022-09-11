@@ -47,9 +47,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough )
+CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough ,
+                            bool forwardAllNotifications            )
     : CNotifier()                    
     , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
+    , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -59,9 +61,11 @@ CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough )
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator          ,
-                            bool allowSameThreadEventsToFlowThrough )
+                            bool allowSameThreadEventsToFlowThrough ,
+                            bool forwardAllNotifications            )
     : CNotifier()                    
     , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
+    , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -71,9 +75,11 @@ CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator          ,
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( CPulseGenerator* pulsGenerator          ,
-                            bool allowSameThreadEventsToFlowThrough )
+                            bool allowSameThreadEventsToFlowThrough ,
+                            bool forwardAllNotifications            )
     : CNotifier()                    
     , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
+    , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -85,6 +91,7 @@ CTSGNotifier::CTSGNotifier( CPulseGenerator* pulsGenerator          ,
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
     : CNotifier( src )                   
     , m_tsgObserver( src.m_tsgObserver )
+    , m_forwardAllNotifications( src.m_forwardAllNotifications )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -108,6 +115,7 @@ CTSGNotifier::operator=( const CTSGNotifier& src )
     if ( this != &src )
     {
         CNotifier::operator=( src );
+        m_forwardAllNotifications = src.m_forwardAllNotifications;
     }
     return *this;
 }
@@ -174,8 +182,11 @@ CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
                               CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    NotifyObservers( eventid   ,
-                     eventdata );
+    if ( m_forwardAllNotifications )
+    {
+        NotifyObservers( eventid   ,
+                         eventdata );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

@@ -55,7 +55,7 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CPubSubFlowRouter( void )
-    : CORE::CTSGNotifier( GUCEF_NULL, true )
+    : CORE::CTSGNotifier( GUCEF_NULL, true, false )
     , m_config()
     , m_routeMap()
     , m_usedInRouteMap()

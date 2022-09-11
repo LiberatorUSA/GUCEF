@@ -258,11 +258,6 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     typedef CORE::CTEventHandlerFunctor< PubSub2PubSub > TEventCallback;
 
     void
-    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                         const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );
-
-    void
     OnAppShutdown( CORE::CNotifier* notifier    ,
                    const CORE::CEvent& eventId  ,
                    CORE::CICloneable* eventData );
@@ -287,7 +282,6 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CDataNode m_globalConfig;
-    CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
 };
 

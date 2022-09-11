@@ -214,7 +214,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublis
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) +
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -238,7 +238,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublis
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) +
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -702,7 +702,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
                 {
                     publishSuccess = false;
 
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):PublishMsgsSync: Failed to publish messages to topic" );
 
                     if ( m_sideSettings.retryFailedPublishAttempts )
@@ -722,7 +722,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 
     if ( publishSuccess )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):PublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " +
             CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
     }
@@ -944,7 +944,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
             {
                 if ( !topic->IsPublishingSupported() )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( topicLink.publishFailedMsgs.size() ) +
                         " publish failed messages and yet the topic is set as being incapable of publishing. This should never happen! Clearing the failed message as resolving the situation is impossible" );
 
@@ -952,7 +952,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                     ++i; continue;
                 }
 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( topicLink.publishFailedMsgs.size() ) + " messages queued for retry" );
 
                 TopicLink::TUInt64Set inFlightDiscardList;
@@ -977,7 +977,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     if ( m_sideSettings.maxMsgPublishAckRetryAttempts >= 0                                    &&
                                             retryEntry.retryCount >= (CORE::UInt32) m_sideSettings.maxMsgPublishAckRetryAttempts )
                                     {
-                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of ack retries (" + CORE::ToString( retryEntry.retryCount ) +
                                             ") for acknowledging successfull publishing of a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                             " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -994,7 +994,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                         CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
                                         if ( timeDiffInMs >= m_sideSettings.maxMsgPublishRetryTotalTimeInMs )
                                         {
-                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of ack retry time in ms (" + CORE::ToString( timeDiffInMs ) +
                                                 ") for acknowledging successfull publishing of a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                                 " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -1038,7 +1038,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     if ( m_sideSettings.maxMsgPublishRetryAttempts >= 0                                    &&
                                          retryEntry.retryCount >= (CORE::UInt32) m_sideSettings.maxMsgPublishRetryAttempts )
                                     {
-                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of publish retries (" + CORE::ToString( retryEntry.retryCount ) +
                                             ") for publishing a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                             " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -1055,7 +1055,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                         CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
                                         if ( timeDiffInMs >= m_sideSettings.maxMsgPublishRetryTotalTimeInMs )
                                         {
-                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of publish retry time in ms (" + CORE::ToString( timeDiffInMs ) +
                                                 ") for publishing a message. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                                 " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -1080,7 +1080,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                     {
                                         // It worked this time!
 
-                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Successfully retried publish of message on topic " + topic->GetTopicName() + " after " + CORE::ToString( retryEntry.retryCount ) +
                                             " retries. First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                             " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -1094,7 +1094,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                                         // Still didnt work :(
                                         publishRetrySuccess = false;
 
-                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                             "):RetryPublishFailedMsgs: Retry failed of publish of message on topic " + topic->GetTopicName() + ". Retry attempt " + CORE::ToString( retryEntry.retryCount ) +
                                             ". First retry attempt was at " + CORE::ToString( retryEntry.firstPublishAttempt ) +
                                             " and this last attempt was started at " + CORE::ToString( retryEntry.lastPublishAttempt ) +
@@ -1111,7 +1111,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                         }
                         else
                         {
-                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                                 "):RetryPublishFailedMsgs: A message tracking entry on topic " + topic->GetTopicName() + " has no message associated. We will discard the entry. publishActionId=" + CORE::ToString( retryEntry.publishActionId ) );
 
                             inFlightDiscardList.insert( retryEntry.publishActionId );
@@ -1131,7 +1131,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
                 }
                 if ( discardedMsgs > 0 )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                         "):RetryPublishFailedMsgs: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( discardedMsgs ) +
                         " messages due to exceeding the max retry attempts and/or sanity checks" );
                 }
@@ -1352,7 +1352,7 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
         }
         else
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                 "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to store bookmark. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
                 ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
                 GetMsgAttributesForLog( msg ) );
@@ -1387,7 +1387,7 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
             }
             else
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to derive bookmark from message. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
                     ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
                     GetMsgAttributesForLog( msg ) );
@@ -1415,7 +1415,7 @@ CPubSubClientSide::UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& ms
             }
             else
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):UpdateReceivedMessagesBookmarkAsNeeded: Failed to locate nearest msg batch bookmark for message. msgsSinceLastBookmarkPersist=" + CORE::ToString( topicLink.msgsSinceLastBookmarkPersist ) +
                     ". lastBookmarkPersistSuccess=" + CORE::ToString( topicLink.lastBookmarkPersistSuccess ) + ". " +
                     GetMsgAttributesForLog( msg ) );
@@ -1610,7 +1610,7 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
                     }
                     else
                     {
-                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientChannel(" + CORE::PointerToString( this ) +
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
                             "):OnPubSubTopicMsgsPublished: Failed to signal receipt of message acknowledgement of message on topic " + topic->GetTopicName() +
                             ". Will reset entry for PublishAck retries. Publish details: retryCount=" + CORE::ToString( msgTrackingEntry.retryCount ) +
                             ". First publish attempt was at " + CORE::ToString( msgTrackingEntry.firstPublishAttempt ) +

@@ -178,11 +178,19 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
     virtual bool IsHealthy( void ) const;
 
     const CPubSubChannelSettings& GetChannelSettings( void ) const;
-    
-    void PublishChannelMetrics( void ) const;
 
     void Clear( void );
 
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
+
+    void OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+
+    void RegisterEventHandlers( void );
+    
     private:
 
     typedef std::vector< CPubSubClientSidePtr > TPubSubClientSidePtrVector;
@@ -190,6 +198,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
     TPubSubClientSidePtrVector m_sides;
     CPubSubFlowRouter m_flowRouter;
     CPubSubChannelSettings m_channelSettings;
+    CORE::CTimer m_metricsTimer;
 };
 
 /*-------------------------------------------------------------------------*/

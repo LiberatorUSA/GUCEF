@@ -78,7 +78,7 @@ CTaskConsumer::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskConsumer::CTaskConsumer( void )
-    : CTSGNotifier( GUCEF_NULL, true )
+    : CTSGNotifier( GUCEF_NULL, true, false )
     , m_taskId()
     , m_threadPool()
     , m_delegator()
@@ -94,6 +94,9 @@ CTaskConsumer::CTaskConsumer( void )
 
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
+
+    if ( !m_delegator.IsNULL() )
+        SetPulseGenerator( GUCEF_NULL );
 
     CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );
 }
@@ -203,6 +206,10 @@ CTaskConsumer::SetTaskDelegator( const TTaskDelegatorBasicPtr& delegator )
     if ( !m_delegator.IsNULL() )
     {
         SetPulseGenerator( &m_delegator->GetPulseGenerator() );
+    }
+    else
+    {
+        SetPulseGenerator( GUCEF_NULL );
     }
 }
 

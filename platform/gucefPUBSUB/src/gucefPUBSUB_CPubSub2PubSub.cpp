@@ -369,7 +369,6 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_httpServer()
     , m_httpRouter()
     , m_globalConfig()
-    , m_metricsTimer()
     , m_transmitMetrics( true )
 {GUCEF_TRACE;
 
@@ -394,11 +393,6 @@ PubSub2PubSub::RegisterEventHandlers( void )
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() ,
                  CORE::CGUCEFApplication::AppShutdownEvent        ,
                  callback                                         );
-
-    TEventCallback callback2( this, &PubSub2PubSub::OnMetricsTimerCycle );
-    SubscribeTo( &m_metricsTimer                ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback2                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -520,8 +514,6 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
             ++i;
         }
 
-        m_metricsTimer.SetEnabled( false );
-
         m_isInStandby = totalSuccess;
         return totalSuccess;
     }
@@ -587,12 +579,6 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
                 }
             }
             ++n;
-        }
-
-        if ( totalSuccess && m_transmitMetrics )
-        {
-            m_metricsTimer.SetInterval( 1000 );
-            m_metricsTimer.SetEnabled( true );
         }
 
         m_isInStandby = !totalSuccess;
@@ -865,25 +851,6 @@ PubSub2PubSub::OnAppShutdown( CORE::CNotifier* notifier    ,
 
     // Now get rid of all the channels we created based on the settings
     m_channels.clear();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-PubSub2PubSub::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventId  ,
-                                    CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    // We invoke the channel's 'publish metrics' from the thread the main app
-    // runs in which is a different thread vs the channels. reason being that if
-    // the channels are bogged down busy they may not get to send stats in time
-    PubSubClientChannelMap::iterator i = m_channels.begin();
-    while ( i != m_channels.end() )
-    {
-        (*i).second->PublishChannelMetrics();
-        ++i;
-    }
 }
 
 /*-------------------------------------------------------------------------*/

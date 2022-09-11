@@ -139,6 +139,9 @@ CTaskDelegator::~CTaskDelegator()
     UnsubscribeAllFromNotifier();
     m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );
     m_threadPool.Unlink();
+    
+    if ( !m_taskConsumer.IsNULL() )
+        m_taskConsumer->SetPulseGenerator( GUCEF_NULL );
     m_taskConsumer.Unlink();
 }
 
