@@ -31,10 +31,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
 #include "CTNumericIDGenerator.h"
@@ -75,7 +75,7 @@ class CPulseGenerator;
  *  the task is performed within a thread that is exclusve to the task for the
  *  duration of the task.
  */
-class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
 {
     public:
 
@@ -103,8 +103,6 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     void SetTaskDelegator( const TTaskDelegatorBasicPtr& delegator );
     
     TTaskDelegatorBasicPtr GetTaskDelegator( void );
-
-    CPulseGenerator* GetPulseGenerator( void );
 
     UInt32 GetDelegatorThreadId( void ) const;
 

@@ -79,9 +79,13 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 {
     public:
 
-    CTSGNotifier( void );
+    CTSGNotifier( bool allowSameThreadEventsToFlowThrough = true );
 
-    CTSGNotifier( CPulseGenerator& pulsGenerator );
+    CTSGNotifier( CPulseGenerator& pulsGenerator                 ,
+                  bool allowSameThreadEventsToFlowThrough = true );
+
+    CTSGNotifier( CPulseGenerator* pulsGenerator                 ,
+                  bool allowSameThreadEventsToFlowThrough = true );
 
     CTSGNotifier( const CTSGNotifier& src );
 
@@ -157,6 +161,8 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     protected:
     friend class CTSGObserver;
+
+    virtual void SetPulseGenerator( CPulseGenerator* newPulseGenerator );
 
     /**
      *  Same as NotifyObservers() except the notification is pumped first

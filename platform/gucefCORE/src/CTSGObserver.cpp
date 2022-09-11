@@ -39,13 +39,24 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTSGObserver::CTSGObserver( CPulseGenerator& pulsGenerator )
-    : CPumpedObserver( pulsGenerator ) ,  
-      m_parentNotifier( NULL )
+CTSGObserver::CTSGObserver( CPulseGenerator& pulseGenerator         ,
+                            bool allowSameThreadEventsToFlowThrough )
+    : CPumpedObserver( pulseGenerator, allowSameThreadEventsToFlowThrough )
+    , m_parentNotifier( GUCEF_NULL )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTSGObserver::CTSGObserver( CPulseGenerator* pulseGenerator         ,
+                            bool allowSameThreadEventsToFlowThrough )
+    : CPumpedObserver( pulseGenerator, allowSameThreadEventsToFlowThrough )
+    , m_parentNotifier( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -53,8 +64,8 @@ CTSGObserver::CTSGObserver( CPulseGenerator& pulsGenerator )
 /*-------------------------------------------------------------------------*/
 
 CTSGObserver::CTSGObserver( const CTSGObserver& src )
-    : CPumpedObserver( src )                   ,
-      m_parentNotifier( src.m_parentNotifier )
+    : CPumpedObserver( src )                   
+    , m_parentNotifier( src.m_parentNotifier )
 {GUCEF_TRACE;
 
 }

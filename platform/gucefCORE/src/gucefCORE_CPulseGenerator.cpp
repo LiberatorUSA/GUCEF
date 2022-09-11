@@ -90,6 +90,7 @@ CPulseGenerator::CPulseGenerator( void )
     , m_forcedStopOfPeriodPulses( false )              
     , m_periodicUpdateRequestors()                     
     , m_driver( NULL )    
+    , m_driverThreadId( 0 )
     , m_objLock()
     , m_dataLock()
 {GUCEF_TRACE;
@@ -494,6 +495,14 @@ CPulseGenerator::RequestPeriodicPulses( void )
 
 /*--------------------------------------------------------------------------*/
 
+UInt32
+CPulseGenerator::GetPulseDriverThreadId( void ) const
+{
+    return m_driverThreadId;
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool
 CPulseGenerator::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
@@ -528,6 +537,8 @@ CPulseGenerator::OnDriverPulse( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex dataLock( m_dataLock );
+
+    m_driverThreadId = MT::GetCurrentTaskID();
     
     UInt64 tickCount = MT::PrecisionTickCount();
     UInt64 deltaTicks = tickCount - m_lastCycleTickCount;

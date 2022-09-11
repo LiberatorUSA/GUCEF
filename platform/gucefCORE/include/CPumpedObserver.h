@@ -64,9 +64,13 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 {
     public:
 
-    CPumpedObserver( void );
+    CPumpedObserver( bool allowSameThreadEventsToFlowThrough = true );
 
-    CPumpedObserver( CPulseGenerator& pulsGenerator );
+    CPumpedObserver( CPulseGenerator& pulsGenerator                 ,
+                     bool allowSameThreadEventsToFlowThrough = true );
+
+    CPumpedObserver( CPulseGenerator* pulsGenerator                 ,
+                     bool allowSameThreadEventsToFlowThrough = true );
 
     CPumpedObserver( const CPumpedObserver& src );
 
@@ -76,6 +80,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SetPulseGenerator( CPulseGenerator* newPulseGenerator );
+    
     CPulseGenerator* GetPulseGenerator( void ) const;
 
     /**
@@ -146,10 +152,13 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                                       const CEvent& eventid         ,
                                       CICloneable* eventdata = NULL );
 
+    void RegisterPulseGeneratorEventHandlers( void );
+    
     private:
 
-    CPulseGenerator* m_pulsGenerator;
+    CPulseGenerator* m_pulseGenerator;
     bool m_propagatePulseEvent;
+    bool m_allowSameThreadEventsToFlowThrough;
     MT::CTMailBox< CEvent > m_mailbox;
     MT::CMutex m_mutex;
 };

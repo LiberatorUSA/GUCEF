@@ -55,13 +55,12 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CPubSubFlowRouter( void )
-    : CORE::CObservingNotifier()
+    : CORE::CTSGNotifier( GUCEF_NULL, true )
     , m_config()
     , m_routeMap()
     , m_usedInRouteMap()
     , m_spilloverInfoMap()
     , m_spilloverInfoForTargetsMap()
-    , m_pulseGenerator( GUCEF_NULL )
     , m_lock( true )
 {GUCEF_TRACE;
 
@@ -860,7 +859,7 @@ CPubSubFlowRouter::UpdatePulseGeneratorUsage( void )
         while ( n != multiRouteInfo.end() )
         {
             CRouteInfo& routeInfo = (*n);
-            routeInfo.routeSwitchingTimer.SetPulseGenerator( m_pulseGenerator );
+            routeInfo.routeSwitchingTimer.SetPulseGenerator( GetPulseGenerator() );
             ++n;
         }
         ++r;
@@ -874,7 +873,7 @@ CPubSubFlowRouter::SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator )
 {GUCEF_TRACE;
     
     MT::CScopeWriterLock lock( m_lock );
-    m_pulseGenerator = pulseGenerator;
+    CORE::CTSGNotifier::SetPulseGenerator( pulseGenerator );
     UpdatePulseGeneratorUsage();
 }
 
@@ -1248,6 +1247,26 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
     MT::CScopeWriterLock lock( m_lock );
        
     CPubSubClientSide* newActiveSide = GUCEF_NULL;
+
+    // Check if this our first run at determining the active route
+    if ( GUCEF_NULL == routeInfo.activeSide )
+    {
+        // For a first run we cover the scenario of having a spillover which was not full drained for whatever
+        // reason when last we ran. As such data would remain stuck in the spillover until we happened to need it again
+        // and there is no telling when that will be. As such we need to make sure the spillover gets drained on startup.
+        if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):DetermineActiveRoute: The route has a spillover configured and this is the first active route determination. Commencing spillover egress to ensure there is no data stuck there" );            
+        
+            routeInfo.flowingIntoSpillover = false;  // egress mode
+            ConfigureSpillover( routeInfo.spilloverBufferSide, false );
+            routeInfo.routeSwitchingTimer.SetEnabled( true );
+            
+            routeInfo.activeSide = routeInfo.spilloverBufferSide;
+            return;
+        }
+    }
     
     CORE::UInt64 primarySideHealthDurationInMs = (CORE::UInt64) routeInfo.toSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow();
     

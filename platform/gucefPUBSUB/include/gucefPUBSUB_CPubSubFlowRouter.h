@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -79,7 +84,7 @@ namespace PUBSUB {
  *  Class which aims to provide a config driven mapping between pubsub sides
  *  The mapping entails various information flows and behaviour between said sides
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifier
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
 {
     public:
 
@@ -105,7 +110,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     bool AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide ,
                                     CIPubSubMsg::TNoLockSharedPtr& msg );
     
-    void SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator );
+    virtual void SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
     
     protected:
 
@@ -246,7 +251,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CObservingNotifie
     TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
     TSidePtrToSpilloverInfoMap m_spilloverInfoMap;
     TSidePtrToSpilloverInfoPtrMap m_spilloverInfoForTargetsMap;
-    CORE::CPulseGenerator* m_pulseGenerator;
     MT::CReadWriteLock m_lock;
 };
 

@@ -47,9 +47,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTSGNotifier::CTSGNotifier( void )
+CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough )
     : CNotifier()                    
-    , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -58,9 +58,22 @@ CTSGNotifier::CTSGNotifier( void )
 
 /*-------------------------------------------------------------------------*/
 
-CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator )
+CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator          ,
+                            bool allowSameThreadEventsToFlowThrough )
     : CNotifier()                    
-    , m_tsgObserver( pulsGenerator )
+    , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
+    , m_dataLock()
+{GUCEF_TRACE;
+
+    m_tsgObserver.SetParent( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTSGNotifier::CTSGNotifier( CPulseGenerator* pulsGenerator          ,
+                            bool allowSameThreadEventsToFlowThrough )
+    : CNotifier()                    
+    , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -204,6 +217,15 @@ CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
     m_tsgObserver.AddEventToMailbox( this      ,
                                      eventid   ,
                                      eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTSGNotifier::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
+{GUCEF_TRACE;
+
+    m_tsgObserver.SetPulseGenerator( newPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -109,6 +109,8 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;
 
+    UInt32 GetPulseDriverThreadId( void ) const;
+
     bool IsForcedStopOfPeriodicPulsesRequested( void ) const;
 
     void ForceStopOfPeriodicPulses( void );
@@ -159,6 +161,7 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
     bool m_forcedStopOfPeriodPulses;
     TPeriodicPulseRequestorMap m_periodicUpdateRequestors;
     CIPulseGeneratorDriver* m_driver;
+    UInt32 m_driverThreadId;
     MT::CMutex m_objLock;
     MT::CMutex m_dataLock;
 };

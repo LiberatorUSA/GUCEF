@@ -89,7 +89,7 @@ class CNotifier;
  *  One of those scenarios is destruction of the notifier as a result of it's notification.
  *  this class makes that scenario something that can be handled safely and care-free.
  */
-class CNotifierImplementor : public MT::CILockable
+class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
 {  
     public:
 
