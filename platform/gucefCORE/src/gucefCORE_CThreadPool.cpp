@@ -562,7 +562,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
             {
                 taskConsumer->Subscribe( taskObserver );
             }
-            SubscribeTo( taskConsumer.GetPointerAlways() );
+            SubscribeToTaskConsumerEvents( taskConsumer );
 
             CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer              ,
                                                             taskData                  ,
@@ -579,6 +579,21 @@ CThreadPool::QueueTask( const CString& taskType           ,
     }
     NotifyObservers( TaskQueuedEvent );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::SubscribeToTaskConsumerEvents( CTaskConsumerPtr& taskConsumer )
+{GUCEF_TRACE;
+
+    CORE::CNotifier* notifier = taskConsumer.GetPointerAlways();
+    SubscribeTo( notifier, CTaskConsumer::TaskKilledEvent );
+    SubscribeTo( notifier, CTaskConsumer::TaskStartedEvent );
+    SubscribeTo( notifier, CTaskConsumer::TaskStartupFailedEvent );
+    SubscribeTo( notifier, CTaskConsumer::TaskPausedEvent );
+    SubscribeTo( notifier, CTaskConsumer::TaskResumedEvent );
+    SubscribeTo( notifier, CTaskConsumer::TaskFinishedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -694,8 +709,8 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
     //            This causes the consumer to be linked but no OnTaskStart or the like will yet be invoked on the consumer 
     taskConsumer->SetIsInPhasedSetup( true );
 
-    // We proxy event messages
-    SubscribeTo( taskConsumer.GetPointerAlways() );
+    // We listen for task consumer generic events
+    SubscribeToTaskConsumerEvents( taskConsumer );
 
     // Since clearly the task consumer wishes to utlize this particular thread pool we will now
     // make sure the task consumer is registered as a known consumer for this thread pool
@@ -781,7 +796,7 @@ CThreadPool::StartTask( const CString& taskType ,
         {
             *task = taskConsumer;
         }
-        SubscribeTo( taskConsumer.GetPointerAlways() );
+        SubscribeToTaskConsumerEvents( taskConsumer );
 
         CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
         SubscribeTo( delegator.GetPointerAlways() );

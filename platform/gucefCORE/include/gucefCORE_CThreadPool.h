@@ -265,6 +265,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void RemoveDelegator( CNotifier* notifier );
 
+    void SubscribeToTaskConsumerEvents( CTaskConsumerPtr& taskConsumer );
+
     CThreadPool( const CThreadPool& src );                   /**< not supported */
     CThreadPool& operator=( const CThreadPool& src );        /**< not supported */
 
