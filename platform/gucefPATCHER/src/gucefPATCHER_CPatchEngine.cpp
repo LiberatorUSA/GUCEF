@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define GUCEF_CORE_CMFILEACCESS_H
@@ -77,7 +82,7 @@ const CORE::CEvent CPatchEngine::PatchListDecodingFailedEvent = "GUCEF::PATCHER:
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
+CPatchEngine::CPatchEngine( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CORE::CForwardingNotifier()                                 ,
       CPatchSetDirEngineEvents()                                  ,
       CPatchSetFileEngineEvents()                                 ,

@@ -98,7 +98,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
     
     // The following are runtime available:
 
-    CORE::CPulseGenerator* pulseGenerator;                  /**< dedicated pulse generator to use for anything that uses a pulse generator directly, if any */
+    CORE::PulseGeneratorPtr pulseGenerator;                 /**< dedicated pulse generator to use for anything that uses a pulse generator directly, if any */
     TIPubSubBookmarkPersistencePtr bookmarkPersistence;     /**< peristance facility for bookmarks */
 
     CPubSubClientConfig( void );

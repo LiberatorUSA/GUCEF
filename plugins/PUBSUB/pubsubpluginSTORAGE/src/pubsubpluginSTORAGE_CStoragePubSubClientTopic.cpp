@@ -194,7 +194,7 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
 /*-------------------------------------------------------------------------*/
 
 CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_pubsubMsgs()
     , m_pubsubMsgsRefs()
@@ -315,9 +315,9 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -925,9 +925,9 @@ CStoragePubSubClientTopic::OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClientTopic::OnNotify( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventid  ,
-                                     CORE::CICloneable* eventdata )
+CStoragePubSubClientTopic::OnPumpedNotify( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventid  ,
+                                           CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();

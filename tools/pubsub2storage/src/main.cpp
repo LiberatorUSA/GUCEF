@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -316,9 +321,9 @@ GUCEF_OSMAIN_BEGIN
         return -2;
     }
 
-    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestPulseInterval( 25 );
-    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+    CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestPulseInterval( 25 );
+    pulseGenerator->RequestPulsesPerImmediatePulseRequest( 25 );
     
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     returnValue = app.main( argc, argv, true );

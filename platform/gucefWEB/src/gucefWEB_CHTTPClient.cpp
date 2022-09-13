@@ -122,7 +122,7 @@ CHTTPClient::CHTTPClient( void )
 
 /*-------------------------------------------------------------------------*/
 
-CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
+CHTTPClient::CHTTPClient( CORE::PulseGeneratorPtr& pulseGenerator )
     : CObservingNotifier()       
     , m_socket( pulseGenerator ,
                 false          ) 

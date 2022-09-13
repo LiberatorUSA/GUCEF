@@ -146,7 +146,7 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext );
+    GUI::TGuiContextPtr guiContextPtr = GUI::TGuiContextPtr( new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext ) );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;

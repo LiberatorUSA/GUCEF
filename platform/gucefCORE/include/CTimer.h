@@ -46,6 +46,11 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -60,10 +65,6 @@ namespace CORE {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class CPulseGenerator;
-
-/*-------------------------------------------------------------------------*/
 
 /**
  *  Timer implementation that attempts to provide a timing mechanism with a
@@ -99,10 +100,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
     public:
 
-    CTimer( CPulseGenerator* pulseGenerator          ,
-            const UInt32 updateDeltaInMilliSecs = 25 );
-
-    CTimer( CPulseGenerator& pulseGenerator          ,
+    CTimer( PulseGeneratorPtr pulseGenerator        ,
             const UInt32 updateDeltaInMilliSecs = 25 );
 
     CTimer( const UInt32 updateDeltaInMilliSecs = 25 );
@@ -185,7 +183,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
      *  internals at the time you are calling this function as it is NOT threadsafe
 	 *  Use with great care
 	 */
-    void SetPulseGenerator( CPulseGenerator* newPulseGenerator );    
+    void SetPulseGenerator( PulseGeneratorPtr newPulseGenerator );    
     
     void SetOpaqueUserData( void* opaqueUserData );
 
@@ -200,13 +198,9 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     private:
     typedef CTEventHandlerFunctor< CTimer > TEventCallback;
 
-    void OnPulse( CNotifier* notifier           ,
-                  const CEvent& eventid         ,
-                  CICloneable* eventdata = NULL );
-
-    void OnPulseGeneratorDestruction( CNotifier* notifier           ,
-                                      const CEvent& eventid         ,
-                                      CICloneable* eventdata = NULL );
+    void OnPulse( CNotifier* notifier                 ,
+                  const CEvent& eventid               ,
+                  CICloneable* eventdata = GUCEF_NULL );
 
     void RegisterPulseGeneratorEventHandlers( void );
     
@@ -219,7 +213,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     UInt64 m_activationTickCount;
     bool m_enabled;
     bool m_immediateTriggerRequested;
-    CPulseGenerator* m_pulseGenerator;
+    PulseGeneratorPtr m_pulseGenerator;
     void* m_opaqueUserData;
 };
 

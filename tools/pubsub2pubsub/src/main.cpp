@@ -62,15 +62,10 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
 #ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
@@ -331,9 +326,9 @@ GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2pubsub" )
         return -2;
     }
 
-    CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestPulseInterval( 25 );
-    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+    CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestPulseInterval( 25 );
+    pulseGenerator->RequestPulsesPerImmediatePulseRequest( 25 );
     
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     returnValue = app.main( argc, argv, true );

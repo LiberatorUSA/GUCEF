@@ -60,21 +60,7 @@ CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough ,
 
 /*-------------------------------------------------------------------------*/
 
-CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator          ,
-                            bool allowSameThreadEventsToFlowThrough ,
-                            bool forwardAllNotifications            )
-    : CNotifier()                    
-    , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
-    , m_forwardAllNotifications( forwardAllNotifications )
-    , m_dataLock()
-{GUCEF_TRACE;
-
-    m_tsgObserver.SetParent( this );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTSGNotifier::CTSGNotifier( CPulseGenerator* pulsGenerator          ,
+CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
                             bool allowSameThreadEventsToFlowThrough ,
                             bool forwardAllNotifications            )
     : CNotifier()                    
@@ -232,15 +218,6 @@ CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CTSGNotifier::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
-{GUCEF_TRACE;
-
-    m_tsgObserver.SetPulseGenerator( newPulseGenerator );
-}
-
-/*-------------------------------------------------------------------------*/
-
 const CString&
 CTSGNotifier::GetClassTypeName( void ) const
 {GUCEF_TRACE;
@@ -287,7 +264,16 @@ CTSGNotifier::AsObserver( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator* 
+void 
+CTSGNotifier::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    m_tsgObserver.SetPulseGenerator( newPulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
+PulseGeneratorPtr 
 CTSGNotifier::GetPulseGenerator( void ) const
 {GUCEF_TRACE;
 
@@ -304,7 +290,8 @@ CTSGNotifier::UnsubscribeAllFromObserver( bool isBeingDestroyed )
     {
         m_tsgObserver.ForwardSignalOfUpcomingObserverDestruction();
         m_tsgObserver.ClearMailbox( false );
-        m_tsgObserver.SetParent( GUCEF_NULL ); 
+        m_tsgObserver.SetPulseGenerator( PulseGeneratorPtr() );
+        m_tsgObserver.SetParent( GUCEF_NULL );         
     }
     else
     {

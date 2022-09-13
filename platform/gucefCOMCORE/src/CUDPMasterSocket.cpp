@@ -64,9 +64,9 @@ CUDPMasterSocket::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
     
-CUDPMasterSocket::CUDPMasterSocket( CORE::CPulseGenerator& pulseGenerator ,
-                                    bool blocking                         )
-    : CObservingNotifier()          ,
+CUDPMasterSocket::CUDPMasterSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                                    bool blocking                                 )
+    : CObservingNotifier()        ,
       m_udpSocket( pulseGenerator , 
                    blocking       ) ,
       m_channelMap()

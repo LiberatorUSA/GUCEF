@@ -110,7 +110,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     bool AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide ,
                                     CIPubSubMsg::TNoLockSharedPtr& msg );
     
-    virtual void SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
     
     protected:
 

@@ -99,7 +99,7 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
     , m_disconnectIfIdle( false )
-    , m_idleTimer( *tcp_serversock->m_pulseGenerator, 600000 )
+    , m_idleTimer( tcp_serversock->m_pulseGenerator, 600000 )
 {GUCEF_TRACE;
 
     _data = new TTCPServerConData;

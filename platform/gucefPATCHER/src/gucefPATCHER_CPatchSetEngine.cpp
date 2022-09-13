@@ -79,7 +79,7 @@ CPatchSetEngine::CPatchSetEngine( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPatchSetEngine::CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator )
+CPatchSetEngine::CPatchSetEngine( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CORE::CForwardingNotifier()                                     ,
       CPatchSetDirEngineEvents()                                      ,
       CPatchSetFileEngineEvents()                                     ,

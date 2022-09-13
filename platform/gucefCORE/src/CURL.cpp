@@ -67,7 +67,7 @@ CURL::CURL( void )
       CIURLEvents()         ,
       m_handler( NULL )     ,
       m_url()               ,
-      m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
+      m_pulseGenerator( CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     Initialize();
@@ -88,12 +88,12 @@ CURL::CURL( const CURL& src )
 
 /*-------------------------------------------------------------------------*/
 
-CURL::CURL( CPulseGenerator& pulseGenerator )
+CURL::CURL( PulseGeneratorPtr pulseGenerator )
     : CForwardingNotifier()               ,
       CIURLEvents()                       ,
       m_handler( NULL )                   ,
       m_url()                             ,
-      m_pulseGenerator( &pulseGenerator )
+      m_pulseGenerator( pulseGenerator )
 {GUCEF_TRACE;
 
     Initialize();
@@ -106,7 +106,7 @@ CURL::CURL( const CString& url )
       CIURLEvents()                        ,
       m_handler( GetHandlerForURL( url ) ) ,
       m_url( url )                         ,
-      m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
+      m_pulseGenerator( CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     Initialize();
@@ -114,13 +114,13 @@ CURL::CURL( const CString& url )
 
 /*-------------------------------------------------------------------------*/
 
-CURL::CURL( const CString& url              ,
-            CPulseGenerator& pulseGenerator )
+CURL::CURL( const CString& url               ,
+            PulseGeneratorPtr pulseGenerator )
     : CForwardingNotifier()                ,
       CIURLEvents()                        ,
       m_handler( GetHandlerForURL( url ) ) ,
       m_url( url )                         ,
-      m_pulseGenerator( &pulseGenerator )
+      m_pulseGenerator( pulseGenerator )
 {GUCEF_TRACE;
 
     Initialize();
@@ -190,11 +190,11 @@ CURL::Refresh( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator&
+PulseGeneratorPtr
 CURL::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return *m_pulseGenerator;
+    return m_pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

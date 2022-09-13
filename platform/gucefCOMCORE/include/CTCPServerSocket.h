@@ -111,9 +111,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     public:
     
     
-    CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
-                      bool blocking                         ,
-                      UInt32 maxConnections = 100UL         );    
+    CTCPServerSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                      bool blocking                                 ,
+                      UInt32 maxConnections = 100UL                 );    
     
     CTCPServerSocket( bool blocking                 ,
                       UInt32 maxConnections = 100UL );
@@ -250,7 +250,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;         
-    CORE::CPulseGenerator* m_pulseGenerator;
+    CORE::PulseGeneratorPtr m_pulseGenerator;
     UInt32 m_maxUpdatesPerCycle;               /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReopenOnError;                  /**< flag for feature to auto re-open the listen socket after a socket error occurred */
     bool m_lastListenFailed;

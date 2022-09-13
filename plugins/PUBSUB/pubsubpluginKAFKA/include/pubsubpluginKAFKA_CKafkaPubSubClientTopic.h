@@ -142,8 +142,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
                   const CORE::CEvent& eventId  ,
                   CORE::CICloneable* eventData );
 
-    CORE::CPulseGenerator* GetPulseGenerator( void );
-
     CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
 
     CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );

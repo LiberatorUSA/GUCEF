@@ -110,7 +110,7 @@ CLogSvcClient::CLogSvcClient( void )
 
 /*-------------------------------------------------------------------------*/
 
-CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
+CLogSvcClient::CLogSvcClient( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CLoggingTask()                       ,
       m_tcpClient( pulseGenerator, false ) ,
       m_appName( "Unknown" )               ,

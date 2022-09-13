@@ -95,8 +95,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
      *
      *      @param blocking whether to construct the socket as a blocking socket
      */        
-    CUDPMasterSocket( CORE::CPulseGenerator& pulseGenerator ,
-                      bool blocking                         );
+    CUDPMasterSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                      bool blocking                                 );
     
     /**
      *      Creates a UDP socket object initialized to be either blocking

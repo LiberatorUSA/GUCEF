@@ -95,7 +95,8 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool )
 
     RegisterEvents();
 
-    m_pulseGenerator.SetPulseGeneratorDriver( this );
+    m_pulseGenerator = CPulseGenerator::CreateSharedObj();
+    m_pulseGenerator->SetPulseGeneratorDriver( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,7 +121,8 @@ CTaskDelegator::CTaskDelegator( const TBasicThreadPoolPtr& threadPool ,
 
     RegisterEvents();
 
-    m_pulseGenerator.SetPulseGeneratorDriver( this );
+    m_pulseGenerator = CPulseGenerator::CreateSharedObj();
+    m_pulseGenerator->SetPulseGeneratorDriver( this );
 
     // If we are being handed the task consumer already we can already establish the bi-directional link
     // this delegator is going to be the one to execute this task
@@ -137,11 +139,12 @@ CTaskDelegator::~CTaskDelegator()
         return;
 
     UnsubscribeAllFromNotifier();
-    m_pulseGenerator.SetPulseGeneratorDriver( GUCEF_NULL );
+    m_pulseGenerator->SetPulseGeneratorDriver( GUCEF_NULL );
+    m_pulseGenerator.Unlink();
     m_threadPool.Unlink();
     
     if ( !m_taskConsumer.IsNULL() )
-        m_taskConsumer->SetPulseGenerator( GUCEF_NULL );
+        m_taskConsumer->SetPulseGenerator( PulseGeneratorPtr() );
     m_taskConsumer.Unlink();
 }
 
@@ -156,7 +159,7 @@ CTaskDelegator::GetThreadPool( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator&
+PulseGeneratorPtr
 CTaskDelegator::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
@@ -169,7 +172,7 @@ void
 CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    if ( &pulseGenerator == &m_pulseGenerator )
+    if ( &pulseGenerator == m_pulseGenerator.GetPointerAlways() )
     {
         m_immediatePulseTickets = m_immediatePulseTicketMax;
     }
@@ -182,7 +185,7 @@ CTaskDelegator::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGen
                                                        const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
 
-    if ( &pulseGenerator == &m_pulseGenerator )
+    if ( &pulseGenerator == m_pulseGenerator.GetPointerAlways() )
     {
         if ( requestedPulsesPerImmediatePulseRequest > 1 )
             m_immediatePulseTicketMax = requestedPulsesPerImmediatePulseRequest;
@@ -200,7 +203,7 @@ CTaskDelegator::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
 
 {GUCEF_TRACE;
 
-    if ( &pulseGenerator == &m_pulseGenerator )
+    if ( &pulseGenerator == m_pulseGenerator.GetPointerAlways() )
     {
         m_delayInMilliSecs = pulseDeltaInMilliSecs;
         m_sendRegularPulses = true;
@@ -214,7 +217,7 @@ CTaskDelegator::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
                                       const UInt32 pulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    if ( &pulseGenerator == &m_pulseGenerator )
+    if ( &pulseGenerator == m_pulseGenerator.GetPointerAlways() )
     {
         m_delayInMilliSecs = pulseDeltaInMilliSecs;
         m_sendRegularPulses = true;
@@ -227,7 +230,7 @@ void
 CTaskDelegator::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    if ( &pulseGenerator == &m_pulseGenerator )
+    if ( &pulseGenerator == m_pulseGenerator.GetPointerAlways() )
     {
         m_sendRegularPulses = false;
     }
@@ -316,7 +319,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     {
         if ( !IsDeactivationRequested() )
         {
-            m_pulseGenerator.WaitTillNextPulseWindow( 25 );
+            m_pulseGenerator->WaitTillNextPulseWindow( 25 );
         }
         else
         {
@@ -344,7 +347,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 }
 
                 if ( m_sendRegularPulses || m_immediatePulseTickets > 0 )
-                    SendDriverPulse( m_pulseGenerator );
+                    SendDriverPulse( *m_pulseGenerator.GetPointerAlways() );
 
                 if ( m_immediatePulseTickets > 0 )
                 {
@@ -354,12 +357,12 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 {
                     if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
                     {
-                        m_pulseGenerator.WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
+                        m_pulseGenerator->WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
                         m_taskRequestedCycleDelayInMs = 0;
                     }
                     else
                     {
-                        m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                        m_pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
                     }
                 }
             }

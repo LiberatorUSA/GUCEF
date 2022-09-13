@@ -83,8 +83,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     public:
         
-    CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
-                      bool blocking                         );
+    CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
+                      bool blocking                          );
     
     CTCPClientSocket( bool blocking );
     
@@ -244,7 +244,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CORE::CDynamicBuffer m_sendOpBuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
     CHostAddress m_hostAddress;             /**< network order IP address */
-    CORE::CPulseGenerator* m_pulseGenerator;
+    CORE::PulseGeneratorPtr m_pulseGenerator;
     bool m_coaleseDataSends;
     UInt32 m_maxUpdatesPerCycle;            /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReconnectOnError;            /**< flag for feature to auto reconnect after a socket error occurred */

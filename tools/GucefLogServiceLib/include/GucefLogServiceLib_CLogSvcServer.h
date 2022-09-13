@@ -93,7 +93,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcServer : public CORE::CObservingNoti
 
     CLogSvcServer( void );
     
-    CLogSvcServer( CORE::CPulseGenerator& pulseGenerator ); 
+    CLogSvcServer( const CORE::PulseGeneratorPtr& pulseGenerator ); 
     
     virtual ~CLogSvcServer();
     

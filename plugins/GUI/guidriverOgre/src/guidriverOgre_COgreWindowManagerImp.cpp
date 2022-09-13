@@ -88,7 +88,7 @@ COgreWindowManagerImp::CreateWindowContext( const GUI::CString& title           
                                             const CORE::CValueList* params      )
 {GUCEF_TRACE;
 
-    TOgreWindowContextPtr windowContext = new COgreWindowContext();
+    TOgreWindowContextPtr windowContext = TOgreWindowContextPtr( new COgreWindowContext() );
     if ( windowContext->Initialize( title    ,
                                     settings ) )
     {

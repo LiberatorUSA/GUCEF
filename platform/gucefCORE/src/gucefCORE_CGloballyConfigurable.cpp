@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CCONFIGSTORE_H
 #endif /* GUCEF_CORE_CCONFIGSTORE_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #include "gucefCORE_CGloballyConfigurable.h" 
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H

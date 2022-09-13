@@ -120,7 +120,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPing : public CORE::CTSGNotifier
     
     CPing( void );
     
-    CPing( CORE::CPulseGenerator& pulsGenerator );
+    CPing( CORE::PulseGeneratorPtr pulsGenerator );
     
     virtual ~CPing();
 

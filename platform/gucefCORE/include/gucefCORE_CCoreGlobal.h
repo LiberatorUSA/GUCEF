@@ -46,6 +46,16 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -62,7 +72,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CDateTime;
-class CPulseGenerator;
+//class CPulseGenerator;
 class CTaskManager;
 class CURLHandlerRegistry;
 class CDStoreCodecRegistry;
@@ -77,9 +87,10 @@ class CSysConsole;
 class CNotificationIDRegistry;
 class CStdCodecPluginManager;
 class CConfigStore;
-class CPulseGenerator;
 class CCodecRegistry;
 class CFunctionRegistry;
+
+//typedef CTBasicSharedPtr< CPulseGenerator, MT::CMutex > BasicPulseGeneratorPtr;
 
 /*-------------------------------------------------------------------------*/
 
@@ -94,11 +105,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     CGUCEFApplication& GetApplication( void );
 
-    /**
-     *  Convenience function providing access to the Application
-     *  pulse generator
-     */
-    CPulseGenerator& GetPulseGenerator( void );
+    PulseGeneratorPtr GetPulseGenerator( void );
 
     CTaskManager& GetTaskManager( void );
 
@@ -163,7 +170,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     private:
 
-    CPulseGenerator* m_pulseGenerator;
+    PulseGeneratorPtr m_pulseGenerator;
     CTaskManager* m_taskManager;
     CURLHandlerRegistry* m_urlHandlerRegistry;
     CDStoreCodecRegistry* m_dstoreCodecRegistry;

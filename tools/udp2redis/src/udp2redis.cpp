@@ -694,9 +694,9 @@ bool
 Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-	m_udpSocket = new COMCORE::CUDPSocket( *GetPulseGenerator(), false );
-    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), 10 );
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+	m_udpSocket = new COMCORE::CUDPSocket( GetPulseGenerator(), false );
+    m_redisReconnectTimer = new CORE::CTimer( GetPulseGenerator(), 10 );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
 
     RegisterEventHandlers();
 

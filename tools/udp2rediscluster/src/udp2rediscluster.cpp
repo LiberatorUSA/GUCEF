@@ -365,10 +365,10 @@ bool
 ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
-    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.redisReconnectDelayInMs );
+    m_redisReconnectTimer = new CORE::CTimer( GetPulseGenerator(), m_channelSettings.redisReconnectDelayInMs );
 
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
@@ -1412,8 +1412,8 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
         }
     }
 
-	m_udpSocket = new COMCORE::CUDPSocket( *GetPulseGenerator(), false );
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+	m_udpSocket = new COMCORE::CUDPSocket( GetPulseGenerator(), false );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
     // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle

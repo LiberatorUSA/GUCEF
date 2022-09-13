@@ -185,6 +185,7 @@ set( HEADER_FILES
   include/gucefCORE_CJsonLoggingFormatter.h
   include/gucefCORE_CLinkedTransferBuffer.h
   include/gucefCORE_CLoaderDelegatedPluginLoadLogic.h
+  include/gucefCORE_CLoggingGlobal.h
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CMetricsClientManager.h
   include/gucefCORE_CMultiLogger.h
@@ -405,6 +406,7 @@ set( SOURCE_FILES
   src/gucefCORE_CJsonLoggingFormatter.cpp
   src/gucefCORE_CLinkedTransferBuffer.cpp
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
+  src/gucefCORE_CLoggingGlobal.cpp
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CMetricsClientManager.cpp
   src/gucefCORE_CMultiLogger.cpp

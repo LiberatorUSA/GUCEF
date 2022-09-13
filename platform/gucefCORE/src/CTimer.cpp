@@ -82,7 +82,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     , m_activationTickCount( 0 )
     , m_enabled( false )
     , m_immediateTriggerRequested( false )
-    , m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_pulseGenerator( CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
@@ -98,34 +98,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
 
 /*-------------------------------------------------------------------------*/
 
-CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
-                const UInt32 updateDeltaInMilliSecs /* = 25 */ )
-    : CObservingNotifier()
-    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
-    , m_lastTimerCycle( 0 )                                    
-    , m_tickCount( 0 )
-    , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
-    , m_activationTickCount( 0 )
-    , m_enabled( false )
-    , m_immediateTriggerRequested( false )
-    , m_pulseGenerator( &pulseGenerator )
-    , m_opaqueUserData( GUCEF_NULL )
-{GUCEF_TRACE;
-
-    assert( GUCEF_NULL != m_pulseGenerator );    
-    RegisterEvents();
-
-    if ( 0 == m_updateDeltaInMilliSecs )
-    {
-        m_updateDeltaInMilliSecs = 1;
-    }
-
-    RegisterPulseGeneratorEventHandlers();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTimer::CTimer( CPulseGenerator* pulseGenerator                ,
+CTimer::CTimer( PulseGeneratorPtr pulseGenerator               ,
                 const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : CObservingNotifier()
     , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
@@ -171,14 +144,7 @@ CTimer::CTimer( const CTimer& src )
         m_updateDeltaInMilliSecs = 1;
     }
 
-    TEventCallback callback( this, &CTimer::OnPulse );
-    SubscribeTo( m_pulseGenerator            ,
-                 CPulseGenerator::PulseEvent ,
-                 callback                    );
-    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CPulseGenerator::DestructionEvent ,
-                 callback2                         );
+    RegisterPulseGeneratorEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -186,10 +152,11 @@ CTimer::CTimer( const CTimer& src )
 CTimer::~CTimer()
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_pulseGenerator )
+    if ( !m_pulseGenerator.IsNULL() )
     {
         // Make sure this object is not still registered as requiring periodic updates
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+        m_pulseGenerator.Unlink();
     }
 }
 
@@ -228,17 +195,12 @@ void
 CTimer::RegisterPulseGeneratorEventHandlers( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_pulseGenerator )
+    if ( !m_pulseGenerator.IsNULL() )
     {
         TEventCallback callback( this, &CTimer::OnPulse );
-        SubscribeTo( m_pulseGenerator            ,
-                     CPulseGenerator::PulseEvent ,
-                     callback                    );
-        TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
-        SubscribeTo( m_pulseGenerator                  ,
-                     CPulseGenerator::DestructionEvent ,
-                     callback2                         );
-
+        SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                     CPulseGenerator::PulseEvent         ,
+                     callback                            );
     }
 }
 
@@ -325,21 +287,6 @@ CTimer::GetOpaqueUserData( void ) const
 {GUCEF_TRACE;
 
     return m_opaqueUserData;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTimer::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
-                                     const CEvent& eventid               ,
-                                     CICloneable* eventdata /* = NULL */ )
-
-{GUCEF_TRACE;
-
-    if ( static_cast< CPulseGenerator* >( notifier ) == m_pulseGenerator )
-    {
-        m_pulseGenerator = GUCEF_NULL;
-    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -497,11 +444,11 @@ CTimer::Unlock( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CTimer::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
+CTimer::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
     
     bool wasEnabled = m_enabled;
-    UnsubscribeFrom( m_pulseGenerator );
+    UnsubscribeFrom( m_pulseGenerator.GetPointerAlways() );
 
     SetEnabled( false );
     Reset();

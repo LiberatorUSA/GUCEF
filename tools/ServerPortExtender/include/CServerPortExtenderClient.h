@@ -72,7 +72,7 @@ class CServerPortExtenderClient : public CORE::CObserver
 {
     public:
     
-    CServerPortExtenderClient( CORE::CPulseGenerator& pulseGenerator );
+    CServerPortExtenderClient( CORE::PulseGeneratorPtr pulseGenerator );
     
     virtual ~CServerPortExtenderClient();
     
@@ -207,7 +207,7 @@ class CServerPortExtenderClient : public CORE::CObserver
     COMCORE::CHostAddress m_remoteSPEServerControl;
     COMCORE::CHostAddress m_remoteSPEReversedServer;
     bool m_controlConnectionInitialized;
-    CORE::CPulseGenerator* m_pulseGenerator;
+    CORE::PulseGeneratorPtr m_pulseGenerator;
     CORE::CTimer m_reconnectTimer;
     bool m_disconnectRequested;
     TSocketSet m_clientGarbageHeap;

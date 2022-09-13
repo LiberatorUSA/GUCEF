@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #include "gucefCORE_CPulseGenerator.h"
 #define GUCEF_CORE_CPULSEGENERATOR_H
@@ -132,9 +137,9 @@ void
 CWin32WindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestStopOfPeriodicUpdates( this );
-    UnsubscribeFrom( &pulseGenerator );
+	CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestStopOfPeriodicUpdates( this );
+    UnsubscribeFrom( pulseGenerator.GetPointerAlways() );
 
     if ( NULL != m_window.GetHwnd() )
     {
@@ -216,9 +221,9 @@ CWin32WindowContext::Initialize( const GUI::CString& title                ,
         m_window.GrabFocus();
 
         // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
-        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-        SubscribeTo( &pulseGenerator );
+        CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
+        pulseGenerator->RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+        SubscribeTo( pulseGenerator.GetPointerAlways() );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32WindowContext: Succesfully created Win32 window" );
         return true;

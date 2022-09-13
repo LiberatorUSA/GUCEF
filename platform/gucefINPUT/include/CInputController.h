@@ -270,7 +270,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CTSGNotifier
     TContextSet m_contextSet;
     TKeyboardMap m_keyboardMap;
     TMouseMap m_mouseMap;    
-    CORE::CPulseGenerator* m_pulseGenerator;    
+    CORE::PulseGeneratorPtr m_pulseGenerator;    
     #ifdef GUCEF_MSWIN_BUILD
     UInt64 m_hinstance;
     #endif    

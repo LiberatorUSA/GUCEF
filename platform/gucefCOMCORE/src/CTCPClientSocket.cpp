@@ -50,6 +50,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -127,8 +132,8 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
-                                    bool blocking                         )
+CTCPClientSocket::CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
+                                    bool blocking                          )
     : CTCPConnection()                    
     , _blocking( blocking )               
     , _active( false )                    
@@ -139,7 +144,7 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_maxreadbytes( 0 )                 
     , m_hostAddress()                     
     , m_isConnecting( false )             
-    , m_pulseGenerator( &pulseGenerator ) 
+    , m_pulseGenerator( pulseGenerator ) 
     , m_coaleseDataSends( true )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReconnectOnError( false )
@@ -157,9 +162,9 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
     TEventCallback callback( this, &CTCPClientSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,7 +180,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
     , m_maxreadbytes( 0 )      
     , m_hostAddress()          
     , m_isConnecting( false )  
-    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
+    , m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
     , m_coaleseDataSends( true )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReconnectOnError( false )
@@ -193,9 +198,9 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
     TEventCallback callback( this, &CTCPClientSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/

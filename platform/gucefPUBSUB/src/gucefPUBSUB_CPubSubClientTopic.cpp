@@ -87,7 +87,17 @@ CPubSubClientTopic::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientTopic::CPubSubClientTopic( void )
-    : CORE::CObservingNotifier()
+    : CORE::CTSGNotifier( CORE::PulseGeneratorPtr(), true, false )
+    , CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >( this )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopic::CPubSubClientTopic( const CORE::PulseGeneratorPtr& pulseGenerator )
+    : CORE::CTSGNotifier( pulseGenerator, true, false )
     , CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >( this )
 {GUCEF_TRACE;
 
@@ -99,6 +109,7 @@ CPubSubClientTopic::CPubSubClientTopic( void )
 CPubSubClientTopic::~CPubSubClientTopic()
 {GUCEF_TRACE;
 
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/

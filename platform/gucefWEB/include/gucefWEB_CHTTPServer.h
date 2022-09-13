@@ -117,7 +117,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
                  const CHttpServerSettings* settings = GUCEF_NULL                     );
 
-    CHTTPServer( CORE::CPulseGenerator& pulsGenerator                                 ,
+    CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator                         ,
                  THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
                  const CHttpServerSettings* settings = GUCEF_NULL                     );
     

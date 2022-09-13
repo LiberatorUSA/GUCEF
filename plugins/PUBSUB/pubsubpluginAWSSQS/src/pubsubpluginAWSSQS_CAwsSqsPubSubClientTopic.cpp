@@ -95,7 +95,7 @@ namespace AWSSQS {
 //-------------------------------------------------------------------------*/
 
 CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_redisShardHost()
     , m_config()
@@ -140,9 +140,9 @@ CAwsSqsPubSubClientTopic::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CAwsSqsPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 }
 
 /*-------------------------------------------------------------------------*/

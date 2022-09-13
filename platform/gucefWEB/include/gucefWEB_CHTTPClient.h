@@ -115,7 +115,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPClient : public CORE::CObservingNotifier
 
     CHTTPClient( void );                
     
-    CHTTPClient( CORE::CPulseGenerator& pulseGenerator );
+    CHTTPClient( CORE::PulseGeneratorPtr& pulseGenerator );
     
     virtual ~CHTTPClient();
     

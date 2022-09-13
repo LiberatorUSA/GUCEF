@@ -64,7 +64,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetFileEngine : public CORE::CObservingNotif
     
     CPatchSetFileEngine( void );
     
-    CPatchSetFileEngine( CORE::CPulseGenerator& pulseGenerator );
+    CPatchSetFileEngine( const CORE::PulseGeneratorPtr& pulseGenerator );
     
     virtual ~CPatchSetFileEngine();
     

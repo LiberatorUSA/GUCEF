@@ -87,8 +87,8 @@ bool
 CRedisClusterKeyCacheUpdateTask::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    CORE::CPulseGenerator* pulseGenerator = GetPulseGenerator();
-    if ( GUCEF_NULL == pulseGenerator )
+    CORE::PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
+    if ( pulseGenerator.IsNULL() )
         return false;
 
     m_indexingTimer = new CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL );

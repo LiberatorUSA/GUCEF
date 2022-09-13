@@ -124,7 +124,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchListEngine : public CORE::CForwardingNotifi
     
     CPatchListEngine( void );
     
-    CPatchListEngine( CORE::CPulseGenerator& pulseGenerator );
+    CPatchListEngine( const CORE::PulseGeneratorPtr& pulseGenerator );
     
     virtual ~CPatchListEngine();
     

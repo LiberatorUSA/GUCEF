@@ -36,6 +36,11 @@
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 #ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTORPROXY_H
 #include "gucefCORE_CTEventHandlerFunctorProxy.h"
 #define GUCEF_CORE_CTEVENTHANDLERFUNCTORPROXY_H
@@ -71,10 +76,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     CPumpedObserver( bool allowSameThreadEventsToFlowThrough = true );
 
-    CPumpedObserver( CPulseGenerator& pulsGenerator                 ,
-                     bool allowSameThreadEventsToFlowThrough = true );
-
-    CPumpedObserver( CPulseGenerator* pulsGenerator                 ,
+    CPumpedObserver( PulseGeneratorPtr pulsGenerator                ,
                      bool allowSameThreadEventsToFlowThrough = true );
 
     CPumpedObserver( const CPumpedObserver& src );
@@ -85,9 +87,9 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    void SetPulseGenerator( CPulseGenerator* newPulseGenerator );
+    void SetPulseGenerator( PulseGeneratorPtr newPulseGenerator );
     
-    CPulseGenerator* GetPulseGenerator( void ) const;
+    PulseGeneratorPtr GetPulseGenerator( void ) const;
 
     /**
      *  A pumped observer uses pulse generator events to allow for async 
@@ -191,15 +193,11 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                   const CEvent& eventid         ,
                   CICloneable* eventdata = NULL );
 
-    void OnPulseGeneratorDestruction( CNotifier* notifier           ,
-                                      const CEvent& eventid         ,
-                                      CICloneable* eventdata = NULL );
-
     void RegisterPulseGeneratorEventHandlers( void );
     
     private:
 
-    CPulseGenerator* m_pulseGenerator;
+    PulseGeneratorPtr m_pulseGenerator;
     bool m_propagatePulseEvent;
     bool m_allowSameThreadEventsToFlowThrough;
     MT::CTMailBox< CEvent > m_mailbox;

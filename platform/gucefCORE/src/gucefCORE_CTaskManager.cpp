@@ -105,7 +105,7 @@ CTaskManager::CTaskManager( void )
     , m_threadPools()       
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultTreadPoolName ] = ( new CThreadPool( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
+    m_threadPools[ DefaultTreadPoolName ] = ( new CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -158,9 +158,9 @@ CTaskManager::GetThreadPool( const CString& threadPoolName ) const
 /*-------------------------------------------------------------------------*/
 
 ThreadPoolPtr 
-CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName           , 
-                                     bool createIfNotExists                  ,
-                                     CPulseGenerator* threadPoolPulseContext )
+CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            , 
+                                     PulseGeneratorPtr threadPoolPulseContext ,
+                                     bool createIfNotExists                   )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -179,6 +179,16 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName           ,
     }
 
     return ThreadPoolPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+ThreadPoolPtr 
+CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName , 
+                                     bool createIfNotExists        )
+{GUCEF_TRACE;
+
+    return GetOrCreateThreadPool( threadPoolName, CORE::CCoreGlobal::Instance()->GetPulseGenerator(), createIfNotExists );        
 }
 
 /*-------------------------------------------------------------------------*/

@@ -74,7 +74,7 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemDirectoryWatcher : public CObservingNotif
 
     CFileSystemDirectoryWatcher( void );
 
-    CFileSystemDirectoryWatcher( CPulseGenerator& pulseGenerator );
+    CFileSystemDirectoryWatcher( PulseGeneratorPtr pulseGenerator );
 
     CFileSystemDirectoryWatcher( const CFileSystemDirectoryWatcher& src );
 

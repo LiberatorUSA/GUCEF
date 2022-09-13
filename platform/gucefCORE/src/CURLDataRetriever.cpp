@@ -75,7 +75,7 @@ CURLDataRetriever::CURLDataRetriever( void )
 
 /*-------------------------------------------------------------------------*/
 
-CURLDataRetriever::CURLDataRetriever( CPulseGenerator& pulseGenerator )
+CURLDataRetriever::CURLDataRetriever( PulseGeneratorPtr pulseGenerator )
     : CForwardingNotifier()      ,
       CIURLEvents()              ,
       m_ioAccess( NULL )         ,

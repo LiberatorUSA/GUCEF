@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_COMCORE_SOCKETUTILS_H
 #include "socketutils.h"
 #define GUCEF_COMCORE_SOCKETUTILS_H
@@ -107,9 +112,9 @@ typedef struct STCPServerSockData TTCPServerSockData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
-                                    bool blocking                         ,
-                                    UInt32 maxConnections                 )
+CTCPServerSocket::CTCPServerSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                                    bool blocking                                 ,
+                                    UInt32 maxConnections                         )
     : CSocket()                               
     , _connections( maxConnections )
     , m_activeConnections() 
@@ -119,7 +124,7 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_port( 0 )                             
     , _datalock()
     , _timeout( 0 )
-    , m_pulseGenerator( &pulseGenerator )
+    , m_pulseGenerator( pulseGenerator )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReopenOnError( false )
     , m_lastListenFailed( false )
@@ -140,9 +145,9 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -158,7 +163,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking         ,
     , m_port( 0 )      
     , _datalock()                       
     , _timeout( 0 )
-    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReopenOnError( false )
     , m_lastListenFailed( false )
@@ -179,9 +184,9 @@ CTCPServerSocket::CTCPServerSocket( bool blocking         ,
     }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/

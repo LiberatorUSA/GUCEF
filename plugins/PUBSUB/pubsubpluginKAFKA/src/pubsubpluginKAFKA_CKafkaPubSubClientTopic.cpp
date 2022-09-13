@@ -72,7 +72,7 @@ const std::string CKafkaPubSubClientTopic::KafkaMsgHeader_ProducerHostname = "Pr
 /*-------------------------------------------------------------------------*/
 
 CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_metricsTimer( GUCEF_NULL )
     , m_config()
@@ -179,9 +179,9 @@ CKafkaPubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback2( this, &CKafkaPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback2                            );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback2                                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2250,15 +2250,6 @@ CKafkaPubSubClientTopic::RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDel
         m_requestedConsumeDelayInMs = minDelayInMs + remainingMs;
     }
     return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CPulseGenerator*
-CKafkaPubSubClientTopic::GetPulseGenerator( void )
-{GUCEF_TRACE;
-
-    return m_client->GetConfig().pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -78,7 +78,7 @@ CPubSubClientChannel::CPubSubClientChannel( void )
     : CORE::CTaskConsumer()
     , m_sides()
     , m_flowRouter()
-    , m_metricsTimer( GUCEF_NULL, 1000 )
+    , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
 {GUCEF_TRACE;
 
 }
@@ -89,6 +89,7 @@ CPubSubClientChannel::~CPubSubClientChannel()
 {GUCEF_TRACE;
 
     Clear();
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,7 +169,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer.SetInterval( m_channelSettings.metricsIntervalInMs );
     m_metricsTimer.SetEnabled( m_channelSettings.collectMetrics );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PubSubClientChannel(" + CORE::ToString( this ) + ")", true, GetPulseGenerator() );
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PubSubClientChannel(" + CORE::ToString( this ) + ")", GetPulseGenerator(), true );
 
     // Create a side for every side config entry
     CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::const_iterator c = m_channelSettings.pubSubSideChannelSettingsMap.begin();

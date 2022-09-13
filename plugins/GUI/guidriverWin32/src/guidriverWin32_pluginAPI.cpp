@@ -55,7 +55,7 @@ namespace GUIDRIVERWIN32 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TWin32WindowManagerImpPtr win32WindowManager = new CWin32WindowManagerImp();
+static TWin32WindowManagerImpPtr win32WindowManager = TWin32WindowManagerImpPtr( new CWin32WindowManagerImp() );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

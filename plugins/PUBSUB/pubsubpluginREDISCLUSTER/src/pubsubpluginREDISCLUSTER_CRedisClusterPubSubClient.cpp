@@ -93,27 +93,30 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient: Failed to load config at construction" );
     }
 
-    if ( GUCEF_NULL == m_config.pulseGenerator )
-        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    if ( m_config.pulseGenerator.IsNULL() )
+        m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
 
     if ( m_config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+        m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
     if ( m_config.desiredFeatures.supportsAutoReconnect )
     {
-        m_redisReconnectTimer = new CORE::CTimer( *config.pulseGenerator, config.reconnectDelayInMs );
+        m_redisReconnectTimer = new CORE::CTimer( config.pulseGenerator, config.reconnectDelayInMs );
     }
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
     {                                                                      // @TODO: interval
-        m_streamIndexingTimer = new CORE::CTimer( *config.pulseGenerator, 100000 );
+        m_streamIndexingTimer = new CORE::CTimer( config.pulseGenerator, 100000 );
     }
 
-    m_config.metricsPrefix += "credis.";
+    m_config.metricsPrefix += "redis.";
 
     if ( config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", true );
+        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( 
+                "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", 
+                m_config.pulseGenerator, 
+                true );
 
     RegisterEventHandlers();
 }

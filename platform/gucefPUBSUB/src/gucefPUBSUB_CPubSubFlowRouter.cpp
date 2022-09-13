@@ -55,7 +55,7 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CPubSubFlowRouter( void )
-    : CORE::CTSGNotifier( GUCEF_NULL, true, false )
+    : CORE::CTSGNotifier( CORE::PulseGeneratorPtr(), true, false )
     , m_config()
     , m_routeMap()
     , m_usedInRouteMap()
@@ -91,7 +91,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     , deadLetterSide( GUCEF_NULL )
     , deadLetterSideIsHealthy( true )
     , deadLetterSideLastHealthStatusChange( CORE::CDateTime::PastMax )
-    , routeSwitchingTimer( GUCEF_NULL, 1000 )
+    , routeSwitchingTimer( CORE::PulseGeneratorPtr(), 1000 )
     , spilloverInfo( GUCEF_NULL )
 {GUCEF_TRACE;
     
@@ -869,11 +869,11 @@ CPubSubFlowRouter::UpdatePulseGeneratorUsage( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::SetPulseGenerator( CORE::CPulseGenerator* pulseGenerator )
+CPubSubFlowRouter::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
     
     MT::CScopeWriterLock lock( m_lock );
-    CORE::CTSGNotifier::SetPulseGenerator( pulseGenerator );
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
     UpdatePulseGeneratorUsage();
 }
 

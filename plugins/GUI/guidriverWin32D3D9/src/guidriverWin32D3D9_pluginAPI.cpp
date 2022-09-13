@@ -55,7 +55,7 @@ namespace GUIDRIVERWIN32D3D9 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TWin32D3D9WindowManagerImpPtr win32D3D9WindowManager = new CWin32D3D9WindowManagerImp();
+static TWin32D3D9WindowManagerImpPtr win32D3D9WindowManager = TWin32D3D9WindowManagerImpPtr( new CWin32D3D9WindowManagerImp() );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

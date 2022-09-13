@@ -22,6 +22,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -37,20 +47,15 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-#ifndef GUCEF_MT_CACTIVEOBJECT_H
-#include "gucefMT_CActiveObject.h"
-#define GUCEF_MT_CACTIVEOBJECT_H
-#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
-
 #ifndef GUCEF_CORE_CTSGNOTIFIER_H
 #include "CTSGNotifier.h"
 #define GUCEF_CORE_CTSGNOTIFIER_H
 #endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
 #ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"
@@ -189,7 +194,7 @@ CPing::CPingEventData::GetRoundTripTime( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CPing::CPing( CORE::CPulseGenerator& pulsGenerator )
+CPing::CPing( CORE::PulseGeneratorPtr pulsGenerator )
     : CTSGNotifier( pulsGenerator ) ,
       m_isActive( false )           ,
       m_remoteHosts()               ,

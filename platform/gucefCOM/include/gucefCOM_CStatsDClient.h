@@ -70,7 +70,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
 
     CStatsDClient( void );
 
-    CStatsDClient( CORE::CPulseGenerator& pulseGenerator );
+    CStatsDClient( const CORE::PulseGeneratorPtr& pulseGenerator );
 
     virtual ~CStatsDClient();
 

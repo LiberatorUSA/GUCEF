@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -135,7 +135,7 @@ class CPubSubClient;
  *  distinct process runs or backend topic lifecycles.
  *
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifier                                    ,
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier                                       ,
                                                    public CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >
 {
     public:
@@ -168,6 +168,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotifi
     static void RegisterEvents( void );
 
     CPubSubClientTopic( void );
+
+    CPubSubClientTopic( const CORE::PulseGeneratorPtr& pulseGenerator );
 
     virtual ~CPubSubClientTopic();
 

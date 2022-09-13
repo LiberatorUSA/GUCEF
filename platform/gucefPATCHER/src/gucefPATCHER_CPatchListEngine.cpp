@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define GUCEF_CORE_CMFILEACCESS_H
@@ -65,7 +70,7 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPatchListEngine::CPatchListEngine( CORE::CPulseGenerator& pulseGenerator )
+CPatchListEngine::CPatchListEngine( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CORE::CForwardingNotifier()                               ,
       CPatchSetDirEngineEvents()                                ,
       CPatchSetFileEngineEvents()                               ,

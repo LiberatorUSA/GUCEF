@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
 #endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"          /* often used gucefVFS macros */
 #define GUCEF_VFS_MACROS_H

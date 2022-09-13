@@ -87,7 +87,7 @@ CPatchSetFileEngine::CPatchSetFileEngine( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPatchSetFileEngine::CPatchSetFileEngine( CORE::CPulseGenerator& pulseGenerator )
+CPatchSetFileEngine::CPatchSetFileEngine( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CObservingNotifier()               ,
       CPatchSetFileEngineEvents()        ,
       m_isActive( false )                ,

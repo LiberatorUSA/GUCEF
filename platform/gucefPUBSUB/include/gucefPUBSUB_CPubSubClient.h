@@ -83,7 +83,7 @@ namespace PUBSUB {
 /**
  *  Base class for all pub-sub client implementations
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier           ,
                                               public virtual CORE::CIConfigurable
 {
     public:
@@ -105,6 +105,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     typedef CORE::TCloneableBool                                    THealthStatusChangeEventData;           /**< boolean flag indicating the health status */
 
     CPubSubClient( void );
+    
+    CPubSubClient( const CORE::PulseGeneratorPtr& pulseGenerator );
 
     CPubSubClient( const CPubSubClient& src );
 
@@ -219,6 +221,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     void SetOpaqueUserData( void* opaqueUserData );
     
     void* GetOpaqueUserData( void ) const;
+
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
 
     static void RegisterEvents( void );
     

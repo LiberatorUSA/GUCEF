@@ -92,7 +92,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchManager : public CORE::CTSGNotifier
     
     CPatchManager( void );
     
-    CPatchManager( CORE::CPulseGenerator& pulseGenerator );
+    CPatchManager( const CORE::PulseGeneratorPtr& pulseGenerator );
     
     virtual ~CPatchManager();
     

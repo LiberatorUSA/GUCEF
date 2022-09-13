@@ -70,7 +70,7 @@ class CServerPortExtender : public CORE::CObservingNotifier
     
     public:
     
-    CServerPortExtender( CORE::CPulseGenerator& pulseGenerator );
+    CServerPortExtender( CORE::PulseGeneratorPtr pulseGenerator );
     
     virtual ~CServerPortExtender();
     

@@ -84,6 +84,7 @@ CPulseGenerator::RegisterEvents( void )
 
 CPulseGenerator::CPulseGenerator( void )
     : CNotifier()                                      
+    , CTSharedObjCreator< CPulseGenerator, MT::CMutex >( this )
     , m_lastCycleTickCount( MT::PrecisionTickCount() ) 
     , m_updateDeltaInMilliSecs( 10 )                   
     , m_ticksPerMs( 1000 )                             

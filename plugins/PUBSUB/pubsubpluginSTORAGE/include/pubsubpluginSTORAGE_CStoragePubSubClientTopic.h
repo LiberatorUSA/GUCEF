@@ -204,9 +204,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnNotify( CORE::CNotifier* notifier                 ,
-                           const CORE::CEvent& eventid               ,
-                           CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier                 ,
+                                 const CORE::CEvent& eventid               ,
+                                 CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     void OnVfsFileCreated( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventid  ,

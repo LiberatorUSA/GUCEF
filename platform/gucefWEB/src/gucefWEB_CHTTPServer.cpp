@@ -53,6 +53,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 #include "gucefWEB_CDefaultHTTPServerRouterController.h"
 #define GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
@@ -203,7 +208,7 @@ CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactor
 
 /*-------------------------------------------------------------------------*/
 
-CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                                       ,
+CHTTPServer::CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator                               ,
                           THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ ,
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
     : CORE::CObservingNotifier()                               

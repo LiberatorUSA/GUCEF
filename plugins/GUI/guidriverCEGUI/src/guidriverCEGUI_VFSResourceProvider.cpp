@@ -149,7 +149,7 @@ VfsResourceProvider::loadRawDataContainer( const CEGUI::String& filename      ,
             output.setData( (CEGUI::uint8*) buffer );
             output.setSize( dataSize );
 
-            DataContainerInfoPtr info = new TDataContainerInfo;
+            DataContainerInfoPtr info = DataContainerInfoPtr( new TDataContainerInfo );
             info->fileHandle = file;
             info->requestFilename = fileName;
             info->requestresourceGroup = resourceGroup;

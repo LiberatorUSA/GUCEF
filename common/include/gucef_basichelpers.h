@@ -65,6 +65,12 @@
   #undef GUCEF_DEBUG_MODE
 #endif
 
+#if defined( GUCEF_DEBUG_MODE ) && defined( GUCEF_DEBUG_VERBOSE )
+  #define GUCEF_DEBUG_MODE_VERBOSE
+#else
+  #undef GUCEF_DEBUG_MODE_VERBOSE
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 /*

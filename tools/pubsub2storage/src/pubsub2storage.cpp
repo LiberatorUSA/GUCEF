@@ -615,7 +615,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     if ( !clientFeatures.supportsAutoReconnect )
     {
         if ( GUCEF_NULL != m_pubsubClientReconnectTimer )
-            m_pubsubClientReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.pubsubClientConfig.reconnectDelayInMs );
+            m_pubsubClientReconnectTimer = new CORE::CTimer( GetPulseGenerator(), m_channelSettings.pubsubClientConfig.reconnectDelayInMs );
     }
 
     SubscribeTo( m_pubsubClient.GetPointerAlways() );
@@ -739,7 +739,7 @@ bool
 CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.pubsubClientConfig.desiredFeatures.supportsMetrics );
 
     m_buffers.SetMinimalBufferSize( m_channelSettings.desiredMinimalSerializedBlockSize );

@@ -75,7 +75,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CLoggingTask
         
     CLogSvcClient( void );
     
-    CLogSvcClient( CORE::CPulseGenerator& pulseGenerator ); 
+    CLogSvcClient( const CORE::PulseGeneratorPtr& pulseGenerator ); 
     
     virtual ~CLogSvcClient() GUCEF_VIRTUAL_OVERRIDE;
     

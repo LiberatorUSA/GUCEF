@@ -25,6 +25,11 @@
 
 #include <string.h>
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -89,7 +94,7 @@ CLogSvcServer::CLogSvcServer( void )
 
 /*-------------------------------------------------------------------------*/
 
-CLogSvcServer::CLogSvcServer( CORE::CPulseGenerator& pulseGenerator )
+CLogSvcServer::CLogSvcServer( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CORE::CObservingNotifier()           ,
       m_tcpServer( pulseGenerator, false ) ,
       m_clientInfoMap()                    ,

@@ -126,9 +126,9 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_metricsMap()
     , m_sideSettings()
     , m_mailbox()
-    , m_metricsTimer( GUCEF_NULL, 1000 )
-    , m_pubsubClientReconnectTimer( GUCEF_NULL, 1000 )
-    , m_timedOutInFlightMessagesCheckTimer( GUCEF_NULL, 5000 )
+    , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
+    , m_pubsubClientReconnectTimer( CORE::PulseGeneratorPtr(), 1000 )
+    , m_timedOutInFlightMessagesCheckTimer( CORE::PulseGeneratorPtr(), 5000 )
     , m_sideId( sideId )
     , m_threadIdOfSide( 0 )
     , m_awaitingFailureReport( false )
@@ -147,6 +147,7 @@ CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
     DisconnectPubSubClient( true );
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1909,6 +1910,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         // This allows getting all the way from:
         //      a message -> a topic -> a client -> a pubsub side
         m_pubsubClient->SetOpaqueUserData( this );
+        m_pubsubClient->SetPulseGenerator( GetPulseGenerator() );
         
         clientSetupWasNeeded = true;
     }
@@ -2060,7 +2062,7 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     m_threadIdOfSide = MT::GetCurrentTaskID();
 
 
-    CORE::CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    CORE::PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
 
     m_pubsubClientReconnectTimer.SetPulseGenerator( pulseGenerator );

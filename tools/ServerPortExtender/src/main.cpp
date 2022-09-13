@@ -30,6 +30,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -82,8 +87,8 @@ class SpeTestController : CORE::CObserver
     {
         GUCEF::CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
 
-        m_spe = new CServerPortExtender( *app->GetPulseGenerator() );
-        m_speClient = new CServerPortExtenderClient( *app->GetPulseGenerator() );
+        m_spe = new CServerPortExtender( app->GetPulseGenerator() );
+        m_speClient = new CServerPortExtenderClient( app->GetPulseGenerator() );
 
         SubscribeTo( app );
         SubscribeTo( m_spe );
@@ -398,7 +403,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
         CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
-        CServerPortExtender serverPortExtender( *app->GetPulseGenerator() );
+        CServerPortExtender serverPortExtender( app->GetPulseGenerator() );
 
         serverPortExtender.ListenForReversedControlClientOnPort( serverControlPort );
         serverPortExtender.ListenForReversedClientsOnPort( reversedServerPort );
@@ -446,7 +451,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server port set to " + CORE::UInt16ToString( speServerPort ) );
 
         CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
-        CServerPortExtenderClient serverPortExtenderClient( *app->GetPulseGenerator() );
+        CServerPortExtenderClient serverPortExtenderClient( app->GetPulseGenerator() );
 
         serverPortExtenderClient.SetLocalServer( actualServerHostname, actualServerPort );
         serverPortExtenderClient.SetRemoteServerSocket( reversedServerPort );

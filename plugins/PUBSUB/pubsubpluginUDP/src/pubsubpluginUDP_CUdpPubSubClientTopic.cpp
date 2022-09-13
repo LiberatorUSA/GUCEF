@@ -73,7 +73,7 @@ namespace UDP {
 //-------------------------------------------------------------------------*/
 
 CUdpPubSubClientTopic::CUdpPubSubClientTopic( CUdpPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_config()
     , m_lock()
@@ -85,7 +85,7 @@ CUdpPubSubClientTopic::CUdpPubSubClientTopic( CUdpPubSubClient* client )
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_metricFriendlyTopicName()
-    , m_udpSocket( *client->GetConfig().pulseGenerator, false )
+    , m_udpSocket( client->GetPulseGenerator(), false )
 {GUCEF_TRACE;
         
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
@@ -141,9 +141,9 @@ CUdpPubSubClientTopic::RegisterEventHandlers( void )
                  callback5                                    );
 
     TEventCallback callback6( this, &CUdpPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback6                            );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback6                                               );
 }
 
 /*-------------------------------------------------------------------------*/

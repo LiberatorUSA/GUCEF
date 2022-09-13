@@ -62,7 +62,7 @@ class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
 
     CURLDataRetriever( void );
 
-    CURLDataRetriever( CPulseGenerator& pulseGenerator );
+    CURLDataRetriever( PulseGeneratorPtr pulseGenerator );
 
     virtual ~CURLDataRetriever();
 

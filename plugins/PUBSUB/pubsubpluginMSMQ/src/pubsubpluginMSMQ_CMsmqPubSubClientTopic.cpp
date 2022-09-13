@@ -130,7 +130,7 @@ RetrieveWin32APIErrorMessage( DWORD dwErr )
 /*-------------------------------------------------------------------------*/
 
 CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_msgSendMsg()
     , m_config()
@@ -163,11 +163,11 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    m_syncReadTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
+    m_syncReadTimer = new CORE::CTimer( client->GetPulseGenerator(), 25 );
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
     }
 
     RegisterEventHandlers();
@@ -251,9 +251,9 @@ CMsmqPubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback( this, &CMsmqPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 }
 
 /*-------------------------------------------------------------------------*/

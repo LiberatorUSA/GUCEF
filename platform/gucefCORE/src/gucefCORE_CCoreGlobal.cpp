@@ -158,6 +158,11 @@
 #define GUCEF_CORE_CFUNCTIONREGISTRY_H
 #endif /* GUCEF_CORE_CFUNCTIONREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CLOGGINGGLOBAL_H
+#include "gucefCORE_CLoggingGlobal.h"
+#define GUCEF_CORE_CLOGGINGGLOBAL_H
+#endif /* GUCEF_CORE_CLOGGINGGLOBAL_H ? */
+
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
   #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
@@ -270,9 +275,9 @@ CCoreGlobal::Initialize( void )
      *  We start with the log manager so that it is possible to log everything from that point on
      *  if a logger is registered at an early stage
      */
-    m_logManager = new CLogManager();                 
+    m_logManager = &CLoggingGlobal::Instance()->GetLogManager();
     m_notificationIdRegistry = new CNotificationIDRegistry();
-    m_pulseGenerator = new CPulseGenerator();
+    m_pulseGenerator = CTSharedObjCreator< CPulseGenerator, MT::CMutex >::CreateSharedObj();
 
     /*
      *  Make sure all events are registered from the start
@@ -340,13 +345,13 @@ CCoreGlobal::Initialize( void )
 /*-------------------------------------------------------------------------*/
 
 CCoreGlobal::CCoreGlobal( void )
-    : m_pulseGenerator( GUCEF_NULL )
+    : m_pulseGenerator()
     , m_taskManager( GUCEF_NULL )                
     , m_urlHandlerRegistry( GUCEF_NULL )         
     , m_dstoreCodecRegistry( GUCEF_NULL )        
     , m_exclusiveActivationManager( GUCEF_NULL ) 
     , m_application( GUCEF_NULL )                
-    , m_logManager( GUCEF_NULL )                 
+    , m_logManager( GUCEF_NULL )                
     , m_metricsClientManager( GUCEF_NULL )       
     , m_dstoreCodecPluginManager( GUCEF_NULL )   
     , m_genericPluginManager( GUCEF_NULL )       
@@ -394,7 +399,7 @@ CCoreGlobal::~CCoreGlobal()
     m_exclusiveActivationManager = GUCEF_NULL;
     delete m_application;
     m_application = GUCEF_NULL;
-    delete m_logManager;
+    CLoggingGlobal::Deinstance();
     m_logManager = GUCEF_NULL;
     delete m_metricsClientManager;
     m_metricsClientManager = GUCEF_NULL;
@@ -416,8 +421,6 @@ CCoreGlobal::~CCoreGlobal()
     m_codecRegistry = GUCEF_NULL;
     delete m_functionRegistry;
     m_functionRegistry = GUCEF_NULL;
-    delete m_pulseGenerator;
-    m_pulseGenerator = GUCEF_NULL;
 
 }
 
@@ -465,11 +468,11 @@ CCoreGlobal::GetApplication( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator&
+PulseGeneratorPtr
 CCoreGlobal::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return *m_pulseGenerator;
+    return m_pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

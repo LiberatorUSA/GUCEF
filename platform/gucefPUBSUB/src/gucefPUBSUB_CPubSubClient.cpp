@@ -62,8 +62,19 @@ const CORE::CEvent CPubSubClient::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPub
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPubSubClient::CPubSubClient( const CORE::PulseGeneratorPtr& pulseGenerator )
+    : CORE::CTSGNotifier( pulseGenerator, true, false )
+    , CORE::CIConfigurable()
+    , m_opaqueUserData( GUCEF_NULL )
+{GUCEF_TRACE;
+
+    RegisterEvents();    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPubSubClient::CPubSubClient( void )
-    : CORE::CObservingNotifier()
+    : CORE::CTSGNotifier( CORE::PulseGeneratorPtr(), true, false )
     , CORE::CIConfigurable()
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
@@ -74,7 +85,7 @@ CPubSubClient::CPubSubClient( void )
 /*-------------------------------------------------------------------------*/
 
 CPubSubClient::CPubSubClient( const CPubSubClient& src )
-    : CORE::CObservingNotifier( src )
+    : CORE::CTSGNotifier( src )
     , CORE::CIConfigurable( src )
     , m_opaqueUserData( src.m_opaqueUserData )
 {GUCEF_TRACE;
@@ -86,6 +97,7 @@ CPubSubClient::CPubSubClient( const CPubSubClient& src )
 CPubSubClient::~CPubSubClient()
 {GUCEF_TRACE;
 
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,7 +123,7 @@ CPubSubClient::operator=( const CPubSubClient& src )
     if ( &src != this )
     {
         CORE::CIConfigurable::operator=( *this );
-        CORE::CObservingNotifier::operator=( *this );
+        CORE::CTSGNotifier::operator=( *this );
     }
     return *this;
 }
@@ -124,6 +136,25 @@ CPubSubClient::GetClassTypeName( void ) const
 
     static const CString classTypeName = "GUCEF::PUBSUB::CPubSubClient";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    
+    PubSubClientTopicSet allTopicAccess;
+    GetAllCreatedTopicAccess( allTopicAccess );
+
+    PubSubClientTopicSet::iterator i = allTopicAccess.begin();
+    while ( i != allTopicAccess.end() )
+    {
+        (*i)->SetPulseGenerator( newPulseGenerator );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

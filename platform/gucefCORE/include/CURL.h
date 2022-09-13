@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
 #ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
 #include "gucefCORE_CForwardingNotifier.h"
 #define GUCEF_CORE_CFORWARDINGNOTIFIER_H
@@ -64,7 +69,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CURLHandler;
-class CPulseGenerator;
 
 /*-------------------------------------------------------------------------*/
 
@@ -80,12 +84,12 @@ class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
 
     CURL( const CURL& src );
 
-    CURL( CPulseGenerator& pulseGenerator );
+    CURL( PulseGeneratorPtr pulseGenerator );
 
     CURL( const CString& url );
 
-    CURL( const CString& url              ,
-          CPulseGenerator& pulseGenerator );
+    CURL( const CString& url               ,
+          PulseGeneratorPtr pulseGenerator );
 
     virtual ~CURL();
 
@@ -110,7 +114,7 @@ class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
 
     void Refresh( void );
 
-    CPulseGenerator& GetPulseGenerator( void );
+    PulseGeneratorPtr GetPulseGenerator( void );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -130,7 +134,7 @@ class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
 
     CString m_url;             /**< the URL string */
     CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
-    CPulseGenerator* m_pulseGenerator; /** pulse generator to be used by handlers */
+    PulseGeneratorPtr m_pulseGenerator; /** pulse generator to be used by handlers */
 };
 
 /*-------------------------------------------------------------------------//
@@ -145,14 +149,3 @@ class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CURL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-04-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/

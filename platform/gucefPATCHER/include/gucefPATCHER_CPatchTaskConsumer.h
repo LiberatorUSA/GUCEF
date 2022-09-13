@@ -93,8 +93,6 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchTaskConsumer : public CORE::CTaskConsumer
     private:
         
     CPatchEngine* m_patchEngine;
-    CORE::CPulseGenerator m_pulseGenerator;
-    CORE::CBusyWaitPulseGeneratorDriver m_pulseDriver;
     CString m_taskName;
 };
 

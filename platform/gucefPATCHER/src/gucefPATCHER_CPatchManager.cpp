@@ -28,6 +28,16 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_PATCHER_CPATCHTASKDATA_H
 #include "gucefPATCHER_CPatchTaskData.h"
 #define GUCEF_PATCHER_CPATCHTASKDATA_H
@@ -94,7 +104,7 @@ CPatchManager::CPatchManager( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPatchManager::CPatchManager( CORE::CPulseGenerator& pulseGenerator )
+CPatchManager::CPatchManager( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CTSGNotifier( pulseGenerator )                  ,
       m_taskManager( &CORE::CCoreGlobal::Instance()->GetTaskManager() )
 {GUCEF_TRACE;

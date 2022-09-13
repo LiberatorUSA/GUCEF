@@ -40,6 +40,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -97,7 +102,7 @@ CInputController::CInputController( void )
           m_idGenerator()            ,
           m_keyboardMap()            ,
           m_mouseMap()               ,
-          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ),
+          m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ),
           #ifdef GUCEF_MSWIN_BUILD
           m_hinstance(0UL),
           #endif
@@ -109,9 +114,9 @@ CInputController::CInputController( void )
     RegisterEvents();
 
     TEventCallback callback( this, &CInputController::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/

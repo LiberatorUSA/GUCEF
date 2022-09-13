@@ -195,10 +195,10 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     
     CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *renderTarget );
     ceGuiContext->setRootWindow( CEGUI::System::getSingleton().getDefaultGUIContext().getRootWindow() );
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         ,
-                                                           windowContext ,
-                                                           inputContext  ,
-                                                           ceGuiContext  );
+    GUI::TGuiContextPtr guiContextPtr = GUI::TGuiContextPtr( new CGUIContextGL( *this         ,
+                                                                                windowContext ,
+                                                                                inputContext  ,
+                                                                                ceGuiContext  ) );
     // Add a reference to the context in our set
     m_contextSet.insert( guiContextPtr );
 

@@ -94,7 +94,7 @@ CMsmqPubSubClient::CMsmqPubSubClient( const PUBSUB::CPubSubClientConfig& config 
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( *config.pulseGenerator, 1000 );
+            m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }

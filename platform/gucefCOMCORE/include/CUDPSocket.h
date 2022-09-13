@@ -109,8 +109,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *
      *      @param blocking whether to construct the socket as a blocking socket
      */
-    CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
-                bool blocking                         );
+    CUDPSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                bool blocking                                 );
 
     /**
      *      Creates a UDP socket object initialized to be either blocking
@@ -450,10 +450,6 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
                   const CORE::CEvent& eventid         ,
                   CORE::CICloneable* eventdata = NULL );
 
-    void OnPulseGeneratorDestruction( CORE::CNotifier* notifier           ,
-                                      const CORE::CEvent& eventid         ,
-                                      CORE::CICloneable* eventdata = NULL );
-
     bool Update( bool performRead );  /**< checks the socket for queued incoming data */
 
     bool PerformRead( void );
@@ -476,7 +472,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     TDynamicBufferVector m_receiveBuffers;         /**< multiple receive buffers mapped into the underlying receive buffer */
     UDPPacketsRecievedEventData m_udpPacketsReceivedEventData;
     UInt32 m_maxRecievedDataBufferSize;
-    CORE::CPulseGenerator* m_pulseGenerator;
+    CORE::PulseGeneratorPtr m_pulseGenerator;
     UInt32 m_maxUpdatesPerCycle;    /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_allowMulticastLoopback;
     int m_multicastTTL;

@@ -333,12 +333,12 @@ bool
 CKafkaPubSubClient::SetupBasedOnConfig( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_config.pulseGenerator )
+    if ( m_config.pulseGenerator.IsNULL() )
     {
         // Use the global pulse generator.
         // NOT what you want if you want thread isolation or basically any time you are not
         // writing a single threaded app
-        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+        m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     }
         
     if ( m_config.desiredFeatures.supportsMetrics )

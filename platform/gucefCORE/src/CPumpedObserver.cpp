@@ -157,7 +157,7 @@ class CMailElement : public CICloneable
 
 CPumpedObserver::CPumpedObserver( bool allowSameThreadEventsToFlowThrough )
     : CObserver()                                                      
-    , m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() ) 
+    , m_pulseGenerator( CCoreGlobal::Instance()->GetPulseGenerator() ) 
     , m_propagatePulseEvent( false )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
@@ -170,23 +170,7 @@ CPumpedObserver::CPumpedObserver( bool allowSameThreadEventsToFlowThrough )
 
 /*-------------------------------------------------------------------------*/
 
-CPumpedObserver::CPumpedObserver( CPulseGenerator& pulseGenerator         ,
-                                  bool allowSameThreadEventsToFlowThrough )
-    : CObserver()                       
-    , m_pulseGenerator( &pulseGenerator ) 
-    , m_propagatePulseEvent( false )
-    , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
-    , m_mailbox()
-    , m_mutex()
-{GUCEF_TRACE;
-    
-    assert( GUCEF_NULL != m_pulseGenerator );
-    RegisterPulseGeneratorEventHandlers();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPumpedObserver::CPumpedObserver( CPulseGenerator* pulseGenerator         ,
+CPumpedObserver::CPumpedObserver( PulseGeneratorPtr pulseGenerator        ,
                                   bool allowSameThreadEventsToFlowThrough )
     : CObserver()                       
     , m_pulseGenerator( pulseGenerator ) 
@@ -210,9 +194,7 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     , m_mutex()
 {GUCEF_TRACE;
 
-    // This is an aggregate relationship that does not affect the source object
-    // thus a const cast is acceptable.
-    m_pulseGenerator = const_cast< CPumpedObserver& >( src ).m_pulseGenerator;
+    m_pulseGenerator = src.m_pulseGenerator;
 
     RegisterPulseGeneratorEventHandlers();
 }
@@ -223,16 +205,12 @@ void
 CPumpedObserver::RegisterPulseGeneratorEventHandlers( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_pulseGenerator )
+    if ( !m_pulseGenerator.IsNULL() )
     {
         TEventCallback callback( this, &CPumpedObserver::OnPulse );
-        SubscribeTo( m_pulseGenerator            ,
-                     CPulseGenerator::PulseEvent ,
-                     callback                    );
-        TEventCallback callback2( this, &CPumpedObserver::OnPulseGeneratorDestruction );
-        SubscribeTo( m_pulseGenerator                  ,
-                     CPulseGenerator::DestructionEvent ,
-                     callback2                         );
+        SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                     CPulseGenerator::PulseEvent         ,
+                     callback                            );
 
         m_pulseGenerator->RequestPeriodicPulses( this );
     }
@@ -243,8 +221,8 @@ CPumpedObserver::RegisterPulseGeneratorEventHandlers( void )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
-    SignalUpcomingObserverDestruction();
-    SetPulseGenerator( GUCEF_NULL );
+    SetPulseGenerator( PulseGeneratorPtr() );
+    SignalUpcomingObserverDestruction();    
     ClearMailbox( false );
 }
 
@@ -287,15 +265,15 @@ CPumpedObserver::operator=( const CPumpedObserver& src )
 /*-------------------------------------------------------------------------*/
 
 void 
-CPumpedObserver::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
+CPumpedObserver::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_mutex );
 
-    if ( GUCEF_NULL != m_pulseGenerator )
+    if ( !m_pulseGenerator.IsNULL() )
     {
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
-        m_pulseGenerator = GUCEF_NULL;
+        m_pulseGenerator.Unlink();
     }
 
     m_pulseGenerator = newPulseGenerator;
@@ -303,7 +281,7 @@ CPumpedObserver::SetPulseGenerator( CPulseGenerator* newPulseGenerator )
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator* 
+PulseGeneratorPtr 
 CPumpedObserver::GetPulseGenerator( void ) const
 {GUCEF_TRACE;
 
@@ -367,18 +345,6 @@ CPumpedObserver::GetPropagatePulseEvent( void ) const
 {GUCEF_TRACE;
 
     return m_propagatePulseEvent;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier                       ,
-                                              const CEvent& eventid                     ,
-                                              CICloneable* eventdata /* = GUCEF_NULL */ )
-
-{GUCEF_TRACE;
-
-    SetPulseGenerator( GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -38,10 +38,10 @@
 #define GUCEF_CORE_LOGLEVELS_H
 #endif /* GUCEF_CORE_LOGLEVELS_H ? */
 
-#ifndef GUCEF_CORE_CCOREGLOBAL_H
-#include "gucefCORE_CCoreGlobal.h"
-#define GUCEF_CORE_CCOREGLOBAL_H
-#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+#ifndef GUCEF_CORE_CLOGGINGGLOBAL_H
+#include "gucefCORE_CLoggingGlobal.h"
+#define GUCEF_CORE_CLOGGINGGLOBAL_H
+#endif /* GUCEF_CORE_CLOGGINGGLOBAL_H ? */
 
 #endif /* GUCEF_NO_LOGGING ? */
 
@@ -59,66 +59,70 @@
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_ERROR_LOG
-#define GUCEF_ERROR_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_ERROR, logLevel, logMessage );
+#define GUCEF_ERROR_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_ERROR, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_LOG
-#define GUCEF_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_STANDARD, logLevel, logMessage );
+#define GUCEF_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_STANDARD, logLevel, logMessage );
 #define GUCEF_STANDARD_LOG GUCEF_LOG
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_USER_LOG
-#define GUCEF_USER_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_USER, logLevel, logMessage );
+#define GUCEF_USER_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_USER, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_SYSTEM_LOG
-#define GUCEF_SYSTEM_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_SYSTEM, logLevel, logMessage );
+#define GUCEF_SYSTEM_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_SYSTEM, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_DEV_LOG
-#define GUCEF_DEV_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_DEV, logLevel, logMessage );
+#define GUCEF_DEV_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_DEV, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_SERVICE_LOG
-#define GUCEF_SERVICE_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_SERVICE, logLevel, logMessage );
+#define GUCEF_SERVICE_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_SERVICE, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_PROTECTED_LOG
-#define GUCEF_PROTECTED_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_PROTECTED, logLevel, logMessage );
+#define GUCEF_PROTECTED_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_PROTECTED, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_CALLSTACK_LOG
-#define GUCEF_CALLSTACK_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_CALLSTACK, logLevel, logMessage );
+#define GUCEF_CALLSTACK_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_CALLSTACK, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_EXCEPTION_LOG
-#define GUCEF_EXCEPTION_LOG( logLevel, logMessage ) GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_EXCEPTION, logLevel, logMessage );
+#define GUCEF_EXCEPTION_LOG( logLevel, logMessage ) GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_EXCEPTION, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_CONSOLE_LOG
-#define GUCEF_CONSOLE_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_CONSOLE, logLevel, logMessage );
+#define GUCEF_CONSOLE_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_CONSOLE, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_WARNING_LOG
-#define GUCEF_WARNING_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_WARNING, logLevel, logMessage );
+#define GUCEF_WARNING_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_WARNING, logLevel, logMessage );
 
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_DEBUG_LOG
 #ifdef GUCEF_DEBUG_MODE
-#define GUCEF_DEBUG_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->Log( GUCEF::CORE::LOG_DEBUG, logLevel, logMessage );
+  #define GUCEF_DEBUG_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_DEBUG, logLevel, logMessage );
+  #ifdef GUCEF_DEBUG_MODE_VERBOSE
+    #define GUCEF_DEBUG_LOG_EVERYTHING( logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_DEBUG, LOGLEVEL_EVERYTHING, logMessage );
+  #endif
 #else
-#define GUCEF_DEBUG_LOG( logLevel, logMessage )
+  #define GUCEF_DEBUG_LOG( logLevel, logMessage )
+  #define GUCEF_DEBUG_LOG_EVERYTHING( logMessage )
 #endif
 
 /*-------------------------------------------------------------------------*/
@@ -140,6 +144,7 @@
 #define GUCEF_CONSOLE_LOG( logLevel, logMessage ) { }
 #define GUCEF_WARNING_LOG( logLevel, logMessage ) { }
 #define GUCEF_DEBUG_LOG( logLevel, logMessage ) { }
+#define GUCEF_DEBUG_LOG_EVERYTHING( logMessage ) { }
 
 /*
  *  We use a typedef to ensure any logging macro statements that have namespaced
@@ -159,14 +164,3 @@ typedef int LOGLEVEL_EVERYTHING;
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_LOGGINGMACROS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/

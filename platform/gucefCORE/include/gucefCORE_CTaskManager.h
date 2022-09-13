@@ -70,9 +70,12 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     ThreadPoolPtr GetThreadPool( const CString& threadPoolName = DefaultTreadPoolName ) const;
 
-    ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName                        , 
-                                         bool createIfNotExists = true                        ,
-                                         CPulseGenerator* threadPoolPulseContext = GUCEF_NULL );
+    ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName            , 
+                                         PulseGeneratorPtr threadPoolPulseContext ,
+                                         bool createIfNotExists = true            );
+
+    ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName , 
+                                         bool createIfNotExists = true );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );

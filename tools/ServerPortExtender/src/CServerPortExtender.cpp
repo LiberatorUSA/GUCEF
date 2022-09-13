@@ -56,7 +56,7 @@ CServerPortExtender::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator )
+CServerPortExtender::CServerPortExtender( CORE::PulseGeneratorPtr pulseGenerator )
     : CObservingNotifier()                                   ,
       m_reversedServerControlSocket( pulseGenerator, false ) ,
       m_reversedServerSocket( pulseGenerator, false )        ,
@@ -79,11 +79,11 @@ CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator 
     SubscribeTo( &m_serverSocket );
     
     TEventCallback callback( this, &CServerPortExtender::OnPulse );
-    SubscribeTo( &pulseGenerator                   ,
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
                  CORE::CPulseGenerator::PulseEvent ,
                  callback                          );
                  
-    pulseGenerator.RequestPeriodicPulses( this, 10 );
+    pulseGenerator->RequestPeriodicPulses( this, 10 );
 }
 
 /*-------------------------------------------------------------------------*/

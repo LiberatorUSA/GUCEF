@@ -63,10 +63,10 @@ class GUCEF_CORE_PUBLIC_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
     virtual void RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
                                                         const Int32 requestedPulsesPerImmediatePulseRequest ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+    virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator   ,
                                         const UInt32 pulseDeltaInMilliSecs ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+    virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator  ,
                                        const UInt32 pulseDeltaInMilliSecs ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;

@@ -187,7 +187,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
-    friend class CCoreGlobal;
+    friend class CLoggingGlobal;
 
     CLogManager( void );
 

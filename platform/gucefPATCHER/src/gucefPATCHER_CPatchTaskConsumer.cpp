@@ -53,13 +53,10 @@ namespace PATCHER {
 CPatchTaskConsumer::CPatchTaskConsumer( void )
     : CTaskConsumer()       ,
       m_patchEngine( NULL ) ,
-      m_pulseGenerator()    ,
-      m_pulseDriver()       ,
       m_taskName()          
 {GUCEF_TRACE;
 
-    m_pulseGenerator.SetPulseGeneratorDriver( &m_pulseDriver );
-    m_patchEngine = new CPatchEngine( m_pulseGenerator );
+    m_patchEngine = new CPatchEngine( GetPulseGenerator() );
 }
 
 /*-------------------------------------------------------------------------*/

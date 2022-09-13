@@ -1110,8 +1110,8 @@ bool
 Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), false );
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( GetPulseGenerator(), false );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
     // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle

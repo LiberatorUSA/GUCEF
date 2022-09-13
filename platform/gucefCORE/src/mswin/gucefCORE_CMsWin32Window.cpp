@@ -42,6 +42,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -63,7 +68,7 @@ CMsWin32Window::CMsWin32Window( void )
       m_orgWinProc( 0 )
 {GUCEF_TRACE;
 
-    SubscribeTo( &CCoreGlobal::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
+    SubscribeTo( CCoreGlobal::Instance()->GetPulseGenerator().GetPointerAlways(), CPulseGenerator::PulseEvent );
 }
 
 /*-------------------------------------------------------------------------*/

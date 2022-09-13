@@ -55,7 +55,7 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TWin32GLWindowManagerImpPtr win32GlWindowManager = new CWin32GLWindowManagerImp();
+static TWin32GLWindowManagerImpPtr win32GlWindowManager = TWin32GLWindowManagerImpPtr( new CWin32GLWindowManagerImp() );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

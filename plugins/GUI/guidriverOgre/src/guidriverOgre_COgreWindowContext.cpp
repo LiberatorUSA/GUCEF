@@ -155,9 +155,9 @@ COgreWindowContext::Shutdown( void )
     
     if ( m_initialized )
 	{
-        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-        pulseGenerator.RequestStopOfPeriodicUpdates( this );
-        UnsubscribeFrom( &pulseGenerator );
+        CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+        pulseGenerator->RequestStopOfPeriodicUpdates( this );
+        UnsubscribeFrom( pulseGenerator.GetPointerAlways() );
 
         if ( NULL != m_osWindow )
         {
@@ -306,9 +306,9 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
                                                        &options ); 
 
         // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
-        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-        SubscribeTo( &pulseGenerator );
+        CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
+        pulseGenerator->RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+        SubscribeTo( pulseGenerator.GetPointerAlways() );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Succesfully created Ogre rendering context" );
         m_initialized = true;

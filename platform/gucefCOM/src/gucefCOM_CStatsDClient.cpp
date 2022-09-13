@@ -77,7 +77,7 @@ CStatsDClient::CStatsDClient( void )
 
 /*-------------------------------------------------------------------------*/
 
-CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
+CStatsDClient::CStatsDClient( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CGloballyConfigurable()
     , CORE::CIMetricsSystemClient()
     , m_udpSender( pulseGenerator, false )

@@ -75,10 +75,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     private:
     friend class CTSGNotifier;
 
-    CTSGObserver( CPulseGenerator& pulsGenerator                 ,
-                  bool allowSameThreadEventsToFlowThrough = true );
-
-    CTSGObserver( CPulseGenerator* pulsGenerator                 ,
+    CTSGObserver( PulseGeneratorPtr pulsGenerator                ,
                   bool allowSameThreadEventsToFlowThrough = true );                 
 
     virtual ~CTSGObserver();

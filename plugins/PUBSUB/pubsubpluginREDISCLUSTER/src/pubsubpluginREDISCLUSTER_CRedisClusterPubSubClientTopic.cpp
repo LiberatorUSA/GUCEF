@@ -71,7 +71,7 @@ namespace REDISCLUSTER {
 //-------------------------------------------------------------------------*/
 
 CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_redisPipeline( GUCEF_NULL )
     , m_redisContext()
@@ -107,7 +107,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
 
     if ( client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_redisReconnectTimer = new CORE::CTimer( client->GetConfig().pulseGenerator, client->GetConfig().reconnectDelayInMs );
+        m_redisReconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), client->GetConfig().reconnectDelayInMs );
     }
 
     RegisterEventHandlers();
@@ -137,9 +137,9 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback( this, &CRedisClusterPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 }
 
 /*-------------------------------------------------------------------------*/

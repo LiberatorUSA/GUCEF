@@ -404,7 +404,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     }
 
     OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper ,
-                                CPulseGenerator& pulseGenerator      )
+                                PulseGeneratorPtr pulseGenerator     )
         : m_osPollingTimer( pulseGenerator )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -1037,7 +1037,7 @@ CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( const CFileSystemDirec
 
 /*-------------------------------------------------------------------------*/
 
-CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( CPulseGenerator& pulseGenerator )
+CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( PulseGeneratorPtr pulseGenerator )
     : CObservingNotifier()
     , CIDirectoryWatcher()
     , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this, pulseGenerator ) )

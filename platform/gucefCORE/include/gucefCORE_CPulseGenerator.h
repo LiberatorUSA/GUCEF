@@ -33,6 +33,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
 #define GUCEF_CORE_CNOTIFIER_H
@@ -62,7 +67,8 @@ class CIPulseGeneratorDriver;
 
 /*--------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
+class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier ,
+                                              public CTSharedObjCreator< CPulseGenerator, MT::CMutex >
 {
     public:
 
@@ -165,6 +171,10 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
     MT::CMutex m_objLock;
     MT::CMutex m_dataLock;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef typename CTSharedPtrCreator< CPulseGenerator, MT::CMutex >::TSharedPtrType  PulseGeneratorPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

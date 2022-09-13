@@ -228,7 +228,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     private:
     friend class CTaskManager;
 
-    CThreadPool( CPulseGenerator* threadPoolPulseContext );
+    CThreadPool( PulseGeneratorPtr threadPoolPulseContext );
 
     private:
 

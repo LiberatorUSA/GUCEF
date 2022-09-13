@@ -132,7 +132,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     
     CTaskConsumerPtr GetTaskConsumer( void );
 
-    CPulseGenerator& GetPulseGenerator( void );
+    PulseGeneratorPtr GetPulseGenerator( void );
 
     TBasicThreadPoolPtr GetThreadPool( void );
 
@@ -201,7 +201,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    CPulseGenerator m_pulseGenerator;
+    PulseGeneratorPtr m_pulseGenerator;
 
     private:
 

@@ -67,7 +67,7 @@ namespace GUIDRIVEROGRE {
 
 static GUIDRIVEROGRE::COgreLogAdapter ogreLogAdapter;
 static GUIDRIVEROGRE::COgrePluginManager ogrePluginManager;
-static TOgreWindowManagerImpPtr ogreWindowManager = new COgreWindowManagerImp();
+static TOgreWindowManagerImpPtr ogreWindowManager = TOgreWindowManagerImpPtr( new COgreWindowManagerImp() );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

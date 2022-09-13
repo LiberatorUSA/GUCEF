@@ -88,8 +88,8 @@ CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClient: Failed to load config at construction" );
     }
 
-    if ( GUCEF_NULL == m_config.pulseGenerator )
-        m_config.pulseGenerator = &CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    if ( m_config.pulseGenerator.IsNULL() )
+        m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
 
     if ( m_config.desiredFeatures.supportsMetrics )
     {
@@ -99,8 +99,8 @@ CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
 
     if ( m_config.transmitTestPackets )
     {
-        m_testUdpSocket = new COMCORE::CUDPSocket( *m_config.pulseGenerator, false );
-        m_testPacketTransmitTimer = new CORE::CTimer( *m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
+        m_testUdpSocket = new COMCORE::CUDPSocket( m_config.pulseGenerator, false );
+        m_testPacketTransmitTimer = new CORE::CTimer( m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
         m_testPacketTransmitTimer->SetEnabled( m_config.transmitTestPackets );
     }
 

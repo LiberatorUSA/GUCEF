@@ -763,7 +763,7 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     delete m_streamIndexingTimer;
-    m_streamIndexingTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_streamIndexingTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
 
     if ( m_settings.streamIndexingInterval > 0 && IsStreamIndexingNeeded() )
     {
@@ -771,10 +771,10 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
     }
 
     delete m_redisReconnectTimer;
-    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), 100 );
+    m_redisReconnectTimer = new CORE::CTimer( GetPulseGenerator(), 100 );
     
     delete m_metricsTimer;
-    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_settings.collectMetrics );
     
     RegisterEventHandlers();

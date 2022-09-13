@@ -71,7 +71,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
       m_stopSignalGiven( false )             ,
       m_localRoot()                          ,
       m_tempStorageRoot()                    ,
-      m_pulseGenerator( NULL )               ,
+      m_pulseGenerator()                     ,
       m_processedDataSizeInBytes( 0 )        ,
       m_stopOnFileReplacementFailure( true )
 {GUCEF_TRACE;
@@ -81,7 +81,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
+CPatchSetDirEngine::CPatchSetDirEngine( const CORE::PulseGeneratorPtr& pulseGenerator )
     : CORE::CForwardingNotifier()             ,
       CPatchSetFileEngineEvents()             ,
       m_curSubDirIndex( 0 )                   ,
@@ -92,7 +92,7 @@ CPatchSetDirEngine::CPatchSetDirEngine( CORE::CPulseGenerator& pulseGenerator )
       m_stopSignalGiven( false )              ,
       m_localRoot()                           ,
       m_tempStorageRoot()                     ,
-      m_pulseGenerator( &pulseGenerator )     ,
+      m_pulseGenerator( pulseGenerator )      ,
       m_processedDataSizeInBytes( 0 )         ,
       m_stopOnFileReplacementFailure( false )
 {GUCEF_TRACE;
@@ -162,9 +162,9 @@ CPatchSetDirEngine::ProcessFilesInDir( void )
         // We will be needing an engine for our file processing
         if ( m_filePatchEngine == NULL )
         {
-            if ( NULL != m_pulseGenerator )
+            if ( !m_pulseGenerator.IsNULL() )
             {
-                m_filePatchEngine = new CPatchSetFileEngine( *m_pulseGenerator );
+                m_filePatchEngine = new CPatchSetFileEngine( m_pulseGenerator );
             }
             else
             {
@@ -201,9 +201,9 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
         // We will be needing an engine for our sub-dir processing
         if ( m_subDirPatchEngine == NULL )
         {
-            if ( NULL != m_pulseGenerator )
+            if ( !m_pulseGenerator.IsNULL() )
             {
-                m_subDirPatchEngine = new CPatchSetDirEngine( *m_pulseGenerator );
+                m_subDirPatchEngine = new CPatchSetDirEngine( m_pulseGenerator );
             }
             else
             {

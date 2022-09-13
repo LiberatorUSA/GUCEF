@@ -146,7 +146,7 @@ RestApiPublishedMessagesResource::Deserialize( const CORE::CString& resourcePath
 /*-------------------------------------------------------------------------*/
 
 CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_config()
     , m_reconnectTimer( GUCEF_NULL )
@@ -159,7 +159,7 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_metricFriendlyTopicName()
-    , m_httpServer( *m_client->GetConfig().pulseGenerator )
+    , m_httpServer( client->GetPulseGenerator() )
     , m_httpRouter()
     , m_publishedMsgPrunerTimer( GUCEF_NULL )
     , m_publishedMsgs()
@@ -176,11 +176,11 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
     }
     if ( 0 != m_config.maxPublishedMsgCountToRetainForRest )
     {
-        m_publishedMsgPrunerTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+        m_publishedMsgPrunerTimer = new CORE::CTimer( client->GetPulseGenerator(), 1000 );
     }
 
     RegisterRestApiEndpoints(); 
@@ -271,9 +271,9 @@ CWebPubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback( this, &CWebPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 }
 
 /*-------------------------------------------------------------------------*/

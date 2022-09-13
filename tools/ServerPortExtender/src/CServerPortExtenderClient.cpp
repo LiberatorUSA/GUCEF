@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -54,7 +59,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pulseGenerator )
+CServerPortExtenderClient::CServerPortExtenderClient( CORE::PulseGeneratorPtr pulseGenerator )
     : CORE::CObserver()                        ,
       m_controlClient( pulseGenerator, false ) ,
       m_rsClientConnections()                  ,
@@ -65,7 +70,7 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
       m_remoteSPEServerControl()               ,
       m_remoteSPEReversedServer()              ,
       m_controlConnectionInitialized( false )  ,
-      m_pulseGenerator( &pulseGenerator )      ,
+      m_pulseGenerator( pulseGenerator )       ,
       m_reconnectTimer( pulseGenerator, SPE_RECONNECT_INTERVAL ) ,
       m_disconnectRequested( false )           ,
       m_clientGarbageHeap()
@@ -99,12 +104,12 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
 
     // Subscribe to Pulse
     TEventCallback callback6( this, &CServerPortExtenderClient::OnPulse );
-    SubscribeTo( &pulseGenerator                   ,
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
                  CORE::CPulseGenerator::PulseEvent ,
                  callback6                         );
 
     // Request to be periodicly updated
-    pulseGenerator.RequestPeriodicPulses( this, 10 );
+    pulseGenerator->RequestPeriodicPulses( this, 10 );
 
     // Subscribe to timer
     TEventCallback callback7( this, &CServerPortExtenderClient::OnReconnectTimerUpdate );
@@ -471,7 +476,7 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
 
     // initiate a new connection to the local server
     // we create the client socket and add it to our list of connections
-    COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
+    COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( m_pulseGenerator, false );
 
     // Subscribe to client events
     TEventCallback callback( this, &CServerPortExtenderClient::OnClientToActualServerConnected );
@@ -610,7 +615,7 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
             {
                 // initiate a new connection to the SPE server
                 // we create the client socket and add it to our list of connections
-                COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
+                COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( m_pulseGenerator, false );
                 clientSocket->ConnectTo( m_remoteSPEReversedServer );
 
                 // Subscribe to client events

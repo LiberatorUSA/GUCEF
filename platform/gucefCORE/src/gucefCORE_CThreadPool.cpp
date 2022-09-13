@@ -197,7 +197,7 @@ CThreadPool::CTaskQueueItem::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CThreadPool::CThreadPool( CPulseGenerator* threadPoolPulseContext )
+CThreadPool::CThreadPool( PulseGeneratorPtr threadPoolPulseContext )
     : CTSGNotifier( threadPoolPulseContext, true, false )
     , CTSharedPtrCreator< CThreadPool, MT::CMutex >( this )
     , m_consumerFactory()

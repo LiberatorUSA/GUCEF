@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_COMCORE_SOCKETUTILS_H
 #include "socketutils.h"
 #define GUCEF_COMCORE_SOCKETUTILS_H
@@ -114,8 +119,8 @@ struct CUDPSocket::SUDPSockData
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
-                        bool blocking                         )
+CUDPSocket::CUDPSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
+                        bool blocking                                 )
     : CSocket()
     , m_autoReopenOnError( false )
     , _blocking( blocking )
@@ -125,7 +130,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_receiveBuffers()
     , m_udpPacketsReceivedEventData()
     , m_maxRecievedDataBufferSize( GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE )
-    , m_pulseGenerator( &pulseGenerator )
+    , m_pulseGenerator( pulseGenerator )
     , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
@@ -145,13 +150,9 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
-    TEventCallback callback2( this, &CUDPSocket::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                        ,
-                 CORE::CPulseGenerator::DestructionEvent ,
-                 callback2                               );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,7 +167,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_receiveBuffers()
     , m_udpPacketsReceivedEventData()
     , m_maxRecievedDataBufferSize( GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE )
-    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
@@ -186,13 +187,9 @@ CUDPSocket::CUDPSocket( bool blocking )
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator                  ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback                          );
-    TEventCallback callback2( this, &CUDPSocket::OnPulseGeneratorDestruction );
-    SubscribeTo( m_pulseGenerator                        ,
-                 CORE::CPulseGenerator::DestructionEvent ,
-                 callback2                               );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -562,21 +559,6 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
     else
     {
         while( Update( true ) );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier                 ,
-                                         const CORE::CEvent& eventid               ,
-                                         CORE::CICloneable* eventdata /* = NULL */ )
-
-{GUCEF_TRACE;
-
-    if ( notifier == m_pulseGenerator )
-    {
-        m_pulseGenerator = GUCEF_NULL;
     }
 }
 

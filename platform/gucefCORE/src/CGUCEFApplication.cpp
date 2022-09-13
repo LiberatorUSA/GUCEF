@@ -75,6 +75,11 @@
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #include "CGUCEFApplication.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -154,7 +159,7 @@ CGUCEFApplication::~CGUCEFApplication()
 
     MT::CObjectScopeLock lock( this );
 
-    CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
     if ( GUCEF_NULL != pulseGenerator )
     {
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
@@ -176,7 +181,7 @@ CGUCEFApplication::MainLoop( void )
 {GUCEF_TRACE;
 
     Lock();
-    CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
     if ( GUCEF_NULL != pulseGenerator )
     {
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
@@ -198,7 +203,7 @@ CGUCEFApplication::MainLoop( void )
             if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
             
             // Now keep looping until we are externally triggered to break out of the loop
-            m_busyWaitPulseDriver.Run( *pulseGenerator, m_forcedMinimalCycleDeltaInMilliSecs, m_desiredMaximumCycleDeltaInMilliSecs );
+            m_busyWaitPulseDriver.Run( *pulseGenerator.GetPointerAlways(), m_forcedMinimalCycleDeltaInMilliSecs, m_desiredMaximumCycleDeltaInMilliSecs );
             return 0;
         }
         else
@@ -419,8 +424,8 @@ CGUCEFApplication::Update( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    CPulseGenerator* pulseGenerator = GetPulseGenerator();
-    if ( GUCEF_NULL != pulseGenerator )
+    PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
+    if ( !pulseGenerator.IsNULL() )
         pulseGenerator->RequestImmediatePulse();
 }
 
@@ -437,8 +442,8 @@ CGUCEFApplication::Stop( bool wait )
         {
             if ( !NotifyObservers( AppShutdownEvent ) ) return;
        
-            CPulseGenerator* pulseGenerator = GetPulseGenerator();
-            if ( GUCEF_NULL != pulseGenerator )
+            PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
+            if ( !pulseGenerator.IsNULL() )
             {
                 pulseGenerator->ForceStopOfPeriodicPulses();
                 
@@ -455,8 +460,8 @@ CGUCEFApplication::Stop( bool wait )
         m_shutdownRequested = true;
         if ( !NotifyObservers( AppShutdownCompleteEvent ) ) return;
 
-        CPulseGenerator* pulseGenerator = GetPulseGenerator();
-        if ( GUCEF_NULL != pulseGenerator )
+        PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
+        if ( !pulseGenerator.IsNULL() )
         {
             // Once last round for pumped observers
             pulseGenerator->ForceDirectPulse();

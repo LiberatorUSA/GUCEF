@@ -600,7 +600,7 @@ CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
         CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( new T() ) )->CreateBasicSharedPtr() );
         return retVal;
     }
-    catch ( const std::exception& e )
+    catch ( const std::exception& )
     {
         delete obj;
         obj = GUCEF_NULL;

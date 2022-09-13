@@ -172,7 +172,7 @@ CTestPubSubClientTopic::StorageToPubSubRequest::LoadConfig( const CORE::CDataNod
 /*-------------------------------------------------------------------------*/
 
 CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
-    : PUBSUB::CPubSubClientTopic()
+    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_pubsubMsgs()
     , m_pubsubMsgsRefs()
@@ -293,9 +293,9 @@ CTestPubSubClientTopic::RegisterEventHandlers( void )
     }
 
     TEventCallback callback( this, &CTestPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator ,
-                 CORE::CPulseGenerator::PulseEvent    ,
-                 callback                             );
+    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent                       ,
+                 callback                                                );
 
 
 
