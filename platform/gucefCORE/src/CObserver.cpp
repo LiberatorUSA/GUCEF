@@ -24,6 +24,17 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #include "CNotificationIDRegistry.h"
 #include "CNotifier.h"
 
@@ -67,7 +78,16 @@ CObserver::CObserver( const CObserver& src )
 CObserver::~CObserver()
 {GUCEF_TRACE;
 
-    Lock();
+    SignalUpcomingObserverDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObserver::SignalUpcomingObserverDestruction( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -80,8 +100,6 @@ CObserver::~CObserver()
         ++i;
     }
     m_notifiers.clear();
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,7 +128,7 @@ void
 CObserver::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -127,8 +145,6 @@ CObserver::UnsubscribeAllFromObserver( void )
         (*i)->Unsubscribe( this );
         ++i;
     }
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -145,7 +161,9 @@ CObserver::SubscribeTo( CNotifier* notifier )
 void
 CObserver::SubscribeTo( CNotifier* notifier   ,
                         const CEvent& eventid )
-{
+{GUCEF_TRACE;
+
+    // this is merely syntax sugar
     SubscribeToImp( notifier, eventid, 0 );
 }
 
@@ -155,7 +173,9 @@ void
 CObserver::SubscribeTo( CNotifier* notifier                 ,
                         const CEvent& eventid               ,
                         CIEventHandlerFunctorBase& callback )
-{
+{GUCEF_TRACE;
+
+    // this is merely syntax sugar
     SubscribeToImp( notifier, eventid, &callback );
 }
 
@@ -167,6 +187,7 @@ CObserver::SubscribeToImp( CNotifier* notifier                 ,
                            CIEventHandlerFunctorBase* callback )
 {GUCEF_TRACE;
 
+    // this is merely syntax sugar
     notifier->Subscribe( this     ,
                          eventid  ,
                          callback );
@@ -180,9 +201,8 @@ CObserver::LinkTo( CNotifier* notifier )
 
     if ( GUCEF_NULL != notifier )
     {
-        Lock();
+        MT::CObjectScopeLock lock( this );
         m_notifiers.insert( notifier );
-        Unlock();
     }
 }
 
@@ -192,9 +212,8 @@ void
 CObserver::UnlinkFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_notifiers.erase( notifier );
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,14 +223,13 @@ CObserver::GetSubscriptionCount( void )
 {GUCEF_TRACE;
 
     UInt32 subscriptionCount( 0 );
-    Lock();
+    MT::CObjectScopeReadOnlyLock lock( this );
     TNotifierList::const_iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
         subscriptionCount += (*i)->GetSubscriptionCountForObserver( this );
         ++i;
     }
-    Unlock();
     return subscriptionCount;
 }
 
@@ -221,6 +239,7 @@ UInt32
 CObserver::GetNotifierCount( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeReadOnlyLock lock( this );
     return (UInt32) m_notifiers.size();
 }
 

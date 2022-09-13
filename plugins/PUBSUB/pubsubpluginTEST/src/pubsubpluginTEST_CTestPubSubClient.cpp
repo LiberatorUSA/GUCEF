@@ -98,7 +98,7 @@ CTestPubSubClient::CTestPubSubClient( const PUBSUB::CPubSubClientConfig& config 
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
-    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "TestPubSubClient(" + CORE::ToString( this ) + ")", true );
+    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "TestPubSubClient(" + CORE::ToString( this ) + ")", true, config.pulseGenerator );
 
     m_config.metricsPrefix += "test.";
 

@@ -102,7 +102,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
-    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", true );
+    m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", true, config.pulseGenerator );
 
     m_config.metricsPrefix += "storage.";
 

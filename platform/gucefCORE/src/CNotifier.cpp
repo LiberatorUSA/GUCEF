@@ -54,7 +54,7 @@ namespace CORE {
 
 CNotifier::CNotifier( bool registerStdEvents )
     : CINotifier( registerStdEvents )
-    , m_imp( NULL )
+    , m_imp( GUCEF_NULL )
 {GUCEF_TRACE;
 
     if ( registerStdEvents )

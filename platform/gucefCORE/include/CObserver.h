@@ -143,6 +143,8 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SignalUpcomingObserverDestruction( void );
+
     private:
 
     /*

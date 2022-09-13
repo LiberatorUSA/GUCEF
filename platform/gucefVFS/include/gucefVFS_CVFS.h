@@ -591,39 +591,3 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 /*-------------------------------------------------------------------------*/
           
 #endif /* GUCEF_VFS_CVFS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-05-2008 :
-        - Dinand: Reworked the VFS system to support a mounting system that
-          groups resources in archives that become part of the resource tree in
-          a transparent manner. This rework allows the VFS plugins to become 
-          operational again as archive factories.
-- 24-08-2005 :
-        - Dinand: implemented GetNewFile()
-        - Dinand: reworked the AddRoot() and root administration mechanisms. This allows
-          support for writeable roots and storage of the relative paths without
-          data duplication.
-        - Dinand: Added support for new writeable files (exclusive access only)
-        - Dinand: Added support for read & write files (exclusive access only)
-- 18-05-2005 :
-        - Dinand: Fixed a bug in FileExists(): If the recource didn't exist the code would get
-          stuck in a loop.
-- 01-05-2005 :
-        - Dinand: Fixed array bounds write violation in LoadFromDiskCache()
-        - Dinand: Fixed a bug in Unload(): The last cached item's access object was
-          deleted twice.
-        - Dinand: Unload() no longer has to search for the handle entry saving us some time           
-- 26-04-2005 :
-        - Dinand: Fixed a bug in LoadFromDisk(): file information storage accessed an
-          invalid heap entry if no storage space was available.
-        - Dinand: Fixed a bug in Unload(): The last cached item's access object was
-          deleted twice.  
-- 12-02-2005 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

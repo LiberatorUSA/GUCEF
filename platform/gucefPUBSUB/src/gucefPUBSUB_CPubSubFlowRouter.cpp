@@ -747,9 +747,9 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                         "\" to side \"" + toSide->GetSideId() + "\"" );
                 }
 
-                // Always init the spillover for ingress as a startup default
+                // The spillover is a special case and we reconfigure it as needed anyway
+                // as such there is no point to connect it only to then later reconnect it
                 routeInfo.spilloverBufferSide->SetPerformConnectOnTaskStart( false );
-                ConfigureSpillover( routeInfo.spilloverBufferSide, true );
             }
 
             ++n;

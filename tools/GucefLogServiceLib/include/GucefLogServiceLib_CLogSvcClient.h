@@ -109,9 +109,9 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CLoggingTask
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier           ,
+                                 const CORE::CEvent& eventid         ,
+                                 CORE::CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool OnTaskCycleLog( const CORE::TLogMsgType logMsgType ,
                                  const CORE::Int32 logLevel         ,

@@ -982,7 +982,7 @@ class DCSBruteInstaller : public CORE::CObserver
     bool Setup( const CORE::CValueList& keyValueList )
     {GUCEF_TRACE;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DCSBruteInstaller: Setup starting. " + CORE::UInt32ToString( keyValueList.GetCount() ) + " Config keys were provided" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DCSBruteInstaller: Setup starting. " + CORE::UInt32ToString( keyValueList.GetKeyCount() ) + " Config keys were provided" );
 
         CORE::CPlatformNativeConsoleWindow consoleWindow;
         bool provideConsoleWindow = false;

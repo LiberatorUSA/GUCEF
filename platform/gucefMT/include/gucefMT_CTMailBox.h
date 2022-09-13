@@ -95,7 +95,7 @@ class CTMailBox : public virtual MT::CILockable
      *  @param eventid the ID of the event you wish to add to the mailbox
      *  @param data cloneable data container for optional event data.
      */
-    void AddMail( const T& eventid                     ,
+    bool AddMail( const T& eventid                     ,
                   const CICloneable* data = GUCEF_NULL );
 
     /**
@@ -155,6 +155,8 @@ class CTMailBox : public virtual MT::CILockable
 
     UInt32 AmountOfMail( void ) const;
 
+    void SetAcceptsNewMail( bool acceptNewMail );
+
     bool DoLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     bool DoUnlock( void ) const;
@@ -185,6 +187,7 @@ class CTMailBox : public virtual MT::CILockable
     private:
 
     TMailQueue m_mailQueue;
+    bool m_acceptsNewMail;
     CMutex m_datalock;
 };
 
@@ -198,6 +201,7 @@ template< typename T >
 CTMailBox< T >::CTMailBox( void )
     : MT::CILockable()
     , m_mailQueue()
+    , m_acceptsNewMail( true )
     , m_datalock()
 {GUCEF_TRACE;
 
@@ -209,30 +213,48 @@ template< typename T >
 CTMailBox< T >::~CTMailBox()
 {GUCEF_TRACE;
 
+    m_acceptsNewMail = false;
     Clear();
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
+bool
 CTMailBox< T >::AddMail( const T& eventid                     ,
                          const CICloneable* data /* = NULL */ )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
 
-    TMailElement entry;
-    entry.eventid = eventid;
-    if ( GUCEF_NULL != data )
+    if ( m_acceptsNewMail )
     {
-        entry.data = data->Clone();
+        TMailElement entry;
+        entry.eventid = eventid;
+        if ( GUCEF_NULL != data )
+        {
+            entry.data = data->Clone();
+        }
+        else
+        {
+            entry.data = GUCEF_NULL;
+        }
+        m_mailQueue.push_back( entry );
+        
+        return true;
     }
-    else
-    {
-        entry.data = GUCEF_NULL;
-    }
-    m_mailQueue.push_back( entry );
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+void 
+CTMailBox< T >::SetAcceptsNewMail( bool acceptNewMail )
+{GUCEF_TRACE;
+
+    CObjectScopeLock lock( this );
+    m_acceptsNewMail = acceptNewMail;
 }
 
 /*--------------------------------------------------------------------------*/

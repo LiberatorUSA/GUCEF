@@ -129,6 +129,15 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CTSGObserver::ForwardSignalOfUpcomingObserverDestruction( void )
+{GUCEF_TRACE;
+
+    SignalUpcomingObserverDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTSGObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;

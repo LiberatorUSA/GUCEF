@@ -197,8 +197,8 @@ CThreadPool::CTaskQueueItem::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CThreadPool::CThreadPool( void )
-    : CTSGNotifier()
+CThreadPool::CThreadPool( CPulseGenerator* threadPoolPulseContext )
+    : CTSGNotifier( threadPoolPulseContext, true, false )
     , CTSharedPtrCreator< CThreadPool, MT::CMutex >( this )
     , m_consumerFactory()
     , m_desiredNrOfThreads( 0 )
@@ -219,8 +219,10 @@ CThreadPool::CThreadPool( void )
 
 CThreadPool::~CThreadPool( void )
 {GUCEF_TRACE;
-
-    NotifyObservers( DestructionEvent );
+    
+    m_acceptNewWork = false;
+    if ( !NotifyObservers( DestructionEvent ) )
+        return;
 
     MT::CObjectScopeLock lock( this );
 
@@ -233,7 +235,8 @@ CThreadPool::~CThreadPool( void )
         delegator->Deactivate( true, true );
         ++i;
     }
-    m_taskDelegators.clear();
+    m_taskDelegators.clear();    
+    m_taskQueue.SetAcceptsNewMail( false );
 }
 
 /*-------------------------------------------------------------------------*/

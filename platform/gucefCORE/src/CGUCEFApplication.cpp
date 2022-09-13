@@ -166,7 +166,7 @@ CGUCEFApplication::~CGUCEFApplication()
         }
     }
 
-    UnsubscribeAllFromObserver();
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/

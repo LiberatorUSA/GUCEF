@@ -101,6 +101,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     bool GetPropagatePulseEvent( void ) const;
 
+    void ClearMailbox( bool acceptNewMail );
+
     protected:
 
     /**

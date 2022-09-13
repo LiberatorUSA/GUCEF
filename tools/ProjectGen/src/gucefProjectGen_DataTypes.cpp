@@ -337,7 +337,7 @@ GetXmlDStoreCodec( void )
                                                                                       true            ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
-                return NULL;
+                return CORE::CDStoreCodecRegistry::TDStoreCodecPtr();
             }
 
             #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )

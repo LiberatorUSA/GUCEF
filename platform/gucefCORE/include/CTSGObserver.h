@@ -89,6 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
                             const CEvent& eventid         ,
                             CICloneable* eventdata = NULL );
     
+    void ForwardSignalOfUpcomingObserverDestruction( void );
+    
     private:
 
     CTSGObserver( void );

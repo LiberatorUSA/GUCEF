@@ -98,7 +98,8 @@ CTaskConsumer::~CTaskConsumer()
     if ( !m_delegator.IsNULL() )
         SetPulseGenerator( GUCEF_NULL );
 
-    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );
+    UnsubscribeAllFromObserver( true );    
+    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -276,34 +277,6 @@ CTaskConsumer::OnTaskEnding( CICloneable* taskdata ,
                              bool willBeForced     )
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskConsumer::Lock( UInt32 lockWaitTimeoutInMs ) const
-{GUCEF_TRACE;
-
-    TTaskDelegatorBasicPtr delegator = m_delegator;
-    if ( !delegator.IsNULL() )
-    {
-        return delegator->Lock( lockWaitTimeoutInMs );
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskConsumer::Unlock( void ) const
-{GUCEF_TRACE;
-
-    TTaskDelegatorBasicPtr delegator = m_delegator;
-    if ( !delegator.IsNULL() )
-    {
-        return delegator->Unlock();
-    }
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/

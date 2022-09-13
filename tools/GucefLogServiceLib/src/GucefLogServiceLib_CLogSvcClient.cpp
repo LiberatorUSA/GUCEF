@@ -339,9 +339,9 @@ CLogSvcClient::SendAllQueuedItems( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
-                         const CORE::CEvent& eventid  ,
-                         CORE::CICloneable* eventdata )
+CLogSvcClient::OnPumpedNotify( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventid  ,
+                               CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
 

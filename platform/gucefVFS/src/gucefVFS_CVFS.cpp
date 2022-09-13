@@ -172,7 +172,7 @@ CVFS::~CVFS()
 
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
-    UnsubscribeAllFromObserver();
+    UnsubscribeAllFromObserver( true );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -58,6 +58,11 @@
 #define GUCEF_CORE_CSINGLETASKDELEGATOR_H
 #endif /* GUCEF_CORE_CSINGLETASKDELEGATOR_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -100,7 +105,7 @@ CTaskManager::CTaskManager( void )
     , m_threadPools()       
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultTreadPoolName ] = ( new CThreadPool() )->CreateSharedPtr();
+    m_threadPools[ DefaultTreadPoolName ] = ( new CThreadPool( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,6 +114,7 @@ CTaskManager::~CTaskManager( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
+    UnsubscribeAllFromObserver( true );
     m_threadPools.clear();
     lock.EarlyUnlock();
 }
@@ -152,8 +158,9 @@ CTaskManager::GetThreadPool( const CString& threadPoolName ) const
 /*-------------------------------------------------------------------------*/
 
 ThreadPoolPtr 
-CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName , 
-                                     bool createIfNotExists        )
+CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName           , 
+                                     bool createIfNotExists                  ,
+                                     CPulseGenerator* threadPoolPulseContext )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -166,7 +173,7 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName ,
     
     if ( createIfNotExists )
     {
-        ThreadPoolPtr newPool = ( new CThreadPool() )->CreateSharedPtr();
+        ThreadPoolPtr newPool = ( new CThreadPool( threadPoolPulseContext ) )->CreateSharedPtr();
         m_threadPools[ threadPoolName ] = newPool;
         return newPool; 
     }

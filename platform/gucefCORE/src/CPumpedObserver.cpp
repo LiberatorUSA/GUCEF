@@ -243,7 +243,36 @@ CPumpedObserver::RegisterPulseGeneratorEventHandlers( void )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
+    SignalUpcomingObserverDestruction();
     SetPulseGenerator( GUCEF_NULL );
+    ClearMailbox( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPumpedObserver::ClearMailbox( bool acceptNewMail )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_mutex );
+
+    if ( !acceptNewMail )
+        m_mailbox.SetAcceptsNewMail( acceptNewMail );
+
+    CEvent mailEventID;
+    CICloneable* dataptr( GUCEF_NULL );
+    CMailElement* maildata( GUCEF_NULL );
+    while ( m_mailbox.GetMail( mailEventID ,
+                               &dataptr    ) )
+    {
+        maildata = static_cast< CMailElement* >( dataptr );
+        delete maildata->GetCallback();
+        delete maildata->GetData();
+        delete maildata;
+    }
+
+    if ( acceptNewMail )
+        m_mailbox.SetAcceptsNewMail( acceptNewMail );
 }
 
 /*-------------------------------------------------------------------------*/

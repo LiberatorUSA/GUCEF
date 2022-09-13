@@ -168,7 +168,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer.SetInterval( m_channelSettings.metricsIntervalInMs );
     m_metricsTimer.SetEnabled( m_channelSettings.collectMetrics );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PubSubClientChannel(" + CORE::ToString( this ) + ")", true, GetPulseGenerator() );
 
     // Create a side for every side config entry
     CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::const_iterator c = m_channelSettings.pubSubSideChannelSettingsMap.begin();
