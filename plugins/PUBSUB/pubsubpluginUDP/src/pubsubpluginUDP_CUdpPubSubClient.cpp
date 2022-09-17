@@ -453,6 +453,15 @@ CUdpPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CUdpPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CUdpPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;

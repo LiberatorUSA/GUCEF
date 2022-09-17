@@ -127,6 +127,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     static const CORE::CEvent AsyncVfsOperationCompletedEvent;
     static const CORE::CEvent ArchiveMountedEvent;
     static const CORE::CEvent ArchiveUnmountedEvent;
+    static const CORE::CEvent DelayedArchiveMountingCompletedEvent;
+    static const CORE::CEvent VfsInitializationCompletedEvent;
 
     typedef CORE::TCloneableString      TArchiveMountedEventData; 
     typedef CORE::TCloneableString      TArchiveUnmountedEventData;
@@ -445,6 +447,28 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
      *  Checks if the item pointed at is a mounted archive
      */
     bool IsMountedArchive( const CString& location ) const;
+
+    bool IsDelayedArchiveMountingCompleted( void ) const;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the initialization completeness of the 
+     *  persistence backends used. Given the abstractions one cannot assume that merely accessing the
+     *  VFS equals full initialization. There may be dependencies at play which need to be satisfied async.
+     */
+    bool IsInitialized( void ) const;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current health of the archives
+     *  mounted into the VFS plus the overall VFS health. 
+     */
+    bool IsHealthy( void ) const;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current connectivity of the archives
+     *  mounted into the VFS. This mainly comes into play for various forms of networked
+     *  storage.
+     */
+    bool IsConnected( void ) const;
     
     /**
      *  Searches for archives mounted at the "location"
@@ -455,8 +479,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                                 const bool recursive    ,
                                 TStringSet& outputList  ) const;
     
-    bool FileExists( const CString& filePath ) const;
+    bool DirExists( const CString& dirPath ) const; 
     
+    bool FileExists( const CString& filePath ) const;
+        
     UInt32 GetFileSize( const CString& filePath ) const;
     
     CORE::CString GetFileHash( const CString& filename ) const;
@@ -577,6 +603,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
     TArchiveSettingsVector m_delayMountedArchiveSettings;
     TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
+    bool m_delayedArchiveMountingIsComplete;
 };
 
 /*-------------------------------------------------------------------------//

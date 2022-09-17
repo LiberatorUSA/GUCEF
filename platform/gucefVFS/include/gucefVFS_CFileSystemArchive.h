@@ -102,6 +102,8 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     virtual bool DeleteFile( const CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool FileExists( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool DirExists( const CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual UInt32 GetFileSize( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -133,6 +135,10 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE; 
     
     const CString& GetRootDir( void ) const;
 

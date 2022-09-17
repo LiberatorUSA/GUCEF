@@ -972,6 +972,15 @@ CRedisClusterPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CRedisClusterPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
 {GUCEF_TRACE;

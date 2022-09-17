@@ -49,6 +49,16 @@
 #define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
 #include "pubsubpluginSTORAGE_CStoragePubSubClientConfig.h"
 #define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
@@ -543,6 +553,16 @@ CStoragePubSubClient::IsHealthy( void ) const
         return allHealthy;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    // the storage backend fully depends on the VFS without which we cannot do anything
+    return VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
 }
 
 /*-------------------------------------------------------------------------*/

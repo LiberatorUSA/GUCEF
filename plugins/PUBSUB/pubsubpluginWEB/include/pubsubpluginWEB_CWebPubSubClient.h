@@ -107,6 +107,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClient : public PUBSUB::CPub
 
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsInitialized( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**

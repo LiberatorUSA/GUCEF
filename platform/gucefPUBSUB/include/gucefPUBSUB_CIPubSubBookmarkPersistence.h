@@ -122,6 +122,25 @@ class GUCEF_PUBSUB_EXPORT_CPP CIPubSubBookmarkPersistence : public CORE::CTShare
                                      UInt32 maxNrToLoad                     ) = 0;
     
     virtual const CORE::CString& GetType( void ) const = 0;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the initialization completeness of the 
+     *  persistence backend used 
+     */
+    virtual bool IsInitialized( void ) const = 0;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current health of the archives
+     *  mounted into the VFS plus the overall VFS health. 
+     */
+    virtual bool IsHealthy( void ) const = 0;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current connectivity of the archives
+     *  mounted into the VFS. This mainly comes into play for various forms of networked
+     *  storage.
+     */
+    virtual bool IsConnected( void ) const = 0;
     
     CIPubSubBookmarkPersistence( void );
     CIPubSubBookmarkPersistence( const CIPubSubBookmarkPersistence& src );

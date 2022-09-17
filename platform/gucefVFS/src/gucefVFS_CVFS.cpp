@@ -130,6 +130,9 @@ namespace VFS {
 const CORE::CEvent CVFS::AsyncVfsOperationCompletedEvent = "GUCEF::VFS::CVFS::AsyncVfsOperationCompletedEvent";
 const CORE::CEvent CVFS::ArchiveMountedEvent = "GUCEF::VFS::CVFS::ArchiveMountedEvent";
 const CORE::CEvent CVFS::ArchiveUnmountedEvent = "GUCEF::VFS::CVFS::ArchiveUnmountedEvent";
+const CORE::CEvent CVFS::DelayedArchiveMountingCompletedEvent = "GUCEF::VFS::CVFS::DelayedArchiveMountingCompletedEvent";
+const CORE::CEvent CVFS::VfsInitializationCompletedEvent = "GUCEF::VFS::CVFS::VfsInitializationCompletedEvent";
+
 const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 
 /*-------------------------------------------------------------------------//
@@ -145,6 +148,8 @@ CVFS::RegisterEvents( void )
     AsyncVfsOperationCompletedEvent.Initialize();
     ArchiveMountedEvent.Initialize();
     ArchiveUnmountedEvent.Initialize();
+    DelayedArchiveMountingCompletedEvent.Initialize();
+    VfsInitializationCompletedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -158,6 +163,7 @@ CVFS::CVFS( void )
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
+    , m_delayedArchiveMountingIsComplete( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -369,6 +375,72 @@ CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CVFS::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return m_delayedArchiveMountingIsComplete;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::IsConnected( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    bool isConnectedOverall = true;
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntry& mountEntry = (*i);
+        if ( !mountEntry.archive->IsConnected() )
+        {
+            isConnectedOverall = false;
+            break;
+        }
+        ++i;
+    }
+    
+    return isConnectedOverall;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    bool isHealthyOverall = true;
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntry& mountEntry = (*i);
+        if ( !mountEntry.archive->IsHealthy() )
+        {
+            isHealthyOverall = false;
+            break;
+        }
+        ++i;
+    }
+    
+    return isHealthyOverall;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::IsDelayedArchiveMountingCompleted( void ) const
+{GUCEF_TRACE;
+
+    return m_delayedArchiveMountingIsComplete;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CVFS::MountAllDelayMountedArchives( void )
 {GUCEF_TRACE;
@@ -388,6 +460,10 @@ CVFS::MountAllDelayMountedArchives( void )
         }
         m_delayMountedArchiveSettings.erase( i );
     }
+    m_delayedArchiveMountingIsComplete = true;
+    lock.EarlyUnlock();
+
+    NotifyObservers( DelayedArchiveMountingCompletedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -399,6 +475,8 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     MountAllDelayMountedArchives();
+    
+    NotifyObservers( VfsInitializationCompletedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1317,6 +1395,35 @@ CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
                 CORE::AppendToPath( relativePath, remainder );
                 return true;
             }
+        }
+        ++i;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::DirExists( const CString& dirPath ) const
+{GUCEF_TRACE;
+
+    CString path = ConformVfsDirPath( dirPath );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Search for a file and then get the hash
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->DirExists( mountLink.remainder ) )
+        {
+            return true;
         }
         ++i;
     }

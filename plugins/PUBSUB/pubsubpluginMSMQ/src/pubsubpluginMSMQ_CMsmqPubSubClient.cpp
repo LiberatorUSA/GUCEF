@@ -787,6 +787,15 @@ CMsmqPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CMsmqPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMsmqPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;

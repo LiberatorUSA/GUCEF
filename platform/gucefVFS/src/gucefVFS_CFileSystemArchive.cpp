@@ -406,6 +406,16 @@ CFileSystemArchive::FileExists( const CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CFileSystemArchive::DirExists( const CString& dirPath ) const
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, dirPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return CORE::DirExists( path );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CFileSystemArchive::GetFileSize( const CString& filePath ) const
 {GUCEF_TRACE;
@@ -753,6 +763,25 @@ CFileSystemArchive::OnNotify( CORE::CNotifier* notifier    ,
         // we do need to translate the paths first
         OnDirectoryWatcherEvent( notifier, eventId, eventdata );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::IsConnected( void ) const
+{GUCEF_TRACE;
+
+    // try to interact with the file system and verify the root path exists
+    return CORE::DirExists( m_rootDir );
 }
 
 /*-------------------------------------------------------------------------//

@@ -543,6 +543,15 @@ CKafkaPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CKafkaPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CKafkaPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;

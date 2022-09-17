@@ -119,6 +119,8 @@
   #define GUCEF_DEBUG_LOG( logLevel, logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_DEBUG, logLevel, logMessage );
   #ifdef GUCEF_DEBUG_MODE_VERBOSE
     #define GUCEF_DEBUG_LOG_EVERYTHING( logMessage ) ::GUCEF::CORE::CLoggingGlobal::Instance()->Log( GUCEF::CORE::LOG_DEBUG, LOGLEVEL_EVERYTHING, logMessage );
+  #else
+    #define GUCEF_DEBUG_LOG_EVERYTHING( logMessage )
   #endif
 #else
   #define GUCEF_DEBUG_LOG( logLevel, logMessage )

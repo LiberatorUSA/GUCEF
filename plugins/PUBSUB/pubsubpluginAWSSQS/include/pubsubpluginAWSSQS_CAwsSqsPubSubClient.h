@@ -105,6 +105,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsInitialized( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**

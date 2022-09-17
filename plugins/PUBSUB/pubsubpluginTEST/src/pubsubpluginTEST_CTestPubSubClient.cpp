@@ -511,6 +511,15 @@ CTestPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CTestPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTestPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;

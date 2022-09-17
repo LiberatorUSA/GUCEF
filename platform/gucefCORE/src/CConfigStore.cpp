@@ -121,6 +121,8 @@ CConfigStore::CConfigStore( void )
     , m_configureables()
     , m_newConfigureables()
     , m_isBusyLoadingConfig( false )
+    , m_globalConfigIsLoaded( false )
+    , m_globalBootstrapConfigIsLoaded( false )
 {GUCEF_TRACE;
 
 }
@@ -378,7 +380,10 @@ CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
     bool success = true;
     try
     {
-        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+        m_globalBootstrapConfigIsLoaded = false;
+        m_globalConfigIsLoaded = false;
+        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) 
+            return false;
         
         {
             MT::CObjectScopeLock lock( this );        
@@ -386,7 +391,11 @@ CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
         }
 
         if ( success )
+        {
+            m_globalBootstrapConfigIsLoaded = true;
+            m_globalConfigIsLoaded = true;
             NotifyObservers( GlobalConfigLoadCompletedEvent );
+        }
         else
             NotifyObservers( GlobalConfigLoadFailedEvent );
     }
@@ -414,11 +423,15 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         // Do we have a bootstrap log? If so apply that first
         if ( !m_bootstrapConfigFile.IsNULLOrEmpty() )
         {
-            if ( !NotifyObservers( GlobalBootstrapConfigLoadStartingEvent ) ) return false;
+            m_globalConfigIsLoaded = false;
+            m_globalBootstrapConfigIsLoaded = false;
+            
+            if ( !NotifyObservers( GlobalBootstrapConfigLoadStartingEvent ) ) 
+                return false;
 
             totalSuccess = LoadConfigData( m_bootstrapConfigFile, config );
     
-            // If we have a bootstrap config it MUST load successfully
+            // IF we have a bootstrap config it MUST load successfully
             if ( !totalSuccess )
             {
                 NotifyObservers( GlobalBootstrapConfigLoadFailedEvent );
@@ -428,15 +441,25 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
             totalSuccess = ApplyConfigData( config, true, true );
 
             if ( totalSuccess )
+            {
+                m_globalBootstrapConfigIsLoaded = true;
                 NotifyObservers( GlobalBootstrapConfigLoadCompletedEvent );
+            }
             else
+            {
                 NotifyObservers( GlobalBootstrapConfigLoadFailedEvent );
+            }
+        }
+        else
+        {
+            m_globalBootstrapConfigIsLoaded = true;
         }
     }
     {
         MT::CObjectScopeLock lock( this );
     
-        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) 
+            return false;
 
         // Load and overlay configs in the order given
         CString::StringVector::const_iterator i = m_configfiles.begin();
@@ -457,7 +480,10 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         totalSuccess = ApplyConfigData( config, false, !m_bootstrapConfigFile.IsNULLOrEmpty() );
 
         if ( totalSuccess )
+        {
+            m_globalConfigIsLoaded = true;
             NotifyObservers( GlobalConfigLoadCompletedEvent );
+        }
         else
             NotifyObservers( GlobalConfigLoadFailedEvent );
     }
@@ -581,7 +607,7 @@ bool
 CConfigStore::IsGlobalBootstrapConfigLoadInProgress( void ) const
 {GUCEF_TRACE;
 
-    return m_isBusyLoadingConfig;
+    return m_isBusyLoadingConfig && !m_globalBootstrapConfigIsLoaded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -590,7 +616,25 @@ bool
 CConfigStore::IsGlobalConfigLoadInProgress( void ) const
 {GUCEF_TRACE;
 
-    return m_isBusyLoadingConfig;
+    return m_isBusyLoadingConfig && !m_globalConfigIsLoaded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::IsGlobalConfigLoaded( void ) const
+{GUCEF_TRACE;
+
+    return m_globalConfigIsLoaded;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool 
+CConfigStore::IsGlobalBootstrapConfigIsLoaded( void ) const
+{GUCEF_TRACE;
+
+    return m_globalBootstrapConfigIsLoaded;
 }
 
 /*-------------------------------------------------------------------------*/

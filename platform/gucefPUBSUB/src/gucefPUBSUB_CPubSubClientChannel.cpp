@@ -29,6 +29,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -78,6 +83,8 @@ CPubSubClientChannel::CPubSubClientChannel( void )
     : CORE::CTaskConsumer()
     , m_sides()
     , m_flowRouter()
+    , m_isInitialized( false )
+    , m_globalConfigLoadCompleted( false )
     , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
 {GUCEF_TRACE;
 
@@ -97,12 +104,22 @@ CPubSubClientChannel::~CPubSubClientChannel()
 void
 CPubSubClientChannel::RegisterEventHandlers( void )
 {GUCEF_TRACE;
+    
+    TEventCallback callback( this, &CPubSubClientChannel::OnGlobalConfigLoadStarted );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore()  ,
+                 CORE::CConfigStore::GlobalConfigLoadStartingEvent ,
+                 callback                                          );
+    TEventCallback callback2( this, &CPubSubClientChannel::OnGlobalConfigLoadCompleted );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore()   ,
+                 CORE::CConfigStore::GlobalConfigLoadCompletedEvent ,
+                 callback2                                          );
+    m_globalConfigLoadCompleted = CORE::CCoreGlobal::Instance()->GetConfigStore().IsGlobalConfigLoaded(); 
 
     m_metricsTimer.SetPulseGenerator( GetPulseGenerator() );
-    TEventCallback callback( this, &CPubSubClientChannel::OnMetricsTimerCycle );
+    TEventCallback callback3( this, &CPubSubClientChannel::OnMetricsTimerCycle );
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
-                 callback                       );    
+                 callback3                      );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,15 +173,22 @@ CPubSubClientChannel::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
+bool 
+CPubSubClientChannel::InitializeChannel( bool force )
 {GUCEF_TRACE;
 
+    if ( m_isInitialized && !force )
+        return true;
+    
+    if ( !m_globalConfigLoadCompleted )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientChannel:InitializeChannel: Deferring initialization because global config loading has not yet been completed" );
+        return false;
+    }
+    
     // In case we are retrying we might have state from a previous run
     // clear it first
     Clear();
-    
-    RegisterEventHandlers();
 
     m_metricsTimer.SetInterval( m_channelSettings.metricsIntervalInMs );
     m_metricsTimer.SetEnabled( m_channelSettings.collectMetrics );
@@ -183,7 +207,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         CPubSubClientSidePtr side( new CPubSubClientSide( sideId, &m_flowRouter ) );        
         if ( !side->LoadConfig( sideSettings ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because side with id " + sideId + " failed LoadConfig" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because side with id " + sideId + " failed LoadConfig" );
             return false;
         }
         
@@ -195,7 +219,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
             if ( !threadPool->SetupTask( side ) )
             {
                 // As a fallback we support trying run as part of the channel thread instead
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to setup dedicated thread for side with id " + side->GetSideId() + ". Falling back to using main channel thread" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Failed to setup dedicated thread for side with id " + side->GetSideId() + ". Falling back to using main channel thread" );
                 CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
                 sideSettings.performPubSubInDedicatedThread = false;
                 side->SetTaskDelegator( GetTaskDelegator() );
@@ -210,7 +234,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
 
         if ( !side->PerformPubSubClientSetup() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because side with id " + sideId + " failed to setup pubsub client" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because side with id " + sideId + " failed to setup pubsub client" );
             return false;
         }
 
@@ -225,7 +249,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
     if ( !m_flowRouter.BuildRoutes( m_channelSettings.flowRouterConfig ,
                                     m_sides                            ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because we failed to build the flow router's routes" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because we failed to build the flow router's routes" );
         return false;
     }
 
@@ -236,9 +260,9 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         CPubSubClientSidePtr& side = (*i);
         if ( !side->IsRunningInDedicatedThread() )
         {
-            if ( !side->OnTaskStart( taskData ) )
+            if ( !side->OnTaskStart( GUCEF_NULL ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because non-dedicated-thread side with id " + side->GetSideId() + " failed its own OnTaskStart" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because non-dedicated-thread side with id " + side->GetSideId() + " failed its own OnTaskStart" );
                 return false;
             }
         }
@@ -246,28 +270,42 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         {
             if ( !threadPool->StartTask( side ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Failed to start dedicated thread for other side. Falling back to a single thread" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Failed to start dedicated thread for other side. Falling back to a single thread" );
                 
                 // As a fallback we support trying run as part of the channel thread instead
 
                 CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
                 sideSettings.performPubSubInDedicatedThread = false;
 
-                if ( !side->OnTaskStart( taskData ) )
+                if ( !side->OnTaskStart( GUCEF_NULL ) )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:OnTaskStart: Aborting because non-dedicated-thread (fallback mode) side with id " + side->GetSideId() + " failed its own OnTaskStart" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because non-dedicated-thread (fallback mode) side with id " + side->GetSideId() + " failed its own OnTaskStart" );
                     return false;
                 }
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:OnTaskStart: Successfully requested the launch of a dedicated thread for side with id " + side->GetSideId() );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:InitializeChannel: Successfully requested the launch of a dedicated thread for side with id " + side->GetSideId() );
             }
         }
 
         ++i;
     }
 
+    m_isInitialized = true;
+    return true;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    RegisterEventHandlers();
+
+    InitializeChannel( true );
     return true;
 }
 
@@ -351,6 +389,35 @@ CPubSubClientChannel::OnTaskEnded( CORE::CICloneable* taskData ,
     }
 
     Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnGlobalConfigLoadStarted( CORE::CNotifier* notifier    ,
+                                                 const CORE::CEvent& eventId  ,
+                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // We should wait for all platform systems to initialize since this is middleware and 
+    // we dont know what platform systems the various backends depend on so we cannot get a head start
+    // without potentially causing issues
+    m_globalConfigLoadCompleted = false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnGlobalConfigLoadCompleted( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // We should wait for all platform systems to initialize since this is middleware and 
+    // we dont know what platform systems the various backends depend on so we cannot get a head start
+    // without potentially causing issues
+    m_globalConfigLoadCompleted = true;
+    InitializeChannel( false );
 }
 
 /*-------------------------------------------------------------------------*/

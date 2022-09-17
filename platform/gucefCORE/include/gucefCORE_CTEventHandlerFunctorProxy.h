@@ -193,7 +193,8 @@ CTEventHandlerFunctorProxy< IObserverDerived >::OnNotify( CNotifier* notifier   
                                                           CICloneable* evenData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CTEventHandlerFunctorProxy(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
+    GUCEF_DEBUG_LOG_EVERYTHING( "CTEventHandlerFunctorProxy(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
+        ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
 
     (m_observer->*m_functor)( notifier         ,
                               eventID          ,

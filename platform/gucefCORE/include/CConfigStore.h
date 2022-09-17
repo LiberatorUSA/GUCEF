@@ -130,6 +130,10 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
     
     bool IsGlobalConfigLoadInProgress( void ) const;
 
+    bool IsGlobalConfigLoaded( void ) const;
+    
+    bool IsGlobalBootstrapConfigIsLoaded( void ) const;
+
     private:
 
     friend class CGloballyConfigurable;
@@ -168,6 +172,8 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
     TConfigurableSet m_configureables;
     TConfigurableSet m_newConfigureables;
     bool m_isBusyLoadingConfig;
+    bool m_globalConfigIsLoaded;
+    bool m_globalBootstrapConfigIsLoaded;
 };
 
 /*-------------------------------------------------------------------------//

@@ -458,6 +458,35 @@ CVfsPubSubBookmarkPersistence::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CVfsPubSubBookmarkPersistence::IsInitialized( void ) const
+{GUCEF_TRACE;
+    
+    return  !m_config.vfsRootPath.IsNULLOrEmpty() &&
+            VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVfsPubSubBookmarkPersistence::IsHealthy( void ) const
+{GUCEF_TRACE;
+    
+    return VFS::CVfsGlobal::Instance()->GetVfs().IsHealthy();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVfsPubSubBookmarkPersistence::IsConnected( void ) const
+{GUCEF_TRACE;
+    
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    return vfs.IsConnected() && vfs.DirExists( m_config.vfsRootPath );    
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CVfsPubSubBookmarkPersistence::PerformMaxBookmarkFilesCleanup( const CORE::CString& rootPath )
 {GUCEF_TRACE;

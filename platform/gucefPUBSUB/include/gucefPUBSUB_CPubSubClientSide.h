@@ -201,7 +201,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
 
+    void RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubClient );
+
     void RegisterTopicEventHandlers( CPubSubClientTopic& topic );
+
+    void RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -270,6 +274,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool PublishMailboxMsgs( void );
 
     bool RetryPublishFailedMsgs( void );
+
+    bool IsPubSubClientInfraReadyToConnect( void ) const;
 
     void ProcessAcknowledgeReceiptsMailbox( void );
 

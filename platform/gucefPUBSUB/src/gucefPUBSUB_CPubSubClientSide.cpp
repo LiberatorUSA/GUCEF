@@ -39,11 +39,6 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H */
 
-#ifndef GUCEF_CORE_CONFIGSTORE_H
-#include "CConfigStore.h"
-#define GUCEF_CORE_CONFIGSTORE_H
-#endif /* GUCEF_CORE_CONFIGSTORE_H */
-
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -324,6 +319,31 @@ CPubSubClientSide::TopicLink::MsgTrackingEntry::operator=( const MsgTrackingEntr
 /*-------------------------------------------------------------------------*/
 
 void
+CPubSubClientSide::RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubClient )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()           ,
+                 CPubSubClient::TopicsAccessAutoCreatedEvent ,
+                 callback                                    );
+
+    TEventCallback callback2( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()             ,
+                 CPubSubClient::TopicsAccessAutoDestroyedEvent ,
+                 callback2                                     );
+
+    TEventCallback callback3( this, &CPubSubClientSide::OnClientHealthStatusChanged );
+    SubscribeTo( m_pubsubClient.GetPointerAlways()      ,
+                 CPubSubClient::HealthStatusChangeEvent ,
+                 callback3                              );
+
+    // register event handlers for any topics the client may already have
+    RegisterTopicEventHandlers( pubsubClient );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPubSubClientSide::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
@@ -337,25 +357,31 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent        ,
                  callback2                             );
 
-    TEventCallback callback3( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()           ,
-                 CPubSubClient::TopicsAccessAutoCreatedEvent ,
-                 callback3                                   );
-
-    TEventCallback callback4( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()             ,
-                 CPubSubClient::TopicsAccessAutoDestroyedEvent ,
-                 callback4                                     );
-
-    TEventCallback callback5( this, &CPubSubClientSide::OnClientHealthStatusChanged );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()      ,
-                 CPubSubClient::HealthStatusChangeEvent ,
-                 callback5                              );
-    
-    TEventCallback callback6( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
+    TEventCallback callback3( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
     SubscribeTo( &m_pubsubClientReconnectTimer  ,
                  CORE::CTimer::TimerUpdateEvent ,
-                 callback6                      );
+                 callback3                      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient )
+{GUCEF_TRACE;
+
+    CPubSubClient::PubSubClientTopicSet allTopicAccess;
+    pubsubClient->GetAllCreatedTopicAccess( allTopicAccess );
+
+    CPubSubClient::PubSubClientTopicSet::iterator i = allTopicAccess.begin();
+    while ( i != allTopicAccess.end() )
+    {
+        CPubSubClientTopic* topic = (*i);
+        if ( GUCEF_NULL != topic )
+        {
+            RegisterTopicEventHandlers( *topic );
+        }
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -471,6 +497,16 @@ CPubSubClientSide::IsHealthy( void ) const
     try
     {
         if ( !m_pubsubClient.IsNULL() && !m_pubsubClient->IsHealthy() )
+            fullyHealthy = false;
+    }
+    catch ( const std::exception& )
+    {
+        fullyHealthy = false;
+    }
+
+    try
+    {
+        if ( !m_pubsubBookmarkPersistence.IsNULL() && !m_pubsubBookmarkPersistence->IsHealthy() )
             fullyHealthy = false;
     }
     catch ( const std::exception& )
@@ -621,17 +657,28 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
     // stop the timer, reconnect time itself should not count towards the reconnect interval
     m_pubsubClientReconnectTimer.SetEnabled( false );
 
-    // Since the client does not support reconnects we will destructively reconnnect
-    // Meaning we wipe out any previous client as we cannot rely on the client implementation
-    // properly handling the state transition
-    if ( DisconnectPubSubClient( true ) )
-    {
-        if ( ConnectPubSubClient() )
-            return; // no need to resume the timer
+    if ( IsPubSubClientInfraReadyToConnect() )
+    {    
+        if ( m_clientFeatures.supportsAutoReconnect )
+        {
+            if ( ConnectPubSubClient() )
+                return; // no need to resume the timer
+        }
+        else
+        {
+            // Since the client does not support reconnects we will destructively reconnnect
+            // Meaning we wipe out any previous client as we cannot rely on the client implementation
+            // properly handling the state transition
+            if ( DisconnectPubSubClient( true ) )
+            {
+                if ( ConnectPubSubClient() )
+                    return; // no need to resume the timer
+            }
+        }
     }
 
     // no joy, start the timer again
-    m_pubsubClientReconnectTimer.SetEnabled( false );
+    m_pubsubClientReconnectTimer.SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1930,6 +1977,8 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 
     if ( clientSetupWasNeeded )
     {
+        RegisterPubSubClientEventHandlers( m_pubsubClient );        
+        
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):PerformPubSubClientSetup: Setup completed for pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\" for side with id " +
             GetSideId() );
@@ -2053,6 +2102,34 @@ CPubSubClientSide::ConnectPubSubClient( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::IsPubSubClientInfraReadyToConnect( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_pubsubBookmarkPersistence.IsNULL() )
+    {
+        // if we are using bookmark peristence it should be initialized before
+        // we use the client because we will need to source the bookmarks for the client
+        if ( !m_pubsubBookmarkPersistence->IsInitialized() )
+            return false;
+    }
+
+    if ( !m_pubsubClient.IsNULL() )
+    {
+        if ( !m_pubsubClient->IsInitialized() )
+            return false;
+    }
+    else
+    {
+        // we dont even have a client to connect
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
@@ -2106,10 +2183,20 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( m_connectOnTaskStart )
     {
-        if ( !ConnectPubSubClient() )
+        if ( IsPubSubClientInfraReadyToConnect() )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
+            if ( !ConnectPubSubClient() )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
+                m_pubsubClientReconnectTimer.SetEnabled( true );
+            }
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnTaskStart: Deferring pubsub client connect awaiting prereqs" );
+
             m_pubsubClientReconnectTimer.SetEnabled( true );
         }
     }

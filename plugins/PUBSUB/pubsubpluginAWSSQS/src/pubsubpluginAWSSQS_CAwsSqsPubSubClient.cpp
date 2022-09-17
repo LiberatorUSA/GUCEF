@@ -423,6 +423,15 @@ CAwsSqsPubSubClient::IsHealthy( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CAwsSqsPubSubClient::IsInitialized( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAwsSqsPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;

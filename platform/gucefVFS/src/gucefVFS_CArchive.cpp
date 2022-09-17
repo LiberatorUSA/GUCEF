@@ -107,7 +107,25 @@ CArchive::IsDirectoryWatchingSupported( void ) const
 
     return false;
 }
-    
+
+/*-------------------------------------------------------------------------*/
+ 
+bool
+CArchive::IsHealthy( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchive::IsConnected( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

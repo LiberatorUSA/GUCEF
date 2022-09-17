@@ -378,7 +378,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                   const CORE::CEvent& eventId  ,
                   CORE::CICloneable* eventData );
 
-    
+    void
+    OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+                  
     CORE::UInt32 GetMsgsLoadedFromStorageCounter( bool resetCounter );
     CORE::UInt32 GetMsgBytesLoadedFromStorageCounter( bool resetCounter );
     CORE::UInt32 GetMsgsWrittenToStorageCounter( bool resetCounter );
@@ -406,6 +410,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CString m_metricFriendlyTopicName;
     mutable bool m_isHealthy;
     bool m_subscriptionIsAtEndOfData;
+    bool m_vfsInitIsComplete;
 
     CORE::CDynamicBuffer* m_currentReadBuffer;
     CORE::CDynamicBuffer* m_currentWriteBuffer;

@@ -312,6 +312,16 @@ CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CS3BucketArchive::DirExists( const VFS::CString& dirPath ) const
+{GUCEF_TRACE;
+
+    // @TODO
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CS3BucketArchive::DeleteFile( const VFS::CString& filePath )
 {GUCEF_TRACE;

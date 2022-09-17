@@ -189,6 +189,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
                               const CORE::CEvent& eventId  ,
                               CORE::CICloneable* eventData );
 
+    void OnGlobalConfigLoadCompleted( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData );
+    
+    void OnGlobalConfigLoadStarted( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
+
+    bool InitializeChannel( bool force );
+    
     void RegisterEventHandlers( void );
     
     private:
@@ -198,6 +208,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
     TPubSubClientSidePtrVector m_sides;
     CPubSubFlowRouter m_flowRouter;
     CPubSubChannelSettings m_channelSettings;
+    bool m_isInitialized;
+    bool m_globalConfigLoadCompleted;
     CORE::CTimer m_metricsTimer;
 };
 

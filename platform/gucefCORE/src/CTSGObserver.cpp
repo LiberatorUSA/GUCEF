@@ -112,9 +112,9 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
                                  CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    OnNotify( notifier  ,
-              eventid   ,
-              eventdata );
+    CPumpedObserver::OnNotify( notifier  ,
+                               eventid   ,
+                               eventdata );
 }
 
 /*-------------------------------------------------------------------------*/

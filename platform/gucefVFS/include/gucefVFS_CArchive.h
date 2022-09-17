@@ -136,6 +136,8 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool DeleteFile( const CString& filePath ) = 0;
     
     virtual bool FileExists( const CString& filePath ) const = 0;
+
+    virtual bool DirExists( const CString& dirPath ) const = 0;
     
     virtual UInt32 GetFileSize( const CString& filePath ) const = 0;
     
@@ -170,6 +172,10 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHealthy( void ) const;
+
+    virtual bool IsConnected( void ) const;
 };
 
 /*-------------------------------------------------------------------------//

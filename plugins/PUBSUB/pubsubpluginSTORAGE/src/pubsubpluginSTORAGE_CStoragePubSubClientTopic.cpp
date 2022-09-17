@@ -213,6 +213,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_metricFriendlyTopicName()
     , m_isHealthy( true )
     , m_subscriptionIsAtEndOfData( false )
+    , m_vfsInitIsComplete( false )
     , m_currentReadBuffer( GUCEF_NULL )
     , m_currentWriteBuffer( GUCEF_NULL )
     , m_currentBookmarkInfo()
@@ -314,10 +315,16 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                      callback                            );
     }
 
-    TEventCallback callback( this, &CStoragePubSubClientTopic::OnPulseCycle );
+    TEventCallback callback( this, &CStoragePubSubClientTopic::OnVfsInitializationCompleted );
+    SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
+                 VFS::CVFS::VfsInitializationCompletedEvent ,
+                 callback                                   );
+    m_vfsInitIsComplete = VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
+
+    TEventCallback callback2( this, &CStoragePubSubClientTopic::OnPulseCycle );
     SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
                  CORE::CPulseGenerator::PulseEvent                       ,
-                 callback                                                );
+                 callback2                                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1441,8 +1448,9 @@ CStoragePubSubClientTopic::IsConnected( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
-    // @TODO: Add a VFS based access test
-    return true;
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+    return vfs.IsHealthy() && vfs.IsConnected();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1453,7 +1461,7 @@ CStoragePubSubClientTopic::IsHealthy( void ) const
 
     MT::CScopeMutex lock( m_lock );
 
-    bool newIsHealthyState = true;
+    bool newIsHealthyState = VFS::CVfsGlobal::Instance()->GetVfs().IsHealthy();
     
     if ( m_config.maxStorageCorruptionDetectionsToBeHealthy >= 0 )
     {
@@ -2093,6 +2101,12 @@ bool
 CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
 {GUCEF_TRACE;
 
+    if ( !m_vfsInitIsComplete )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: Deferring until VFS init has been completed" );
+        return false;
+    }
+    
     CORE::CDynamicBufferSwap& buffers = GetSerializedMsgBuffers();
 
     CORE::CDateTime msgBatchDt;
@@ -2212,6 +2226,12 @@ bool
 CStoragePubSubClientTopic::LocateFilesForStorageToPubSubRequest( void )
 {GUCEF_TRACE;
 
+    if ( !m_vfsInitIsComplete )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:LocateFilesForStorageToPubSubRequest: Deferring until VFS init has been completed" );
+        return false;
+    }
+    
     bool totalSuccess = true;
     while ( !m_stage1StorageToPubSubRequests.empty() )
     {
@@ -2491,7 +2511,8 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
         }
     }
 
-    m_subscriptionIsAtEndOfData = endOfData;
+    if ( m_vfsInitIsComplete )
+        m_subscriptionIsAtEndOfData = endOfData;
     return totalSuccess;
 }
 
@@ -2684,6 +2705,17 @@ CStoragePubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
 {GUCEF_TRACE;
 
     return m_subscriptionIsAtEndOfData;
+}
+
+/*-------------------------------------------------------------------------*/
+                                 
+void
+CStoragePubSubClientTopic::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
+                                                         const CORE::CEvent& eventId  ,
+                                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    m_vfsInitIsComplete = true;
 }
 
 /*-------------------------------------------------------------------------//

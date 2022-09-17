@@ -187,7 +187,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
         oPtr = (*i).first;
         if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
         {
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + (*i).first->GetClassTypeName() + "(" + CORE::PointerToString( (*i).first ) + ")" );
+            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + (*i).first->GetClassTypeName() + "(" + CORE::PointerToString( (*i).first ) + ")" );
 
             (*i).first->OnNotify( m_ownerNotifier ,
                                   eventid         ,
@@ -461,7 +461,7 @@ CNotifierImplementor::LinkObserver( CObserver* observer          ,
             // Establish our communication path from observer -> notifier
             observer->LinkTo( m_ownerNotifier );
 
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
                 ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
 
             // Send the standard subscription event to notify of first link
@@ -570,7 +570,8 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
              */
             observer->UnlinkFrom( m_ownerNotifier );
 
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
+            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                    ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
 
             /*
              *  Send the standard un-subscribe event
@@ -815,7 +816,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                 oPtr = (*i).first;
                 if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
                 {
-                    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
+                    GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                        ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
 
                     // Perform the notification
                     // If an observer is subscribed to all events we never used specialized callbacks
@@ -883,7 +885,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                         CIEventHandlerFunctorBase* callback = (*n).second;
                         if ( GUCEF_NULL != callback )
                         {
-                            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+                            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() +    
+                                ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
 
                             callback->OnNotify( &sender   ,
                                                 eventid   ,
@@ -891,7 +894,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                         }
                         else
                         {
-                            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
+                            GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                                ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
 
                             oPtr->OnNotify( &sender   ,
                                             eventid   ,
@@ -905,7 +909,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                     // We should not get here, but we will pass on the event anyway
                     GUCEF_ASSERT_ALWAYS;
 
-                    GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
+                    GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                        ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
 
                     oPtr->OnNotify( &sender   ,
                                     eventid   ,
@@ -962,7 +967,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
     }
     else
     {
-        GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() );
+        GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+            " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() );
 
         // This notifier is already busy processing a notification
         // We will store the request until we are done
@@ -1146,7 +1152,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         {
             if ( (*i).second )
             {
-                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
+                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
 
                 // Perform the notification
                 // If an observer is subscribed to all events we never used specialized callbacks
@@ -1188,7 +1194,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             CIEventHandlerFunctorBase* callback = (*n).second;
             if ( GUCEF_NULL != callback )
             {
-                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
 
                 callback->OnNotify( &sender   ,
                                     eventid   ,
@@ -1196,7 +1202,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             }
             else
             {
-                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
+                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
 
                 specificObserver.OnNotify( &sender   ,
                                            eventid   ,
@@ -1231,7 +1237,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
     }
     else
     {
-        GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() + " to " + specificObserver.GetClassTypeName() );
+        GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + " is Busy, Mailboxing event \"" +  eventid.GetName() + "\" from " + sender.GetClassTypeName() + " to " + specificObserver.GetClassTypeName() );
 
         // This notifier is already busy processing a notification
         // We will store the request until we are done
@@ -1312,7 +1318,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
 {
    MT::CObjectScopeLock lock( this );
 
-   GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Scheduling for destruction" );
+   GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Scheduling for destruction" );
 
    if ( !m_isBusy )
     {

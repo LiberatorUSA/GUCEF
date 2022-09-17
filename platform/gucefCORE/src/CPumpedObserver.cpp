@@ -268,15 +268,17 @@ void
 CPumpedObserver::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_mutex );
-
-    if ( !m_pulseGenerator.IsNULL() )
+    PulseGeneratorPtr oldPulseGenerator = m_pulseGenerator;
+    m_pulseGenerator.Unlink();
+    
+    if ( !oldPulseGenerator.IsNULL() )
     {
-        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
-        m_pulseGenerator.Unlink();
+        oldPulseGenerator->RequestStopOfPeriodicUpdates( this );
+        UnsubscribeFrom( *oldPulseGenerator.GetPointerAlways() ); 
     }
 
     m_pulseGenerator = newPulseGenerator;
+    RegisterPulseGeneratorEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -302,7 +304,7 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
     CMailElement* maildata( GUCEF_NULL );
     while ( m_mailbox.GetMail( mailEventID ,
                                &dataptr    ) )
-    {
+    {        
         maildata = static_cast< CMailElement* >( dataptr );
         CIEventHandlerFunctorBase* callback = maildata->GetCallback();
         if ( GUCEF_NULL == callback )

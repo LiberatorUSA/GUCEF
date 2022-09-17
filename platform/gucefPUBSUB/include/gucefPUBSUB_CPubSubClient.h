@@ -200,6 +200,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     virtual bool IsHealthy( void ) const = 0;
 
     /**
+     *  Obtains a snapshot-in-time evaluation of the initialization completeness of the 
+     *  persistence backend used. Given the abstractions one cannot assume that merely instantiating the
+     *  client equals full initialization. There may be dependencies at play which need to be satisfied async.
+     */
+    virtual bool IsInitialized( void ) const = 0;
+
+    /**
      *  Provides a snapshot-in-time state of whether as an aggregate status for all topics the subscriptions have 
      *  reached a point where no more data is known to be available. Not all backends will support this as it is 
      *  tied with the 'supportsSubscriptionEndOfDataEvent' feature toggle.

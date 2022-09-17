@@ -99,6 +99,25 @@ class GUCEF_PUBSUB_EXPORT_CPP CVfsPubSubBookmarkPersistence : public CIPubSubBoo
                                      UInt32 maxNrToLoad                     ) GUCEF_VIRTUAL_OVERRIDE;
                                             
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the initialization completeness of the 
+     *  persistence backend used 
+     */
+    virtual bool IsInitialized( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current health of the archives
+     *  mounted into the VFS plus the overall VFS health. 
+     */
+    virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Obtains a snapshot-in-time evaluation of the current connectivity of the archives
+     *  mounted into the VFS. This mainly comes into play for various forms of networked
+     *  storage.
+     */
+    virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     bool GetBookmarkPersistenceRootPath( const CORE::CString& bookmarkNamespace ,
                                          const CPubSubClient& client            ,
