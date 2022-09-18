@@ -354,7 +354,7 @@ CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
         PubSubClientTopicConstSet::iterator i = topics.begin();
         while ( i != topics.end() )
         {
-            if ( (*i)->IsSubscriptionAtEndOfData() )
+            if ( !(*i)->IsSubscriptionAtEndOfData() )
             {
                 allAtEnd = false;
                 break;

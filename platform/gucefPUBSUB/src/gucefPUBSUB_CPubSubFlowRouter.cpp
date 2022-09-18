@@ -1151,7 +1151,7 @@ CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopi
 
     if ( GUCEF_NULL != topicAccess ) 
     {
-        TEventCallback callback( this, &CPubSubFlowRouter::OnSidePubSubClientTopicCreation );
+        TEventCallback callback( this, &CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData );
         SubscribeTo( topicAccess                                    ,
                      CPubSubClientTopic::SubscriptionEndOfDataEvent ,
                      callback                                       );
