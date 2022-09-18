@@ -963,7 +963,10 @@ CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
     CORE::CIDirectoryWatcher::CDirWatchOptions dirWatchOptions( false );
     dirWatchOptions.watchForFileCreation = true;
 
-    SubscribeTo( &vfs );
+    SubscribeTo( &vfs, VFS::CVFS::FileCreatedEvent );
+    //SubscribeTo( &vfs, VFS::CVFS::FileModifiedEvent );
+    //SubscribeTo( &vfs, VFS::CVFS::FileRenamedEvent );
+    //SubscribeTo( &vfs, VFS::CVFS::FileDeletedEvent );
 
     return vfs.AddDirToWatch( m_vfsRootPath, dirWatchOptions );
 }

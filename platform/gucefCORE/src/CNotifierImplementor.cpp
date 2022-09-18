@@ -261,7 +261,18 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
             while ( m != eventMap.end() )
             {
                 (*m).first->UnlinkFrom( m_ownerNotifier );
-                delete (*m).second;
+                TEventHandlerFunctorInterfaceVector& callbacks = (*m).second;
+                if ( !callbacks.empty() )
+                {
+                    TEventHandlerFunctorInterfaceVector::iterator v = callbacks.begin();
+                    while ( v != callbacks.end() )
+                    {
+                        delete (*v);
+                        (*v) = GUCEF_NULL;
+                        ++v;
+                    }
+                    callbacks.clear();
+                }
                 ++m;
             }
             ++n;
@@ -322,8 +333,8 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 /*-------------------------------------------------------------------------*/
 
 void
-CNotifierImplementor::Subscribe( CObserver* observer                              ,
-                                 const CEvent& eventid                            ,
+CNotifierImplementor::Subscribe( CObserver* observer                                    ,
+                                 const CEvent& eventid                                  ,
                                  CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
@@ -356,14 +367,9 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                 if ( i != eventObservers.end() )
                 {
                     // The observer is already subscribed to this event
-                    // All we have to do is make sure the callback is up-to-date
-                    delete (*i).second;
-                    (*i).second = GUCEF_NULL;
-                    if ( GUCEF_NULL != callback )
-                    {
-                        (*i).second = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
-                    }
-
+                    // All we have to do is make sure the callback is added
+                    TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
+                    callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
                     m_isBusy = false;
                     return;
                 }
@@ -374,11 +380,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  */
                 if ( GUCEF_NULL != callback )
                 {
-                    eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
-                }
-                else
-                {
-                    eventObservers[ observer ] = GUCEF_NULL;
+                    TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
+                    callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
                 }
             }
             else
@@ -392,11 +395,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                 TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];
                 if ( GUCEF_NULL != callback )
                 {
-                    eventObservers[ observer ] = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
-                }
-                else
-                {
-                    eventObservers[ observer ] = GUCEF_NULL;
+                    TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
+                    callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
                 }
             }
         }
@@ -551,10 +551,17 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                  *  Remove the reference to the given observer
                  *  Also delete the event handler functor as needed
                  */
-                if ( GUCEF_NULL != (*i).second )
+                TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
+                if ( !callbacks.empty() )
                 {
-                    delete (*i).second;
-                    (*i).second = GUCEF_NULL;
+                    TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
+                    while ( m != callbacks.end() )
+                    {
+                        delete (*m);
+                        (*m) = GUCEF_NULL;
+                        ++m;
+                    }
+                    callbacks.clear();
                 }
                 eventObservers.erase( i );
             }
@@ -665,10 +672,17 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                      *  We found the observer and we will remove it from
                      *  our notification list for this event.
                      */
-                    if ( GUCEF_NULL != (*i).second )
+                    TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
+                    if ( !callbacks.empty() )
                     {
-                        delete (*i).second;
-                        (*i).second = GUCEF_NULL;
+                        TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
+                        while ( m != callbacks.end() )
+                        {                            
+                            delete (*m);
+                            (*m) = GUCEF_NULL;
+                            ++m;
+                        }
+                        callbacks.clear();
                     }
                     eventObservers.erase( i );
                     m_isBusy = false;                    
@@ -882,15 +896,22 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                     {
                         // Check if we should perform notification using the generic
                         // handler or a user specified callback.
-                        CIEventHandlerFunctorBase* callback = (*n).second;
-                        if ( GUCEF_NULL != callback )
+                        TEventHandlerFunctorInterfaceVector& callbacks = (*n).second;
+                        if ( !callbacks.empty() )
                         {
-                            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() +    
-                                ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+                            TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
+                            while ( m != callbacks.end() )
+                            {
+                                CIEventHandlerFunctorBase* callback = (*m);
 
-                            callback->OnNotify( &sender   ,
-                                                eventid   ,
-                                                eventData );
+                                GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() +    
+                                    ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+
+                                callback->OnNotify( &sender   ,
+                                                    eventid   ,
+                                                    eventData );
+                                ++m;
+                            }
                         }
                         else
                         {
@@ -899,7 +920,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
 
                             oPtr->OnNotify( &sender   ,
                                             eventid   ,
-                                            eventData );
+                                            eventData );                            
                         }
                         notified = true;
                     }
@@ -1191,23 +1212,34 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         {
             // Check if we should perform notification using the generic
             // handler or a user specified callback.
-            CIEventHandlerFunctorBase* callback = (*n).second;
-            if ( GUCEF_NULL != callback )
-            {
-                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
 
-                callback->OnNotify( &sender   ,
-                                    eventid   ,
-                                    eventData );
+            TEventHandlerFunctorInterfaceVector& callbacks = (*n).second;
+            if ( !callbacks.empty() )
+            {
+                TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
+                while ( m != callbacks.end() )
+                {
+                    CIEventHandlerFunctorBase* callback = (*m);
+
+                    GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                        ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+
+                    callback->OnNotify( &sender   ,
+                                        eventid   ,
+                                        eventData );
+                    ++m;
+                }
             }
             else
             {
-                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
+                GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                    ": Dispatching event \"" + eventid.GetName() + "\" to " + specificObserver.GetClassTypeName() + "(" + CORE::PointerToString( &specificObserver ) + ")" );
 
                 specificObserver.OnNotify( &sender   ,
                                            eventid   ,
-                                           eventData );
+                                           eventData );                           
             }
+
             m_isBusy = false;
 
             // Check if someone deleted our owner notifier

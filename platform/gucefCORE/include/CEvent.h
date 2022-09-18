@@ -82,6 +82,10 @@ class GUCEF_CORE_PUBLIC_CPP CEvent
 
     bool operator==( const CEvent& other ) const;
 
+    bool operator==( const char* eventName ) const;
+
+    bool operator==( const CORE::CString& eventName ) const;
+
     bool operator!=( const CEvent& other ) const;
 
     /**

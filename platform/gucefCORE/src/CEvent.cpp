@@ -166,6 +166,24 @@ CEvent::operator==( const CEvent& other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CEvent::operator==( const CORE::CString& eventName ) const
+{GUCEF_TRACE;
+
+    return m_eventName == eventName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEvent::operator==( const char* eventName ) const
+{GUCEF_TRACE;
+
+    return m_eventName == eventName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CEvent::operator!=( const CEvent& other ) const
 {GUCEF_TRACE;
 

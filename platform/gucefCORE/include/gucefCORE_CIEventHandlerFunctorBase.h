@@ -77,13 +77,3 @@ class GUCEF_CORE_PUBLIC_CPP CIEventHandlerFunctorBase : public CIObserver  ,
 
 #endif /* GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-03-2005 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/

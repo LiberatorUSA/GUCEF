@@ -295,7 +295,8 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
     
     private:
     
-    typedef std::map< CObserver*, CIEventHandlerFunctorBase* > TEventNotificationMap;
+    typedef std::vector< CIEventHandlerFunctorBase* > TEventHandlerFunctorInterfaceVector;
+    typedef std::map< CObserver*, TEventHandlerFunctorInterfaceVector > TEventNotificationMap;
     
     typedef std::set< CObserver* > TObserverSet;
     typedef std::map< CEvent, TEventNotificationMap > TNotificationList;
