@@ -193,7 +193,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
                           TPubSubClientSidePtrVector& sides             ,
                           CPubSubFlowRouterConfig& normalizedConfig     );
 
-    bool IsTrackingInFlightPublishedMsgsForAcksNeeded( const CPubSubClientSide* side ) const;
+    bool IsTrackingInFlightPublishedMsgsForAcksNeededForSide( const CPubSubClientSide* side ) const;
     
     void
     OnSidePubSubClientInstantiation( CORE::CNotifier* notifier    ,

@@ -250,14 +250,22 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     };
     typedef std::deque< StorageToPubSubRequest > StorageToPubSubRequestDeque;
     
+    typedef std::vector< bool > TBoolVector;
+    
     class StorageBufferMetaData
     {
         public:
 
         PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
+        PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;
+        TMsgsRecievedEventData pubsubMsgsRefs;
+        TBoolVector msgAcks;
+        CORE::UInt32 ackdMsgCount;
         TPublishActionIdVector actionIds; 
         CORE::CString relatedStorageFile;
         StorageToPubSubRequest* linkedRequest;
+
+        void Clear( void );
 
         StorageBufferMetaData( void );
     };
@@ -279,18 +287,18 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     template < typename T >
     bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds, const std::vector< T >& msgs, bool notify );
 
-    bool AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark  ,
-                                 const StorageBufferMetaData* metaData );
+    bool AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark ,
+                                 StorageBufferMetaData* metaData      );
 
     bool GetBookmarkForReceiveActionId( CORE::UInt64 receiveActionId      , 
                                         PUBSUB::CPubSubBookmark& bookmark ) const;
 
-    bool GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId           , 
-                                            const StorageBufferMetaData** metaData ,
-                                            TStorageBookmarkInfo& bookmarkInfo     ) const;
+    bool GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId       , 
+                                            StorageBufferMetaData** metaData   ,
+                                            TStorageBookmarkInfo& bookmarkInfo );
     
-    bool GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId           , 
-                                                        const StorageBufferMetaData** metaData ) const;
+    bool GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId     , 
+                                                        StorageBufferMetaData** metaData );
     
     bool GetPersistedBookmark( CORE::Int32 channelId              , 
                                const CORE::CString& topicName     , 
@@ -394,7 +402,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     CStoragePubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
-    TMsgsRecievedEventData m_pubsubMsgsRefs;
     CStoragePubSubClientTopicConfig m_config;
     CORE::CTimer* m_syncVfsOpsTimer;    
     CORE::CTimer* m_reconnectTimer;
@@ -409,6 +416,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
     mutable bool m_isHealthy;
+    bool m_needToTrackAcks;
     bool m_subscriptionIsAtEndOfData;
     bool m_vfsInitIsComplete;
 

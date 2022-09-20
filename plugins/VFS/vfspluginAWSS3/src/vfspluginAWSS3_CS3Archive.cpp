@@ -235,6 +235,17 @@ CS3Archive::DeleteFile( const VFS::CString& filePath )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3Archive::MoveFile( const VFS::CString& oldFilePath ,
+                      const VFS::CString& newFilePath ,
+                      const bool overwrite            )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CS3Archive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

@@ -107,6 +107,10 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CArchive
                              UInt32 maxListEntries = GUCEF_UINT16MAX              ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool DeleteFile( const VFS::CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool MoveFile( const VFS::CString& oldFilePath ,
+                           const VFS::CString& newFilePath ,
+                           const bool overwrite            ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool FileExists( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
 

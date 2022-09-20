@@ -82,6 +82,7 @@
 #endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
 
 #undef CopyFile
+#undef MoveFile
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -421,6 +422,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 
     bool DeleteFile( const CString& filePath ,
                      bool okIfItDoesNotExist );
+
+    bool MoveFile( const CString& oldFilePath ,
+                   const CString& newFilePath ,
+                   const bool overwrite       );
 
     virtual bool GetFileList( TStringVector& outputList                       ,
                               const CString& location                         ,

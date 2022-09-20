@@ -98,6 +98,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     , m_pubsubBookmarkPersistence()
     , m_threadPool()
     , m_isHealthy( true )
+    , m_needToTrackAcks( true )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -113,7 +114,6 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     }
 
     m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "StoragePubSubClient(" + CORE::ToString( this ) + ")", GetPulseGenerator(), true );
-
     m_config.metricsPrefix += "storage.";
 
     RegisterEventHandlers();
@@ -204,6 +204,46 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsAckUsingBookmark = features.supportsDerivingBookmarkFromMsg;  
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
+{GUCEF_TRACE;
+
+    PUBSUB::CPubSubClientFeatures features;
+    GetSupportedFeatures( features );
+    
+    // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
+    // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
+    // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
+    
+    bool doWeWantIt = ( m_config.desiredFeatures.supportsSubscribing &&                         // <- does it apply in this context ?
+                        ( m_config.desiredFeatures.supportsSubscriberMsgReceivedAck ||          // <- do we want it?
+                          m_config.desiredFeatures.supportsSubscribingUsingBookmark  )
+                      );
+
+    bool isItSupported = features.supportsSubscriberMsgReceivedAck ||
+                         ( features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark );
+
+    bool canWeNotWantIt = features.supportsAbsentMsgReceivedAck &&          // <- Is it even an option to not do it regardless of desired features
+                          ( !features.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
+                             features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark && features.supportsServerSideBookmarkPersistance );
+                              
+    bool acksNeeded =  ( doWeWantIt && isItSupported ) || 
+                       ( !canWeNotWantIt && isItSupported );
+
+    return acksNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
+{GUCEF_TRACE;
+
+    return m_needToTrackAcks;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -445,6 +485,7 @@ CStoragePubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
         MT::CScopeMutex lock( m_lock );
 
         m_config = parsedCfg;
+        m_needToTrackAcks = DetermineIfTrackingAcksIsNeeded(); 
         return ConfigureBookmarkPersistance();
     }
     return false;

@@ -488,8 +488,7 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
     // @TODO: This functionality could be improved by taking into account outstanding references to the resource
     //        Not all archive types might be able to handle denying a delete themselves during ongoing I/O especially with remote storage
 
-    // Switch dir separator chars if needed
-    CString path( filePath.ReplaceChar( '\\', '/' ) );
+    CString path = ConformVfsFilePath( filePath );
 
     MT::CObjectScopeLock lock( this );
 
@@ -512,6 +511,55 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
 
     // No such file found
     return okIfItDoesNotExist;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::MoveFile( const CString& oldFilePath ,
+                const CString& newFilePath ,
+                const bool overwrite       )
+{GUCEF_TRACE;
+
+    CString oldPath = ConformVfsFilePath( oldFilePath );
+    CString newPath = ConformVfsFilePath( newFilePath );
+    
+    MT::CObjectScopeLock lock( this );
+
+    // Get lists of all eligable mounts
+    TConstMountLinkVector oldPathMountLinks;
+    GetEligableMounts( oldPath, false, oldPathMountLinks );    
+    TConstMountLinkVector newPathMountLinks;
+    GetEligableMounts( newPath, false, newPathMountLinks );
+
+    TConstMountLinkVector::iterator i = oldPathMountLinks.begin();
+    while ( i != oldPathMountLinks.end() )
+    {
+        TConstMountLink& oldMountLink = (*i);
+        TConstMountLinkVector::iterator n = newPathMountLinks.begin();
+        while ( n != newPathMountLinks.end() )
+        {            
+            TConstMountLink& newMountLink = (*n);
+            if ( oldMountLink.mountEntry == newMountLink.mountEntry )
+            {
+                // Found a match where both old and new path are available via the same archive
+                // this takes priority over any cross-archive logical 'moves'
+                TArchivePtr archive = newMountLink.mountEntry->archive;
+                return archive->MoveFile( oldMountLink.remainder , 
+                                          newMountLink.remainder , 
+                                          overwrite              );
+            }
+            ++n;
+        }
+        ++i;
+    }
+
+    // Since we could not find an archive that can hold both the old and new location we will have to
+    // perform a logical move which is a copy followed by a delete
+
+    // @TODO
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

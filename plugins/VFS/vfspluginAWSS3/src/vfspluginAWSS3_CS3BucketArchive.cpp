@@ -366,6 +366,17 @@ CS3BucketArchive::DeleteFile( const VFS::CString& filePath )
     }
     return false;
 }
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CS3BucketArchive::MoveFile( const VFS::CString& oldFilePath ,
+                            const VFS::CString& newFilePath ,
+                            const bool overwrite            )
+{GUCEF_TRACE;
+
+    return false;
+}
  
 /*-------------------------------------------------------------------------*/
 

@@ -141,6 +141,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     PUBSUB::TIPubSubBookmarkPersistenceBasicPtr GetBookmarkPersistence( void ) const;
 
+    bool IsTrackingAcksNeeded( void ) const;
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -149,6 +151,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     private:
 
+    bool DetermineIfTrackingAcksIsNeeded( void ) const;
+    
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -178,6 +182,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     PUBSUB::TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::ThreadPoolPtr m_threadPool;
     mutable bool m_isHealthy;
+    bool m_needToTrackAcks;
     MT::CMutex m_lock;
 };
 

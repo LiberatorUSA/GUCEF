@@ -81,6 +81,8 @@
 
 #include "pubsubpluginSTORAGE_CStoragePubSubClientTopic.h"
 
+#undef MoveFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -184,6 +186,10 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::LoadConfig( const CORE::CData
 
 CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
     : msgOffsetIndex()
+    , msgs()
+    , pubsubMsgsRefs()
+    , msgAcks()
+    , ackdMsgCount( 0 )
     , actionIds()
     , relatedStorageFile()
     , linkedRequest( GUCEF_NULL )
@@ -193,11 +199,26 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
+{GUCEF_TRACE;
+
+    msgOffsetIndex.clear();
+    msgs.clear();
+    pubsubMsgsRefs.clear();
+    msgAcks.clear();
+    ackdMsgCount = 0;
+    actionIds.clear();
+    relatedStorageFile.Clear();
+    linkedRequest = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
     , m_client( client )
     , m_pubsubMsgs()
-    , m_pubsubMsgsRefs()
     , m_config()
     , m_syncVfsOpsTimer( GUCEF_NULL )
     , m_reconnectTimer( GUCEF_NULL )
@@ -212,6 +233,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_metrics()
     , m_metricFriendlyTopicName()
     , m_isHealthy( true )
+    , m_needToTrackAcks( true )
     , m_subscriptionIsAtEndOfData( false )
     , m_vfsInitIsComplete( false )
     , m_currentReadBuffer( GUCEF_NULL )
@@ -255,6 +277,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     }
 
     m_pubsubBookmarkPersistence = m_client->GetBookmarkPersistence();
+    m_needToTrackAcks = m_client->IsTrackingAcksNeeded(); 
     
     RegisterEventHandlers();
 }
@@ -1198,14 +1221,14 @@ CStoragePubSubClientTopic::GetCurrentBookmark( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId           , 
-                                                                          const StorageBufferMetaData** metaData ) const
+CStoragePubSubClientTopic::GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId     , 
+                                                                          StorageBufferMetaData** metaData )
 {GUCEF_TRACE;
 
-    TStorageBufferMetaDataMap::const_iterator i = m_storageBufferMetaData.begin();
+    TStorageBufferMetaDataMap::iterator i = m_storageBufferMetaData.begin();
     while ( i != m_storageBufferMetaData.end() )
     {
-        const StorageBufferMetaData& metaDataEntry = (*i).second;
+        StorageBufferMetaData& metaDataEntry = (*i).second;
         
         // Logically since we control 'receiveActionId' right here in the backend
         // we know that we always just increment in a batch for all messages in a container
@@ -1239,8 +1262,10 @@ CStoragePubSubClientTopic::GetBookmarkForReceiveActionId( CORE::UInt64 receiveAc
 {GUCEF_TRACE;
 
     TStorageBookmarkInfo bmInfo;
-    const StorageBufferMetaData* metaData = GUCEF_NULL;
-    if ( GetBookmarkInfoForReceiveActionId( receiveActionId, &metaData, bmInfo ) )
+    StorageBufferMetaData* metaData = GUCEF_NULL;
+    
+    // since we wont use 'metaData' we can const_cast as its logically const  
+    if ( const_cast< CStoragePubSubClientTopic* >( this )->GetBookmarkInfoForReceiveActionId( receiveActionId, &metaData, bmInfo ) )
     {
         return SyncBookmarkInfoToBookmark( bmInfo, bookmark );
     }
@@ -1250,12 +1275,12 @@ CStoragePubSubClientTopic::GetBookmarkForReceiveActionId( CORE::UInt64 receiveAc
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId           , 
-                                                              const StorageBufferMetaData** metaData ,
-                                                              TStorageBookmarkInfo& bookmarkInfo     ) const
+CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId       , 
+                                                              StorageBufferMetaData** metaData   ,
+                                                              TStorageBookmarkInfo& bookmarkInfo )
 {GUCEF_TRACE;
 
-    const StorageBufferMetaData* mData = GUCEF_NULL;
+    StorageBufferMetaData* mData = GUCEF_NULL;
     if ( GetStorageBufferMetaDataPtrForReceiveActionId( receiveActionId, &mData ) )
     {
         if ( GUCEF_NULL != metaData )
@@ -1268,8 +1293,7 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
         // for this we again use our knowledge of the 'receiveActionId' to try and forgo
         // having to seach and compare all IDs. Since they should be ordered
         // we should be able to use the min as an offset
-                
-        TStorageBookmarkInfo bmInfo;
+
         bool msgOffsetFound = false;
 
         // most of the time an exact offset will be an exact match
@@ -1277,8 +1301,8 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
         CORE::UInt64 actionIdSearchOffset = receiveActionId - containerReceiveActionIdMin;
         if ( receiveActionId == mData->actionIds[ actionIdSearchOffset ] )
         {
-            bmInfo.msgIndex = (CORE::UInt32) actionIdSearchOffset;
-            bmInfo.offsetInFile = mData->msgOffsetIndex[ actionIdSearchOffset ];
+            bookmarkInfo.msgIndex = (CORE::UInt32) actionIdSearchOffset;
+            bookmarkInfo.offsetInFile = mData->msgOffsetIndex[ actionIdSearchOffset ];
             msgOffsetFound = true;
         }
         else
@@ -1297,8 +1321,8 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
                 {
                     if ( receiveActionId == mData->actionIds[ downIndex ] )
                     {
-                        bmInfo.msgIndex = (CORE::UInt32) downIndex;
-                        bmInfo.offsetInFile = mData->msgOffsetIndex[ downIndex ];
+                        bookmarkInfo.msgIndex = (CORE::UInt32) downIndex;
+                        bookmarkInfo.offsetInFile = mData->msgOffsetIndex[ downIndex ];
                         msgOffsetFound = true;
                     }
                 }
@@ -1306,8 +1330,8 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
                 {
                     if ( receiveActionId == mData->actionIds[ upIndex ] )
                     {
-                        bmInfo.msgIndex = (CORE::UInt32) upIndex;
-                        bmInfo.offsetInFile = mData->msgOffsetIndex[ upIndex ];
+                        bookmarkInfo.msgIndex = (CORE::UInt32) upIndex;
+                        bookmarkInfo.offsetInFile = mData->msgOffsetIndex[ upIndex ];
                         msgOffsetFound = true;
                     }
                 }
@@ -1319,9 +1343,9 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
 
         if ( msgOffsetFound )
         {
-            bmInfo.bookmarkFormatVersion = 1; 
-            bmInfo.doneWithFile = containerReceiveActionIdMax == receiveActionId;
-            bmInfo.vfsFilePath = mData->relatedStorageFile;                    
+            bookmarkInfo.bookmarkFormatVersion = 1; 
+            bookmarkInfo.doneWithFile = containerReceiveActionIdMax == receiveActionId;
+            bookmarkInfo.vfsFilePath = mData->relatedStorageFile;                    
             return true;
         }
 
@@ -1343,20 +1367,16 @@ CStoragePubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg
     // As such it cannot blindly support this using message attributes. The only exception to that is the receiveActionId
     // which is under this backend's runtime control
 
-    if ( m_config.needSubscribeSupport )
+    if ( m_config.needSubscribeSupport && m_needToTrackAcks )
     {
         CORE::UInt64 receiveActionId = msg.GetReceiveActionId();
         if ( receiveActionId > 0 )
         {
             return GetBookmarkForReceiveActionId( receiveActionId, bookmark );
         }
-        else
-        {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:DeriveBookmarkFromMsg: this feature is only supported for messages sourced from this backend at runtime as it needs the 'receiveActionId'" );
-            return false;
-        }
     }
 
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:DeriveBookmarkFromMsg: this feature is only supported for messages sourced from this backend in 'subscriber' mode at runtime and needs a valid 'receiveActionId'" );
     return false;
 }
 
@@ -1370,7 +1390,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
     // As such it cannot blindly support this using message attributes. The only exception to that is the receiveActionId
     // which is under this backend's runtime control
 
-    if ( m_config.needSubscribeSupport )
+    if ( m_config.needSubscribeSupport && m_needToTrackAcks )
     {
         CORE::UInt64 receiveActionId = msg.GetReceiveActionId();
         if ( receiveActionId > 0 )
@@ -1378,7 +1398,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
             MT::CScopeMutex lock( m_lock );
 
             TStorageBookmarkInfo bmInfo;
-            const StorageBufferMetaData* metaData = GUCEF_NULL;
+            StorageBufferMetaData* metaData = GUCEF_NULL;
             if ( GetBookmarkInfoForReceiveActionId( receiveActionId, &metaData, bmInfo ) )
             {
                 return AcknowledgeReceiptImpl( bmInfo, metaData );
@@ -1386,7 +1406,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
         }
         else
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:DeriveBookmarkFromMsg: this feature is only supported for messages sourced from this backend at runtime as it needs the 'receiveActionId'" );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: this feature is only supported for messages sourced from this backend at runtime as it needs the 'receiveActionId'" );
             return false;
         }
     }
@@ -1402,26 +1422,100 @@ bool
 CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    TStorageBookmarkInfo bm;
-    if ( SyncBookmarkToBookmarkInfo( bookmark, bm ) )
+    if ( m_config.needSubscribeSupport && m_needToTrackAcks )
     {
-        MT::CScopeMutex lock( m_lock );
-        return AcknowledgeReceiptImpl( bm, GUCEF_NULL );
+        TStorageBookmarkInfo bm;
+        if ( SyncBookmarkToBookmarkInfo( bookmark, bm ) )
+        {
+            MT::CScopeMutex lock( m_lock );
+            return AcknowledgeReceiptImpl( bm, GUCEF_NULL );
+        }
+    
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Unable to interpret generic bookmark" );
+        return false;
     }
     
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Unable to interpret generic bookmark" );
-    return false;
+    // treat as advisory fyi
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark  , 
-                                                   const StorageBufferMetaData* metaData )
+CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark , 
+                                                   StorageBufferMetaData* metaData      )
 {GUCEF_TRACE;
 
-    const CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
+    CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
+    PUBSUB::CPubSubClientFeatures& desiredFeatures = clientConfig.desiredFeatures;
 
+    if ( metaData->msgAcks[ bookmark.msgIndex ] )
+    {
+        // this message has already been ack'd before so we already took whatever action we were going to take
+        // treat as fyi no-op
+        return true;
+    }
+
+    // This message had not been previously ack'd yet
+    ++metaData->ackdMsgCount;
+    metaData->msgAcks[ bookmark.msgIndex ] = true;
+
+    if ( desiredFeatures.supportsAckUsingLastMsgInBatch )
+    {
+        // treat as a batch ack for this message and everything before it from the same file
+        // we know we publish messages in the order they are stored in the file
+
+        for ( CORE::UInt32 i=0; i<bookmark.msgIndex; ++i )
+        {
+            if ( !metaData->msgAcks[ i ] )
+            {
+                metaData->msgAcks[ i ] = true;
+                ++metaData->ackdMsgCount;
+            }
+        }
+    }
+
+    if ( metaData->ackdMsgCount >= metaData->msgAcks.size() )
+    {
+        // All messages from this container have been acknowledged
+        if ( m_config.moveContainersWithFullyAckdContent )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->relatedStorageFile );
+
+            CORE::CString containerFilename = metaData->relatedStorageFile.SubstrToChar( '/', false, true );
+            containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
+            
+            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+            if ( !vfs.MoveFile( metaData->relatedStorageFile, containerFilename, true ) )
+            {
+                // This might cause problems later like additional retransmission of data
+                // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to move container file from \"" + 
+                        metaData->relatedStorageFile + "\" to \"" + containerFilename + "\"" );
+            }
+        }
+        else
+        if ( m_config.deleteContainersWithFullyAckdContent )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + metaData->relatedStorageFile );
+
+            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+            if ( !vfs.DeleteFile( metaData->relatedStorageFile, true ) )
+            {
+                // This might cause problems later like additional retransmission of data
+                // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to delete container file" );
+            }
+        }
+
+        // Free up the read buffer and thus the meta data and thus enable reading the next container if any exists
+        metaData->Clear();
+        m_buffers.SignalEndOfReading();
+        m_currentReadBuffer = GUCEF_NULL;
+    }
+
+
+    // store bm on disk, in-mem not good enough in case of crash (interval?)    
     //
     //
     //if ( !m_pubsubBookmarkPersistence.IsNULL() )
@@ -1432,15 +1526,7 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& b
     //    }
     //}
 
-    // see if we can free up the read buffer and thus the meta data and thus read the next container if any exists
-
-    if ( 0 != bookmark.doneWithFile )
-    {
-        // we are not done with this container file yet
-    }
-
-
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1682,7 +1768,7 @@ CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle( CORE::CNotifier*
                                                                 CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_currentWriteBuffer )
+    if ( GUCEF_NULL != m_currentWriteBuffer && m_config.needPublishSupport )
     {
         if ( m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
         {
@@ -1708,18 +1794,18 @@ CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     m_metrics.queuedReadyToReadBuffers = m_buffers.GetBuffersQueuedToRead();
     m_metrics.smallestBufferSizeInBytes = smallest;
     m_metrics.largestBufferSizeInBytes = largest;
-    m_metrics.msgsLoadedFromStorage = GetMsgsLoadedFromStorageCounter( true );
-    m_metrics.msgBytesLoadedFromStorage = GetMsgBytesLoadedFromStorageCounter( true );
-    m_metrics.msgsWrittenToStorage = GetMsgsWrittenToStorageCounter( true );
-    m_metrics.msgBytesWrittenToStorage = GetMsgBytesWrittenToStorageCounter( true );
-    m_metrics.storageCorruptionDetections = GetStorageCorruptionDetectionCounter( true );
-    m_metrics.storageDeserializationFailures = GetStorageDeserializationFailuresCounter( true );
 
     if ( clientConfig.desiredFeatures.supportsPublishing )
     {
+        m_metrics.msgsWrittenToStorage = GetMsgsWrittenToStorageCounter( true );
+        m_metrics.msgBytesWrittenToStorage = GetMsgBytesWrittenToStorageCounter( true );
     }
     if ( clientConfig.desiredFeatures.supportsSubscribing )
     {
+        m_metrics.msgsLoadedFromStorage = GetMsgsLoadedFromStorageCounter( true );
+        m_metrics.msgBytesLoadedFromStorage = GetMsgBytesLoadedFromStorageCounter( true );
+        m_metrics.storageDeserializationFailures = GetStorageDeserializationFailuresCounter( true );
+        m_metrics.storageCorruptionDetections = GetStorageCorruptionDetectionCounter( true );    
     }
 }
 
@@ -2525,7 +2611,7 @@ void
 CStoragePubSubClientTopic::OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt )
 {GUCEF_TRACE;
 
-
+    // @TODO
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2630,6 +2716,9 @@ bool
 CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL != m_currentReadBuffer )
+        return false;
+    
     CORE::CDateTime firstMsgDt;
     m_currentReadBuffer = m_buffers.GetNextReaderBuffer( firstMsgDt, false, 0 );
     if ( GUCEF_NULL == m_currentReadBuffer )
@@ -2638,14 +2727,15 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
         "):TransmitNextPubSubMsgBuffer: New buffer with data is available of " + CORE::ToString( m_currentReadBuffer->GetDataSize() ) + " bytes" );
 
+    // fetch the meta-data for this buffer
+    StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
+
     // We now link logical message objects to the data in the buffer
     CORE::UInt32 startIndexOffset = 0;
     CORE::UInt32 endIndexOffset = 0;
     bool isCorrupted = false;
-    CORE::UInt32 bytesRead = 0;
-    PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;
-    PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
-    if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, msgOffsetIndex, *m_currentReadBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
+    CORE::UInt32 bytesRead = 0;    
+    if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( bufferMetaData->msgs, true, bufferMetaData->msgOffsetIndex, *m_currentReadBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
     {
         // update metrics
         if ( isCorrupted )
@@ -2653,13 +2743,14 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         ++m_storageDeserializationFailures;
 
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-            "):TransmitNextPubSubMsgBuffer: Failed to deserialize messages from container. According to the footer the container had " +
-            CORE::ToString( msgOffsetIndex.size() ) + " entries. isCorrupted=" + CORE::BoolToString( isCorrupted ) );
-
-        m_buffers.SignalEndOfReading();
-        m_currentReadBuffer = GUCEF_NULL;
+            "):TransmitNextPubSubMsgBuffer: Failed to deserialize messages from container even with rebuild. According to the footer (if any existed) the container had " +
+            CORE::ToString( bufferMetaData->msgOffsetIndex.size() ) + " entries. isCorrupted=" + CORE::BoolToString( isCorrupted ) );
 
         OnStoredPubSubMsgTransmissionFailure( firstMsgDt );
+
+        m_buffers.SignalEndOfReading();
+        bufferMetaData->Clear();
+        m_currentReadBuffer = GUCEF_NULL;
         return false;
     }
     if ( isCorrupted )
@@ -2670,34 +2761,49 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
             "):TransmitNextPubSubMsgBuffer: Deserialize messages from container but corruption was detected. According to the index the container has " +
-            CORE::ToString( msgOffsetIndex.size() ) + " entries" );
+            CORE::ToString( bufferMetaData->msgOffsetIndex.size() ) + " entries" );
     }
 
     // update metrics
-    m_msgsLoadedFromStorage += static_cast< CORE::UInt32 >( msgs.size() );
+    m_msgsLoadedFromStorage += static_cast< CORE::UInt32 >( bufferMetaData->msgs.size() );
     m_msgBytesLoadedFromStorage += m_currentReadBuffer->GetDataSize();
 
-    PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator i = msgs.begin();
-    while ( i != msgs.end() )
+    bufferMetaData->actionIds.reserve( bufferMetaData->msgs.size() );
+    bufferMetaData->pubsubMsgsRefs.reserve( bufferMetaData->msgs.size() );
+    if ( m_needToTrackAcks )
+        bufferMetaData->msgAcks.reserve( bufferMetaData->msgs.size() );
+
+    PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator i = bufferMetaData->msgs.begin();
+    while ( i != bufferMetaData->msgs.end() )
     {
         PUBSUB::CBasicPubSubMsg& msg = (*i);
 
         msg.SetOriginClientTopic( this );
 
         msg.SetReceiveActionId( m_currentReceiveActionId );
+        bufferMetaData->actionIds.push_back( m_currentReceiveActionId );
         ++m_currentReceiveActionId;
+        
+        bufferMetaData->pubsubMsgsRefs.push_back( TPubSubMsgRef( &msg ) );
 
-        m_pubsubMsgsRefs.push_back( TPubSubMsgRef( &msg ) );
+        if ( m_needToTrackAcks )
+            bufferMetaData->msgAcks.push_back( false );
 
         ++i;
     }
 
-    if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) )
+    if ( !NotifyObservers( MsgsRecievedEvent, &bufferMetaData->pubsubMsgsRefs ) )
         return true;
 
-    m_pubsubMsgsRefs.clear();
-    m_buffers.SignalEndOfReading();
-    m_currentReadBuffer = GUCEF_NULL;
+    if ( !m_needToTrackAcks )
+    {
+        // Its a fire-and-forget subscription on us
+        // as such wrap things up now and free up resources, no need to wait for an ack
+        bufferMetaData->Clear();
+        m_buffers.SignalEndOfReading();
+        m_currentReadBuffer = GUCEF_NULL;
+    }
+
     return true;
 }
 

@@ -100,6 +100,10 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
                              UInt32 maxListEntries = GUCEF_UINT16MAX    ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool DeleteFile( const CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool MoveFile( const CString& oldFilePath ,
+                           const CString& newFilePath ,
+                           const bool overwrite       ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool FileExists( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
 

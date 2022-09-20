@@ -107,6 +107,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     CORE::Int32 maxStorageCorruptionDetectionsToBeHealthy;
     CORE::Int32 maxStorageDeserializationFailuresToBeHealthy;
     bool treatEveryFullfilledRequestAsEODEvent;
+    bool deleteContainersWithFullyAckdContent;
+    bool moveContainersWithFullyAckdContent;
+    CORE::CString vfsStorageRootPathForFullyAckdContainers;
 
     CStoragePubSubClientTopicConfig( void );
 

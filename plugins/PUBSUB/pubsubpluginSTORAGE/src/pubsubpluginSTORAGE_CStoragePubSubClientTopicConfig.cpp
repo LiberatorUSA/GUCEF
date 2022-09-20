@@ -87,6 +87,9 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , maxStorageCorruptionDetectionsToBeHealthy( 0 )
     , maxStorageDeserializationFailuresToBeHealthy( 0 )
     , treatEveryFullfilledRequestAsEODEvent( false )
+    , deleteContainersWithFullyAckdContent( false )
+    , moveContainersWithFullyAckdContent( false )
+    , vfsStorageRootPathForFullyAckdContainers()
 {GUCEF_TRACE;
     
 }
@@ -122,6 +125,9 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , maxStorageCorruptionDetectionsToBeHealthy( src.maxStorageCorruptionDetectionsToBeHealthy )
     , maxStorageDeserializationFailuresToBeHealthy( src.maxStorageDeserializationFailuresToBeHealthy )
     , treatEveryFullfilledRequestAsEODEvent( src.treatEveryFullfilledRequestAsEODEvent )
+    , deleteContainersWithFullyAckdContent( src.deleteContainersWithFullyAckdContent )
+    , moveContainersWithFullyAckdContent( src.moveContainersWithFullyAckdContent )
+    , vfsStorageRootPathForFullyAckdContainers( src.vfsStorageRootPathForFullyAckdContainers )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -158,6 +164,9 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , maxStorageCorruptionDetectionsToBeHealthy( 0 )
     , maxStorageDeserializationFailuresToBeHealthy( 0 )
     , treatEveryFullfilledRequestAsEODEvent( false )
+    , deleteContainersWithFullyAckdContent( false )
+    , moveContainersWithFullyAckdContent( false )
+    , vfsStorageRootPathForFullyAckdContainers()
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -202,6 +211,9 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     maxStorageCorruptionDetectionsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageCorruptionDetectionsToBeHealthy" ).AsInt32( maxStorageCorruptionDetectionsToBeHealthy, true );
     maxStorageDeserializationFailuresToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageDeserializationFailuresToBeHealthy" ).AsInt32( maxStorageDeserializationFailuresToBeHealthy, true );
     treatEveryFullfilledRequestAsEODEvent = config.GetAttributeValueOrChildValueByName( "treatEveryFullfilledRequestAsEODEvent" ).AsBool( treatEveryFullfilledRequestAsEODEvent, true );
+    deleteContainersWithFullyAckdContent = config.GetAttributeValueOrChildValueByName( "deleteContainersWithFullyAckdContent" ).AsBool( deleteContainersWithFullyAckdContent, true );
+    moveContainersWithFullyAckdContent = config.GetAttributeValueOrChildValueByName( "moveContainersWithFullyAckdContent" ).AsBool( moveContainersWithFullyAckdContent, true );
+    vfsStorageRootPathForFullyAckdContainers = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPathForFullyAckdContainers" ).AsString( vfsStorageRootPathForFullyAckdContainers, true ); 
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -247,6 +259,9 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "maxStorageCorruptionDetectionsToBeHealthy", maxStorageCorruptionDetectionsToBeHealthy ) && success;        
     success = config.SetAttribute( "maxStorageDeserializationFailuresToBeHealthy", maxStorageDeserializationFailuresToBeHealthy ) && success;            
     success = config.SetAttribute( "treatEveryFullfilledRequestAsEODEvent", treatEveryFullfilledRequestAsEODEvent ) && success;                
+    success = config.SetAttribute( "deleteContainersWithFullyAckdContent", deleteContainersWithFullyAckdContent ) && success;                    
+    success = config.SetAttribute( "moveContainersWithFullyAckdContent", moveContainersWithFullyAckdContent ) && success;                    
+    success = config.SetAttribute( "vfsStorageRootPathForFullyAckdContainers", vfsStorageRootPathForFullyAckdContainers ) && success;
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -312,6 +327,9 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         maxStorageCorruptionDetectionsToBeHealthy = src.maxStorageCorruptionDetectionsToBeHealthy;
         maxStorageDeserializationFailuresToBeHealthy = src.maxStorageDeserializationFailuresToBeHealthy;
         treatEveryFullfilledRequestAsEODEvent = src.treatEveryFullfilledRequestAsEODEvent;
+        deleteContainersWithFullyAckdContent = src.deleteContainersWithFullyAckdContent;
+        moveContainersWithFullyAckdContent = src.moveContainersWithFullyAckdContent;
+        vfsStorageRootPathForFullyAckdContainers = src.vfsStorageRootPathForFullyAckdContainers;
 
         customConfig = src.customConfig;
     }

@@ -64,6 +64,8 @@
 #define GUCEF_VFS_CARCHIVESETTINGS_H
 #endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
 
+#undef MoveFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -135,6 +137,10 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     
     virtual bool DeleteFile( const CString& filePath ) = 0;
     
+    virtual bool MoveFile( const CString& oldFilePath ,
+                           const CString& newFilePath ,
+                           const bool overwrite       ) = 0;
+
     virtual bool FileExists( const CString& filePath ) const = 0;
 
     virtual bool DirExists( const CString& dirPath ) const = 0;

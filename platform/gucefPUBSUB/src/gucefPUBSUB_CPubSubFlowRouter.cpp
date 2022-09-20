@@ -778,8 +778,13 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
             if ( GUCEF_NULL != routeInfo.deadLetterSide )
                 sideUsedInMap[ routeInfo.deadLetterSide ].insert( &routeInfo );
 
+            CPubSubClientSide* fromSide = (*r).first;
+            if ( GUCEF_NULL != fromSide )
+                sideUsedInMap[ fromSide ].insert( &routeInfo );
+
             ++n;
         }
+
         ++r;
     }
     // Sets are slower than vectors so we convert to a vector for runtime efficiency
@@ -1048,20 +1053,20 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSi
 
     MT::CScopeReaderLock lock( m_lock );
     
-    TSidePtrToRouteInfoVectorMap::const_iterator i = m_routeMap.find( sideWeAskFor );
-    if ( i != m_routeMap.end() )
+    TSidePtrToRouteInfoPtrVectorMap::const_iterator i = m_usedInRouteMap.find( sideWeAskFor );
+    if ( i != m_usedInRouteMap.end() )
     {
-        const TRouteInfoVector& multiRouteInfo = (*i).second;
-        TRouteInfoVector::const_iterator n = multiRouteInfo.begin();
+        const TRouteInfoPtrVector& multiRouteInfo = (*i).second;
+        TRouteInfoPtrVector::const_iterator n = multiRouteInfo.begin();
         while ( n != multiRouteInfo.end() )
         {
-            const CRouteInfo& routeInfo = (*n);
+            const CRouteInfo* routeInfo = (*n);
         
             // We need tracking as soon as 1 side anywhere needs a subscriber ack
-            bool trackingNeeded = IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.toSide ) ||
-                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.failoverSide ) ||
-                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.deadLetterSide ) ||
-                                  IsTrackingInFlightPublishedMsgsForAcksNeeded( routeInfo.spilloverBufferSide );
+            bool trackingNeeded = IsTrackingInFlightPublishedMsgsForAcksNeededForSide( routeInfo->toSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeededForSide( routeInfo->failoverSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeededForSide( routeInfo->deadLetterSide ) ||
+                                  IsTrackingInFlightPublishedMsgsForAcksNeededForSide( routeInfo->spilloverBufferSide );
             
             if ( trackingNeeded )
                 return trackingNeeded;
@@ -1075,7 +1080,7 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSi
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeeded( const CPubSubClientSide* side ) const
+CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeededForSide( const CPubSubClientSide* side ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != side )

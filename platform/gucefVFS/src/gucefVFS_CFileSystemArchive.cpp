@@ -237,6 +237,21 @@ CFileSystemArchive::DeleteFile( const CString& filePath )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CFileSystemArchive::MoveFile( const CString& oldFilePath ,
+                              const CString& newFilePath ,
+                              const bool overwrite       ) 
+{GUCEF_TRACE;
+
+    CString oldPath = CORE::CombinePath( m_rootDir, oldFilePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString newPath = CORE::CombinePath( m_rootDir, newFilePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CFileSystemArchive::StoreAsFile( const CORE::CString& filePath    ,
                                  const CORE::CDynamicBuffer& data ,

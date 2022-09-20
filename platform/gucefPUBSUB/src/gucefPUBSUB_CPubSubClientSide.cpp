@@ -711,8 +711,10 @@ CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
                           ( !m_clientFeatures.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
                              m_clientFeatures.supportsBookmarkingConcept && m_clientFeatures.supportsSubscribingUsingBookmark && m_clientFeatures.supportsServerSideBookmarkPersistance );
                               
-    return ( doWeWantIt && isItSupported ) || 
-           ( !doWeWantIt && canWeNotWantIt && isItSupported );
+    bool acksNeeded =  ( doWeWantIt && isItSupported ) || 
+                       ( !canWeNotWantIt && isItSupported );
+
+    return acksNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
