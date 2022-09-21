@@ -347,7 +347,14 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *  the caller is henceforth responsible for deallocating the memory
      *  Note that if the buffer is linked this operation will result in the creation of a private copy
      */
-    void RelinquishDataOwnership( void*& data, UInt32& dataSize );
+    bool RelinquishDataOwnership( void*& data, UInt32& dataSize );
+
+    /**
+     *  Relinquishes ownership of any contained data to the given variant
+     *  the variant is henceforth responsible for deallocating the memory
+     *  Note that if the buffer is linked this operation will result in the creation of a private copy
+     */
+    bool RelinquishDataOwnership( CVariant& newDataOwner );
 
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

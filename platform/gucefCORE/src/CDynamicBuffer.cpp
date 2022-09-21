@@ -37,6 +37,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"        
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CVARIANT_H
 #include "gucefCORE_CVariant.h"
 #define GUCEF_CORE_CVARIANT_H
@@ -704,14 +709,16 @@ CDynamicBuffer::GetBufferPtr( const UInt32 offset /* = 0 */ )
 const void* 
 CDynamicBuffer::GetConstBufferPtr( const UInt32 offset /* = 0 */ ) const
 {GUCEF_TRACE;
-        return _buffer + offset;
+
+    return _buffer + offset;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CDynamicBuffer::RelinquishDataOwnership( void*& data, UInt32& dataSize )
-{
+{GUCEF_TRACE;
+
     SecureLinkBeforeMutation();
 
     // yield ownership
@@ -719,9 +726,21 @@ CDynamicBuffer::RelinquishDataOwnership( void*& data, UInt32& dataSize )
     dataSize = m_dataSize;
 
     // release our references
-    _buffer = NULL;
+    _buffer = GUCEF_NULL;
     m_dataSize = 0;
     _bsize = 0;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::RelinquishDataOwnership( CVariant& newDataOwner )
+{GUCEF_TRACE;
+
+    // this is just syntax sugar, we call the reverse
+    return newDataOwner.TransferOwnershipFrom( *this );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -1187,33 +1187,6 @@ ExtractFilename( const CString& pathPlusFilename )
 /*-------------------------------------------------------------------------*/
 
 bool
-FileExists( const CString& filename )
-{GUCEF_TRACE;
-
-    return 0 != File_Exists( filename.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-DirExists( const CString& path )
-{GUCEF_TRACE;
-
-    return 0 != Dir_Exists( path.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32
-FileSize( const CString& filename )
-{GUCEF_TRACE;
-
-    return Filesize( filename.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
 IsPathValid( const CString& path  )
 {GUCEF_TRACE;
 
@@ -1370,26 +1343,6 @@ LoadTextFileAsString( const CString& filePath ,
         return true;
     }
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CreateDirs( const CString& path )
-{GUCEF_TRACE;
-
-    CString actualPath = RelativePath( path );
-    return 0 != Create_Directory( actualPath.C_String() );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-DeleteFile( const CString& path )
-{GUCEF_TRACE;
-
-    CString actualPath = RelativePath( path );
-    return 0 != Delete_File( actualPath.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -1159,22 +1159,24 @@ CStoragePubSubClientTopic::SyncBookmarkInfoToBookmark( const TStorageBookmarkInf
                                                        PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    CORE::CVariant& data = bookmark.GetBookmarkData();
-    if ( data.IsBlob() )
-    {
-        CORE::CDynamicBuffer buffer;
-        buffer.LinkTo( data );
-        CORE::CDynamicBufferAccess bufferAccess( buffer );
+    CORE::CDynamicBuffer buffer( 1+1+4+4+128, true );
+    CORE::CDynamicBufferAccess bufferAccess( buffer );
 
-        bool totalSuccess = true;
-        totalSuccess = bufferAccess.WriteValue( info.bookmarkFormatVersion ) && totalSuccess;
-        totalSuccess = bufferAccess.WriteValue( info.doneWithFile ) && totalSuccess;
-        totalSuccess = bufferAccess.WriteValue( info.msgIndex ) && totalSuccess;
-        totalSuccess = bufferAccess.WriteValue( info.offsetInFile ) && totalSuccess;
-        totalSuccess = bufferAccess.WriteByteSizePrefixedString( info.vfsFilePath ) && totalSuccess;
-        return totalSuccess;
-    }
-    return false;
+    bool totalSuccess = true;
+    totalSuccess = bufferAccess.WriteValue( info.bookmarkFormatVersion ) && totalSuccess;
+    totalSuccess = bufferAccess.WriteValue( info.doneWithFile ) && totalSuccess;
+    totalSuccess = bufferAccess.WriteValue( info.msgIndex ) && totalSuccess;
+    totalSuccess = bufferAccess.WriteValue( info.offsetInFile ) && totalSuccess;
+    totalSuccess = bufferAccess.WriteByteSizePrefixedString( info.vfsFilePath ) && totalSuccess;
+
+    totalSuccess = bookmark.GetBookmarkData().TransferOwnershipFrom( buffer ) && totalSuccess;
+
+    if ( totalSuccess )
+        bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX );
+    else
+        bookmark.SetBookmarkType( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_NOT_INITIALIZED );
+    
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

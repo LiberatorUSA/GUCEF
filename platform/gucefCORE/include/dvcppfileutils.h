@@ -51,6 +51,10 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
+#undef MoveFile
+#undef CopyFile
+#undef DeleteFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -79,6 +83,33 @@ GetFileModificationTime( const CString& path );
  */
 GUCEF_CORE_PUBLIC_CPP CDateTime
 GetFileCreationTime( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+FileExists( const CString& filename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+DeleteFile( const CString& filename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+MoveFile( const CString& oldPath ,
+          const CString& newPath ,
+          const bool overwrite   );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+DirExists( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP UInt32
+FileSize( const CString& filename );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

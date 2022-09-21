@@ -460,6 +460,44 @@ CCopyFileTaskData::Clone( void ) const
     return new CCopyFileTaskData( *this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+CMoveFileTaskData::CMoveFileTaskData( void )
+    : CAsyncVfsTaskData()
+    , originalFilepath()
+    , newFilepath()
+    , overwrite( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMoveFileTaskData::CMoveFileTaskData( const CMoveFileTaskData& src )
+    : CAsyncVfsTaskData( src )
+    , originalFilepath( src.originalFilepath )
+    , newFilepath( src.newFilepath )
+    , overwrite( src.overwrite )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMoveFileTaskData::~CMoveFileTaskData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CMoveFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CMoveFileTaskData( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

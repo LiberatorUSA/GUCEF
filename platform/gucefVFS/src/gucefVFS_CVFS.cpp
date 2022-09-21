@@ -524,6 +524,12 @@ CVFS::MoveFile( const CString& oldFilePath ,
     CString oldPath = ConformVfsFilePath( oldFilePath );
     CString newPath = ConformVfsFilePath( newFilePath );
     
+    if ( oldPath == newPath )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: old and new path are the same. No action taken. Path= " + oldPath );
+        return true;
+    }    
+    
     MT::CObjectScopeLock lock( this );
 
     // Get lists of all eligable mounts
@@ -557,9 +563,33 @@ CVFS::MoveFile( const CString& oldFilePath ,
     // Since we could not find an archive that can hold both the old and new location we will have to
     // perform a logical move which is a copy followed by a delete
 
-    // @TODO
-    
+    if( CopyFile( oldFilePath ,
+                  newFilePath ,
+                  overwrite   ) )
+    {
+        return DeleteFile( oldFilePath, false );
+    }
+
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::MoveFileAsync( const CORE::CString& oldFilePath    ,
+                     const CORE::CString& newFilePath    ,
+                     const bool overwrite                ,
+                     const CORE::CString& asyncRequestId )
+{GUCEF_TRACE;
+
+    CMoveFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_MOVEFILE;
+    operationData.asyncRequestId = asyncRequestId;
+    operationData.originalFilepath = oldFilePath;
+    operationData.newFilepath = newFilePath;
+    operationData.overwrite = overwrite;
+
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -606,11 +636,11 @@ CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
                      const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
-    CEncodeFileTaskData operationData;
+    CCopyFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILE;
     operationData.asyncRequestId = asyncRequestId;
     operationData.originalFilepath = originalFilepath;
-    operationData.encodedFilepath = copyFilepath;
+    operationData.copyFilepath = copyFilepath;
     operationData.overwrite = overwrite;
 
     return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );

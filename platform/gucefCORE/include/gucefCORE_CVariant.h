@@ -277,6 +277,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& LinkTo( const std::wstring& src );
         
     CVariant& TransferOwnershipTo( CVariant& newOwner );
+    bool TransferOwnershipFrom( CDynamicBuffer& oldOwner );
 
     protected:
 

@@ -427,6 +427,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                    const CString& newFilePath ,
                    const bool overwrite       );
 
+    bool MoveFileAsync( const CString& oldFilePath                                 ,
+                        const CString& newFilePath                                 ,
+                        const bool overwrite                                       ,
+                        const CORE::CString& asyncRequestId = CORE::CString::Empty );
+
     virtual bool GetFileList( TStringVector& outputList                       ,
                               const CString& location                         ,
                               bool recursive = false                          ,

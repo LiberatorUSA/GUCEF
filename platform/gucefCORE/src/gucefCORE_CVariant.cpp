@@ -1517,6 +1517,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         case GUCEF_DATATYPE_NIL:
         {
             m_variantData.containedType = varType;
+            return true;
         }
         default:
         {
@@ -1657,6 +1658,27 @@ CVariant::TransferOwnershipTo( CVariant& newOwner )
     newOwner.m_variantData = m_variantData;
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     return newOwner;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::TransferOwnershipFrom( CDynamicBuffer& oldOwner )
+{GUCEF_TRACE;
+
+    // first we get the dynamic buffer to give up ownership
+    void* data = GUCEF_NULL;
+    UInt32 dataSize  = 0;
+    oldOwner.RelinquishDataOwnership( data, dataSize );
+
+    // then we link to this memory
+    if ( Set( data, dataSize, GUCEF_DATATYPE_BINARY_BLOB, true ) )
+    {
+        // then we wipe out knowledge that it was supposedly a link
+        m_variantData.union_data.heap_data.heap_data_is_linked = 0;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

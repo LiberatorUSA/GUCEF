@@ -34,9 +34,13 @@
 #define GUCEF_CORE_CONFIG_H
 #endif /* GUCEF_CORE_CONFIG_H ? */
 
-#include "dvcppfileutils.h"	/* function prototypes */
-
 #include "dvstrutils.h"         /* My own string utils */
+
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"        /* all kinds of file utils */
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>		/* WIN32 API */
   #undef min
@@ -64,6 +68,8 @@
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
+#include "dvcppfileutils.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -149,6 +155,66 @@ GetFileCreationTime( const CString& path )
     return CDateTime();
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CreateDirs( const CString& path )
+{GUCEF_TRACE;
+
+    CString actualPath = RelativePath( path );
+    return 0 != Create_Directory( actualPath.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeleteFile( const CString& path )
+{GUCEF_TRACE;
+
+    CString actualPath = RelativePath( path );
+    return 0 != Delete_File( actualPath.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MoveFile( const CString& oldPath ,
+          const CString& newPath ,
+          const bool overwrite   )
+{GUCEF_TRACE;
+
+    CString actualOldPath = RelativePath( oldPath );
+    CString actualNewPath = RelativePath( newPath );
+    return 0 != Move_File( actualNewPath.C_String(), actualOldPath.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FileExists( const CString& filename )
+{GUCEF_TRACE;
+
+    return 0 != File_Exists( filename.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DirExists( const CString& path )
+{GUCEF_TRACE;
+
+    return 0 != Dir_Exists( path.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+FileSize( const CString& filename )
+{GUCEF_TRACE;
+
+    return Filesize( filename.C_String() );
 }
 
 /*-------------------------------------------------------------------------//
