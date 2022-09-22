@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,21 +42,13 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-namespace GUCEF {
-namespace PUBSUBPLUGIN {
-namespace STORAGE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CStoragePubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
+using namespace GUCEF;
+
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::STORAGE::CStoragePubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -71,13 +64,13 @@ TStoragePubSubClientFactory g_storagePubSubClientFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CORE::Int32 PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin STORAGE" );
 
-    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CStoragePubSubClient::TypeName, &g_storagePubSubClientFactory );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( PUBSUBPLUGIN::STORAGE::CStoragePubSubClient::TypeName, &g_storagePubSubClientFactory );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin STORAGE" );
     return 1;
@@ -85,21 +78,21 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_Unload( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on PUBSUB plugin STORAGE" );
 
-    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CStoragePubSubClient::TypeName );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( PUBSUBPLUGIN::STORAGE::CStoragePubSubClient::TypeName );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin STORAGE" );
 }
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != versionInfo )
@@ -113,8 +106,8 @@ GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFF
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+const char* PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetCopyright( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     return "Copyright (C) Dinand Vanvelzen, Apache License v2";
@@ -122,21 +115,11 @@ GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+const char* PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetDescription( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE pubsub storage";
+    return "Generic GUCEF plugin for PUBSUB module functionality providing a storage interface";
 }
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace STORAGE */
-}; /* namespace PUBSUBPLUGIN */
-}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

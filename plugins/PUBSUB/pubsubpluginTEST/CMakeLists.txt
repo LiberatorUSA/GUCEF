@@ -12,6 +12,14 @@
 # Configuration for module: pubsubpluginTEST
 
 set( HEADER_FILES 
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClient.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientConfig.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopic.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_config.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_macros.h
   include/pubsubpluginTEST.h
   include/pubsubpluginTEST_CTestPubSubClient.h
   include/pubsubpluginTEST_CTestPubSubClientConfig.h
@@ -22,6 +30,12 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClient.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopic.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp
   src/pubsubpluginTEST.cpp
   src/pubsubpluginTEST_CTestPubSubClient.cpp
   src/pubsubpluginTEST_CTestPubSubClientConfig.cpp
@@ -42,9 +56,9 @@ set( MODULE_NAME "pubsubpluginTEST" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT gucefPUBSUB gucefVFS gucefWEB )
 target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT gucefPUBSUB gucefVFS gucefWEB )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PUBSUBPLUGIN_STORAGE_EMBED_CODE;PUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL" )
 
-include_directories( ../../../common/include ../../../platform/gucefCOM/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefPUBSUB/include ../../../platform/gucefVFS/include ../../../platform/gucefWEB/include include )
+include_directories( ../../../common/include ../../../platform/gucefCOM/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefPUBSUB/include ../../../platform/gucefVFS/include ../../../platform/gucefWEB/include ../pubsubpluginSTORAGE/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

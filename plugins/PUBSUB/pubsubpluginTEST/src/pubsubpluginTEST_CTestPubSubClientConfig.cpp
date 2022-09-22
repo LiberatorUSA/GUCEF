@@ -46,7 +46,7 @@ namespace TEST {
 //-------------------------------------------------------------------------*/
 
 CTestPubSubClientConfig::CTestPubSubClientConfig( void )
-    : PUBSUB::CPubSubClientConfig()
+    : STORAGE::CStoragePubSubClientConfig()
     , defaultIsHealthyStatus( true )
 {GUCEF_TRACE;
 
@@ -55,7 +55,7 @@ CTestPubSubClientConfig::CTestPubSubClientConfig( void )
 /*-------------------------------------------------------------------------*/
 
 CTestPubSubClientConfig::CTestPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig )
-    : PUBSUB::CPubSubClientConfig( genericConfig )
+    : STORAGE::CStoragePubSubClientConfig( genericConfig )
     , defaultIsHealthyStatus( true )
 {GUCEF_TRACE;
 
@@ -75,7 +75,11 @@ bool
 CTestPubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
     
-    // @TODO
+    if ( CStoragePubSubClientConfig::SaveCustomConfig( config ) )
+    {
+        // @TODO
+        return true;
+    }
     return false;
 }
 
@@ -85,9 +89,13 @@ bool
 CTestPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    defaultIsHealthyStatus = config.GetAttributeValueOrChildValueByName( "defaultIsHealthyStatus" ).AsBool( defaultIsHealthyStatus, true );
+    if ( CStoragePubSubClientConfig::LoadCustomConfig( config ) )
+    {
+        defaultIsHealthyStatus = config.GetAttributeValueOrChildValueByName( "defaultIsHealthyStatus" ).AsBool( defaultIsHealthyStatus, true );
 
-    return true;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +106,7 @@ CTestPubSubClientConfig::operator=( const PUBSUB::CPubSubClientConfig& src )
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientConfig::operator=( src );
+        CStoragePubSubClientConfig::operator=( src );
         LoadCustomConfig( src.customConfig );    
     }
     return *this;
@@ -112,7 +120,7 @@ CTestPubSubClientConfig::operator=( const CTestPubSubClientConfig& src )
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientConfig::operator=( src );
+        CStoragePubSubClientConfig::operator=( src );
 
         defaultIsHealthyStatus = src.defaultIsHealthyStatus;
 
@@ -135,7 +143,7 @@ bool
 CTestPubSubClientConfig::LoadConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
 
-    if ( PUBSUB::CPubSubClientConfig::LoadConfig( config ) )
+    if ( CStoragePubSubClientConfig::LoadConfig( config ) )
     {
         return LoadCustomConfig( customConfig ); 
     }
@@ -148,7 +156,7 @@ bool
 CTestPubSubClientConfig::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
-    PUBSUB::CPubSubClientConfig cfgCopy( *this );
+    CTestPubSubClientConfig cfgCopy( *this );
     if ( SaveCustomConfig( cfgCopy.customConfig ) )
     {
         // Now that the custom config is re-integrated we can just use the base class to save the config
@@ -167,7 +175,7 @@ CTestPubSubClientConfig::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg )
     // assignment. Its the custom config where the actual parsed loading occurs
     if ( &cfg != this )
     {
-        PUBSUB::CPubSubClientConfig::operator=( cfg );
+        CStoragePubSubClientConfig::operator=( cfg );
     }
     return LoadCustomConfig( cfg.customConfig ); 
 }

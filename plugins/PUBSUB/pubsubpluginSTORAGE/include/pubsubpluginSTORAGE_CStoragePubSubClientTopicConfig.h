@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -123,9 +124,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
 
     CStoragePubSubClientTopicConfig& operator=( const CStoragePubSubClientTopicConfig& src );
 
-    bool LoadCustomConfig( const CORE::CDataNode& config );
+    virtual bool LoadCustomConfig( const CORE::CDataNode& config );
 
-    bool SaveCustomConfig( CORE::CDataNode& config ) const;
+    virtual bool SaveCustomConfig( CORE::CDataNode& config ) const;
 };
 
 /*-------------------------------------------------------------------------//

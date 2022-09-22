@@ -22,6 +22,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "pubsubpluginTEST.h"
+
 #ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
 #include "gucefPUBSUB_CPubSubClientFactory.h"
 #define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
@@ -37,17 +39,10 @@
 #define PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENT_H
 #endif /* PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENT_H ? */
 
-#include "pubsubpluginTEST.h"
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-namespace GUCEF {
-namespace PUBSUBPLUGIN {
-namespace TEST {
+#ifndef PUBSUBPLUGIN_STORAGE_H
+#include "pubsubpluginSTORAGE.h"
+#define PUBSUBPLUGIN_STORAGE_H
+#endif /* PUBSUBPLUGIN_STORAGE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +50,9 @@ namespace TEST {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CTestPubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
+using namespace GUCEF;
+
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTestPubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,14 +67,16 @@ TStoragePubSubClientFactory g_storagePubSubClientFactory;
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+              int  foo () { return 0; }
+CORE::Int32 PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin TEST" );
 
-    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CTestPubSubClient::TypeName, &g_storagePubSubClientFactory );
+    pubsubpluginSTORAGE_GUCEFPlugin_Load( argc, argv );
+
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( PUBSUBPLUGIN::TEST::CTestPubSubClient::TypeName, &g_storagePubSubClientFactory );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin TEST" );
     return 1;
@@ -85,21 +84,23 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_Unload( void ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on PUBSUB plugin TEST" );
 
-    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CTestPubSubClient::TypeName );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( PUBSUBPLUGIN::TEST::CTestPubSubClient::TypeName );
+
+    pubsubpluginSTORAGE_GUCEFPlugin_Unload();
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin TEST" );
 }
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != versionInfo )
@@ -113,8 +114,8 @@ GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFF
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+const char* PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetCopyright( void ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     return "Copyright (C) Dinand Vanvelzen, Apache License v2";
@@ -122,21 +123,11 @@ GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+const char* PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetDescription( void ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE pubsub storage";
+    return "Generic GUCEF PUBSUB plugin for adding integration/system tests";
 }
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-}; /* namespace TEST */
-}; /* namespace PUBSUBPLUGIN */
-}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

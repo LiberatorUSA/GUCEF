@@ -1,3 +1,4 @@
+<ModuleInfoEntries>
 <ModuleInfoEntry>
     <Module Name="pubsubpluginSTORAGE" Type="SharedLibrary" Platform="all" Tags="plugin">
         <Dependencies>
@@ -19,3 +20,25 @@
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginSTORAGE_Integrated" Type="CodeIntegrateLocation" Platform="all" Tags="plugin" >
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefPUBSUB" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefPUBSUB" />
+		</Linker>
+        <Preprocessor>
+			<Define String="PUBSUBPLUGIN_STORAGE_EMBED_CODE" />
+        </Preprocessor>
+    </Module>		
+</ModuleInfoEntry>
+</ModuleInfoEntries>

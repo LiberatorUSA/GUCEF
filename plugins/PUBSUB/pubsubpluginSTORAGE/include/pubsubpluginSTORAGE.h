@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,15 +38,22 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      NAMESPACE                                                          //
+//      DEFINES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-namespace GUCEF {
-namespace PUBSUBPLUGIN {
-namespace STORAGE {
-#endif /* __cplusplus */
+#ifndef PUBSUBPLUGIN_STORAGE_EMBED_CODE
+  #define pubsubpluginSTORAGE_GUCEFPlugin_Load              GUCEFPlugin_Load      
+  #define pubsubpluginSTORAGE_GUCEFPlugin_Unload            GUCEFPlugin_Unload
+  #define pubsubpluginSTORAGE_GUCEFPlugin_GetVersion        GUCEFPlugin_GetVersion
+  #define pubsubpluginSTORAGE_GUCEFPlugin_GetCopyright      GUCEFPlugin_GetCopyright
+  #define pubsubpluginSTORAGE_GUCEFPlugin_GetDescription    GUCEFPlugin_GetDescription
+  #define PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX             GUCEF_PLUGIN_CALLSPEC_PREFIX
+  #define PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX             GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#else
+  #define PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+  #define PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,45 +72,33 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C CORE::Int32 PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C void PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_Unload( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C void PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C const char* PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetCopyright( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_STORAGE_PLUGIN_PUBLIC_C const char* PUBSUB_STORAGE_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginSTORAGE_GUCEFPlugin_GetDescription( void ) PUBSUB_STORAGE_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 
 
 #ifdef __cplusplus
    }
-#endif /* __cplusplus */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef __cplusplus
-}; /* namespace STORAGE */
-}; /* namespace PUBSUBPLUGIN */
-}; /* namespace GUCEF */
 #endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/

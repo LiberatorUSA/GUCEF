@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.

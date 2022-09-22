@@ -41,52 +41,12 @@ namespace TEST {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
-#define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
-#define GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_TEST_SIZE_IN_BYTES    (1024*1024*50)// 50MB
-#define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
-#define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
-#define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( void )
-    : PUBSUB::CPubSubClientTopicConfig()
-    , pubsubBinarySerializerOptions()
-    , pubsubSerializerOptions()
-    , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
-    , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_TEST_SIZE_IN_BYTES )
-    , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
-    , vfsStorageRootPath()
-    , vfsFileExtention()
-    , encodeCodecFamily()
-    , encodeCodecName()
-    , decodeCodecFamily()
-    , decodeCodecName()
-    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
-    , performVfsOpsASync( true )
-    , performVfsOpsInDedicatedThread( true )
-    , applyDedicatedVfsOpsThreadCpuAffinity( false )
-    , cpuAffinityForDedicatedVfsOpsThread( 0 )
-    , collectMetrics( true )
-    , mode( CHANNELMODE_PUBSUB_TO_TEST )
-    , subscribeWithoutBookmarkIfNoneIsPersisted( true )
-    , autoPushAfterStartupIfStorageToPubSub( true )
-    , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
-    , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
-    , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
-    , bestEffortDeserializeIsAllowed( false )
-    , maxStorageCorruptionDetectionsToBeHealthy( 0 )
-    , maxStorageDeserializationFailuresToBeHealthy( 0 )
-
+    : STORAGE::CStoragePubSubClientTopicConfig()
     , defaultIsHealthyStatus( true )
     , toggleHealthyStatus( false )
     , healthyStatusToggleIntervalInMs( 5000 )
@@ -98,35 +58,7 @@ CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( void )
 /*-------------------------------------------------------------------------*/
 
 CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( const CTestPubSubClientTopicConfig& src )
-    : PUBSUB::CPubSubClientTopicConfig( src )
-    , pubsubBinarySerializerOptions( src.pubsubBinarySerializerOptions )
-    , pubsubSerializerOptions( src.pubsubSerializerOptions )
-    , desiredNrOfBuffers( src.desiredNrOfBuffers )
-    , desiredMinimalSerializedBlockSize( src.desiredMinimalSerializedBlockSize )
-    , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
-    , vfsStorageRootPath( src.vfsStorageRootPath )
-    , vfsFileExtention( src.vfsFileExtention )
-    , encodeCodecFamily( src.encodeCodecFamily )
-    , encodeCodecName( src.encodeCodecName )
-    , decodeCodecFamily( src.decodeCodecFamily )
-    , decodeCodecName( src.decodeCodecName )
-    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
-    , performVfsOpsASync( src.performVfsOpsASync )
-    , performVfsOpsInDedicatedThread( src.performVfsOpsInDedicatedThread )
-    , applyDedicatedVfsOpsThreadCpuAffinity( src.applyDedicatedVfsOpsThreadCpuAffinity )
-    , cpuAffinityForDedicatedVfsOpsThread( src.cpuAffinityForDedicatedVfsOpsThread )
-    , collectMetrics( src.collectMetrics )
-    , mode( src.mode )
-    , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
-    , autoPushAfterStartupIfStorageToPubSub( src.autoPushAfterStartupIfStorageToPubSub )
-    , youngestStoragePubSubMsgFileToLoad( src.youngestStoragePubSubMsgFileToLoad )
-    , oldestStoragePubSubMsgFileToLoad( src.oldestStoragePubSubMsgFileToLoad )
-    , defaultCodecDecodeGrowthRatioExpectation( src.defaultCodecDecodeGrowthRatioExpectation )
-    , bestEffortDeserializeIsAllowed( src.bestEffortDeserializeIsAllowed )
-    , maxStorageCorruptionDetectionsToBeHealthy( src.maxStorageCorruptionDetectionsToBeHealthy )
-    , maxStorageDeserializationFailuresToBeHealthy( src.maxStorageDeserializationFailuresToBeHealthy )
-
-
+    : STORAGE::CStoragePubSubClientTopicConfig( src )
     , defaultIsHealthyStatus( src.defaultIsHealthyStatus )
     , toggleHealthyStatus( src.toggleHealthyStatus )
     , healthyStatusToggleIntervalInMs( src.healthyStatusToggleIntervalInMs )
@@ -139,35 +71,7 @@ CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( const CTestPubSubCli
 /*-------------------------------------------------------------------------*/
 
 CTestPubSubClientTopicConfig::CTestPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
-    : PUBSUB::CPubSubClientTopicConfig( genericConfig )
-    , pubsubBinarySerializerOptions()
-    , pubsubSerializerOptions()
-    , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
-    , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_TEST_SIZE_IN_BYTES )
-    , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
-    , vfsStorageRootPath()
-    , vfsFileExtention()
-    , encodeCodecFamily()
-    , encodeCodecName()
-    , decodeCodecFamily()
-    , decodeCodecName()
-    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
-    , performVfsOpsASync( true )
-    , performVfsOpsInDedicatedThread( true )
-    , applyDedicatedVfsOpsThreadCpuAffinity( false )
-    , cpuAffinityForDedicatedVfsOpsThread( 0 )
-    , collectMetrics( true )
-    , mode( CHANNELMODE_PUBSUB_TO_TEST )
-    , subscribeWithoutBookmarkIfNoneIsPersisted( true )
-    , autoPushAfterStartupIfStorageToPubSub( true )
-    , youngestStoragePubSubMsgFileToLoad( CORE::CDateTime::FutureMax )
-    , oldestStoragePubSubMsgFileToLoad( CORE::CDateTime::PastMax )  
-    , defaultCodecDecodeGrowthRatioExpectation( GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION )
-    , bestEffortDeserializeIsAllowed( false )
-    , maxStorageCorruptionDetectionsToBeHealthy( 0 )
-    , maxStorageDeserializationFailuresToBeHealthy( 0 )
-
-
+    : STORAGE::CStoragePubSubClientTopicConfig( genericConfig )
     , defaultIsHealthyStatus( true )
     , toggleHealthyStatus( false )
     , healthyStatusToggleIntervalInMs( 5000 )
@@ -190,42 +94,8 @@ bool
 CTestPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    bool success = true;
-    desiredNrOfBuffers = config.GetAttributeValueOrChildValueByName( "desiredNrOfBuffers" ).AsUInt32( desiredNrOfBuffers, true );
-    desiredMinimalSerializedBlockSize = config.GetAttributeValueOrChildValueByName( "desiredMinimalSerializedBlockSize" ).AsUInt32( desiredMinimalSerializedBlockSize, true );
-    desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = config.GetAttributeValueOrChildValueByName( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs" ).AsUInt32( desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs, true );
-    vfsStorageRootPath = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPath" ).AsString( vfsStorageRootPath, true );
-    vfsFileExtention = config.GetAttributeValueOrChildValueByName( "vfsFileExtention" ).AsString( vfsFileExtention, true );
-    encodeCodecFamily = config.GetAttributeValueOrChildValueByName( "encodeCodecFamily" ).AsString( encodeCodecFamily, true );
-    encodeCodecName = config.GetAttributeValueOrChildValueByName( "encodeCodecName" ).AsString( encodeCodecName, true );
-    decodeCodecFamily = config.GetAttributeValueOrChildValueByName( "decodeCodecFamily" ).AsString( decodeCodecFamily, true );
-    decodeCodecName = config.GetAttributeValueOrChildValueByName( "decodeCodecName" ).AsString( decodeCodecName, true );
-    ticketRefillOnBusyCycle = config.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
-    performVfsOpsASync = config.GetAttributeValueOrChildValueByName( "performVfsOpsASync" ).AsBool( performVfsOpsASync, true );
-    performVfsOpsInDedicatedThread = config.GetAttributeValueOrChildValueByName( "performVfsOpsInDedicatedThread" ).AsBool( performVfsOpsInDedicatedThread, true );
-    applyDedicatedVfsOpsThreadCpuAffinity = config.GetAttributeValueOrChildValueByName( "applyDedicatedVfsOpsThreadCpuAffinity" ).AsBool( applyDedicatedVfsOpsThreadCpuAffinity, true );
-    cpuAffinityForDedicatedVfsOpsThread = config.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedVfsOpsThread" ).AsUInt32( cpuAffinityForDedicatedVfsOpsThread, true );
-    collectMetrics = config.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
-    mode = (TChannelMode) config.GetAttributeValueOrChildValueByName( "mode" ).AsInt32( mode, true );
-    subscribeWithoutBookmarkIfNoneIsPersisted = config.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
-    autoPushAfterStartupIfStorageToPubSub = config.GetAttributeValueOrChildValueByName( "autoPushAfterStartupIfStorageToPubSub" ).AsBool( autoPushAfterStartupIfStorageToPubSub, true ); 
-    youngestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "youngestStoragePubSubMsgFileToLoad" ).AsString( youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
-    oldestStoragePubSubMsgFileToLoad.FromIso8601DateTimeString( config.GetAttributeValueOrChildValueByName( "oldestStoragePubSubMsgFileToLoad" ).AsString( oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ), true ) );
-    defaultCodecDecodeGrowthRatioExpectation = config.GetAttributeValueOrChildValueByName( "defaultCodecDecodeGrowthRatioExpectation" ).AsFloat32( defaultCodecDecodeGrowthRatioExpectation, true );
-    bestEffortDeserializeIsAllowed = config.GetAttributeValueOrChildValueByName( "bestEffortDeserializeIsAllowed" ).AsBool( bestEffortDeserializeIsAllowed, true );
-    maxStorageCorruptionDetectionsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageCorruptionDetectionsToBeHealthy" ).AsInt32( maxStorageCorruptionDetectionsToBeHealthy, true );
-    maxStorageDeserializationFailuresToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxStorageDeserializationFailuresToBeHealthy" ).AsInt32( maxStorageDeserializationFailuresToBeHealthy, true );
-
-    CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
-    if ( GUCEF_NULL != binarySerializerOptionsCfg )
-        success = pubsubBinarySerializerOptions.LoadConfig( *binarySerializerOptionsCfg ) && success;
-
-    CORE::CDataNode* serializerOptionsCfg = config.FindChild( "PubSubMsgSerializerOptions" );
-    if ( GUCEF_NULL != serializerOptionsCfg )
-        success = pubsubSerializerOptions.LoadConfig( *serializerOptionsCfg ) && success;
-
-
-
+    bool success = STORAGE::CStoragePubSubClientTopicConfig::LoadCustomConfig( config );
+    
     defaultIsHealthyStatus = config.GetAttributeValueOrChildValueByName( "defaultIsHealthyStatus" ).AsBool( defaultIsHealthyStatus, true );
     toggleHealthyStatus  = config.GetAttributeValueOrChildValueByName( "toggleHealthyStatus" ).AsBool( toggleHealthyStatus, true );
     healthyStatusToggleIntervalInMs = config.GetAttributeValueOrChildValueByName( "healthyStatusToggleIntervalInMs" ).AsUInt32( healthyStatusToggleIntervalInMs, true );
@@ -240,50 +110,13 @@ bool
 CTestPubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
-    bool success = true;
-    
-    success = config.SetAttribute( "desiredNrOfBuffers", desiredNrOfBuffers ) && success;
-    success = config.SetAttribute( "desiredMinimalSerializedBlockSize", desiredMinimalSerializedBlockSize ) && success;
-    success = config.SetAttribute( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs", desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) && success;
-    success = config.SetAttribute( "vfsStorageRootPath", vfsStorageRootPath ) && success;
-    success = config.SetAttribute( "vfsFileExtention", vfsFileExtention ) && success;
-    success = config.SetAttribute( "encodeCodecFamily", encodeCodecFamily ) && success;
-    success = config.SetAttribute( "encodeCodecName", encodeCodecName ) && success;
-    success = config.SetAttribute( "decodeCodecFamily", decodeCodecFamily ) && success;
-    success = config.SetAttribute( "decodeCodecName", decodeCodecName ) && success;
-    success = config.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle ) && success;
-    success = config.SetAttribute( "performVfsOpsASync", performVfsOpsASync ) && success;
-    success = config.SetAttribute( "performVfsOpsInDedicatedThread", performVfsOpsInDedicatedThread ) && success;
-    success = config.SetAttribute( "applyDedicatedVfsOpsThreadCpuAffinity", applyDedicatedVfsOpsThreadCpuAffinity ) && success;
-    success = config.SetAttribute( "cpuAffinityForDedicatedVfsOpsThread", cpuAffinityForDedicatedVfsOpsThread ) && success;
-    success = config.SetAttribute( "collectMetrics", collectMetrics ) && success;
-    success = config.SetAttribute( "mode", mode ) && success;
-    success = config.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && success;
-    success = config.SetAttribute( "autoPushAfterStartupIfStorageToPubSub", autoPushAfterStartupIfStorageToPubSub ) && success;
-    success = config.SetAttribute( "youngestStoragePubSubMsgFileToLoad", youngestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
-    success = config.SetAttribute( "oldestStoragePubSubMsgFileToLoad", oldestStoragePubSubMsgFileToLoad.ToIso8601DateTimeString( true, true ) ) && success;
-    success = config.SetAttribute( "defaultCodecDecodeGrowthRatioExpectation", defaultCodecDecodeGrowthRatioExpectation ) && success;    
-    success = config.SetAttribute( "bestEffortDeserializeIsAllowed", bestEffortDeserializeIsAllowed ) && success;    
-    success = config.SetAttribute( "maxStorageCorruptionDetectionsToBeHealthy", maxStorageCorruptionDetectionsToBeHealthy ) && success;        
-    success = config.SetAttribute( "maxStorageDeserializationFailuresToBeHealthy", maxStorageDeserializationFailuresToBeHealthy ) && success;            
-    
-    CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
-    if ( GUCEF_NULL != binarySerializerOptionsCfg )
-        success = pubsubBinarySerializerOptions.SaveConfig( *binarySerializerOptionsCfg ) && success;
+    bool success = STORAGE::CStoragePubSubClientTopicConfig::SaveCustomConfig( config );
 
-    CORE::CDataNode* serializerOptionsCfg = config.AddChild( "PubSubMsgSerializerOptions" );
-    if ( GUCEF_NULL != serializerOptionsCfg )
-        success = pubsubSerializerOptions.SaveConfig( *serializerOptionsCfg ) && success;
-
-    
-    
-    
     success = config.SetAttribute( "defaultIsHealthyStatus", defaultIsHealthyStatus ) && success;            
     success = config.SetAttribute( "toggleHealthyStatus", toggleHealthyStatus ) && success;            
     success = config.SetAttribute( "healthyStatusToggleIntervalInMs", healthyStatusToggleIntervalInMs ) && success;            
     success = config.SetAttribute( "healthyStatusToggleIntervalJitter", healthyStatusToggleIntervalJitter ) && success;            
-    
-    
+        
     return success;
 }
 
@@ -295,9 +128,7 @@ CTestPubSubClientTopicConfig::operator=( const PUBSUB::CPubSubClientTopicConfig&
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientTopicConfig::operator=( src );
-
-
+        STORAGE::CStoragePubSubClientTopicConfig::operator=( src );
         LoadCustomConfig( src.customConfig );
     }
     return *this;
@@ -311,46 +142,12 @@ CTestPubSubClientTopicConfig::operator=( const CTestPubSubClientTopicConfig& src
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientTopicConfig::operator=( src );
-
-        pubsubBinarySerializerOptions = src.pubsubBinarySerializerOptions;
-        pubsubSerializerOptions = src.pubsubSerializerOptions;
-        desiredNrOfBuffers = src.desiredNrOfBuffers;
-        desiredMinimalSerializedBlockSize = src.desiredMinimalSerializedBlockSize;
-        desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;
-        vfsStorageRootPath = src.vfsStorageRootPath;
-        vfsFileExtention = src.vfsFileExtention;
-        encodeCodecFamily = src.encodeCodecFamily;
-        encodeCodecName = src.encodeCodecName;
-        decodeCodecFamily = src.decodeCodecFamily;
-        decodeCodecName = src.decodeCodecName;
-        ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
-        performVfsOpsASync = src.performVfsOpsASync;
-        performVfsOpsInDedicatedThread = src.performVfsOpsInDedicatedThread;
-        applyDedicatedVfsOpsThreadCpuAffinity = src.applyDedicatedVfsOpsThreadCpuAffinity;
-        cpuAffinityForDedicatedVfsOpsThread = src.cpuAffinityForDedicatedVfsOpsThread;
-        collectMetrics = src.collectMetrics;
-        mode = src.mode;
-        subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
-        autoPushAfterStartupIfStorageToPubSub = src.autoPushAfterStartupIfStorageToPubSub;
-        youngestStoragePubSubMsgFileToLoad = src.youngestStoragePubSubMsgFileToLoad;
-        oldestStoragePubSubMsgFileToLoad = src.oldestStoragePubSubMsgFileToLoad;
-        defaultCodecDecodeGrowthRatioExpectation = src.defaultCodecDecodeGrowthRatioExpectation;
-        bestEffortDeserializeIsAllowed = src.bestEffortDeserializeIsAllowed;
-        maxStorageCorruptionDetectionsToBeHealthy = src.maxStorageCorruptionDetectionsToBeHealthy;
-        maxStorageDeserializationFailuresToBeHealthy = src.maxStorageDeserializationFailuresToBeHealthy;
-
-
-
-
-
-
+        STORAGE::CStoragePubSubClientTopicConfig::operator=( src );
 
         defaultIsHealthyStatus = src.defaultIsHealthyStatus;
         toggleHealthyStatus = src.toggleHealthyStatus;
         healthyStatusToggleIntervalInMs = src.healthyStatusToggleIntervalInMs;
         healthyStatusToggleIntervalJitter = src.healthyStatusToggleIntervalJitter;
-
 
         customConfig = src.customConfig;
     }

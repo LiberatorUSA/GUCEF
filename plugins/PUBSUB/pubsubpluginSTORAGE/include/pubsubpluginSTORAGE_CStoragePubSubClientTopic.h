@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -216,14 +217,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                               const CORE::CEvent& eventid  ,
                               CORE::CICloneable* eventdata );
 
-    private:
-
     typedef CORE::CTEventHandlerFunctor< CStoragePubSubClientTopic > TEventCallback;
 
     // Types to implement/hook-up topic interface
     typedef std::vector< PUBSUB::CBasicPubSubMsg > TPubSubMsgsVector;
-
-    private:
 
     class StorageToPubSubRequest : public CORE::CIConfigurable
     {
@@ -398,7 +395,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::UInt32 GetStorageCorruptionDetectionCounter( bool resetCounter );
     CORE::UInt32 GetStorageDeserializationFailuresCounter( bool resetCounter );
 
-    private:
+    protected:
 
     CStoragePubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;

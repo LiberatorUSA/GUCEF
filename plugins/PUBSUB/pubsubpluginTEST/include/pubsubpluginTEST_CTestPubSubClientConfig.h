@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
-#include "gucefPUBSUB_CPubSubClientConfig.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
+#ifndef PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginSTORAGE_CStoragePubSubClientConfig.h"
+#define PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_TEST_MACROS_H
 #include "pubsubpluginTEST_macros.h"
@@ -57,7 +57,7 @@ class CTestPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientConfig : public PUBSUB::CPubSubClientConfig
+class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientConfig : public STORAGE::CStoragePubSubClientConfig
 {
     public:
 

@@ -1,7 +1,8 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF COMCORE plugin for providing pubsub storage
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *                       providing a storage interface
  *
- *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -56,11 +57,15 @@
  *      before including this macro file.
  */
 #undef PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC
-#ifdef PUBSUBPLUGIN_STORAGE_BUILD_PLUGIN_DLL
-  #define PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC GUCEF_EXPORT
+#ifdef PUBSUBPLUGIN_STORAGE_EMBED_CODE
+  #define PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC GUCEF_HIDDEN
 #else
-  #define PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC GUCEF_IMPORT
-#endif
+  #ifdef PUBSUBPLUGIN_STORAGE_BUILD_PLUGIN_DLL
+    #define PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC GUCEF_EXPORT
+  #else
+    #define PUBSUBPLUGIN_STORAGE_PLUGIN_EXPORTSPEC GUCEF_IMPORT
+  #endif
+#endif 
 
 /*-------------------------------------------------------------------------*/
 

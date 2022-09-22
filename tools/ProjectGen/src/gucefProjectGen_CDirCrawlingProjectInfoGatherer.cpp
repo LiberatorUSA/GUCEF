@@ -48,6 +48,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
@@ -3159,7 +3164,7 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
         CORE::CString pathToCodeLocation = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir ,
                                                                                  codeIncludeRoot         );
 
-        // merge in the headers for both header integration locations as well as code integration locations
+        // merge in the content for header integration locations as well as code integration locations
         TStringSetMap::const_iterator n;
 
         n = moduleInfoToMergeIn.includeDirs.begin();
@@ -3176,6 +3181,7 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
             ++n;
         }
 
+        // we only merge in source code for code integration locations
         if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )
         {
             n = moduleInfoToMergeIn.sourceDirs.begin();
@@ -3192,6 +3198,12 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
                 ++n;
             }
         }
+
+        // merge in any defines that come with the location's header or source
+        MergeStringSet( moduleInfo.preprocessorSettings.defines, moduleInfoToMergeIn.preprocessorSettings.defines, true );
+        // merge in additional include dirs
+        MergeStringSet( moduleInfo.dependencyIncludeDirs, moduleInfoToMergeIn.dependencyIncludeDirs, true );
+
         ++i;
     }
 }
@@ -3307,6 +3319,11 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
 
                     ++n;
                 }
+
+                // merge in any defines that come with the location's header or source
+                MergeStringSet( moduleInfo.preprocessorSettings.defines, moduleInfoToMergeIn.preprocessorSettings.defines, true );
+                // merge in additional include dirs
+                MergeStringSet( moduleInfo.dependencyIncludeDirs, moduleInfoToMergeIn.dependencyIncludeDirs, true );
             }
 
             if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )
@@ -3356,6 +3373,11 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
 
                             ++n;
                         }
+
+                        // merge in any defines that come with the location's header or source
+                        MergeStringSet( moduleInfo.preprocessorSettings.defines, moduleInfoToMergeIn.preprocessorSettings.defines, true );
+                        // merge in additional include dirs
+                        MergeStringSet( moduleInfo.dependencyIncludeDirs, moduleInfoToMergeIn.dependencyIncludeDirs, true );
                     }
 
                     if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )

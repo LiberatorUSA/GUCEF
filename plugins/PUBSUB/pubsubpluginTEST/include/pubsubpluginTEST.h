@@ -37,15 +37,22 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      NAMESPACE                                                          //
+//      DEFINES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-namespace GUCEF {
-namespace PUBSUBPLUGIN {
-namespace TEST {
-#endif /* __cplusplus */
+#ifndef PUBSUBPLUGIN_TEST_EMBED_CODE
+  #define pubsubpluginTEST_GUCEFPlugin_Load              GUCEFPlugin_Load      
+  #define pubsubpluginTEST_GUCEFPlugin_Unload            GUCEFPlugin_Unload
+  #define pubsubpluginTEST_GUCEFPlugin_GetVersion        GUCEFPlugin_GetVersion
+  #define pubsubpluginTEST_GUCEFPlugin_GetCopyright      GUCEFPlugin_GetCopyright
+  #define pubsubpluginTEST_GUCEFPlugin_GetDescription    GUCEFPlugin_GetDescription
+  #define PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX             GUCEF_PLUGIN_CALLSPEC_PREFIX
+  #define PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX             GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#else
+  #define PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+  #define PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,33 +66,34 @@ namespace TEST {
 #ifdef __cplusplus
 using namespace ::GUCEF;
 using namespace ::GUCEF::CORE;
+
 extern "C" {
 #endif
 
 /*---------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C CORE::Int32 PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C void PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C void PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C const char* PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetCopyright( void ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_TEST_PLUGIN_PUBLIC_C const char* PUBSUB_TEST_PLUGIN_CALLSPEC_PREFIX
+pubsubpluginTEST_GUCEFPlugin_GetDescription( void ) PUBSUB_TEST_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 
 
@@ -93,18 +101,6 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
    }
 #endif /* __cplusplus */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef __cplusplus
-}; /* namespace TEST */
-}; /* namespace PUBSUBPLUGIN */
-}; /* namespace GUCEF */
-#endif /* __cplusplus */
-
-/*--------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_TEST_H ? */

@@ -276,6 +276,7 @@ CPubSubClientChannel::InitializeChannel( bool force )
 
                 CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
                 sideSettings.performPubSubInDedicatedThread = false;
+                side->SetTaskDelegator( GetTaskDelegator() );
 
                 if ( !side->OnTaskStart( GUCEF_NULL ) )
                 {
