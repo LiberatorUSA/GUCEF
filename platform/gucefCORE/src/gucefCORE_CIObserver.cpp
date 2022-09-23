@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#include <assert.h>
+
 #include "gucefCORE_CIObserver.h"
 
 /*-------------------------------------------------------------------------//
@@ -67,6 +69,118 @@ CIObserver::operator=( const CIObserver& src )
 
     return *this;
 }   
+
+/*-------------------------------------------------------------------------*/
+
+CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver )
+    : m_lockableObserver( lockableObserver )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableObserver )    
+        m_isLocked = lockableObserver->NotificationLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverScopeLock::CObserverScopeLock( const CIObserver& lockableObserver )
+    : m_lockableObserver( &lockableObserver )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableObserver );        
+    m_isLocked = m_lockableObserver->NotificationLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverScopeLock::~CObserverScopeLock()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
+    {
+        m_isLocked = !m_lockableObserver->NotificationUnlock();
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObserverScopeLock::IsLocked( void ) const
+{GUCEF_TRACE;
+
+    return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObserverScopeLock::EarlyUnlock( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
+    {
+        m_isLocked = !m_lockableObserver->NotificationUnlock();
+        return !m_isLocked;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver* lockableObserver )
+    : m_lockableObserver( lockableObserver )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableObserver )    
+        m_isLocked = m_lockableObserver->NotificationReadOnlyLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver& lockableObserver )
+    : m_lockableObserver( &lockableObserver )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableObserver );        
+    m_isLocked = m_lockableObserver->NotificationReadOnlyLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverScopeReadOnlyLock::~CObserverScopeReadOnlyLock()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
+    {
+        m_isLocked = !m_lockableObserver->NotificationReadOnlyUnlock();
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObserverScopeReadOnlyLock::IsLocked( void ) const
+{GUCEF_TRACE;
+
+    return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObserverScopeReadOnlyLock::EarlyReaderUnlock( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
+    {
+        m_isLocked = !m_lockableObserver->NotificationReadOnlyUnlock();
+        return !m_isLocked;
+    }
+    return false;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

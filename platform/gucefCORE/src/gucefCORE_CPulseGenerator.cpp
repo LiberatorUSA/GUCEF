@@ -92,7 +92,7 @@ CPulseGenerator::CPulseGenerator( void )
     , m_periodicUpdateRequestors()                     
     , m_driver( NULL )    
     , m_driverThreadId( 0 )
-    , m_objLock()
+    , m_notificationLock()
     , m_dataLock()
 {GUCEF_TRACE;
 
@@ -508,7 +508,7 @@ bool
 CPulseGenerator::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_objLock.Lock( lockWaitTimeoutInMs );
+    return m_dataLock.Lock( lockWaitTimeoutInMs );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -517,7 +517,25 @@ bool
 CPulseGenerator::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return m_objLock.Unlock();
+    return m_dataLock.Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPulseGenerator::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_notificationLock.Lock( lockWaitTimeoutInMs );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPulseGenerator::NotificationUnlock( void ) const
+{GUCEF_TRACE;
+
+    return m_notificationLock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/

@@ -53,6 +53,7 @@ CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough ,
     , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
     , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
+    , m_notificationLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -67,6 +68,7 @@ CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
     , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
     , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
+    , m_notificationLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -79,6 +81,7 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
     , m_tsgObserver( src.m_tsgObserver )
     , m_forwardAllNotifications( src.m_forwardAllNotifications )
     , m_dataLock()
+    , m_notificationLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -251,6 +254,24 @@ CTSGNotifier::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE; 
+
+    return m_notificationLock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::NotificationUnlock( void ) const
+{GUCEF_TRACE;
+
+    return m_notificationLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

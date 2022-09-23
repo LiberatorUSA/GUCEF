@@ -105,6 +105,10 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     void ClearMailbox( bool acceptNewMail );
 
+    bool AddEventToMailbox( CNotifier* notifier                 , 
+                            const CEvent& eventId               ,
+                            CICloneable* eventData = GUCEF_NULL );
+
     protected:
 
     /**
@@ -201,7 +205,6 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
     bool m_propagatePulseEvent;
     bool m_allowSameThreadEventsToFlowThrough;
     MT::CTMailBox< CEvent > m_mailbox;
-    MT::CMutex m_mutex;
 };
 
 /*-------------------------------------------------------------------------//

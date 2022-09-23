@@ -141,6 +141,10 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier ,
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool NotificationUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
     friend class CIPulseGeneratorDriver;
 
@@ -168,7 +172,7 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier ,
     TPeriodicPulseRequestorMap m_periodicUpdateRequestors;
     CIPulseGeneratorDriver* m_driver;
     UInt32 m_driverThreadId;
-    MT::CMutex m_objLock;
+    MT::CMutex m_notificationLock;
     MT::CMutex m_dataLock;
 };
 

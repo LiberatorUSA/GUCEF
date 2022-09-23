@@ -161,7 +161,6 @@ CPumpedObserver::CPumpedObserver( bool allowSameThreadEventsToFlowThrough )
     , m_propagatePulseEvent( false )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
-    , m_mutex()
 {GUCEF_TRACE;
 
     assert( GUCEF_NULL != m_pulseGenerator );
@@ -177,7 +176,6 @@ CPumpedObserver::CPumpedObserver( PulseGeneratorPtr pulseGenerator        ,
     , m_propagatePulseEvent( false )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
-    , m_mutex()
 {GUCEF_TRACE;
     
     RegisterPulseGeneratorEventHandlers();
@@ -191,7 +189,6 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     , m_propagatePulseEvent( src.m_propagatePulseEvent )
     , m_allowSameThreadEventsToFlowThrough( src.m_allowSameThreadEventsToFlowThrough )
     , m_mailbox()
-    , m_mutex()
 {GUCEF_TRACE;
 
     m_pulseGenerator = src.m_pulseGenerator;
@@ -231,8 +228,6 @@ CPumpedObserver::~CPumpedObserver()
 void 
 CPumpedObserver::ClearMailbox( bool acceptNewMail )
 {GUCEF_TRACE;
-
-    MT::CScopeMutex lock( m_mutex );
 
     if ( !acceptNewMail )
         m_mailbox.SetAcceptsNewMail( acceptNewMail );
@@ -353,31 +348,37 @@ CPumpedObserver::GetPropagatePulseEvent( void ) const
 
 void
 CPumpedObserver::OnNotify( CNotifier* notifier                       ,
-                           const CEvent& eventid                     ,
-                           CICloneable* eventdata /* = GUCEF_NULL */ )
+                           const CEvent& eventId                     ,
+                           CICloneable* eventData /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    if ( ( GUCEF_NULL != m_pulseGenerator )                                       && 
+    if ( !m_pulseGenerator.IsNULL()                                               && 
          m_allowSameThreadEventsToFlowThrough                                     &&
          ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )                                               
     {
         // We are already in the thread that will pump the events
         OnPumpedNotify( notifier  , 
-                        eventid   ,
-                        eventdata );
+                        eventId   ,
+                        eventData );
         return;
     }
     
-    if ( GUCEF_NULL != eventdata )
-    {
-        eventdata = eventdata->Clone();
-    }
+    AddEventToMailbox( notifier, eventId, eventData );
+}
 
-    CMailElement maildata( notifier  ,
-                           eventdata );
+/*-------------------------------------------------------------------------*/
 
-    m_mailbox.AddMail( eventid   ,
-                       &maildata );
+bool 
+CPumpedObserver::AddEventToMailbox( CNotifier* notifier    , 
+                                    const CEvent& eventId  ,
+                                    CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != eventData )
+        eventData = eventData->Clone();
+
+    CMailElement maildata( notifier, eventData );
+    return m_mailbox.AddMail( eventId, &maildata );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -389,7 +390,7 @@ CPumpedObserver::OnFunctorNotify( CNotifier* notifier                 ,
                                   CIEventHandlerFunctorBase* callback )
 {GUCEF_TRACE;
 
-    if ( ( GUCEF_NULL != m_pulseGenerator )                                       && 
+    if ( !m_pulseGenerator.IsNULL()                                               &&
          m_allowSameThreadEventsToFlowThrough                                     &&
          ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )                                               
     {
@@ -479,7 +480,7 @@ bool
 CPumpedObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mutex.Lock( lockWaitTimeoutInMs );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -488,7 +489,7 @@ bool
 CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return m_mutex.Unlock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

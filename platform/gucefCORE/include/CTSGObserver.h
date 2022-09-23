@@ -72,6 +72,14 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool NotificationUnlock( void ) const;
+
+    virtual bool NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool NotificationReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
     friend class CTSGNotifier;
 
@@ -81,10 +89,6 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     virtual ~CTSGObserver();
 
     void SetParent( CTSGNotifier* parentNotifier );
-
-    void AddEventToMailbox( CNotifier* notifier           ,
-                            const CEvent& eventid         ,
-                            CICloneable* eventdata = NULL );
     
     void ForwardSignalOfUpcomingObserverDestruction( void );
     

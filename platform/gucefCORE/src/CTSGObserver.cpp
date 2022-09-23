@@ -107,19 +107,6 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
-                                 const CEvent& eventid               ,
-                                 CICloneable* eventdata /* = NULL */ )
-{GUCEF_TRACE;
-
-    CPumpedObserver::OnNotify( notifier  ,
-                               eventid   ,
-                               eventdata );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CTSGObserver::ForwardSignalOfUpcomingObserverDestruction( void )
 {GUCEF_TRACE;
 
@@ -148,6 +135,58 @@ CTSGObserver::Unlock( void ) const
     if ( GUCEF_NULL != m_parentNotifier )
     {
         return m_parentNotifier->Unlock();
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGObserver::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->NotificationLock( lockWaitTimeoutInMs );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGObserver::NotificationUnlock( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->NotificationUnlock();
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTSGObserver::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const 
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGObserver::NotificationReadOnlyUnlock( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->NotificationReadOnlyUnlock();
     }
     return false;
 }

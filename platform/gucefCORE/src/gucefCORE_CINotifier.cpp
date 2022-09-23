@@ -109,6 +109,118 @@ CINotifier::RegisterEvents( void )
     UnsubscribeEvent.Initialize();
 }
 
+/*-------------------------------------------------------------------------*/
+
+CNotifierScopeLock::CNotifierScopeLock( const CINotifier* lockableNotifier )
+    : m_lockableNotifier( lockableNotifier )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableNotifier )    
+        m_isLocked = m_lockableNotifier->NotificationLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CNotifierScopeLock::CNotifierScopeLock( const CINotifier& lockableNotifier )
+    : m_lockableNotifier( &lockableNotifier )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableNotifier );        
+    m_isLocked = m_lockableNotifier->NotificationLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CNotifierScopeLock::~CNotifierScopeLock()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
+    {
+        m_isLocked = !m_lockableNotifier->NotificationUnlock();
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CNotifierScopeLock::IsLocked( void ) const
+{GUCEF_TRACE;
+
+    return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CNotifierScopeLock::EarlyUnlock( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
+    {
+        m_isLocked = !m_lockableNotifier->NotificationUnlock();
+        return !m_isLocked;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier* lockableNotifier )
+    : m_lockableNotifier( lockableNotifier )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableNotifier )    
+        m_isLocked = m_lockableNotifier->NotificationReadOnlyLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier& lockableNotifier )
+    : m_lockableNotifier( &lockableNotifier )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableNotifier );        
+    m_isLocked = m_lockableNotifier->NotificationReadOnlyLock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CNotifierScopeReadOnlyLock::~CNotifierScopeReadOnlyLock()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
+    {
+        m_isLocked = !m_lockableNotifier->NotificationReadOnlyUnlock();
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CNotifierScopeReadOnlyLock::IsLocked( void ) const
+{GUCEF_TRACE;
+
+    return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CNotifierScopeReadOnlyLock::EarlyReaderUnlock( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
+    {
+        m_isLocked = !m_lockableNotifier->NotificationReadOnlyUnlock();
+        return !m_isLocked;
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

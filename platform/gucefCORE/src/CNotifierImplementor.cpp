@@ -240,7 +240,7 @@ void
 CNotifierImplementor::UnsubscribeAllFromNotifier( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -298,7 +298,7 @@ void
 CNotifierImplementor::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -338,7 +338,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                                  CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -508,7 +508,7 @@ void
 CNotifierImplementor::Unsubscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     UnsubscribeFromAllEvents( observer ,
                               true     ,
@@ -591,7 +591,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
 
         if ( m_scheduledForDestruction )
         {
-            Unlock();
+            NotificationUnlock();
             m_ownerNotifier->m_imp = GUCEF_NULL;
             delete m_ownerNotifier;
             return;
@@ -651,7 +651,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                                    const CEvent& eventid )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -727,7 +727,7 @@ CNotifierImplementor::GetSubscriptionCountForObserver( CObserver* observer ) con
         return 0;
 
     UInt32 subscriptionCount( 0 );
-    MT::CObjectScopeReadOnlyLock lock( this );
+    CNotifierScopeReadOnlyLock lock( m_ownerNotifier );
 
     TObserverList::const_iterator i = m_observers.find( observer );
     if ( i != m_observers.end() )
@@ -760,10 +760,10 @@ bool
 CNotifierImplementor::NotifyObservers( void )
 {GUCEF_TRACE;
 
-    Lock();
+    NotificationLock();
     if ( ForceNotifyObserversOnce( CNotifier::ModifyEvent ) )
     {
-        Unlock();
+        NotificationUnlock();
         return true;
     }
     // Notifier is destroyed, don't unlock just return
@@ -811,7 +811,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
      *  in a new notification request on the same notifier this could muck up our administration
      *  It could also cause stack overflows if the event chain where long enough.
      */
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -1161,7 +1161,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
      *  in a new notification request on the same notifier this could muck up our administration
      *  It could also cause stack overflows if the event chain where long enough.
      */
-    MT::CObjectScopeLock lock( this );
+    CNotifierScopeLock lock( m_ownerNotifier );
 
     if ( !m_isBusy )
     {
@@ -1298,13 +1298,13 @@ void
 CNotifierImplementor::OnObserverDestroy( CObserver* observer )
 {GUCEF_TRACE;
 
-    Lock();
+    NotificationLock();
 
     UnsubscribeFromAllEvents( observer ,
                               false    ,
                               true     );
 
-    Unlock();
+    NotificationUnlock();
 
     m_ownerNotifier->OnObserverDestruction( observer );
 }
@@ -1348,7 +1348,7 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
 void
 CNotifierImplementor::ScheduleForDestruction( void )
 {
-   MT::CObjectScopeLock lock( this );
+   CNotifierScopeLock lock( m_ownerNotifier );
 
    GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Scheduling for destruction" );
 
@@ -1375,12 +1375,12 @@ CNotifierImplementor::ScheduleForDestruction( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::Lock( UInt32 lockWaitTimeoutInMs ) const
+CNotifierImplementor::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( m_ownerNotifier != GUCEF_NULL )
     {
-        return m_ownerNotifier->Lock( lockWaitTimeoutInMs );
+        return m_ownerNotifier->NotificationLock( lockWaitTimeoutInMs );
     }
     return false;
 }
@@ -1388,12 +1388,12 @@ CNotifierImplementor::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::Unlock( void ) const
+CNotifierImplementor::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 
     if ( m_ownerNotifier != GUCEF_NULL )
     {
-        return m_ownerNotifier->Unlock();
+        return m_ownerNotifier->NotificationUnlock();
     }
     return false;
 }

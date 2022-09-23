@@ -160,6 +160,10 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool NotificationUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     friend class CTSGObserver;    
 
@@ -198,6 +202,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
     CTSGObserver m_tsgObserver;
     bool m_forwardAllNotifications;
     MT::CMutex m_dataLock;
+    MT::CMutex m_notificationLock;
 };
 
 /*-------------------------------------------------------------------------//

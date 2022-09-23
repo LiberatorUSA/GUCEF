@@ -87,7 +87,7 @@ void
 CObserver::SignalUpcomingObserverDestruction( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CObserverScopeLock lock( this );
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -128,7 +128,7 @@ void
 CObserver::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CObserverScopeLock lock( this );
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -201,7 +201,7 @@ CObserver::LinkTo( CNotifier* notifier )
 
     if ( GUCEF_NULL != notifier )
     {
-        MT::CObjectScopeLock lock( this );
+        CObserverScopeLock lock( this );
         m_notifiers.insert( notifier );
     }
 }
@@ -212,7 +212,7 @@ void
 CObserver::UnlinkFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    CObserverScopeLock lock( this );
     m_notifiers.erase( notifier );
 }
 
@@ -223,7 +223,7 @@ CObserver::GetSubscriptionCount( void )
 {GUCEF_TRACE;
 
     UInt32 subscriptionCount( 0 );
-    MT::CObjectScopeReadOnlyLock lock( this );
+    CObserverScopeReadOnlyLock lock( this );
     TNotifierList::const_iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
@@ -239,7 +239,7 @@ UInt32
 CObserver::GetNotifierCount( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    CObserverScopeReadOnlyLock lock( this );
     return (UInt32) m_notifiers.size();
 }
 
