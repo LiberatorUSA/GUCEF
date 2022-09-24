@@ -94,7 +94,6 @@ namespace PUBSUB {
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
 #define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
-#define GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT                     1000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,7 +117,6 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
     , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( true )                                         // even though we dont want to send messages out-of-order here we will allow it to avoid losing messages as the bigger evil
     , maxMsgPublishAckRetryAttempts( -1 )                                                               // safer default is no max nr of ack retries
     , maxMsgPublishAckRetryTotalTimeInMs( -1 )                                                          // safer default is no max time for ack retries
-    , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_SIDE_MAX_IN_FLIGHT )                                   // for operating in parallel we dont want this too low but also not too high as it increased admin overhead and depending on other settings (acks etc) also risk
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , collectMetrics( true )
     , metricsIntervalInMs( 1000 )
@@ -147,7 +145,6 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannel
     , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
     , maxMsgPublishAckRetryAttempts( src.maxMsgPublishAckRetryAttempts )
     , maxMsgPublishAckRetryTotalTimeInMs( src.maxMsgPublishAckRetryTotalTimeInMs )
-    , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , collectMetrics( src.collectMetrics )
     , metricsIntervalInMs( src.metricsIntervalInMs )
@@ -182,7 +179,6 @@ CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
         allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
         maxMsgPublishAckRetryAttempts = src.maxMsgPublishAckRetryAttempts;
         maxMsgPublishAckRetryTotalTimeInMs = src.maxMsgPublishAckRetryTotalTimeInMs;
-        maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         collectMetrics = src.collectMetrics;
         metricsIntervalInMs = src.metricsIntervalInMs;
@@ -227,7 +223,6 @@ CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder", allowTimedOutPublishedInFlightMsgsRetryOutOfOrder ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "collectMetrics", collectMetrics ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "metricsIntervalInMs", metricsIntervalInMs ) && totalSuccess;
@@ -300,7 +295,6 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     maxMsgPublishRetryAttempts = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryAttempts" ).AsInt32( maxMsgPublishRetryAttempts, true );
     maxMsgPublishRetryTotalTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryTotalTimeInMs" ).AsInt32( maxMsgPublishRetryTotalTimeInMs, true );
     maxPublishedMsgInFlightTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxPublishedMsgInFlightTimeInMs" ).AsInt32( maxPublishedMsgInFlightTimeInMs, true );
-    maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = cfg.GetAttributeValueOrChildValueByName( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder" ).AsBool( allowTimedOutPublishedInFlightMsgsRetryOutOfOrder, true );
     ticketRefillOnBusyCycle = cfg.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
     collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );

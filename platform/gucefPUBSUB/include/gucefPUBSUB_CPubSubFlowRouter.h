@@ -255,6 +255,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     bool ConnectSide( CPubSubClientSide* sideToConnect );
 
     void DetermineFirstActiveRoute( CRouteInfo& routeInfo );
+
+    void DetermineActiveRouteDestination( CRouteInfo& routeInfo );
     
     private:
     

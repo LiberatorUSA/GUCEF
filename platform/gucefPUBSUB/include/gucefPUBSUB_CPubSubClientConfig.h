@@ -91,6 +91,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
     CPubSubClientFeatures desiredFeatures;   /**< desired feature set of the client */ 
     CORE::CDataNode customConfig;            /**< client type specific configuration, if any */    
     CORE::UInt32 reconnectDelayInMs;         /**< minimal time to wait before attempting a reconnect if the client supports auto reconnects */
+    CORE::Int64 maxTotalMsgsInFlight;        /**< desired max nr of messages in transit, -1 is infinite */
     THostAddressVector remoteAddresses;      /**< primary addresses of the remote host(s) if applicable */
     TPubSubClientTopicConfigVector topics;   /**< config related to specific topics you want the client to deal with */
     CORE::CString metricsPrefix;             /**< metric key prefix to apply if metrics are enabled */

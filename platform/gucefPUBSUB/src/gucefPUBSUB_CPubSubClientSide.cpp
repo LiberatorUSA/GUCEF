@@ -1202,9 +1202,9 @@ CPubSubClientSide::PublishMailboxMsgs( void )
 {GUCEF_TRACE;
 
     CORE::Int32 maxMailItemsToGrab = -1;
-    if ( m_sideSettings.maxTotalMsgsInFlight > 0 )
+    if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
     {
-        CORE::Int64 remainingForFlight = m_sideSettings.maxTotalMsgsInFlight - m_totalMsgsInFlight;
+        CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - m_totalMsgsInFlight;
         if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
             maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
     }
@@ -1253,7 +1253,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
         if ( !msgs.empty() )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPubSubClientSide(" + CORE::PointerToString( this ) +
-                "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s)" );
+                "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s) from pubsub client on side: " + m_sideId );
             
             // We now broadcast the received messages to all other sides which is the purpose of this class
             if ( GUCEF_NULL != m_flowRouter )
@@ -1262,12 +1262,12 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 if ( totalSuccess )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Successfully published message(s) via flow router" );
+                        "):OnPubSubTopicMsgsReceived: Successfully relayed message(s) via flow router from side " + m_sideId );
                 }
                 else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):OnPubSubTopicMsgsReceived: Failed to publish (some?) message(s) via flow router" );
+                        "):OnPubSubTopicMsgsReceived: Failed to relay (some?) message(s) via flow router from side " + m_sideId );
                 }
 
                 if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept && !m_clientFeatures.supportsDerivingBookmarkFromMsg )
@@ -2273,7 +2273,7 @@ CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
         ProcessAcknowledgeReceiptsMailbox();
 
         // Check if we have a max for messages in-flight, if so dont try to process any more messages right now
-        if ( m_sideSettings.maxTotalMsgsInFlight <= 0 || m_totalMsgsInFlight < (CORE::UInt64) m_sideSettings.maxTotalMsgsInFlight )
+        if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight <= 0 || m_totalMsgsInFlight < (CORE::UInt64) m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight )
         {
             if ( !m_awaitingFailureReport )
             {

@@ -97,7 +97,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CORE::CIConfig
     bool allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
     CORE::Int32 maxMsgPublishAckRetryAttempts;
     CORE::Int32 maxMsgPublishAckRetryTotalTimeInMs;
-    CORE::Int64 maxTotalMsgsInFlight;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool collectMetrics;                                                   
     CORE::UInt32 metricsIntervalInMs;

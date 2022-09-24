@@ -53,6 +53,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
     , topicName()
     , consumerGroupName()
     , consumerName()
+    , useTopicLevelMaxTotalMsgsInFlight( false )
     , maxTotalMsgsInFlight( -1 )
     , customConfig()
 {GUCEF_TRACE;
@@ -70,6 +71,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConf
     , topicName( src.topicName )
     , consumerGroupName( src.consumerGroupName )
     , consumerName( src.consumerName )
+    , useTopicLevelMaxTotalMsgsInFlight( src.useTopicLevelMaxTotalMsgsInFlight )
     , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , customConfig( src.customConfig )
 {GUCEF_TRACE;
@@ -99,6 +101,7 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
         topicName = src.topicName;
         consumerGroupName = src.consumerGroupName;
         consumerName = src.consumerName;
+        useTopicLevelMaxTotalMsgsInFlight = src.useTopicLevelMaxTotalMsgsInFlight;
         maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
         customConfig = src.customConfig;        
     }
@@ -117,7 +120,8 @@ CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "preferDedicatedConnection", preferDedicatedConnection );
     tree.SetAttribute( "topicName", topicName );
     tree.SetAttribute( "consumerGroupName", consumerGroupName );
-    tree.SetAttribute( "consumerName", consumerName );    
+    tree.SetAttribute( "consumerName", consumerName );        
+    tree.SetAttribute( "useTopicLevelMaxTotalMsgsInFlight", useTopicLevelMaxTotalMsgsInFlight );        
     tree.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight );        
     tree.CopySubTree( customConfig );    
     return true;
@@ -136,6 +140,7 @@ CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
     topicName = cfg.GetAttributeValueOrChildValueByName( "topicName" ).AsString( topicName, true );
     consumerGroupName = cfg.GetAttributeValueOrChildValueByName( "consumerGroupName" ).AsString( consumerGroupName, true );
     consumerName = cfg.GetAttributeValueOrChildValueByName( "consumerName" ).AsString( consumerName, true );
+    useTopicLevelMaxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "useTopicLevelMaxTotalMsgsInFlight" ).AsBool( useTopicLevelMaxTotalMsgsInFlight, true );
     maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );

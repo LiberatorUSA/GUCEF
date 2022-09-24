@@ -229,6 +229,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::CDateTime startDt;
         CORE::CDateTime endDt;
         CORE::CString::StringSet vfsPubSubMsgContainersToPush;
+        CORE::CString::StringSet vfsPubSubMsgContainersPushed;
+        CORE::CString::StringSet vfsPubSubMsgContainersTransmitted;
         bool okIfZeroContainersAreFound;
         bool isPersistentRequest;
 
@@ -344,6 +346,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     
     bool TransmitNextPubSubMsgBuffer( void );
 
+    void ProgressRequest( StorageBufferMetaData* bufferMetaData ,
+                          bool isTransmitted                    ,
+                          bool isAcked                          );
+
     void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
 
     void
@@ -416,6 +422,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool m_needToTrackAcks;
     bool m_subscriptionIsAtEndOfData;
     bool m_vfsInitIsComplete;
+    CORE::Int64 m_maxTotalMsgsInFlight;
 
     CORE::CDynamicBuffer* m_currentReadBuffer;
     CORE::CDynamicBuffer* m_currentWriteBuffer;
@@ -427,9 +434,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;
-    StorageToPubSubRequestDeque m_stage0StorageToPubSubRequests;
-    StorageToPubSubRequestDeque m_stage1StorageToPubSubRequests;
-    StorageToPubSubRequestDeque m_stage2StorageToPubSubRequests;
+    StorageToPubSubRequestDeque m_stage0StorageToPubSubRequests;  // <- persistent requests, holding area
+    StorageToPubSubRequestDeque m_stage1StorageToPubSubRequests;  // <- requests that need to be matched to files
+    StorageToPubSubRequestDeque m_stage2StorageToPubSubRequests;  // <- requests that need their files loaded into buffers to serve the request
    
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDateTime m_lastWriteBlockCompletion;    

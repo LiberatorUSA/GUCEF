@@ -74,6 +74,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigur
     CORE::CString topicName;
     CORE::CString consumerGroupName;
     CORE::CString consumerName;
+    bool useTopicLevelMaxTotalMsgsInFlight;
     CORE::Int64 maxTotalMsgsInFlight;
     CORE::CDataNode customConfig;
 

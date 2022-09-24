@@ -42,22 +42,26 @@
 							"maxMsgPublishRetryAttempts": 20,
 							"maxMsgPublishRetryTotalTimeInMs": 60000,
 							"maxPublishedMsgInFlightTimeInMs": 240000,
-							"maxTotalMsgsInFlight": 1000,
 							"performPubSubInDedicatedThread": true,
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 							"PubSubClientConfig": {
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
+								"maxTotalMsgsInFlight": 1000,
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
 										"PubSubClientTopicConfig": {
 											"isOptional": false,
-											"needPublishSupport": false,
 											"needSubscribeSupport": true,
+											"needPublishSupport": false,
 											"preferDedicatedConnection": false,
 											"topicName": "source",
+											"consumerGroupName": "",
+											"consumerName": "",
+											"useTopicLevelMaxTotalMsgsInFlight": false,
+											"maxTotalMsgsInFlight": -1,
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,
@@ -148,22 +152,26 @@
 							"maxMsgPublishRetryAttempts": 20,
 							"maxMsgPublishRetryTotalTimeInMs": 60000,
 							"maxPublishedMsgInFlightTimeInMs": 240000,
-							"maxTotalMsgsInFlight": 1000,
 							"performPubSubInDedicatedThread": true,
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 							"PubSubClientConfig": {
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
+								"maxTotalMsgsInFlight": 1000,								
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
 										"PubSubClientTopicConfig": {
 											"isOptional": false,
-											"needPublishSupport": false,
 											"needSubscribeSupport": true,
+											"needPublishSupport": false,
 											"preferDedicatedConnection": false,
 											"topicName": "spillover",
+											"consumerGroupName": "",
+											"consumerName": "",
+											"useTopicLevelMaxTotalMsgsInFlight": false,
+											"maxTotalMsgsInFlight": -1,
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,
@@ -254,22 +262,26 @@
 							"maxMsgPublishRetryAttempts": 20,
 							"maxMsgPublishRetryTotalTimeInMs": 60000,
 							"maxPublishedMsgInFlightTimeInMs": 240000,
-							"maxTotalMsgsInFlight": 1000,
 							"performPubSubInDedicatedThread": true,
 							"retryFailedPublishAttempts": true,
 							"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 							"PubSubClientConfig": {
 								"pubsubClientType": "TEST",
 								"reconnectDelayInMs": 0,
+								"maxTotalMsgsInFlight": 1000,								
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
 										"PubSubClientTopicConfig": {
 											"isOptional": false,
-											"needPublishSupport": true,
 											"needSubscribeSupport": false,
+											"needPublishSupport": true,
 											"preferDedicatedConnection": false,
 											"topicName": "sink",
+											"consumerGroupName": "",
+											"consumerName": "",
+											"useTopicLevelMaxTotalMsgsInFlight": false,
+											"maxTotalMsgsInFlight": -1,
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,

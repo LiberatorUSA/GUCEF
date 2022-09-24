@@ -40,6 +40,14 @@ namespace PUBSUB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_DEFAULT_PUBSUB_CLIENT_MAX_IN_FLIGHT                     1000
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -50,6 +58,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , desiredFeatures()
     , customConfig()    
     , reconnectDelayInMs( 0 )
+    , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_CLIENT_MAX_IN_FLIGHT )
     , remoteAddresses()
     , topics()
     , metricsPrefix()
@@ -67,6 +76,7 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , desiredFeatures( src.desiredFeatures )
     , customConfig( src.customConfig )    
     , reconnectDelayInMs( src.reconnectDelayInMs )
+    , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , remoteAddresses( src.remoteAddresses )
     , topics( src.topics )
     , metricsPrefix( src.metricsPrefix )
@@ -96,6 +106,7 @@ CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
         desiredFeatures = src.desiredFeatures;
         customConfig = src.customConfig;
         reconnectDelayInMs = src.reconnectDelayInMs;
+        maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
         remoteAddresses = src.remoteAddresses;
         topics = src.topics;
         metricsPrefix = src.metricsPrefix;
@@ -117,6 +128,7 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
     bool totalSuccess = true;
     totalSuccess = cfg.SetAttribute( "pubsubClientType", pubsubClientType ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;    
     totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "pubsubIdPrefix", pubsubIdPrefix ) && totalSuccess;    
     
@@ -173,6 +185,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 
     pubsubClientType = cfg.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ).AsString( pubsubClientType, true );
     reconnectDelayInMs = cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ).AsUInt32( reconnectDelayInMs, true );
+    maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     metricsPrefix = cfg.GetAttributeValueOrChildValueByName( "metricsPrefix" ).AsString( metricsPrefix, true ); 
     pubsubIdPrefix = cfg.GetAttributeValueOrChildValueByName( "pubsubIdPrefix" ).AsString( pubsubIdPrefix, true ); 
 

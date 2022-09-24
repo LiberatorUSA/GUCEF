@@ -113,6 +113,8 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( void 
     : startDt()
     , endDt()
     , vfsPubSubMsgContainersToPush()
+    , vfsPubSubMsgContainersPushed()
+    , vfsPubSubMsgContainersTransmitted()
     , okIfZeroContainersAreFound( true )
     , isPersistentRequest( false )
 {GUCEF_TRACE;
@@ -128,6 +130,8 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( const
     : startDt( startDt )
     , endDt( endDt )
     , vfsPubSubMsgContainersToPush()
+    , vfsPubSubMsgContainersPushed()
+    , vfsPubSubMsgContainersTransmitted()
     , okIfZeroContainersAreFound( okIfZeroContainersAreFoundDefault ) 
     , isPersistentRequest( isPersistentRequestDefault )
 {GUCEF_TRACE;
@@ -140,6 +144,8 @@ CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( const
     : startDt( src.startDt )
     , endDt( src.endDt )
     , vfsPubSubMsgContainersToPush( src.vfsPubSubMsgContainersToPush )
+    , vfsPubSubMsgContainersPushed( src.vfsPubSubMsgContainersPushed )
+    , vfsPubSubMsgContainersTransmitted( src.vfsPubSubMsgContainersTransmitted )
     , okIfZeroContainersAreFound( src.okIfZeroContainersAreFound )
     , isPersistentRequest( src.isPersistentRequest )
 {GUCEF_TRACE;
@@ -604,7 +610,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                     // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
                     if ( m_currentWriteBuffer->GetDataSize() >= m_config.desiredMinimalSerializedBlockSize ||                                                                  // <- container byte size limit criterea
                         ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) ||  // <- container max timespan limit criterea 
-                        ( m_config.maxTotalMsgsInFlight > 0 && bufferMetaData->actionIds.size() >= (size_t) m_config.maxTotalMsgsInFlight ) )                                  // <- respect max in-flight limit and dont block
+                        ( m_maxTotalMsgsInFlight > 0 && bufferMetaData->actionIds.size() >= (size_t) m_maxTotalMsgsInFlight ) )                                                // <- respect max in-flight limit and dont block
                     {
                         // The current container is now considered to have enough content.
                         // Let's wrap things up...
@@ -762,6 +768,11 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
     m_config = config;
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
     m_vfsRootPath = ResolveVfsRootPath();    
+
+    if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
+        m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
+    else
+        m_maxTotalMsgsInFlight = m_client->GetConfig().maxTotalMsgsInFlight;
 
     return true;
 }
@@ -1511,10 +1522,7 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& b
             }
         }
 
-        // Free up the read buffer and thus the meta data and thus enable reading the next container if any exists
-        metaData->Clear();
-        m_buffers.SignalEndOfReading();
-        m_currentReadBuffer = GUCEF_NULL;
+        ProgressRequest( metaData, true, true );
     }
 
 
@@ -2365,7 +2373,7 @@ CStoragePubSubClientTopic::LocateFilesForStorageToPubSubRequest( void )
                 else
                 {
                     // Only send end of data event if all requests have been fullfilled
-                    if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.empty() )
+                    if ( m_stage1StorageToPubSubRequests.size() <= 1 && m_stage2StorageToPubSubRequests.empty() )
                     {
                         m_subscriptionIsAtEndOfData = true;
                         NotifyObservers( SubscriptionEndOfDataEvent );    
@@ -2393,7 +2401,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
     {
         StorageToPubSubRequest& queuedRequest = (*i);
 
-        size_t containersToProcess = queuedRequest.vfsPubSubMsgContainersToPush.size();
+        size_t containersToProcess = queuedRequest.vfsPubSubMsgContainersPushed.size() + queuedRequest.vfsPubSubMsgContainersToPush.size();
         size_t containersProcessed = 0;
         CORE::CString::StringSet::iterator n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
         while ( n != queuedRequest.vfsPubSubMsgContainersToPush.end() )
@@ -2505,13 +2513,14 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         CORE::UInt32 bytesWritten = 0;
                         if ( PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( newOffsetIndex, m_currentWriteBuffer->GetDataSize()-1, *m_currentWriteBuffer, bytesWritten ) )
                         {
+                            queuedRequest.vfsPubSubMsgContainersPushed.insert( (*n) );
+                            queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
+                            n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
+
                             // We are done with this container
                             ++containersProcessed;
                             m_currentWriteBuffer = GUCEF_NULL;
                             m_buffers.SignalEndOfWriting();
-
-                            queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
-                            n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                             continue;
                         }
                         else
@@ -2539,13 +2548,14 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request: " + bufferMetaData->relatedStorageFile );
                     if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
                     {
+                        queuedRequest.vfsPubSubMsgContainersPushed.insert( (*n) );
+                        queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
+                        n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
+
                         // Since we loaded the entire container and we dont need a subset we are done
                         ++containersProcessed;
                         m_currentWriteBuffer = GUCEF_NULL;
                         m_buffers.SignalEndOfWriting();
-
-                        queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
-                        n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                         continue;
                     }
                     else
@@ -2567,44 +2577,16 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
             }
             ++n;
         }
-
-        if ( containersProcessed != containersToProcess )
-        {
-            OnUnableToFullFillStorageToPubSubRequest( queuedRequest );
-        }
        
-        // Check to see if we are done with this request
-        if ( queuedRequest.vfsPubSubMsgContainersToPush.empty() )
+        if ( containersProcessed > 0 && containersToProcess > 0 )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Completed storage request. Start=" +
+            // Since we worked the request provide an update            
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loaded files for storage request. Start=" +
                 CORE::ToString( queuedRequest.startDt ) + ", End=" + CORE::ToString( queuedRequest.endDt ) +
                 " Proccessed " + CORE::ToString( containersProcessed ) + "/" + CORE::ToString( containersToProcess ) + " files successfully" );
-                        
-            m_stage2StorageToPubSubRequests.pop_front();
-            
-            // Are end-of-data (EOD) event messages desired?
-            if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
-            {
-                if ( m_config.treatEveryFullfilledRequestAsEODEvent )
-                {
-                    m_subscriptionIsAtEndOfData = endOfData = true;
-                    NotifyObservers( SubscriptionEndOfDataEvent );
-                }
-                else
-                {
-                    // Only send end of data event if all requests have been fullfilled
-                    if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.empty() )
-                    {
-                        m_subscriptionIsAtEndOfData = endOfData = true;
-                        NotifyObservers( SubscriptionEndOfDataEvent );    
-                    }
-                }
-            }
         }
     }
 
-    if ( m_vfsInitIsComplete )
-        m_subscriptionIsAtEndOfData = endOfData;
     return totalSuccess;
 }
 
@@ -2715,6 +2697,84 @@ CStoragePubSubClientTopic::GetStorageDeserializationFailuresCounter( bool resetC
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaData ,
+                                            bool isTransmitted                    ,
+                                            bool isAcked                          )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == bufferMetaData )
+        return;
+    
+    StorageToPubSubRequest* request = bufferMetaData->linkedRequest;
+    if ( GUCEF_NULL != request )
+    {
+        if ( isTransmitted )
+        {
+            bool firstTransmission = request->vfsPubSubMsgContainersPushed.end() != request->vfsPubSubMsgContainersPushed.find( bufferMetaData->relatedStorageFile );
+            if ( firstTransmission )
+            {
+                request->vfsPubSubMsgContainersTransmitted.insert( bufferMetaData->relatedStorageFile );
+                request->vfsPubSubMsgContainersPushed.erase( bufferMetaData->relatedStorageFile );
+            }
+
+            // We are done with the transmission-as-message portion of the container request handling
+            // check to see if we need to wait any longer for ack handling
+            if ( !m_needToTrackAcks || isAcked ) 
+            {
+                if ( request->vfsPubSubMsgContainersToPush.empty() &&
+                     request->vfsPubSubMsgContainersPushed.empty()  )
+                {
+                    // All containers for this request have had their content transmitted
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProgressRequest: Completed storage request. Start=" +
+                        CORE::ToString( request->startDt ) + ", End=" + CORE::ToString( request->endDt ) +
+                        ". Transmitted content of " + CORE::ToString( request->vfsPubSubMsgContainersTransmitted.size() ) + " containers. isAcked=" + CORE::ToString( isAcked ) );
+
+                    // Are end-of-data (EOD) event messages desired?
+                    if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+                    {
+                        if ( m_config.treatEveryFullfilledRequestAsEODEvent )
+                        {
+                            m_subscriptionIsAtEndOfData = true;
+                            NotifyObservers( SubscriptionEndOfDataEvent );
+                        }
+                        else
+                        {
+                            // Only send end of data event if all requests have been fullfilled
+                            if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.size() <= 1 )
+                            {
+                                m_subscriptionIsAtEndOfData = true;
+                                NotifyObservers( SubscriptionEndOfDataEvent );    
+                            }
+                        }
+                    }
+
+                    // get rid of the request itself since its completed
+                    StorageToPubSubRequestDeque::iterator i = m_stage2StorageToPubSubRequests.begin();
+                    while ( i != m_stage2StorageToPubSubRequests.end() )
+                    {
+                        if ( request == &(*i) )
+                        {
+                            bufferMetaData->linkedRequest = GUCEF_NULL;
+                            m_stage2StorageToPubSubRequests.erase( i );
+
+                            bufferMetaData->Clear();
+                            break;
+                        }                            
+                        ++i;
+                    }
+                }
+
+                // @TODO: multiple in-flight read buffers for speed
+                m_buffers.SignalEndOfReading();
+                m_currentReadBuffer = GUCEF_NULL;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 {GUCEF_TRACE;
@@ -2798,15 +2858,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     if ( !NotifyObservers( MsgsRecievedEvent, &bufferMetaData->pubsubMsgsRefs ) )
         return true;
 
-    if ( !m_needToTrackAcks )
-    {
-        // Its a fire-and-forget subscription on us
-        // as such wrap things up now and free up resources, no need to wait for an ack
-        bufferMetaData->Clear();
-        m_buffers.SignalEndOfReading();
-        m_currentReadBuffer = GUCEF_NULL;
-    }
-
+    ProgressRequest( bufferMetaData, true, false );
     return true;
 }
 
