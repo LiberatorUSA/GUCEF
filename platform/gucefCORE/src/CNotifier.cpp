@@ -111,30 +111,32 @@ CNotifier::~CNotifier()
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifier::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_imp )
+    if ( GUCEF_NULL != observer && GUCEF_NULL != m_imp )
     {
-        m_imp->Subscribe( observer );
+        return m_imp->Subscribe( observer );
     }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifier::Subscribe( CObserver* observer                                    ,
                       const CEvent& eventid                                  ,
                       CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_imp )
+    if ( GUCEF_NULL != observer && GUCEF_NULL != m_imp )
     {
-        m_imp->Subscribe( observer ,
-                          eventid  ,
-                          callback );
+        return m_imp->Subscribe( observer ,
+                                 eventid  ,
+                                 callback );
     }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -57,7 +57,7 @@
 											"needPublishSupport": false,
 											"needSubscribeSupport": true,
 											"preferDedicatedConnection": false,
-											"topicName": "pubsub",
+											"topicName": "source",
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,
@@ -160,10 +160,10 @@
 									"0": {
 										"PubSubClientTopicConfig": {
 											"isOptional": false,
-											"needPublishSupport": true,
+											"needPublishSupport": false,
 											"needSubscribeSupport": true,
 											"preferDedicatedConnection": false,
-											"topicName": "pubsub",
+											"topicName": "spillover",
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,
@@ -198,7 +198,7 @@
 									}
 								},
 								"DesiredFeatures": {
-									"supportsPublishing": false,
+									"supportsPublishing": true,
 									"supportsSubscribing": true,
 									"supportsAutoReconnect": true,
 									"supportsSubscriberRateThrottling": true,
@@ -267,9 +267,9 @@
 										"PubSubClientTopicConfig": {
 											"isOptional": false,
 											"needPublishSupport": true,
-											"needSubscribeSupport": true,
+											"needSubscribeSupport": false,
 											"preferDedicatedConnection": false,
-											"topicName": "pubsub",
+											"topicName": "sink",
 											"CustomConfig": {
 												"desiredNrOfBuffers": 3,
 												"desiredMinimalSerializedBlockSize": 2560000,

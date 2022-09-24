@@ -122,14 +122,14 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CINotifier
      *  notifier events. Every event dispatched by
      *  the notifier will be sent to the observer.
      */
-    virtual void Subscribe( CObserver* observer ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Subscribe( CObserver* observer ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Subscribes the given observer to the four standard
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    virtual void Subscribe( CObserver* observer                              ,
+    virtual bool Subscribe( CObserver* observer                              ,
                             const CEvent& eventid                            ,
                             CIEventHandlerFunctorBase* callback = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 

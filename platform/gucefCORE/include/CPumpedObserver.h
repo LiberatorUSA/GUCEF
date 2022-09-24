@@ -167,7 +167,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
-    void ProxySubscribeTo( CNotifier* threadedNotifier         ,
+    bool ProxySubscribeTo( CNotifier* threadedNotifier         ,
                            const CEvent& eventid               ,
                            CIEventHandlerFunctorBase& callback );
 

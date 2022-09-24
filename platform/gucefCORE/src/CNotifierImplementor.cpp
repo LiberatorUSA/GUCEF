@@ -294,7 +294,7 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifierImplementor::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
@@ -309,7 +309,7 @@ CNotifierImplementor::Subscribe( CObserver* observer )
                 lock.EarlyUnlock();
                 m_ownerNotifier->m_imp = GUCEF_NULL;
                 delete m_ownerNotifier;
-                return;
+                return false;
             }
 
             ProcessMailbox();
@@ -328,11 +328,13 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 
         LinkObserver( observer, true );
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CNotifierImplementor::Subscribe( CObserver* observer                                    ,
                                  const CEvent& eventid                                  ,
                                  CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
@@ -371,7 +373,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                     TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
                     callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
                     m_isBusy = false;
-                    return;
+                    return true;
                 }
 
                 /*
@@ -410,7 +412,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
             lock.EarlyUnlock();
             m_ownerNotifier->m_imp = GUCEF_NULL;
             delete m_ownerNotifier; // <- This will delete this object as well thus self-destructing
-            return;
+            return false;
         }
 
         ProcessMailbox();
@@ -435,6 +437,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
 
         LinkObserver( observer, false );
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -183,6 +183,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual bool IsHealthy( void ) const;
 
+    bool IsConnected( void ) const;
+
+    bool IsPubSubClientInfraReadyToConnect( void ) const;
+
     bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
     bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
@@ -274,8 +278,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool PublishMailboxMsgs( void );
 
     bool RetryPublishFailedMsgs( void );
-
-    bool IsPubSubClientInfraReadyToConnect( void ) const;
 
     void ProcessAcknowledgeReceiptsMailbox( void );
 

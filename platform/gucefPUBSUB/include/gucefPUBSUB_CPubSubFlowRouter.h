@@ -132,6 +132,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     class CRouteInfo
     {
         public:
+        CPubSubClientSide* fromSide;
         CPubSubClientSide* activeSide;
         
         CPubSubClientSide* toSide;
@@ -154,8 +155,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         CORE::CTimer routeSwitchingTimer;
         CSpilloverInfo* spilloverInfo;
 
+        bool IsSpilloverEgressActive( void ) const;
         bool IsSpilloverEgressOngoing( void ) const;
         bool IsSpilloverIngressOngoing( void ) const;
+        bool DidMsgsFlowIntoSpillover( void ) const;
         bool IsSpilloverInActiveUse( void ) const;
 
         CRouteInfo( void );
@@ -173,12 +176,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         CORE::UInt64 spilloverEgressMsgCount;
         bool endOfDataEventOccured;
         bool endOfDataEventSupported;
+        bool msgsFlowedIntoSpillover;
         CRouteInfo* route;
 
         CSpilloverInfo( void );
 
         bool IsEgressOngoing( void ) const;
+        bool IsEgressActive( void ) const;
         bool IsIngressOngoing( void ) const;
+        bool DidMsgsFlowIntoSpillover( void ) const;
         bool IsInActiveUse( void ) const;
     };
 
@@ -243,6 +249,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
                                          bool isHealthy          );
     
     bool ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover );
+
+    bool ConnectRoutesForFromSide( CPubSubClientSide* fromSide );
+
+    bool ConnectSide( CPubSubClientSide* sideToConnect );
+
+    void DetermineFirstActiveRoute( CRouteInfo& routeInfo );
     
     private:
     

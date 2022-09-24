@@ -98,7 +98,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
      *  the threadedNotifier will be sent to the
      *  instance of this class.
      */
-    void SubscribeTo( CNotifier* threadedNotifier );
+    bool SubscribeTo( CNotifier* threadedNotifier );
 
     void UnsubscribeFrom( CNotifier* threadedNotifier );
 
@@ -125,7 +125,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    void SubscribeTo( CNotifier* threadedNotifier         ,
+    bool SubscribeTo( CNotifier* threadedNotifier         ,
                       const CEvent& eventid               ,
                       CIEventHandlerFunctorBase& callback );
 

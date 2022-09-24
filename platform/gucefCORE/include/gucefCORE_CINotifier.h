@@ -95,14 +95,14 @@ class GUCEF_CORE_PUBLIC_CPP CINotifier : public virtual MT::CILockable ,
      *  notifier events. Every event dispatched by
      *  the notifier will be sent to the observer.
      */
-    virtual void Subscribe( CObserver* observer ) = 0;
+    virtual bool Subscribe( CObserver* observer ) = 0;
 
     /**
      *  Subscribes the given observer to the four standard
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    virtual void Subscribe( CObserver* observer                        ,
+    virtual bool Subscribe( CObserver* observer                        ,
                             const CEvent& eventid                      ,
                             CIEventHandlerFunctorBase* callback = NULL ) = 0;
 

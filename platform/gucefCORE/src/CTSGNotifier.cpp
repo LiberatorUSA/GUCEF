@@ -111,11 +111,13 @@ CTSGNotifier::operator=( const CTSGNotifier& src )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier )
 {GUCEF_TRACE;
 
-    threadedNotifier->Subscribe( &m_tsgObserver );
+    if ( GUCEF_NULL != threadedNotifier )
+        return threadedNotifier->Subscribe( &m_tsgObserver );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -151,16 +153,16 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier         ,
                            const CEvent& eventid               ,
                            CIEventHandlerFunctorBase& callback )
 {GUCEF_TRACE;
 
     assert( GUCEF_NULL != &callback );
-    m_tsgObserver.ProxySubscribeTo( threadedNotifier ,
-                                    eventid          ,
-                                    callback         );
+    return m_tsgObserver.ProxySubscribeTo( threadedNotifier ,
+                                           eventid          ,
+                                           callback         );
 }
 
 /*-------------------------------------------------------------------------*/

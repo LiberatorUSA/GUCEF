@@ -231,8 +231,14 @@ bool
 CTimer::SetEnabled( const bool enabled )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_pulseGenerator )
+    if ( m_pulseGenerator.IsNULL() )
+    {
+        // presumably a pulse generator will be set later via SetPulseGenerator()
+        // we still store the enabled state so that we can become active as soon as the pulse
+        // generator is hooked up
+        m_enabled = enabled;
         return false;
+    }
     
     if ( m_enabled != enabled )
     {

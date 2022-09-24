@@ -210,6 +210,10 @@ CPubSubClientChannel::InitializeChannel( bool force )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because side with id " + sideId + " failed LoadConfig" );
             return false;
         }
+
+        // We want the flow router to control connectivity
+        // start off with everyting disconnected
+        side->SetPerformConnectOnTaskStart( false );
         
         // Ensure pulse generator access ahead of client setup        
         if ( side->IsRunningInDedicatedThread() )
@@ -286,7 +290,7 @@ CPubSubClientChannel::InitializeChannel( bool force )
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:InitializeChannel: Successfully requested the launch of a dedicated thread for side with id " + side->GetSideId() );
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:InitializeChannel: Successfully requested the launch of a dedicated thread for side with id " + side->GetSideId() );
             }
         }
 

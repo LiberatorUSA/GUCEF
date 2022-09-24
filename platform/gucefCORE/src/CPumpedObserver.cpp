@@ -451,7 +451,7 @@ CPumpedObserver::OnPumpedFunctorNotify( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CPumpedObserver::ProxySubscribeTo( CNotifier* threadedNotifier         ,
                                    const CEvent& eventid               ,
                                    CIEventHandlerFunctorBase& callback )
@@ -459,10 +459,14 @@ CPumpedObserver::ProxySubscribeTo( CNotifier* threadedNotifier         ,
 
     assert( GUCEF_NULL != &callback );
 
-    TEventCallbackProxy callbackProxy( this, &CPumpedObserver::OnFunctorNotify, &callback );
-    threadedNotifier->Subscribe( this           ,
-                                 eventid        ,
-                                 &callbackProxy );
+    if ( GUCEF_NULL != threadedNotifier )
+    {
+        TEventCallbackProxy callbackProxy( this, &CPumpedObserver::OnFunctorNotify, &callback );
+        return threadedNotifier->Subscribe( this           ,
+                                            eventid        ,
+                                            &callbackProxy );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

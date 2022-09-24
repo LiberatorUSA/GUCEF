@@ -130,16 +130,16 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      *  notifier events. Every event dispatched by 
      *  the notifier will be sent to the observer.
      */
-    void Subscribe( CObserver* observer );
+    bool Subscribe( CObserver* observer );
     
     /**
      *  Subscribes the given observer to the four standard
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */    
-    void Subscribe( CObserver* observer                        ,
-                    const CEvent& eventid                      ,
-                    CIEventHandlerFunctorBase* callback = NULL );
+    bool Subscribe( CObserver* observer                              ,
+                    const CEvent& eventid                            ,
+                    CIEventHandlerFunctorBase* callback = GUCEF_NULL );
 
     /**
      *  Detaches the given observer from the notifier.

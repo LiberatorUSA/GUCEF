@@ -323,17 +323,17 @@ CPubSubClientSide::RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubCl
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPubSubClientSide::OnTopicsAccessAutoCreated );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()           ,
+    SubscribeTo( pubsubClient.GetPointerAlways()             ,
                  CPubSubClient::TopicsAccessAutoCreatedEvent ,
                  callback                                    );
 
     TEventCallback callback2( this, &CPubSubClientSide::OnTopicsAccessAutoDestroyed );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()             ,
+    SubscribeTo( pubsubClient.GetPointerAlways()               ,
                  CPubSubClient::TopicsAccessAutoDestroyedEvent ,
                  callback2                                     );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnClientHealthStatusChanged );
-    SubscribeTo( m_pubsubClient.GetPointerAlways()      ,
+    SubscribeTo( pubsubClient.GetPointerAlways()        ,
                  CPubSubClient::HealthStatusChangeEvent ,
                  callback3                              );
 
@@ -1270,7 +1270,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                         "):OnPubSubTopicMsgsReceived: Failed to publish (some?) message(s) via flow router" );
                 }
 
-                if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept )
+                if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept && !m_clientFeatures.supportsDerivingBookmarkFromMsg )
                 {
                     const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
                     TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
@@ -1278,7 +1278,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                     {
                         TopicLink& topicLink = (*i).second;
                         CPubSubBookmark currentBookmark;
-                        if ( m_clientFeatures.supportsDerivingBookmarkFromMsg )
+                        if ( m_clientFeatures.supportsDerivingBookmarkFromMsg )   // do we need this???
                         {
                             if ( !lastMsgRef->GetOriginClientTopic()->DeriveBookmarkFromMsg( *lastMsgRef, currentBookmark ) )
                             {
@@ -1937,7 +1937,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
     // Set the pubsub ID prefix automatically if so desired:
     // Depending on the context in which pubsub is used you'd want a different namespace
     // In this case we need to take care to account for the channel and side relationship to provide a unique storage area / namespace / prefix or rely on config
-    if ( pubSubConfig.pubsubIdPrefix == "{auto}"  )
+    if ( pubSubConfig.pubsubIdPrefix.IsNULLOrEmpty() || pubSubConfig.pubsubIdPrefix == "{auto}"  )
         pubSubConfig.pubsubIdPrefix = m_sideSettings.pubsubIdPrefix + '.' + m_sideId; 
 
     bool clientSetupWasNeeded = false;
@@ -2001,6 +2001,15 @@ CPubSubClientSide::ConnectPubSubClient( void )
         return false;
 
     MT::CObjectScopeLock lock( this );
+
+    if ( !IsPubSubClientInfraReadyToConnect() )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):ConnectPubSubClient: Deferring pubsub client connect awaiting prereqs" );
+
+        m_pubsubClientReconnectTimer.SetEnabled( true );
+        return false;
+    }
 
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
@@ -2107,6 +2116,8 @@ bool
 CPubSubClientSide::IsPubSubClientInfraReadyToConnect( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( !m_pubsubBookmarkPersistence.IsNULL() )
     {
         // if we are using bookmark peristence it should be initialized before
@@ -2127,6 +2138,30 @@ CPubSubClientSide::IsPubSubClientInfraReadyToConnect( void ) const
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientSide::IsConnected( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    
+    if ( !m_pubsubBookmarkPersistence.IsNULL() )
+    {
+        // if we are using bookmark peristence it's connected state counts as part of the aggregate connected state
+        // because we will need to source the bookmarks for the client
+        if ( !m_pubsubBookmarkPersistence->IsConnected() )
+            return false;
+    }
+    if ( !m_pubsubClient.IsNULL() )
+    {
+        if ( m_pubsubClient->IsConnected() )
+            return true;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
