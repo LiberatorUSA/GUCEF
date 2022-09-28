@@ -206,6 +206,7 @@ set( HEADER_FILES
   include/gucefCORE_CSingleTaskDelegator.h
   include/gucefCORE_CString.h
   include/gucefCORE_CSubFileAccess.h
+  include/gucefCORE_CTBasicSharedPtrObjOperators.h
   include/gucefCORE_CTDataNodeSerializableObj.h
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTEventHandlerFunctorProxy.h

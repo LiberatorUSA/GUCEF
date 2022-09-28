@@ -276,7 +276,7 @@ CRedisClusterKeyCache::GetRedisClusterAccess( RedisClusterPtrSet& set )
             ++i;
         }
     }
-    catch ( const std::exception& e )
+    catch ( const std::exception& )
     {
         return false;
     }
@@ -343,7 +343,7 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
         // notify of the changes
         NotifyObservers( CacheUpdateEvent, &updateInfo );
     }
-    catch ( const std::exception& e )
+    catch ( const std::exception& )
     {
         return false;
     }

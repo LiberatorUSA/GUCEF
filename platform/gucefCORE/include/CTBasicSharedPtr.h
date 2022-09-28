@@ -198,9 +198,9 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
     CTBasicSharedPtr( const CTBasicSharedPtr& src );
 
-    CTBasicSharedPtr( TBasicSharedPtrSharedData< LockType >* shared ,
-                      T* ptr                                        ,
-                      TDestructor* objectDestructor                 );
+    CTBasicSharedPtr( const TBasicSharedPtrSharedData< LockType >* shared ,
+                      const T* ptr                                        ,
+                      const TDestructor* objectDestructor                 );
 
     virtual ~CTBasicSharedPtr() GUCEF_VIRTUAL_OVERRIDE;
 
@@ -376,7 +376,7 @@ class CTBasicSharedPtrCreator
     typedef LockType                            TBasicSharedPtrLockType;
     typedef CTBasicSharedPtr< T, LockType >     TBasicSharedPtrType;
 
-    CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void );
+    CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void ) const;
 
     CTBasicSharedPtrCreator( T* derived );
     virtual ~CTBasicSharedPtrCreator();
@@ -417,9 +417,9 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( TBasicSharedPtrSharedData< LockType >* shared ,
-                                                   T* ptr                                        ,
-                                                   TDestructor* objectDestructor                 )
+CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const TBasicSharedPtrSharedData< LockType >* shared ,
+                                                   const T* ptr                                        ,
+                                                   const TDestructor* objectDestructor                 )
     : m_shared( GUCEF_NULL )
     , m_ptr( GUCEF_NULL )
     , m_objectDestructor( GUCEF_NULL )
@@ -428,10 +428,10 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( TBasicSharedPtrSharedData< Lo
     if ( GUCEF_NULL != shared )
     {
         MT::CObjectScopeLock lock( shared );
-        m_shared = shared;
+        m_shared = const_cast< TBasicSharedPtrSharedData< LockType >* >( shared );
         ++m_shared->m_refCounter;
-        m_objectDestructor = objectDestructor;
-        m_ptr = ptr;
+        m_objectDestructor = const_cast< TDestructor* >( objectDestructor );
+        m_ptr = const_cast< T* >( ptr );
     }
 }
 
@@ -1078,7 +1078,7 @@ CTBasicSharedPtr< T, LockType >::Clone( void ) const
 
 template< typename T, class LockType >
 CTBasicSharedPtr< T, LockType > 
-CTBasicSharedPtrCreator< T, LockType >::CreateBasicSharedPtr( void )
+CTBasicSharedPtrCreator< T, LockType >::CreateBasicSharedPtr( void ) const
 {GUCEF_TRACE;
     
     CTBasicSharedPtr< T, LockType > retVal( &m_shared, m_this, m_objectDestructor );

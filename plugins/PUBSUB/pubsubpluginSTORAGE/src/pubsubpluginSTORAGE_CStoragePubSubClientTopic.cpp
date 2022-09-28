@@ -108,6 +108,74 @@ namespace STORAGE {
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+      
+CStoragePubSubClientTopic::CStorageBookmarkInfo::CStorageBookmarkInfo( const CORE::CString& vfsPath )
+    : CORE::CTSharedObjCreator< CStorageBookmarkInfo, MT::CNoLock >( this )
+    , bookmarkFormatVersion( 1 )
+    , doneWithFile( 0 )
+    , msgIndex( 0 )
+    , offsetInFile( 0 )
+    , vfsFilePath( vfsPath )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStoragePubSubClientTopic::CStorageBookmarkInfo::CStorageBookmarkInfo( const CStorageBookmarkInfo& src )
+    : CORE::CTSharedObjCreator< CStorageBookmarkInfo, MT::CNoLock >( this )
+    , bookmarkFormatVersion( src.bookmarkFormatVersion )
+    , doneWithFile( src.doneWithFile )
+    , msgIndex( src.msgIndex )
+    , offsetInFile( src.offsetInFile )
+    , vfsFilePath( src.vfsFilePath )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::CStorageBookmarkInfo::operator<( const CStorageBookmarkInfo& other ) const
+{GUCEF_TRACE;
+
+    if ( vfsFilePath == other.vfsFilePath )
+    {
+        return msgIndex < other.msgIndex;
+    }
+    else
+    {
+        return vfsFilePath < other.vfsFilePath;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CStoragePubSubClientTopic::CStorageBookmarkInfo& 
+CStoragePubSubClientTopic::CStorageBookmarkInfo::operator=( const CStorageBookmarkInfo& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        bookmarkFormatVersion = src.bookmarkFormatVersion;
+        doneWithFile = src.doneWithFile;
+        msgIndex = src.msgIndex;
+        offsetInFile = src.offsetInFile;
+        vfsFilePath = src.vfsFilePath;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::CStorageBookmarkInfo::IsEmpty( void ) const
+{GUCEF_TRACE;
+    
+    return 0 == bookmarkFormatVersion;
+}
+
+/*-------------------------------------------------------------------------*/
 
 CStoragePubSubClientTopic::StorageToPubSubRequest::StorageToPubSubRequest( void )
     : startDt()
@@ -198,8 +266,8 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
     , msgAcks()
     , ackdMsgCount( 0 )
     , actionIds()
-    , relatedStorageFile()
     , linkedRequest( GUCEF_NULL )
+    , linkedRequestEntry()    
 {GUCEF_TRACE;
 
 }
@@ -215,9 +283,9 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
     pubsubMsgsRefs.clear();
     msgAcks.clear();
     ackdMsgCount = 0;
-    actionIds.clear();
-    relatedStorageFile.Clear();
+    actionIds.clear();    
     linkedRequest = GUCEF_NULL;
+    linkedRequestEntry.Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -914,11 +982,15 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
                 {
                     StorageToPubSubRequest newAutoRequest( (*i) );
                     newAutoRequest.isPersistentRequest = false;
-                    newAutoRequest.vfsPubSubMsgContainersToPush.insert( *fileCreatedEventData );
+                    
+                    TStorageBookmarkInfoPtr bookmarkInfo = CStorageBookmarkInfo::CreateSharedObj();
+                    bookmarkInfo->vfsFilePath = fileCreatedEventData->GetData();
+                    newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData + 
                         " as request based on persistent storage request" );
                     
+                    m_subscriptionIsAtEndOfData = false;
                     m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
                 }
 
@@ -1083,52 +1155,86 @@ CStoragePubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    if ( m_config.needSubscribeSupport && ( m_config.autoPushAfterStartupIfStorageToPubSub ) )
+
+    if ( m_config.needSubscribeSupport )
     {
-        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad, true, false ) ) )
+        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( msgDtBookmark, m_config.youngestStoragePubSubMsgFileToLoad, true, true ) ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to add publish request. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
             return false;
         }
-    }
 
-    bool success = BeginVfsOps();
-    if ( success )
-    {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+        bool success = BeginVfsOps();
+        if ( success )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to start VFS Ops. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+        }
+        return success;
     }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Failed to start VFS Ops. DT=" + msgDtBookmark.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
-    }
-    return success;
+    
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtMsgDateTime: Attemping to subscribe to a topic that is not configured to support subscriptions, Topic Name: " + m_config.topicName );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::SubscribeStartingAtBookmarkInfo( const TStorageBookmarkInfo& bookmarkInfo )
+CStoragePubSubClientTopic::SubscribeStartingAtBookmarkInfo( const CStorageBookmarkInfo& bookmarkInfo )
 {GUCEF_TRACE;
 
-    if ( 0 != bookmarkInfo.doneWithFile )
+    // first just get the timestamps from the file
+    CORE::CDateTime firstMsgDt;
+    CORE::CDateTime lastMsgDt;
+    CORE::CDateTime containerDt;
+    if ( GetTimestampsFromContainerFilename( bookmarkInfo.vfsFilePath, firstMsgDt, lastMsgDt, containerDt ) )
     {
-        // Since we were done with the file referenced we want the next available file
-
-        CORE::CDateTime firstMsgDt;
-        CORE::CDateTime lastMsgDt;
-        CORE::CDateTime containerDt;
-        if ( GetTimestampsFromContainerFilename( bookmarkInfo.vfsFilePath, firstMsgDt, lastMsgDt, containerDt ) )
+        // if we are done with the file no need to get fancy
+        if ( 0 != bookmarkInfo.doneWithFile )
         {
-            // We now know the datetime of the last message
-            // We use this as the starting point
             return SubscribeStartingAtMsgDateTime( lastMsgDt );
         }
-    }
-    else
-    {
-        // we were not done yet with the referenced file
-        // we need to reload it and resume operations
-                          // @TODO
+        else
+        {
+            // Define a partial container request
+            TStorageBookmarkInfoReference bookmarkInfoRef( CStorageBookmarkInfo::CreateSharedObj() );
+            bookmarkInfoRef = bookmarkInfo;
+
+            StorageToPubSubRequest requestThatMatchesBookmark;
+            requestThatMatchesBookmark.okIfZeroContainersAreFound = false;
+            requestThatMatchesBookmark.isPersistentRequest = true;            
+            requestThatMatchesBookmark.startDt = firstMsgDt;
+            requestThatMatchesBookmark.vfsPubSubMsgContainersToPush.insert( bookmarkInfoRef );            
+            
+            MT::CScopeMutex lock( m_lock );
+            requestThatMatchesBookmark.endDt = m_config.youngestStoragePubSubMsgFileToLoad;
+
+            if ( m_config.needSubscribeSupport )
+            {
+                if ( !AddStorageToPubSubRequest( requestThatMatchesBookmark ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtBookmarkInfo: Failed to add publish request. DT=" + firstMsgDt.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+                    return false;
+                }
+
+                bool success = BeginVfsOps();
+                if ( success )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtBookmarkInfo: DT=" + firstMsgDt.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtBookmarkInfo: Failed to start VFS Ops. DT=" + firstMsgDt.ToIso8601DateTimeString( true, true ) + ", Topic Name: " + m_config.topicName );
+                }
+                return success;
+            }
+    
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:SubscribeStartingAtBookmarkInfo: Attemping to subscribe to a topic that is not configured to support subscriptions, Topic Name: " + m_config.topicName );
+            return false;
+        }
     }
     return false;
 }
@@ -1148,9 +1254,13 @@ CStoragePubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBoo
                 return SubscribeStartingAtMsgDateTime( msgDtBookmark );
             return false;
         }
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID:
+        {
+            return SubscribeStartingAtMsgId( bookmark.GetBookmarkData() );
+        }
         case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX:
         {
-            TStorageBookmarkInfo bookmarkInfo;
+            CStorageBookmarkInfo bookmarkInfo;
             if ( SyncBookmarkToBookmarkInfo( bookmark, bookmarkInfo ) )
                 return SubscribeStartingAtBookmarkInfo( bookmarkInfo );
             return false;
@@ -1167,7 +1277,7 @@ CStoragePubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBoo
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::SyncBookmarkInfoToBookmark( const TStorageBookmarkInfo& info  ,
+CStoragePubSubClientTopic::SyncBookmarkInfoToBookmark( const CStorageBookmarkInfo& info  ,
                                                        PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
@@ -1195,7 +1305,7 @@ CStoragePubSubClientTopic::SyncBookmarkInfoToBookmark( const TStorageBookmarkInf
 
 bool
 CStoragePubSubClientTopic::SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
-                                                       TStorageBookmarkInfo& info              )
+                                                       CStorageBookmarkInfo& info              )
 {GUCEF_TRACE;
 
     const CORE::CVariant& data = bookmark.GetBookmarkData();
@@ -1275,7 +1385,7 @@ CStoragePubSubClientTopic::GetBookmarkForReceiveActionId( CORE::UInt64 receiveAc
                                                           PUBSUB::CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;
 
-    TStorageBookmarkInfo bmInfo;
+    CStorageBookmarkInfo bmInfo;
     StorageBufferMetaData* metaData = GUCEF_NULL;
     
     // since we wont use 'metaData' we can const_cast as its logically const  
@@ -1291,7 +1401,7 @@ CStoragePubSubClientTopic::GetBookmarkForReceiveActionId( CORE::UInt64 receiveAc
 bool
 CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 receiveActionId       , 
                                                               StorageBufferMetaData** metaData   ,
-                                                              TStorageBookmarkInfo& bookmarkInfo )
+                                                              CStorageBookmarkInfo& bookmarkInfo )
 {GUCEF_TRACE;
 
     StorageBufferMetaData* mData = GUCEF_NULL;
@@ -1359,7 +1469,7 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
         {
             bookmarkInfo.bookmarkFormatVersion = 1; 
             bookmarkInfo.doneWithFile = containerReceiveActionIdMax == receiveActionId;
-            bookmarkInfo.vfsFilePath = mData->relatedStorageFile;                    
+            bookmarkInfo.vfsFilePath = mData->linkedRequestEntry->vfsFilePath;                    
             return true;
         }
 
@@ -1411,7 +1521,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
         {
             MT::CScopeMutex lock( m_lock );
 
-            TStorageBookmarkInfo bmInfo;
+            CStorageBookmarkInfo bmInfo;
             StorageBufferMetaData* metaData = GUCEF_NULL;
             if ( GetBookmarkInfoForReceiveActionId( receiveActionId, &metaData, bmInfo ) )
             {
@@ -1438,7 +1548,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bo
 
     if ( m_config.needSubscribeSupport && m_needToTrackAcks )
     {
-        TStorageBookmarkInfo bm;
+        CStorageBookmarkInfo bm;
         if ( SyncBookmarkToBookmarkInfo( bookmark, bm ) )
         {
             MT::CScopeMutex lock( m_lock );
@@ -1456,7 +1566,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bo
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& bookmark , 
+CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& bookmark , 
                                                    StorageBufferMetaData* metaData      )
 {GUCEF_TRACE;
 
@@ -1494,27 +1604,27 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const TStorageBookmarkInfo& b
         // All messages from this container have been acknowledged
         if ( m_config.moveContainersWithFullyAckdContent )
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->relatedStorageFile );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
 
-            CORE::CString containerFilename = metaData->relatedStorageFile.SubstrToChar( '/', false, true );
+            CORE::CString containerFilename = metaData->linkedRequestEntry->vfsFilePath.SubstrToChar( '/', false, true );
             containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
             
             VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-            if ( !vfs.MoveFile( metaData->relatedStorageFile, containerFilename, true ) )
+            if ( !vfs.MoveFile( metaData->linkedRequestEntry->vfsFilePath, containerFilename, true ) )
             {
                 // This might cause problems later like additional retransmission of data
                 // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to move container file from \"" + 
-                        metaData->relatedStorageFile + "\" to \"" + containerFilename + "\"" );
+                        metaData->linkedRequestEntry->vfsFilePath + "\" to \"" + containerFilename + "\"" );
             }
         }
         else
         if ( m_config.deleteContainersWithFullyAckdContent )
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + metaData->relatedStorageFile );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
 
             VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-            if ( !vfs.DeleteFile( metaData->relatedStorageFile, true ) )
+            if ( !vfs.DeleteFile( metaData->linkedRequestEntry->vfsFilePath, true ) )
             {
                 // This might cause problems later like additional retransmission of data
                 // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
@@ -2130,9 +2240,9 @@ CStoragePubSubClientTopic::GetTimestampsFromContainerFilename( const CORE::CStri
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt  ,
-                                                         const CORE::CDateTime& endDt    ,
-                                                         CORE::CString::StringSet& files ) const
+CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt           ,
+                                                         const CORE::CDateTime& endDt             ,
+                                                         TStorageBookmarkInfoReferenceSet& files  ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -2154,7 +2264,9 @@ CStoragePubSubClientTopic::GetPathsToPubSubStorageFiles( const CORE::CDateTime& 
                 // It is assumed here that the containers have messages chronologically ordered
                 if ( containerFileFirstMsgDt.IsWithinRange( startDt, endDt ) || containerFileLastMsgDt.IsWithinRange( startDt, endDt ) )
                 {
-                    files.insert( (*i) );
+                    TStorageBookmarkInfoPtr bookmarkInfo = CStorageBookmarkInfo::CreateSharedObj();
+                    bookmarkInfo->vfsFilePath = (*i);
+                    files.insert( bookmarkInfo );
                 }
             }
             else
@@ -2403,17 +2515,17 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
 
         size_t containersToProcess = queuedRequest.vfsPubSubMsgContainersPushed.size() + queuedRequest.vfsPubSubMsgContainersToPush.size();
         size_t containersProcessed = 0;
-        CORE::CString::StringSet::iterator n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
+        TStorageBookmarkInfoReferenceSet::iterator n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
         while ( n != queuedRequest.vfsPubSubMsgContainersToPush.end() )
         {
             bool needContainerSubsetOnly = false;
             bool containerStartIsInRange = true;
             bool containerEndIsInRange = true;
-
+            
             CORE::CDateTime containerFileFirstMsgDt;
             CORE::CDateTime containerFileLastMsgDt;
             CORE::CDateTime containerCaptureDt;
-            if ( GetTimestampsFromContainerFilename( (*n), containerFileFirstMsgDt, containerFileLastMsgDt, containerCaptureDt ) )
+            if ( GetTimestampsFromContainerFilename( (*n)->vfsFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerCaptureDt ) )
             {
                 containerStartIsInRange = containerFileFirstMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );
                 containerEndIsInRange = containerFileLastMsgDt.IsWithinRange( queuedRequest.startDt, queuedRequest.endDt );
@@ -2426,7 +2538,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed to parse start and/or end DateTime from file at path \"" +
-                    (*n) + "\". The file will be disregarded as invalid and skipped" );
+                    (*n)->vfsFilePath + "\". The file will be disregarded as invalid and skipped" );
                 queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                 n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                 totalSuccess = false;
@@ -2440,14 +2552,14 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
             {
                 StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
                 bufferMetaData->msgOffsetIndex.clear();
-                bufferMetaData->relatedStorageFile = (*n);
                 bufferMetaData->linkedRequest = &queuedRequest;
+                bufferMetaData->linkedRequestEntry = (*n); 
                 m_currentWriteBuffer->SetDataSize( 0 );
 
                 if ( needContainerSubsetOnly )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the container and used a subset of its data to serve (part of) the request: " + bufferMetaData->relatedStorageFile );
-                    if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the container and used a subset of its data to serve (part of) the request: " + bufferMetaData->linkedRequestEntry->vfsFilePath );
+                    if ( LoadStorageFile( (*n)->vfsFilePath, *m_currentWriteBuffer ) )
                     {
                         // Since we loaded the entire container we need to now efficiently make sure only the subset gets processed
                         // The way we can do that is by editing the footer in the buffer to logically eliminate entries we do not need
@@ -2462,7 +2574,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( msgs, true, bufferMetaData->msgOffsetIndex, *m_currentWriteBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed obtain messages from pubsub msg container at path \"" +
-                                (*n) + "\". The file will be disregarded as invalid and skipped" );
+                                (*n)->vfsFilePath + "\". The file will be disregarded as invalid and skipped" );
                             queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                             n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                             totalSuccess = false;
@@ -2474,7 +2586,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         {
                             // Make sure we log this because messages could be missing
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Successfully rebuild index for corrupted pubsub msg container at path \"" +
-                                (*n) + "\". Found " + CORE::ToString( bufferMetaData->msgOffsetIndex.size() ) + " recoverable entries in the file" );
+                                (*n)->vfsFilePath + "\". Found " + CORE::ToString( bufferMetaData->msgOffsetIndex.size() ) + " recoverable entries in the file" );
                         }
 
                         // Check to see how many we need to trim from the start
@@ -2536,7 +2648,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                     else
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed load pubsub msg container at path \"" +
-                            (*n) + "\". The file will be disregarded as invalid and skipped" );
+                            (*n)->vfsFilePath + "\". The file will be disregarded as invalid and skipped" );
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                         n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                         totalSuccess = false;
@@ -2545,8 +2657,8 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                 }
                 else
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request: " + bufferMetaData->relatedStorageFile );
-                    if ( LoadStorageFile( (*n), *m_currentWriteBuffer ) )
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Loading the entire container as-is to serve (part of) the request: " + bufferMetaData->linkedRequestEntry->vfsFilePath );
+                    if ( LoadStorageFile( (*n)->vfsFilePath, *m_currentWriteBuffer ) )
                     {
                         queuedRequest.vfsPubSubMsgContainersPushed.insert( (*n) );
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
@@ -2561,7 +2673,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                     else
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed load pubsub msg container at path \"" +
-                            (*n) + "\". The file will be disregarded as invalid and skipped" );
+                            (*n)->vfsFilePath + "\". The file will be disregarded as invalid and skipped" );
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
                         n = queuedRequest.vfsPubSubMsgContainersToPush.begin();
                         totalSuccess = false;
@@ -2711,11 +2823,11 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
     {
         if ( isTransmitted )
         {
-            bool firstTransmission = request->vfsPubSubMsgContainersPushed.end() != request->vfsPubSubMsgContainersPushed.find( bufferMetaData->relatedStorageFile );
+            bool firstTransmission = request->vfsPubSubMsgContainersPushed.end() != request->vfsPubSubMsgContainersPushed.find( bufferMetaData->linkedRequestEntry );
             if ( firstTransmission )
             {
-                request->vfsPubSubMsgContainersTransmitted.insert( bufferMetaData->relatedStorageFile );
-                request->vfsPubSubMsgContainersPushed.erase( bufferMetaData->relatedStorageFile );
+                request->vfsPubSubMsgContainersTransmitted.insert( bufferMetaData->linkedRequestEntry );
+                request->vfsPubSubMsgContainersPushed.erase( bufferMetaData->linkedRequestEntry );
             }
 
             // We are done with the transmission-as-message portion of the container request handling

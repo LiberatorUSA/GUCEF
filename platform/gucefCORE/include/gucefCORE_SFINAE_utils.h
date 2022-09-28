@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CICLONEABLE_H
+#include "gucefMT_CICloneable.h"
+#define GUCEF_MT_CICLONEABLE_H
+#endif /* GUCEF_MT_CICLONEABLE_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -117,6 +122,50 @@ struct TypeHasMemberFunctionGetPointerAlways
     template <typename U, U u> struct reallyHas;
 
     template < typename TestClass > static yes& test( reallyHas< typename TestClass::TContainedType* (TestClass::*)(), &TestClass::GetPointerAlways >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows for checking for the existance of the member function MT::CICloneable* T::Clone()
+ */
+template < class T >
+struct TypeHasMemberFunctionClone
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template <typename U, U u> struct reallyHas;
+
+    template < typename TestClass > static yes& test( reallyHas< typename MT::CICloneable* (TestClass::*)(), &TestClass::Clone >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows for checking for the existance of the member function MT::CICloneable* T::Clone()
+ */
+template < class T >
+struct TypeHasAssignmentOperator
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template <typename U, U u> struct reallyHas;
+
+    template < typename TestClass > static yes& test( reallyHas< typename TestClass& (TestClass::*)(), &TestClass::operator= >* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.

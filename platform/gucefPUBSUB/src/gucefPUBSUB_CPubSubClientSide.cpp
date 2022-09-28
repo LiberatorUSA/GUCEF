@@ -1918,11 +1918,11 @@ bool
 CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( !DisconnectPubSubClient( hardReset ) )
         return false;
     
-    MT::CObjectScopeLock lock( this );
-
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
 
@@ -1996,12 +1996,12 @@ bool
 CPubSubClientSide::ConnectPubSubClient( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     // Make sure setup was completed before connecting
     if ( !PerformPubSubClientSetup( false ) )
         return false;
-
-    MT::CObjectScopeLock lock( this );
-
+    
     if ( !IsPubSubClientInfraReadyToConnect() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
