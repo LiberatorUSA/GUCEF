@@ -686,6 +686,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
+            GUCEF_METRIC_COUNT( metricsPrefix + ".msgsNotifiedAsReceived", topicMetrics.msgsNotifiedAsReceived, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
         }
         else

@@ -112,17 +112,18 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     typedef std::vector< CORE::UInt32 >                         UInt32Vector;
 
-    class CStorageBookmarkInfo : public CORE::CTSharedObjCreator< CStorageBookmarkInfo, MT::CNoLock >
+    class CStorageBookmarkInfo
     {
         public:
 
         UInt8 bookmarkFormatVersion;
         UInt8 doneWithFile;
-        CORE::UInt32 msgIndex;
-        CORE::UInt32 offsetInFile;
+        mutable CORE::UInt32 msgIndex;
+        mutable CORE::UInt32 offsetInFile;
         CORE::CString vfsFilePath;
 
         bool operator<( const CStorageBookmarkInfo& other ) const;
+        bool operator==( const CStorageBookmarkInfo& other ) const;
         CStorageBookmarkInfo& operator=( const CStorageBookmarkInfo& src );
 
         bool IsEmpty( void ) const;
@@ -130,9 +131,29 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CStorageBookmarkInfo( const CORE::CString& vfsFilePath = CORE::CString::Empty );
         CStorageBookmarkInfo( const CStorageBookmarkInfo& src );        
     };
-    typedef CORE::CTBasicSharedPtr< CStorageBookmarkInfo, MT::CNoLock >             TStorageBookmarkInfoPtr;
-    typedef CORE::CTBasicSharedPtrObjOperators< CStorageBookmarkInfo, MT::CNoLock > TStorageBookmarkInfoReference;
-    typedef std::set< TStorageBookmarkInfoReference >                               TStorageBookmarkInfoReferenceSet;
+    
+    class CContainerRangeInfo : public CStorageBookmarkInfo ,
+                                public CORE::CTSharedObjCreator< CContainerRangeInfo, MT::CNoLock >
+    {
+        public:
+
+        mutable bool hasEndDelimiter;
+        mutable CORE::UInt32 lastMsgIndex;
+        mutable CORE::UInt32 lastOffsetInFile;
+
+        bool operator<( const CContainerRangeInfo& other ) const;
+        bool operator==( const CContainerRangeInfo& other ) const;
+        CContainerRangeInfo& operator=( const CContainerRangeInfo& src );
+        CContainerRangeInfo& operator=( const CStorageBookmarkInfo& src );
+
+        CContainerRangeInfo( const CORE::CString& vfsFilePath = CORE::CString::Empty );
+        CContainerRangeInfo( const CContainerRangeInfo& src );
+        CContainerRangeInfo( const CStorageBookmarkInfo& src );
+    };
+
+    typedef CORE::CTBasicSharedPtr< CContainerRangeInfo, MT::CNoLock >              TCContainerRangeInfoPtr;
+    typedef CORE::CTBasicSharedPtrObjOperators< CContainerRangeInfo, MT::CNoLock >  TCContainerRangeInfoReference;
+    typedef std::set< TCContainerRangeInfoReference >                               TCContainerRangeInfoReferenceSet;
 
     CStoragePubSubClientTopic( CStoragePubSubClient* client );
 
@@ -197,6 +218,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::UInt32 largestBufferSizeInBytes;
         CORE::UInt32 msgsLoadedFromStorage;
         CORE::UInt32 msgBytesLoadedFromStorage;
+        CORE::UInt32 msgsNotifiedAsReceived;
         CORE::UInt32 msgsWrittenToStorage;
         CORE::UInt32 msgBytesWrittenToStorage;
         CORE::UInt32 storageCorruptionDetections;
@@ -243,9 +265,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
         CORE::CDateTime startDt;
         CORE::CDateTime endDt;
-        TStorageBookmarkInfoReferenceSet vfsPubSubMsgContainersToPush;
-        TStorageBookmarkInfoReferenceSet vfsPubSubMsgContainersPushed;
-        TStorageBookmarkInfoReferenceSet vfsPubSubMsgContainersTransmitted;
+        TCContainerRangeInfoReferenceSet vfsPubSubMsgContainersToPush;
+        TCContainerRangeInfoReferenceSet vfsPubSubMsgContainersPushed;
+        TCContainerRangeInfoReferenceSet vfsPubSubMsgContainersTransmitted;
         bool okIfZeroContainersAreFound;
         bool isPersistentRequest;
 
@@ -277,7 +299,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::UInt32 ackdMsgCount;
         TPublishActionIdVector actionIds;         
         StorageToPubSubRequest* linkedRequest;
-        TStorageBookmarkInfoReference linkedRequestEntry;
+        TCContainerRangeInfoReference linkedRequestEntry;
 
         void Clear( void );
 
@@ -313,27 +335,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     
     bool GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId     , 
                                                         StorageBufferMetaData** metaData );
-    
-    bool GetPersistedBookmark( CORE::Int32 channelId              , 
-                               const CORE::CString& topicName     , 
-                               PUBSUB::CPubSubBookmark& bookmark );
-
-    bool GetLastPersistedMsgAttributes( CORE::Int32 channelId          , 
-                                        const CORE::CString& topicName , 
-                                        CORE::CVariant& msgId          , 
-                                        CORE::CDateTime& msgDt         );
-
-    bool GetLastPersistedMsgAttributesWithOffset( CORE::Int32 channelId          , 
-                                                  const CORE::CString& topicName , 
-                                                  CORE::CVariant& msgId          , 
-                                                  CORE::CDateTime& msgDt         ,
-                                                  CORE::UInt32 lastFileOffset    ,
-                                                  bool& fileExistedButHasIssue   );
 
     bool
     GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt           ,
                                   const CORE::CDateTime& endDt             ,
-                                  TStorageBookmarkInfoReferenceSet& files  ) const;
+                                  TCContainerRangeInfoReferenceSet& files  ) const;
 
     bool AddStorageToPubSubRequest( const StorageToPubSubRequest& request );
 
@@ -350,7 +356,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool LocateFilesForStorageToPubSubRequest( void );
 
     bool LoadStorageFile( const CORE::CString& vfsPath       ,
-                          CORE::CDynamicBuffer& targetBuffer );
+                          CORE::CDynamicBuffer& targetBuffer ,
+                          bool& failureIsOk                  );
 
     bool GetTimestampsFromContainerFilename( const CORE::CString& fullPath     ,
                                              CORE::CDateTime& firstMsgDt       ,
@@ -397,6 +404,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     CORE::CString ResolveVfsRootPath( void ) const;
 
+    bool WasContainerMoved( const CORE::CString& vfsFilePath ) const;
+
     void UpdateIsHealthyStatus( bool newStatus );
     
     void
@@ -412,6 +421,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::UInt32 GetMsgsLoadedFromStorageCounter( bool resetCounter );
     CORE::UInt32 GetMsgBytesLoadedFromStorageCounter( bool resetCounter );
     CORE::UInt32 GetMsgsWrittenToStorageCounter( bool resetCounter );
+    CORE::UInt32 GetMsgsNotifiedAsReceivedCounter( bool resetCounter );
     CORE::UInt32 GetMsgBytesWrittenToStorageCounter( bool resetCounter );
     CORE::UInt32 GetStorageCorruptionDetectionCounter( bool resetCounter );
     CORE::UInt32 GetStorageDeserializationFailuresCounter( bool resetCounter );
@@ -460,6 +470,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     CORE::UInt32 m_msgsLoadedFromStorage;
     CORE::UInt32 m_msgBytesLoadedFromStorage;
+    CORE::UInt32 m_msgsNotifiedAsReceived;
     CORE::UInt32 m_msgsWrittenToStorage;
     CORE::UInt32 m_msgBytesWrittenToStorage;
     CORE::UInt32 m_storageCorruptionDetections;
