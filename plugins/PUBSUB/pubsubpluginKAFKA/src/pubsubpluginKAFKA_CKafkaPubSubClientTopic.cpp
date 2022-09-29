@@ -84,6 +84,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_kafkaProducerTopic( GUCEF_NULL )
     , m_kafkaConsumer( GUCEF_NULL )
     , m_kafkaErrorReplies( 0 )
+    , m_kafkaConnectionErrors( 0 )
     , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaMessagesReceived( 0 )
     , m_kafkaMessagesFiltered( 0 )
@@ -1375,12 +1376,28 @@ CKafkaPubSubClientTopic::GetKafkaErrorRepliesCounter( bool resetCounter )
 
     if ( resetCounter )
     {
-        CORE::UInt32 redisErrorReplies = m_kafkaErrorReplies;
+        CORE::UInt32 kafkaErrorReplies = m_kafkaErrorReplies;
         m_kafkaErrorReplies = 0;
-        return redisErrorReplies;
+        return kafkaErrorReplies;
     }
     else
         return m_kafkaErrorReplies;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CKafkaPubSubClientTopic::GetKafkaConnectionErrorsCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 kafkaConnectionErrors = m_kafkaConnectionErrors;
+        m_kafkaConnectionErrors = 0;
+        return kafkaConnectionErrors;
+    }
+    else
+        return m_kafkaConnectionErrors;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1455,6 +1472,8 @@ CKafkaPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     const CKafkaPubSubClientConfig& clientConfig = m_client->GetConfig();
 
     m_metrics.kafkaErrorReplies = GetKafkaErrorRepliesCounter( true );
+    m_metrics.kafkaConnectionErrors = GetKafkaConnectionErrorsCounter( true );
+
     if ( clientConfig.desiredFeatures.supportsPublishing )
     {
         m_metrics.kafkaTransmitQueueSize = (CORE::UInt32) m_kafkaProducer->outq_len();
@@ -1992,6 +2011,9 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 #endif
                 case RdKafka::ERR__RESOLVE:
                 {
+                    ++m_kafkaErrorReplies;
+                    ++m_kafkaConnectionErrors;
+                    
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName +
@@ -2002,6 +2024,9 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 }
                 case RdKafka::ERR__TRANSPORT:
                 {             
+                    ++m_kafkaErrorReplies;
+                    ++m_kafkaConnectionErrors;
+
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + 

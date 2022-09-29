@@ -144,6 +144,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
 
+    CORE::UInt32 GetKafkaConnectionErrorsCounter( bool resetCounter );
+
     CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );
 
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
@@ -164,6 +166,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
         CORE::UInt32 kafkaMessagesFiltered;
 
         CORE::UInt32 kafkaErrorReplies;
+        CORE::UInt32 kafkaConnectionErrors;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
@@ -283,6 +286,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
     CORE::UInt32 m_kafkaErrorReplies;
+    CORE::UInt32 m_kafkaConnectionErrors;
     CORE::UInt32 m_kafkaMsgsTransmitted;
     CORE::UInt32 m_kafkaMessagesReceived;
     CORE::UInt32 m_kafkaMessagesFiltered;

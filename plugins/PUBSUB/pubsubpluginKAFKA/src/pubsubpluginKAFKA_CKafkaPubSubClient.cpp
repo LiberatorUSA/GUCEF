@@ -607,6 +607,7 @@ CKafkaPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const CORE::CString& topicName = (*i).second->GetTopicName();
 
         GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
+        GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaConnectionErrors", metrics.kafkaConnectionErrors, 1.0f );
 
         if ( m_config.desiredFeatures.supportsPublishing )
         {
