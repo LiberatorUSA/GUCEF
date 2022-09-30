@@ -52,6 +52,7 @@ namespace STORAGE {
 #define GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS   (1000*60*5)   // 5mins
 #define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
 #define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
+#define GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN         50
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,6 +92,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , deleteContainersWithFullyAckdContent( false )
     , moveContainersWithFullyAckdContent( false )
     , vfsStorageRootPathForFullyAckdContainers()
+    , maxCompletedContainerRefsToRetain( GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN )
 {GUCEF_TRACE;
     
 }
@@ -129,6 +131,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , deleteContainersWithFullyAckdContent( src.deleteContainersWithFullyAckdContent )
     , moveContainersWithFullyAckdContent( src.moveContainersWithFullyAckdContent )
     , vfsStorageRootPathForFullyAckdContainers( src.vfsStorageRootPathForFullyAckdContainers )
+    , maxCompletedContainerRefsToRetain( src.maxCompletedContainerRefsToRetain )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -168,6 +171,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , deleteContainersWithFullyAckdContent( false )
     , moveContainersWithFullyAckdContent( false )
     , vfsStorageRootPathForFullyAckdContainers()
+    , maxCompletedContainerRefsToRetain()
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -215,6 +219,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     deleteContainersWithFullyAckdContent = config.GetAttributeValueOrChildValueByName( "deleteContainersWithFullyAckdContent" ).AsBool( deleteContainersWithFullyAckdContent, true );
     moveContainersWithFullyAckdContent = config.GetAttributeValueOrChildValueByName( "moveContainersWithFullyAckdContent" ).AsBool( moveContainersWithFullyAckdContent, true );
     vfsStorageRootPathForFullyAckdContainers = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPathForFullyAckdContainers" ).AsString( vfsStorageRootPathForFullyAckdContainers, true ); 
+    maxCompletedContainerRefsToRetain = config.GetAttributeValueOrChildValueByName( "maxCompletedContainerRefsToRetain" ).AsUInt32( maxCompletedContainerRefsToRetain, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -263,6 +268,7 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "deleteContainersWithFullyAckdContent", deleteContainersWithFullyAckdContent ) && success;                    
     success = config.SetAttribute( "moveContainersWithFullyAckdContent", moveContainersWithFullyAckdContent ) && success;                    
     success = config.SetAttribute( "vfsStorageRootPathForFullyAckdContainers", vfsStorageRootPathForFullyAckdContainers ) && success;
+    success = config.SetAttribute( "maxCompletedContainerRefsToRetain", maxCompletedContainerRefsToRetain ) && success;    
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -331,6 +337,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         deleteContainersWithFullyAckdContent = src.deleteContainersWithFullyAckdContent;
         moveContainersWithFullyAckdContent = src.moveContainersWithFullyAckdContent;
         vfsStorageRootPathForFullyAckdContainers = src.vfsStorageRootPathForFullyAckdContainers;
+        maxCompletedContainerRefsToRetain = src.maxCompletedContainerRefsToRetain;
 
         customConfig = src.customConfig;
     }

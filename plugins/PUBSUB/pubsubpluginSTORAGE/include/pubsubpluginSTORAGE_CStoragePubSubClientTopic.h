@@ -117,7 +117,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         public:
 
         UInt8 bookmarkFormatVersion;
-        UInt8 doneWithFile;
+        mutable UInt8 doneWithFile;
         mutable CORE::UInt32 msgIndex;
         mutable CORE::UInt32 offsetInFile;
         CORE::CString vfsFilePath;
@@ -140,6 +140,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         mutable bool hasEndDelimiter;
         mutable CORE::UInt32 lastMsgIndex;
         mutable CORE::UInt32 lastOffsetInFile;
+
+        CORE::UInt64 minActionId;
+        CORE::UInt64 maxActionId;
 
         bool operator<( const CContainerRangeInfo& other ) const;
         bool operator==( const CContainerRangeInfo& other ) const;
@@ -462,6 +465,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     StorageToPubSubRequestDeque m_stage0StorageToPubSubRequests;  // <- persistent requests, holding area
     StorageToPubSubRequestDeque m_stage1StorageToPubSubRequests;  // <- requests that need to be matched to files
     StorageToPubSubRequestDeque m_stage2StorageToPubSubRequests;  // <- requests that need their files loaded into buffers to serve the request
+    TCContainerRangeInfoReferenceSet m_completedContainers;
    
     CORE::CDynamicBufferSwap m_buffers;
     CORE::CDateTime m_lastWriteBlockCompletion;    

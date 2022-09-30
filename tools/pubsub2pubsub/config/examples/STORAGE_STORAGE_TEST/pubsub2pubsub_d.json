@@ -91,6 +91,7 @@
 												"deleteContainersWithFullyAckdContent": false,
 												"moveContainersWithFullyAckdContent": true,
 												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed"
+												"maxCompletedContainerRefsToRetain": 50,
 											}
 										}
 									}
@@ -201,6 +202,7 @@
 												"deleteContainersWithFullyAckdContent": false,
 												"moveContainersWithFullyAckdContent": true,
 												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/spillover-temp-storage/processed"
+												"maxCompletedContainerRefsToRetain": 50,
 											}
 										}
 									}
@@ -311,6 +313,7 @@
 												"deleteContainersWithFullyAckdContent": false,
 												"moveContainersWithFullyAckdContent": true,
 												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/test-sink/processed",
+												"maxCompletedContainerRefsToRetain": 50,
 
 
 

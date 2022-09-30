@@ -190,6 +190,8 @@ CStoragePubSubClientTopic::CContainerRangeInfo::CContainerRangeInfo( const CORE:
     , hasEndDelimiter( false )
     , lastMsgIndex( 0 )
     , lastOffsetInFile( 0 )
+    , minActionId( 0 )
+    , maxActionId( 0 )
 {GUCEF_TRACE;
 
 }
@@ -202,6 +204,8 @@ CStoragePubSubClientTopic::CContainerRangeInfo::CContainerRangeInfo( const CCont
     , hasEndDelimiter( src.hasEndDelimiter )
     , lastMsgIndex( src.lastMsgIndex )
     , lastOffsetInFile( src.lastOffsetInFile )
+    , minActionId( src.minActionId )
+    , maxActionId( src.maxActionId )
 {GUCEF_TRACE;
 
 }
@@ -214,6 +218,8 @@ CStoragePubSubClientTopic::CContainerRangeInfo::CContainerRangeInfo( const CStor
     , hasEndDelimiter( false )
     , lastMsgIndex( 0 )
     , lastOffsetInFile( 0 )
+    , minActionId( 0 )
+    , maxActionId( 0 )
 {GUCEF_TRACE;
 
 }
@@ -258,6 +264,8 @@ CStoragePubSubClientTopic::CContainerRangeInfo::operator=( const CContainerRange
         hasEndDelimiter = src.hasEndDelimiter;
         lastMsgIndex = src.lastMsgIndex;
         lastOffsetInFile = src.lastOffsetInFile;
+        minActionId = src.minActionId;
+        maxActionId = src.maxActionId;
     }
     return *this;
 }
@@ -274,6 +282,8 @@ CStoragePubSubClientTopic::CContainerRangeInfo::operator=( const CStorageBookmar
         hasEndDelimiter = false;
         lastMsgIndex = 0;
         lastOffsetInFile = 0;
+        minActionId = 0;
+        maxActionId = 0;
     }
     return *this;
 }
@@ -1580,7 +1590,27 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
         // No other container is going to have this 
         return false;
     }
+    else
+    {
+        if ( GUCEF_NULL != metaData )
+            *metaData = GUCEF_NULL;
 
+        // the active buffers no longer reference this data
+        // check the completed containers
+        TCContainerRangeInfoReferenceSet::reverse_iterator c = m_completedContainers.rbegin();
+        while ( c != m_completedContainers.rend() )
+        {
+            if ( (*c)->minActionId <= receiveActionId &&
+                 (*c)->maxActionId >= receiveActionId )
+            {
+                // Found it
+                // We have already completed this container, report as such
+                bookmarkInfo = *(*c);
+                return true;
+            }
+            ++c;
+        }
+    }
     return false;
 }
 
@@ -2579,6 +2609,9 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         {
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: pubsub msg container not available to load at path \"" +
                                 (*n)->vfsFilePath + "\". The file reference will be disregarded" );
+
+                            (*n)->doneWithFile = 1;
+                            m_completedContainers.insert( (*n) );
                         }
 
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
@@ -2615,6 +2648,9 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         {
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: pubsub msg container not available to load at path \"" +
                                 (*n)->vfsFilePath + "\". The file reference will be disregarded" );
+
+                            (*n)->doneWithFile = 1;
+                            m_completedContainers.insert( (*n) );
                         }
 
                         queuedRequest.vfsPubSubMsgContainersToPush.erase( (*n) );
@@ -2793,6 +2829,23 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
             // check to see if we need to wait any longer for ack handling
             if ( !m_needToTrackAcks || isAcked ) 
             {
+                // Since we are done with this specific container we can update 
+                // the 'bookmark' portion of the request entry to match what we have completed
+                // This makes sure that if the info is retrieved and stored as a bookmark that it will 
+                // reference the correct position
+                if ( bufferMetaData->linkedRequestEntry->hasEndDelimiter )
+                {
+                    bufferMetaData->linkedRequestEntry->msgIndex = bufferMetaData->linkedRequestEntry->lastMsgIndex;
+                    bufferMetaData->linkedRequestEntry->offsetInFile = bufferMetaData->linkedRequestEntry->lastOffsetInFile;
+                }
+                else
+                {
+                    bufferMetaData->linkedRequestEntry->msgIndex = (UInt32) bufferMetaData->msgOffsetIndex.size()-1;
+                    bufferMetaData->linkedRequestEntry->offsetInFile = bufferMetaData->msgOffsetIndex[ bufferMetaData->linkedRequestEntry->msgIndex ];
+                }
+
+                // Check to see if there is no additional work related to the overall request
+                // if not we can perform some additional progression & cleanup
                 if ( request->vfsPubSubMsgContainersToPush.empty() &&
                      request->vfsPubSubMsgContainersPushed.empty()  )
                 {
@@ -2816,6 +2869,28 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
                             {
                                 m_subscriptionIsAtEndOfData = true;
                                 NotifyObservers( SubscriptionEndOfDataEvent );    
+                            }
+                        }
+                    }
+
+                    if ( m_needToTrackAcks && isAcked )
+                    {
+                        // Retain the container references a little longer for bookmarking purposes
+                        TCContainerRangeInfoReferenceSet::iterator c = request->vfsPubSubMsgContainersTransmitted.begin();
+                        while ( c != request->vfsPubSubMsgContainersTransmitted.end() )
+                        {
+                            (*c)->doneWithFile = 1;
+                            m_completedContainers.insert( (*c) );                        
+                            ++c;
+                        }
+
+                        // let's not keep an unlimited amount of these old references as we'd run out of memory over time                        
+                        if ( m_completedContainers.size() > m_config.maxCompletedContainerRefsToRetain )
+                        {
+                            UInt32 referencesToPrune = (UInt32) m_completedContainers.size() - m_config.maxCompletedContainerRefsToRetain;
+                            for ( UInt32 pruned=0; pruned < referencesToPrune; ++pruned )
+                            {
+                                m_completedContainers.erase( m_completedContainers.begin() );
                             }
                         }
                     }
@@ -2921,6 +2996,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
             seriesEnd = bufferMetaData->msgs.end();
         }
 
+        bufferMetaData->linkedRequestEntry->minActionId = m_currentReceiveActionId;
         while ( i != seriesEnd )
         {
             PUBSUB::CBasicPubSubMsg& msg = (*i);
@@ -2938,6 +3014,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 
             ++i;
         }
+        bufferMetaData->linkedRequestEntry->maxActionId = m_currentReceiveActionId-1;
 
         if ( !NotifyObservers( MsgsRecievedEvent, &bufferMetaData->pubsubMsgsRefs ) )
             return true;

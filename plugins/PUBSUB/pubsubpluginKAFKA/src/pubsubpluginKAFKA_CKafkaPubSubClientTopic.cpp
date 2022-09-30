@@ -1570,6 +1570,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
             return low;
         }
 
+        ++m_kafkaErrorReplies;
         std::string errStr = RdKafka::err2str( err );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"BEGINNING\" into offset for partition " +
                 CORE::Int32ToString( partitionId ) + ". ErrorCode : " + errStr );
@@ -1596,6 +1597,8 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         RdKafka::ErrorCode err = m_kafkaConsumer->assignment( partitions );
         if ( RdKafka::ERR_NO_ERROR != err )
         {
+            ++m_kafkaErrorReplies;
+            
             std::string errStr = RdKafka::err2str( err );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"STORED\" into offset for partition " +
                     CORE::Int32ToString( partitionId ) + ". Cannot obtain partition assignment. ErrorCode : " + errStr );
@@ -1605,6 +1608,8 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         err = m_kafkaConsumer->committed( partitions, timeoutInMs );
         if ( RdKafka::ERR_NO_ERROR != err )
         {
+            ++m_kafkaErrorReplies;
+            
             std::string errStr = RdKafka::err2str( err );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"STORED\" into offset for partition " +
                     CORE::Int32ToString( partitionId ) + ". Cannot obtain commited offsets . ErrorCode : " + errStr );
@@ -1659,6 +1664,8 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
 
     if ( RdKafka::ERR_NO_ERROR != err && RdKafka::ERR__NO_OFFSET != err )
     {
+        ++m_kafkaErrorReplies;
+
         std::string errStr = RdKafka::err2str( err );
         CORE::CString commitInfo = "KafkaPubSubClientTopic:offset_commit_cb: Member ID \"" + m_kafkaConsumer->memberid() + "\": Code: " + errStr + " : ";
         for ( unsigned int i=0; i<offsets.size(); ++i )
@@ -1707,7 +1714,10 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
 
         assignSuccess = consumer->assign( partitions );
         if ( RdKafka::ERR_NO_ERROR != assignSuccess )
+        {
+            ++m_kafkaErrorReplies;
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:rebalance_cb: Failed to assign new partitions" );
+        }
 
         RdKafka::ErrorCode ec = consumer->offsets_store( partitions );
         RdKafka::ErrorCode ec2 = consumer->commitSync( this );
@@ -1737,6 +1747,12 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Offsets for topic \"" + m_config.topicName +
                     "\" and partition " + CORE::Int32ToString( partitions[ i ]->partition() ) + ": Low=" + ConvertKafkaConsumerStartOffset( low ) +
                     ", High=" + ConvertKafkaConsumerStartOffset( high ) );
+        }
+        else
+        {
+            ++m_kafkaErrorReplies;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Unable to get offsets for topic \"" + m_config.topicName +
+                    "\" and partition " + CORE::Int32ToString( partitions[ i ]->partition() ) );
         }
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
@@ -1965,23 +1981,31 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
         }
         case RdKafka::ERR__UNKNOWN_PARTITION:
         {
+            ++m_kafkaErrorReplies;
+            
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_PARTITION: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
         }
         case RdKafka::ERR__UNKNOWN_TOPIC:
         {
+            ++m_kafkaErrorReplies;
+            
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_TOPIC: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
         }
         case RdKafka::ERR__MAX_POLL_EXCEEDED:
         {
+            ++m_kafkaErrorReplies;
+            
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: MAX_POLL_EXCEEDED: " + message.errstr() );
             break;
         }
         default:
         {
+            ++m_kafkaErrorReplies;
+            
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
@@ -2056,11 +2080,13 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 case RdKafka::Event::EVENT_SEVERITY_EMERG:
                 case RdKafka::Event::EVENT_SEVERITY_CRITICAL:
                 {
+                    ++m_kafkaErrorReplies;
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Kafka log: " + event.fac() + " : " + event.str() );
                     break;
                 }
                 case RdKafka::Event::EVENT_SEVERITY_ERROR:
                 {
+                    ++m_kafkaErrorReplies;
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
                     break;
                 }
@@ -2160,6 +2186,8 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
 
     if ( message.err() )
     {
+        ++m_kafkaErrorReplies;
+
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: publishActionId: " + CORE::ToString( publishActionId ) +
                                                 ". error: \"" + message.errstr() +
                                                 "\", on topic: \"" + message.topic_name() +
@@ -2234,6 +2262,8 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
             }
             else
             {
+                ++m_kafkaErrorReplies;
+
                 std::string errStr = RdKafka::err2str( err );
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
                 UpdateIsHealthyStatus( false );
@@ -2242,6 +2272,8 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
         }
         else
         {
+            ++m_kafkaErrorReplies;
+
             std::string errStr = RdKafka::err2str( err );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to store current offets on local topic objects. ErrorCode : " + errStr );
             return false;
@@ -2249,6 +2281,8 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
     }
     else
     {
+        ++m_kafkaErrorReplies;
+
         std::string errStr = RdKafka::err2str( err );
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to obtain current partition assignment. ErrorCode : " + errStr );
         UpdateIsHealthyStatus( false );

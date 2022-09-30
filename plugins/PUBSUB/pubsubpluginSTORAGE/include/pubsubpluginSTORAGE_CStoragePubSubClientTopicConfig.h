@@ -111,6 +111,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     bool deleteContainersWithFullyAckdContent;
     bool moveContainersWithFullyAckdContent;
     CORE::CString vfsStorageRootPathForFullyAckdContainers;
+    CORE::UInt32 maxCompletedContainerRefsToRetain;
 
     CStoragePubSubClientTopicConfig( void );
 
