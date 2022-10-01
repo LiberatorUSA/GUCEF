@@ -230,7 +230,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
 
     void RegisterSidePubSubClientEventHandlers( CPubSubClientPtr& client );
 
-    void RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopic* topicAccess );
+    void RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopicBasicPtr topicAccess );
 
     void RegisterSidePubSubClientTopicEventHandlers( CPubSubClientPtr& client );
 

@@ -142,7 +142,8 @@ class CWebPubSubClient;
  *  As such its intended to be used as described for reads: for performing spot checks and debugging for low flow-rate messages
  *  
  */
-class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                  public CORE::CTSharedObjCreator< CWebPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -228,12 +229,12 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
 
-    bool PublishToRestApi( CORE::UInt64& publishActionId                        , 
-                           const PUBSUB::CIPubSubMsg& msg                      , 
-                           bool notify                                          , 
-                           const PUBSUB::CPubSubClient* originClient           ,
-                           const CORE::CString& originClientType                ,
-                           const PUBSUB::CPubSubClientTopic* originClientTopic );
+    bool PublishToRestApi( CORE::UInt64& publishActionId                               , 
+                           const PUBSUB::CIPubSubMsg& msg                              , 
+                           bool notify                                                 , 
+                           const PUBSUB::CPubSubClient* originClient                   ,
+                           const CORE::CString& originClientType                       ,
+                           const PUBSUB::CPubSubClientTopicBasicPtr& originClientTopic );
 
     void
     OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
@@ -254,18 +255,18 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
 
     static CORE::CString UnknownClientType;
 
-    typedef std::map< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >                                            TUInt64dToTIPubSubMsgSPtrMap;
-    typedef std::map< const PUBSUB::CPubSubClientTopic*, TUInt64dToTIPubSubMsgSPtrMap >                                TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap;
-    typedef std::map< const PUBSUB::CPubSubClient*, TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap >              TPubSubClientToPubSubClientTopicMsgsMap;
-    typedef std::vector< const PUBSUB::CPubSubClient* >                                                                TPubSubClientPtrVector;
-    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientPtrVector >                   TClientIndexMap;
-    typedef std::map< CORE::CString, TPubSubClientPtrVector >                                                           TStringToPubSubClientPtrVectorMap;
-    typedef std::vector< const PUBSUB::CPubSubClientTopic* >                                                           TPubSubClientTopicPtrVector;
-    typedef std::map< CORE::CString, TPubSubClientTopicPtrVector >                                                      TStringToPubSubClientTopicPtrVectorMap;
-    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientTopicPtrVector >              TClientTopicIndexMap;
-    typedef std::map< CORE::CString, TStringToPubSubClientTopicPtrVectorMap >                                           TStringToStringToPubSubClientTopicPtrVectorMap;            
-    typedef GUCEF::WEB::CDummyHTTPServerResource                                                                        TDummyHttpServerResource;
-    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >    TClientTopicMsgsIndexMap;
+    typedef std::map< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >                                                TUInt64dToTIPubSubMsgSPtrMap;
+    typedef std::map< const PUBSUB::CPubSubClientTopic*, TUInt64dToTIPubSubMsgSPtrMap >                                    TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap;
+    typedef std::map< const PUBSUB::CPubSubClient*, TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap >                  TPubSubClientToPubSubClientTopicMsgsMap;
+    typedef std::vector< const PUBSUB::CPubSubClient* >                                                                    TPubSubClientPtrVector;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientPtrVector >                      TClientIndexMap;
+    typedef std::map< CORE::CString, TPubSubClientPtrVector >                                                              TStringToPubSubClientPtrVectorMap;
+    typedef std::vector< PUBSUB::CPubSubClientTopicBasicPtr >                                                              TPubSubClientTopicPtrVector;
+    typedef std::map< CORE::CString, TPubSubClientTopicPtrVector >                                                         TStringToPubSubClientTopicPtrVectorMap;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::CString, TPubSubClientTopicPtrVector >                 TClientTopicIndexMap;
+    typedef std::map< CORE::CString, TStringToPubSubClientTopicPtrVectorMap >                                              TStringToStringToPubSubClientTopicPtrVectorMap;            
+    typedef GUCEF::WEB::CDummyHTTPServerResource                                                                           TDummyHttpServerResource;
+    typedef GUCEF::WEB::CTReadableMapIndexHttpServerResource< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >        TClientTopicMsgsIndexMap;
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr > TClientTopicMsgsMap;
 
     CWebPubSubClient* m_client;
@@ -290,6 +291,10 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
     TStringToStringToPubSubClientTopicPtrVectorMap m_publishedTopicNamesPerClientType;
     PUBSUB::CPubSubMsgSerializerOptions m_pubsubSerializerOptions;
 };
+
+/*--------------------------------------------------------------------------*/
+
+typedef CWebPubSubClientTopic::TSharedPtrType   CWebPubSubClientTopicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

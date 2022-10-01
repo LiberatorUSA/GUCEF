@@ -119,8 +119,7 @@ CWebPubSubClient::~CWebPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -181,27 +180,26 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CWebPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CWebPubSubClientTopic* topicAccess = GUCEF_NULL;
+    CWebPubSubClientTopicPtr topicAccess;
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = new CWebPubSubClientTopic( this );
+        topicAccess = ( new CWebPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -212,7 +210,7 @@ CWebPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -223,7 +221,7 @@ CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -253,13 +251,13 @@ CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CWebPubSubClientTopic* topicAccess = (*i).second;
+        CWebPubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
 
-        delete topicAccess;
+        topicAccess.Unlink();
     }
 }
 
@@ -502,7 +500,7 @@ CWebPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CWebPubSubClientTopic* topic = (*i).second;
+        CWebPubSubClientTopicPtr topic = (*i).second;
         const CWebPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CWebPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();

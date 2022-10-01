@@ -124,8 +124,7 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -205,15 +204,15 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CMsmqPubSubClientTopic* topicAccess = GUCEF_NULL;
+    CMsmqPubSubClientTopicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = new CMsmqPubSubClientTopic( this );
+        topicAccess = ( new CMsmqPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;            
@@ -221,12 +220,11 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -237,7 +235,7 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopicPtr 
 CMsmqPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -248,7 +246,7 @@ CMsmqPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,13 +276,13 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CMsmqPubSubClientTopic* topicAccess = (*i).second;
+        CMsmqPubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        delete topicAccess;        
+        topicAccess.Unlink();        
     }
 }
 
@@ -812,13 +810,13 @@ CMsmqPubSubClient::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CMsmqPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+CMsmqPubSubClient::RegisterTopicEventHandlers( CMsmqPubSubClientTopicPtr& topic )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != topic )
+    if ( !topic.IsNULL() )
     {
         TEventCallback callback( this, &CMsmqPubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                           ,
+        SubscribeTo( topic.GetPointerAlways()                        ,
                      CMsmqPubSubClientTopic::HealthStatusChangeEvent ,
                      callback                                        );
     }
@@ -925,7 +923,7 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CMsmqPubSubClientTopic* topic = (*i).second;
+        CMsmqPubSubClientTopicPtr topic = (*i).second;
         const CMsmqPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CMsmqPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();

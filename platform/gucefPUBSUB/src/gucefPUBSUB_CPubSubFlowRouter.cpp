@@ -1006,10 +1006,8 @@ CPubSubFlowRouter::AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide
     // Note that acks are always ONLY to the side that originated the message since that side is the only
     // one that knows about that specific message and whatever conventions its abstracting wrt the underlying message format
 
-    CORE::UInt32 invokerThreadId = MT::GetCurrentTaskID();
-    
-    CPubSubClientTopic* originTopic = msg->GetOriginClientTopic();
-    if ( GUCEF_NULL != originTopic )
+    CPubSubClientTopicBasicPtr originTopic = msg->GetOriginClientTopic();
+    if ( !originTopic.IsNULL() )
     {
         CPubSubClient* originClient = originTopic->GetClient();
         if ( GUCEF_NULL != originClient )
@@ -1017,10 +1015,7 @@ CPubSubFlowRouter::AcknowledgeReceiptForSide( CPubSubClientSide* msgReceiverSide
             CPubSubClientSide* originSide = static_cast< CPubSubClientSide* >( originClient->GetOpaqueUserData() );
             if ( GUCEF_NULL != originSide )
             {
-                if ( invokerThreadId != originSide->GetDelegatorThreadId() )
-                    return originSide->AcknowledgeReceiptASync( msg );
-                else
-                    return originSide->AcknowledgeReceiptSync( msg );
+                return originSide->AcknowledgeReceipt( msg );
             }
             else
             {
@@ -1218,13 +1213,13 @@ CPubSubFlowRouter::RegisterSidePubSubClientEventHandlers( CPubSubClientPtr& clie
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopic* topicAccess )
+CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopicBasicPtr topicAccess )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != topicAccess ) 
+    if ( !topicAccess.IsNULL() ) 
     {
         TEventCallback callback( this, &CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData );
-        SubscribeTo( topicAccess                                    ,
+        SubscribeTo( topicAccess.GetPointerAlways()                 ,
                      CPubSubClientTopic::SubscriptionEndOfDataEvent ,
                      callback                                       );
     }
@@ -1904,7 +1899,7 @@ CPubSubFlowRouter::OnSidePubSubClientTopicCreation( CORE::CNotifier* notifier   
         return;
 
     CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
-    CPubSubClientTopic* topicAccess = pubsubClient->GetTopicAccess( topicName );
+    CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( GUCEF_NULL != topicAccess ) 
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +

@@ -58,7 +58,8 @@ namespace TEST {
 
 class CTestPubSubClient;
 
-class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORAGE::CStoragePubSubClientTopic
+class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORAGE::CStoragePubSubClientTopic ,
+                                                                    public CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -91,6 +92,10 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORA
     CTestPubSubClientTopicConfig m_testConfig;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >::TSharedPtrType  CTestPubSubClientTopicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -101,6 +106,6 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORA
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_TEST_CTESTPUBSUBCLIENTTOPIC_H ? */

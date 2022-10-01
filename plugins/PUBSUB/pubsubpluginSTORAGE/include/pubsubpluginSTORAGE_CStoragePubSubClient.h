@@ -86,9 +86,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -164,7 +164,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     
     void RegisterEventHandlers( void );
 
-    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
+    void RegisterTopicEventHandlers( CStoragePubSubClientTopicPtr& topic );
 
     bool ConfigureBookmarkPersistance( void );
     
@@ -173,7 +173,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     protected:
 
     typedef CORE::CTEventHandlerFunctor< CStoragePubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CStoragePubSubClientTopic* > TTopicMap;
+    typedef std::map< CORE::CString, CStoragePubSubClientTopicPtr > TTopicMap;
 
     CStoragePubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;

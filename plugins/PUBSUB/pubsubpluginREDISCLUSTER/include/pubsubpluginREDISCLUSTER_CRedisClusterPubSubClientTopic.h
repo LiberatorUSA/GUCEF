@@ -86,7 +86,8 @@ class CRedisClusterPubSubClient;
  *  Clustered Redis implementation of the conceptual pub-sub "topic"
  *  For Redis we use streams to implement the topic concept
  */
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopic : public PUBSUB::CPubSubClientTopic  ,
+                                                                                    public CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -240,6 +241,10 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     MT::CMutex m_lock;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CRedisClusterPubSubClientTopic::TSharedPtrType  CRedisClusterPubSubClientTopicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -250,6 +255,6 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H ? */

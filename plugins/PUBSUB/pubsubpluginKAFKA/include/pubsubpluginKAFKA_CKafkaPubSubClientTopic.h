@@ -75,6 +75,7 @@ class CKafkaPubSubClient;
  *  KAFKA implementation of the conceptual pub-sub "topic"
  */
 class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                      public CORE::CTSharedObjCreator< CKafkaPubSubClientTopic, MT::CMutex > ,
                                                                       private RdKafka::EventCb           ,
                                                                       private RdKafka::DeliveryReportCb  ,
                                                                       private RdKafka::ConsumeCb         ,
@@ -310,6 +311,10 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     MT::CMutex m_lock;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CKafkaPubSubClientTopic::TSharedPtrType CKafkaPubSubClientTopicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -320,6 +325,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_KAFKA_CKAFKAPUBSUBCLIENTTOPIC_H ? */

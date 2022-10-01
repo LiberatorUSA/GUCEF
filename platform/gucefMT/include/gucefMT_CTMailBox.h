@@ -165,7 +165,7 @@ class CTMailBox : public virtual MT::CILockable
 
     typename TMailQueue::iterator end( void );
 
-    void erase( typename TMailQueue::iterator& index );
+    typename TMailQueue::iterator erase( typename TMailQueue::iterator& index );
 
     typename TMailQueue::const_iterator begin( void ) const;
 
@@ -529,11 +529,11 @@ CTMailBox< T >::DoUnlock( void ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
+typename CTMailBox< T >::TMailQueue::iterator
 CTMailBox< T >::erase( typename TMailQueue::iterator& index )
 {GUCEF_TRACE;
 
-    m_mailQueue.erase( index );
+    return m_mailQueue.erase( index );
 }
 
 /*--------------------------------------------------------------------------*/

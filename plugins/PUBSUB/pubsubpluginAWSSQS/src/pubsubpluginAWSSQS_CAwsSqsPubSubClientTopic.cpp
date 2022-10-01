@@ -96,6 +96,7 @@ namespace AWSSQS {
 
 CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_redisShardHost()
     , m_config()

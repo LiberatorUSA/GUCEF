@@ -279,6 +279,8 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
     inline bool operator<( const CTBasicSharedPtr& other ) const;
 
+    inline bool operator<( const void* other ) const;
+
     /**
      *  operator that implements '(*mySharedPtr)'
      *
@@ -601,6 +603,16 @@ CTBasicSharedPtr< T, LockType >::operator<( const CTBasicSharedPtr< T, LockType 
 {GUCEF_TRACE;
 
     return m_ptr < other.m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+inline bool
+CTBasicSharedPtr< T, LockType >::operator<( const void* other ) const
+{GUCEF_TRACE;
+
+    return m_ptr < other;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -73,6 +73,7 @@ const std::string CKafkaPubSubClientTopic::KafkaMsgHeader_ProducerHostname = "Pr
 
 CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CKafkaPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_metricsTimer( GUCEF_NULL )
     , m_config()
@@ -1785,7 +1786,7 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     // Grab a message wrapper from pre-allocated storage
     PUBSUB::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
     msgWrap.Clear();
-    msgWrap.SetOriginClientTopic( this );
+    msgWrap.SetOriginClientTopic( CreateSharedPtr() );
 
     msgWrap.SetReceiveActionId( m_currentReceiveActionId );
     ++m_currentReceiveActionId;

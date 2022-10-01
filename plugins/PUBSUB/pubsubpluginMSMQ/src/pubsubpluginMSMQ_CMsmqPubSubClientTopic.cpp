@@ -131,6 +131,7 @@ RetrieveWin32APIErrorMessage( DWORD dwErr )
 
 CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CMsmqPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_msgSendMsg()
     , m_config()
@@ -2147,7 +2148,7 @@ CMsmqPubSubClientTopic::OnMsmqMsgReceived( const MQMSGPROPS& msg, CORE::UInt32 m
 
     PUBSUB::CBasicPubSubMsg& translatedMsg = m_pubsubMsgs[ msgCycleIndex ];
     translatedMsg.Clear();
-    translatedMsg.SetOriginClientTopic( this );
+    translatedMsg.SetOriginClientTopic( CreateSharedPtr() );
 
     translatedMsg.SetReceiveActionId( m_currentReceiveActionId );
     ++m_currentReceiveActionId;

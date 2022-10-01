@@ -57,6 +57,8 @@ namespace PUBSUB {
 
 class CPubSubClientTopic;
 
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Class providing a generic representation of a pub-sub message
  *  Based on the client used different capabilities will be available and 
@@ -66,10 +68,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CIPubSubMsg : public COMCORE::CIMessage
 {
     public:
 
-    typedef std::vector< CIPubSubMsg* >                     TIPubSubMsgRawPtrVector;
-    typedef std::vector< const CIPubSubMsg* >               TIPubSubMsgConstRawPtrVector;
-    typedef CORE::CTSharedPtr< CIPubSubMsg, MT::CNoLock >   TNoLockSharedPtr;
-    typedef std::vector< TNoLockSharedPtr >                 TIPubSubMsgSPtrVector;
+    typedef std::vector< CIPubSubMsg* >                                 TIPubSubMsgRawPtrVector;
+    typedef std::vector< const CIPubSubMsg* >                           TIPubSubMsgConstRawPtrVector;
+    typedef CORE::CTSharedPtr< CIPubSubMsg, MT::CNoLock >               TNoLockSharedPtr;
+    typedef std::vector< TNoLockSharedPtr >                             TIPubSubMsgSPtrVector;
+    typedef CORE::CTBasicSharedPtr< CPubSubClientTopic, MT::CMutex >    CPubSubClientTopicBasicPtr;
 
     CIPubSubMsg( void );
 
@@ -84,7 +87,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CIPubSubMsg : public COMCORE::CIMessage
      *  For a message constructed by the application for publishing this can be left 
      *  as GUCEF_NULL
      */ 
-    virtual CPubSubClientTopic* GetOriginClientTopic( void ) const = 0;
+    virtual CPubSubClientTopicBasicPtr GetOriginClientTopic( void ) const = 0;
 
     /**
      *  Receive Action ID is a backend runtime unique ID used for referencing

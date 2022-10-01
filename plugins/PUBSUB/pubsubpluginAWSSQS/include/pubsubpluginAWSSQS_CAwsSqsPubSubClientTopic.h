@@ -66,7 +66,8 @@ class CAwsSqsPubSubClient;
 /**
  *  MS Windows AWSSQS implementation of the conceptual pub-sub "topic"
  */
-class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                        public CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -164,6 +165,10 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CAwsSqsPubSubClientTopic::TSharedPtrType    CAwsSqsPubSubClientTopicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -174,6 +179,6 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPIC_H ? */

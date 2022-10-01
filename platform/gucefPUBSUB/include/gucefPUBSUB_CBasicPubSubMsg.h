@@ -112,9 +112,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
      *  For a message constructed by the application for publishing this can be left 
      *  as GUCEF_NULL
      */ 
-    virtual CPubSubClientTopic* GetOriginClientTopic( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CPubSubClientTopicBasicPtr GetOriginClientTopic( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    void SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic );
+    void SetOriginClientTopic( CPubSubClientTopicBasicPtr msgOriginClientTopic );
 
     /**
      *  Receive Action ID is a backend runtime unique ID used for referencing
@@ -196,7 +196,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     CORE::CVariant m_primaryPayload;
     TKeyValuePairs m_keyValuePairs;    
     TKeyValuePairs m_metaDataKeyValuePairs;    
-    CPubSubClientTopic* m_msgOriginClientTopic;
+    CPubSubClientTopicBasicPtr m_msgOriginClientTopic;
     CORE::UInt64 m_receiveActionId;
 };
 

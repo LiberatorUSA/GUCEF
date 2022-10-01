@@ -157,6 +157,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 
     inline bool operator<( const CTSharedPtr& other ) const;
 
+    inline bool operator<( const void* other ) const;
+
     /**
      *  operator that implements '(*mySharedPtr)'
      *
@@ -368,6 +370,16 @@ CTSharedPtr< T, LockType >::operator<( const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) < static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+inline bool
+CTSharedPtr< T, LockType >::operator<( const void* other ) const
+{GUCEF_TRACE;
+
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) < other;
 }
 
 /*-------------------------------------------------------------------------*/

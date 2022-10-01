@@ -157,7 +157,7 @@ CPubSubClientSide::GetCurrentUnderlyingPubSubClient( void )
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientSide::TopicLink::TopicLink( void )
-    : topic( GUCEF_NULL )
+    : topic()
     , currentPublishActionIds()
     , inFlightMsgs()
     , publishFailedMsgs()
@@ -173,7 +173,7 @@ CPubSubClientSide::TopicLink::TopicLink( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopic* t )
+CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
@@ -375,10 +375,10 @@ CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient )
     CPubSubClient::PubSubClientTopicSet::iterator i = allTopicAccess.begin();
     while ( i != allTopicAccess.end() )
     {
-        CPubSubClientTopic* topic = (*i);
-        if ( GUCEF_NULL != topic )
+        CPubSubClientTopicBasicPtr topic = (*i);
+        if ( !topic.IsNULL() )
         {
-            RegisterTopicEventHandlers( *topic );
+            RegisterTopicEventHandlers( topic );
         }
         ++i;
     }
@@ -387,26 +387,26 @@ CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientTopic& topic )
+CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic )
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPubSubClientSide::OnPubSubTopicMsgsReceived );
-    SubscribeTo( &topic                                ,
+    SubscribeTo( topic.GetPointerAlways()              ,
                  CPubSubClientTopic::MsgsRecievedEvent ,
                  callback                              );
 
     TEventCallback callback2( this, &CPubSubClientSide::OnPubSubTopicMsgsPublished );
-    SubscribeTo( &topic                                 ,
+    SubscribeTo( topic.GetPointerAlways()               ,
                  CPubSubClientTopic::MsgsPublishedEvent ,
                  callback2                              );
 
     TEventCallback callback3( this, &CPubSubClientSide::OnPubSubTopicMsgsPublishFailure );
-    SubscribeTo( &topic                                      ,
+    SubscribeTo( topic.GetPointerAlways()                    ,
                  CPubSubClientTopic::MsgsPublishFailureEvent ,
                  callback3                                   );
 
     TEventCallback callback4( this, &CPubSubClientSide::OnPubSubTopicLocalPublishQueueFull );
-    SubscribeTo( &topic                                         ,
+    SubscribeTo( topic.GetPointerAlways()                       ,
                  CPubSubClientTopic::LocalPublishQueueFullEvent ,
                  callback4                                      );
 }
@@ -606,10 +606,10 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
         {
-            CPubSubClientTopic* tAccess = (*i);
-            if ( GUCEF_NULL != tAccess )
+            CPubSubClientTopicBasicPtr tAccess = (*i);
+            if ( !tAccess.IsNULL() )
             {
-                if ( ConfigureTopicLink( m_sideSettings, *tAccess ) )
+                if ( ConfigureTopicLink( m_sideSettings, tAccess ) )
                 {
                     ConnectPubSubClientTopic( *tAccess, m_clientFeatures, m_sideSettings );
                 }
@@ -634,12 +634,12 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
         {
-            CPubSubClientTopic* tAccess = (*i);
-            if ( GUCEF_NULL != tAccess )
+            CPubSubClientTopicBasicPtr tAccess = (*i);
+            if ( !tAccess.IsNULL() )
             {
                 // @TODO: What to do about in-flight messages etc? Any special action?
                 //      send them to dead letter ?
-                m_topics.erase( tAccess );
+                m_topics.erase( tAccess.GetPointerAlways() );
             }
             ++i;
         }
@@ -732,7 +732,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopicBasicPtr topic = topicLink.topic;
 
         if ( GUCEF_NULL != topic )
         {
@@ -846,7 +846,7 @@ CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopicBasicPtr topic = topicLink.topic;
 
         totalMsgsInFlight += topicLink.inFlightMsgs.size();
 
@@ -984,7 +984,7 @@ CPubSubClientSide::RetryPublishFailedMsgs( void )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
-        CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopicBasicPtr topic = topicLink.topic;
 
         totalMsgsInFlight += topicLink.inFlightMsgs.size();
 
@@ -1273,7 +1273,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                 if ( totalSuccess && m_clientFeatures.supportsBookmarkingConcept && !m_clientFeatures.supportsDerivingBookmarkFromMsg )
                 {
                     const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
-                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
+                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic().GetPointerAlways() );
                     if ( i != m_topics.end() )
                     {
                         TopicLink& topicLink = (*i).second;
@@ -1346,7 +1346,7 @@ CPubSubClientSide::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
                                     // If we successfully published but we dont need to wait on any acks then we can update bookmarks right now if applicable
                                     // instead of waiting for the ack to come back before doing the same thing
                                     const CPubSubClientTopic::TPubSubMsgRef& lastMsgRef = msgs[ msgs.size()-1 ];
-                                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic() );
+                                    TopicMap::iterator i = m_topics.find( lastMsgRef->GetOriginClientTopic().GetPointerAlways() );
                                     if ( i != m_topics.end() )
                                     {
                                         TopicLink& topicLink = (*i).second;
@@ -1562,10 +1562,27 @@ CPubSubClientSide::ProcessAcknowledgeReceiptsMailbox( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubClientSide::AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+
+    CORE::UInt32 callerThreadId = MT::GetCurrentTaskID();
+    if ( m_threadIdOfSide == callerThreadId )
+    {
+        return AcknowledgeReceiptSync( msg );
+    }
+    else
+    {
+        return AcknowledgeReceiptASync( msg );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic() );
+    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic().GetPointerAlways() );
     if ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
@@ -1600,7 +1617,9 @@ bool
 CPubSubClientSide::AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic() );
+    MT::CObjectScopeLock lock( this );
+
+    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic().GetPointerAlways() );
     if ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i).second;
@@ -1801,17 +1820,17 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 
 bool
 CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                                       CPubSubClientTopic& topic                            )
+                                       CPubSubClientTopicBasicPtr topic                     )
 {GUCEF_TRACE;                                                              
 
     RegisterTopicEventHandlers( topic );
 
-    TopicLink& topicLink = m_topics[ &topic ];
-    topicLink.topic = &topic;
-    topicLink.metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic.GetTopicName() ) + ".";
+    TopicLink& topicLink = m_topics[ topic.GetPointerAlways() ];
+    topicLink.topic = topic;
+    topicLink.metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
     topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
-    topicLink.metrics->hasSupportForPublishing = topic.IsPublishingSupported();
-    topicLink.metrics->hasSupportForSubscribing = topic.IsSubscribingSupported();
+    topicLink.metrics->hasSupportForPublishing = topic->IsPublishingSupported();
+    topicLink.metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
 
     UpdateTopicMetrics( topicLink );
 
@@ -2052,8 +2071,8 @@ CPubSubClientSide::ConnectPubSubClient( void )
             CPubSubClient::PubSubClientTopicSet::iterator a = topicAccess.begin();
             while ( a != topicAccess.end() )
             {            
-                CPubSubClientTopic* topic = (*a);
-                if ( GUCEF_NULL == topic )
+                CPubSubClientTopicBasicPtr topic = (*a);
+                if ( topic.IsNULL() )
                 {
                     if ( !(*i).isOptional )
                     {
@@ -2070,7 +2089,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 }
                 else
                 {
-                    ConfigureTopicLink( m_sideSettings, *topic );
+                    ConfigureTopicLink( m_sideSettings, topic );
                 }
                 ++a;
             }
@@ -2099,7 +2118,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     while ( t != m_topics.end() )
     {
         TopicLink& topicLink = (*t).second;
-        CPubSubClientTopic* topic = topicLink.topic;
+        CPubSubClientTopicBasicPtr topic = topicLink.topic;
         
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
                                                              m_clientFeatures ,

@@ -271,8 +271,8 @@ CPubSubMsgSerializer::Serialize( const CPubSubMsgSerializerOptions& options ,
             success = output.SetAttribute( "receiveActionId", msg.GetReceiveActionId() ) && success;
         }
     
-        const CPubSubClientTopic* topic = msg.GetOriginClientTopic();
-        if ( GUCEF_NULL != topic )
+        CPubSubClientTopicBasicPtr topic = msg.GetOriginClientTopic();
+        if ( !topic.IsNULL() )
         {
             if ( options.originTopicNameIncluded )
             {

@@ -225,6 +225,33 @@ CPumpedObserver::~CPumpedObserver()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock mailboxLock( m_mailbox );
+
+    MT::CTMailBox< CEvent >::TMailQueue::iterator i = m_mailbox.begin();
+    while ( i != m_mailbox.end() )
+    {
+        CMailElement* mail = static_cast< CMailElement* >( (*i).data );
+        if ( GUCEF_NULL != mail )
+        {
+            if ( mail->m_notifier == notifier )
+            {
+                delete mail->GetCallback();
+                delete mail->GetData();                
+                delete mail;
+                i = m_mailbox.erase( i );
+                continue;
+            }
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CPumpedObserver::ClearMailbox( bool acceptNewMail )
 {GUCEF_TRACE;
@@ -351,6 +378,11 @@ CPumpedObserver::OnNotify( CNotifier* notifier                       ,
                            const CEvent& eventId                     ,
                            CICloneable* eventData /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
+
+    if ( CNotifier::DestructionEvent == eventId )        
+    {
+        ClearNotifierReferencesFromMailbox( notifier );
+    }
 
     if ( !m_pulseGenerator.IsNULL()                                               && 
          m_allowSameThreadEventsToFlowThrough                                     &&

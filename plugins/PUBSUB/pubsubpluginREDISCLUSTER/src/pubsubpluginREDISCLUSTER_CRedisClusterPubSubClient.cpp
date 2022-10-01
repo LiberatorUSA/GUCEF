@@ -143,8 +143,7 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -209,7 +208,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
@@ -221,18 +220,18 @@ CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicCo
         if ( CreateMultiTopicAccess( topicConfig, allTopicAccess ) && !allTopicAccess.empty() )
         {
             // Caller should really use the CreateMultiTopicAccess() variant
-            PUBSUB::CPubSubClientTopic* tAccess = *(allTopicAccess.begin());
+            PUBSUB::CPubSubClientTopicPtr tAccess( *(allTopicAccess.begin()) );
             return tAccess;
         }
-        return GUCEF_NULL;
+        return PUBSUB::CPubSubClientTopicPtr();
     }
     else
     {
-        CRedisClusterPubSubClientTopic* topicAccess = GUCEF_NULL;
+        CRedisClusterPubSubClientTopicPtr topicAccess;
         {
             MT::CObjectScopeLock lock( this );
 
-            topicAccess = new CRedisClusterPubSubClientTopic( this );
+            topicAccess = ( new CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
             if ( topicAccess->LoadConfig( topicConfig ) )
             {
                 m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -244,8 +243,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicCo
             }
             else
             {
-                delete topicAccess;
-                topicAccess = GUCEF_NULL;
+                topicAccess.Unlink();
             }
         }
         return topicAccess;
@@ -254,7 +252,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicCo
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -265,7 +263,7 @@ CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -363,11 +361,11 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                 PUBSUB::CPubSubClientTopicConfig topicConfig( templateTopicConfig );
                 topicConfig.topicName = (*i);
 
-                CRedisClusterPubSubClientTopic* tAccess = GUCEF_NULL;
+                CRedisClusterPubSubClientTopicPtr tAccess;
                 {
                     MT::CObjectScopeLock lock( this );
 
-                    tAccess = new CRedisClusterPubSubClientTopic( this );
+                    tAccess = ( new CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
                     if ( tAccess->LoadConfig( topicConfig ) )
                     {
                         m_topicMap[ topicConfig.topicName ] = tAccess;
@@ -379,8 +377,7 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                     }
                     else
                     {
-                        delete tAccess;
-                        tAccess = GUCEF_NULL;
+                        tAccess.Unlink();
                         totalSuccess = false;
 
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
@@ -441,8 +438,8 @@ CRedisClusterPubSubClient::CreateMultiTopicAccess( const PUBSUB::CPubSubClientTo
     }
     else
     {
-        PUBSUB::CPubSubClientTopic* tAccess = CreateTopicAccess( topicConfig );
-        if ( GUCEF_NULL != tAccess )
+        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig );
+        if ( !tAccess.IsNULL() )
         {
             topicAccess.insert( tAccess );
             return true;
@@ -463,12 +460,12 @@ CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TTopicMap::iterator i = m_topicMap.find( topicName );
         if ( i != m_topicMap.end() )
         {
-            CRedisClusterPubSubClientTopic* topicAccess = (*i).second;
+            CRedisClusterPubSubClientTopicPtr topicAccess = (*i).second;
             m_topicMap.erase( i );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):DestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
 
-            delete topicAccess;
+            topicAccess.Unlink();
         }
     }
 
@@ -493,7 +490,7 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
             TTopicMap::iterator i = m_topicMap.find( topicName );
             if ( i != m_topicMap.end() )
             {
-                CRedisClusterPubSubClientTopic* tAccess = (*i).second;
+                CRedisClusterPubSubClientTopicPtr tAccess = (*i).second;
                 topicAccess.insert( tAccess );
             }
             ++t;
@@ -513,10 +510,10 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
             PubSubClientTopicSet::iterator t = topicAccess.begin();
             while ( t != topicAccess.end() )
             {
-                CRedisClusterPubSubClientTopic* tAccess = static_cast< CRedisClusterPubSubClientTopic* >( (*t) );
+                PUBSUB::CPubSubClientTopicBasicPtr tAccess = (*t);
                 CORE::CString topicName = tAccess->GetTopicName();
                 m_topicMap.erase( topicName );
-                delete tAccess;
+                tAccess.Unlink();
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
 
@@ -1066,7 +1063,7 @@ CRedisClusterPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CRedisClusterPubSubClientTopic* topic = (*i).second;
+        CRedisClusterPubSubClientTopicPtr topic = (*i).second;
         const CRedisClusterPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         //const CRedisClusterPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();

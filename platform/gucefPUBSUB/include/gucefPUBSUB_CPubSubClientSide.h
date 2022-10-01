@@ -187,10 +187,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool IsPubSubClientInfraReadyToConnect( void ) const;
 
-    bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
-
-    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
-
+    bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
+    
     /**
      *  Provides access to the current instantiation of the underlying pubsub client for this side
      *  Note that the lifecycle of the client is controlled by the side hence it the active side instance could be replaced
@@ -203,11 +201,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     
     private:
 
+    bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
+
     void RegisterEventHandlers( void );
 
     void RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubClient );
 
-    void RegisterTopicEventHandlers( CPubSubClientTopic& topic );
+    void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic );
 
     void RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient );
 
@@ -262,7 +264,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                         CORE::CICloneable* eventData );
 
     bool ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                             CPubSubClientTopic& topic                            );
+                             CPubSubClientTopicBasicPtr topic                     );
     
     bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                            ,
                                    const CPubSubClientFeatures& clientFeatures          ,
@@ -315,7 +317,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         typedef std::map< CORE::UInt64, CPubSubBookmark >                           TUInt64ToBookmarkMap;
         typedef std::set< CORE::UInt64 >                                            TUInt64Set;
 
-        CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        CPubSubClientTopicBasicPtr topic;                                       /**< the actual backend topic access object */ 
         CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
         TUInt64ToMsgTrackingEntryMap inFlightMsgs;
         TUInt64Set publishFailedMsgs;
@@ -327,7 +329,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         TUInt64ToBookmarkMap bookmarksOnMsgReceived;
 
         TopicLink( void );
-        TopicLink( CPubSubClientTopic* t );
+        TopicLink( CPubSubClientTopicBasicPtr t );
         
         void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                               const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
@@ -370,6 +372,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                        UInt64 msgBatchBookmarkReceiveId );
     
     typedef std::map< CPubSubClientTopic*, TopicLink > TopicMap;
+    typedef std::set< CPubSubClientTopicBasicPtr > TopicSet;
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     CPubSubClientPtr m_pubsubClient;

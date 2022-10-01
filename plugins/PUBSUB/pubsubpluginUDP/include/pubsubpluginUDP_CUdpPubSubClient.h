@@ -89,9 +89,9 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public PUBSUB::CPub
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -158,7 +158,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClient : public PUBSUB::CPub
     private:
 
     typedef CORE::CTEventHandlerFunctor< CUdpPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CUdpPubSubClientTopic* > TTopicMap;
+    typedef std::map< CORE::CString, CUdpPubSubClientTopicPtr > TTopicMap;
 
     CUdpPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;

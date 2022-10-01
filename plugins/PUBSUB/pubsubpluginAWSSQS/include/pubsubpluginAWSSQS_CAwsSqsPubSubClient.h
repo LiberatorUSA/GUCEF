@@ -83,9 +83,9 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -151,14 +151,14 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     void RegisterEventHandlers( void );
 
-    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
+    void RegisterTopicEventHandlers( CAwsSqsPubSubClientTopicPtr& topic );
     
     CAwsSqsPubSubClient( void ); /**< not implemented */
 
     private:
 
     typedef CORE::CTEventHandlerFunctor< CAwsSqsPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CAwsSqsPubSubClientTopic* > TTopicMap;
+    typedef std::map< CORE::CString, CAwsSqsPubSubClientTopicPtr > TTopicMap;
 
     PUBSUB::CPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;

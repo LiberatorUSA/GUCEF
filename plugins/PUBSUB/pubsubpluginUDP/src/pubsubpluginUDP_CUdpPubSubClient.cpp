@@ -119,8 +119,7 @@ CUdpPubSubClient::~CUdpPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -186,27 +185,26 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CUdpPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CUdpPubSubClientTopic* topicAccess = GUCEF_NULL;
+    CUdpPubSubClientTopicPtr topicAccess;
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = new CUdpPubSubClientTopic( this );
+        topicAccess = ( new CUdpPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -217,7 +215,7 @@ CUdpPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopicPtr
 CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -228,7 +226,7 @@ CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,13 +256,13 @@ CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CUdpPubSubClientTopic* topicAccess = (*i).second;
+        CUdpPubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        delete topicAccess;        
+        topicAccess.Unlink();        
     }
 }
 
@@ -506,7 +504,7 @@ CUdpPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CUdpPubSubClientTopic* topic = (*i).second;
+        CUdpPubSubClientTopicPtr topic = (*i).second;
         const CUdpPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CUdpPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
@@ -537,7 +535,7 @@ CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CUdpPubSubClientTopic* topic = (*i).second;
+        CUdpPubSubClientTopicPtr topic = (*i).second;
         const CUdpPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
 
         if ( topicConfig.wantsTestPackage )

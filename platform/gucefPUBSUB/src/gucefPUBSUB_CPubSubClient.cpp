@@ -152,21 +152,23 @@ CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
     PubSubClientTopicSet::iterator i = allTopicAccess.begin();
     while ( i != allTopicAccess.end() )
     {
-        (*i)->SetPulseGenerator( newPulseGenerator );
+        CPubSubClientTopicBasicPtr topic = (*i);
+        if ( !topic.IsNULL() )
+            topic->SetPulseGenerator( newPulseGenerator );
         ++i;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopic* 
+CPubSubClientTopicPtr 
 CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
 
-    CPubSubClientTopic* topicAccess = GetTopicAccess( topicName );
-    if ( GUCEF_NULL == topicAccess )
+    CPubSubClientTopicPtr topicAccess = GetTopicAccess( topicName );
+    if ( !topicAccess.IsNULL() )
     {
         topicAccess = CreateTopicAccess( topicName );
     }
@@ -175,7 +177,7 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopic* 
+CPubSubClientTopicPtr 
 CPubSubClient::CreateTopicAccess( const CString& topicName )
 {GUCEF_TRACE;
 
@@ -184,10 +186,10 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
     const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != topicConfig )
     {
-        CPubSubClientTopic* topicAccess = CreateTopicAccess( *topicConfig );
+        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( *topicConfig );
         return topicAccess;
     }
-    return GUCEF_NULL;
+    return CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,8 +203,8 @@ CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
     // As such it redirects to the basic GetTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopic* tAccess = GetTopicAccess( topicName );
-    if ( GUCEF_NULL != tAccess )
+    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicName );
+    if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
         return true;
@@ -257,7 +259,7 @@ CPubSubClient::CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConf
     // As such it redirects to the basic CreateTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopic* tAccess = CreateTopicAccess( topicConfig );
+    CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig );
     if ( GUCEF_NULL != tAccess )
     {
         topicAccess.insert( tAccess );
@@ -317,7 +319,7 @@ CPubSubClient::GetOpaqueUserData( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicConstSet& topicAccess ) const
+CPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) const
 {GUCEF_TRACE;
 
     // Since this is just a const correctness helper function we can abuse the non-const version
@@ -344,14 +346,14 @@ CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
     // First get a list of all available topics from the backend
     // for efficiency the backend should really implement its own version if supported as we need to pull a list copy
     // the backend likely already has said list
-    PubSubClientTopicConstSet topics;
+    PubSubClientTopicSet topics;
     GetAllCreatedTopicAccess( topics );
 
     if ( !topics.empty() )
     {
         bool allAtEnd = true;
 
-        PubSubClientTopicConstSet::iterator i = topics.begin();
+        PubSubClientTopicSet::iterator i = topics.begin();
         while ( i != topics.end() )
         {
             if ( !(*i)->IsSubscriptionAtEndOfData() )

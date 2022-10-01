@@ -135,8 +135,7 @@ class CPubSubClient;
  *  distinct process runs or backend topic lifecycles.
  *
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier                                       ,
-                                                   public CORE::CTSharedPtrCreator< CPubSubClientTopic, MT::CMutex >
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier                                       
 {
     public:
 
@@ -290,7 +289,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier    
 
 /*-------------------------------------------------------------------------*/
 
-typedef CPubSubClientTopic::TSharedPtrType CPubSubClientTopicPtr;
+typedef CORE::CTSharedPtr< CPubSubClientTopic, MT::CMutex >         CPubSubClientTopicPtr;
+typedef CORE::CTBasicSharedPtr< CPubSubClientTopic, MT::CMutex >    CPubSubClientTopicBasicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

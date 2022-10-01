@@ -129,6 +129,9 @@ CMutex::CMutex( void )
 CMutex::~CMutex()
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == _mutexdata )
+        return;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( ((TMutexData*)_mutexdata)->id );

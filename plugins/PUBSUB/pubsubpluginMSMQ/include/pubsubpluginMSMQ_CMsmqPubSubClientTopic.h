@@ -116,7 +116,8 @@ class CMsmqPubSubClient;
  *      PROPID_M_RESP_QUEUE contains the format name of a response queue if a response is requested.
  *      When opening a response queue to send several response messages, the receiving application can cache the queue handle returned by MQOpenQueue, thus eliminating the need to call MQOpenQueueseveral times for the same response queue. 
  */
-class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                    public CORE::CTSharedObjCreator< CMsmqPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -445,9 +446,11 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     bool m_subscriptionIsAtEndOfData;
 };
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 std::wstring RetrieveWin32APIErrorMessage( DWORD dwErr );
+
+typedef CMsmqPubSubClientTopic::TSharedPtrType  CMsmqPubSubClientTopicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -459,6 +462,6 @@ std::wstring RetrieveWin32APIErrorMessage( DWORD dwErr );
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_MSMQ_CMSMQPUBSUBCLIENTTOPIC_H ? */

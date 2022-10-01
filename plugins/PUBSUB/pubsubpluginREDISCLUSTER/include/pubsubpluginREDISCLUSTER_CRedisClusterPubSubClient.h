@@ -91,9 +91,9 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
                                       PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
@@ -219,7 +219,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     private:
 
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CRedisClusterPubSubClientTopic* > TTopicMap;
+    typedef std::map< CORE::CString, CRedisClusterPubSubClientTopicPtr > TTopicMap;
 
     PUBSUB::CPubSubClientConfig m_config;
     RedisNodeMap m_nodeMap;

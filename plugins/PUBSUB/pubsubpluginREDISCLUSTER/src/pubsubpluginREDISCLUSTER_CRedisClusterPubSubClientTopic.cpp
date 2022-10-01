@@ -72,6 +72,7 @@ namespace REDISCLUSTER {
 
 CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_redisPipeline( GUCEF_NULL )
     , m_redisContext()
@@ -468,7 +469,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     msgRefs.push_back( TPubSubMsgRef() );
                     TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
                     pubsubMsgRef.LinkTo( &pubsubMsg );
-                    pubsubMsg.SetOriginClientTopic( this );
+                    pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
 
                     pubsubMsg.SetReceiveActionId( m_currentReceiveActionId );
                     ++m_currentReceiveActionId;

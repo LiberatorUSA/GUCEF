@@ -99,6 +99,7 @@ namespace TEST {
 
 CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
     : STORAGE::CStoragePubSubClientTopic( client )
+    , CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >( this )
     , m_hasFakeHealthIssue( false )
     , m_healthyStatusToggleTimer()
 {GUCEF_TRACE;

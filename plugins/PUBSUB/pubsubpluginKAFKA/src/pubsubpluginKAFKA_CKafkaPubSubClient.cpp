@@ -109,8 +109,7 @@ CKafkaPubSubClient::Clear( void )
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -174,15 +173,15 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CKafkaPubSubClientTopic* topicAccess = GUCEF_NULL;
+    CKafkaPubSubClientTopicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = new CKafkaPubSubClientTopic( this );
+        topicAccess = ( new CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -190,12 +189,11 @@ CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& t
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -206,7 +204,7 @@ CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& t
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopicPtr 
 CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -217,7 +215,7 @@ CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,13 +245,13 @@ CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CKafkaPubSubClientTopic* topicAccess = (*i).second;
+        CKafkaPubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        delete topicAccess;        
+        topicAccess.Unlink();        
     }
 }
 
@@ -568,13 +566,13 @@ CKafkaPubSubClient::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CKafkaPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+CKafkaPubSubClient::RegisterTopicEventHandlers( CKafkaPubSubClientTopicPtr& topic )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != topic )
+    if ( !topic.IsNULL() )
     {
         TEventCallback callback( this, &CKafkaPubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                            ,
+        SubscribeTo( topic.GetPointerAlways()                         ,
                      CKafkaPubSubClientTopic::HealthStatusChangeEvent ,
                      callback                                         );
     }

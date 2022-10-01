@@ -80,7 +80,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
     , m_primaryPayload()
     , m_keyValuePairs()
     , m_metaDataKeyValuePairs()
-    , m_msgOriginClientTopic( GUCEF_NULL )
+    , m_msgOriginClientTopic()
     , m_receiveActionId( 0 )
 {GUCEF_TRACE;
 
@@ -521,7 +521,7 @@ CBasicPubSubMsg::AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE:
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopic* 
+CBasicPubSubMsg::CPubSubClientTopicBasicPtr 
 CBasicPubSubMsg::GetOriginClientTopic( void ) const
 {GUCEF_TRACE;
 
@@ -531,7 +531,7 @@ CBasicPubSubMsg::GetOriginClientTopic( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CBasicPubSubMsg::SetOriginClientTopic( CPubSubClientTopic* msgOriginClientTopic )
+CBasicPubSubMsg::SetOriginClientTopic( CPubSubClientTopicBasicPtr msgOriginClientTopic )
 {GUCEF_TRACE;
 
     m_msgOriginClientTopic = msgOriginClientTopic;

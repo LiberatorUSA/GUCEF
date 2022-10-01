@@ -106,7 +106,8 @@ class CStoragePubSubClient;
  *  data has been served but rather revert to a holding area where we wait for more data that matches the request
  *  Once data is found that matches the persitent request it starts progressing through the phases again.
  */
-class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                          public CORE::CTSharedObjCreator< CStoragePubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -481,6 +482,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::UInt32 m_storageDeserializationFailures;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CStoragePubSubClientTopic::TSharedPtrType   CStoragePubSubClientTopicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -491,6 +496,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPIC_H ? */

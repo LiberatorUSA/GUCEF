@@ -85,9 +85,9 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopic* GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -161,7 +161,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     void RegisterEventHandlers( void );
 
-    void RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic );
+    void RegisterTopicEventHandlers( CKafkaPubSubClientTopicPtr& topic );
 
     CKafkaPubSubClient( void ); /**< not implemented */
 
@@ -170,7 +170,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
     private:
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClient > TEventCallback;
-    typedef std::map< CORE::CString, CKafkaPubSubClientTopic* > TTopicMap;
+    typedef std::map< CORE::CString, CKafkaPubSubClientTopicPtr > TTopicMap;
 
     CKafkaPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;

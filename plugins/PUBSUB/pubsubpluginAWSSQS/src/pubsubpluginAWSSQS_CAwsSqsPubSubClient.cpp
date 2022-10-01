@@ -121,8 +121,7 @@ CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -177,15 +176,15 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CAwsSqsPubSubClientTopic* topicAccess = GUCEF_NULL;
+    CAwsSqsPubSubClientTopicPtr topicAccess;
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = new CAwsSqsPubSubClientTopic( this );
+        topicAccess = ( new CAwsSqsPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -193,12 +192,11 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -209,7 +207,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopicPtr 
 CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
         
@@ -220,7 +218,7 @@ CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,13 +248,13 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CAwsSqsPubSubClientTopic* topicAccess = (*i).second;
+        CAwsSqsPubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        delete topicAccess;        
+        topicAccess.Unlink();        
     }
 }
 
@@ -448,13 +446,13 @@ CAwsSqsPubSubClient::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CAwsSqsPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+CAwsSqsPubSubClient::RegisterTopicEventHandlers( CAwsSqsPubSubClientTopicPtr& topic )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != topic )
+    if ( !topic.IsNULL() )
     {
         TEventCallback callback( this, &CAwsSqsPubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                             ,
+        SubscribeTo( topic.GetPointerAlways()                          ,
                      CAwsSqsPubSubClientTopic::HealthStatusChangeEvent ,
                      callback                                          );
     }

@@ -74,6 +74,7 @@ namespace UDP {
 
 CUdpPubSubClientTopic::CUdpPubSubClientTopic( CUdpPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CUdpPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_config()
     , m_lock()
@@ -578,7 +579,7 @@ CUdpPubSubClientTopic::OnUDPPacketsRecieved( CORE::CNotifier* notifier    ,
             
             PUBSUB::CBasicPubSubMsg& msgWrapper = m_pubsubMsgs[ i ];
             msgWrapper.Clear();
-            msgWrapper.SetOriginClientTopic( this );
+            msgWrapper.SetOriginClientTopic( CreateSharedPtr() );
             msgWrapper.SetReceiveActionId( m_currentReceiveActionId );
             ++m_currentReceiveActionId;
 

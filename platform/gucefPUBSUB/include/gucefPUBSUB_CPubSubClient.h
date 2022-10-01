@@ -95,8 +95,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     static const CORE::CEvent TopicDiscoveryEvent;                     /**< occurs when available topic changes are detected. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the topic */
 
-    typedef std::set< CPubSubClientTopic* >                         PubSubClientTopicSet;
-    typedef std::set< const CPubSubClientTopic* >                   PubSubClientTopicConstSet;
+    typedef std::set< CPubSubClientTopicBasicPtr >                  PubSubClientTopicSet;
     typedef CORE::TCloneableString                                  TopicAccessCreatedEventData;            /**< name of the topic is passed as event relevant data */
     typedef CORE::TCloneableString                                  TopicAccessDestroyedEventData;          /**< name of the topic is passed as event relevant data */
     typedef CORE::CTCloneableObj< PubSubClientTopicSet >            TopicsAccessAutoCreatedEventData;       /**< access to the topics is passed as event relevant data */
@@ -116,18 +115,18 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual bool GetSupportedFeatures( CPubSubClientFeatures& features ) const = 0;
 
-    virtual CPubSubClientTopic* CreateTopicAccess( const CPubSubClientTopicConfig& topicConfig ) = 0;
+    virtual CPubSubClientTopicPtr CreateTopicAccess( const CPubSubClientTopicConfig& topicConfig ) = 0;
 
     /**
      *  Same as the version that takes an entire config except the expectation here is that the topic      
      *  is already configured via a CPubSubClientConfig but not yet instantiated
      *  This would be the typical case when using global app config defined topics and not programatic topic access
      */ 
-    virtual CPubSubClientTopic* CreateTopicAccess( const CString& topicName );
+    virtual CPubSubClientTopicPtr CreateTopicAccess( const CString& topicName );
 
-    virtual CPubSubClientTopic* GetTopicAccess( const CString& topicName ) = 0;
+    virtual CPubSubClientTopicPtr GetTopicAccess( const CString& topicName ) = 0;
 
-    virtual CPubSubClientTopic* GetOrCreateTopicAccess( const CString& topicName );
+    virtual CPubSubClientTopicPtr GetOrCreateTopicAccess( const CString& topicName );
 
     virtual bool GetMultiTopicAccess( const CString& topicName          ,
                                       PubSubClientTopicSet& topicAccess );
@@ -187,7 +186,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual void GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) = 0;
     
-    virtual void GetAllCreatedTopicAccess( PubSubClientTopicConstSet& topicAccess ) const;
+    virtual void GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) const;
 
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 

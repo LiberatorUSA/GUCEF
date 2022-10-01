@@ -198,6 +198,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                   CICloneable* eventdata = NULL );
 
     void RegisterPulseGeneratorEventHandlers( void );
+
+    void ClearNotifierReferencesFromMailbox( CNotifier* notifier );
     
     private:
 

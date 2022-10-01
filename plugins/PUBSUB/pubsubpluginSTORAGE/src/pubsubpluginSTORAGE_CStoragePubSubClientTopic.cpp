@@ -405,6 +405,7 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
 
 CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CStoragePubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_pubsubMsgs()
     , m_config()
@@ -3001,7 +3002,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         {
             PUBSUB::CBasicPubSubMsg& msg = (*i);
 
-            msg.SetOriginClientTopic( this );
+            msg.SetOriginClientTopic( CreateSharedPtr() );
 
             msg.SetReceiveActionId( m_currentReceiveActionId );
             bufferMetaData->actionIds.push_back( m_currentReceiveActionId );

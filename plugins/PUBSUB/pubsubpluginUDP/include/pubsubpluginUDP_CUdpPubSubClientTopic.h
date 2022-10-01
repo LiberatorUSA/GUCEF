@@ -68,7 +68,8 @@ namespace UDP {
 
 class CUdpPubSubClient;
 
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB::CPubSubClientTopic
+class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB::CPubSubClientTopic ,
+                                                                  public CORE::CTSharedObjCreator< CUdpPubSubClientTopic, MT::CMutex >
 {
     public:
 
@@ -205,6 +206,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
     COMCORE::CUDPSocket m_udpSocket;
 
 };
+
+/*--------------------------------------------------------------------------*/
+
+typedef CUdpPubSubClientTopic::TSharedPtrType   CUdpPubSubClientTopicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -132,8 +132,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        delete (*i).second;
-        (*i).second = GUCEF_NULL;
+        (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
@@ -249,15 +248,15 @@ CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic*
+PUBSUB::CPubSubClientTopicPtr
 CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
 {GUCEF_TRACE;
 
-    CStoragePubSubClientTopic* topicAccess = GUCEF_NULL;
+    CStoragePubSubClientTopicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = new CStoragePubSubClientTopic( this );
+        topicAccess = ( new CStoragePubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -265,12 +264,11 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
         }
         else
         {
-            delete topicAccess;
-            topicAccess = GUCEF_NULL;
+            topicAccess.Unlink();
         }
     }
 
-    if ( GUCEF_NULL != topicAccess )
+    if ( !topicAccess.IsNULL() )
     {
         TopicAccessCreatedEventData eData( topicConfig.topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
@@ -281,7 +279,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopic* 
+PUBSUB::CPubSubClientTopicPtr 
 CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -292,7 +290,7 @@ CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,14 +320,14 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
-        CStoragePubSubClientTopic* topicAccess = (*i).second;
+        CStoragePubSubClientTopicPtr topicAccess = (*i).second;
         m_topicMap.erase( i );
 
         lock.EarlyUnlock();
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        delete topicAccess;        
+        topicAccess.Unlink();
     }
 }
 
@@ -625,13 +623,13 @@ CStoragePubSubClient::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CStoragePubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
+CStoragePubSubClient::RegisterTopicEventHandlers( CStoragePubSubClientTopicPtr& topic )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != topic )
     {
         TEventCallback callback( this, &CStoragePubSubClient::OnTopicHealthStatusChange );
-        SubscribeTo( topic                                              ,
+        SubscribeTo( topic.GetPointerAlways()                           ,
                      CStoragePubSubClientTopic::HealthStatusChangeEvent ,
                      callback                                           );
     }
@@ -672,7 +670,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        CStoragePubSubClientTopic* topic = (*i).second;
+        CStoragePubSubClientTopicPtr topic = (*i).second;
         const CStoragePubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CStoragePubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();

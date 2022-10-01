@@ -147,6 +147,7 @@ RestApiPublishedMessagesResource::Deserialize( const CORE::CString& resourcePath
 
 CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
     : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+    , CORE::CTSharedObjCreator< CWebPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_config()
     , m_reconnectTimer( GUCEF_NULL )
@@ -307,12 +308,12 @@ CWebPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId                        , 
-                                         const PUBSUB::CIPubSubMsg& msg                      , 
-                                         bool notify                                          ,
-                                         const PUBSUB::CPubSubClient* originClient           ,
-                                         const CORE::CString& originClientType                ,
-                                         const PUBSUB::CPubSubClientTopic* originClientTopic )
+CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId                               , 
+                                         const PUBSUB::CIPubSubMsg& msg                              , 
+                                         bool notify                                                 ,
+                                         const PUBSUB::CPubSubClient* originClient                   ,
+                                         const CORE::CString& originClientType                       ,
+                                         const PUBSUB::CPubSubClientTopicBasicPtr& originClientTopic )
 {GUCEF_TRACE;
     
     // For the REST API we retain the messages for some period/count to allow for retrieval/viewing
@@ -346,7 +347,7 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
         
         // Access client->topic storage
         TUInt64dToTIPubSubMsgSPtrMap* topicMsgMap = GUCEF_NULL;
-        TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap::iterator n = clientTopics->find( originClientTopic );
+        TPubSubClientTopicToUInt64ToIPubSubMsgSPtrVectorMap::iterator n = clientTopics->find( originClientTopic.GetPointerAlways() );
         if ( n != clientTopics->end() )
         {
             topicMsgMap = &(*n).second;
@@ -357,7 +358,7 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
                 CORE::ToString( originClientTopic ) + ". topicName=\"" + originClientTopic->GetTopicName() + "\" urlencodedTopicName=" + urlEncodedOriginClientTopicName );
             
             // completely new msg origin, add storage plus reference links for it        
-            topicMsgMap = &(*clientTopics)[ originClientTopic ];
+            topicMsgMap = &(*clientTopics)[ originClientTopic.GetPointerAlways() ];
             TStringToPubSubClientTopicPtrVectorMap& topicNameMap = m_publishedTopicNamesPerClientType[ urlEncodedOriginClientType ];
             TPubSubClientTopicPtrVector& topics = topicNameMap[ urlEncodedOriginClientTopicName ];
             topics.push_back( originClientTopic );
@@ -399,8 +400,8 @@ CWebPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::CIP
     bool success = true;
     
     const PUBSUB::CPubSubClient* originClient = GUCEF_NULL;
-    const PUBSUB::CPubSubClientTopic* originClientTopic = msg.GetOriginClientTopic();
-    if ( GUCEF_NULL != originClientTopic )
+    PUBSUB::CPubSubClientTopicBasicPtr originClientTopic = msg.GetOriginClientTopic();
+    if ( !originClientTopic.IsNULL() )
     {       
         originClient = originClientTopic->GetClient();
     }
