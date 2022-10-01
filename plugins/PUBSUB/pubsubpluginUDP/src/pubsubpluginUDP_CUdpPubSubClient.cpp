@@ -262,6 +262,7 @@ CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
+        topicAccess->UnlinkFromParentClient();
         topicAccess.Unlink();        
     }
 }

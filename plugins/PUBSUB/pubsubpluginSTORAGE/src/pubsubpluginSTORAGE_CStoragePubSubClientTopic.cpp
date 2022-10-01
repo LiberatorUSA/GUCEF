@@ -477,16 +477,40 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
 CStoragePubSubClientTopic::~CStoragePubSubClientTopic()
 {GUCEF_TRACE;
 
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::Shutdown( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    m_client = GUCEF_NULL;
+
     Disconnect();
 
     delete m_syncVfsOpsTimer;
     m_syncVfsOpsTimer = GUCEF_NULL;
 
+    m_vfsOpsThread.Unlink();
+    
     delete m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
 
     delete m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -922,10 +946,14 @@ CORE::CString
 CStoragePubSubClientTopic::ResolveVfsRootPath( void ) const
 {GUCEF_TRACE;
 
-    CORE::CString vfsRootPath = m_config.vfsStorageRootPath.ReplaceSubstr( "{pubsubIdPrefix}", m_client->GetConfig().pubsubIdPrefix );    
-    vfsRootPath = vfsRootPath.ReplaceSubstr( "{topicName}", m_config.topicName );
-    vfsRootPath = vfsRootPath.ReplaceSubstr( "{metricsFriendlyTopicName}", m_metricFriendlyTopicName );
-    return vfsRootPath;
+    if ( GUCEF_NULL != m_client )
+    {
+        CORE::CString vfsRootPath = m_config.vfsStorageRootPath.ReplaceSubstr( "{pubsubIdPrefix}", m_client->GetConfig().pubsubIdPrefix );    
+        vfsRootPath = vfsRootPath.ReplaceSubstr( "{topicName}", m_config.topicName );
+        vfsRootPath = vfsRootPath.ReplaceSubstr( "{metricsFriendlyTopicName}", m_metricFriendlyTopicName );
+        return vfsRootPath;
+    }
+    return  CORE::CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -933,7 +961,7 @@ CStoragePubSubClientTopic::ResolveVfsRootPath( void ) const
 bool
 CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
-
+    
     // Sanity check the config
     if ( config.needPublishSupport && config.needSubscribeSupport )
     {
@@ -947,6 +975,9 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
     }
     
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
 
     m_config = config;
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
@@ -978,6 +1009,9 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
 
     if ( !m_config.performVfsOpsASync )
     {
@@ -1251,6 +1285,9 @@ CStoragePubSubClientTopic::SubscribeStartingAtMsgId( const CORE::CVariant& msgId
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
 
     if ( m_client->GetConfig().desiredFeatures.supportsMsgIdBasedBookmark )
     {
@@ -1718,6 +1755,9 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
                                                    StorageBufferMetaData* metaData      )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_client )
+        return false;
+
     CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
     PUBSUB::CPubSubClientFeatures& desiredFeatures = clientConfig.desiredFeatures;
 
@@ -2054,6 +2094,9 @@ CStoragePubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                                 const CORE::CEvent& eventId  ,
                                                 CORE::CICloneable* eventData )
 {GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_client )
+        return;
 
     const PUBSUB::CPubSubClientConfig& clientConfig = m_client->GetConfig();
 
@@ -2408,6 +2451,9 @@ bool
 CStoragePubSubClientTopic::LocateFilesForStorageToPubSubRequest( void )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_client )
+        return false;    
+    
     if ( !m_vfsInitIsComplete )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:LocateFilesForStorageToPubSubRequest: Deferring until VFS init has been completed" );
@@ -2811,7 +2857,7 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
                                             bool isAcked                          )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == bufferMetaData )
+    if ( GUCEF_NULL == bufferMetaData || GUCEF_NULL == m_client )
         return;
     
     StorageToPubSubRequest* request = bufferMetaData->linkedRequest;

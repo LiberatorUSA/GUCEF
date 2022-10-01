@@ -133,6 +133,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     virtual bool LoadConfig( const CKafkaPubSubClientTopicConfig& config );
 
+    void UnlinkFromParentClient( void );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,

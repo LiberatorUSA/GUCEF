@@ -190,6 +190,15 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CWebPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    m_client = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWebPubSubClientTopic::RegisterRestApiEndpoints( void )
 {GUCEF_TRACE;

@@ -131,6 +131,7 @@ CMutex::~CMutex()
 
     if ( GUCEF_NULL == _mutexdata )
         return;
+    Lock();
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 

@@ -132,6 +132,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
+        (*i).second->UnlinkFromParentClient();
         (*i).second.Unlink();
         ++i;
     }
@@ -264,6 +265,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
         }
         else
         {
+            topicAccess->UnlinkFromParentClient();
             topicAccess.Unlink();
         }
     }
@@ -327,6 +329,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
+        topicAccess->UnlinkFromParentClient();
         topicAccess.Unlink();
     }
 }

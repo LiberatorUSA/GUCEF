@@ -211,6 +211,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
+    void UnlinkFromParentClient( void );
+
+    void Shutdown( void );
+
     class TopicMetrics
     {
         public:

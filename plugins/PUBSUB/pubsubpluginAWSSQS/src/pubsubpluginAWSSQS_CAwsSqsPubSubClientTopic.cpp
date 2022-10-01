@@ -127,6 +127,15 @@ CAwsSqsPubSubClientTopic::~CAwsSqsPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CAwsSqsPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    m_client = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClient*
 CAwsSqsPubSubClientTopic::GetClient( void )
 {GUCEF_TRACE;

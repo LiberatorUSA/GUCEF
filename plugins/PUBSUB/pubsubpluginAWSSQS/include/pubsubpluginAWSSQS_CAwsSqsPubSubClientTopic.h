@@ -108,6 +108,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
+    void UnlinkFromParentClient( void );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,

@@ -47,6 +47,7 @@ namespace PUBSUB {
 CPubSubClientFeatures::CPubSubClientFeatures( void )
     : supportsPublishing( false )
     , supportsSubscribing( false )    
+    , supportsSimultaneousPubAndSub( false )
     , supportsAutoReconnect( false )
     , supportsSubscriberRateThrottling( false )
     , supportsSubscriptionMsgArrivalDelayRequests( false )
@@ -94,40 +95,42 @@ bool
 CPubSubClientFeatures::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    cfg.SetAttribute( "supportsPublishing", supportsPublishing );
-    cfg.SetAttribute( "supportsSubscribing", supportsSubscribing );
-    cfg.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect );
-    cfg.SetAttribute( "supportsSubscriberRateThrottling", supportsSubscriberRateThrottling );    
-    cfg.SetAttribute( "supportsSubscriptionMsgArrivalDelayRequests", supportsSubscriptionMsgArrivalDelayRequests );        
-    cfg.SetAttribute( "supportsSubscriptionEndOfDataEvent", supportsSubscriptionEndOfDataEvent );            
-    cfg.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
-    cfg.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
-    cfg.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds );
-    cfg.SetAttribute( "supportsMsgIndex", supportsMsgIndex );
-    cfg.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg );
-    cfg.SetAttribute( "supportsAbsentPrimaryPayloadPerMsg", supportsAbsentPrimaryPayloadPerMsg );
-    cfg.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg );
-    cfg.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
-    cfg.SetAttribute( "supportsMetaDataKeyValueSetPerMsg", supportsMetaDataKeyValueSetPerMsg );
-    cfg.SetAttribute( "supportsSubscriberMsgReceivedAck", supportsSubscriberMsgReceivedAck );
-    cfg.SetAttribute( "supportsAutoMsgReceivedAck", supportsAutoMsgReceivedAck );
-    cfg.SetAttribute( "supportsAbsentMsgReceivedAck", supportsAbsentMsgReceivedAck );
-    cfg.SetAttribute( "supportsAckUsingLastMsgInBatch", supportsAckUsingLastMsgInBatch );
-    cfg.SetAttribute( "supportsAckUsingBookmark", supportsAckUsingBookmark );
-    cfg.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept );
-    cfg.SetAttribute( "supportsSubscribingUsingBookmark", supportsSubscribingUsingBookmark );
-    cfg.SetAttribute( "supportsServerSideBookmarkPersistance", supportsServerSideBookmarkPersistance );
-    cfg.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking );
-    cfg.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark );
-    cfg.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark );
-    cfg.SetAttribute( "supportsTopicIndexBasedBookmark", supportsTopicIndexBasedBookmark );    
-    cfg.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark );
-    cfg.SetAttribute( "supportsDerivingBookmarkFromMsg", supportsDerivingBookmarkFromMsg );    
-    cfg.SetAttribute( "supportsDiscoveryOfAvailableTopics", supportsDiscoveryOfAvailableTopics );    
-    cfg.SetAttribute( "supportsGlobPatternTopicNames", supportsGlobPatternTopicNames );    
-    cfg.SetAttribute( "supportsMetrics", supportsMetrics );
+    bool success = true;
+    success = cfg.SetAttribute( "supportsPublishing", supportsPublishing ) && success;
+    success = cfg.SetAttribute( "supportsSubscribing", supportsSubscribing ) && success;
+    success = cfg.SetAttribute( "supportsSimultaneousPubAndSub", supportsSimultaneousPubAndSub ) && success;    
+    success = cfg.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect ) && success;
+    success = cfg.SetAttribute( "supportsSubscriberRateThrottling", supportsSubscriberRateThrottling ) && success;    
+    success = cfg.SetAttribute( "supportsSubscriptionMsgArrivalDelayRequests", supportsSubscriptionMsgArrivalDelayRequests ) && success;        
+    success = cfg.SetAttribute( "supportsSubscriptionEndOfDataEvent", supportsSubscriptionEndOfDataEvent ) && success;            
+    success = cfg.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads ) && success;
+    success = cfg.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding ) && success;
+    success = cfg.SetAttribute( "supportsPerMsgIds", supportsPerMsgIds ) && success;
+    success = cfg.SetAttribute( "supportsMsgIndex", supportsMsgIndex ) && success;
+    success = cfg.SetAttribute( "supportsPrimaryPayloadPerMsg", supportsPrimaryPayloadPerMsg ) && success;
+    success = cfg.SetAttribute( "supportsAbsentPrimaryPayloadPerMsg", supportsAbsentPrimaryPayloadPerMsg ) && success;
+    success = cfg.SetAttribute( "supportsKeyValueSetPerMsg", supportsKeyValueSetPerMsg ) && success;
+    success = cfg.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg ) && success;
+    success = cfg.SetAttribute( "supportsMetaDataKeyValueSetPerMsg", supportsMetaDataKeyValueSetPerMsg ) && success;
+    success = cfg.SetAttribute( "supportsSubscriberMsgReceivedAck", supportsSubscriberMsgReceivedAck ) && success;
+    success = cfg.SetAttribute( "supportsAutoMsgReceivedAck", supportsAutoMsgReceivedAck ) && success;
+    success = cfg.SetAttribute( "supportsAbsentMsgReceivedAck", supportsAbsentMsgReceivedAck ) && success;
+    success = cfg.SetAttribute( "supportsAckUsingLastMsgInBatch", supportsAckUsingLastMsgInBatch ) && success;
+    success = cfg.SetAttribute( "supportsAckUsingBookmark", supportsAckUsingBookmark ) && success;
+    success = cfg.SetAttribute( "supportsBookmarkingConcept", supportsBookmarkingConcept ) && success;
+    success = cfg.SetAttribute( "supportsSubscribingUsingBookmark", supportsSubscribingUsingBookmark ) && success;
+    success = cfg.SetAttribute( "supportsServerSideBookmarkPersistance", supportsServerSideBookmarkPersistance ) && success;
+    success = cfg.SetAttribute( "supportsAutoBookmarking", supportsAutoBookmarking ) && success;
+    success = cfg.SetAttribute( "supportsMsgIdBasedBookmark", supportsMsgIdBasedBookmark ) && success;
+    success = cfg.SetAttribute( "supportsMsgIndexBasedBookmark", supportsMsgIndexBasedBookmark ) && success;
+    success = cfg.SetAttribute( "supportsTopicIndexBasedBookmark", supportsTopicIndexBasedBookmark ) && success;    
+    success = cfg.SetAttribute( "supportsMsgDateTimeBasedBookmark", supportsMsgDateTimeBasedBookmark ) && success;
+    success = cfg.SetAttribute( "supportsDerivingBookmarkFromMsg", supportsDerivingBookmarkFromMsg ) && success;    
+    success = cfg.SetAttribute( "supportsDiscoveryOfAvailableTopics", supportsDiscoveryOfAvailableTopics ) && success;    
+    success = cfg.SetAttribute( "supportsGlobPatternTopicNames", supportsGlobPatternTopicNames ) && success;    
+    success = cfg.SetAttribute( "supportsMetrics", supportsMetrics ) && success;
 
-    return true;
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,6 +141,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
 
     supportsPublishing = cfg.GetAttributeValueOrChildValueByName( "supportsPublishing" ).AsBool( supportsPublishing, true );
     supportsSubscribing = cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ).AsBool( supportsSubscribing, true );
+    supportsSimultaneousPubAndSub = cfg.GetAttributeValueOrChildValueByName( "supportsSimultaneousPubAndSub" ).AsBool( supportsSimultaneousPubAndSub, true );
     supportsAutoReconnect = cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ).AsBool( supportsAutoReconnect, true );
     supportsSubscriberRateThrottling = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriberRateThrottling" ).AsBool( supportsSubscriberRateThrottling, true );
     supportsSubscriptionMsgArrivalDelayRequests = cfg.GetAttributeValueOrChildValueByName( "supportsSubscriptionEndOfDataEvent" ).AsBool( supportsSubscriptionEndOfDataEvent, true );

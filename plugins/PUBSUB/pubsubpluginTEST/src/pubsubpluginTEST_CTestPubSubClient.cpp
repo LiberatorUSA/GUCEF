@@ -117,6 +117,7 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         }
         else
         {
+            topicAccess->UnlinkFromParentClient();
             topicAccess.Unlink();
         }
     }

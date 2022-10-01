@@ -121,6 +121,8 @@ MutexCreate( void )
 void
 MutexDestroy( struct SMutex* mutex )
 {
+    MutexLock( mutex, GUCEF_UINT32MAX );
+    
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( mutex->id );

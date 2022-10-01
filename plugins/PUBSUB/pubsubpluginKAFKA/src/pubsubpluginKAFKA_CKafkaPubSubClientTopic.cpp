@@ -126,6 +126,15 @@ CKafkaPubSubClientTopic::~CKafkaPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CKafkaPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    m_client = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClient*
 CKafkaPubSubClientTopic::GetClient( void )
 {GUCEF_TRACE;

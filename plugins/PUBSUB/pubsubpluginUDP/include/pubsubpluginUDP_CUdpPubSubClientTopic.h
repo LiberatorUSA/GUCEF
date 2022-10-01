@@ -111,6 +111,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
+
+    void UnlinkFromParentClient( void );
     
     class TopicMetrics
     {

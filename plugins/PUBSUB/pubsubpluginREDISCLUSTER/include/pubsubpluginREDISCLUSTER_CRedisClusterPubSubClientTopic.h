@@ -134,6 +134,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
+    void UnlinkFromParentClient( void );
+
     class TopicMetrics
     {
         public:
@@ -243,7 +245,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
 /*-------------------------------------------------------------------------*/
 
-typedef CRedisClusterPubSubClientTopic::TSharedPtrType  CRedisClusterPubSubClientTopicPtr;
+typedef CRedisClusterPubSubClientTopic::TSharedPtrType          CRedisClusterPubSubClientTopicPtr;
+typedef CRedisClusterPubSubClientTopic::TBasicSharedPtrType     CRedisClusterPubSubClientTopicBasicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

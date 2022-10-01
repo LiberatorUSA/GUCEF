@@ -106,6 +106,15 @@ CUdpPubSubClientTopic::~CUdpPubSubClientTopic()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CUdpPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    m_client = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClient*
 CUdpPubSubClientTopic::GetClient( void )
 {GUCEF_TRACE;

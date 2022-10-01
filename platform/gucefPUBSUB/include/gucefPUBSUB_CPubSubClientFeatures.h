@@ -61,6 +61,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientFeatures : public CORE::CIConfigurabl
 
     bool supportsPublishing;                    /**< not every client may support full pub-sub: Is publishing supported? */
     bool supportsSubscribing;                   /**< not every client may support full pub-sub: Is subscribing supported? */
+    bool supportsSimultaneousPubAndSub;         /**< even if publishing AND subscribing is supported that doesnt mean you can use both simultaneously, this flag will tell */
     
     bool supportsAutoReconnect;                 /**< whether the backend is capable of handling disconnects on its own */
     bool supportsSubscriberRateThrottling;      /**< whether the backend is capable of throttling the rate at which messages are received when subscribed */

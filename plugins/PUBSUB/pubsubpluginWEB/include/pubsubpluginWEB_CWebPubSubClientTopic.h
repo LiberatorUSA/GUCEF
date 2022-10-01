@@ -187,6 +187,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
     
+    void UnlinkFromParentClient( void );
+    
     class TopicMetrics
     {
         public:

@@ -124,6 +124,7 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
+        (*i).second->UnlinkFromParentClient();
         (*i).second.Unlink();
         ++i;
     }
@@ -220,6 +221,7 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         }
         else
         {
+            topicAccess->UnlinkFromParentClient();
             topicAccess.Unlink();
         }
     }
@@ -282,6 +284,7 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
+        topicAccess->UnlinkFromParentClient();
         topicAccess.Unlink();        
     }
 }

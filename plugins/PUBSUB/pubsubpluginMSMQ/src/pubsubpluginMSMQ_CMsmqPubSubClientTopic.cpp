@@ -166,7 +166,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
 
     m_syncReadTimer = new CORE::CTimer( client->GetPulseGenerator(), 25 );
 
-    if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
+    if ( GUCEF_NULL != m_client && m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
         m_reconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
     }
@@ -178,6 +178,19 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
 
 CMsmqPubSubClientTopic::~CMsmqPubSubClientTopic()
 {GUCEF_TRACE;
+
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsmqPubSubClientTopic::Shutdown( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    m_client = GUCEF_NULL;
 
     Disconnect();
 
@@ -222,6 +235,15 @@ CMsmqPubSubClientTopic::MsmqQueueProperties::ToString( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMsmqPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClient*
 CMsmqPubSubClientTopic::GetClient( void )
 {GUCEF_TRACE;
@@ -251,10 +273,13 @@ CMsmqPubSubClientTopic::RegisterEventHandlers( void )
                      callback                       );
     }
 
-    TEventCallback callback( this, &CMsmqPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent                       ,
-                 callback                                                );
+    if ( GUCEF_NULL != m_client )
+    {
+        TEventCallback callback( this, &CMsmqPubSubClientTopic::OnPulseCycle );
+        SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                     CORE::CPulseGenerator::PulseEvent                       ,
+                     callback                                                );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -529,12 +554,15 @@ CMsmqPubSubClientTopic::Disconnect( void )
 bool
 CMsmqPubSubClientTopic::BeginReconnectSequence( const CORE::CEvent* eventMsg )
 {GUCEF_TRACE;
-
+    
     if ( Disconnect() )
     {
         {
             MT::CScopeMutex lock( m_lock );
             
+            if ( GUCEF_NULL == m_client )
+                return false;
+
             // Make sure to notify of any messages received already
             // If we are using the peek behavior you would not lose messages via reconnect but you would lost more time if it happens at a semi-regular interval
             // If you are not using the peeks then you'd actually lose messages if we dont do this step since the new subscribe will reinitialize everything and thus wipe messages
@@ -919,6 +947,9 @@ CMsmqPubSubClientTopic::AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& b
         return false;
     
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
 
     const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
     bool supportsAcksViaLookup = clientConfig.simulateReceiveAckFeatureViaLookupId && clientConfig.desiredFeatures.supportsSubscriberMsgReceivedAck; 
@@ -2358,6 +2389,9 @@ CMsmqPubSubClientTopic::OnSyncReadTimerCycle( CORE::CNotifier* notifier    ,
     ITransaction* pTransaction = MQ_NO_TRANSACTION;     // could support transactions: isTransactional ? MQ_SINGLE_MESSAGE : MQ_NO_TRANSACTION;
 
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return;
     
     // For MSMQ 3.0 and above:
     const CMsmqPubSubClientConfig& clientConfig = m_client->GetConfig();
@@ -3079,6 +3113,9 @@ CMsmqPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_client )
+        return;    
+    
     // If m_msmqMsgsQueued is -1 dont bother trying again as we cannot solve config/permission issues here
     // in order to efficiently get this metric you need elevated access to the queue
     // We assume the same would apply to the other similar metrics since they have the same restriction

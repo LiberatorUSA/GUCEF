@@ -145,6 +145,15 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CRedisClusterPubSubClientTopic::UnlinkFromParentClient( void )
+{GUCEF_TRACE;
+
+    m_client = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClient*
 CRedisClusterPubSubClientTopic::GetClient( void )
 {GUCEF_TRACE;

@@ -114,16 +114,7 @@ CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
 CTestPubSubClientTopic::~CTestPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Disconnect();
-
-    delete m_syncVfsOpsTimer;
-    m_syncVfsOpsTimer = GUCEF_NULL;
-
-    delete m_reconnectTimer;
-    m_reconnectTimer = GUCEF_NULL;
-
-    delete m_bufferContentTimeWindowCheckTimer;
-    m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
+    m_healthyStatusToggleTimer.SetEnabled( false );
 }
 
 /*-------------------------------------------------------------------------*/
