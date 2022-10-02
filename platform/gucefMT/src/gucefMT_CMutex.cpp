@@ -178,6 +178,9 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
         }
         case WAIT_ABANDONED:
         {
+            if ( GUCEF_NULL == _mutexdata )
+                return false;
+
             ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
             ((TMutexData*)_mutexdata)->isLocked = true;
             GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( ((TMutexData*)_mutexdata)->id );

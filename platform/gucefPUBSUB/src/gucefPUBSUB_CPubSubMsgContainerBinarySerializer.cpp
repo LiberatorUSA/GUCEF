@@ -657,6 +657,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( TBasicPubSubMsgVect
         }
     }
 
+    msgs.reserve( index.size() );
     if ( !Deserialize( msgs, true, index, source, isCorrupted, bestEffortIsOk ) )
     {
         // Have we already tried a rebuild?

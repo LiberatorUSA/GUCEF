@@ -378,6 +378,7 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
     , pubsubMsgsRefs()
     , msgAcks()
     , ackdMsgCount( 0 )
+    , lastAckdMsgIndex( 0 )
     , actionIds()
     , linkedRequest( GUCEF_NULL )
     , linkedRequestEntry()    
@@ -396,6 +397,7 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
     pubsubMsgsRefs.clear();
     msgAcks.clear();
     ackdMsgCount = 0;
+    lastAckdMsgIndex = 0;
     actionIds.clear();    
     linkedRequest = GUCEF_NULL;
     linkedRequestEntry.Unlink();
@@ -1758,6 +1760,12 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
     if ( GUCEF_NULL == m_client )
         return false;
 
+    // Check if we were already done with this record
+    if ( GUCEF_NULL == metaData )
+    {
+        return true;
+    }
+
     CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
     PUBSUB::CPubSubClientFeatures& desiredFeatures = clientConfig.desiredFeatures;
 
@@ -1777,7 +1785,7 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
         // treat as a batch ack for this message and everything before it from the same file
         // we know we publish messages in the order they are stored in the file
 
-        for ( CORE::UInt32 i=0; i<bookmark.msgIndex; ++i )
+        for ( CORE::UInt32 i=metaData->lastAckdMsgIndex; i<bookmark.msgIndex; ++i )
         {
             if ( !metaData->msgAcks[ i ] )
             {
@@ -1785,6 +1793,7 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
                 ++metaData->ackdMsgCount;
             }
         }
+        metaData->lastAckdMsgIndex = bookmark.msgIndex;
     }
 
     if ( metaData->ackdMsgCount >= metaData->msgAcks.size() )
@@ -2989,6 +2998,8 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     // We now link logical message objects to the data in the buffer
     bool isCorrupted = false;
     CORE::UInt32 bytesRead = 0;    
+    bufferMetaData->msgs.clear();
+    bufferMetaData->msgOffsetIndex.clear();
     if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( bufferMetaData->msgs, true, bufferMetaData->msgOffsetIndex, *m_currentReadBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
     {
         // update metrics
@@ -3022,10 +3033,15 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     m_msgsLoadedFromStorage += static_cast< CORE::UInt32 >( bufferMetaData->msgs.size() );
     m_msgBytesLoadedFromStorage += m_currentReadBuffer->GetDataSize();
 
+    bufferMetaData->actionIds.clear();
     bufferMetaData->actionIds.reserve( bufferMetaData->msgs.size() );
+    bufferMetaData->pubsubMsgsRefs.clear();
     bufferMetaData->pubsubMsgsRefs.reserve( bufferMetaData->msgs.size() );
     if ( m_needToTrackAcks )
+    {
+        bufferMetaData->msgAcks.clear();
         bufferMetaData->msgAcks.reserve( bufferMetaData->msgs.size() );
+    }
 
     PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator seriesEnd;
     PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator i = bufferMetaData->msgs.begin();

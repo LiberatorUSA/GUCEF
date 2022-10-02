@@ -879,15 +879,7 @@ inline T*
 CTBasicSharedPtr< T, LockType >::operator->( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
-    if ( GUCEF_NULL != m_ptr )
-    {
-        return m_ptr;
-    }
-
-    // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ): uninitialized pointer usage" );
+    return m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -897,15 +889,7 @@ inline const T*
 CTBasicSharedPtr< T, LockType >::operator->( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
-    if ( GUCEF_NULL != m_ptr )
-    {
-        return m_ptr;
-    }
-
-    // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ) const: uninitialized pointer usage" );
+    return m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/

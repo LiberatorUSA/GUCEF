@@ -305,6 +305,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         TMsgsRecievedEventData pubsubMsgsRefs;
         TBoolVector msgAcks;
         CORE::UInt32 ackdMsgCount;
+        CORE::UInt32 lastAckdMsgIndex;
         TPublishActionIdVector actionIds;         
         StorageToPubSubRequest* linkedRequest;
         TCContainerRangeInfoReference linkedRequestEntry;
