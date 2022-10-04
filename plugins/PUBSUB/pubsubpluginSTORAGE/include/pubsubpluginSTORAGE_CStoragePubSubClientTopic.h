@@ -250,10 +250,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnPumpedNotify( CORE::CNotifier* notifier                 ,
-                                 const CORE::CEvent& eventid               ,
-                                 CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
-
     void OnVfsFileCreated( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventid  ,
                            CORE::CICloneable* eventdata );
@@ -355,8 +351,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool SubscribeToVfsTopicPathEvents( void );
 
     void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
-
-    CORE::CString GetPathToLastWrittenPubSubStorageFile( CORE::UInt32 lastOffset ) const;
 
     bool StoreNextReceivedPubSubBuffer( void );
 

@@ -86,6 +86,11 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
      */
     bool EarlyUnlock( void );
 
+    /**
+     *  Allows you to re lock the lock after an EarlyUnlock()
+     */
+    bool ReLock( void );
+
     private:
     const CMutex* m_mutex;
     bool m_isLocked;

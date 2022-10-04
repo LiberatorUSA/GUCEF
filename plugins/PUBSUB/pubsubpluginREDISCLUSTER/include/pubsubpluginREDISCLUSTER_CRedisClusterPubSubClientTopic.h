@@ -111,6 +111,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
@@ -231,6 +233,10 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CRedisClusterPubSubClientTopicConfig m_config;
     std::string m_readOffset;    
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
+    bool m_needToTrackAcks;
+    bool m_subscriptionIsAtEndOfData;
+    CORE::Int64 m_maxTotalMsgsInFlight;
+    CORE::UInt64 m_msgsInFlight;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;
     TPublishActionIdVector m_publishSuccessActionIds;

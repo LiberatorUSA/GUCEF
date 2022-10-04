@@ -84,6 +84,7 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     , m_streamIndexingTimer( GUCEF_NULL )
     , m_topicMap()
     , m_threadPool()
+    , m_needToTrackAcks( true )
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
@@ -170,6 +171,15 @@ CRedisClusterPubSubClient::GetThreadPool( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CRedisClusterPubSubClient::IsTrackingAcksNeeded( void ) const
+{GUCEF_TRACE;
+
+    return m_needToTrackAcks;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const 
 {GUCEF_TRACE;
@@ -184,13 +194,14 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsMultiHostSharding = true;          // Redis doesnt support this but clustered Redis does which is what this plugin supports
     features.supportsPublishing = true;                 // We support being a Redis producer in this plugin
     features.supportsSubscribing = true;                // We support being a Redis consumer in this plugin
+    features.supportsSimultaneousPubAndSub = true;      // this plugin supports pub and sub on a topic at the same time
     features.supportsMetrics = true;                    // this plugin adds metrics support
     features.supportsAutoReconnect = true;              // Our plugin adds auto reconnect out of the box
-    features.supportsSubscriberMsgReceivedAck = false;  // since offsets are managed client-side there really is no such concept but could be implemented as a plugin specific add-on - todo?
+    features.supportsSubscriberMsgReceivedAck = true;   // we can handle acks
     features.supportsAutoMsgReceivedAck = false;        // not supported right now
     features.supportsAbsentMsgReceivedAck = true;       // no such inherent concept
     features.supportsAckUsingLastMsgInBatch = false;    // not supported right now
-    features.supportsAckUsingBookmark = false;          // not supported right now
+    features.supportsAckUsingBookmark = true;           // we can handle acks
     features.supportsBookmarkingConcept = true;         // Redis does not support this server-side but does support it via passing your "bookmark" back to Redis as an offset
     features.supportsServerSideBookmarkPersistance = false; // no such support
     features.supportsSubscribingUsingBookmark = true;   // supported via giving Redis the starting offset
@@ -203,7 +214,9 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
     features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // we support delaying the redis read thread on a per read cycle basis
-    features.supportsSubscriptionEndOfDataEvent = false;
+    
+    // the following features we enable based on expresed desired functionality, we support either
+    features.supportsSubscriptionEndOfDataEvent = m_config.desiredFeatures.supportsSubscriptionEndOfDataEvent;
     return true;
 }
 
@@ -612,6 +625,37 @@ CRedisClusterPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CRedisClusterPubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
+{GUCEF_TRACE;
+
+    PUBSUB::CPubSubClientFeatures features;
+    GetSupportedFeatures( features );
+    
+    // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
+    // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
+    // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
+    
+    bool doWeWantIt = ( m_config.desiredFeatures.supportsSubscribing &&                         // <- does it apply in this context ?
+                        ( m_config.desiredFeatures.supportsSubscriberMsgReceivedAck ||          // <- do we want it?
+                          m_config.desiredFeatures.supportsSubscribingUsingBookmark  )
+                      );
+
+    bool isItSupported = features.supportsSubscriberMsgReceivedAck ||
+                         ( features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark );
+
+    bool canWeNotWantIt = features.supportsAbsentMsgReceivedAck &&          // <- Is it even an option to not do it regardless of desired features
+                          ( !features.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
+                             features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark && features.supportsServerSideBookmarkPersistance );
+                              
+    bool acksNeeded =  ( doWeWantIt && isItSupported ) || 
+                       ( !canWeNotWantIt && isItSupported );
+
+    return acksNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CRedisClusterPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
@@ -641,9 +685,7 @@ CRedisClusterPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
     PUBSUB::CPubSubClientConfig parsedCfg;
     if ( parsedCfg.LoadConfig( cfg ) )
     {
-        MT::CScopeMutex lock( m_lock );
-        m_config = parsedCfg;
-        return true;
+        return LoadConfig( parsedCfg );
     }
     return false;
 }
@@ -656,6 +698,7 @@ CRedisClusterPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
 
     MT::CScopeMutex lock( m_lock );
     m_config = cfg;
+    m_needToTrackAcks = DetermineIfTrackingAcksIsNeeded();
     return true;
 }
 

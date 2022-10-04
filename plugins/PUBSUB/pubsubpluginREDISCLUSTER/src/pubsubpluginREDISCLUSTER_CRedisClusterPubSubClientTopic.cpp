@@ -92,6 +92,10 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_config()
     , m_readOffset( "0" )
     , m_readerThread()
+    , m_needToTrackAcks( true )
+    , m_subscriptionIsAtEndOfData( false )
+    , m_maxTotalMsgsInFlight( 1000 )
+    , m_msgsInFlight( 0 )
     , m_currentPublishActionId( 1 )
     , m_currentReceiveActionId( 1 )
     , m_publishSuccessActionIds()
@@ -110,6 +114,8 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     {
         m_redisReconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), client->GetConfig().reconnectDelayInMs );
     }
+
+    m_needToTrackAcks = m_client->IsTrackingAcksNeeded();
 
     RegisterEventHandlers();
 }
@@ -265,16 +271,41 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
 
     MT::CScopeMutex lock( m_lock );
 
-    m_config = config;
-    m_redisHashSlot = CalculateRedisHashSlot( m_config.topicName );
-    //m_readOffset = config.redisXReadDefaultOffset;
+    if ( Disconnect() )
+    {
+        m_config = config;
 
-    m_redisXreadCount = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadCount" ).AsUInt32( m_redisXreadCount );
-    m_redisXreadBlockTimeoutInMs = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadBlockTimeoutInMs" ).AsUInt32( m_redisXreadBlockTimeoutInMs );
+        m_redisHashSlot = CalculateRedisHashSlot( m_config.topicName );
+        m_readOffset = m_config.redisXReadDefaultOffset;
+        m_redisXreadBlockTimeoutInMs = m_config.redisXReadBlockTimeoutInMs;
 
-    m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+        m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
 
-    return true;
+        if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
+            m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
+        else
+            m_maxTotalMsgsInFlight = m_client->GetConfig().maxTotalMsgsInFlight;
+        
+        if ( !m_needToTrackAcks )
+        {
+            // We are in fire and forget mode so max in flight means per notification of received messages
+            // for that there is no point in reading more from redis than we are willing to notify
+            // as such we take the lesser of the 2
+            if ( m_maxTotalMsgsInFlight > 0 )
+                m_redisXreadCount = SMALLEST( m_config.redisXReadCount, m_maxTotalMsgsInFlight );
+            else
+                m_redisXreadCount = m_config.redisXReadCount;
+        }
+        else
+        {
+            // We are tracking acks
+            // as such we will be waiting on acks as an independent check
+            m_redisXreadCount = m_config.redisXReadCount;
+        }
+        
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -429,6 +460,15 @@ CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CRedisClusterPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    return m_subscriptionIsAtEndOfData;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClientTopic::RedisRead( void )
 {GUCEF_TRACE;
@@ -436,25 +476,47 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     bool totalSuccess = false;
     MT::CScopeMutex lock( m_lock );
 
-    if ( m_redisContext.IsNULL() || m_config.topicName.IsNULLOrEmpty() )
-        return totalSuccess;
-
     try
     {
+        if ( m_redisContext.IsNULL() || m_config.topicName.IsNULLOrEmpty() )
+            return totalSuccess;
+
+        CORE::UInt64 maxMsgsToRead = m_redisXreadCount;
+        if ( m_needToTrackAcks || m_maxTotalMsgsInFlight > 0 )
+        {
+            if ( m_msgsInFlight >= m_maxTotalMsgsInFlight )
+            {
+                // We already have too many messages 'in flight' 
+                // wait for this number to go down before reading more
+                return true;
+            }
+
+            maxMsgsToRead = m_maxTotalMsgsInFlight - m_msgsInFlight; 
+            if ( m_config.minAvailableInFlightSlotsBeforeRead > maxMsgsToRead )
+            {
+                // Based on settings lets not take the overhead of another read call to Redis right now
+                // wait for some more 'in flight' slots to open up
+                return true;
+            }
+        }    
+
         sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
         std::chrono::milliseconds readBlockTimeout( m_redisXreadBlockTimeoutInMs );
 
         TRedisMsgByStreamInserter inserter = std::inserter( m_redisReadMsgs, m_redisReadMsgs.end() );
 
-        if ( m_redisXreadCount > 0 )
-            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) m_redisXreadCount, inserter );
+        if ( maxMsgsToRead > 0 )
+            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) maxMsgsToRead, inserter );
         else
             m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, inserter );
 
         // Do we have data from any streams?
         if ( !m_redisReadMsgs.empty() )
         {
+            // Since we received messages we cannot be 'at end of data'
+            m_subscriptionIsAtEndOfData = false;
+            
             // Process messages for every stream
             TRedisMsgByStream::iterator s = m_redisReadMsgs.begin();
             while ( s != m_redisReadMsgs.end() )
@@ -525,6 +587,26 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                 ++s;
             }
         }
+        else
+        {
+            // xread timeout occured since we returned without any data
+            if ( m_config.treatXReadBlockTimeoutAsEndOfDataEvent )
+            {   
+                if ( !m_subscriptionIsAtEndOfData )
+                {
+                    m_subscriptionIsAtEndOfData = true;
+
+                    if ( GUCEF_NULL != m_client )
+                    {
+                        if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+                        {                         
+                             if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
+                                return totalSuccess;
+                        }
+                    }
+                }
+            }
+        }
 
         // We will count the ability to read messages as proof of good health
         UpdateIsHealthyStatus( true );
@@ -572,7 +654,14 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     if ( totalSuccess )
     {
         // Communicate all the messages received via an event notification
-        if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return totalSuccess;
+        if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 
+        {
+            m_msgsInFlight += (CORE::UInt64) m_pubsubMsgsRefs.size();
+        }
+        else
+        {
+            return totalSuccess;
+        }
     }
     m_redisReadMsgs.clear();
     m_pubsubMsgsRefs.clear();
@@ -626,7 +715,21 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Beginning cleanup" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Beginning cleanup" );
+
+        RedisClusterPubSubClientTopicReaderPtr redisReader = m_readerThread;
+        if ( !redisReader.IsNULL() )
+        {
+            lock.EarlyUnlock();
+
+            if ( !redisReader->RequestTaskToStop( true ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Failed to stop reader thread" );
+                return false;
+            }
+
+            lock.ReLock();
+        }
 
         delete m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
@@ -711,6 +814,9 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
 
     try
     {
+        // reset the oed flag, once we read we will see what the new status is
+        m_subscriptionIsAtEndOfData = false;
+
         m_readOffset = readOffset;
         
         // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
@@ -769,10 +875,23 @@ bool
 CRedisClusterPubSubClientTopic::SubscribeStartingAtBookmark( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    // With Redis the default ID format is a Unix Epoch based datetime
-    // For streaming Redis the msg ID and offset/index are the same thing
     MT::CScopeMutex lock( m_lock );
-    return SubscribeImpl( bookmark.GetBookmarkData().AsString() );
+
+    switch ( bookmark.GetBookmarkType() )
+    {
+        // With Redis the default ID format is a Unix Epoch based datetime
+        // For streaming Redis the msg ID and offset/index are the same thing
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_ID:
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX:
+        case PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_TOPIC_INDEX:
+        {
+            return SubscribeImpl( bookmark.GetBookmarkData().AsString() );
+        }
+        default:
+        {
+            return false;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -805,6 +924,11 @@ bool
 CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
+    if ( m_msgsInFlight > 0 )
+        --m_msgsInFlight;
+
     // Does not apply to Redis wrt what this plugin supports. just treat as a no-op fyi
     return true;
 }
@@ -814,6 +938,11 @@ CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& m
 bool
 CRedisClusterPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    if ( m_msgsInFlight > 0 )
+        --m_msgsInFlight;
 
     // Does not apply to Redis wrt what this plugin supports. just treat as a no-op fyi
     return true;

@@ -88,6 +88,20 @@ CScopeMutex::EarlyUnlock( void )
     return false;
 }
 
+/*--------------------------------------------------------------------------*/
+
+bool 
+CScopeMutex::ReLock( void )
+{GUCEF_TRACE;
+
+    if ( !m_isLocked )
+    {
+        m_isLocked = m_mutex->Lock();
+        return m_isLocked;
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

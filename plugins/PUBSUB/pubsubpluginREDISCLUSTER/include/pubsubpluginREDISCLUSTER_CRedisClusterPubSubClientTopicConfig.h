@@ -63,8 +63,12 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     CORE::Int32 redisXAddMaxLen;
     bool redisXAddMaxLenIsApproximate;
-    CORE::CString redisXReadDefaultOffset;
     bool redisXAddIgnoreMsgId;
+    CORE::CString redisXReadDefaultOffset;
+    CORE::Int32 redisXReadCount;
+    CORE::UInt32 redisXReadBlockTimeoutInMs;
+    bool treatXReadBlockTimeoutAsEndOfDataEvent;
+    CORE::UInt32 minAvailableInFlightSlotsBeforeRead;  /**< if a max nr of msgs in flight is being enforced then this controls the min free slots there have to be before the overhead of another read attemps */
     
     CRedisClusterPubSubClientTopicConfig( void );
     

@@ -49,6 +49,7 @@
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
 								"maxTotalMsgsInFlight": 1000,
+								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
@@ -160,6 +161,7 @@
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
 								"maxTotalMsgsInFlight": 1000,								
+								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
 									"0": {
@@ -271,6 +273,7 @@
 								"pubsubClientType": "TEST",
 								"reconnectDelayInMs": 0,
 								"maxTotalMsgsInFlight": 1000,								
+								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
 									"0": {

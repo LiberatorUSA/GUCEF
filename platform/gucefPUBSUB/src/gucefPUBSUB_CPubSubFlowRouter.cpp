@@ -1692,8 +1692,18 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
     DetermineActiveRouteDestination( routeInfo );           
     if ( GUCEF_NULL != routeInfo.activeSide )
     {
-        if ( !ConnectSide( routeInfo.fromSide ) )
+        if ( ConnectRoutesForFromSide( routeInfo.fromSide ) )
         {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):DetermineActiveRoute: Successfully connected route" );
+
+            routeInfo.routeSwitchingTimer.SetEnabled( false );
+        }
+        else
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):DetermineActiveRoute: failed to connect route, will retry" );
+
             routeInfo.routeSwitchingTimer.SetEnabled( true );
         }
     }

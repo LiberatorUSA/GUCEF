@@ -420,6 +420,14 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                        const CORE::CString& codecFamily     ,
                        const CORE::CString& decodeCodec     );
 
+    /**
+     *  Checks if the given 'filePathToCheck' points to a resource that is a sub path of the given 'dirPath'
+     *  Note that this does not actually check if the file resource exists on the storage medium nor does it
+     *  validate the existance of the dir. It merely applies VFS path formatting rules for comparison reasons.
+     */
+    bool IsFilePathSubOfDirPath( const CORE::CString& dirPath         ,
+                                 const CORE::CString& filePathToCheck ) const;
+
     bool DeleteFile( const CString& filePath ,
                      bool okIfItDoesNotExist );
 

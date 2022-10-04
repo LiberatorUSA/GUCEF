@@ -1541,6 +1541,18 @@ CVFS::FileExists( const CString& file ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::IsFilePathSubOfDirPath( const CORE::CString& dirPath         ,
+                              const CORE::CString& filePathToCheck ) const
+{GUCEF_TRACE;
+
+    CString conformedDirPath = ConformVfsDirPath( dirPath );
+    CString conformedFilePath = ConformVfsFilePath( filePathToCheck );
+    return 0 == conformedFilePath.HasSubstr( conformedDirPath, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::UnmountArchiveByName( const CString& archiveName )
 {GUCEF_TRACE;
 

@@ -167,6 +167,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     RedisClusterPtr GetRedisContext( void ) const;
 
+    bool IsTrackingAcksNeeded( void ) const;
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -184,6 +186,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
 
     const PUBSUB::CPubSubClientTopicConfig* FindTemplateConfigForTopicName( const CORE::CString& topicName ) const;
+
+    bool DetermineIfTrackingAcksIsNeeded( void ) const;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -230,6 +234,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     CORE::CTimer* m_streamIndexingTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
+    bool m_needToTrackAcks;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };

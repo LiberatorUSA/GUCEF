@@ -48,9 +48,13 @@ namespace REDISCLUSTER {
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
     , redisXAddMaxLen( -1 )
-    , redisXAddMaxLenIsApproximate( true )
-    , redisXReadDefaultOffset( "0" )
+    , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
+    , redisXReadDefaultOffset( "0" )
+    , redisXReadCount( -1 )
+    , redisXReadBlockTimeoutInMs( 1000 )
+    , treatXReadBlockTimeoutAsEndOfDataEvent( true )
+    , minAvailableInFlightSlotsBeforeRead( 100 )
 {GUCEF_TRACE;
 
 }
@@ -60,9 +64,13 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , redisXAddMaxLen( -1 )
-    , redisXAddMaxLenIsApproximate( true )
-    , redisXReadDefaultOffset( "0" )
+    , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
+    , redisXReadDefaultOffset( "0" )
+    , redisXReadCount( -1 )
+    , redisXReadBlockTimeoutInMs( 1000 )
+    , treatXReadBlockTimeoutAsEndOfDataEvent( true )
+    , minAvailableInFlightSlotsBeforeRead( 100 )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -82,9 +90,13 @@ CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& c
 {GUCEF_TRACE;
     
     redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
-    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );
-    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true );
+    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );    
     redisXAddIgnoreMsgId = config.GetAttributeValueOrChildValueByName( "redisXAddIgnoreMsgId" ).AsBool( redisXAddIgnoreMsgId, true ); 
+    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true );
+    redisXReadCount = config.GetAttributeValueOrChildValueByName( "redisXReadCount" ).AsInt32( redisXReadCount, true ); 
+    redisXReadBlockTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisXReadBlockTimeoutInMs" ).AsUInt32( redisXReadBlockTimeoutInMs );
+    treatXReadBlockTimeoutAsEndOfDataEvent = config.GetAttributeValueOrChildValueByName( "treatXReadBlockTimeoutAsEndOfDataEvent" ).AsBool( treatXReadBlockTimeoutAsEndOfDataEvent, true ); 
+    minAvailableInFlightSlotsBeforeRead = config.GetAttributeValueOrChildValueByName( "minAvailableInFlightSlotsBeforeRead" ).AsUInt32( minAvailableInFlightSlotsBeforeRead );
     return true;
 }
 
@@ -113,6 +125,12 @@ CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClient
         PUBSUB::CPubSubClientTopicConfig::operator=( src );
         redisXAddMaxLen = src.redisXAddMaxLen; 
         redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;   
+        redisXAddIgnoreMsgId = src.redisXAddIgnoreMsgId;
+        redisXReadDefaultOffset = src.redisXReadDefaultOffset;
+        redisXReadCount = src.redisXReadCount;
+        redisXReadBlockTimeoutInMs = src.redisXReadBlockTimeoutInMs;
+        treatXReadBlockTimeoutAsEndOfDataEvent = src.treatXReadBlockTimeoutAsEndOfDataEvent;
+        minAvailableInFlightSlotsBeforeRead = src.minAvailableInFlightSlotsBeforeRead;
     }
     return *this;
 }

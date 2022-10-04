@@ -554,16 +554,22 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                      callback                            );
     }
 
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnVfsInitializationCompleted );
-    SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
+    SubscribeTo( &vfs                                       ,
                  VFS::CVFS::VfsInitializationCompletedEvent ,
                  callback                                   );
     m_vfsInitIsComplete = VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
 
-    TEventCallback callback2( this, &CStoragePubSubClientTopic::OnPulseCycle );
+    TEventCallback callback2( this, &CStoragePubSubClientTopic::OnVfsArchiveMounted );
+    SubscribeTo( &vfs                           ,
+                 VFS::CVFS::ArchiveMountedEvent ,
+                 callback2                      );
+
+    TEventCallback callback3( this, &CStoragePubSubClientTopic::OnPulseCycle );
     SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
                  CORE::CPulseGenerator::PulseEvent                       ,
-                 callback2                                               );
+                 callback3                                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1112,48 +1118,58 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
     CORE::CDirectoryWatcherEvents::TFileCreatedEventData* fileCreatedEventData = static_cast< CORE::CDirectoryWatcherEvents::TFileCreatedEventData* >( eventdata );
     if ( GUCEF_NULL != fileCreatedEventData )
     {        
-        CORE::CDateTime containerFileFirstMsgDt;
-        CORE::CDateTime containerFileLastMsgDt;
-        CORE::CDateTime containerFileCaptureDt;
-        if ( GetTimestampsFromContainerFilename( *fileCreatedEventData, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
-        {
-            // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
-            // this is on a first come first serve basis if we find a match
+        CORE::CString vfsNewFilePath = fileCreatedEventData->GetData();
 
-            StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
-            while ( i != m_stage0StorageToPubSubRequests.end() )
+        // Since VFS events are global lets make sure this relates to a path we actually care about
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        if ( vfs.IsFilePathSubOfDirPath( m_config.vfsStorageRootPath, vfsNewFilePath ) )
+        {        
+            CORE::CDateTime containerFileFirstMsgDt;
+            CORE::CDateTime containerFileLastMsgDt;
+            CORE::CDateTime containerFileCaptureDt;
+            if ( GetTimestampsFromContainerFilename( vfsNewFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
             {
-                // Check to see if the file is in range
+                // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
+                // this is on a first come first serve basis if we find a match
 
-                bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                bool isPartialMatch = ( firstMsgIsInRange && !lastMsgIsInRange ) || ( !firstMsgIsInRange && lastMsgIsInRange );
-
-                if ( firstMsgIsInRange || lastMsgIsInRange )
+                StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
+                while ( i != m_stage0StorageToPubSubRequests.end() )
                 {
-                    StorageToPubSubRequest newAutoRequest( (*i) );
-                    newAutoRequest.isPersistentRequest = false;
-                    
-                    TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
-                    bookmarkInfo->vfsFilePath = fileCreatedEventData->GetData();
-                    newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
+                    // Check to see if the file is in range
 
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData + 
-                        " as request based on persistent storage request" );
+                    bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
+                    bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
+                    bool isPartialMatch = ( firstMsgIsInRange && !lastMsgIsInRange ) || ( !firstMsgIsInRange && lastMsgIsInRange );
+
+                    if ( firstMsgIsInRange || lastMsgIsInRange )
+                    {
+                        StorageToPubSubRequest newAutoRequest( (*i) );
+                        newAutoRequest.isPersistentRequest = false;
+                        newAutoRequest.startDt = containerFileFirstMsgDt;
+                        newAutoRequest.endDt = containerFileLastMsgDt;
+                        newAutoRequest.okIfZeroContainersAreFound = false;
                     
-                    m_subscriptionIsAtEndOfData = false;
-                    m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
+                        TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
+                        bookmarkInfo->vfsFilePath = vfsNewFilePath;
+                        newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
+
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData + 
+                            " as request based on persistent storage request" );
+                    
+                        m_subscriptionIsAtEndOfData = false;
+                        m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
+                    }
+
+                    if ( !isPartialMatch )
+                        break;
+
+                    ++i;
                 }
-
-                if ( !isPartialMatch )
-                    break;
-
-                ++i;
             }
-        }
-        else
-        {
-            // could be some other file that is not a container file
+            else
+            {
+                // could be some other file that is not a container file
+            } 
         }
     }
 }
@@ -1189,29 +1205,6 @@ CStoragePubSubClientTopic::OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CStoragePubSubClientTopic::OnPumpedNotify( CORE::CNotifier* notifier    ,
-                                           const CORE::CEvent& eventid  ,
-                                           CORE::CICloneable* eventdata )
-{GUCEF_TRACE;
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    if ( &vfs == notifier )
-    {
-        if ( eventid == CORE::CDirectoryWatcherEvents::FileCreatedEvent )
-        {
-            OnVfsFileCreated( notifier, eventid, eventdata );
-        }
-        else
-        if ( eventid == VFS::CVFS::ArchiveMountedEvent )
-        {
-            OnVfsArchiveMounted( notifier, eventid, eventdata );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
 {GUCEF_TRACE;
@@ -1221,7 +1214,9 @@ CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
     CORE::CIDirectoryWatcher::CDirWatchOptions dirWatchOptions( false );
     dirWatchOptions.watchForFileCreation = true;
 
-    SubscribeTo( &vfs, VFS::CVFS::FileCreatedEvent );
+    TEventCallback callback( this, &CStoragePubSubClientTopic::OnVfsFileCreated );
+    SubscribeTo( &vfs, VFS::CVFS::FileCreatedEvent, callback );
+
     //SubscribeTo( &vfs, VFS::CVFS::FileModifiedEvent );
     //SubscribeTo( &vfs, VFS::CVFS::FileRenamedEvent );
     //SubscribeTo( &vfs, VFS::CVFS::FileDeletedEvent );
