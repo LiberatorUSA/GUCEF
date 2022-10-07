@@ -173,7 +173,7 @@ CNotifier::UnsubscribeAllFromNotifier( void )
 
     if ( GUCEF_NULL != m_imp )
     {
-        m_imp->UnsubscribeAllFromNotifier();
+        m_imp->UnsubscribeAllFromNotifier( false );
     }
 }
 

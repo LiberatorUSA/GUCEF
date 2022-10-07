@@ -130,7 +130,8 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      *  notifier events. Every event dispatched by 
      *  the notifier will be sent to the observer.
      */
-    bool Subscribe( CObserver* observer );
+    bool Subscribe( CObserver* observer                ,
+                    bool busyProcessingMailbox = false );
     
     /**
      *  Subscribes the given observer to the four standard
@@ -139,7 +140,8 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      */    
     bool Subscribe( CObserver* observer                              ,
                     const CEvent& eventid                            ,
-                    CIEventHandlerFunctorBase* callback = GUCEF_NULL );
+                    CIEventHandlerFunctorBase* callback = GUCEF_NULL ,
+                    bool busyProcessingMailbox = false               );
 
     /**
      *  Detaches the given observer from the notifier.
@@ -155,13 +157,14 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      *  Note that subscriptions to the standard notifier events 
      *  cannot be cancelled, attempts to do so will be ignored.
      */    
-    void Unsubscribe( CObserver* observer   ,
-                      const CEvent& eventid );
+    void Unsubscribe( CObserver* observer                ,
+                      const CEvent& eventid              ,
+                      bool busyProcessingMailbox = false );
     
     /**
      *  Cancels the subscription of all observers subscribed to this notifier
      */
-    void UnsubscribeAllFromNotifier( void );
+    void UnsubscribeAllFromNotifier( bool busyProcessingMailbox );
 
     /**
      *  Dispatches the standard CNotifier::ModifyEvent
@@ -193,9 +196,10 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      *  Use with great care !!!
      *  Use of this version should be an exception and not standard practice
      */
-    bool NotifyObservers( CNotifier& sender             ,
-                          const CEvent& eventid         ,
-                          CICloneable* eventData = NULL );
+    bool NotifyObservers( CNotifier& sender                   ,
+                          const CEvent& eventid               ,
+                          CICloneable* eventData = GUCEF_NULL ,
+                          bool busyProcessingMailbox = false  );
 
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
@@ -235,10 +239,11 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
      *  Use of this version should be an exception and not standard practice
      *  This is typically only needed for exotic internal use!
      */
-    bool NotifySpecificObserver( CNotifier& sender             ,
-                                 CObserver& specificObserver   ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventData = NULL );
+    bool NotifySpecificObserver( CNotifier& sender                   ,
+                                 CObserver& specificObserver         ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventData = GUCEF_NULL ,
+                                 bool busyProcessingMailbox = false  );
 
     /**
      *  The same as NotifyObservers( CNotifier, CEvent, CICloneable )
@@ -280,7 +285,8 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
 
     void UnsubscribeFromAllEvents( CObserver* observer            ,
                                    const bool notifyObserver      ,
-                                   const bool observerDestruction );
+                                   const bool observerDestruction ,
+                                   bool busyProcessingMailbox     );
 
     UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
     

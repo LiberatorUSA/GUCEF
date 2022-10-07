@@ -133,7 +133,7 @@ CNotifierImplementor::~CNotifierImplementor()
      */
     assert( !m_isBusy );
 
-    UnsubscribeAllFromNotifier();
+    UnsubscribeAllFromNotifier( false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -237,12 +237,12 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
 /*-------------------------------------------------------------------------*/
 
 void
-CNotifierImplementor::UnsubscribeAllFromNotifier( void )
+CNotifierImplementor::UnsubscribeAllFromNotifier( bool busyProcessingMailbox )
 {GUCEF_TRACE;
 
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         // Now we will remove references to the notifier at the observers
         TObserverList::iterator i = m_observers.begin();
@@ -295,12 +295,13 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::Subscribe( CObserver* observer )
+CNotifierImplementor::Subscribe( CObserver* observer                      ,
+                                 bool busyProcessingMailbox /* = false */ )
 {GUCEF_TRACE;
 
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         if ( !LinkObserver( observer, true ) )
         {
@@ -312,7 +313,8 @@ CNotifierImplementor::Subscribe( CObserver* observer )
                 return false;
             }
 
-            ProcessMailbox();
+            if ( !busyProcessingMailbox )
+                ProcessMailbox();
         }
     }
     else
@@ -337,12 +339,13 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 bool
 CNotifierImplementor::Subscribe( CObserver* observer                                    ,
                                  const CEvent& eventid                                  ,
-                                 CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ )
+                                 CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ ,
+                                 bool busyProcessingMailbox /* = false */               )
 {GUCEF_TRACE;
 
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
 
@@ -415,7 +418,8 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
             return false;
         }
 
-        ProcessMailbox();
+        if ( !busyProcessingMailbox )
+            ProcessMailbox();
     }
     else
     {
@@ -516,6 +520,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer )
 
     UnsubscribeFromAllEvents( observer ,
                               true     ,
+                              false    ,
                               false    );
 }
 
@@ -524,10 +529,11 @@ CNotifierImplementor::Unsubscribe( CObserver* observer )
 void
 CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                                                 const bool notifyObserver      ,
-                                                const bool observerDestruction )
+                                                const bool observerDestruction ,
+                                                bool busyProcessingMailbox     )
 {GUCEF_TRACE;
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
 
@@ -601,7 +607,8 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             return;
         }
 
-        ProcessMailbox();
+        if ( !busyProcessingMailbox )
+            ProcessMailbox();
     }
     else
     {
@@ -651,13 +658,14 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
 /*-------------------------------------------------------------------------*/
 
 void
-CNotifierImplementor::Unsubscribe( CObserver* observer   ,
-                                   const CEvent& eventid )
+CNotifierImplementor::Unsubscribe( CObserver* observer                      ,
+                                   const CEvent& eventid                    ,
+                                   bool busyProcessingMailbox /* = false */ )
 {GUCEF_TRACE;
 
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
 
@@ -706,7 +714,8 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
             return;
         }
 
-        ProcessMailbox();
+        if ( !busyProcessingMailbox )
+            ProcessMailbox();
     }
     else
     {
@@ -801,9 +810,10 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
-                                       const CEvent& eventid  ,
-                                       CICloneable* eventData )
+CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
+                                       const CEvent& eventid      ,
+                                       CICloneable* eventData     ,
+                                       bool busyProcessingMailbox )
 {GUCEF_TRACE;
 
     /*
@@ -817,7 +827,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
      */
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
 
@@ -857,18 +867,21 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                     // Add the observer to our 'notified' list
                     notifiedObservers.insert( oPtr );
 
-                    // Process command mail if needed
-                    if ( !m_cmdMailStack.empty() )
+                    if ( !busyProcessingMailbox )
                     {
-                        // We have command mail
-                        m_isBusy = false;
-                        ProcessCmdMailbox();
-                        m_isBusy = true;
+                        // Process command mail if needed
+                        if ( !m_cmdMailStack.empty() )
+                        {
+                            // We have command mail
+                            m_isBusy = false;
+                            ProcessCmdMailbox();
+                            m_isBusy = true;
 
-                        // the administration has been altered, we now have no choice
-                        // but to start from the beginning
-                        i = m_observers.begin();
-                        continue;
+                            // the administration has been altered, we now have no choice
+                            // but to start from the beginning
+                            i = m_observers.begin();
+                            continue;
+                        }
                     }
                 }
             }
@@ -958,24 +971,24 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
                     // Add the observer to our 'notified' list
                     notifiedObservers.insert( oPtr );
 
-                    // Process command mail if needed
-                    if ( !m_cmdMailStack.empty() )
+                    if ( !busyProcessingMailbox )
                     {
-                        // We have command mail
-                        m_isBusy = false;
-                        ProcessCmdMailbox();
-                        m_isBusy = true;
+                        // Process command mail if needed
+                        if ( !m_cmdMailStack.empty() )
+                        {
+                            // We have command mail
+                            ProcessCmdMailbox();
 
-                        // the administration has been altered, we now have no choice
-                        // but to start from the beginning
-                        n = observers.begin();
-                        continue;
+                            // the administration has been altered, we now have no choice
+                            // but to start from the beginning
+                            n = observers.begin();
+                            continue;
+                        }
                     }
                 }
             }
             ++n;
         }
-
 
         m_isBusy = false;
 
@@ -988,7 +1001,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
         }
 
         // Now we check if any requests where received while we where busy
-        ProcessMailbox();
+        if ( !busyProcessingMailbox )
+            ProcessMailbox();
     }
     else
     {
@@ -1042,11 +1056,13 @@ CNotifierImplementor::ProcessCmdMailbox( void )
                 {
                     Subscribe( cmdMailElement.observer ,
                                cmdMailElement.eventID  ,
-                               cmdMailElement.callback );
+                               cmdMailElement.callback ,
+                               true                    );
                 }
                 else
                 {
-                    Subscribe( cmdMailElement.observer );
+                    Subscribe( cmdMailElement.observer ,
+                               true                    );
                 }
                 break;
             }
@@ -1055,19 +1071,21 @@ CNotifierImplementor::ProcessCmdMailbox( void )
                 if ( cmdMailElement.eventID.IsInitialized() )
                 {
                     Unsubscribe( cmdMailElement.observer ,
-                                 cmdMailElement.eventID  );
+                                 cmdMailElement.eventID  ,
+                                 true                    );
                 }
                 else
                 {
                     UnsubscribeFromAllEvents( cmdMailElement.observer            ,
                                               cmdMailElement.notify              ,
-                                              cmdMailElement.observerIsDestroyed );
+                                              cmdMailElement.observerIsDestroyed ,
+                                              true                               );
                 }
                 break;
             }
             case REQUEST_UNSUBSCRIBE_ALL :
             {
-                UnsubscribeAllFromNotifier();
+                UnsubscribeAllFromNotifier( true );
                 break;
             }
             default :
@@ -1098,11 +1116,11 @@ CNotifierImplementor::ProcessEventMailbox( void )
             // for the next mail item
             if ( GUCEF_NULL == entry.specificObserver )
             {
-                NotifyObservers( *entry.sender, entry.eventID, entry.eventData );
+                NotifyObservers( *entry.sender, entry.eventID, entry.eventData, true );
             }
             else
             {
-                NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData );
+                NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData, true );
             }
         }
         delete entry.eventData;
@@ -1144,7 +1162,8 @@ CNotifierImplementor::NotifySpecificObserver( CObserver& specificObserver ,
     return NotifySpecificObserver( *m_ownerNotifier ,
                                    specificObserver ,
                                    eventid          ,
-                                   eventData        );
+                                   eventData        ,
+                                   false            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1153,7 +1172,8 @@ bool
 CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                                               CObserver& specificObserver ,
                                               const CEvent& eventid       ,
-                                              CICloneable* eventData      )
+                                              CICloneable* eventData      ,
+                                              bool busyProcessingMailbox  )
 {GUCEF_TRACE;
 
     /*
@@ -1167,7 +1187,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
      */
     CNotifierScopeLock lock( m_ownerNotifier );
 
-    if ( !m_isBusy )
+    if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
 
@@ -1197,10 +1217,13 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
                 }
 
                 // Process command mail if needed
-                if ( !m_cmdMailStack.empty() )
+                if ( !busyProcessingMailbox )
                 {
-                    // We have command mail
-                    ProcessCmdMailbox();
+                    if ( !m_cmdMailStack.empty() )
+                    {
+                        // We have command mail
+                        ProcessCmdMailbox();
+                    }
                 }
 
                 // Since we only have no notify a single observer we can stop here
@@ -1256,10 +1279,13 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
             }
 
             // Process command mail if needed
-            if ( !m_cmdMailStack.empty() )
+            if ( !busyProcessingMailbox )
             {
-                // We have command mail
-                ProcessMailbox();
+                if ( !m_cmdMailStack.empty() )
+                {
+                    // We have command mail
+                    ProcessMailbox();
+                }
             }
         }
 
@@ -1306,7 +1332,8 @@ CNotifierImplementor::OnObserverDestroy( CObserver* observer )
 
     UnsubscribeFromAllEvents( observer ,
                               false    ,
-                              true     );
+                              true     ,
+                              false    );
 
     NotificationUnlock();
 
@@ -1327,7 +1354,7 @@ CNotifierImplementor::OnDeathOfOwnerNotifier( void )
     /*
      *  Now we will remove references to the notifier at the observers
      */
-    UnsubscribeAllFromNotifier();
+    UnsubscribeAllFromNotifier( false );
 
     /*
      *  This is an important step,..
