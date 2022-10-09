@@ -241,7 +241,7 @@ CHTTPServer::~CHTTPServer()
 
     MT::CScopeMutex lock( m_lock );
     
-    UnsubscribeAllFromObserver();
+    SignalUpcomingObserverDestruction();
 
     if ( GUCEF_NULL != m_requestHandlerFactory )
         m_requestHandlerFactory->Destroy( m_requestHandler );

@@ -107,7 +107,7 @@ CPubSubClientTopic::CPubSubClientTopic( const CORE::PulseGeneratorPtr& pulseGene
 CPubSubClientTopic::~CPubSubClientTopic()
 {GUCEF_TRACE;
 
-    UnsubscribeAllFromObserver( true );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

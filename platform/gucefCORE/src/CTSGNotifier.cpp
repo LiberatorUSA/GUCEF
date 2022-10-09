@@ -92,7 +92,7 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 CTSGNotifier::~CTSGNotifier()
 {GUCEF_TRACE;
    
-    UnsubscribeAllFromObserver( true );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,6 +278,24 @@ CTSGNotifier::NotificationUnlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CTSGNotifier::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const 
+{GUCEF_TRACE; 
+
+    return m_notificationLock.Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTSGNotifier::NotificationReadOnlyUnlock( void ) const 
+{GUCEF_TRACE;
+
+    return m_notificationLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CObserver&
 CTSGNotifier::AsObserver( void )
 {GUCEF_TRACE;
@@ -306,20 +324,36 @@ CTSGNotifier::GetPulseGenerator( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CTSGNotifier::UnsubscribeAllFromObserver( bool isBeingDestroyed )
+CTSGNotifier::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    if ( isBeingDestroyed )
-    {
-        m_tsgObserver.ForwardSignalOfUpcomingObserverDestruction();
-        m_tsgObserver.ClearMailbox( false );
-        m_tsgObserver.SetPulseGenerator( PulseGeneratorPtr() );
-        m_tsgObserver.SetParent( GUCEF_NULL );         
-    }
-    else
-    {
-        m_tsgObserver.UnsubscribeAllFromObserver();
-    }
+    m_tsgObserver.UnsubscribeAllFromObserver();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTSGNotifier::SignalUpcomingObserverDestruction( void )
+{GUCEF_TRACE;
+
+    m_tsgObserver.ForwardSignalOfUpcomingObserverDestruction();
+    m_tsgObserver.ClearMailbox( false );
+    m_tsgObserver.SetPulseGenerator( PulseGeneratorPtr() );
+    m_tsgObserver.SetParent( GUCEF_NULL );         
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGNotifier::OnNotify( CNotifier* notifier   ,
+                        const CEvent& eventId ,
+                        CICloneable* evenData )
+{GUCEF_TRACE;
+
+    // we will route to the observer component for actual processing
+    m_tsgObserver.OnNotify( notifier ,
+                            eventId  ,
+                            evenData );
 }
 
 /*-------------------------------------------------------------------------//

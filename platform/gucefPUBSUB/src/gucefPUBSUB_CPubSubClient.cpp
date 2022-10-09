@@ -97,7 +97,7 @@ CPubSubClient::CPubSubClient( const CPubSubClient& src )
 CPubSubClient::~CPubSubClient()
 {GUCEF_TRACE;
 
-    UnsubscribeAllFromObserver( true );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

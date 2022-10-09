@@ -62,6 +62,10 @@ class GUCEF_CORE_PUBLIC_CPP CIEventHandlerFunctorBase : public CIObserver  ,
     virtual ~CIEventHandlerFunctorBase();
 
     CIEventHandlerFunctorBase& operator=( const CIEventHandlerFunctorBase& src );
+
+    virtual const CIObserver* GetTargetObserver( void ) const = 0;
+
+    virtual CIObserver* GetTargetObserver( void ) = 0;
 };
 
 /*-------------------------------------------------------------------------//

@@ -808,7 +808,7 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
             jsonDoc = json_parse( fileBuffer, bytesRead );
             free( fileBuffer );
 
-            free( sd->jsonDoc );
+            json_builder_free( sd->jsonDoc );
             sd->jsonDoc = jsonDoc;
 
             /* Now we actually commence the reading itself

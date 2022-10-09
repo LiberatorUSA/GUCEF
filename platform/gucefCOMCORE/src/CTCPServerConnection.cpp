@@ -120,7 +120,7 @@ CTCPServerConnection::~CTCPServerConnection()
 
     Close();
 
-    UnsubscribeAllFromObserver();
+    SignalUpcomingObserverDestruction();
     
     delete _data;
     _data = GUCEF_NULL;

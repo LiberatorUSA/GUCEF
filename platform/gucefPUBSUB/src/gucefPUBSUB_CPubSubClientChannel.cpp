@@ -96,7 +96,7 @@ CPubSubClientChannel::~CPubSubClientChannel()
 {GUCEF_TRACE;
 
     Clear();
-    UnsubscribeAllFromObserver( true );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

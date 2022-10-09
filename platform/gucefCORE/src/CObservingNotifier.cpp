@@ -72,6 +72,8 @@ CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
 CObservingNotifier::~CObservingNotifier()
 {GUCEF_TRACE;
 
+    CNotifierScopeLock lock( this );
+    SignalUpcomingObserverDestruction();
     m_observer.SetOwner( GUCEF_NULL );
 }
 
@@ -93,9 +95,18 @@ void
 CObservingNotifier::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    Lock();
+    CNotifierScopeLock lock( this );
     m_observer.UnsubscribeAllFromObserver();
-    Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::SignalUpcomingObserverDestruction( void )
+{GUCEF_TRACE;
+
+    CNotifierScopeLock lock( this );
+    m_observer.SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -104,9 +115,8 @@ UInt32
 CObservingNotifier::GetObserverSubscriptionCount( void )
 {GUCEF_TRACE;
 
-    Lock();
+    CNotifierScopeLock lock( this );
     UInt32 retval( m_observer.GetSubscriptionCount() );
-    Unlock();
     return retval;
 }
 
@@ -116,9 +126,8 @@ UInt32
 CObservingNotifier::GetObserverNotifierCount( void )
 {GUCEF_TRACE;
 
-    Lock();
+    CNotifierScopeLock lock( this );
     UInt32 retval( m_observer.GetNotifierCount() );
-    Unlock();
     return retval;
 }
 
@@ -130,9 +139,8 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 
     if ( NULL != notifier )
     {
-        Lock();
+        CNotifierScopeLock lock( this );
         notifier->Subscribe( &m_observer );
-        Unlock();
     }
 }
 
@@ -165,13 +173,12 @@ CObservingNotifier::SubscribeToImp( CNotifier* notifier                 ,
                                     CIEventHandlerFunctorBase* callback )
 {GUCEF_TRACE;
 
-    if ( NULL != notifier )
+    if ( GUCEF_NULL != notifier )
     {
-        Lock();
+        CNotifierScopeLock lock( this );
         notifier->Subscribe( &m_observer ,
                              eventid     ,
                              callback    );
-        Unlock();
     }
 }
 
@@ -181,11 +188,10 @@ void
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    if ( NULL != notifier )
+    if ( GUCEF_NULL != notifier )
     {
-        Lock();
+        CNotifierScopeLock lock( this );
         notifier->Unsubscribe( &m_observer );
-        Unlock();
     }
 }
 
@@ -196,12 +202,11 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
                                      const CEvent& eventid )
 {GUCEF_TRACE;
 
-    if ( NULL != notifier )
+    if ( GUCEF_NULL != notifier )
     {
-        Lock();
+        CNotifierScopeLock lock( this );
         notifier->Unsubscribe( &m_observer ,
                                eventid     );
-        Unlock();
     }
 }
 

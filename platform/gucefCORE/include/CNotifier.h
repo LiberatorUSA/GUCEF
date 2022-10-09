@@ -263,7 +263,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CINotifier
     /**
      *  Certain edge-cases require knowledge of the destructions of
      *  a specific observer. Typically this is not needed since it is handled
-     *  authomatically. However if you use a function like NotifySpecificObserver()
+     *  automatically. However if you use a function like NotifySpecificObserver()
      *  then you might have use for this function. No-op at this level.
      */
     virtual void OnObserverDestruction( CObserver* observer );

@@ -116,6 +116,7 @@ CNotifierObservingComponent::CNotifierObservingComponent( const CNotifierObservi
 CNotifierObservingComponent::~CNotifierObservingComponent()
 {GUCEF_TRACE;
 
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

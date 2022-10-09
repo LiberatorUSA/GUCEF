@@ -75,7 +75,8 @@ class CPulseGenerator;
  *  the event data before it is sent to the observers.
  *  Keep in mind that the CTSGNotifier will become the source notifier !!!
  */
-class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
+class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
+                                           public CIObserver
 {
     public:
 
@@ -129,7 +130,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
                       const CEvent& eventid               ,
                       CIEventHandlerFunctorBase& callback );
 
-    void UnsubscribeAllFromObserver( bool isBeingDestroyed );
+    void UnsubscribeAllFromObserver( void );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -164,6 +165,10 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     virtual bool NotificationUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE; 
+
+    virtual bool NotificationReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE; 
+
     protected:
     friend class CTSGObserver;    
 
@@ -197,6 +202,18 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
                                  const CEvent& eventid               ,
                                  CICloneable* eventdata = GUCEF_NULL );
 
+    /**
+     *  Implemented to satisfy the IObserver interface.
+     *  The purpose of this class is thread uniformity in event handling
+     *  As such OnPumpedNotify() is correct corresponding handler you may wish to override.
+     *  This handler merely forwards to the observer component
+     */
+    virtual void OnNotify( CNotifier* notifier                ,
+                           const CEvent& eventId              ,
+                           CICloneable* evenData = GUCEF_NULL );
+
+    void SignalUpcomingObserverDestruction( void );
+    
     private:
 
     CTSGObserver m_tsgObserver;

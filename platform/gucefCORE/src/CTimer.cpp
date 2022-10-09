@@ -151,6 +151,9 @@ CTimer::CTimer( const CTimer& src )
 
 CTimer::~CTimer()
 {GUCEF_TRACE;
+    
+    SetEnabled( false );
+    SignalUpcomingObserverDestruction();
 
     if ( !m_pulseGenerator.IsNULL() )
     {

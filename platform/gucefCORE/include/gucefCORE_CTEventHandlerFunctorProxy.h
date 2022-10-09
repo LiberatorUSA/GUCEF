@@ -81,6 +81,10 @@ class CTEventHandlerFunctorProxy : public virtual CIEventHandlerFunctorBase
 
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const CIObserver* GetTargetObserver( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CIObserver* GetTargetObserver( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -210,6 +214,34 @@ CTEventHandlerFunctorProxy< IObserverDerived >::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CTEventHandlerFunctorProxy< IObserverDerived >( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+const CIObserver* 
+CTEventHandlerFunctorProxy< IObserverDerived >::GetTargetObserver( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_actualCallback )
+    {
+        return m_actualCallback->GetTargetObserver();
+    }
+    return static_cast< const CIObserver* >( m_observer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+CIObserver* 
+CTEventHandlerFunctorProxy< IObserverDerived >::GetTargetObserver( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_actualCallback )
+    {
+        return m_actualCallback->GetTargetObserver();
+    }
+    return static_cast< CIObserver* >( m_observer );
 }
 
 /*-------------------------------------------------------------------------*/

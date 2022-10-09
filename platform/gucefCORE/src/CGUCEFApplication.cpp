@@ -171,7 +171,7 @@ CGUCEFApplication::~CGUCEFApplication()
         }
     }
 
-    UnsubscribeAllFromObserver( true );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

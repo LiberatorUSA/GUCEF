@@ -155,6 +155,8 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SignalUpcomingObserverDestruction( void );
+
     /**
      *  Event callback member function.
      *  Implement this in your descending class to handle

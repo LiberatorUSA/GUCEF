@@ -209,9 +209,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
             if ( !m_cmdMailStack.empty() )
             {
                 // We have command mail
-                m_isBusy = false;
                 ProcessCmdMailbox();
-                m_isBusy = true;
 
                 // the administration has been altered, we now have no choice
                 // but to start from the beginning
@@ -342,9 +340,10 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                                  CIEventHandlerFunctorBase* callback /* = GUCEF_NULL */ ,
                                  bool busyProcessingMailbox /* = false */               )
 {GUCEF_TRACE;
-
+    
     CNotifierScopeLock lock( m_ownerNotifier );
 
+    bool wasBusy = m_isBusy;
     if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
@@ -374,8 +373,9 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                     // The observer is already subscribed to this event
                     // All we have to do is make sure the callback is added
                     TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
-                    callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
-                    m_isBusy = false;
+                    if ( GUCEF_NULL != callback )
+                        callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
+                    m_isBusy = wasBusy;
                     return true;
                 }
 
@@ -406,7 +406,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
             }
         }
 
-        m_isBusy = false;
+        m_isBusy = wasBusy;
         
         LinkObserver( observer, false );
 
@@ -533,7 +533,8 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                                                 bool busyProcessingMailbox     )
 {GUCEF_TRACE;
 
-    if ( !m_isBusy || busyProcessingMailbox )
+    bool wasBusy = m_isBusy;
+    if ( !m_isBusy || busyProcessingMailbox || observerDestruction )
     {
         m_isBusy = true;
 
@@ -597,7 +598,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                                 CNotifier::UnsubscribeEvent );
         }
 
-        m_isBusy = false;
+        m_isBusy = wasBusy;
 
         if ( m_scheduledForDestruction )
         {
@@ -612,18 +613,14 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
     }
     else
     {
-        // Check if the observer is being destroyed in which case there is no point adding mail we will ignore anyway
-        if ( !observerDestruction )
-        {
-            TCmdMailElement cmdMailElement;
-            cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
-            cmdMailElement.eventID = CEvent();    // <- not used in this context
-            cmdMailElement.observer = observer;
-            cmdMailElement.callback = GUCEF_NULL;
-            cmdMailElement.notify = notifyObserver;
-            cmdMailElement.observerIsDestroyed = observerDestruction;
-            m_cmdMailStack.push_back( cmdMailElement );
-        }
+        TCmdMailElement cmdMailElement;
+        cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
+        cmdMailElement.eventID = CEvent();    // <- not used in this context
+        cmdMailElement.observer = observer;
+        cmdMailElement.callback = GUCEF_NULL;
+        cmdMailElement.notify = notifyObserver;
+        cmdMailElement.observerIsDestroyed = observerDestruction;
+        m_cmdMailStack.push_back( cmdMailElement );
     }
 
     if ( observerDestruction )
@@ -665,6 +662,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer                      ,
 
     CNotifierScopeLock lock( m_ownerNotifier );
 
+    bool wasBusy = m_isBusy;
     if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
@@ -697,14 +695,14 @@ CNotifierImplementor::Unsubscribe( CObserver* observer                      ,
                         callbacks.clear();
                     }
                     eventObservers.erase( i );
-                    m_isBusy = false;                    
+                    m_isBusy = wasBusy;                    
                     return;
                 }
                 ++i;
             }
         }
 
-        m_isBusy = false;
+        m_isBusy = wasBusy;
 
         if ( m_scheduledForDestruction )
         {
@@ -827,6 +825,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
      */
     CNotifierScopeLock lock( m_ownerNotifier );
 
+    bool wasBusy = m_isBusy;
     if ( !m_isBusy || busyProcessingMailbox )
     {
         m_isBusy = true;
@@ -834,31 +833,57 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
         CObserver* oPtr = GUCEF_NULL;
         TObserverSet notifiedObservers;
 
-        // First we process observers that are subscribed to all events
-        TObserverList::iterator i = m_observers.begin();
-        while ( i != m_observers.end() )
+        // Notify observers that are subscribed to this specific event (if any)       
+        TNotificationList::iterator l = m_eventobservers.find( eventid );
+        if ( l != m_eventobservers.end() )
         {
-            if ( (*i).second )
+            TEventNotificationMap& observers = (*l).second;        
+            TEventNotificationMap::iterator n = observers.begin();
+            while ( n != observers.end() )
             {
-                // Check if we have not already notified this observer
-                oPtr = (*i).first;
-                if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
+                oPtr = (*n).first;
+                bool notified = false;
+
+                // Check if we should perform notification using the generic
+                // handler or a user specified callback.
+                TEventHandlerFunctorInterfaceVector& callbacks = (*n).second;
+                if ( !callbacks.empty() )
                 {
-                    GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                    TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
+                    while ( m != callbacks.end() )
+                    {
+                        CIEventHandlerFunctorBase* callback = (*m);
+                        if ( GUCEF_NULL != callback )
+                        {
+                            GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() +    
+                                ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
+
+                            callback->OnNotify( &sender   ,
+                                                eventid   ,
+                                                eventData );
+                            notified = true;
+                        }
+                        ++m;
+                    }
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
                         ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
 
-                    // Perform the notification
-                    // If an observer is subscribed to all events we never used specialized callbacks
-                    // instead we always use the standard OnNotify()
                     oPtr->OnNotify( &sender   ,
                                     eventid   ,
-                                    eventData );
-
+                                    eventData );                            
+                    notified = true;
+                }
+                  
+                if ( notified )
+                {
                     // Check if someone deleted our owner notifier
                     if ( m_ownerNotifier == GUCEF_NULL )
                     {
                         // Gracefully handle the destruction sequence
-                        m_isBusy = false;
+                        m_isBusy = wasBusy;
                         lock.EarlyUnlock();
                         Destroy( this );
                         return false;
@@ -873,9 +898,60 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
                         if ( !m_cmdMailStack.empty() )
                         {
                             // We have command mail
-                            m_isBusy = false;
                             ProcessCmdMailbox();
-                            m_isBusy = true;
+
+                            // the administration has been altered, we now have no choice
+                            // but to start from the beginning. Its some extra work but 'notifiedObservers'
+                            // will make sure we do not notifiy redundantly
+                            n = observers.begin();
+                            continue;
+                        }
+                    }
+                }
+                ++n;
+            }
+        }
+
+        // Now we process observers that are subscribed to 'all' events
+        // these are catch-all subscriptions
+        TObserverList::iterator i = m_observers.begin();
+        while ( i != m_observers.end() )
+        {
+            // Check if this observer is registered as interested in all events which is just a flag
+            if ( (*i).second )
+            {
+                // Check if we have not already notified this observer using a more dedicated subscription and potentially dedicated callback
+                oPtr = (*i).first;
+                if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
+                {
+                    GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                        ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
+
+                    // Perform the notification because this observer has not been notified at all yet
+                    oPtr->OnNotify( &sender   ,
+                                    eventid   ,
+                                    eventData );
+
+                    // Check if someone deleted our owner notifier
+                    if ( m_ownerNotifier == GUCEF_NULL )
+                    {
+                        // Gracefully handle the destruction sequence
+                        m_isBusy = wasBusy;
+                        lock.EarlyUnlock();
+                        Destroy( this );
+                        return false;
+                    }
+
+                    // Add the observer to our 'notified' list
+                    notifiedObservers.insert( oPtr );
+
+                    if ( !busyProcessingMailbox )
+                    {
+                        // Process command mail if needed
+                        if ( !m_cmdMailStack.empty() )
+                        {
+                            // We have command mail
+                            ProcessCmdMailbox();
 
                             // the administration has been altered, we now have no choice
                             // but to start from the beginning
@@ -888,109 +964,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
             ++i;
         }
 
-        // Notify observers that are subscribed to this specific event
-        bool notified = false;
-        TEventNotificationMap& observers = m_eventobservers[ eventid ];
-        notifiedObservers.clear();
-
-        TEventNotificationMap::iterator n = observers.begin();
-        while ( n != observers.end() )
-        {
-            // Check if we have not already notified this observer
-            notified = false;
-            oPtr = (*n).first;
-            if ( notifiedObservers.find( oPtr ) == notifiedObservers.end() )
-            {
-                // Perform the notification
-                i = m_observers.find( oPtr );
-                if ( i != m_observers.end() )
-                {
-                    // Check if this observer is also registered as interested in all
-                    // events. In such a case we don't have to notify this observer
-                    // any more because it has already been notified in the generic
-                    // event notification section above this one.
-                    if ( !(*i).second )
-                    {
-                        // Check if we should perform notification using the generic
-                        // handler or a user specified callback.
-                        TEventHandlerFunctorInterfaceVector& callbacks = (*n).second;
-                        if ( !callbacks.empty() )
-                        {
-                            TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
-                            while ( m != callbacks.end() )
-                            {
-                                CIEventHandlerFunctorBase* callback = (*m);
-
-                                GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() +    
-                                    ": Dispatching event \"" + eventid.GetName() + "\" to " + callback->GetClassTypeName() + "(" + CORE::PointerToString( callback ) + ")" );
-
-                                callback->OnNotify( &sender   ,
-                                                    eventid   ,
-                                                    eventData );
-                                ++m;
-                            }
-                        }
-                        else
-                        {
-                            GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
-                                ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
-
-                            oPtr->OnNotify( &sender   ,
-                                            eventid   ,
-                                            eventData );                            
-                        }
-                        notified = true;
-                    }
-                }
-                else
-                {
-                    // We should not get here, but we will pass on the event anyway
-                    GUCEF_ASSERT_ALWAYS;
-
-                    GUCEF_DEBUG_LOG_EVERYTHING( "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
-                        ": Dispatching event \"" + eventid.GetName() + "\" to " + oPtr->GetClassTypeName() + "(" + CORE::PointerToString( oPtr ) + ")" );
-
-                    oPtr->OnNotify( &sender   ,
-                                    eventid   ,
-                                    eventData );
-                    notified = true;
-                }
-
-                if ( notified )
-                {
-                    // Check if someone deleted our owner notifier
-                    if ( m_ownerNotifier == GUCEF_NULL )
-                    {
-                        // Gracefully handle the destruction sequence
-                        m_isBusy = false;
-                        lock.EarlyUnlock();
-                        Destroy( this );
-                        return false;
-                    }
-
-                    // Add the observer to our 'notified' list
-                    notifiedObservers.insert( oPtr );
-
-                    if ( !busyProcessingMailbox )
-                    {
-                        // Process command mail if needed
-                        if ( !m_cmdMailStack.empty() )
-                        {
-                            // We have command mail
-                            ProcessCmdMailbox();
-
-                            // the administration has been altered, we now have no choice
-                            // but to start from the beginning
-                            n = observers.begin();
-                            continue;
-                        }
-                    }
-                }
-            }
-            ++n;
-        }
-
-        m_isBusy = false;
+        m_isBusy = wasBusy;
 
         if ( m_scheduledForDestruction )
         {            
@@ -1327,15 +1301,17 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
 void
 CNotifierImplementor::OnObserverDestroy( CObserver* observer )
 {GUCEF_TRACE;
+    
+    CNotifierScopeLock lock( m_ownerNotifier );
 
-    NotificationLock();
-
+    GUCEF_DEBUG_LOG_EVERYTHING( "NotifierImplementor(" + CORE::PointerToString( this ) + "):OnObserverDestroy: for observer " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );    
+    
     UnsubscribeFromAllEvents( observer ,
                               false    ,
                               true     ,
                               false    );
 
-    NotificationUnlock();
+    lock.EarlyUnlock();
 
     m_ownerNotifier->OnObserverDestruction( observer );
 }

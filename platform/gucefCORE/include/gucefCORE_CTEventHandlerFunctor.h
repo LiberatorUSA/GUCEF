@@ -91,6 +91,10 @@ class CTEventHandlerFunctor : public virtual CIEventHandlerFunctorBase
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const CIObserver* GetTargetObserver( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CIObserver* GetTargetObserver( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -201,6 +205,26 @@ CTEventHandlerFunctor< IObserverDerived >::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CTEventHandlerFunctor< IObserverDerived >( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+const CIObserver* 
+CTEventHandlerFunctor< IObserverDerived >::GetTargetObserver( void ) const
+{GUCEF_TRACE;
+
+    return static_cast< const CIObserver* >( m_observer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+CIObserver* 
+CTEventHandlerFunctor< IObserverDerived >::GetTargetObserver( void )
+{GUCEF_TRACE;
+
+    return static_cast< CIObserver* >( m_observer );
 }
 
 /*-------------------------------------------------------------------------*/

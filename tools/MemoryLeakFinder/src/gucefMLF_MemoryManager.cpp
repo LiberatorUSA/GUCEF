@@ -5,6 +5,8 @@
  *      - Added better edge case handling
  *      - various tweaks leveraging GUCEF platform abilities
  *      - Fixed realloc wiping prior memory contents during realloc
+ *      - Added additional printing options
+ *      - Added dumping of fault address related info
  */
 
 /***
@@ -44,6 +46,8 @@
 
 #include "gucefMLF_MemoryManager.h"    
 
+#include <map>
+
 #ifndef GUCEF_MT_MUTEX_H
 #include "gucefMT_mutex.h"
 #define GUCEF_MT_MUTEX_H
@@ -80,6 +84,8 @@
 
 #undef GUCEF_USE_CALLSTACK_TRACING
 #undef GUCEF_USE_CALLSTACK_PLATFORM_TRACING
+
+#define GUCEF_MAX_DEALLOCS_TO_TRACK     10000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -196,7 +202,9 @@ private:
 // since this file is the only one that can ever create a MemoryManager object.
 class MemoryManager
 {
-public:
+    public:
+    typedef std::map< UInt64, MemoryNode* > TUInt64ToMemoryNodeMap;
+
   MemoryManager( void );    // Default Constructor.
   ~MemoryManager( void );    // Destructor.
 
@@ -217,8 +225,17 @@ public:
 
     // Error Reporting Routines
     void dumpLogReport( void );
+    void dumpLogReport( FILE* fp );
     void dumpMemoryAllocations( void );
+    void dumpMemoryAllocations( FILE* fp );
+    void dumpMemoryNode( FILE* fp, MemoryNode* node );
+    void dumpExceptionLogReport( FILE* fp, void* faultAddress );
+    void dumpExceptionLogReport( void* faultAddress );
     void log( char *s, ... );
+
+    // Looks through all nodes to find which one is nearest to the address given
+    void FindNearestCurrentMemoryNodes( const void* address, UInt32 maxNrOfNodes, TUInt64ToMemoryNodeMap& nearestNodes );
+    void FindNearestDeallocatedMemoryNodes( const void* address, UInt32 maxNrOfNodes, TUInt64ToMemoryNodeMap& nearestNodes );
     
     // User programmable options
     int           m_breakOnAllocationCount;
@@ -255,9 +272,12 @@ private:
     int getHashIndex( const void *address );  // Given an address this returns the hash table index
     int calculateUnAllocatedMemory();   // Return the amount of unallocated memory.
 
-    MemoryNode *m_hashTable[HASH_SIZE]; // Hash Table container for tracking memory allocations.
+    MemoryNode* m_hashTable[HASH_SIZE]; // Hash Table container for tracking memory allocations.
 
-    MemoryNode *m_memoryCache;          // Used for caching unused memory nodes.
+    MemoryNode* m_deallocatedNodes;     // not actively in-use but 'recently' deallocated nodes
+    MemoryNode* m_lastDeallocatedNode;
+    UInt32 m_deallocatedNodeCount;
+    MemoryNode* m_memoryCache;          // Used for caching unused memory nodes.
 };
 
 bool manager_is_constructed = false;
@@ -281,7 +301,13 @@ MemoryManager::MemoryManager( void )
     : m_initialized( false ) 
     , m_shutdownCalled( false )
     , m_mutex()
+    , m_hashTable()
+    , m_deallocatedNodes( GUCEF_NULL )
+    , m_lastDeallocatedNode( GUCEF_NULL )
+    , m_deallocatedNodeCount( 0 )
+    , m_memoryCache( GUCEF_NULL )
 {
+    memset( m_hashTable, 0, HASH_SIZE * sizeof( MemoryNode* ) );
     manager_is_constructed = true;
 }
 
@@ -602,13 +628,41 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
     MEMMAN_DeAllocateMemory( address, type );
 }
 
-/*******************************************************************************************/
-/*******************************************************************************************/
-// ***** Helper Functions
+/*-------------------------------------------------------------------------*/
 
-/*******************************************************************************************/
-/*******************************************************************************************/
-// ****** Implementation of the MemoryManager Class:
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #if ( _WIN32_WINNT >= 0x0500 )
+
+    LONG WINAPI
+    Win32VectoredExceptionHandler( struct _EXCEPTION_POINTERS* ExceptionInfo )
+    {        
+        switch ( ExceptionInfo->ExceptionRecord->ExceptionCode )
+        {
+            case EXCEPTION_ACCESS_VIOLATION:
+            case EXCEPTION_IN_PAGE_ERROR:
+            {
+                if ( manager_is_constructed )
+                {
+                    if ( ExceptionInfo->ExceptionRecord->NumberParameters > 1 )
+                    {
+                        ULONG_PTR faultAddressInt = ExceptionInfo->ExceptionRecord->ExceptionInformation[ 1 ];
+                        g_manager.dumpExceptionLogReport( (void*) faultAddressInt );
+                    }
+                }
+                return EXCEPTION_CONTINUE_SEARCH;
+            }
+
+            default:
+            {
+                return EXCEPTION_CONTINUE_SEARCH;
+            }
+        }        
+    }
+
+  #endif
+#endif
+
+/*-------------------------------------------------------------------------*/
 
 /**
  * MemoryManager::initialize():
@@ -637,6 +691,14 @@ void MemoryManager::initialize( void )
     m_topStack.init();
 
     m_memoryCache = NULL;
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #if ( _WIN32_WINNT >= 0x0500 )
+
+    ::AddVectoredExceptionHandler( 1, Win32VectoredExceptionHandler );
+
+  #endif
+#endif
 
     m_initialized = true;
 }
@@ -674,9 +736,19 @@ void MemoryManager::release( void )
         m_topStack.pop();
     }
 
+    // Clean up the recently deallocated nodes
+    MemoryNode* ptr = GUCEF_NULL;
+    while ( GUCEF_NULL != m_deallocatedNodes )  
+    {
+        ptr = m_deallocatedNodes;
+        m_deallocatedNodes = ptr->next;
+        free( ptr );
+    }
+
     // Clean the memory cache
-    MemoryNode *ptr;
-    while (m_memoryCache) {
+    ptr = GUCEF_NULL;
+    while ( GUCEF_NULL != m_memoryCache ) 
+    {
         ptr = m_memoryCache;
         m_memoryCache = ptr->next;
         free( ptr );
@@ -739,6 +811,122 @@ MemoryNode* MemoryManager::getMemoryNode( const void *address )
         ptr = ptr->next;
     }
     return ptr;
+}
+
+/*******************************************************************************************/
+
+void 
+MemoryManager::FindNearestDeallocatedMemoryNodes( const void* address, 
+                                                  UInt32 maxNrOfNodes, 
+                                                  TUInt64ToMemoryNodeMap& nearestNodes )
+{
+    const Int8* testAddress = (const Int8*) address;
+
+    MemoryNode* nearestNode = GUCEF_NULL;
+    Int64 nearestMemoryDistance = GUCEF_INT64MAX;
+
+    MemoryNode* node = m_deallocatedNodes;
+    while ( GUCEF_NULL != node )
+    {        
+        //const Int8* actualTestAddress = (const Int8*) node->actualAddress;
+        //Int64 testActualAddressMemoryDistance = GUCEF_INT64MAX;
+
+        //if ( testAddress > actualTestAddress )
+        //    testActualAddressMemoryDistance = testAddress - actualTestAddress; 
+        //else
+        //    testActualAddressMemoryDistance = actualTestAddress - testAddress;
+
+        const Int8* reportedTestAddress = (const Int8*) node->reportedAddress;
+        Int64 testReportedAddressMemoryDistance = GUCEF_INT64MAX;
+
+        if ( testAddress > reportedTestAddress )
+            testReportedAddressMemoryDistance = (Int64) (const Int8*)( testAddress - reportedTestAddress ); 
+        else
+            testReportedAddressMemoryDistance = (Int64) (const Int8*)( reportedTestAddress - testAddress );
+
+        UInt64 testAddressMemoryDistance = (UInt64) testReportedAddressMemoryDistance;
+        //if ( testActualAddressMemoryDistance < testReportedAddressMemoryDistance )
+        //    testAddressMemoryDistance = (UInt64) testActualAddressMemoryDistance;
+
+        if ( nearestNodes.size() < maxNrOfNodes )
+        {
+            nearestNodes[ testAddressMemoryDistance ] = node;
+        }
+        else
+        {
+            // map is ordered small to large to last item is largest
+            TUInt64ToMemoryNodeMap::reverse_iterator n = nearestNodes.rbegin();
+            if ( (*n).first > testAddressMemoryDistance )
+            {
+                // drop the furthest away node and add the new nearer node
+                TUInt64ToMemoryNodeMap::iterator m = nearestNodes.begin();
+                for ( UInt32 l=1; l<nearestNodes.size(); ++l )
+                    ++m;
+                nearestNodes.erase( m );
+                nearestNodes[ testAddressMemoryDistance ] = node;
+            }
+        }            
+        node = node->next;
+    }
+}
+
+void 
+MemoryManager::FindNearestCurrentMemoryNodes( const void* address, 
+                                              UInt32 maxNrOfNodes, 
+                                              TUInt64ToMemoryNodeMap& nearestNodes )
+{
+    // we dont use the hash here because the address is only loosely related
+    // could optimize though later using a fan out instead of brute force
+    const Int8* testAddress = (const Int8*) address;
+
+    MemoryNode* nearestNode = GUCEF_NULL;
+    Int64 nearestMemoryDistance = GUCEF_INT64MAX;
+    for ( UInt32 i=0; i<HASH_SIZE; ++i )
+    {        
+        MemoryNode* node = m_hashTable[ i ];
+        while ( node != GUCEF_NULL )
+        {
+            const Int8* actualTestAddress = (const Int8*) node->actualAddress;
+            Int64 testActualAddressMemoryDistance = GUCEF_INT64MAX;
+
+            if ( testAddress > actualTestAddress )
+                testActualAddressMemoryDistance = testAddress - actualTestAddress; 
+            else
+                testActualAddressMemoryDistance = actualTestAddress - testAddress;
+
+            const Int8* reportedTestAddress = (const Int8*) node->reportedAddress;
+            Int64 testReportedAddressMemoryDistance = GUCEF_INT64MAX;
+
+            if ( testAddress > reportedTestAddress )
+                testReportedAddressMemoryDistance = testAddress - reportedTestAddress; 
+            else
+                testReportedAddressMemoryDistance = reportedTestAddress - testAddress;
+
+            UInt64 testAddressMemoryDistance = (UInt64) testActualAddressMemoryDistance;
+            if ( testReportedAddressMemoryDistance < testActualAddressMemoryDistance )
+                testAddressMemoryDistance = (UInt64) testReportedAddressMemoryDistance;
+
+            if ( nearestNodes.size() < maxNrOfNodes )
+            {
+                nearestNodes[ testAddressMemoryDistance ] = node;
+            }
+            else
+            {
+                // map is ordered small to large to last item is largest
+                TUInt64ToMemoryNodeMap::reverse_iterator n = nearestNodes.rbegin();
+                if ( (*n).first > testAddressMemoryDistance )
+                {
+                    // drop the furthest away node and add the new nearer node
+                    TUInt64ToMemoryNodeMap::iterator m = nearestNodes.begin();
+                    for ( UInt32 l=1; l<nearestNodes.size(); ++l )
+                        ++m;
+                    nearestNodes.erase( m );
+                    nearestNodes[ testAddressMemoryDistance ] = node;
+                }
+            }            
+            node = node->next;
+        }
+    }
 }
 
 /*******************************************************************************************/
@@ -870,18 +1058,42 @@ MemoryManager::ValidateMemory( void )
  *  Arguments   : 
  *  	MemoryNode *node : The MemoryNode to be released.
  */
-void MemoryManager::deallocateMemory( MemoryNode *node )
+void 
+MemoryManager::deallocateMemory( MemoryNode* node )
 {
     m_overheadMemoryCost -= (node->paddingSize * 2 * sizeof(long));
 
-    if ( GUCEF_NULL != node->allocCallstack )
+    if ( m_deallocatedNodeCount >= GUCEF_MAX_DEALLOCS_TO_TRACK )
     {
-        MEMMAN_FreeCallstackCopy( node->allocCallstack );
-        node->allocCallstack = GUCEF_NULL;
-    }
+        // make some space
+        MemoryNode* lastNode = m_lastDeallocatedNode;
+        m_lastDeallocatedNode = m_lastDeallocatedNode->prev;
+        m_lastDeallocatedNode->next = GUCEF_NULL;
+        
+        lastNode->prev = GUCEF_NULL;
+        lastNode->next = m_memoryCache;
+        if ( GUCEF_NULL != m_memoryCache )
+            m_memoryCache->prev = lastNode;
+        m_memoryCache = lastNode;
+        
+        // we do not retain the stack info once we move the node to the 'free list'
+        if ( GUCEF_NULL != lastNode->allocCallstack )
+        {
+            MEMMAN_FreeCallstackCopy( lastNode->allocCallstack );
+            lastNode->allocCallstack = GUCEF_NULL;
+        }
 
-    node->next = m_memoryCache;
-    m_memoryCache = node;
+        --m_deallocatedNodeCount;
+    }
+    
+    node->next = m_deallocatedNodes;
+    if ( GUCEF_NULL == m_deallocatedNodes )
+        m_lastDeallocatedNode = node;
+    node->prev = GUCEF_NULL;
+    if ( GUCEF_NULL != m_deallocatedNodes )
+        m_deallocatedNodes->prev = node;
+    m_deallocatedNodes = node;
+    ++m_deallocatedNodeCount;
 }
 
 /*******************************************************************************************/
@@ -909,7 +1121,11 @@ MemoryNode* MemoryManager::allocateMemory( void )
 
         MemoryNode* newNode = (MemoryNode*) malloc( sizeof(MemoryNode) );
         if ( GUCEF_NULL != newNode )
+        {
             newNode->allocCallstack = GUCEF_NULL;
+            newNode->prev = GUCEF_NULL;
+            newNode->next = GUCEF_NULL;
+        }
         return newNode; 
     }
     else 
@@ -922,35 +1138,99 @@ MemoryNode* MemoryManager::allocateMemory( void )
             m_peakOverHeadMemoryCost =  m_overheadMemoryCost;
         }
 
-        MemoryNode *ptr = m_memoryCache;
+        // decouple node from 'free list'
+        MemoryNode* ptr = m_memoryCache;
         m_memoryCache = m_memoryCache->next;
+        if ( GUCEF_NULL != m_memoryCache )
+            m_memoryCache->prev = GUCEF_NULL;
+
+        ptr->prev = GUCEF_NULL;
+        ptr->next = GUCEF_NULL;
         return ptr;
     }
     return NULL;
 }
 
-/*******************************************************************************************/
-
-/**
- * MemoryManager::dumpLogReport():
- *  This method implements the main reporting system.  It reports all of the statistical
- *  information to the desired log file.
- * 
- *  Return Type : void 
- *  Arguments   : NONE
- */
-void MemoryManager::dumpLogReport( void )
+void 
+MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
 {
-    if (m_cleanLogFileOnFirstRun) {      // Cleanup the log?
+    if (!fp) 
+        return;
+
+    // Header Information
+    fprintf( fp, "\r\n" );
+    fprintf( fp, "******************************************************************************* \r\n");
+    fprintf( fp, "*********           Exception report for fault address: %p            \r\n", faultAddress );
+    fprintf( fp, "******************************************************************************* \r\n");
+    fprintf( fp, "\r\n" );
+    
+    TUInt64ToMemoryNodeMap nearestNodes;
+    FindNearestDeallocatedMemoryNodes( faultAddress, 10, nearestNodes );
+    if ( !nearestNodes.empty() )
+    {
+        fprintf( fp, "             N E A R E S T  D E A L L O C A T E D  M E M O R Y  N O D E S       \r\n" );
+        fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+        
+        UInt32 distanceRank = 1;
+        TUInt64ToMemoryNodeMap::iterator i = nearestNodes.begin();
+        while ( i != nearestNodes.end() )
+        {
+            fprintf( fp, "** Distance rank # %d\r\n", distanceRank );
+            fprintf( fp, "Distance in bytes : %d\r\n", (UInt32)(*i).first );
+            dumpMemoryNode( fp, (*i).second );
+            fprintf( fp, "\r\n");
+            
+            ++i; ++distanceRank;
+        }        
+        fprintf( fp, "\r\n");
+    }
+
+    nearestNodes.clear();
+    FindNearestCurrentMemoryNodes( faultAddress, 10, nearestNodes );
+    if ( !nearestNodes.empty() )
+    {
+        fprintf( fp, "                     N E A R E S T  C U R R E N T  M E M O R Y  N O D E S       \r\n" );
+        fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+        
+        UInt32 distanceRank = 1;
+        TUInt64ToMemoryNodeMap::iterator i = nearestNodes.begin();
+        while ( i != nearestNodes.end() )
+        {
+            fprintf( fp, "** Distance rank # %d\r\n", distanceRank );
+            fprintf( fp, "Distance in bytes : %d\r\n", (UInt32)(*i).first );
+            dumpMemoryNode( fp, (*i).second );
+            fprintf( fp, "\r\n");
+            
+            ++i; ++distanceRank;
+        }        
+        fprintf( fp, "\r\n");
+    }
+
+    dumpLogReport( fp );
+}
+
+void 
+MemoryManager::dumpExceptionLogReport( void* faultAddress )
+{
+    if (m_cleanLogFileOnFirstRun) 
+    {
+        // Cleanup the log?
         _unlink( LOGFILE );                 // Delete the existing log file.
         m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
     }
 
-    FILE	*fp = fopen( LOGFILE, "ab" ); // Open the log file
-    if (!fp) return;
+    FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
+    dumpExceptionLogReport( fp, faultAddress );
+    fclose( fp );
+}
 
-  time_t t = time( NULL );
-  tm *time = localtime( &t );
+void MemoryManager::dumpLogReport( FILE* fp )
+{
+    if (!fp) 
+        return;
+
+    time_t t = time( NULL );
+    tm *time = localtime( &t );
     
     int memoryLeak = calculateUnAllocatedMemory();
     int totalMemoryDivider = m_totalMemoryAllocated != 0 ? m_totalMemoryAllocated : 1;
@@ -998,17 +1278,84 @@ void MemoryManager::dumpLogReport( void )
     fprintf( fp, "   Percentage of Allocated Memory Un-Allocated: %10.2f %%\r\n", (float)(1 - (m_totalMemoryAllocated - memoryLeak)/(float)totalMemoryDivider) * 100 );
     fprintf( fp, "\r\n");
     fflush( fp );
+}
 
-    if (m_numAllocations != 0) {  // Are there memory leaks?
-        fclose( fp );               // Close the log file.
-        dumpMemoryAllocations();    // Display any memory leaks.
+/*******************************************************************************************/
+
+/**
+ * MemoryManager::dumpLogReport():
+ *  This method implements the main reporting system.  It reports all of the statistical
+ *  information to the desired log file.
+ * 
+ *  Return Type : void 
+ *  Arguments   : NONE
+ */
+void MemoryManager::dumpLogReport( void )
+{
+    if (m_cleanLogFileOnFirstRun) 
+    {
+        // Cleanup the log?
+        _unlink( LOGFILE );                 // Delete the existing log file.
+        m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
     }
-    else {
+
+    FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
+
+    dumpLogReport( fp );
+
+    if (m_numAllocations != 0) 
+    {  
+        // Are there memory leaks?        
+        dumpMemoryAllocations( fp );    // Display any memory leaks.
+        fclose( fp );               // Close the log file.
+    }
+    else 
+    {
         fclose( fp );
     }
 }
 
+void 
+MemoryManager::dumpMemoryNode( FILE* fp, MemoryNode* node )
+{
+    fprintf( fp, "Total Memory Size : %s\r\n", memorySizeString( (UInt32)node->reportedSize, false ) );
+    fprintf( fp, "Source File       : %s\r\n", node->sourceFile );
+    fprintf( fp, "Source Line       : %d\r\n", node->sourceLine );
+    fprintf( fp, "Allocation Type   : %s\r\n", s_allocationTypes[node->allocationType] );
+    if ( GUCEF_NULL != node->allocCallstack )
+    {
+        fprintf( fp, "Allocation Call Stack   :\r\n" );
+        for ( UInt32 s=0; s<node->allocCallstack->items; ++s )
+        {
+            fprintf( fp, "  %s:%d\r\n", node->allocCallstack->file[ s ], node->allocCallstack->linenr[ s ] );
+        }
+    }
+}
+
 /*******************************************************************************************/
+
+void MemoryManager::dumpMemoryAllocations( FILE* fp )
+{
+    if (!fp) 
+        return;
+
+    fprintf( fp, "              C U R R E N T L Y  A L L O C A T E D  M E M O R Y                 \r\n" );
+    fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+
+    for (int ii = 0, cnt = 1; ii < HASH_SIZE; ++ii) 
+    {
+        for (MemoryNode *ptr = m_hashTable[ii]; ptr; ptr = ptr->next) 
+        {
+            fprintf( fp, "** Allocation # %2d\r\n", cnt++ );
+            dumpMemoryNode( fp, ptr );
+            fprintf( fp, "\r\n");
+        }
+    }
+
+    fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+    fprintf( fp, "******************************************************************************* \r\n" );
+    fprintf( fp, "\r\n" );
+}
 
 /**
  * MemoryManager::dumpMemoryAllocations():
@@ -1025,37 +1372,8 @@ void MemoryManager::dumpMemoryAllocations( void )
         m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
     }
 
-    FILE	*fp = fopen( LOGFILE, "ab" ); // Open the log file
-    if (!fp) return;
-
-    fprintf( fp, "              C U R R E N T L Y  A L L O C A T E D  M E M O R Y                 \r\n" );
-    fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
-
-    for (int ii = 0, cnt = 1; ii < HASH_SIZE; ++ii) 
-    {
-        for (MemoryNode *ptr = m_hashTable[ii]; ptr; ptr = ptr->next) 
-        {
-            fprintf( fp, "** Allocation # %2d\r\n", cnt++ );
-            fprintf( fp, "Total Memory Size : %s\r\n", memorySizeString( (UInt32)ptr->reportedSize, false ) );
-            fprintf( fp, "Source File       : %s\r\n", ptr->sourceFile );
-            fprintf( fp, "Source Line       : %d\r\n", ptr->sourceLine );
-            fprintf( fp, "Allocation Type   : %s\r\n", s_allocationTypes[ptr->allocationType] );
-            if ( GUCEF_NULL != ptr->allocCallstack )
-            {
-                fprintf( fp, "Allocation Call Stack   :\r\n" );
-                for ( UInt32 s=0; s<ptr->allocCallstack->items; ++s )
-                {
-                    fprintf( fp, "  %s:%d\r\n", ptr->allocCallstack->file[ s ], ptr->allocCallstack->linenr[ s ] );
-                }
-            }
-            fprintf( fp, "\r\n");
-        }
-    }
-
-    fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
-    fprintf( fp, "******************************************************************************* \r\n" );
-    fprintf( fp, "\r\n" );
-
+    FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
+    dumpMemoryAllocations( fp );
     fclose( fp );
 }
 
