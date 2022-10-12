@@ -449,7 +449,7 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( T* ptr                       
 
     if ( GUCEF_NULL != ptr )
     {
-        m_shared = new TBasicSharedPtrSharedData< LockType >( true );
+        m_shared = GUCEF_NEW TBasicSharedPtrSharedData< LockType >( true );
         m_shared->m_refCounter = 1UL;
         m_objectDestructor = objectDestructor;
         m_ptr = ptr;
@@ -508,7 +508,7 @@ CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
 
     if ( GUCEF_NULL != ptr )
     {
-        m_shared = new TBasicSharedPtrSharedData< LockType >( true );
+        m_shared = GUCEF_NEW TBasicSharedPtrSharedData< LockType >( true );
         m_ptr = ptr;
         m_shared->m_refCounter = 1UL;
         m_objectDestructor = objectDestructor;
@@ -991,7 +991,7 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                     TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;                
                     m_shared = GUCEF_NULL;
                     localSharedRef->m_lock.Unlock();                
-                    delete localSharedRef;
+                    GUCEF_DELETE localSharedRef;
                 }
                 else
                 {
@@ -1017,7 +1017,7 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
             TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
             m_shared = GUCEF_NULL;
             localSharedRef->m_lock.Unlock();
-            delete localSharedRef;
+            GUCEF_DELETE localSharedRef;
         }
     }
 }
@@ -1067,7 +1067,7 @@ CICloneable*
 CTBasicSharedPtr< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTBasicSharedPtr< T, LockType >( *this );
+    return GUCEF_NEW CTBasicSharedPtr< T, LockType >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

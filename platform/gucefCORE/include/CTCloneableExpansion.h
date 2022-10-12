@@ -145,7 +145,7 @@ CICloneable*
 CTCloneableExpansion< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTCloneableExpansion< T >( *this );
+    return GUCEF_NEW CTCloneableExpansion< T >( *this );
 }
 
 /*-------------------------------------------------------------------------//

@@ -113,7 +113,7 @@ CURLDataRetriever::~CURLDataRetriever()
 
     if ( m_ownStorage )
     {
-        delete m_ioAccess;
+        GUCEF_DELETE m_ioAccess;
         m_ioAccess = NULL;
     }
 }
@@ -127,9 +127,9 @@ CURLDataRetriever::SetMemoryBufferAsStorage( void )
     // Cleanup whatever storage we already have
     if ( m_ownStorage )
     {
-        delete m_ioAccess;        
+        GUCEF_DELETE m_ioAccess;        
     }
-    m_ioAccess = new CDynamicBufferAccess( new CDynamicBuffer(), true );
+    m_ioAccess = GUCEF_NEW CDynamicBufferAccess( GUCEF_NEW CDynamicBuffer(), true );
     m_ownStorage = true;
 }
 
@@ -142,9 +142,9 @@ CURLDataRetriever::SetFileAsStorage( const CString& filePath )
     // Cleanup whatever storage we already have
     if ( m_ownStorage )
     {
-        delete m_ioAccess;        
+        GUCEF_DELETE m_ioAccess;        
     }
-    m_ioAccess = new CFileAccess( filePath );
+    m_ioAccess = GUCEF_NEW CFileAccess( filePath );
     m_ownStorage = true;
 }
 
@@ -184,7 +184,7 @@ CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
     // Cleanup whatever storage we already have
     if ( m_ownStorage )
     {
-        delete m_ioAccess;        
+        GUCEF_DELETE m_ioAccess;        
     }
     
     m_ioAccess = ioAccess;

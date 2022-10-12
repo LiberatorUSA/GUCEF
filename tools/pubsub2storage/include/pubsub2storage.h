@@ -254,12 +254,12 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
         typedef std::map< CORE::UInt64, PUBSUB::CIPubSubMsg::TNoLockSharedPtr >    TUInt64ToIPubSubMsgNoLockSharedPtrMap;
 
-        PUBSUB::CPubSubClientTopic* topic;                                              /**< the actual backend topic access object */ 
+        PUBSUB::CPubSubClientTopicPtr topic;                                            /**< the actual backend topic access object */ 
         PUBSUB::CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */         
         TUInt64ToIPubSubMsgNoLockSharedPtrMap inFlightMsgs;
 
         TopicLink( void );
-        TopicLink( PUBSUB::CPubSubClientTopic* t );
+        TopicLink( PUBSUB::CPubSubClientTopicPtr t );
         
         void AddInFlightMsgs( const PUBSUB::CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                               const PUBSUB::CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              );

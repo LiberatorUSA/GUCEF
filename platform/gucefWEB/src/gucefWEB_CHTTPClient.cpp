@@ -369,7 +369,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
 
         // Forward our request to the proxy
         CORE::CString remoteHost( host + ":" + CORE::Int32ToString( port ) + "/" + valuepath );
-        buffer = new char[ 32 + valuepath.Length() + remoteHost.Length() ];
+        buffer = GUCEF_NEW char[ 32 + valuepath.Length() + remoteHost.Length() ];
         sprintf( buffer, "GET %s HTTP/1.1\r\n\r\n", remoteHost.C_String() );
 
         if ( m_socket.ConnectTo( proxyHost ,
@@ -377,7 +377,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
             m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
-            delete []buffer;
+            GUCEF_DELETE []buffer;
             return true;
         }
     }
@@ -387,14 +387,14 @@ CHTTPClient::Get( const CORE::CString& host                      ,
 
         if ( byteoffset == 0 )
         {
-            buffer = new char[ 100 + valuepath.Length() + host.Length() ];
+            buffer = GUCEF_NEW char[ 100 + valuepath.Length() + host.Length() ];
             sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String() );
         }
         else
         {
             CORE::CString intstr = CORE::ToString( byteoffset );
 
-            buffer = new char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
+            buffer = GUCEF_NEW char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
             sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );
         }
 
@@ -403,7 +403,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
             m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
-            delete []buffer;
+            GUCEF_DELETE []buffer;
             return true;
         }
     }
@@ -574,7 +574,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
          *      Create a buffer for the header data and copy
          *      the header info into it.
          */
-        headers = new char[i+1];
+        headers = GUCEF_NEW char[i+1];
         strncpy(headers, data, i);
         headers[i] = '\0';
 
@@ -631,7 +631,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
             length2 = i3 - i2;
 
-            tempChar2 = new char[length2 + 1];
+            tempChar2 = GUCEF_NEW char[length2 + 1];
 
             strncpy(tempChar2, &tempChar[i2], length2 + 1);
             tempChar2[length2] = '\0';
@@ -717,7 +717,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                         return;
                     }
 
-                    tempChar = new char[i + 1];
+                    tempChar = GUCEF_NEW char[i + 1];
                     strncpy(tempChar, data, i + 1);
                     tempChar[i] = '\0';
                     sscanf(tempChar, "%x", &m_filesize);

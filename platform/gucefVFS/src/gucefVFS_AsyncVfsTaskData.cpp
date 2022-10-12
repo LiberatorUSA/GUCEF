@@ -100,7 +100,7 @@ void
 CAsyncVfsTaskData::SetRequestorData( CORE::CICloneable* data )
 {GUCEF_TRACE;
 
-    delete m_requestorData;
+    GUCEF_DELETE m_requestorData;
     m_requestorData = GUCEF_NULL;
 
     if ( GUCEF_NULL != data )
@@ -125,7 +125,7 @@ CORE::CICloneable*
 CAsyncVfsTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CAsyncVfsTaskData( *this );
+    return GUCEF_NEW CAsyncVfsTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ void
 CAsyncVfsTaskResultData::SetTaskData( CAsyncVfsTaskData* data )
 {GUCEF_TRACE;
 
-    delete m_taskData;
+    GUCEF_DELETE m_taskData;
     m_taskData = GUCEF_NULL;
 
     if ( GUCEF_NULL != data )
@@ -217,7 +217,7 @@ CORE::CICloneable*
 CAsyncVfsTaskResultData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CAsyncVfsTaskResultData( *this );
+    return GUCEF_NEW CAsyncVfsTaskResultData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -257,7 +257,7 @@ CORE::CICloneable*
 CStoreAsFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CStoreAsFileTaskData( *this );
+    return GUCEF_NEW CStoreAsFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -291,7 +291,7 @@ CORE::CICloneable*
 CMountArchiveTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CMountArchiveTaskData( *this );
+    return GUCEF_NEW CMountArchiveTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -333,7 +333,7 @@ CORE::CICloneable*
 CEncodeFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CEncodeFileTaskData( *this );
+    return GUCEF_NEW CEncodeFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ CORE::CICloneable*
 CEncodeBufferAsFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CEncodeBufferAsFileTaskData( *this );
+    return GUCEF_NEW CEncodeBufferAsFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -419,7 +419,7 @@ CORE::CICloneable*
 CDecodeFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CDecodeFileTaskData( *this );
+    return GUCEF_NEW CDecodeFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -457,7 +457,7 @@ CORE::CICloneable*
 CCopyFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CCopyFileTaskData( *this );
+    return GUCEF_NEW CCopyFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -495,7 +495,7 @@ CORE::CICloneable*
 CMoveFileTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CMoveFileTaskData( *this );
+    return GUCEF_NEW CMoveFileTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------//

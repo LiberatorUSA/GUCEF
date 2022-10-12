@@ -184,7 +184,7 @@ CUDPMasterSocket::ReserveChannelForAddress( const CIPAddress& remoteAddr )
     if ( NULL == channel )
     {
         // Reserve a new channel for the given address
-        channel = new CUDPChannel( *this, remoteAddr );
+        channel = GUCEF_NEW CUDPChannel( *this, remoteAddr );
         m_channelMap.insert( std::pair< CIPAddress, CUDPChannel* >( remoteAddr, channel ) );
         
         UDPChannelCreatedEventData eData( channel );
@@ -205,7 +205,7 @@ CUDPMasterSocket::DestroyChannelForAddress( const CIPAddress& remoteAddr )
         UDPChannelToBeDestroyedEventData eData( (*i).second );
         NotifyObservers( UDPChannelToBeDestroyedEvent, &eData );
         
-        delete ((*i).second);
+        GUCEF_DELETE ((*i).second);
         m_channelMap.erase( i );
         return true;
     }
@@ -224,7 +224,7 @@ CUDPMasterSocket::DestroyAllChannels( void )
         UDPChannelToBeDestroyedEventData eData( (*i).second );
         NotifyObservers( UDPChannelToBeDestroyedEvent, &eData );
         
-        delete (*i).second;
+        GUCEF_DELETE (*i).second;
         (*i).second = NULL;
         ++i;
     }

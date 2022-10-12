@@ -308,12 +308,15 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
     
     private:
     
-    typedef std::vector< CIEventHandlerFunctorBase* > TEventHandlerFunctorInterfaceVector;
-    typedef std::map< CObserver*, TEventHandlerFunctorInterfaceVector > TEventNotificationMap;
+    typedef std::vector< CIEventHandlerFunctorBase*, basic_allocator< CIEventHandlerFunctorBase* > > TEventHandlerFunctorInterfaceVector;
+    typedef std::pair< const CObserver*, TEventHandlerFunctorInterfaceVector > TObserverRawPtrAndFuncInterfVecPair;
+    typedef std::map< CObserver*, TEventHandlerFunctorInterfaceVector, std::less< CObserver* >, basic_allocator< TObserverRawPtrAndFuncInterfVecPair > > TEventNotificationMap;
     
-    typedef std::set< CObserver* > TObserverSet;
-    typedef std::map< CEvent, TEventNotificationMap > TNotificationList;
-    typedef std::map< CObserver*, bool > TObserverList;
+    typedef std::set< CObserver*, std::less< CObserver* >, basic_allocator< CObserver* >  > TObserverSet;
+    typedef std::pair< const CEvent, TEventNotificationMap > TEventAndEventNotificationMapPair;
+    typedef std::map< CEvent, TEventNotificationMap, std::less< CEvent >, basic_allocator< TEventAndEventNotificationMapPair > > TNotificationList;
+    typedef std::pair< const CObserver*, bool >   TObserverRawPtrAndBoolPair;
+    typedef std::map< CObserver*, bool, std::less< CObserver* >, basic_allocator< TObserverRawPtrAndBoolPair > > TObserverList;
 
     struct SEventMailElement
     {
@@ -344,8 +347,8 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
     };
     typedef struct SCmdMailElement TCmdMailElement;
 
-    typedef std::vector< TEventMailElement > TEventMailVector;
-    typedef std::vector< TCmdMailElement >   TCmdMailVector;
+    typedef std::vector< TEventMailElement, basic_allocator< TEventMailElement > > TEventMailVector;
+    typedef std::vector< TCmdMailElement, basic_allocator< TCmdMailElement > >     TCmdMailVector;
 
     private:
     

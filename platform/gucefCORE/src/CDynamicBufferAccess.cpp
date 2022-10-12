@@ -111,7 +111,7 @@ CDynamicBufferAccess::~CDynamicBufferAccess()
 
     if ( m_deleteBufferUponDestruction )
     {
-        delete m_buffer;
+        GUCEF_DELETE m_buffer;
         m_buffer = NULL;
     }
 }
@@ -128,11 +128,11 @@ CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
 
     if ( m_deleteBufferUponDestruction )
     {
-        delete m_buffer;
+        GUCEF_DELETE m_buffer;
         m_buffer = NULL;
     }
     
-    m_buffer = new CDynamicBuffer();
+    m_buffer = GUCEF_NEW CDynamicBuffer();
     m_bufferWasConst = false;
     if ( m_buffer->LoadContentFromFile( filePath, offsetInFile, bytesToRead ) )
     {
@@ -140,7 +140,7 @@ CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
         return true;
     }
 
-    delete m_buffer;
+    GUCEF_DELETE m_buffer;
     m_buffer = NULL;
     return false;
 }
@@ -179,13 +179,13 @@ CDynamicBufferAccess::LinkTo( const void* externalBuffer ,
 
     if ( m_deleteBufferUponDestruction )
     {
-        delete m_buffer;        
+        GUCEF_DELETE m_buffer;        
     }
     m_buffer = GUCEF_NULL;
     
     if ( GUCEF_NULL != externalBuffer && bufferSize != 0 )
     {
-        m_buffer = new CDynamicBuffer();
+        m_buffer = GUCEF_NEW CDynamicBuffer();
         m_deleteBufferUponDestruction = true;
         m_bufferWasConst = true;
         m_buffer->LinkTo( externalBuffer, bufferSize );    

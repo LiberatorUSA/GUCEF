@@ -238,7 +238,7 @@ CORE::CICloneable*
 CMessageSerializerOptions::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CMessageSerializerOptions( *this );
+    return GUCEF_NEW CMessageSerializerOptions( *this );
 }
 
 /*-------------------------------------------------------------------------*/

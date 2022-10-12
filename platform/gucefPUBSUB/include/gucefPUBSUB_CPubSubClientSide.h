@@ -119,8 +119,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     typedef CORE::TCloneableBool            THealthStatusChangeEventData;           /**< boolean flag indicating the health status */
     typedef CPubSubClientPtr                TPubSubClientInstantiationEventData;    /**< shared pointer to the pubsub client */
 
-    typedef CORE::CTEventHandlerFunctor< CPubSubClientSide > TEventCallback;
-    typedef std::vector< CPubSubClientSide* >                TPubSubClientSideVector;
+    typedef CORE::CTEventHandlerFunctor< CPubSubClientSide >                            TEventCallback;
+    typedef std::vector< CPubSubClientSide*, basic_allocator< CPubSubClientSide* > >    TPubSubClientSideVector;
     
     class CPubSubClientSideMetrics
     {
@@ -371,8 +371,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     void CleanupMsgBatchBookmarksUpTo( TopicLink& topicLink             , 
                                        UInt64 msgBatchBookmarkReceiveId );
     
-    typedef std::map< CPubSubClientTopic*, TopicLink > TopicMap;
-    typedef std::set< CPubSubClientTopicBasicPtr > TopicSet;
+    typedef std::pair< const CPubSubClientTopic*, TopicLink >   TPubSubClientTopicRawPtrAndTopicLinkPair;
+    typedef std::map< CPubSubClientTopic*, TopicLink, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicMap;
+    typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, basic_allocator< CPubSubClientTopicBasicPtr > >            TopicSet;
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     CPubSubClientPtr m_pubsubClient;
@@ -402,7 +403,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex >  CPubSubClientSidePtr;
-typedef std::vector< CPubSubClientSidePtr >                 TPubSubClientSidePtrVector;
+typedef std::vector< CPubSubClientSidePtr, basic_allocator< CPubSubClientSidePtr > >    TPubSubClientSidePtrVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -65,6 +65,10 @@
 #ifdef __cplusplus
   #undef new
   #undef delete
+  #undef GUCEF_NEW
+  #undef GUCEF_DELETE
+  #define GUCEF_NEW     new
+  #define GUCEF_DELETE  delete
 #endif /* __cplusplus ? */
 
 #include <malloc.h>

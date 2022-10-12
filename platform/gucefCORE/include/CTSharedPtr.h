@@ -301,7 +301,7 @@ CTSharedPtr< T, LockType >::CTSharedPtr( T* ptr                                 
     }
     else
     {
-        CTBasicSharedPtr< T, LockType >::Initialize( ptr, new CTDynamicDestructor< T >( true ) );
+        CTBasicSharedPtr< T, LockType >::Initialize( ptr, GUCEF_NEW CTDynamicDestructor< T >( true ) );
     }
 }
 
@@ -570,7 +570,7 @@ CICloneable*
 CTSharedPtr< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTSharedPtr< T, LockType >( *this );
+    return GUCEF_NEW CTSharedPtr< T, LockType >( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -591,7 +591,7 @@ CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
     : CTBasicSharedPtrCreator< T, LockType >( derived )
 {GUCEF_TRACE;
 
-    CTBasicSharedPtrCreator< T, LockType >::m_objectDestructor = new CTDynamicDestructor< T >( true );
+    CTBasicSharedPtrCreator< T, LockType >::m_objectDestructor = GUCEF_NEW CTDynamicDestructor< T >( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -612,12 +612,12 @@ CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
     T* obj = GUCEF_NULL;
     try
     {
-        CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( new T() ) )->CreateBasicSharedPtr() );
+        CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( GUCEF_NEW T() ) )->CreateBasicSharedPtr() );
         return retVal;
     }
     catch ( const std::exception& )
     {
-        delete obj;
+        GUCEF_DELETE obj;
         obj = GUCEF_NULL;
 
         return CTSharedPtr< T, LockType >();
@@ -635,13 +635,13 @@ CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
 //    T* obj = GUCEF_NULL;
 //    try
 //    {
-//        CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( new T() ) )->CreateBasicSharedPtr() );
+//        CTSharedPtr< T, LockType > retVal( static_cast< CTBasicSharedPtrCreator< T, LockType >* >( ( GUCEF_NEW T() ) )->CreateBasicSharedPtr() );
 //        (*retVal.GetPointerAlways()) = objToCopy;
 //        return retVal;
 //    }
 //    catch ( const std::exception& )
 //    {
-//        delete obj;
+//        GUCEF_DELETE obj;
 //        obj = GUCEF_NULL;
 //
 //        return CTSharedPtr< T, LockType >();

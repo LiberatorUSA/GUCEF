@@ -55,7 +55,7 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
 {
     public:
 
-    typedef std::vector< CString > TStringVector;
+    typedef CString::StringVector TStringVector;
 
     virtual bool OnRequest( const CHttpRequestData& request , 
                             CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;

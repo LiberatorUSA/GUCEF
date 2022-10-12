@@ -79,7 +79,7 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServer
 
     if ( GUCEF_NULL == routerController )
     {
-        m_routerController = new CDefaultHTTPServerRouterController();
+        m_routerController = GUCEF_NEW CDefaultHTTPServerRouterController();
         m_ownsRouterController = true;
     }
 }
@@ -729,7 +729,7 @@ CDefaultHttpServerRequestHandler::SetRouterController( CIHTTPServerRouterControl
 
     if ( m_ownsRouterController )
     {
-        delete m_routerController;
+        GUCEF_DELETE m_routerController;
         m_routerController = GUCEF_NULL;
     }
 

@@ -66,7 +66,7 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsoleClient
 {
     protected:
 
-    typedef std::vector< CString > TStringVector;
+    typedef CString::StringVector    TStringVector;
 
     CSysConsoleClient( void );
 
@@ -95,9 +95,9 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsoleClient
 
     const CString& GetPath( void ) const;
 
-    bool Execute( const CString& funcname      ,
-                  const TStringVector& arglist ,
-                  TStringVector& resultdata    );
+    bool Execute( const CString& funcname           ,
+                  const TStringVector& arglist      ,
+                  CString::StringVector& resultdata );
 
     TStringVector GetDirList( void ) const;
 

@@ -586,6 +586,17 @@ MEMMAN_malloc( const char *file, int line, size_t size )
 
 inline
 void*
+MEMMAN_placement_new( const char *file, int line, size_t size, void* address )
+{
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_AllocateMemory( file, line, size, MM_NEW, address );    
+    return address;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
 MEMMAN_calloc( const char *file, int line, size_t num, size_t size )
 {
     return ( 0 == MEMMAN_LazyLoadMemoryManager() ? calloc( num, size ) : fp_MEMMAN_AllocateMemory( file, line, size*num, MM_CALLOC, NULL ) );    

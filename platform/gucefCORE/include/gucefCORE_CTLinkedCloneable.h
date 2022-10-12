@@ -239,7 +239,7 @@ CTConstLinkedCloneable< T >::Clear( void )
 
     if ( !m_linked )
     {
-        delete m_ptr;
+        GUCEF_DELETE m_ptr;
     }
     m_ptr = GUCEF_NULL;
 }
@@ -361,7 +361,7 @@ CICloneable*
 CTConstLinkedCloneable< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTConstLinkedCloneable< T >( *this );
+    return GUCEF_NEW CTConstLinkedCloneable< T >( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -453,7 +453,7 @@ CTLinkedCloneable< T >::Clear( void )
 
     if ( !m_linked )
     {
-        delete m_ptr;
+        GUCEF_DELETE m_ptr;
     }
     m_ptr = GUCEF_NULL;
 }
@@ -553,7 +553,7 @@ CICloneable*
 CTLinkedCloneable< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTLinkedCloneable< T >( *this );
+    return GUCEF_NEW CTLinkedCloneable< T >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

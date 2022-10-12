@@ -299,7 +299,7 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
 
                 }
 
-                delete loggingMail;
+                GUCEF_DELETE loggingMail;
                 mailEntry.data = loggingMail = GUCEF_NULL;
 
                 ++i;
@@ -343,7 +343,7 @@ CLoggingTask::OnTaskEnded( CICloneable* taskdata ,
     while ( i != m_mailList.end() )
     {
         entry = &(*i);
-        delete entry->data;
+        GUCEF_DELETE entry->data;
         ++i;
     }
     m_mailList.clear();
@@ -383,7 +383,7 @@ MT::CICloneable*
 CLoggingTask::CLoggingMail::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CLoggingMail( *this );
+    return GUCEF_NEW CLoggingMail( *this );
 }
 
 /*-------------------------------------------------------------------------//

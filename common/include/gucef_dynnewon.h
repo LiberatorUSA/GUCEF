@@ -206,12 +206,14 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
  */
 
 #ifdef __cplusplus
-
 #undef new
 #undef delete
-
-#define new              new( __FILE__, __LINE__ )
-/* #define delete           MEMMAN_SetOwner( __FILE__, __LINE__ ) ? delete : delete <- fix me */
+#undef GUCEF_NEW
+#undef GUCEF_PLACEMENT_NEW
+#undef GUCEF_DELETE
+#define GUCEF_NEW                           new( __FILE__, __LINE__ )
+#define GUCEF_DELETE                        delete 
+                                              //MEMMAN_SetOwner( __FILE__, __LINE__ ); ? delete : delete
 
 #endif /* __cplusplus ? */
 

@@ -90,7 +90,7 @@ typedef struct SMutexData TMutexData;
 /*--------------------------------------------------------------------------*/
 
 CMutex::CMutex( void )
-    : _mutexdata( new TMutexData )
+    : _mutexdata( GUCEF_NEW TMutexData )
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -98,7 +98,7 @@ CMutex::CMutex( void )
     _mutexdata->id = CreateMutex( NULL, FALSE, NULL );
     if ( 0 == _mutexdata->id )
     {
-        delete _mutexdata;
+        GUCEF_DELETE _mutexdata;
         _mutexdata = GUCEF_NULL;
         GUCEF_ASSERT_ALWAYS;
         return;
@@ -114,7 +114,7 @@ CMutex::CMutex( void )
 
     if ( pthread_mutex_init( &_mutexdata->id, &attr ) != 0 )
     {
-        delete _mutexdata;
+        GUCEF_DELETE _mutexdata;
         _mutexdata = GUCEF_NULL;
         GUCEF_ASSERT_ALWAYS;
         return;
@@ -137,14 +137,14 @@ CMutex::~CMutex()
 
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( ((TMutexData*)_mutexdata)->id );
     CloseHandle( ((TMutexData*)_mutexdata)->id );
-    delete (TMutexData*)_mutexdata;
+    GUCEF_DELETE (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &((TMutexData*)_mutexdata->id );
     pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
-    delete (TMutexData*)_mutexdata;
+    GUCEF_DELETE (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
 
     #endif

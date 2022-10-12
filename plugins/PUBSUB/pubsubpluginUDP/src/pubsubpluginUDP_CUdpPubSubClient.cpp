@@ -93,14 +93,14 @@ CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
 
     if ( m_config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( m_config.pulseGenerator, 1000 );
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( m_config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
     if ( m_config.transmitTestPackets )
     {
-        m_testUdpSocket = new COMCORE::CUDPSocket( m_config.pulseGenerator, false );
-        m_testPacketTransmitTimer = new CORE::CTimer( m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
+        m_testUdpSocket = GUCEF_NEW COMCORE::CUDPSocket( m_config.pulseGenerator, false );
+        m_testPacketTransmitTimer = GUCEF_NEW CORE::CTimer( m_config.pulseGenerator, m_config.testPacketTransmissionIntervalInMs );
         m_testPacketTransmitTimer->SetEnabled( m_config.transmitTestPackets );
     }
 
@@ -124,13 +124,13 @@ CUdpPubSubClient::~CUdpPubSubClient()
     }
     m_topicMap.clear();
     
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    delete m_testPacketTransmitTimer;
+    GUCEF_DELETE m_testPacketTransmitTimer;
     m_testPacketTransmitTimer = GUCEF_NULL;
 
-    delete m_testUdpSocket;
+    GUCEF_DELETE m_testUdpSocket;
     m_testUdpSocket = GUCEF_NULL;
 }
 
@@ -193,7 +193,7 @@ CUdpPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = ( new CUdpPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CUdpPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;

@@ -174,11 +174,11 @@ CGenericPlugin::Link( void* modulePtr                   ,
             UInt32 argc = m_params.GetKeyCount();
             if ( argc > 0 )
             {
-                argv = new const char*[ argc ];
+                argv = GUCEF_NEW const char*[ argc ];
                 for ( UInt32 i=0; i<argc; ++i )
                 {
                     CString keyValuePair = m_params.GetPair( i );
-                    argv[ i ] = new char[ keyValuePair.Length()+1 ];
+                    argv[ i ] = GUCEF_NEW char[ keyValuePair.Length()+1 ];
                     memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
                 } 
             }
@@ -205,7 +205,7 @@ CGenericPlugin::Link( void* modulePtr                   ,
                         Int32ToString( loadStatus  ) + " using module: " + PointerToString( modulePtr ) );
 
                 // Copy the given metadata and update it with info from the actual module
-                m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );                 
+                m_metaData = TPluginMetaDataStoragePtr( GUCEF_NEW CPluginMetaData( *pluginMetaData ) );                 
                 m_metaData->SetDescription( GetDescription() );
                 m_metaData->SetCopyright( GetCopyright() );
                 m_metaData->SetVersion( GetVersion() );

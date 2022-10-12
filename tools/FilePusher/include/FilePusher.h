@@ -145,8 +145,8 @@ class FilePushDestinationSettings
     typedef enum EPushStyle TPushStyle;
     typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
     
-    typedef std::set< CORE::CString > TStringSet;
-    typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
+    typedef CORE::CString::StringSet                              TStringSet;
+    typedef std::map< CORE::UInt32, CORE::CString >               TUInt32StringMap;
     typedef std::map< CORE::UInt64, CORE::CString::StringVector > TUInt64StringVectorMap;
 
     bool LoadConfig( const CORE::CValueList& config );

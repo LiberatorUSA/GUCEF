@@ -91,7 +91,7 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -99,7 +99,7 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( 1000 );
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -125,7 +125,7 @@ CWebPubSubClient::~CWebPubSubClient()
     }
     m_topicMap.clear();
 
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 }
 
@@ -189,7 +189,7 @@ CWebPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = ( new CWebPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CWebPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;

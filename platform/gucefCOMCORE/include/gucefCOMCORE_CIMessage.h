@@ -106,12 +106,12 @@ class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CICloneable             
 {
     public:
 
-    typedef std::pair< CORE::CVariant, CORE::CVariant >     TKeyValuePair;
-    typedef std::vector< TKeyValuePair >                    TKeyValuePairs;
-    typedef std::vector< CIMessage* >                       TIMessageRawPtrVector;
-    typedef std::vector< const CIMessage* >                 TIMessageConstRawPtrVector;
-    typedef CORE::CTSharedPtr< CIMessage, MT::CNoLock >     TIMessageNoLockSharedPtr;
-    typedef std::vector< TIMessageNoLockSharedPtr >         TIMessageSPtrVector;
+    typedef std::pair< CORE::CVariant, CORE::CVariant >                                             TKeyValuePair;
+    typedef std::vector< TKeyValuePair, basic_allocator< TKeyValuePair > >                          TKeyValuePairs;
+    typedef std::vector< CIMessage*, basic_allocator< CIMessage* > >                                TIMessageRawPtrVector;
+    typedef std::vector< const CIMessage*, basic_allocator< const CIMessage* > >                    TIMessageConstRawPtrVector;
+    typedef CORE::CTSharedPtr< CIMessage, MT::CNoLock >                                             TIMessageNoLockSharedPtr;
+    typedef std::vector< TIMessageNoLockSharedPtr, basic_allocator< TIMessageNoLockSharedPtr > >    TIMessageSPtrVector;
 
     CIMessage( void );
 

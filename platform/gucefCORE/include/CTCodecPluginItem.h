@@ -155,7 +155,7 @@ namespace CORE {
 //CTCodecPluginItem< TCodecType >::Clone( void ) const
 //{GUCEF_TRACE;
 //
-//    return new CTCodecPluginItem< TCodecType >( *this );
+//    return GUCEF_NEW CTCodecPluginItem< TCodecType >( *this );
 //}
 //
 ///*-------------------------------------------------------------------------*/

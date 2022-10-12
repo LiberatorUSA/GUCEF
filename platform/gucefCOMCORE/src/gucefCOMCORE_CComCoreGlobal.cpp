@@ -156,8 +156,8 @@ CComCoreGlobal::Initialize( void )
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
                                                                                  &g_pingTaskConsumerFactory         );
 
-    m_com = new CCom();
-    m_discoveryManager = new CDiscoveryManager();
+    m_com = GUCEF_NEW CCom();
+    m_discoveryManager = GUCEF_NEW CDiscoveryManager();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -169,9 +169,9 @@ CComCoreGlobal::~CComCoreGlobal()
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
     
-    delete m_discoveryManager;
+    GUCEF_DELETE m_discoveryManager;
     m_discoveryManager = GUCEF_NULL;
-    delete m_com;
+    GUCEF_DELETE m_com;
     m_com = GUCEF_NULL;
 
 
@@ -191,7 +191,7 @@ CComCoreGlobal::Instance()
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CComCoreGlobal();
+            g_instance = GUCEF_NEW CComCoreGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -209,7 +209,7 @@ CComCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = NULL;
 }
 

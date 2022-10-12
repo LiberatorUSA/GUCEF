@@ -456,16 +456,16 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    m_syncVfsOpsTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
+    m_syncVfsOpsTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
     }
 
     if ( m_client->GetConfig().desiredFeatures.supportsPublishing )
     {
-        m_bufferContentTimeWindowCheckTimer = new CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+        m_bufferContentTimeWindowCheckTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
     }
 
     m_pubsubBookmarkPersistence = m_client->GetBookmarkPersistence();
@@ -494,15 +494,15 @@ CStoragePubSubClientTopic::Shutdown( void )
 
     Disconnect();
 
-    delete m_syncVfsOpsTimer;
+    GUCEF_DELETE m_syncVfsOpsTimer;
     m_syncVfsOpsTimer = GUCEF_NULL;
 
     m_vfsOpsThread.Unlink();
     
-    delete m_reconnectTimer;
+    GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
 
-    delete m_bufferContentTimeWindowCheckTimer;
+    GUCEF_DELETE m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
 }
 
@@ -689,9 +689,9 @@ CStoragePubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds ,
 
 template < typename T >
 bool
-CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds ,
-                                              const std::vector< T >& msgs             ,
-                                              bool notify                              )
+CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds           ,
+                                              const std::vector< T, basic_allocator< T > >& msgs ,
+                                              bool notify                                        )
 {GUCEF_TRACE;
 
     if ( !m_config.needPublishSupport )
@@ -1044,7 +1044,7 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
         {
             if ( m_vfsOpsThread.IsNULL() )
             {
-                m_vfsOpsThread = CStoragePubSubClientTopicVfsTaskPtr( new CStoragePubSubClientTopicVfsTask( this ) );
+                m_vfsOpsThread = CStoragePubSubClientTopicVfsTaskPtr( GUCEF_NEW CStoragePubSubClientTopicVfsTask( this ) );
             }
             if ( !m_vfsOpsThread.IsNULL() )
             {

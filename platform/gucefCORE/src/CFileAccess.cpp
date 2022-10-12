@@ -470,7 +470,7 @@ CFileAccess::Clone( void ) const
 
     if ( IsReadable() )
     {
-            return new CFileAccess( m_filename, "rb" );
+            return GUCEF_NEW CFileAccess( m_filename, "rb" );
     }
     
     // Cannot be cloned

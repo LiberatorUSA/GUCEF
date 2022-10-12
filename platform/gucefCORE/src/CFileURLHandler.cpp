@@ -84,7 +84,7 @@ CFileURLHandler::operator=( const CFileURLHandler& src )
 CICloneable*
 CFileURLHandler::Clone( void ) const
 {GUCEF_TRACE;
-        return new CFileURLHandler( *this );
+        return GUCEF_NEW CFileURLHandler( *this );
 }
 
 /*-------------------------------------------------------------------------*/

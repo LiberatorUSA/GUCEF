@@ -176,7 +176,7 @@ CICloneable*
 CIniDataStoreCodec::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CIniDataStoreCodec();
+    return GUCEF_NEW CIniDataStoreCodec();
 }
 
 /*-------------------------------------------------------------------------//

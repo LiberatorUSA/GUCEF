@@ -102,7 +102,7 @@ CORE::CICloneable*
 CHttpRequestData::Clone( void ) const 
 {GUCEF_TRACE;
 
-    return new CHttpRequestData( *this );
+    return GUCEF_NEW CHttpRequestData( *this );
 }
 
 /*-------------------------------------------------------------------------*/

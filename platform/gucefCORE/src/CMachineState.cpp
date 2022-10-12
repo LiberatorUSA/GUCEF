@@ -67,7 +67,7 @@ CMachineState::~CMachineState()
 {
         for ( UInt32 i=0; i<_transitions.size(); ++i )
         {
-                delete _transitions[ i ];
+                GUCEF_DELETE _transitions[ i ];
         }
 }
 
@@ -95,7 +95,7 @@ CMachineState::AddTransition( UInt32 state          ,
 {
         if ( !GetTransition( conditionvalue ) )
         {
-                TStateTransition* trans = new TStateTransition;
+                TStateTransition* trans = GUCEF_NEW TStateTransition;
                 trans->conditionvalue = conditionvalue;
                 trans->state = state;
                 _transitions.push_back( trans );

@@ -1042,7 +1042,7 @@ CICloneable*
 CDynamicBuffer::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CDynamicBuffer( *this );
+    return GUCEF_NEW CDynamicBuffer( *this );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -164,11 +164,11 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    m_syncReadTimer = new CORE::CTimer( client->GetPulseGenerator(), 25 );
+    m_syncReadTimer = GUCEF_NEW CORE::CTimer( client->GetPulseGenerator(), 25 );
 
     if ( GUCEF_NULL != m_client && m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = GUCEF_NEW CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
     }
 
     RegisterEventHandlers();
@@ -194,10 +194,10 @@ CMsmqPubSubClientTopic::Shutdown( void )
 
     Disconnect();
 
-    delete m_syncReadTimer;
+    GUCEF_DELETE m_syncReadTimer;
     m_syncReadTimer = GUCEF_NULL;
 
-    delete m_reconnectTimer;
+    GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
 }
 

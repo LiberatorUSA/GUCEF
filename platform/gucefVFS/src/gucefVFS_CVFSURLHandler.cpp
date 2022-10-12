@@ -98,7 +98,7 @@ CVFSURLHandler::operator=( const CVFSURLHandler& src )
 CORE::CICloneable*
 CVFSURLHandler::Clone( void ) const
 {GUCEF_TRACE;
-        return new CVFSURLHandler( *this );
+        return GUCEF_NEW CVFSURLHandler( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ CVFSURLHandler::Register( void )
     CORE::CURLHandlerRegistry* registry = &CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry();
     if ( !registry->IsRegistered( "vfs" ) )
     {
-        registry->Register( "vfs", CORE::CURLHandlerRegistry::TRegisteredObjPtr( new CVFSURLHandler() ) );
+        registry->Register( "vfs", CORE::CURLHandlerRegistry::TRegisteredObjPtr( GUCEF_NEW CVFSURLHandler() ) );
     }
 }
 

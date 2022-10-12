@@ -2052,9 +2052,9 @@ CUtf8String::WildcardEquals( const CUtf8String& strWithWildcards    ,
     if ( -1 == strWithWildcards.HasChar( wildCardToken ) )
         return Equals( strWithWildcards, caseSensitive );
 
-    std::vector< CUtf8String > segs = strWithWildcards.ParseElements( wildCardToken, false );
+    CUtf8String::StringVector segs = strWithWildcards.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;
-    std::vector< CUtf8String >::iterator i = segs.begin();
+    CUtf8String::StringVector::iterator i = segs.begin();
     while ( i != segs.end() )
     {
         lastSeg = HasSubstr( (*i), lastSeg, true );

@@ -83,7 +83,7 @@ fa_readl( struct SIOAccess* access ,
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadLine();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -95,7 +95,7 @@ fa_reads( struct SIOAccess* access ,
           char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         CString str = ( (CIOAccess*) access->privdata )->ReadString();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -176,7 +176,7 @@ fa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 void GUCEF_CALLSPEC_PREFIX
 fa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-        delete []((char*)mem);
+        GUCEF_DELETE []((char*)mem);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -263,7 +263,7 @@ CIOAccess::ReadUntill( void *dest            ,
                                      1     ) );
         }
 
-        char* buffer = new char[ delimsize ];
+        char* buffer = GUCEF_NEW char[ delimsize ];
         char* bufwritepos = buffer;
         char* destbuf = static_cast<char*>( dest );
         UInt32 i;
@@ -293,7 +293,7 @@ CIOAccess::ReadUntill( void *dest            ,
                          */
                         if ( memcmp( buffer, delimiter, delimsize ) == 0 )
                         {
-                                delete []buffer;
+                                GUCEF_DELETE []buffer;
                                 destbuf[ i ] = '\0';
                                 GUCEF_END;
                                 return i;
@@ -303,13 +303,13 @@ CIOAccess::ReadUntill( void *dest            ,
                 }
                 else
                 {
-                        delete []buffer;
+                        GUCEF_DELETE []buffer;
                         destbuf[ i ] = '\0';
                         GUCEF_END;
                         return i;
                 }
         }
-        delete []buffer;
+        GUCEF_DELETE []buffer;
         destbuf[ bsize-i ] = '\0';
         GUCEF_END;
         return i;
@@ -338,7 +338,7 @@ CIOAccess::SkipUntill( const void* delimiter ,
                 Seek( 0, SEEK_END );
         }
 
-        char* buffer = new char[ delimsize ];
+        char* buffer = GUCEF_NEW char[ delimsize ];
         char* bufwritepos = buffer;
         UInt32 pos = Tell();
         while( !Eof() )
@@ -365,11 +365,11 @@ CIOAccess::SkipUntill( const void* delimiter ,
                  */
                 if ( memcmp( buffer, delimiter, delimsize ) == 0 )
                 {
-                        delete []buffer;
+                        GUCEF_DELETE []buffer;
                         GUCEF_END_RET( Tell() - pos );
                 }
         }
-        delete []buffer;
+        GUCEF_DELETE []buffer;
         GUCEF_END_RET( Tell() - pos );
 }
 

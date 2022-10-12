@@ -105,7 +105,7 @@ namespace CORE {
 //        while ( i != m_codecList.end() )
 //        {
 //                // get rid of the codec instance
-//                delete (*i);
+//                GUCEF_DELETE (*i);
 //                ++i;
 //        }
 //        m_codecList.clear();
@@ -153,7 +153,7 @@ namespace CORE {
 //        // Try to delete the codec
 //        if ( i != m_codecList.end() )
 //        {
-//                delete (*i);                
+//                GUCEF_DELETE (*i);                
 //                m_codecList.erase( i );
 //                return true;
 //        }
@@ -171,7 +171,7 @@ namespace CORE {
 //                if ( (*i)->GetType() == typeName )
 //                {
 //                        // get rid of the codec instance
-//                        delete (*i);
+//                        GUCEF_DELETE (*i);
 //                        m_codecList.erase( i );
 //                        
 //                        // reset to the start of the list

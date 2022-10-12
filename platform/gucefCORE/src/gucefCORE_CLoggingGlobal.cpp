@@ -73,7 +73,7 @@ CLoggingGlobal::Instance()
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CLoggingGlobal();
+            g_instance = GUCEF_NEW CLoggingGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -90,7 +90,7 @@ CLoggingGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
 }
 
@@ -100,7 +100,7 @@ void
 CLoggingGlobal::Initialize( void )
 {GUCEF_TRACE;
 
-    m_logManager = new CLogManager();                 
+    m_logManager = GUCEF_NEW CLogManager();                 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ CLoggingGlobal::~CLoggingGlobal()
     MT::CScopeMutex lock( g_dataLock );
 
     m_logManager->FlushLogs();
-    delete m_logManager;
+    GUCEF_DELETE m_logManager;
     m_logManager = GUCEF_NULL;
 }
 

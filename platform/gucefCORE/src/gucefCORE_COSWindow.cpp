@@ -108,17 +108,17 @@ COSWindow::Create( void )
 
     // Build-in strategy pattern, there is only 1 right answer per graphical platform
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    CMsWin32Window* window = new CMsWin32Window();
+    CMsWin32Window* window = GUCEF_NEW CMsWin32Window();
     if ( !CORE::CMsWin32Window::RegisterWindowClass( window->GetClassTypeName() ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "COSWindow: Could not register window class" );
-        delete window;
+        GUCEF_DELETE window;
         return 0;
     }
 
     return window;
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
-    return new CX11Window();
+    return GUCEF_NEW CX11Window();
     #else
     return 0;
     #endif
@@ -130,7 +130,7 @@ void
 COSWindow::Destroy( COSWindow* osWindow )
 {GUCEF_TRACE;
 
-    delete osWindow;
+    GUCEF_DELETE osWindow;
 }
 
 /*-------------------------------------------------------------------------//

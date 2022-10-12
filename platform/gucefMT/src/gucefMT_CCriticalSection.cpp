@@ -53,10 +53,10 @@ CCriticalSection::CCriticalSection( void )
 {GUCEF_TRACE;
 
         #ifdef GUCEF_MSWIN_BUILD
-        _data = new CRITICAL_SECTION;
+        _data = GUCEF_NEW CRITICAL_SECTION;
         InitializeCriticalSection( (CRITICAL_SECTION*) _data );
         #else
-        _data = new CMutex();
+        _data = GUCEF_NEW CMutex();
         #endif
 }
 
@@ -67,9 +67,9 @@ CCriticalSection::~CCriticalSection()
 
         #ifdef GUCEF_MSWIN_BUILD
         DeleteCriticalSection( (CRITICAL_SECTION*) _data );
-        delete (CRITICAL_SECTION*) _data;
+        GUCEF_DELETE (CRITICAL_SECTION*) _data;
         #else
-        delete (CMutex*) _data;
+        GUCEF_DELETE (CMutex*) _data;
         #endif
 }
 

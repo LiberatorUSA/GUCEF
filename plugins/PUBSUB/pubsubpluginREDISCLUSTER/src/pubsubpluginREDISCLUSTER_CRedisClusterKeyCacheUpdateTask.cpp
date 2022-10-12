@@ -91,7 +91,7 @@ CRedisClusterKeyCacheUpdateTask::OnTaskStart( CORE::CICloneable* taskData )
     if ( pulseGenerator.IsNULL() )
         return false;
 
-    m_indexingTimer = new CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL );
+    m_indexingTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL );
 
     RegisterEventHandlers();
 
@@ -220,7 +220,7 @@ CRedisClusterKeyCacheUpdateTask::OnTaskEnded( CORE::CICloneable* taskdata ,
                                               bool wasForced              )
 {GUCEF_TRACE;
 
-    delete m_indexingTimer;
+    GUCEF_DELETE m_indexingTimer;
     m_indexingTimer = GUCEF_NULL;
 }
 

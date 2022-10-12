@@ -139,7 +139,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
                                            TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    CDStoreCodecPlugin* plugin = new CDStoreCodecPlugin();
+    CDStoreCodecPlugin* plugin = GUCEF_NEW CDStoreCodecPlugin();
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
@@ -150,7 +150,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
         }
     }
 
-    delete plugin;
+    GUCEF_DELETE plugin;
     return TPluginPtr();
 }
 

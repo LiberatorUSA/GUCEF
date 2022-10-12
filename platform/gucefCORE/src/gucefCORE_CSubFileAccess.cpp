@@ -330,7 +330,7 @@ CICloneable*
 CSubFileAccess::Clone( void ) const
 {GUCEF_TRACE;
 
-    CSubFileAccess* access = new CSubFileAccess();
+    CSubFileAccess* access = GUCEF_NEW CSubFileAccess();
     if( access->Load( m_filename ,
                       m_offset   ,
                       m_size     ) )
@@ -338,7 +338,7 @@ CSubFileAccess::Clone( void ) const
         return access;
     }
     
-    delete access;
+    GUCEF_DELETE access;
     return NULL;
 }
 

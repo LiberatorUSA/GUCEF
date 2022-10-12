@@ -72,7 +72,7 @@ CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
 CPlatformNativeConsoleLogger::~CPlatformNativeConsoleLogger()
 {GUCEF_TRACE;
 
-    delete m_nativeConsoleLogger;
+    GUCEF_DELETE m_nativeConsoleLogger;
     m_nativeConsoleLogger = NULL;
 }
 
@@ -86,11 +86,11 @@ CPlatformNativeConsoleLogger::GetLogger( void )
     {
         #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
-        m_nativeConsoleLogger = new CMSWinConsoleLogger();
+        m_nativeConsoleLogger = GUCEF_NEW CMSWinConsoleLogger();
 
         #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
 
-        m_nativeConsoleLogger = new CXTermConsoleLogger();
+        m_nativeConsoleLogger = GUCEF_NEW CXTermConsoleLogger();
 
         #endif
     }

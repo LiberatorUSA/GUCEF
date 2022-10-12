@@ -204,7 +204,7 @@ CICloneable*
 CTEventHandlerFunctor< IObserverDerived >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTEventHandlerFunctor< IObserverDerived >( *this );
+    return GUCEF_NEW CTEventHandlerFunctor< IObserverDerived >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

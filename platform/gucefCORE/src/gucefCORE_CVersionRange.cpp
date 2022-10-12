@@ -212,7 +212,7 @@ CVersionRange::FromString( const CString& rangeStr )
 
     Int32 offset = 0;
 
-    std::vector< CString > sections = rangeStr.ParseElements( ',', false );
+    CString::StringVector sections = rangeStr.ParseElements( ',', false );
     if ( sections.size() == 1 )
     {
         // 1.0  = x >= 1.0

@@ -66,7 +66,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CCredentialsProviderAdapter : public Aw
 {
     public:
 
-    typedef std::vector< CORE::CString > TStringVector;
+    typedef CORE::CString::StringVector TStringVector;
     
     CCredentialsProviderAdapter( void );
 

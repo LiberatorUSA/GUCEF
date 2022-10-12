@@ -122,7 +122,7 @@ CICloneable*
 CLinkedTransferBuffer::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CLinkedTransferBuffer( *this );
+    return GUCEF_NEW CLinkedTransferBuffer( *this );
 }
 
 /*-------------------------------------------------------------------------*/

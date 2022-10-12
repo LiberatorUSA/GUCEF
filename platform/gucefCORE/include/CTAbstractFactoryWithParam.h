@@ -177,7 +177,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
         typename TFactoryList::iterator i = m_concreteFactoryList.begin();
         while ( i != m_concreteFactoryList.end() )
         {
-            delete (*i).second;
+            GUCEF_DELETE (*i).second;
             (*i).second = GUCEF_NULL;
             ++i;
         }
@@ -291,7 +291,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
     {
         if ( m_assumeFactoryOwnership )
         {
-            delete (*i).second;
+            GUCEF_DELETE (*i).second;
         }
         m_concreteFactoryList.erase( i );
 

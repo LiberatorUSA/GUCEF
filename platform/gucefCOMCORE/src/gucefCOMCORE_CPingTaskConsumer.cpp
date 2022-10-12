@@ -144,7 +144,7 @@ CORE::CICloneable*
 CPingTaskConsumer::CPingTaskData::Clone( void ) const
 {GUCEF_TRACE;
     
-    return new CPingTaskData( *this );
+    return GUCEF_NEW CPingTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -274,7 +274,7 @@ CORE::CICloneable*
 CPingTaskConsumer::CEchoReceivedEventData::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CEchoReceivedEventData( *this );
+    return GUCEF_NEW CEchoReceivedEventData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -316,7 +316,7 @@ CPingTaskConsumer::CPingTaskConsumer( void )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    TMsWinPingData* platformData = new TMsWinPingData;
+    TMsWinPingData* platformData = GUCEF_NEW TMsWinPingData;
     platformData->icmpHandle = IcmpCreateFile();
     platformData->pingEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
     m_platformData = platformData;
@@ -466,7 +466,7 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
     m_notDone = true;
     
     // Prepare our ping packet
-    UInt8* pingData = new UInt8[ m_taskData->GetBytesToSend() ];
+    UInt8* pingData = GUCEF_NEW UInt8[ m_taskData->GetBytesToSend() ];
     memset( pingData, 'x', m_taskData->GetBytesToSend() );
         
     // Setup all ping counters
@@ -481,7 +481,7 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
         pingEntry.ticksAtLastPing = MT::PrecisionTickCount();
         pingEntry.areWeWaitingForPingResult = false;
         pingEntry.echoSize = m_taskData->GetBytesToSend();
-        pingEntry.replyBuffer = new Int8[ sizeof(ICMP_ECHO_REPLY) + pingEntry.echoSize ];
+        pingEntry.replyBuffer = GUCEF_NEW Int8[ sizeof(ICMP_ECHO_REPLY) + pingEntry.echoSize ];
         pingEntry.taskConsumer = this;
         
         m_pingCounters.insert( std::pair< CHostAddress, TPingEntry >( host, pingEntry ) );

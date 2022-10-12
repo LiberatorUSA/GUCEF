@@ -289,7 +289,7 @@ CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
             // We know we are dealing with clonables so fetching by value means we need to guard against memory leaks
             typename TContainer::value_type* mail = static_cast< typename TContainer::value_type* >( m_mailQueue.front() );
             mailList.push_back( *mail );
-            delete mail;
+            GUCEF_DELETE mail;
             m_mailQueue.pop_front();
 
             ++mailItemsRead;

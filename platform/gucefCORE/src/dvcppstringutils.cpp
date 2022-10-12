@@ -551,7 +551,7 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
                                 bool resolveVars        )
 {GUCEF_TRACE;
 
-    typedef std::vector< CString >  TStringVector;
+    typedef CString::StringVector  TStringVector;
 
     // First resolve any variables in the paths,.. normalize
     // This includes getting rid of any redundant foo/../bar segments
@@ -668,7 +668,7 @@ StringToVersion( const CString& versionStr )
 {GUCEF_TRACE;
 
     TVersion version = { 0, 0, 0, 0 };
-    std::vector< CString > elements = versionStr.ParseElements( '.' );
+    CString::StringVector elements = versionStr.ParseElements( '.' );
     if ( elements.size() > 0 )
     {
         version.major = StringToUInt16( elements[ 0 ] );
@@ -1154,10 +1154,10 @@ CString
 StripFilename( const CString& pathPlusFilename )
 {GUCEF_TRACE;
 
-    char* buffer = new char[ pathPlusFilename.Length()+1 ];
+    char* buffer = GUCEF_NEW char[ pathPlusFilename.Length()+1 ];
     UInt32 length = _Strip_Filename( buffer, pathPlusFilename.C_String() );
     CString resultStr( buffer, length );
-    delete []buffer;
+    GUCEF_DELETE []buffer;
     return resultStr;
 }
 

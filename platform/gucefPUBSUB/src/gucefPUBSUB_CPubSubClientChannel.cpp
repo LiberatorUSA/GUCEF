@@ -204,7 +204,7 @@ CPubSubClientChannel::InitializeChannel( bool force )
         if ( sideSettings.pubsubIdPrefix.IsNULLOrEmpty() )
             sideSettings.pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId );
 
-        CPubSubClientSidePtr side( new CPubSubClientSide( sideId, &m_flowRouter ) );        
+        CPubSubClientSidePtr side( GUCEF_NEW CPubSubClientSide( sideId, &m_flowRouter ) );        
         if ( !side->LoadConfig( sideSettings ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because side with id " + sideId + " failed LoadConfig" );

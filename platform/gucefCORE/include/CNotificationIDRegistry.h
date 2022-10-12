@@ -155,7 +155,8 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry : public MT::CILockable
     CNotificationIDRegistry& operator=( const CNotificationIDRegistry& src );
 
     private:
-    typedef std::map<const CString,UInt32> TRegistryList;
+    typedef std::pair< CString, UInt32 > TStringAndUInt32Pair;
+    typedef std::map< CString, UInt32, std::less< CString >, basic_allocator< TStringAndUInt32Pair > > TRegistryList;
 
     TRegistryList m_list;
     UInt32 m_lastid;

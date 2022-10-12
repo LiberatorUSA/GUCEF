@@ -66,11 +66,11 @@ CDataQueue::~CDataQueue()
         CDynamicBuffer* buffer;
         while ( _queue.Pop( &buffer ) ) 
         {
-                delete buffer;
+                GUCEF_DELETE buffer;
         }
         while ( _freebuffers.Pop( &buffer ) ) 
         {
-                delete buffer;
+                GUCEF_DELETE buffer;
         }
         GUCEF_END;                
 }
@@ -86,7 +86,7 @@ CDataQueue::Set( const void* src ,
         if ( !_freebuffers.Pop( &buffer ) )
         {
                 // no more free buffers are available
-                buffer = new CDynamicBuffer( true );                              
+                buffer = GUCEF_NEW CDynamicBuffer( true );                              
         }
         
         buffer->CopyFrom( datasize, src );        

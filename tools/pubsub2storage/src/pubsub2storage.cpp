@@ -346,7 +346,7 @@ CPubSubClientChannel::TopicLink::TopicLink( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientChannel::TopicLink::TopicLink( PUBSUB::CPubSubClientTopic* t )
+CPubSubClientChannel::TopicLink::TopicLink( PUBSUB::CPubSubClientTopicPtr t )
     : topic( t )
     , currentPublishActionIds()
     , inFlightMsgs()
@@ -632,8 +632,8 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     ChannelSettings::TTopicConfigVector::iterator i = m_channelSettings.pubsubClientConfig.topics.begin();
     while ( i != m_channelSettings.pubsubClientConfig.topics.end() )
     {
-        PUBSUB::CPubSubClientTopic* topic = m_pubsubClient->CreateTopicAccess( (*i) );
-        if ( GUCEF_NULL == topic )
+        PUBSUB::CPubSubClientTopicPtr topic = m_pubsubClient->CreateTopicAccess( (*i) );
+        if ( topic.IsNULL() )
         {
             if ( !(*i).isOptional )
             {
@@ -657,7 +657,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     while ( t != m_topics.end() )
     {
         TopicLink& topicLink = (*t);
-        PUBSUB::CPubSubClientTopic* topic = topicLink.topic;
+        PUBSUB::CPubSubClientTopicPtr topic = topicLink.topic;
 
         if ( topic->InitializeConnectivity() )
         {
@@ -842,7 +842,7 @@ CPubSubClientChannel::TransmitNextPubSubMsgBuffer( void )
     while ( i != m_topics.end() )
     {
         TopicLink& topicLink = (*i);
-        PUBSUB::CPubSubClientTopic* topic = topicLink.topic;
+        PUBSUB::CPubSubClientTopicPtr topic = topicLink.topic;
 
         if ( GUCEF_NULL != topic )
         {

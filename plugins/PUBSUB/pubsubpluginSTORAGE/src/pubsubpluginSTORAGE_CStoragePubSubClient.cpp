@@ -110,7 +110,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
 
     if ( config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
@@ -140,7 +140,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
 
     m_pubsubBookmarkPersistence.Unlink();
     
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 }
 
@@ -257,7 +257,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = ( new CStoragePubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;

@@ -546,8 +546,8 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
             if ( i == m_channels.end() )
             {
                 // This is a brand new channel. Lets add the channel object for it
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating new channel with ID " + CORE::Int32ToString( channelId ) );
-                m_channels[ channelId ] = CPubSubClientChannelPtr( new CPubSubClientChannel() );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating GUCEF_NEW channel with ID " + CORE::Int32ToString( channelId ) );
+                m_channels[ channelId ] = CPubSubClientChannelPtr( GUCEF_NEW CPubSubClientChannel() );
             }
             ++n;
         }
@@ -803,11 +803,11 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
 
     m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
 
-    m_httpRouter.SetResourceMapping( "/info", ( new RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );
-    m_httpRouter.SetResourceMapping( "/config/appargs", ( new RestApiPubSub2PubSubConfigResource( this, true ) )->CreateSharedPtr() );
-    m_httpRouter.SetResourceMapping( "/config", ( new RestApiPubSub2PubSubConfigResource( this, false ) )->CreateSharedPtr()  );
-    m_httpRouter.SetResourceMapping( "/config/channels/*", ( new RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
-    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), ( new WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/info", ( GUCEF_NEW RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config/appargs", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, true ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, false ) )->CreateSharedPtr()  );
+    m_httpRouter.SetResourceMapping( "/config/channels/*", ( GUCEF_NEW RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), ( GUCEF_NEW WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

@@ -152,7 +152,7 @@ CURL::~CURL()
     if ( m_handler )
     {
         UnsubscribeFrom( m_handler );
-        delete m_handler;
+        GUCEF_DELETE m_handler;
     }
 }
 
@@ -164,7 +164,7 @@ CURL::operator=( const CURL& src )
 
     if ( &src != this )
     {
-        delete m_handler;
+        GUCEF_DELETE m_handler;
         m_handler = NULL;
 
         m_url = src.m_url;
@@ -232,7 +232,7 @@ CURL::SetURL( const CString& url )
         if ( m_handler )
         {
             UnsubscribeFrom( m_handler );
-            delete m_handler;
+            GUCEF_DELETE m_handler;
             m_handler = NULL;
         }
 

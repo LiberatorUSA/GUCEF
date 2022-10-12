@@ -225,8 +225,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     typedef CORE::CTEventHandlerFunctor< ProcessMetrics > TEventCallback;
     typedef std::map< CORE::CString, TProcInfo > TProcessIdMap;
-    typedef std::set< CORE::CString > TStringSet;
-    typedef std::vector< CORE::CString > TStringVector;
+    typedef CORE::CString::StringSet TStringSet;
+    typedef CORE::CString::StringVector TStringVector;
     typedef std::map< CORE::CString, MetricThreshold >  TMetricsThresholdMap;
     typedef std::map< CORE::CString, TMetricsThresholdMap >  TMetricsThresholdMapMap;
 
@@ -236,7 +236,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     PUBSUB::CPubSubClientFactory::TProductPtr m_pubSubClient;
-    PUBSUB::CPubSubClientTopic* m_thresholdNotificationPublishTopic;
+    PUBSUB::CPubSubClientTopicPtr m_thresholdNotificationPublishTopic;
     PUBSUB::CPubSubClientFeatures m_pubSubFeatures;
     CORE::CString m_thresholdNotificationPrimaryPayloadCodecType;
     bool m_gatherMemStats;

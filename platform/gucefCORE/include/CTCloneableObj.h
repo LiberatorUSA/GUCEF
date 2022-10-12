@@ -150,7 +150,7 @@ CICloneable*
 CTCloneableObj< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTCloneableObj< T >( *this );
+    return GUCEF_NEW CTCloneableObj< T >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -42,6 +42,11 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CROLLINGFILEACCESS_H
 #include "gucefCORE_CRollingFileAccess.h"
 #define GUCEF_CORE_CROLLINGFILEACCESS_H
@@ -238,8 +243,8 @@ GucefAppSignalHandler( int signal )
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2storage" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "pubsub2storage" )
 {GUCEF_TRACE;
 
     int returnValue = -100;

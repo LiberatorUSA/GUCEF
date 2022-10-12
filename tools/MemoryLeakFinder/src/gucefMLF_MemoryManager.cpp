@@ -85,7 +85,7 @@
 #undef GUCEF_USE_CALLSTACK_TRACING
 #undef GUCEF_USE_CALLSTACK_PLATFORM_TRACING
 
-#define GUCEF_MAX_DEALLOCS_TO_TRACK     10000
+#define GUCEF_MAX_DEALLOCS_TO_TRACK     10000000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -141,23 +141,40 @@ struct StackNode
     StackNode *next;                  // routines accept these additional parameters.
 };
 
-struct MemoryNode                   // This struct defines the primary container for tracking
-{                                   // all memory allocations.  It holds information that 
-  size_t         actualSize;        // will be used to track memory violations and information
-  size_t         reportedSize;      // to help the user track down specific problems reported
-  void          *actualAddress;     // to the log file upon termination of the program.
-  void          *reportedAddress;   
-  char           sourceFile[30];    // I have tried to keep the physical size of this struct
-  unsigned short sourceLine;        // to a minimum, to reduce the memory tracking overhead.  
-    unsigned short paddingSize;       // At the same time I have tried to allow for as much
-  char           options;           // flexibility and information holding as possible.
+
+// This class defines the primary container for tracking
+// all memory allocations.  It holds information that 
+// will be used to track memory violations and information
+// to help the user track down specific problems reported
+// to the log file upon termination of the program.
+//
+// I have tried to keep the physical size of this class
+// to a minimum, to reduce the memory tracking overhead.  
+// At the same time I have tried to allow for as much
+// flexibility and information holding as possible.
+class MemoryNode                    
+{                                   
+    public:                           
+                                      
+    size_t         actualSize;        
+    size_t         reportedSize;      
+    void*          actualAddress;     
+    void*          reportedAddress;   
+    char           sourceFile[64];    
+    unsigned short sourceLine;        
+    unsigned short paddingSize;       
+    char           options;           
     long           predefinedBody;
-  ALLOC_TYPE     allocationType;
-  TCallStack*    allocCallstack;
-  MemoryNode    *next, *prev;
+    ALLOC_TYPE     allocationType;
+    TCallStack*    allocCallstack;
+    TCallStack*    deallocCallstack;
+    MemoryNode*    next;
+    MemoryNode*    prev;
 
     void InitializeMemory( long body = BODY ) ; // Initailize the nodes memory for interrogation.
     void InitializeReallocMemory( long body, size_t originalContentSize );
+
+    MemoryNode( void );
 };
 
 // This class implements a basic stack for record keeping.  It is necessary to use this class
@@ -278,6 +295,15 @@ private:
     MemoryNode* m_lastDeallocatedNode;
     UInt32 m_deallocatedNodeCount;
     MemoryNode* m_memoryCache;          // Used for caching unused memory nodes.
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #if ( _WIN32_WINNT >= 0x0500 )
+
+    void* m_vectoredExceptionHandler;
+
+  #endif
+#endif
+
 };
 
 bool manager_is_constructed = false;
@@ -306,6 +332,15 @@ MemoryManager::MemoryManager( void )
     , m_lastDeallocatedNode( GUCEF_NULL )
     , m_deallocatedNodeCount( 0 )
     , m_memoryCache( GUCEF_NULL )
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #if ( _WIN32_WINNT >= 0x0500 )
+
+    , m_vectoredExceptionHandler( GUCEF_NULL )
+
+  #endif
+#endif
+
 {
     memset( m_hashTable, 0, HASH_SIZE * sizeof( MemoryNode* ) );
     manager_is_constructed = true;
@@ -377,6 +412,12 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
     m_assert( type != MM_UNKNOWN );
 
     size_t originalReportedSize = 0;
+    if (type == MM_NEW && GUCEF_NULL != address )
+    {
+        // currently not tracking placement new (yet)
+        return address;
+    }
+    else
     if (type == MM_REALLOC) 
     {
         memory = g_manager.removeMemoryNode( address );
@@ -584,7 +625,15 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
     free( memory->actualAddress );
     memory->actualAddress = GUCEF_NULL;
 
-    // Free the memory used to create the Memory Node
+    // Store the deallocation callstack for diagnostic purposes
+    if ( GUCEF_NULL != memory->deallocCallstack )
+    {
+        MEMMAN_FreeCallstackCopy( memory->deallocCallstack );
+        memory->deallocCallstack = GUCEF_NULL;
+    }
+    MEMMAN_GetCallstackCopyForCurrentThread( &memory->deallocCallstack, 1 );
+
+    // Release the memory node from the list of actively 'in use' Memory Nodes
     g_manager.deallocateMemory( memory );
 
     // Free the info node used to hold the file and line number information for this deallocation.
@@ -695,7 +744,7 @@ void MemoryManager::initialize( void )
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #if ( _WIN32_WINNT >= 0x0500 )
 
-    ::AddVectoredExceptionHandler( 1, Win32VectoredExceptionHandler );
+    m_vectoredExceptionHandler = ::AddVectoredExceptionHandler( 1, Win32VectoredExceptionHandler );
 
   #endif
 #endif
@@ -753,6 +802,14 @@ void MemoryManager::release( void )
         m_memoryCache = ptr->next;
         free( ptr );
     }
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #if ( _WIN32_WINNT >= 0x0500 )
+
+    ::RemoveVectoredExceptionHandler( (PVOID) m_vectoredExceptionHandler );
+
+  #endif
+#endif
 
     m_initialized = false;
     m_shutdownCalled = true;
@@ -1077,6 +1134,11 @@ MemoryManager::deallocateMemory( MemoryNode* node )
         m_memoryCache = lastNode;
         
         // we do not retain the stack info once we move the node to the 'free list'
+        if ( GUCEF_NULL != lastNode->deallocCallstack )
+        {
+            MEMMAN_FreeCallstackCopy( lastNode->deallocCallstack );
+            lastNode->deallocCallstack = GUCEF_NULL;
+        }
         if ( GUCEF_NULL != lastNode->allocCallstack )
         {
             MEMMAN_FreeCallstackCopy( lastNode->allocCallstack );
@@ -1119,7 +1181,7 @@ MemoryNode* MemoryManager::allocateMemory( void )
             m_peakOverHeadMemoryCost =  m_overheadMemoryCost;
         }
 
-        MemoryNode* newNode = (MemoryNode*) malloc( sizeof(MemoryNode) );
+        MemoryNode* newNode = new MemoryNode();
         if ( GUCEF_NULL != newNode )
         {
             newNode->allocCallstack = GUCEF_NULL;
@@ -1176,7 +1238,11 @@ MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
         while ( i != nearestNodes.end() )
         {
             fprintf( fp, "** Distance rank # %d\r\n", distanceRank );
-            fprintf( fp, "Distance in bytes : %d\r\n", (UInt32)(*i).first );
+            #ifdef GUCEF_MSWIN_BUILD
+            fprintf( fp, "Distance in bytes : %I64u\r\n", (*i).first );
+            #else
+            fprintf( fp, "Distance in bytes : %llu\r\n", (*i).first );
+            #endif
             dumpMemoryNode( fp, (*i).second );
             fprintf( fp, "\r\n");
             
@@ -1197,6 +1263,13 @@ MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
         while ( i != nearestNodes.end() )
         {
             fprintf( fp, "** Distance rank # %d\r\n", distanceRank );
+
+            #ifdef GUCEF_MSWIN_BUILD
+            fprintf( fp, "Distance in bytes : %I64u\r\n", (*i).first );
+            #else
+            fprintf( fp, "Distance in bytes : %llu\r\n", (*i).first );
+            #endif
+
             fprintf( fp, "Distance in bytes : %d\r\n", (UInt32)(*i).first );
             dumpMemoryNode( fp, (*i).second );
             fprintf( fp, "\r\n");
@@ -1330,6 +1403,14 @@ MemoryManager::dumpMemoryNode( FILE* fp, MemoryNode* node )
             fprintf( fp, "  %s:%d\r\n", node->allocCallstack->file[ s ], node->allocCallstack->linenr[ s ] );
         }
     }
+    if ( GUCEF_NULL != node->deallocCallstack )
+    {
+        fprintf( fp, "Deallocation Call Stack   :\r\n" );
+        for ( UInt32 s=0; s<node->deallocCallstack->items; ++s )
+        {
+            fprintf( fp, "  %s:%d\r\n", node->deallocCallstack->file[ s ], node->deallocCallstack->linenr[ s ] );
+        }
+    }
 }
 
 /*******************************************************************************************/
@@ -1456,6 +1537,24 @@ int MemoryManager::calculateUnAllocatedMemory( void )
 // ****** Implementation of the MemoryNode Struct
 /*-------------------------------------------------------------------------*/
 
+MemoryNode::MemoryNode( void )
+    : actualSize( 0 )
+    , reportedSize( 0 )
+    , actualAddress( GUCEF_NULL )
+    , reportedAddress( GUCEF_NULL )
+    , sourceFile()
+    , sourceLine( 0 )
+    , paddingSize( 0 )
+    , options( 0 )
+    , predefinedBody( 0 )
+    , allocationType( MM_UNKNOWN )
+    , allocCallstack( GUCEF_NULL )
+    , deallocCallstack( GUCEF_NULL )
+    , next( GUCEF_NULL )
+    , prev( GUCEF_NULL )
+{
+}
+
 /**
  * MemoryNode::InitializeMemory():
  *  Initialize the padding and the body of the allocated memory so that it can be interrogated
@@ -1465,7 +1564,8 @@ int MemoryManager::calculateUnAllocatedMemory( void )
  *  Arguments   : 
  *  	long body	: The value to which the body of the allocated memory should be intialized too.
  */
-void MemoryNode::InitializeMemory( long body ) 
+void 
+MemoryNode::InitializeMemory( long body ) 
 {
     // Initialize the memory padding for detecting bounds violations.
     long *beginning = (long*)actualAddress;

@@ -81,7 +81,7 @@ CAwsS3Global::Instance()
         g_dataLock.Lock();
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CAwsS3Global();
+            g_instance = GUCEF_NEW CAwsS3Global();
             g_instance->Initialize();
         }
         g_dataLock.Unlock();
@@ -96,7 +96,7 @@ CAwsS3Global::Deinstance( void )
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
     g_dataLock.Unlock();
 }
@@ -162,7 +162,7 @@ CAwsS3Global::~CAwsS3Global()
         VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( AwsS3BucketArchiveType );
         VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( AwsS3ArchiveType );
 
-        delete m_s3Client;
+        GUCEF_DELETE m_s3Client;
         m_s3Client = GUCEF_NULL;
         
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsS3Global systems shutdown completed" );
@@ -224,7 +224,7 @@ CAwsS3Global::OnAwsSdkInitialized( CORE::CNotifier* notifier    ,
     {
         // Now that the SDK is initialized properly we can init the S3 client which depends on it
         PLUGINGLUE::AWSSDK::CAwsSdkGlobal* sdk = PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
-        m_s3Client = new Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetDefaultAwsClientConfig() );
+        m_s3Client = GUCEF_NEW Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetDefaultAwsClientConfig() );
 
         // Trigger auto discovery and auto mounting of S3 buckets
         //m_bucketInventoryRefreshTimer.SetInterval( 600000 );

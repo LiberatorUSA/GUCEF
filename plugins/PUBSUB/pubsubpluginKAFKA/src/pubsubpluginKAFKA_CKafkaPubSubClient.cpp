@@ -103,7 +103,7 @@ CKafkaPubSubClient::Clear( void )
 
     MT::CScopeMutex lock( m_lock );
     
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -182,7 +182,7 @@ CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& t
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = ( new CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -344,7 +344,7 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
         
     if ( m_config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( m_config.pulseGenerator, 1000 );
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( m_config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( m_config.desiredFeatures.supportsMetrics );
     }
 

@@ -94,7 +94,7 @@ CVfsGlobal::Instance()
         MT::CScopeMutex scopeLock( g_datalock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CVfsGlobal();
+            g_instance = GUCEF_NEW CVfsGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -112,7 +112,7 @@ CVfsGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex scopeLock( g_datalock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = NULL;
 }
 
@@ -133,7 +133,7 @@ CVfsGlobal::Initialize( void )
     
     try
     {
-        CORE::CCoreGlobal::Instance()->GetCodecRegistry().Register( "VFSPackCodec", CORE::CCodecRegistry::TCodecFamilyRegistryPtr( new CORE::CCodecRegistry::TCodecFamilyRegistry() ) );
+        CORE::CCoreGlobal::Instance()->GetCodecRegistry().Register( "VFSPackCodec", CORE::CCodecRegistry::TCodecFamilyRegistryPtr( GUCEF_NEW CORE::CCodecRegistry::TCodecFamilyRegistry() ) );
     }
     catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
     {
@@ -142,7 +142,7 @@ CVfsGlobal::Initialize( void )
     /*
      *      Instantiate all singletons
      */
-    m_vfs = new CVFS();
+    m_vfs = GUCEF_NEW CVFS();
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncVfsOperation::TaskType, &g_asyncVfsOperationTaskFactory );
     
@@ -180,7 +180,7 @@ CVfsGlobal::~CVfsGlobal()
      *      Take care to deinstance them in the correct order !!!
      */
 
-    delete m_vfs;
+    GUCEF_DELETE m_vfs;
     m_vfs = NULL;
 }
 

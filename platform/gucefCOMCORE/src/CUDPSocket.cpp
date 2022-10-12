@@ -144,7 +144,7 @@ CUDPSocket::CUDPSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
 
     RegisterEvents();
 
-    _data = new TUDPSockData;
+    _data = GUCEF_NEW TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
@@ -181,7 +181,7 @@ CUDPSocket::CUDPSocket( bool blocking )
 
     RegisterEvents();
 
-    _data = new TUDPSockData;
+    _data = GUCEF_NEW TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
@@ -199,7 +199,7 @@ CUDPSocket::~CUDPSocket()
 
     Close( false );
 
-    delete _data;
+    GUCEF_DELETE _data;
     _data = NULL;
 }
 

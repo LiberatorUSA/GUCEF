@@ -176,10 +176,10 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
 
     protected:
 
-    virtual bool OnSysConsoleCommand( const CString& path                ,
-                                      const CString& command             ,
-                                      const std::vector< CString >& args ,
-                                      std::vector< CString >& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnSysConsoleCommand( const CString& path               ,
+                                      const CString& command            ,
+                                      const CString::StringVector& args ,
+                                      CString::StringVector& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;

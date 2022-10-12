@@ -178,7 +178,7 @@ CStateMachine::Clear( void )
 {
         for ( UInt32 i=0; i<_states.size(); ++i )
         {
-                delete _states[ i ];
+                GUCEF_DELETE _states[ i ];
         }
         _states.clear();
 }
@@ -253,7 +253,7 @@ CStateMachine::AddState( UInt32 state           ,
                 if ( !LookupStateObj( state ) )
                 {
                         handler->_machine = this;
-                        _states.push_back( new CMachineState( state, handler ) );
+                        _states.push_back( GUCEF_NEW CMachineState( state, handler ) );
                         return true;
                 }
         }                
@@ -272,7 +272,7 @@ CStateMachine::DelState( UInt32 state )
                 if ( mstate->GetState() == state )
                 {
                     _states[ i ] = NULL;
-                    delete mstate;
+                    GUCEF_DELETE mstate;
                     mstate = 0;
                     //_states.FillNULLGaps(); @TODO
                     return true;

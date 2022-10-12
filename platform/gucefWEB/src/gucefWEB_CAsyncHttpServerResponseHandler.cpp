@@ -102,7 +102,7 @@ CORE::CICloneable*
 CAsyncHttpResponseData::Clone( void ) const 
 {GUCEF_TRACE;
 
-    return new CAsyncHttpResponseData( *this );
+    return GUCEF_NEW CAsyncHttpResponseData( *this );
 }
 
 /*-------------------------------------------------------------------------*/

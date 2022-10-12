@@ -154,7 +154,7 @@ CTMultiRegistry< T, LockType >::CTMultiRegistry( const CTMultiRegistry& src )
     typename TRegistryList::const_iterator i = src.m_list.begin();
     while ( i != src.m_list.end() )
     {
-        m_list[ (*i).first ] = TSubRegistryPtr( new CTRegistry< T, LockType >( *( (*i).second ) ) );
+        m_list[ (*i).first ] = TSubRegistryPtr( GUCEF_NEW CTRegistry< T, LockType >( *( (*i).second ) ) );
         ++i;
     }
 }
@@ -184,7 +184,7 @@ CTMultiRegistry< T, LockType >::operator=( const CTMultiRegistry& src )
         typename TRegistryList::const_iterator i = src.m_list.begin();
         while ( i != src.m_list.end() )
         {
-            m_list[ (*i).first ] = new TSubRegistryPtr( *( (*i).second ) );
+            m_list[ (*i).first ] = GUCEF_NEW TSubRegistryPtr( *( (*i).second ) );
             ++i;
         }
     }
@@ -286,7 +286,7 @@ CTMultiRegistry< T, LockType >::Register( const CString& registryName        ,
         }
         else
         {
-            registry = new CTRegistry< T, LockType >();
+            registry = GUCEF_NEW CTRegistry< T, LockType >();
             m_list[ registryName ] = registry;
         }
     }
@@ -314,7 +314,7 @@ CTMultiRegistry< T, LockType >::TryRegister( const CString& registryName        
         }
         else
         {
-            registry = new CTRegistry< T, LockType >();
+            registry = GUCEF_NEW CTRegistry< T, LockType >();
             m_list[ registryName ] = registry;
         }
     }
@@ -341,7 +341,7 @@ CTMultiRegistry< T, LockType >::Unregister( const CString& registryName  ,
         }
         else
         {
-            registry = new CTRegistry< T, LockType >();
+            registry = GUCEF_NEW CTRegistry< T, LockType >();
             m_list[ registryName ] = registry;
         }
     }
@@ -367,7 +367,7 @@ CTMultiRegistry< T, LockType >::TryUnregister( const CString& registryName  ,
         }
         else
         {
-            registry = new CTRegistry< T, LockType >();
+            registry = GUCEF_NEW CTRegistry< T, LockType >();
             m_list[ registryName ] = registry;
         }
     }

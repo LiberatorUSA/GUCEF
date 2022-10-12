@@ -92,7 +92,7 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CGloballyConfigurable  ,
 
     bool RegisterCmd( const CString& path                ,
                       const CString& command             ,
-                      const std::vector< CString >& args ,
+                      const CString::StringVector& args  ,
                       CISysConsoleCmdHandler* cmdhandler );
 
     void UnregisterCmd( const CString& path    ,
@@ -143,14 +143,14 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CGloballyConfigurable  ,
     bool JumpTo( CSysConsoleClient* client ,
                  const CString& path );
 
-    bool Execute( CSysConsoleClient* client             ,
-                  const CString& funcname               ,
-                  const std::vector< CString >& arglist ,
-                  std::vector< CString >& resultdata    );
+    bool Execute( CSysConsoleClient* client            ,
+                  const CString& funcname              ,
+                  const CString::StringVector& arglist ,
+                  CString::StringVector& resultdata    );
 
-    std::vector< CString > GetDirList( const CSysConsoleClient* client ) const;
+    CString::StringVector GetDirList( const CSysConsoleClient* client ) const;
 
-    std::vector< CString > GetCmdList( const CSysConsoleClient* client ) const;
+    CString::StringVector GetCmdList( const CSysConsoleClient* client ) const;
 
     void InitClient( CSysConsoleClient* client );
 
@@ -194,10 +194,10 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CGloballyConfigurable  ,
 
     TAliasData* FindAliasFunction( const CString& aliasname );
 
-    bool OnSysConsoleCommand( const CString& path                ,
-                              const CString& command             ,
-                              const std::vector< CString >& args ,
-                              std::vector< CString >& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
+    bool OnSysConsoleCommand( const CString& path               ,
+                              const CString& command            ,
+                              const CString::StringVector& args ,
+                              CString::StringVector& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     CDataNode m_root;
     TAliasList m_aliases;

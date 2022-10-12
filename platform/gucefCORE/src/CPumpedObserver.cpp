@@ -145,7 +145,7 @@ class CMailElement : public CICloneable
     virtual CICloneable* Clone( void ) const
     {GUCEF_TRACE;
 
-        return new CMailElement( *this );
+        return GUCEF_NEW CMailElement( *this );
     }
 };
 
@@ -239,9 +239,9 @@ CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
         {
             if ( mail->m_notifier == notifier )
             {
-                delete mail->GetCallback();
-                delete mail->GetData();                
-                delete mail;
+                GUCEF_DELETE mail->GetCallback();
+                GUCEF_DELETE mail->GetData();                
+                GUCEF_DELETE mail;
                 i = m_mailbox.erase( i );
                 continue;
             }
@@ -266,9 +266,9 @@ CPumpedObserver::ClearMailbox( bool acceptNewMail )
                                &dataptr    ) )
     {
         maildata = static_cast< CMailElement* >( dataptr );
-        delete maildata->GetCallback();
-        delete maildata->GetData();
-        delete maildata;
+        GUCEF_DELETE maildata->GetCallback();
+        GUCEF_DELETE maildata->GetData();
+        GUCEF_DELETE maildata;
     }
 
     if ( acceptNewMail )
@@ -342,11 +342,11 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                                    maildata->GetData()     ,
                                    callback                );
         
-            delete callback;
+            GUCEF_DELETE callback;
         }
 
-        delete maildata->GetData();
-        delete maildata;
+        GUCEF_DELETE maildata->GetData();
+        GUCEF_DELETE maildata;
     }
 
     if ( m_propagatePulseEvent )

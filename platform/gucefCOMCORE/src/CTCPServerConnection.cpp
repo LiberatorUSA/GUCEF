@@ -102,7 +102,7 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
     , m_idleTimer( tcp_serversock->m_pulseGenerator, 600000 )
 {GUCEF_TRACE;
 
-    _data = new TTCPServerConData;
+    _data = GUCEF_NEW TTCPServerConData;
     _data->sockid = 0;
     memset( &_data->timeout, 0, sizeof( _data->timeout ) );
     memset( &_data->clientaddr, 0, sizeof(_data->clientaddr) );
@@ -122,7 +122,7 @@ CTCPServerConnection::~CTCPServerConnection()
 
     SignalUpcomingObserverDestruction();
     
-    delete _data;
+    GUCEF_DELETE _data;
     _data = GUCEF_NULL;
 }
 

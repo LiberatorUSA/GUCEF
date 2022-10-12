@@ -82,16 +82,16 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 {
     public:
 
-    typedef std::vector< CString > TStringVector;
-    typedef std::set< CString > TStringSet;
-    typedef std::pair< const CString, CVariant > TKeyValuePair;
-    typedef std::set< CDataNode* > TDataNodeSet;
-    typedef std::list< CDataNode* > TDataNodeList;
-    typedef std::vector< CDataNode* > TDataNodeVector;
-    typedef std::set< const CDataNode* > TConstDataNodeSet;
-    typedef std::map< CString, CVariant > TAttributeMap;
-    typedef CVariant::VariantVector TVariantVector;
-    typedef CVariant::VariantSet TVariantSet;
+    typedef std::vector< CString, basic_allocator< CString > >                                                  TStringVector;
+    typedef std::set< CString, std::less< CString >, basic_allocator< CString > >                               TStringSet;
+    typedef std::pair< const CString, CVariant >                                                                TKeyValuePair;
+    typedef std::set< CDataNode*, std::less< CDataNode* >, basic_allocator< CDataNode* > >                      TDataNodeSet;
+    typedef std::list< CDataNode*, basic_allocator< CDataNode* > >                                              TDataNodeList;
+    typedef std::vector< CDataNode*, basic_allocator< CDataNode* > >                                            TDataNodeVector;
+    typedef std::set< const CDataNode*, std::less< const CDataNode* >, basic_allocator< const CDataNode* > >    TConstDataNodeSet;
+    typedef std::map< CString, CVariant, std::less< CString >, basic_allocator< CString >  >                    TAttributeMap;
+    typedef CVariant::VariantVector                                                                             TVariantVector;
+    typedef CVariant::VariantSet                                                                                TVariantSet;
 
     CDataNode( int nodeType = GUCEF_DATATYPE_OBJECT );
 

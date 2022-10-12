@@ -171,7 +171,7 @@ CTRegistry< T, LockType >::CTRegistry( const CTRegistry& src )
     typename TRegisteredObjList::const_iterator i = src.m_list.begin();
     while ( i != src.m_list.end() )
     {
-        m_list[ (*i).first ] = new TRegisteredObjPtr( *( (*i).second ) );
+        m_list[ (*i).first ] = GUCEF_NEW TRegisteredObjPtr( *( (*i).second ) );
         ++i;
     }
 }
@@ -201,7 +201,7 @@ CTRegistry< T, LockType >::operator=( const CTRegistry& src )
         typename TRegisteredObjList::const_iterator i = src.m_list.begin();
         while ( i != src.m_list.end() )
         {
-            m_list[ (*i).first ] = new TRegisteredObjPtr( *( (*i).second ) );
+            m_list[ (*i).first ] = GUCEF_NEW TRegisteredObjPtr( *( (*i).second ) );
             ++i;
         }
     }
@@ -289,7 +289,7 @@ CTRegistry< T, LockType >::Register( const CString& name                ,
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
-        m_list[ name ] = new TRegisteredObjPtr( sharedPtr );
+        m_list[ name ] = GUCEF_NEW TRegisteredObjPtr( sharedPtr );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Registered \"" + name + "\"" );
         return;
     }
@@ -311,7 +311,7 @@ CTRegistry< T, LockType >::TryRegister( const CString& name                ,
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
-        m_list[ name ] = new TRegisteredObjPtr( sharedPtr );
+        m_list[ name ] = GUCEF_NEW TRegisteredObjPtr( sharedPtr );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Registered \"" + name + "\"" );
         return true;
     }
@@ -331,7 +331,7 @@ CTRegistry< T, LockType >::Unregister( const CString& name )
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
-        delete (*i).second;
+        GUCEF_DELETE (*i).second;
         m_list.erase( i );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistered \"" + name + "\"" );
         return;
@@ -352,7 +352,7 @@ CTRegistry< T, LockType >::TryUnregister( const CString& name )
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
-        delete (*i).second;
+        GUCEF_DELETE (*i).second;
         m_list.erase( i );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistered \"" + name + "\"" );
         return true;
@@ -374,7 +374,7 @@ CTRegistry< T, LockType >::UnregisterAll( void )
     typename TRegisteredObjList::iterator i = m_list.begin();
     while ( i != m_list.end() )
     {
-        delete (*i).second;
+        GUCEF_DELETE (*i).second;
         ++i;
     }
     m_list.clear();

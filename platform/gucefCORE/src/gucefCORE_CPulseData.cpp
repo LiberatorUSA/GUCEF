@@ -101,7 +101,7 @@ CICloneable*
 CPulseData::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CPulseData( *this );
+    return GUCEF_NEW CPulseData( *this );
 }
 
 /*-------------------------------------------------------------------------//

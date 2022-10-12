@@ -57,7 +57,7 @@ CPlatformNativeConsoleWindow::CPlatformNativeConsoleWindow( void )
     : m_nativeConsoleWindow( NULL )
 {
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-    m_nativeConsoleWindow = new CMsWin32ConsoleWindow();
+    m_nativeConsoleWindow = GUCEF_NEW CMsWin32ConsoleWindow();
     #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
     // @TODO make an implementation
     #endif
@@ -68,7 +68,7 @@ CPlatformNativeConsoleWindow::CPlatformNativeConsoleWindow( void )
 CPlatformNativeConsoleWindow::~CPlatformNativeConsoleWindow()
 {
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-    delete static_cast<CMsWin32ConsoleWindow*>( m_nativeConsoleWindow );
+    GUCEF_DELETE static_cast<CMsWin32ConsoleWindow*>( m_nativeConsoleWindow );
     #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
     // @TODO make an implementation
     #endif

@@ -102,7 +102,7 @@ CMailboxForCloneables::PopMail( void )
     if ( !m_mailQueue.empty() )
     {
         CICloneable* obj = m_mailQueue.front();
-        delete obj;
+        GUCEF_DELETE obj;
         m_mailQueue.pop_front();
         return true;
     }
@@ -118,7 +118,7 @@ CMailboxForCloneables::Clear( void )
     CObjectScopeLock lock( this );
     while ( !m_mailQueue.empty() )
     {
-        delete m_mailQueue.front();
+        GUCEF_DELETE m_mailQueue.front();
         m_mailQueue.pop_front();
     }
 }
@@ -139,7 +139,7 @@ CMailboxForCloneables::Delete( const CICloneable* mail )
     {
         if ( (*i) == mail )
         {
-            delete mail;
+            GUCEF_DELETE mail;
             i = m_mailQueue.erase( i );
             continue;
         }
@@ -152,7 +152,7 @@ CMailboxForCloneables::Delete( const CICloneable* mail )
     while ( !m_mailQueue.empty() )
     {
         if ( m_mailQueue.front() == mail )
-            delete mail;
+            GUCEF_DELETE mail;
         else
             copyQueue.push_back( m_mailQueue.front() );  
         m_mailQueue.pop_front();

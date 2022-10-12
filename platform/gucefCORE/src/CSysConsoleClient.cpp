@@ -70,7 +70,7 @@ CSysConsoleClient::~CSysConsoleClient()
 bool
 CSysConsoleClient::RegisterCmd( const CString& path                ,
                                 const CString& command             ,
-                                const std::vector< CString >& args ,
+                                const CString::StringVector& args  ,
                                 CISysConsoleCmdHandler* cmdhandler )
 {GUCEF_TRACE;
 
@@ -131,9 +131,9 @@ CSysConsoleClient::GetPath( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CSysConsoleClient::Execute( const CString& functionname            ,
-                            const std::vector< CString >& arglist  ,
-                            std::vector< CString >& resultdata     )
+CSysConsoleClient::Execute( const CString& functionname           ,
+                            const CString::StringVector& arglist  ,
+                            CString::StringVector& resultdata     )
 {GUCEF_TRACE;
 
         return _system->Execute( this         ,
@@ -144,7 +144,7 @@ CSysConsoleClient::Execute( const CString& functionname            ,
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString >
+CString::StringVector
 CSysConsoleClient::GetDirList( void ) const
 {GUCEF_TRACE;
 
@@ -153,7 +153,7 @@ CSysConsoleClient::GetDirList( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString >
+CString::StringVector
 CSysConsoleClient::GetCmdList( void ) const
 {GUCEF_TRACE;
 

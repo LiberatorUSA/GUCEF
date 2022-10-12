@@ -78,7 +78,7 @@ pfa_readl( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CPFileAccess*) access->privdata )->ReadLine();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );        
         return str.Length();
 }
@@ -90,7 +90,7 @@ pfa_reads( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CPFileAccess*) access->privdata )->ReadString();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -157,7 +157,7 @@ pfa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 void GUCEF_CALLSPEC_PREFIX 
 pfa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
 {
-        delete []((char*)mem);
+        GUCEF_DELETE []((char*)mem);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -350,7 +350,7 @@ CPFileAccess::IsValid( void )
 CORE::CICloneable*
 CPFileAccess::Clone( void ) const
 {
-        return new CPFileAccess( _filename );
+        return GUCEF_NEW CPFileAccess( _filename );
 }
 
 /*-------------------------------------------------------------------------//

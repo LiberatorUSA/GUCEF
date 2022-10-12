@@ -208,7 +208,7 @@ CWin32NetworkInterface::EnumNetworkAdapters( TNetworkInterfaceVector& interfaces
 	pNextAd = pAdptInfo;
 	while( pNextAd ) 
 	{
-		CWin32NetworkInterface* nic = new CWin32NetworkInterface();
+		CWin32NetworkInterface* nic = GUCEF_NEW CWin32NetworkInterface();
 		if ( nic->SetupAdapterInfo( pNextAd ) )
 		{
 			interfaces.push_back( nic );

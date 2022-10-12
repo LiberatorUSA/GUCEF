@@ -225,7 +225,7 @@ CCoreGlobal::Instance()
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CCoreGlobal();
+            g_instance = GUCEF_NEW CCoreGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -248,7 +248,7 @@ CCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
 }
 
@@ -276,7 +276,7 @@ CCoreGlobal::Initialize( void )
      *  if a logger is registered at an early stage
      */
     m_logManager = &CLoggingGlobal::Instance()->GetLogManager();
-    m_notificationIdRegistry = new CNotificationIDRegistry();
+    m_notificationIdRegistry = GUCEF_NEW CNotificationIDRegistry();
     m_pulseGenerator = CTSharedObjCreator< CPulseGenerator, MT::CMutex >::CreateSharedObj();
 
     /*
@@ -310,34 +310,34 @@ CCoreGlobal::Initialize( void )
      *  Next the Config Store because everything that used the global config will need it including perhaps
      *  other singletons
      */
-    m_configStore = new CConfigStore();
-    m_metricsClientManager = new CMetricsClientManager();
+    m_configStore = GUCEF_NEW CConfigStore();
+    m_metricsClientManager = GUCEF_NEW CMetricsClientManager();
 
     /*
      *  Instantiate the rest of the singletons
      */    
-    m_sysConsole = new CSysConsole();
-    m_application = new CGUCEFApplication();
-    m_taskManager = new CTaskManager();
-    m_dstoreCodecRegistry = new CDStoreCodecRegistry();
-    m_codecRegistry = new CCodecRegistry();
-    m_pluginControl = new CPluginControl();
-    m_dstoreCodecPluginManager = new CDStoreCodecPluginManager();
-    m_genericPluginManager = new CGenericPluginManager();
-    m_stdCodecPluginManager = new CStdCodecPluginManager();        
-    m_urlHandlerRegistry = new CURLHandlerRegistry();
-    m_functionRegistry = new CFunctionRegistry();
+    m_sysConsole = GUCEF_NEW CSysConsole();
+    m_application = GUCEF_NEW CGUCEFApplication();
+    m_taskManager = GUCEF_NEW CTaskManager();
+    m_dstoreCodecRegistry = GUCEF_NEW CDStoreCodecRegistry();
+    m_codecRegistry = GUCEF_NEW CCodecRegistry();
+    m_pluginControl = GUCEF_NEW CPluginControl();
+    m_dstoreCodecPluginManager = GUCEF_NEW CDStoreCodecPluginManager();
+    m_genericPluginManager = GUCEF_NEW CGenericPluginManager();
+    m_stdCodecPluginManager = GUCEF_NEW CStdCodecPluginManager();        
+    m_urlHandlerRegistry = GUCEF_NEW CURLHandlerRegistry();
+    m_functionRegistry = GUCEF_NEW CFunctionRegistry();
 
     /*
      *      Register some default URI handlers
      */
-    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjPtr( new CFileURLHandler() ) );
+    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjPtr( GUCEF_NEW CFileURLHandler() ) );
 
     /*
      *      Register some default codecs
      */    
-    m_dstoreCodecRegistry->Register( "ini", CDStoreCodecRegistry::TRegisteredObjPtr( new CIniDataStoreCodec() ) );
-    m_dstoreCodecRegistry->Register( "dnc", CDStoreCodecRegistry::TRegisteredObjPtr( new CDataStoreBinaryCodec() ) );
+    m_dstoreCodecRegistry->Register( "ini", CDStoreCodecRegistry::TRegisteredObjPtr( GUCEF_NEW CIniDataStoreCodec() ) );
+    m_dstoreCodecRegistry->Register( "dnc", CDStoreCodecRegistry::TRegisteredObjPtr( GUCEF_NEW CDataStoreBinaryCodec() ) );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE Global systems initialized" );
 }
@@ -389,37 +389,37 @@ CCoreGlobal::~CCoreGlobal()
      *      cleanup all singletons
      *      Take care to deinstance them in the correct order !!!
      */
-    delete m_taskManager;
+    GUCEF_DELETE m_taskManager;
     m_taskManager = GUCEF_NULL;
-    delete m_urlHandlerRegistry;
+    GUCEF_DELETE m_urlHandlerRegistry;
     m_urlHandlerRegistry = GUCEF_NULL;
-    delete m_dstoreCodecRegistry;
+    GUCEF_DELETE m_dstoreCodecRegistry;
     m_dstoreCodecRegistry = GUCEF_NULL;
-    delete m_exclusiveActivationManager;
+    GUCEF_DELETE m_exclusiveActivationManager;
     m_exclusiveActivationManager = GUCEF_NULL;
-    delete m_application;
+    GUCEF_DELETE m_application;
     m_application = GUCEF_NULL;
     CLoggingGlobal::Deinstance();
     m_logManager = GUCEF_NULL;
-    delete m_metricsClientManager;
+    GUCEF_DELETE m_metricsClientManager;
     m_metricsClientManager = GUCEF_NULL;
-    delete m_dstoreCodecPluginManager;
+    GUCEF_DELETE m_dstoreCodecPluginManager;
     m_dstoreCodecPluginManager = GUCEF_NULL;
-    delete m_genericPluginManager;
+    GUCEF_DELETE m_genericPluginManager;
     m_genericPluginManager = GUCEF_NULL;
-    delete m_stdCodecPluginManager;
+    GUCEF_DELETE m_stdCodecPluginManager;
     m_stdCodecPluginManager = GUCEF_NULL;
-    delete m_pluginControl;
+    GUCEF_DELETE m_pluginControl;
     m_pluginControl = GUCEF_NULL;
-    delete m_sysConsole;
+    GUCEF_DELETE m_sysConsole;
     m_sysConsole = GUCEF_NULL;
-    delete m_notificationIdRegistry;
+    GUCEF_DELETE m_notificationIdRegistry;
     m_notificationIdRegistry = GUCEF_NULL;
-    delete m_configStore;
+    GUCEF_DELETE m_configStore;
     m_configStore = GUCEF_NULL;
-    delete m_codecRegistry;
+    GUCEF_DELETE m_codecRegistry;
     m_codecRegistry = GUCEF_NULL;
-    delete m_functionRegistry;
+    GUCEF_DELETE m_functionRegistry;
     m_functionRegistry = GUCEF_NULL;
 
 }

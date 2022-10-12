@@ -282,7 +282,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
 
                         query->error = (UInt16)(data[5]) | (UInt16)(data[6] << 8);
 
-                        query->description = new char[length - 6];
+                        query->description = GUCEF_NEW char[length - 6];
                         temp_char = query->description;
 
                         for(i = 7; i < length; i++) {
@@ -332,7 +332,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                                 temp_len = data[i]; // table name length
                                 i++;
 
-                                query->Column(column)->table = new char[temp_len + 1];
+                                query->Column(column)->table = GUCEF_NEW char[temp_len + 1];
                                 temp_char = query->Column(column)->table;
 
                                 for(i2 = 0; i2 < temp_len; i2++) {
@@ -346,7 +346,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                                 temp_len = data[i]; // column name length
                                 i++;
 
-                                query->Column(column)->value = new char[temp_len + 1];
+                                query->Column(column)->value = GUCEF_NEW char[temp_len + 1];
                                 temp_char = query->Column(column)->value;
 
                                 for(i2 = 0; i2 < temp_len; i2++) {
@@ -393,7 +393,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
                                         else {
                                                 i++;
 
-                                                query->Field(row, column)->value = new char[temp_len + 1];
+                                                query->Field(row, column)->value = GUCEF_NEW char[temp_len + 1];
                                                 temp_char = query->Field(row, column)->value;
 
                                                 for(i2 = 0; i2 < temp_len; i2++) {
@@ -512,7 +512,7 @@ CMySQLClient::Login( const char *data, UInt32 length )
         if( !mysql_database.Length() )
         {
                 length = 10 + mysql_username.Length() + mysql_password.Length()+1;
-                reply = new char[length + 1];
+                reply = GUCEF_NEW char[length + 1];
 
                 body_length = length - 4;
 
@@ -520,7 +520,7 @@ CMySQLClient::Login( const char *data, UInt32 length )
         }
         else {
                 length = 11 + mysql_username.Length() + mysql_password.Length() + mysql_database.Length()+1;
-                reply = new char[length + 1];
+                reply = GUCEF_NEW char[length + 1];
 
                 body_length = length - 4;
 
@@ -528,7 +528,7 @@ CMySQLClient::Login( const char *data, UInt32 length )
         }
 
         socket.Send(reply, length);
-        delete []reply;
+        GUCEF_DELETE []reply;
 
         return true;
 }
@@ -553,7 +553,7 @@ CMySQLClient::Query( CDBQuery &cdbquery                   ,
         UInt32 body_length = sqlquery.Length()+1;
         UInt32 length = body_length + 4;
 
-        char *data = new char[ 1 + length ];
+        char *data = GUCEF_NEW char[ 1 + length ];
         sprintf( data, "%c%c%c%c%c%s", body_length, body_length >> 8, body_length >> 16, 0x00, 0x03, sqlquery.C_String() );
 
         query = &cdbquery;
@@ -595,13 +595,13 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         query_busy = true;
 
         /*
-         *      Now we formulate and send the new query and wait for that to
+         *      Now we formulate and send the GUCEF_NEW query and wait for that to
          *      finish.
          */
         UInt32 body_length = sqlquery.Length()+1;
         UInt32 length = body_length + 4;
 
-        char *data = new char[ 1 + length ];
+        char *data = GUCEF_NEW char[ 1 + length ];
         sprintf( data, "%c%c%c%c%c%s", body_length, body_length >> 8, body_length >> 16, 0x00, 0x03, sqlquery.C_String() );
 
         query = &cdbquery;
@@ -679,7 +679,7 @@ CMySQLClient::OnError( COMCORE::CTCPClientSocket &socket )
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Sets the new event handling interface.
+ *      Sets the GUCEF_NEW event handling interface.
  *      Note that the interface can only be set if there is no active
  *      query.
  */

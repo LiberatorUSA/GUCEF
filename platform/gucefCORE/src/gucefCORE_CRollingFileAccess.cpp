@@ -317,7 +317,7 @@ CRollingFileAccess::PerformRolledoverFilesCleanup( void )
         CString::StringVector::iterator i = failedFiles.begin();
         while ( i != failedFiles.end() )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "RollingFileAccess: Failed to delete rolled over file: " + (*i) );
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "RollingFileAccess: Failed to GUCEF_DELETE rolled over file: " + (*i) );
             ++i;
         }
 
@@ -491,7 +491,7 @@ CICloneable*
 CRollingFileAccess::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CRollingFileAccess( *this );
+    return GUCEF_NEW CRollingFileAccess( *this );
 }
 
 /*-------------------------------------------------------------------------*/

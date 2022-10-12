@@ -123,7 +123,7 @@ CICloneable*
 CDataNodeSerializableSettings::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CDataNodeSerializableSettings( *this );
+    return GUCEF_NEW CDataNodeSerializableSettings( *this );
 }
 
 /*-------------------------------------------------------------------------//

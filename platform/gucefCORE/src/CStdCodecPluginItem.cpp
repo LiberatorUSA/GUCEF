@@ -149,7 +149,7 @@ CICloneable*
 CStdCodecPluginItem::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CStdCodecPluginItem( *this );
+    return GUCEF_NEW CStdCodecPluginItem( *this );
 }
 
 /*-------------------------------------------------------------------------*/

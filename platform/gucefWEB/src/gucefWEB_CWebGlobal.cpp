@@ -122,7 +122,7 @@ CWebGlobal::Initialize( void )
     CHTTPClient::RegisterEvents();
     CHTTPURLHandler::Register();
 
-    m_globalHttpCodecLinks = new CGlobalHttpCodecLinks();
+    m_globalHttpCodecLinks = GUCEF_NEW CGlobalHttpCodecLinks();
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType, &g_asyncHttpServerRequestHandlerFactory );
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncHttpServerResponseHandler::TaskType, &g_asyncHttpServerResponseHandlerFactory );
@@ -143,7 +143,7 @@ CWebGlobal::~CWebGlobal()
     
     CHTTPURLHandler::Unregister();
 
-    delete m_globalHttpCodecLinks;
+    GUCEF_DELETE m_globalHttpCodecLinks;
     m_globalHttpCodecLinks = GUCEF_NULL;
 }
 
@@ -158,7 +158,7 @@ CWebGlobal::Instance()
         MT::CScopeMutex scopeLock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CWebGlobal();
+            g_instance = GUCEF_NEW CWebGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -176,7 +176,7 @@ CWebGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex scopeLock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = NULL;
 }
 

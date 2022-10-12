@@ -192,7 +192,7 @@ CICloneable*
 CThreadPool::CTaskQueueItem::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTaskQueueItem( const_cast< CTaskQueueItem& >( *this ) );
+    return GUCEF_NEW CTaskQueueItem( const_cast< CTaskQueueItem& >( *this ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -460,7 +460,7 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         for ( UInt32 i=0; i<addCount; ++i )
         {
             // Just spawn a task delegator
-            CTaskDelegator* rawDelegator = new CTaskDelegator( CreateSharedPtr() );
+            CTaskDelegator* rawDelegator = GUCEF_NEW CTaskDelegator( CreateSharedPtr() );
             CTaskDelegatorPtr delegator( rawDelegator->CreateSharedPtr() );
             SubscribeTo( delegator.GetPointerAlways() );
             m_taskDelegators.insert( delegator );
@@ -564,7 +564,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
             }
             SubscribeToTaskConsumerEvents( taskConsumer );
 
-            CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer              ,
+            CTaskQueueItem* queueItem = GUCEF_NEW CTaskQueueItem( taskConsumer              ,
                                                             taskData                  ,
                                                             assumeOwnershipOfTaskData );
 
@@ -718,7 +718,7 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
 
     // Just spawn a task delegator, it will auto register as an active task
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-    CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
+    CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
     m_taskDelegators.insert( delegator );
 
@@ -798,7 +798,7 @@ CThreadPool::StartTask( const CString& taskType ,
         }
         SubscribeToTaskConsumerEvents( taskConsumer );
 
-        CTaskDelegatorPtr delegator( ( new CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
+        CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
         SubscribeTo( delegator.GetPointerAlways() );
         m_taskDelegators.insert( delegator );
 
@@ -828,7 +828,7 @@ CThreadPool::TaskCleanup( CTaskConsumerPtr taskConsumer ,
 {GUCEF_TRACE;
 
     //MT::CObjectScopeLock lock( this );
-    delete taskData;
+    GUCEF_DELETE taskData;
 }
 
 /*-------------------------------------------------------------------------*/

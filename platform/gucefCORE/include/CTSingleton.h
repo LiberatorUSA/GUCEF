@@ -134,7 +134,7 @@ CTSingleton< BaseClass >::Instance( void )
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CTSingleton< BaseClass >();
+            g_instance = GUCEF_NEW CTSingleton< BaseClass >();
         }
     }
     return g_instance;
@@ -149,7 +149,7 @@ CTSingleton< BaseClass >::Deinstance( void )
 
     MT::CScopeMutex lock( g_dataLock );
 
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = NULL;
 }
 

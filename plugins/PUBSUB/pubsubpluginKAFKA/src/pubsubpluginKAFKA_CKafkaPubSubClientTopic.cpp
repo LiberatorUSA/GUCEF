@@ -148,28 +148,28 @@ void
 CKafkaPubSubClientTopic::Clear( void )
 {GUCEF_TRACE;
 
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    delete m_kafkaProducerConf;
+    GUCEF_DELETE m_kafkaProducerConf;
     m_kafkaProducerConf = GUCEF_NULL;
 
-    delete m_kafkaConsumerConf;
+    GUCEF_DELETE m_kafkaConsumerConf;
     m_kafkaConsumerConf = GUCEF_NULL;
 
-    delete m_kafkaProducerTopicConf;
+    GUCEF_DELETE m_kafkaProducerTopicConf;
     m_kafkaProducerTopicConf = GUCEF_NULL;
 
-    delete m_kafkaConsumerTopicConf;
+    GUCEF_DELETE m_kafkaConsumerTopicConf;
     m_kafkaConsumerTopicConf = GUCEF_NULL;
 
-    delete m_kafkaProducerTopic;
+    GUCEF_DELETE m_kafkaProducerTopic;
     m_kafkaProducerTopic = GUCEF_NULL;
 
-    delete m_kafkaProducer;
+    GUCEF_DELETE m_kafkaProducer;
     m_kafkaProducer = GUCEF_NULL;
 
-    delete m_kafkaConsumer;
+    GUCEF_DELETE m_kafkaConsumer;
     m_kafkaConsumer = GUCEF_NULL;
 
     m_currentPublishActionId = 1;
@@ -325,7 +325,7 @@ CKafkaPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::C
     if ( retCode != RdKafka::ERR_NO_ERROR )
     {
         // Headers are auto-deleted on success but not on failure!
-        delete headers;
+        GUCEF_DELETE headers;
     }
 
     switch ( retCode )
@@ -482,7 +482,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
     if ( clientConfig.desiredFeatures.supportsMetrics )
     {
         if ( GUCEF_NULL == m_metricsTimer )
-            m_metricsTimer = new CORE::CTimer( clientConfig.pulseGenerator, 1000 );
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( clientConfig.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( clientConfig.desiredFeatures.supportsMetrics );
     }
 
@@ -523,7 +523,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             }
             ++m;
         }
-        delete m_kafkaProducerConf;
+        GUCEF_DELETE m_kafkaProducerConf;
         m_kafkaProducerConf = kafkaConf;
 
         RdKafka::Conf* kafkaProducerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
@@ -540,7 +540,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             ++m;
 
         }
-        delete m_kafkaProducerTopicConf;
+        GUCEF_DELETE m_kafkaProducerTopicConf;
         m_kafkaProducerTopicConf = kafkaProducerTopicConfig;
 
         RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaProducerConf, errStr );
@@ -591,7 +591,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             }
             ++m;
         }
-        delete m_kafkaConsumerConf;
+        GUCEF_DELETE m_kafkaConsumerConf;
         m_kafkaConsumerConf = kafkaConf;
 
         #ifdef GUCEF_DEBUG_MODE
@@ -632,7 +632,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 
         }
 
-        delete m_kafkaConsumerTopicConf;
+        GUCEF_DELETE m_kafkaConsumerTopicConf;
         m_kafkaConsumerTopicConf = kafkaConsumerTopicConfig;
 
         if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "default_topic_conf", m_kafkaConsumerTopicConf, errStr ) )
@@ -2376,12 +2376,12 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                 int errState = msg->err();
                 if ( RdKafka::ERR__TIMED_OUT == errState || RdKafka::ERR__PARTITION_EOF == errState )
                 {
-                    delete msg;
+                    GUCEF_DELETE msg;
                     break;
                 }
 
                 consume_cb( *msg, GUCEF_NULL );
-                delete msg;
+                GUCEF_DELETE msg;
             }
             if ( i == 50 )
             {

@@ -66,7 +66,7 @@ CDBQuery::Columns(UInt32 amount)
 {GUCEF_TRACE;        
         columns = amount;
 
-        column = new CDBColumn[amount];
+        column = GUCEF_NEW CDBColumn[amount];
 }
 
 /*--------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ CDBQuery::Rows(UInt32 amount)
 {GUCEF_TRACE;
         rows = amount;
 
-        field = new CDBField[rows * columns];
+        field = GUCEF_NEW CDBField[rows * columns];
 }
 
 /*--------------------------------------------------------------------------*/

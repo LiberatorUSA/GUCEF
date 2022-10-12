@@ -209,7 +209,7 @@ LockInventory::Deinstance( void )
         if ( GUCEF_NULL != g_instance )
         {
             g_shutdownRequested = true;
-            delete g_instance;
+            GUCEF_DELETE g_instance;
             g_instance = GUCEF_NULL;
         }
     }

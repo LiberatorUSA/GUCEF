@@ -249,7 +249,7 @@ CORE::CICloneable*
 CBasicPubSubMsg::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CBasicPubSubMsg( *this );
+    return GUCEF_NEW CBasicPubSubMsg( *this );
 }
 
 /*-------------------------------------------------------------------------*/

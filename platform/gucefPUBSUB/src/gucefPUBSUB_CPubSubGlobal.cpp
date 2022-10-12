@@ -137,8 +137,8 @@ CPubSubGlobal::Initialize( void )
     CPubSubClient::RegisterEvents();
     CPubSubClientSide::RegisterEvents();
 
-    m_pubsubClientFactory = new CPubSubClientFactory();
-    m_pubsubBookmarkPersistenceFactory = new CPubSubBookmarkPersistenceFactory();
+    m_pubsubClientFactory = GUCEF_NEW CPubSubClientFactory();
+    m_pubsubBookmarkPersistenceFactory = GUCEF_NEW CPubSubBookmarkPersistenceFactory();
 
     m_pubsubBookmarkPersistenceFactory->RegisterConcreteFactory( CVfsPubSubBookmarkPersistence::BookmarkPersistenceType, &g_vfsPubSubBookmarkPersistenceFactory );
 }
@@ -152,10 +152,10 @@ CPubSubGlobal::~CPubSubGlobal()
   
     m_pubsubBookmarkPersistenceFactory->UnregisterConcreteFactory( CVfsPubSubBookmarkPersistence::BookmarkPersistenceType );
     
-    delete m_pubsubBookmarkPersistenceFactory;
+    GUCEF_DELETE m_pubsubBookmarkPersistenceFactory;
     m_pubsubBookmarkPersistenceFactory = GUCEF_NULL;
 
-    delete m_pubsubClientFactory;
+    GUCEF_DELETE m_pubsubClientFactory;
     m_pubsubClientFactory = GUCEF_NULL;
 
 }
@@ -171,7 +171,7 @@ CPubSubGlobal::Instance()
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CPubSubGlobal();
+            g_instance = GUCEF_NEW CPubSubGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -189,7 +189,7 @@ CPubSubGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = NULL;
 }
 

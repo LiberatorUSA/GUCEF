@@ -94,7 +94,7 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
     typedef SelectionCriteriaType TSelectionCriteriaType;
     typedef CTCloneableObj< SelectionCriteriaType > TKeyContainer;
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;
-    typedef std::set< SelectionCriteriaType > TKeySet;
+    typedef std::set< SelectionCriteriaType, std::less< SelectionCriteriaType >, basic_allocator< SelectionCriteriaType > > TKeySet;
     typedef CTBasicSharedPtr< BaseClassType, LockType > TProductPtr;
 
     explicit CTAbstractFactory( const bool assumeFactoryOwnership = false ,
@@ -139,7 +139,8 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
-    typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
+    typedef std::pair< SelectionCriteriaType, TConcreteFactory* >   TFactoryEntryPair;
+    typedef std::map< SelectionCriteriaType, TConcreteFactory*, std::less< SelectionCriteriaType >, basic_allocator< TFactoryEntryPair > >  TFactoryList;
 
     TFactoryList m_concreteFactoryList;
     bool m_assumeFactoryOwnership;
@@ -187,7 +188,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::~CTAbstract
         typename TFactoryList::iterator i = m_concreteFactoryList.begin();
         while ( i != m_concreteFactoryList.end() )
         {
-            delete (*i).second;
+            GUCEF_DELETE (*i).second;
             (*i).second = GUCEF_NULL;
             ++i;
         }
@@ -299,7 +300,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterC
     {
         if ( m_assumeFactoryOwnership )
         {
-            delete (*i).second;
+            GUCEF_DELETE (*i).second;
         }
         m_concreteFactoryList.erase( i );
 
@@ -326,7 +327,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterA
         typename TFactoryList::iterator i = m_concreteFactoryList.begin();
         if ( m_assumeFactoryOwnership )
         {
-            delete (*i).second;
+            GUCEF_DELETE (*i).second;
         }
 
         SelectionCriteriaType selectedType = (*i).first;

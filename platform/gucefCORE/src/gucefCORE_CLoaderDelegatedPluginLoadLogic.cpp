@@ -139,7 +139,7 @@ CLoaderDelegatedPluginLoadLogic::Initialize( void )
         }
         if ( NULL != modulePtr )
         {
-            TGucefLoaderCInterface* cInterface = new TGucefLoaderCInterface();
+            TGucefLoaderCInterface* cInterface = GUCEF_NEW TGucefLoaderCInterface();
             memset( cInterface, 0, sizeof(cInterface) );
 
             cInterface->loadModule = (TGUCEFLOADERCINTERFACE_LoadModule) GetFunctionAddress( modulePtr, "LoadSpecificModule", 3*sizeof(const char*) + 4*sizeof(long) ).funcPtr;
@@ -152,7 +152,7 @@ CLoaderDelegatedPluginLoadLogic::Initialize( void )
             }
             else
             {
-                delete cInterface;
+                GUCEF_DELETE cInterface;
                 m_cInterface = NULL;
             }
         }
@@ -175,7 +175,7 @@ CLoaderDelegatedPluginLoadLogic::~CLoaderDelegatedPluginLoadLogic()
 
     if ( NULL != m_cInterface )
     {
-        delete (TGucefLoaderCInterface*) m_cInterface;
+        GUCEF_DELETE (TGucefLoaderCInterface*) m_cInterface;
         m_cInterface = NULL;
     }
 }

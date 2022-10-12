@@ -202,7 +202,7 @@ CICloneable*
 CDataStoreBinaryCodec::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CDataStoreBinaryCodec();
+    return GUCEF_NEW CDataStoreBinaryCodec();
 }
 
 /*-------------------------------------------------------------------------//

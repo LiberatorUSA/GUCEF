@@ -94,7 +94,7 @@ CMsmqPubSubClient::CMsmqPubSubClient( const PUBSUB::CPubSubClientConfig& config 
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -102,7 +102,7 @@ CMsmqPubSubClient::CMsmqPubSubClient( const PUBSUB::CPubSubClientConfig& config 
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( 1000 );        
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -130,7 +130,7 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     }
     m_topicMap.clear();
     
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 }
 
@@ -213,7 +213,7 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = ( new CMsmqPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CMsmqPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;            

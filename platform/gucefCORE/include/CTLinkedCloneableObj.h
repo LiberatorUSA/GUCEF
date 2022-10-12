@@ -137,7 +137,7 @@ CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const T* data )
 
 template< typename T >
 CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const CTLinkedCloneableObj< T >& src )
-        : m_data( GUCEF_NULL != src.m_data ? new T( *src.m_data ) : GUCEF_NULL ) ,
+        : m_data( GUCEF_NULL != src.m_data ? GUCEF_NEW T( *src.m_data ) : GUCEF_NULL ) ,
           m_linked( false )
 {GUCEF_TRACE;
 
@@ -161,7 +161,7 @@ CTLinkedCloneableObj< T >::Clear( void )
 
     if ( !m_linked )
     {
-        delete m_data;
+        GUCEF_DELETE m_data;
     }
     m_data = GUCEF_NULL;
 }
@@ -177,7 +177,7 @@ CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
     {
         Clear();
         if ( GUCEF_NULL != src.m_data )
-            m_data = new T( *src.m_data );
+            m_data = GUCEF_NEW T( *src.m_data );
     }
     return *this;
 }
@@ -201,7 +201,7 @@ CICloneable*
 CTLinkedCloneableObj< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTLinkedCloneableObj< T >( *this );
+    return GUCEF_NEW CTLinkedCloneableObj< T >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

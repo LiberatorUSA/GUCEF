@@ -533,7 +533,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
         {
             // We found the file in our cache, we will link to the existing buffer.
             TDynamicBufferPtr bufferPtr = (*n).second;
-            return new CVFSHandle( new CORE::CDynamicBufferAccess( bufferPtr.GetPointer() ,
+            return GUCEF_NEW CVFSHandle( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer() ,
                                                                    false                  ) ,
                                    path                                                     ,
                                    filePath                                                 ,
@@ -557,11 +557,11 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
          ( exists && !needwriteable )              )
     {
         // Attempt to get access to the file
-        CORE::CIOAccess* fa = new CORE::CFileAccess( path, mode );
+        CORE::CIOAccess* fa = GUCEF_NEW CORE::CFileAccess( path, mode );
         if ( !fa->IsValid() )
         {
             // try a different root
-            delete fa;
+            GUCEF_DELETE fa;
             return NULL;
         }
 
@@ -573,13 +573,13 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
             if ( fsize <= memLoadSize )
             {
                 // Create the memory buffer
-                TDynamicBufferPtr bufferPtr( new CORE::CDynamicBuffer() );
-                CORE::CIOAccess* bufferAccess = new CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false );
+                TDynamicBufferPtr bufferPtr( GUCEF_NEW CORE::CDynamicBuffer() );
+                CORE::CIOAccess* bufferAccess = GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false );
 
                 // Copy the file into the buffer
                 if ( fsize == bufferAccess->Write( *fa ) )
                 {
-                    delete fa;
+                    GUCEF_DELETE fa;
                     fa = NULL;
 
                     // reset the carat so the user can access the file from the beginning
@@ -589,7 +589,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
                     m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( path, bufferPtr ) );
 
                     // return the file handle
-                    return new CVFSHandle( bufferAccess ,
+                    return GUCEF_NEW CVFSHandle( bufferAccess ,
                                            path         ,
                                            filePath     ,
                                            bufferPtr    );
@@ -599,13 +599,13 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
                     // Something went wrong while trying to load the file into the buffer
                     // try a different root
                     fa->Setpos( 0 );
-                    delete bufferAccess;
+                    GUCEF_DELETE bufferAccess;
                 }
             }
         }
 
         // return the file handle
-        return new CVFSHandle( fa       ,
+        return GUCEF_NEW CVFSHandle( fa       ,
                                path     ,
                                filePath );
 
@@ -622,7 +622,7 @@ CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
 
     if ( vfshandle != NULL )
     {
-        delete vfshandle->GetAccess();
+        GUCEF_DELETE vfshandle->GetAccess();
 
         if ( vfshandle->IsLoadedInMemory() )
         {
@@ -638,7 +638,7 @@ CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
             }
         }
 
-        delete vfshandle;
+        GUCEF_DELETE vfshandle;
     }
 }
 

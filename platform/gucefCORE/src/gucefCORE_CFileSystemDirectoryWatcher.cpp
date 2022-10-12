@@ -1025,7 +1025,7 @@ CFileSystemDirectoryWatcher::RemoveAllWatches( void )
 CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( void )
     : CObservingNotifier()
     , CIDirectoryWatcher()
-    , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this ) )
+    , m_osSpecificImpl( GUCEF_NEW OSSpecificDirectoryWatcher( this ) )
 {GUCEF_TRACE;
 
 }
@@ -1035,7 +1035,7 @@ CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( void )
 CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( const CFileSystemDirectoryWatcher& src )
     : CObservingNotifier()
     , CIDirectoryWatcher( src )
-    , m_osSpecificImpl( new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this ) )
+    , m_osSpecificImpl( GUCEF_NEW OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this ) )
 {GUCEF_TRACE;
 
 }
@@ -1045,7 +1045,7 @@ CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( const CFileSystemDirec
 CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( PulseGeneratorPtr pulseGenerator )
     : CObservingNotifier()
     , CIDirectoryWatcher()
-    , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this, pulseGenerator ) )
+    , m_osSpecificImpl( GUCEF_NEW OSSpecificDirectoryWatcher( this, pulseGenerator ) )
 {GUCEF_TRACE;
 
 }
@@ -1055,7 +1055,7 @@ CFileSystemDirectoryWatcher::CFileSystemDirectoryWatcher( PulseGeneratorPtr puls
 CFileSystemDirectoryWatcher::~CFileSystemDirectoryWatcher()
 {GUCEF_TRACE;
 
-    delete m_osSpecificImpl;
+    GUCEF_DELETE m_osSpecificImpl;
     m_osSpecificImpl = GUCEF_NULL;
 }
 
@@ -1069,10 +1069,10 @@ CFileSystemDirectoryWatcher::operator=( const CFileSystemDirectoryWatcher& src )
     {
         CIDirectoryWatcher::operator=( src );
         
-        delete m_osSpecificImpl;
+        GUCEF_DELETE m_osSpecificImpl;
         m_osSpecificImpl = GUCEF_NULL;
 
-        m_osSpecificImpl = new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this );
+        m_osSpecificImpl = GUCEF_NEW OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this );
     }
     return *this;
 }

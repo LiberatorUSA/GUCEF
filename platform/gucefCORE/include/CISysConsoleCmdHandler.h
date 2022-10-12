@@ -55,10 +55,10 @@ class GUCEF_CORE_PUBLIC_CPP CISysConsoleCmdHandler
         protected:
         friend class CSysConsole;
 
-        virtual bool OnSysConsoleCommand( const CString& path                ,
-                                          const CString& command             ,
-                                          const std::vector< CString >& args ,
-                                          std::vector< CString >& resultdata ) = 0;
+        virtual bool OnSysConsoleCommand( const CString& path               ,
+                                          const CString& command            ,
+                                          const CString::StringVector& args ,
+                                          CString::StringVector& resultdata ) = 0;
 
 };
 

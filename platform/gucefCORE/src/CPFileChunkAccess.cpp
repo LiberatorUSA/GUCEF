@@ -78,7 +78,7 @@ pfca_readl( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CPFileChunkAccess*) access->privdata )->ReadLine();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -90,7 +90,7 @@ pfca_reads( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CPFileChunkAccess*) access->privdata )->ReadString();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -157,7 +157,7 @@ pfca_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 void GUCEF_CALLSPEC_PREFIX 
 pfca_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
 {
-        delete []((char*)mem);
+        GUCEF_DELETE []((char*)mem);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -368,7 +368,7 @@ CPFileChunkAccess::IsValid( void )
 CORE::CICloneable*
 CPFileChunkAccess::Clone( void ) const
 {
-        return new CPFileChunkAccess( *this );
+        return GUCEF_NEW CPFileChunkAccess( *this );
 }
 
 /*-------------------------------------------------------------------------//

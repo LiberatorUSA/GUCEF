@@ -92,7 +92,7 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& con
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -100,7 +100,7 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& con
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
-            m_metricsTimer = new CORE::CTimer( 1000 );        
+            m_metricsTimer = GUCEF_NEW CORE::CTimer( 1000 );        
             m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
         }
     }
@@ -115,7 +115,7 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& con
 CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
 {GUCEF_TRACE;
     
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -185,7 +185,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
     {
         MT::CObjectScopeLock lock( this );
 
-        topicAccess = ( new CAwsSqsPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = ( GUCEF_NEW CAwsSqsPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;

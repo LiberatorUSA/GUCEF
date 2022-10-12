@@ -152,7 +152,7 @@ template< typename IObserverDerived >
 CTEventHandlerFunctorProxy< IObserverDerived >::~CTEventHandlerFunctorProxy()
 {GUCEF_TRACE;
 
-    delete m_actualCallback;
+    GUCEF_DELETE m_actualCallback;
     m_actualCallback = GUCEF_NULL;
 }
 
@@ -170,7 +170,7 @@ CTEventHandlerFunctorProxy< IObserverDerived >::operator=( const CTEventHandlerF
         m_observer = src.m_observer;
         m_functor = src.m_functor;
         
-        delete m_actualCallback;
+        GUCEF_DELETE m_actualCallback;
         m_actualCallback = static_cast< CIEventHandlerFunctorBase* >( src.m_actualCallback->Clone() );
         assert( GUCEF_NULL != m_actualCallback );
     }
@@ -213,7 +213,7 @@ CICloneable*
 CTEventHandlerFunctorProxy< IObserverDerived >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTEventHandlerFunctorProxy< IObserverDerived >( *this );
+    return GUCEF_NEW CTEventHandlerFunctorProxy< IObserverDerived >( *this );
 }
 
 /*-------------------------------------------------------------------------*/

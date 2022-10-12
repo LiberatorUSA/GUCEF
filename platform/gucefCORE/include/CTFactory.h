@@ -127,7 +127,7 @@ template< class BaseClassType, class ConcreteClassType >
 BaseClassType* 
 CTFactory< BaseClassType, ConcreteClassType >::Create( void )
 {
-    return new ConcreteClassType();
+    return GUCEF_NEW ConcreteClassType();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ CTFactory< BaseClassType, ConcreteClassType >::Destroy( BaseClassType* factoryPr
      *  to ensure it's destructor is called even if the base class does not have a
      *  virtual destructor
      */
-    delete static_cast< ConcreteClassType* >( factoryProduct );
+    GUCEF_DELETE static_cast< ConcreteClassType* >( factoryProduct );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
      *  Decending classes can offcourse override this if additional criteria are
      *  to be considdered.
      */
-    return new CTFactory< BaseClassType, ConcreteClassType >;
+    return GUCEF_NEW CTFactory< BaseClassType, ConcreteClassType >;
 }
 
 /*-------------------------------------------------------------------------//

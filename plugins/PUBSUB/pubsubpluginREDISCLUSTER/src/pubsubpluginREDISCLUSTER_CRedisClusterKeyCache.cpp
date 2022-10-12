@@ -110,7 +110,7 @@ CORE::CICloneable*
 CRedisClusterKeyCache::CacheUpdateInfo::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CacheUpdateInfo( *this );
+    return GUCEF_NEW CacheUpdateInfo( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ CRedisClusterKeyCache::CRedisClusterKeyCache( void )
 {GUCEF_TRACE;
 
     m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PUBSUBPLUGIN::REDISCLUSTER::RedisClusterKeyCache", true );
-    m_cacheUpdateTask = ( new CRedisClusterKeyCacheUpdateTask() )->CreateSharedPtr().StaticCast< CORE::CTaskConsumer >();
+    m_cacheUpdateTask = ( GUCEF_NEW CRedisClusterKeyCacheUpdateTask() )->CreateSharedPtr().StaticCast< CORE::CTaskConsumer >();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ CRedisClusterKeyCache::Instance()
         if ( GUCEF_NULL == g_instance )
         {
             RegisterEvents();
-            g_instance = new CRedisClusterKeyCache();
+            g_instance = GUCEF_NEW CRedisClusterKeyCache();
         }
     }
     return g_instance;
@@ -167,7 +167,7 @@ CRedisClusterKeyCache::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
 }
 

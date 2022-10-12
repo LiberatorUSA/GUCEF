@@ -109,7 +109,7 @@ CDataNode::CDataNode( const CDataNode& src )
 CDataNode::~CDataNode()
 {GUCEF_TRACE;
         
-    delete m_associatedData;
+    GUCEF_DELETE m_associatedData;
     m_associatedData = GUCEF_NULL; 
     
     Clear();
@@ -1359,7 +1359,7 @@ CDataNode::StructureMultiple( const CString& sequence      ,
         {
             CDataNode* leaf = (*i);
             leafNodesParent->DetachChild( leaf );
-            delete leaf;
+            GUCEF_DELETE leaf;
             ++i;
         }
         leaves.clear();
@@ -1373,7 +1373,7 @@ CDataNode::StructureMultiple( const CString& sequence      ,
         if ( nodeType != leaf->GetNodeType() )
         {
             leafNodesParent->DetachChild( leaf );
-            delete leaf;
+            GUCEF_DELETE leaf;
             leaves.erase( i );
             i = leaves.begin();
         }
@@ -1394,7 +1394,7 @@ CDataNode::StructureMultiple( const CString& sequence      ,
         {
             CDataNode* leaf = (*i);
             leafNodesParent->DetachChild( leaf );
-            delete leaf;
+            GUCEF_DELETE leaf;
             
             leaves.erase( i );
             --delta;
@@ -1489,7 +1489,7 @@ CDataNode::DelSubTree( void )
         // which is pointless since we are deleting the entire sub tree
         child->_pparent = GUCEF_NULL;
         
-        delete child;
+        GUCEF_DELETE child;
     } 
 }        
 
@@ -1512,7 +1512,7 @@ CDataNode*
 CDataNode::AddChild( const CDataNode& newnode )
 {GUCEF_TRACE;
 
-    CDataNode* n = new CDataNode( newnode );
+    CDataNode* n = GUCEF_NEW CDataNode( newnode );
     n->_pprev = GUCEF_NULL;
     n->_pnext = GUCEF_NULL;
     n->_pparent = this;        
@@ -1544,7 +1544,7 @@ CDataNode*
 CDataNode::AddChild( void )
 {GUCEF_TRACE;
 
-    CDataNode* n = new CDataNode( GUCEF_DATATYPE_UNKNOWN );
+    CDataNode* n = GUCEF_NEW CDataNode( GUCEF_DATATYPE_UNKNOWN );
     n->_pparent = this;
 
     if ( !m_children.empty() )
@@ -1719,7 +1719,7 @@ CDataNode::Delete( void )
 {GUCEF_TRACE;
 
     Detach();
-    delete this;             
+    GUCEF_DELETE this;             
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1737,7 +1737,7 @@ void
 CDataNode::SetAssociatedData( CICloneable* associatedData )
 {GUCEF_TRACE;
     
-    delete m_associatedData;
+    GUCEF_DELETE m_associatedData;
     m_associatedData = GUCEF_NULL;
     
     if ( GUCEF_NULL != associatedData )    
@@ -1753,7 +1753,7 @@ CDataNode::DelChild( const CString& name )
     CDataNode* n = FindChild( name );
     if ( n )
     {       
-        delete n;
+        GUCEF_DELETE n;
         return true;
     }
     return false;

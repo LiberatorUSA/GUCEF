@@ -91,7 +91,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 {
     public:
 
-    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
+    typedef std::pair< sw::redis::StringView, sw::redis::StringView >      TRedisArgPair;
+    typedef std::vector< TRedisArgPair, basic_allocator< TRedisArgPair > > TRedisArgs;
 
     CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client );
 

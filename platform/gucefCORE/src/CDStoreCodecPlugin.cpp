@@ -384,7 +384,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "  - Copyright/EULA: " + GetCopyright() );
 
             // Copy the given metadata and update it with info from the actual module
-            m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );
+            m_metaData = TPluginMetaDataStoragePtr( GUCEF_NEW CPluginMetaData( *pluginMetaData ) );
             m_metaData->SetDescription( GetDescription() );
             m_metaData->SetCopyright( GetCopyright() );
             m_metaData->SetVersion( GetVersion() );
@@ -644,7 +644,7 @@ CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot ,
         /*
          *      Hook up our read event handlers
          */
-        void* privdata = new TParserData;
+        void* privdata = GUCEF_NEW TParserData;
         static_cast<TParserData*>(privdata)->root = treeroot;
         TReadHandlers rhandlers;
         rhandlers.OnTreeBegin = OnTreeBeginHandler;
@@ -664,7 +664,7 @@ CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot ,
          */
         treeroot->DelSubTree();
         ((TDSTOREPLUGFPTR_Start_Reading)_fptable[ DSTOREPLUG_START_READING ])( &_plugdata, &filedata );
-        delete static_cast<TParserData*>(privdata);
+        GUCEF_DELETE static_cast<TParserData*>(privdata);
 
         /*
          *      We are finished,.. close the file

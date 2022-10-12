@@ -90,19 +90,3 @@ class GUCEF_COM_PUBLIC_CPP CDBField
 
 #endif /* CDBFIELD_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 31-05-2005 :
-        - Commenced integration into new GUCEF codebase
-- 14-10-2003 :
-        - Started integrating this class into the DVNETCOM codebase.
-          This class was contributed to the codebase by Logan, many thanx to him
-          for this usefull class.
-        - Placed this class in a seperate file and changed layout to conform
-          with my standard.
-
----------------------------------------------------------------------------*/

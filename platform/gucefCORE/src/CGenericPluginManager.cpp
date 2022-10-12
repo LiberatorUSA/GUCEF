@@ -90,14 +90,14 @@ CGenericPluginManager::RegisterPlugin( void* modulePtr                   ,
                                        TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    CGenericPlugin* plugin = new CGenericPlugin();
+    CGenericPlugin* plugin = GUCEF_NEW CGenericPlugin();
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
         return TPluginPtr( plugin );
     }
 
-    delete plugin;
+    GUCEF_DELETE plugin;
     return TPluginPtr();
 }
 

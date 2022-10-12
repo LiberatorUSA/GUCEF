@@ -74,6 +74,16 @@
 #define GUCEF_INPUT_H
 #endif /* GUCEF_INPUT_H ? */
 
+#ifndef GUCEF_WEB_H
+#include "gucefWEB.h"   /* GUCEF platform WEB module */
+#define GUCEF_WEB_H
+#endif /* GUCEF_WEB_H ? */
+
+#ifndef GUCEF_PUBSUB_H
+#include "gucefPUBSUB.h" /* GUCEF platform PUBSUB module */
+#define GUCEF_PUBSUB_H
+#endif /* GUCEF_PUBSUB_H ? */
+
 #ifndef GUCEF_PATCHER_H
 #include "gucefPATCHER.h"  /* GUCEF platform PATCHER module */
 #define GUCEF_PATCHER_H
@@ -97,14 +107,3 @@
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 02-01-2007 :
-       - Initial version of this file.
-
----------------------------------------------------------------------------*/

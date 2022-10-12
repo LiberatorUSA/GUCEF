@@ -78,7 +78,7 @@ mfa_readl( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CMFileAccess*) access->privdata )->ReadLine();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );        
         return str.Length();
 }
@@ -90,7 +90,7 @@ mfa_reads( struct SIOAccess* access ,
            char **dest              ) GUCEF_CALLSPEC_SUFFIX
 {
         CString str = ( (CMFileAccess*) access->privdata )->ReadString();
-        *dest = new char[ str.Length()+1 ];
+        *dest = GUCEF_NEW char[ str.Length()+1 ];
         memcpy( *dest, str.C_String(), str.Length() );
         return str.Length();
 }
@@ -157,7 +157,7 @@ mfa_eof( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 void GUCEF_CALLSPEC_PREFIX 
 mfa_free( void* mem ) GUCEF_CALLSPEC_SUFFIX
 {
-        delete []((char*)mem);
+        GUCEF_DELETE []((char*)mem);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -356,7 +356,7 @@ CMFileAccess::IsValid( void )
 CICloneable*
 CMFileAccess::Clone( void ) const
 {
-        return new CMFileAccess( *this );
+        return GUCEF_NEW CMFileAccess( *this );
 }
 
 /*-------------------------------------------------------------------------//

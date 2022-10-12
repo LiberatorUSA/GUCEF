@@ -132,7 +132,7 @@ CTCPServerSocket::CTCPServerSocket( const CORE::PulseGeneratorPtr& pulseGenerato
     , m_maxClientConnectionIdleTime( 600000 )
 {GUCEF_TRACE;
 
-    _data = new TTCPServerSockData;
+    _data = GUCEF_NEW TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
     _data->maxcon = maxConnections;
@@ -140,7 +140,7 @@ CTCPServerSocket::CTCPServerSocket( const CORE::PulseGeneratorPtr& pulseGenerato
     _connections.reserve( maxConnections );
     for ( UInt32 i=0; i<maxConnections; ++i )
     {
-        _connections[ i ] = new CTCPServerConnection( this, i );
+        _connections[ i ] = GUCEF_NEW CTCPServerConnection( this, i );
         m_inactiveConnections.insert( _connections[ i ] );
     }
 
@@ -171,7 +171,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking         ,
     , m_maxClientConnectionIdleTime( 600000 )
 {GUCEF_TRACE;
 
-    _data = new TTCPServerSockData;
+    _data = GUCEF_NEW TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
     _data->maxcon = maxConnections;
@@ -179,7 +179,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking         ,
     _connections.reserve( maxConnections );
     for ( UInt32 i=0; i<maxConnections; ++i )
     {
-        _connections[ i ] = new CTCPServerConnection( this, i );
+        _connections[ i ] = GUCEF_NEW CTCPServerConnection( this, i );
         m_inactiveConnections.insert( _connections[ i ] );
     }
 
@@ -204,13 +204,13 @@ CTCPServerSocket::~CTCPServerSocket()
      */
     for ( UInt32 i=0; i<_connections.size(); ++i )
     {
-        delete _connections[ i ];
+        GUCEF_DELETE _connections[ i ];
     }
     _connections.clear();
     m_inactiveConnections.clear();
     m_activeConnections.clear();
 
-    delete _data;
+    GUCEF_DELETE _data;
     _data = GUCEF_NULL;
 }
 

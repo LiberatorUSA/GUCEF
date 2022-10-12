@@ -99,16 +99,16 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
 
     if ( m_config.desiredFeatures.supportsMetrics )
     {
-        m_metricsTimer = new CORE::CTimer( config.pulseGenerator, 1000 );
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
         m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
     if ( m_config.desiredFeatures.supportsAutoReconnect )
     {
-        m_redisReconnectTimer = new CORE::CTimer( config.pulseGenerator, config.reconnectDelayInMs );
+        m_redisReconnectTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, config.reconnectDelayInMs );
     }
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
     {                                                                      // @TODO: interval
-        m_streamIndexingTimer = new CORE::CTimer( config.pulseGenerator, 100000 );
+        m_streamIndexingTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 100000 );
     }
 
     m_config.metricsPrefix += "redis.";
@@ -132,13 +132,13 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
     if ( !m_threadPool.IsNULL() )
         m_threadPool->RequestAllThreadsToStop( true, false );
 
-    delete m_metricsTimer;
+    GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    delete m_redisReconnectTimer;
+    GUCEF_DELETE m_redisReconnectTimer;
     m_redisReconnectTimer = GUCEF_NULL;
 
-    delete m_streamIndexingTimer;
+    GUCEF_DELETE m_streamIndexingTimer;
     m_streamIndexingTimer = GUCEF_NULL;
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -245,7 +245,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicCo
         {
             MT::CObjectScopeLock lock( this );
 
-            topicAccess = ( new CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
+            topicAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
             if ( topicAccess->LoadConfig( topicConfig ) )
             {
                 m_topicMap[ topicConfig.topicName ] = topicAccess;
@@ -379,7 +379,7 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                 {
                     MT::CObjectScopeLock lock( this );
 
-                    tAccess = ( new CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
+                    tAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
                     if ( tAccess->LoadConfig( topicConfig ) )
                     {
                         m_topicMap[ topicConfig.topicName ] = tAccess;
@@ -925,7 +925,7 @@ CRedisClusterPubSubClient::Connect( void )
 
         // Connect to the Redis cluster
         m_redisContext.Unlink();
-        m_redisContext = RedisClusterPtr( new sw::redis::RedisCluster( rppConnectionOptions ) );
+        m_redisContext = RedisClusterPtr( GUCEF_NEW sw::redis::RedisCluster( rppConnectionOptions ) );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
 

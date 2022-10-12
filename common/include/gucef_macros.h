@@ -69,6 +69,11 @@
 #define GUCEF_MEMORY_H
 #endif /* GUCEF_MEMORY_H ? */
 
+#ifndef GUCEF_ALLOCATOR_H
+#include "gucef_allocator.h"     /* GUCEF platform C++ allocator which incorporates memory management macros */
+#define GUCEF_ALLOCATOR_H
+#endif /* GUCEF_ALLOCATOR_H ? */
+
 #ifndef GUCEF_SHAREDMODULE_H
 #include "gucef_sharedmodule.h"  /* GUCEF platform macros related to the use of shared modules */
 #define GUCEF_SHAREDMODULE_H

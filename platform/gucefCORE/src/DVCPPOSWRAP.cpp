@@ -71,7 +71,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 typedef std::map< CString, CString > TStringMap;
-typedef std::vector< CString > TStringVector;
+typedef CString::StringVector        TStringVector;
 typedef std::pair< CString, CString > TStringPair;
 
 /*-------------------------------------------------------------------------//

@@ -97,7 +97,7 @@ class CMailElement : public CICloneable
     
     virtual CICloneable* Clone( void ) const
     {
-        return new CMailElement( *this );
+        return GUCEF_NEW CMailElement( *this );
     }
     
     private:

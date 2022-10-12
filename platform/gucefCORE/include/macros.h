@@ -122,7 +122,7 @@
         {                                                 \
                 if ( !_instance )                         \
                 {                                         \
-                        _instance = new identifier();     \
+                        _instance = GUCEF_NEW identifier();     \
                 }                                         \
                 return _instance;                         \
         }                                                 \

@@ -78,7 +78,7 @@ namespace CORE {
 struct CSysConsole::SFunctionHook
 {
         CString name;
-        std::vector< CString > argdefs;
+        CString::StringVector argdefs;
         CISysConsoleCmdHandler* handler;
 };
 typedef struct CSysConsole::SFunctionHook TFunctionHook;
@@ -114,7 +114,7 @@ CSysConsole::CSysConsole( void )
      *      itself. The functions allow you to register aliases
      *      using the console.
      */
-    std::vector< CString > args;
+    CString::StringVector args;
     args.push_back( "aliasname" );
     args.push_back( "path" );
     args.push_back( "function" );
@@ -154,7 +154,7 @@ CSysConsole::DelTree( TCmdChannel* tree )
         {
                 chentry = array[ i ];
                 DelTree( chentry );
-                delete chentry;
+                GUCEF_DELETE chentry;
         }
         array.clear();
         
@@ -163,11 +163,11 @@ CSysConsole::DelTree( TCmdChannel* tree )
         for ( UInt32 i=0; i<farray.size(); ++i )
         {
                 fhook = farray[ i ];
-                delete fhook;
+                GUCEF_DELETE fhook;
         }
         farray.clear();
 
-        delete tree; // is this safe ?
+        GUCEF_DELETE tree; // is this safe ?
 }
 
 /*-------------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ CSysConsole::FindFunction( const struct SCmdChannel* curchannel ,
 bool
 CSysConsole::RegisterCmd( const CString& path                ,
                           const CString& functionname        ,
-                          const std::vector< CString >& args ,
+                          const CString::StringVector& args  ,
                           CISysConsoleCmdHandler* cmdhandler )
 {GUCEF_TRACE;
 
@@ -451,10 +451,10 @@ CSysConsole::FindAliasFunction( const CString& aliasname )
 /*-------------------------------------------------------------------------*/
 
 bool
-CSysConsole::Execute( CSysConsoleClient* client             ,
-                      const CString& funcname               ,
-                      const std::vector< CString >& arglist ,
-                      std::vector< CString >& resultdata    )
+CSysConsole::Execute( CSysConsoleClient* client            ,
+                      const CString& funcname              ,
+                      const CString::StringVector& arglist ,
+                      CString::StringVector& resultdata    )
 {GUCEF_TRACE;
 
         //_datalock.Lock();
@@ -521,13 +521,13 @@ CSysConsole::Execute( CSysConsoleClient* client             ,
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString >
+CString::StringVector
 CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
     //MT::CScopeMutex scopeLock( _datalock );
     //std::vector< TCmdChannel* >& channels = static_cast< TCmdChannel* >( client->channel )->channels;
-    std::vector< CString > list;
+    CString::StringVector list;
     //for ( UInt32 i=0; i<channels.size(); ++i )
     //{
     //        list.push_back( channels[ i ]->name );
@@ -537,13 +537,13 @@ CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString >
+CString::StringVector
 CSysConsole::GetCmdList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
     //MT::CScopeMutex scopeLock( _datalock );
     //std::vector< TFunctionHook* >& functions = static_cast< TCmdChannel* >( client->channel )->functions;
-    std::vector< CString > list;
+    CString::StringVector list;
     //for ( UInt32 i=0; i<functions.size(); ++i )
     //{
     //        list.push_back( functions[ i ]->name );
@@ -617,10 +617,10 @@ CSysConsole::UnregisterAlias( const CString& aliasname ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CSysConsole::OnSysConsoleCommand( const CString& path                ,
-                                  const CString& command             ,
-                                  const std::vector< CString >& args ,
-                                  std::vector< CString >& resultdata )
+CSysConsole::OnSysConsoleCommand( const CString& path               ,
+                                  const CString& command            ,
+                                  const CString::StringVector& args ,
+                                  CString::StringVector& resultdata )
 {GUCEF_TRACE;
 
     if ( command == "RegisterAlias" )

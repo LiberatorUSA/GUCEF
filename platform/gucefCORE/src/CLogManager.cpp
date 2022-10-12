@@ -136,7 +136,7 @@ static CharSepLoggingFormatterFactory charSepLoggingFormatterFactory;
 //-------------------------------------------------------------------------*/
 
 CLogManager::CLogManager( void )
-    : m_loggers( new CMultiLogger() )
+    : m_loggers( GUCEF_NEW CMultiLogger() )
     , m_loggingTask()
     , m_useLogThread( false )
     , m_bootstrapLog()
@@ -167,7 +167,7 @@ CLogManager::~CLogManager()
 
     m_loggingTask.Unlink();
 
-    delete m_loggers;
+    GUCEF_DELETE m_loggers;
     m_loggers = GUCEF_NULL;
 }
 
@@ -566,7 +566,7 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
     {
         if ( useLogThread )
         {
-            CLoggingTaskPtr loggingTask( new CLoggingTask( *m_loggers ) );
+            CLoggingTaskPtr loggingTask( GUCEF_NEW CLoggingTask( *m_loggers ) );
             m_loggingTask = loggingTask;
             if ( CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->StartTask( loggingTask ) )
                 m_useLogThread = useLogThread;

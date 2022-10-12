@@ -157,7 +157,7 @@ CTCPClientSocket::CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
 
     RegisterEvents();
 
-    _data = new TTCPClientSockData;
+    _data = GUCEF_NEW TTCPClientSockData;
     assert( _data != NULL );
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
@@ -193,7 +193,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
 
     RegisterEvents();
 
-    _data = new TTCPClientSockData;
+    _data = GUCEF_NEW TTCPClientSockData;
     assert( _data != NULL );
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
@@ -209,7 +209,7 @@ CTCPClientSocket::~CTCPClientSocket()
 {GUCEF_TRACE;
 
     Close();
-    delete _data;
+    GUCEF_DELETE _data;
     _data = NULL;
 }
 

@@ -99,14 +99,14 @@ CStdCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
                                         TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    CStdCodecPlugin* plugin = new CStdCodecPlugin();
+    CStdCodecPlugin* plugin = GUCEF_NEW CStdCodecPlugin();
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
         return TPluginPtr( plugin );
     }
 
-    delete plugin;
+    GUCEF_DELETE plugin;
     return TPluginPtr();
 }
 

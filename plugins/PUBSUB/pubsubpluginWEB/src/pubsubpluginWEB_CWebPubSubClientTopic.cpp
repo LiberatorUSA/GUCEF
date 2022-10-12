@@ -177,11 +177,11 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = GUCEF_NEW CORE::CTimer( client->GetPulseGenerator(), m_client->GetConfig().reconnectDelayInMs );
     }
     if ( 0 != m_config.maxPublishedMsgCountToRetainForRest )
     {
-        m_publishedMsgPrunerTimer = new CORE::CTimer( client->GetPulseGenerator(), 1000 );
+        m_publishedMsgPrunerTimer = GUCEF_NEW CORE::CTimer( client->GetPulseGenerator(), 1000 );
     }
 
     RegisterRestApiEndpoints(); 
@@ -212,13 +212,13 @@ CWebPubSubClientTopic::RegisterRestApiEndpoints( void )
         {
             m_httpRouter.SetWildcardMatchUris( false );
             
-            clientIndexMap = new TClientIndexMap( "PubSubClients", "PubSubClient", "clientType", &m_publishedClientTypes, this );
+            clientIndexMap = GUCEF_NEW TClientIndexMap( "PubSubClients", "PubSubClient", "clientType", &m_publishedClientTypes, this );
             GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr clientIndexMapPtr( clientIndexMap->CreateSharedPtr() );
             m_httpRouter.SetResourceMapping( "/clients", clientIndexMapPtr );          
 
             if ( m_config.exposeBasicHealthEndpoint )
             {
-                healthDummy = new TDummyHttpServerResource();
+                healthDummy = GUCEF_NEW TDummyHttpServerResource();
                 GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr healthDummyPtr( healthDummy->CreateSharedPtr() );
                 m_httpRouter.SetResourceMapping( m_config.basicHealthEndpointPath, healthDummyPtr );
             }
@@ -242,10 +242,10 @@ CWebPubSubClientTopic::~CWebPubSubClientTopic()
     Disconnect();
     m_httpRouter.RemoveAllResourceMappings();
 
-    delete m_reconnectTimer;
+    GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
 
-    delete m_publishedMsgPrunerTimer;
+    GUCEF_DELETE m_publishedMsgPrunerTimer;
     m_publishedMsgPrunerTimer = GUCEF_NULL;
 }
 
@@ -372,17 +372,17 @@ CWebPubSubClientTopic::PublishToRestApi( CORE::UInt64& publishActionId          
             TPubSubClientTopicPtrVector& topics = topicNameMap[ urlEncodedOriginClientTopicName ];
             topics.push_back( originClientTopic );
 
-            TClientTopicIndexMap* topicIndexMap = new TClientTopicIndexMap( "PubSubClientTopics", "PubSubClientTopic", "topicName", &topicNameMap, this );
+            TClientTopicIndexMap* topicIndexMap = GUCEF_NEW TClientTopicIndexMap( "PubSubClientTopics", "PubSubClientTopic", "topicName", &topicNameMap, this );
             GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicIndexMapPtr( topicIndexMap->CreateSharedPtr() );
             m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics", topicIndexMapPtr ); 
 
             // This one is a bit problematic: If we have multiple clients we can have duplicate topics name wise which in turn would actually be distinct 'topicMsgMap' collections
             // right now only the first instance would be accessable due to the overlap
-            //TClientTopicMsgsIndexMap* topicMsgsIndexMap = new TClientTopicMsgsIndexMap( "PubSubMsgs", "PubSubMsg", "publishActionId", topicMsgMap, this );
+            //TClientTopicMsgsIndexMap* topicMsgsIndexMap = GUCEF_NEW TClientTopicMsgsIndexMap( "PubSubMsgs", "PubSubMsg", "publishActionId", topicMsgMap, this );
             //GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsIndexMap->CreateSharedPtr() );
             //m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
 
-            TClientTopicMsgsMap* topicMsgsMap = new TClientTopicMsgsMap( "PubSubMsgs", "publishActionId", &m_pubsubSerializerOptions, topicMsgMap, this, false );
+            TClientTopicMsgsMap* topicMsgsMap = GUCEF_NEW TClientTopicMsgsMap( "PubSubMsgs", "publishActionId", &m_pubsubSerializerOptions, topicMsgMap, this, false );
             GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr topicMsgsIndexMapPtr( topicMsgsMap->CreateSharedPtr() );
             m_httpRouter.SetResourceMapping( "/clients/" + urlEncodedOriginClientType + "/topics/" + urlEncodedOriginClientTopicName + "/messages", topicMsgsIndexMapPtr );
             

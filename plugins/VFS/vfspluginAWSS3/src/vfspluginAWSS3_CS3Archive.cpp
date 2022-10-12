@@ -425,7 +425,7 @@ void
 CS3Archive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
 {GUCEF_TRACE;
 
-    delete objectToBeDestroyed;
+    GUCEF_DELETE objectToBeDestroyed;
 }
 
 /*-------------------------------------------------------------------------//

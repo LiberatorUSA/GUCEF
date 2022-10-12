@@ -170,7 +170,7 @@ CStdCodecPlugin::LinkCodecSet( void )
                 if ( ( (TCODECPLUGFPTR_GetCodecLink) m_fpTable[ STDCODEC_CODECLINK ] )( m_pluginData, iterator, &codecLink ) != 0 )
                 {
                     assert( codecLink != NULL );
-                    CCodecPtr codecItem = CCodecPtr( new CStdCodecPluginItem( m_pluginData, codecLink ) );
+                    CCodecPtr codecItem = CCodecPtr( GUCEF_NEW CStdCodecPluginItem( m_pluginData, codecLink ) );
                     CCodecFamilySet& familySet = m_codecSet[ codecLink->codecFamily ];
                     familySet.insert( std::pair< CString, CCodecPtr >( codecLink->codecType, codecItem ) );
                     CCodecFamilyList& familyList = m_codecList[ codecLink->codecFamily ];
@@ -183,7 +183,7 @@ CStdCodecPlugin::LinkCodecSet( void )
                                                    familyRegistry         ,
                                                    true                   ) )
                     {
-                        familyRegistry = CCodecRegistry::TCodecFamilyRegistryPtr( new CCodecRegistry::TCodecFamilyRegistry() );
+                        familyRegistry = CCodecRegistry::TCodecFamilyRegistryPtr( GUCEF_NEW CCodecRegistry::TCodecFamilyRegistry() );
                         if ( !codecRegistry.TryRegister( codecLink->codecFamily, familyRegistry ) )
                         {
                             // race condition?
@@ -464,7 +464,7 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Successfully loaded module and invoked Init() using module: " + PointerToString( modulePtr ) );
 
     // Copy the given metadata and update it with info from the actual module
-    m_metaData = TPluginMetaDataStoragePtr( new CPluginMetaData( *pluginMetaData ) );
+    m_metaData = TPluginMetaDataStoragePtr( GUCEF_NEW CPluginMetaData( *pluginMetaData ) );
     m_metaData->SetDescription( GetDescription() );
     m_metaData->SetCopyright( GetCopyright() );
     m_metaData->SetVersion( GetVersion() );

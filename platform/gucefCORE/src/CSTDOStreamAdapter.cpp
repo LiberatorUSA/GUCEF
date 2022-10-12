@@ -111,7 +111,7 @@ CSTDOStreamAdapterBuffer::overflow( char value )
 
 CSTDOStreamAdapter::CSTDOStreamAdapter( CIOAccess& access )
     : std::ostream( 0 )                                   ,
-      m_buffer( new CSTDOStreamAdapterBuffer( access ) )
+      m_buffer( GUCEF_NEW CSTDOStreamAdapterBuffer( access ) )
 {GUCEF_TRACE;
 
     std::ostream::init( m_buffer );
@@ -122,7 +122,7 @@ CSTDOStreamAdapter::CSTDOStreamAdapter( CIOAccess& access )
 CSTDOStreamAdapter::~CSTDOStreamAdapter()
 {GUCEF_TRACE;
     
-    delete m_buffer;
+    GUCEF_DELETE m_buffer;
 }
 
 /*-------------------------------------------------------------------------//

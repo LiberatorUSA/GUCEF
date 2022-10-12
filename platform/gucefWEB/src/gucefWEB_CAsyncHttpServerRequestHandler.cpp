@@ -105,7 +105,7 @@ CORE::CICloneable*
 CAsyncHttpRequestData::Clone( void ) const 
 {GUCEF_TRACE;
 
-    return new CAsyncHttpRequestData( *this );
+    return GUCEF_NEW CAsyncHttpRequestData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( const CAsyncHttp
 CAsyncHttpServerRequestHandler::~CAsyncHttpServerRequestHandler()
 {GUCEF_TRACE;
 
-    delete m_requestHandler;
+    GUCEF_DELETE m_requestHandler;
     m_requestHandler = GUCEF_NULL;
 }
 
@@ -195,7 +195,7 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
             return true;
     }
 
-    CAsyncHttpResponseData* response = new CAsyncHttpResponseData( httpRequestData );
+    CAsyncHttpResponseData* response = GUCEF_NEW CAsyncHttpResponseData( httpRequestData );
     m_requestHandler->OnRequest( *httpRequestData, *response );
     
     if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncHttpServerResponseHandler::TaskType, 

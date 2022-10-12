@@ -282,7 +282,7 @@ CICloneable*
 CTBasicSharedPtrObjOperators< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTBasicSharedPtrObjOperators< T, LockType >( *this );
+    return GUCEF_NEW CTBasicSharedPtrObjOperators< T, LockType >( *this );
 }
 
 /*-------------------------------------------------------------------------//

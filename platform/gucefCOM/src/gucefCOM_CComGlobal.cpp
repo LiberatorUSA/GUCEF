@@ -103,7 +103,7 @@ CComGlobal::Initialize( void )
 
     CPHUDPSocket::RegisterEvents();
 
-    CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
+    CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( GUCEF_NEW CStatsDClient() );
     CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( CStatsDClient::Type, statsDClient );
 }
 
@@ -128,7 +128,7 @@ CComGlobal::Instance()
         MT::CScopeMutex lock( g_dataLock );
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CComGlobal();
+            g_instance = GUCEF_NEW CComGlobal();
             if ( GUCEF_NULL != g_instance )
             {
                 g_instance->Initialize();
@@ -146,7 +146,7 @@ CComGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
 }
 

@@ -109,7 +109,7 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = static_cast< CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >* >( new CTestPubSubClientTopic( this ) )->CreateSharedPtr();
+        topicAccess = static_cast< CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >* >( GUCEF_NEW CTestPubSubClientTopic( this ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;

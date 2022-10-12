@@ -163,7 +163,7 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 
     private:
 
-    typedef std::set< CNotifier* > TNotifierList;
+    typedef std::set< CNotifier*, std::less< CNotifier* >, basic_allocator< CNotifier* > > TNotifierList;
 
     TNotifierList m_notifiers;
 };

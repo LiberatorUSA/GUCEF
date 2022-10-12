@@ -79,8 +79,8 @@ class CTMailBox : public virtual MT::CILockable
     };
     typedef struct SMailElement TMailElement;
 
-    typedef std::vector< TMailElement > TMailVector;
-    typedef std::deque< TMailElement >  TMailQueue;
+    typedef std::vector< TMailElement, basic_allocator< TMailElement > > TMailVector;
+    typedef std::deque< TMailElement, basic_allocator< TMailElement > >  TMailQueue;
     typedef typename std::deque< TMailElement >::iterator iterator;
     typedef typename std::deque< TMailElement >::const_iterator const_iterator;
 
@@ -275,7 +275,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
         if ( GUCEF_NULL != data )
             *data = entry.data;
         else
-            delete entry.data;
+            GUCEF_DELETE entry.data;
 
         m_mailQueue.pop_front();
         return true;
@@ -320,7 +320,7 @@ CTMailBox< T >::PopMail( void )
     if ( !m_mailQueue.empty() )
     {
         TMailElement& entry = m_mailQueue.front();
-        delete entry.data;
+        GUCEF_DELETE entry.data;
         m_mailQueue.pop_front();
         return true;
     }
@@ -368,7 +368,7 @@ CTMailBox< T >::Clear( void )
     typename TMailQueue::iterator i( m_mailQueue.begin() );
     while ( i != m_mailQueue.end() )
     {
-        delete (*i).data;
+        GUCEF_DELETE (*i).data;
         ++i;
     }
     m_mailQueue.clear();
@@ -391,7 +391,7 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
     {
         if ( (*i).eventid != eventid )
         {
-            delete (*i).data;
+            GUCEF_DELETE (*i).data;
             i = m_mailQueue.erase( i );
             continue;
         }
@@ -406,7 +406,7 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
         if ( m_mailQueue.front().eventid == eventid )
             copyQueue.push_back( m_mailQueue.front() );
         else
-            delete m_mailQueue.front().data;
+            GUCEF_DELETE m_mailQueue.front().data;
         m_mailQueue.pop_front();
     }
     m_mailQueue = copyQueue;
@@ -431,7 +431,7 @@ CTMailBox< T >::Delete( const T& eventid )
     {
         if ( (*i).eventid == eventid )
         {
-            delete (*i).data;
+            GUCEF_DELETE (*i).data;
             i = m_mailQueue.erase( i );
             continue;
         }
@@ -446,7 +446,7 @@ CTMailBox< T >::Delete( const T& eventid )
         if ( m_mailQueue.front().eventid != eventid )
             copyQueue.push_back( m_mailQueue.front() );
         else
-            delete m_mailQueue.front().data;
+            GUCEF_DELETE m_mailQueue.front().data;
         m_mailQueue.pop_front();
     }
     m_mailQueue = copyQueue;

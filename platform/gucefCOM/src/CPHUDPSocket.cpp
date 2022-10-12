@@ -85,8 +85,8 @@ CPHUDPSocket::CPHUDPSocket( UInt32 minpayloadsize  ,
           _buffer( GUPACKETHDRSIZE + minpayloadsize, true ) ,
           _sendpackettypes( sendpackettypes )               ,
           _rcvpackettypes( rcvpackettypes )                 ,
-          _sendpcounters( new UInt32[ sendpackettypes ] )   ,
-          _rcvpcounters( new UInt32[ rcvpackettypes ] )
+          _sendpcounters( GUCEF_NEW UInt32[ sendpackettypes ] )   ,
+          _rcvpcounters( GUCEF_NEW UInt32[ rcvpackettypes ] )
 {GUCEF_TRACE;
 
         memset( _sendpcounters, 0, sendpackettypes*4 );
@@ -99,8 +99,8 @@ CPHUDPSocket::CPHUDPSocket( UInt32 minpayloadsize  ,
 
 CPHUDPSocket::~CPHUDPSocket()
 {GUCEF_TRACE;
-        delete []_sendpcounters;
-        delete []_rcvpcounters;
+        GUCEF_DELETE []_sendpcounters;
+        GUCEF_DELETE []_rcvpcounters;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -162,7 +162,7 @@ CORE::CICloneable*
 CPing::CPingEventData::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CPingEventData( *this );
+    return GUCEF_NEW CPingEventData( *this );
 }
 
 /*-------------------------------------------------------------------------*/

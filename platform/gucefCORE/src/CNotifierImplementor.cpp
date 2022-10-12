@@ -143,7 +143,7 @@ CNotifierImplementor::Create( CNotifier* ownerNotifier )
 {GUCEF_TRACE;
 
     // perform in-scope creation
-    return new CNotifierImplementor( ownerNotifier );
+    return GUCEF_NEW CNotifierImplementor( ownerNotifier );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ CNotifierImplementor::Create( CNotifier* ownerNotifier ,
 {GUCEF_TRACE;
 
     // perform in-scope creation
-    return new CNotifierImplementor( ownerNotifier ,
+    return GUCEF_NEW CNotifierImplementor( ownerNotifier ,
                                      src           );
 }
 
@@ -165,7 +165,7 @@ CNotifierImplementor::Destroy( CNotifierImplementor* obj )
 {GUCEF_TRACE;
 
     // perform an in-scope destruction
-    delete obj;
+    GUCEF_DELETE obj;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -225,7 +225,7 @@ CNotifierImplementor::ForceNotifyObserversOnce( const CEvent& eventid ,
     if ( m_scheduledForDestruction )
     {
         m_ownerNotifier->m_imp = GUCEF_NULL;
-        delete m_ownerNotifier;
+        GUCEF_DELETE m_ownerNotifier;
         return false;
     }
 
@@ -265,7 +265,7 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( bool busyProcessingMailbox )
                     TEventHandlerFunctorInterfaceVector::iterator v = callbacks.begin();
                     while ( v != callbacks.end() )
                     {
-                        delete (*v);
+                        GUCEF_DELETE (*v);
                         (*v) = GUCEF_NULL;
                         ++v;
                     }
@@ -307,7 +307,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                      ,
             {
                 lock.EarlyUnlock();
                 m_ownerNotifier->m_imp = GUCEF_NULL;
-                delete m_ownerNotifier;
+                GUCEF_DELETE m_ownerNotifier;
                 return false;
             }
 
@@ -414,7 +414,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
         {
             lock.EarlyUnlock();
             m_ownerNotifier->m_imp = GUCEF_NULL;
-            delete m_ownerNotifier; // <- This will delete this object as well thus self-destructing
+            GUCEF_DELETE m_ownerNotifier; // <- This will GUCEF_DELETE this object as well thus self-destructing
             return false;
         }
 
@@ -560,7 +560,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             {
                 /*
                  *  Remove the reference to the given observer
-                 *  Also delete the event handler functor as needed
+                 *  Also GUCEF_DELETE the event handler functor as needed
                  */
                 TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
                 if ( !callbacks.empty() )
@@ -568,7 +568,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                     TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
                     while ( m != callbacks.end() )
                     {
-                        delete (*m);
+                        GUCEF_DELETE (*m);
                         (*m) = GUCEF_NULL;
                         ++m;
                     }
@@ -604,7 +604,7 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
         {
             NotificationUnlock();
             m_ownerNotifier->m_imp = GUCEF_NULL;
-            delete m_ownerNotifier;
+            GUCEF_DELETE m_ownerNotifier;
             return;
         }
 
@@ -688,7 +688,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer                      ,
                         TEventHandlerFunctorInterfaceVector::iterator m = callbacks.begin();
                         while ( m != callbacks.end() )
                         {                            
-                            delete (*m);
+                            GUCEF_DELETE (*m);
                             (*m) = GUCEF_NULL;
                             ++m;
                         }
@@ -708,7 +708,7 @@ CNotifierImplementor::Unsubscribe( CObserver* observer                      ,
         {
             lock.EarlyUnlock();
             m_ownerNotifier->m_imp = GUCEF_NULL;
-            delete m_ownerNotifier;
+            GUCEF_DELETE m_ownerNotifier;
             return;
         }
 
@@ -970,7 +970,7 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
         {            
             m_ownerNotifier->m_imp = GUCEF_NULL;
             lock.EarlyUnlock();
-            delete m_ownerNotifier;
+            GUCEF_DELETE m_ownerNotifier;
             return false;
         }
 
@@ -1097,7 +1097,7 @@ CNotifierImplementor::ProcessEventMailbox( void )
                 NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData, true );
             }
         }
-        delete entry.eventData;
+        GUCEF_DELETE entry.eventData;
     }
 }
 
@@ -1267,7 +1267,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         {
             m_ownerNotifier->m_imp = GUCEF_NULL;
             lock.EarlyUnlock();
-            delete m_ownerNotifier;
+            GUCEF_DELETE m_ownerNotifier;
             return false;
         }
     }
@@ -1366,7 +1366,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
          *  trigger by the notifier itself. Thus we can safely delete the notifier
          */
         lock.EarlyUnlock();
-        delete m_ownerNotifier;
+        GUCEF_DELETE m_ownerNotifier;
     }
     else
     {

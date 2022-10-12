@@ -112,7 +112,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     
     public:
 
-    typedef std::vector< CString > TStringVector;
+    typedef CString::StringVector TStringVector;
     
     CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
                  const CHttpServerSettings* settings = GUCEF_NULL                     );

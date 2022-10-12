@@ -137,7 +137,7 @@ CGUCEFApplication::CGUCEFApplication( void )
     CSysConsole* sysconsole = &CORE::CCoreGlobal::Instance()->GetSysConsole();
     if ( GUCEF_NULL != sysconsole )
     {
-        std::vector< CString > args;
+        CString::StringVector args;
         sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
                                  "Stop"                           ,
                                  args                             ,
@@ -292,8 +292,8 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     data.ncmdshow = ncmdshow;
 
     // Parse the MSWIN param into the old style param list
-    std::vector< CString > argList;
-    if ( NULL != lpcmdline )
+    CString::StringVector argList;
+    if ( GUCEF_NULL != lpcmdline )
     {
         argList = CString( lpcmdline ).ParseElements( ' ' );
     }
@@ -302,7 +302,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     SetEnv( "argc", Int32ToString( data.argc ) );
     if ( data.argc > 0 )
     {
-        data.argv = new char*[ data.argc ];
+        data.argv = GUCEF_NEW char*[ data.argc ];
         for ( Int32 i=0; i<data.argc; ++i )
         {
             data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
@@ -336,7 +336,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         }
     }
 
-    delete []data.argv;
+    GUCEF_DELETE []data.argv;
     return appReturnCode;
 }
 #endif
@@ -521,10 +521,10 @@ CGUCEFApplication::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
-                                        const CString& command             ,
-                                        const std::vector< CString >& args ,
-                                        std::vector< CString >& resultdata )
+CGUCEFApplication::OnSysConsoleCommand( const CString& path               ,
+                                        const CString& command            ,
+                                        const CString::StringVector& args ,
+                                        CString::StringVector& resultdata )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );

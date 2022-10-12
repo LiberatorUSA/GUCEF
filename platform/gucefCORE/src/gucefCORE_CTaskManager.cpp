@@ -105,7 +105,7 @@ CTaskManager::CTaskManager( void )
     , m_threadPools()       
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultTreadPoolName ] = ( new CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
+    m_threadPools[ DefaultTreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
     
     if ( createIfNotExists )
     {
-        ThreadPoolPtr newPool = ( new CThreadPool( threadPoolPulseContext ) )->CreateSharedPtr();
+        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext ) )->CreateSharedPtr();
         m_threadPools[ threadPoolName ] = newPool;
         return newPool; 
     }

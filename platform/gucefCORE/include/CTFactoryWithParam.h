@@ -143,7 +143,7 @@ template< class BaseClassType, class ConcreteClassType, typename ConstructionPar
 BaseClassType* 
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::Create( const ConstructionParamType& param )
 {
-    return new ConcreteClassType( param );
+    return GUCEF_NEW ConcreteClassType( param );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::D
      *  to ensure it's destructor is called even if the base class does not have a
      *  virtual destructor
      */
-    delete static_cast< ConcreteClassType* >( factoryProduct );
+    GUCEF_DELETE static_cast< ConcreteClassType* >( factoryProduct );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,7 +173,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::C
      *  Decending classes can offcourse override this if additional criteria are
      *  to be considdered.
      */
-    return new CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >;
+    return GUCEF_NEW CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >;
 }
 
 /*-------------------------------------------------------------------------//

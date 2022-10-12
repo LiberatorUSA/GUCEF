@@ -112,7 +112,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
 
     if ( client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_redisReconnectTimer = new CORE::CTimer( client->GetPulseGenerator(), client->GetConfig().reconnectDelayInMs );
+        m_redisReconnectTimer = GUCEF_NEW CORE::CTimer( client->GetPulseGenerator(), client->GetConfig().reconnectDelayInMs );
     }
 
     m_needToTrackAcks = m_client->IsTrackingAcksNeeded();
@@ -731,7 +731,7 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
             lock.ReLock();
         }
 
-        delete m_redisPipeline;
+        GUCEF_DELETE m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
 
         // the parent client owns the context, we just null it
@@ -824,7 +824,7 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
 
         if ( m_readerThread.IsNULL() )
         {
-            m_readerThread = RedisClusterPubSubClientTopicReaderPtr( new CRedisClusterPubSubClientTopicReader( this ) );
+            m_readerThread = RedisClusterPubSubClientTopicReaderPtr( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) );
         }
         if ( !m_readerThread.IsNULL() )
         {
@@ -1046,8 +1046,8 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
         {
             // Connect to the specific shard used for this channel's stream with a single dedicated connection
             sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
-            delete m_redisPipeline;
-            m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
+            GUCEF_DELETE m_redisPipeline;
+            m_redisPipeline = GUCEF_NEW sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
         }

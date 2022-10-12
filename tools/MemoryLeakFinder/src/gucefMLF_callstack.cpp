@@ -218,7 +218,7 @@ StackInventory::Deinstance( void )
         MT::CScopeMutex lock( g_instanceLock );
         if ( GUCEF_NULL != g_instance )
         {
-            delete g_instance;
+            GUCEF_DELETE g_instance;
             g_instance = GUCEF_NULL;
         }
     }

@@ -262,7 +262,7 @@ CCPPWrapFileAccess::IsValid( void )
 CICloneable*
 CCPPWrapFileAccess::Clone( void ) const
 {GUCEF_TRACE;
-        return new CCPPWrapFileAccess( _access );
+        return GUCEF_NEW CCPPWrapFileAccess( _access );
 }
 
 /*-------------------------------------------------------------------------*/

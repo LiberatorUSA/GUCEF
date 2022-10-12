@@ -573,7 +573,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
 
     // Note that we make a copy of the meta data since the interface we have might be pointing to a implementation which needs
     // the module to be loaded which is the plugin managers right to do so.
-    TPluginMetaDataPtr metaDataCopyPtr( new CPluginMetaData( *pluginMetaData ) );
+    TPluginMetaDataPtr metaDataCopyPtr( GUCEF_NEW CPluginMetaData( *pluginMetaData ) );
 
     // First we unregister the plugin with its plugin manager
     CString pluginType = metaDataCopyPtr->GetPluginType();
@@ -1075,7 +1075,7 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
 
     // Add the metadata
     MT::CObjectScopeLock lock( this );
-    TPluginMetaDataPtr pluginMetaDataCopy( new CPluginMetaData( pluginMetaData ) );
+    TPluginMetaDataPtr pluginMetaDataCopy( GUCEF_NEW CPluginMetaData( pluginMetaData ) );
     CPluginGroup& pluginGroup = m_pluginGroups[ groupName ];
     pluginGroup.GetPluginMetaData().insert( pluginMetaDataCopy );
 

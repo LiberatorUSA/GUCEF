@@ -103,11 +103,11 @@ template< typename T >
 void
 CTDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed )
 {
-    delete objectToBeDestroyed;
+    GUCEF_DELETE objectToBeDestroyed;
 
     if ( m_destroySelfOnDestroyObject )
     {
-        delete this;
+        GUCEF_DELETE this;
     }
 }
 

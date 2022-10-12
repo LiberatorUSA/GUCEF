@@ -86,7 +86,7 @@ CAwsSdkGlobal::Instance()
         g_dataLock.Lock();
         if ( GUCEF_NULL == g_instance )
         {
-            g_instance = new CAwsSdkGlobal();
+            g_instance = GUCEF_NEW CAwsSdkGlobal();
         }
         g_dataLock.Unlock();
     }
@@ -100,7 +100,7 @@ CAwsSdkGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    delete g_instance;
+    GUCEF_DELETE g_instance;
     g_instance = GUCEF_NULL;
     g_dataLock.Unlock();
 }

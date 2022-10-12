@@ -91,7 +91,7 @@ CHTTPURLHandler::~CHTTPURLHandler()
     if ( NULL != m_httpClient )
     {
         UnsubscribeFrom( m_httpClient );
-        delete m_httpClient;
+        GUCEF_DELETE m_httpClient;
         m_httpClient = NULL;
     }
 }
@@ -115,8 +115,8 @@ CHTTPURLHandler::Activate( CORE::CURL& url )
 
     m_transferFinished = false;
 
-    delete m_httpClient;
-    m_httpClient = new CHTTPClient( url.GetPulseGenerator() );
+    GUCEF_DELETE m_httpClient;
+    m_httpClient = GUCEF_NEW CHTTPClient( url.GetPulseGenerator() );
     SubscribeTo( m_httpClient );
 
     return m_httpClient->Get( url.GetURL() );
@@ -155,7 +155,7 @@ CORE::CICloneable*
 CHTTPURLHandler::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CHTTPURLHandler( *this );
+    return GUCEF_NEW CHTTPURLHandler( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -223,7 +223,7 @@ CHTTPURLHandler::Register( void )
     CORE::CURLHandlerRegistry* registry = &CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry();
     if ( !registry->IsRegistered( "http" ) )
     {
-        registry->Register( "http", CORE::CURLHandlerRegistry::TRegisteredObjPtr( new CHTTPURLHandler() ) );
+        registry->Register( "http", CORE::CURLHandlerRegistry::TRegisteredObjPtr( GUCEF_NEW CHTTPURLHandler() ) );
     }
 }
 

@@ -84,7 +84,7 @@ CAsciiString::CAsciiString( const CAsciiString &src )
 
     if ( src.m_length > 0 )
     {
-        m_string = new char[ src.m_length+1 ];
+        m_string = GUCEF_NEW char[ src.m_length+1 ];
         assert( m_string != NULL );
         m_length = src.m_length;
         memcpy( m_string, src.m_string, m_length+1 );
@@ -111,7 +111,7 @@ CAsciiString::CAsciiString( const std::string& src ) GUCEF_NOEXCEPT
     if ( src.size() > 0 )
     {
         m_length = (UInt32)src.size();
-        m_string = new char[ m_length+1 ];
+        m_string = GUCEF_NEW char[ m_length+1 ];
         assert( m_string != NULL );
         memcpy( m_string, src.c_str(), m_length+1 );
     }
@@ -140,7 +140,7 @@ CAsciiString::CAsciiString( const char *src ) GUCEF_NOEXCEPT
     if ( src != NULL )
     {
         m_length = (UInt32)strlen( src );
-        m_string = new char[ m_length+1 ];
+        m_string = GUCEF_NEW char[ m_length+1 ];
         assert( m_string );
         memcpy( m_string, src, m_length+1 );
     }
@@ -160,14 +160,14 @@ CAsciiString::CAsciiString( const char *src ,
         if ( '\0' == src[ length-1 ] )
         {
             m_length = length-1;
-            m_string = new char[ length ];
+            m_string = GUCEF_NEW char[ length ];
             assert( m_string );
             memcpy( m_string, src, length );
         }
         else
         {
             m_length = length;
-            m_string = new char[ length+1 ];
+            m_string = GUCEF_NEW char[ length+1 ];
             assert( m_string );
             memcpy( m_string, src, length );
             m_string[ length ] = '\0';
@@ -199,7 +199,7 @@ CAsciiString::CAsciiString( const int NULLvalue )
 CAsciiString::~CAsciiString()
 {GUCEF_TRACE;
 
-    delete []m_string;
+    GUCEF_DELETE []m_string;
     m_string = NULL;
     m_length = 0;
 }
@@ -212,13 +212,13 @@ CAsciiString::operator=( const CAsciiString &src )
 
     if ( &src != this )
     {
-        delete []m_string;
+        GUCEF_DELETE []m_string;
         m_string = NULL;
         m_length = src.m_length;
 
         if ( m_length > 0 )
         {
-            m_string = new char[ m_length+1 ];
+            m_string = GUCEF_NEW char[ m_length+1 ];
             assert( m_string );
             memcpy( m_string, src.m_string, m_length+1 );
         }
@@ -232,13 +232,13 @@ CAsciiString&
 CAsciiString::operator=( const std::string& src )
 {GUCEF_TRACE;
 
-    delete []m_string;
+    GUCEF_DELETE []m_string;
     m_string = NULL;
     m_length = (UInt32) src.size();
 
     if ( m_length > 0 )
     {
-        m_string = new char[ m_length+1 ];
+        m_string = GUCEF_NEW char[ m_length+1 ];
         assert( m_string );
         memcpy( m_string, src.c_str(), m_length+1 );
     }
@@ -254,7 +254,7 @@ CAsciiString::operator=( const char *src )
     // protect against self-assignment
     if ( src != m_string )
     {
-        delete []m_string;
+        GUCEF_DELETE []m_string;
         m_string = NULL;
         m_length = 0;
 
@@ -263,7 +263,7 @@ CAsciiString::operator=( const char *src )
             m_length = (UInt32)strlen( src );
             if ( m_length > 0 )
             {
-                m_string = new char[ m_length+1 ];
+                m_string = GUCEF_NEW char[ m_length+1 ];
                 assert( m_string );
                 memcpy( m_string, src, m_length+1 );
             }
@@ -467,7 +467,7 @@ CAsciiString::Set( const char *new_str ,
 
     if ( new_str != m_string )
     {
-        delete []m_string;
+        GUCEF_DELETE []m_string;
         m_string = NULL;
         m_length = 0;
 
@@ -475,7 +475,7 @@ CAsciiString::Set( const char *new_str ,
              ( len > 0 )          )
         {
             m_length = len;
-            m_string = new char[ len+1 ];
+            m_string = GUCEF_NEW char[ len+1 ];
             assert( m_string != NULL );
             memcpy( m_string, new_str, m_length+1 );
             m_string[ len ] = '\0';
@@ -548,20 +548,20 @@ CAsciiString::Append( const char *appendstr ,
     {
         if ( m_length > 0 )
         {
-            char* newString = new char[ m_length+len+1 ];
+            char* newString = GUCEF_NEW char[ m_length+len+1 ];
             assert( newString != NULL );
             memcpy( newString, m_string, m_length );
             memcpy( newString+m_length, appendstr, len );
             m_length = m_length+len;
             newString[ m_length ] = 0;
-            delete []m_string;
+            GUCEF_DELETE []m_string;
             m_string = newString;
         }
         else
         {
-            delete []m_string;
+            GUCEF_DELETE []m_string;
             m_length = len;
-            m_string = new char[ m_length+1 ];
+            m_string = GUCEF_NEW char[ m_length+1 ];
             assert( m_string );
             memcpy( m_string, appendstr, m_length );
             m_string[ m_length ] = 0;
@@ -635,12 +635,12 @@ char*
 CAsciiString::Reserve( const UInt32 bufferSize, Int32 newLength )
 {GUCEF_TRACE;
 
-    delete []m_string;
+    GUCEF_DELETE []m_string;
     m_string = NULL;
 
     if ( bufferSize > 0 )
     {
-        m_string = new char[ bufferSize ];
+        m_string = GUCEF_NEW char[ bufferSize ];
     }
     m_length = bufferSize;
     if ( newLength >= 0 )
@@ -690,9 +690,9 @@ CAsciiString::SetLength( UInt32 newLength )
     {
         if ( m_length < newLength )
         {
-            char* newString = new char[ newLength+1 ];
+            char* newString = GUCEF_NEW char[ newLength+1 ];
             memcpy( newString, m_string, m_length+1 );
-            delete []m_string;
+            GUCEF_DELETE []m_string;
             m_string = newString;
             memset( m_string+m_length, 0, newLength-m_length );
             m_length = newLength;
@@ -706,7 +706,7 @@ CAsciiString::SetLength( UInt32 newLength )
 
     if ( newLength > 0 )
     {
-        m_string = new char[ newLength+1 ];
+        m_string = GUCEF_NEW char[ newLength+1 ];
         memset( m_string, 0, newLength );
     }
     m_length = newLength;
@@ -734,7 +734,7 @@ CAsciiString::ReplaceChar( char oldchar ,
 
     if ( m_length > 0 )
     {
-        char* str = new char[ m_length+1 ];
+        char* str = GUCEF_NEW char[ m_length+1 ];
         memcpy( str, m_string, m_length+1 );
         for ( UInt32 i=0; i<m_length; ++i )
         {
@@ -744,7 +744,7 @@ CAsciiString::ReplaceChar( char oldchar ,
                 }
         }
         CAsciiString newstr( str, m_length );
-        delete []str;
+        GUCEF_DELETE []str;
         return newstr;
     }
     CAsciiString emptystr;
@@ -863,7 +863,7 @@ CAsciiString::Clear( void )
 {GUCEF_TRACE;
 
     m_length = 0;
-    delete []m_string;
+    GUCEF_DELETE []m_string;
     m_string = NULL;
 }
 
@@ -1100,7 +1100,7 @@ CAsciiString
 CAsciiString::CompactRepeatingChar( const char charToCompact ) const
 {GUCEF_TRACE;
 
-    char* newString = new char[ m_length+1 ];
+    char* newString = GUCEF_NEW char[ m_length+1 ];
     UInt32 newStringLength = 0;
 
     for ( UInt32 i=0; i<m_length; ++i )
@@ -1119,7 +1119,7 @@ CAsciiString::CompactRepeatingChar( const char charToCompact ) const
     }
 
     CAsciiString returnStr( newString, newStringLength );
-    delete []newString;
+    GUCEF_DELETE []newString;
     return returnStr;
 }
 
@@ -1167,7 +1167,7 @@ CAsciiString::Lowercase( void ) const
 
     if ( m_length > 0 )
     {
-        char* lcstr = new char[ m_length+1 ];
+        char* lcstr = GUCEF_NEW char[ m_length+1 ];
         memcpy( lcstr, m_string, m_length+1 );
         for ( UInt32 i=0; i<m_length; ++i )
         {
@@ -1178,7 +1178,7 @@ CAsciiString::Lowercase( void ) const
             }
         }
         CAsciiString lower( lcstr, m_length );
-        delete []lcstr;
+        GUCEF_DELETE []lcstr;
         return lower;
     }
     return CAsciiString();
@@ -1192,7 +1192,7 @@ CAsciiString::Uppercase( void ) const
 
     if ( m_length > 0 )
     {
-        char* ucstr = new char[ m_length+1 ];
+        char* ucstr = GUCEF_NEW char[ m_length+1 ];
         memcpy( ucstr, m_string, m_length+1 );
         for ( UInt32 i=0; i<m_length; ++i )
         {
@@ -1203,7 +1203,7 @@ CAsciiString::Uppercase( void ) const
             }
         }
         CAsciiString upper( ucstr, m_length );
-        delete []ucstr;
+        GUCEF_DELETE []ucstr;
         return upper;
     }
     return CAsciiString();
@@ -1501,9 +1501,9 @@ CAsciiString::WildcardEquals( const CAsciiString& strWithWildcards    ,
     if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
 
-    std::vector< CAsciiString > segs = strWithWildcards.ParseElements( wildCardToken, false );
+    CAsciiString::StringVector segs = strWithWildcards.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;
-    std::vector< CAsciiString >::iterator i = segs.begin();
+    CAsciiString::StringVector::iterator i = segs.begin();
     while ( i != segs.end() )
     {
         lastSeg = HasSubstr( (*i), lastSeg, true );
