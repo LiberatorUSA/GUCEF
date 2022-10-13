@@ -194,10 +194,10 @@ MEMMAN_ValidateKnownAllocPtr( const void* address ,
                               int line            );
 
 GUCEF_MLF_PUBLIC_C void
-MEMMAN_Validate( const void* address ,
-                 UInt32 blocksize    ,
-                 const char *file    ,
-                 int line            );
+MEMMAN_ValidateKnownAllocBlock( const void* address ,
+                                UInt32 blocksize    ,
+                                const char *file    ,
+                                int line            );
 
 GUCEF_MLF_PUBLIC_C void
 MEMMAN_ValidateChunk( const void* address ,
@@ -205,6 +205,12 @@ MEMMAN_ValidateChunk( const void* address ,
                       UInt32 blocksize    ,
                       const char *file    ,
                       int line            );
+
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_ValidateAccessibility( const void* address ,
+                              UInt32 blocksize    ,
+                              const char *file    ,
+                              int line            );
 
 /*-------------------------------------------------------------------------*/
 

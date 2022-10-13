@@ -54,6 +54,10 @@ class CTSGNotifier;
  */
 class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 {
+    public:
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     protected:
 
     /**

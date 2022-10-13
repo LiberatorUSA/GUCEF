@@ -112,7 +112,7 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
+    virtual void Shutdown( void );
     
     class TopicMetrics
     {
@@ -161,6 +161,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
                           CORE::CICloneable* evenData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

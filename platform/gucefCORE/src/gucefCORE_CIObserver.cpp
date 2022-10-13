@@ -77,8 +77,11 @@ CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != lockableObserver )    
+    if ( GUCEF_NULL != lockableObserver )
+    {
+        GUCEF_CHECKACCESS( lockableObserver, sizeof( CIObserver ) );
         m_isLocked = lockableObserver->NotificationLock();
+    }
 }
 
 /*--------------------------------------------------------------------------*/

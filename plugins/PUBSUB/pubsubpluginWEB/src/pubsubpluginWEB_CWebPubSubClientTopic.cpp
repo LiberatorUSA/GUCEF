@@ -190,11 +190,32 @@ CWebPubSubClientTopic::CWebPubSubClientTopic( CWebPubSubClient* client )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CWebPubSubClientTopic::UnlinkFromParentClient( void )
+CWebPubSubClientTopic::~CWebPubSubClientTopic()
 {GUCEF_TRACE;
 
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWebPubSubClientTopic::Shutdown( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
     m_client = GUCEF_NULL;
+
+    Disconnect();
+    m_httpRouter.RemoveAllResourceMappings();
+
+    GUCEF_DELETE m_reconnectTimer;
+    m_reconnectTimer = GUCEF_NULL;
+
+    GUCEF_DELETE m_publishedMsgPrunerTimer;
+    m_publishedMsgPrunerTimer = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -232,21 +253,6 @@ CWebPubSubClientTopic::RegisterRestApiEndpoints( void )
     {
         return false;
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CWebPubSubClientTopic::~CWebPubSubClientTopic()
-{GUCEF_TRACE;
-
-    Disconnect();
-    m_httpRouter.RemoveAllResourceMappings();
-
-    GUCEF_DELETE m_reconnectTimer;
-    m_reconnectTimer = GUCEF_NULL;
-
-    GUCEF_DELETE m_publishedMsgPrunerTimer;
-    m_publishedMsgPrunerTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -725,6 +731,16 @@ CWebPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CWebPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::WEB::CWebPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

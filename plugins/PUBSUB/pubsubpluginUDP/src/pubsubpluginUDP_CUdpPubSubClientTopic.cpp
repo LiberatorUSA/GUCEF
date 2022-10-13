@@ -100,17 +100,22 @@ CUdpPubSubClientTopic::CUdpPubSubClientTopic( CUdpPubSubClient* client )
 CUdpPubSubClientTopic::~CUdpPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Disconnect();
-    UnsubscribeFrom( &m_udpSocket );
+    Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CUdpPubSubClientTopic::UnlinkFromParentClient( void )
+CUdpPubSubClientTopic::Shutdown( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     m_client = GUCEF_NULL;
+    
+    Disconnect();
+    UnsubscribeFrom( &m_udpSocket );
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -660,6 +665,16 @@ CUdpPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CUdpPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::UDP::CUdpPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

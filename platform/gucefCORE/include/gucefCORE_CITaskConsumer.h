@@ -73,7 +73,7 @@ class CPulseGenerator;
  *  The method used to invoke the functionatility of decending task classes
  *  is not defined by this class but it is assumed to by one means or another
  *  the task is performed within a thread that is exclusve to the task for the
- *  duration of the task.
+ *  duration of the task.                      
  */
 class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
 {

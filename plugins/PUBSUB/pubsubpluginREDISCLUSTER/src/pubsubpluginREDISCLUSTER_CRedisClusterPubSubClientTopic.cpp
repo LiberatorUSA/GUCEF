@@ -125,8 +125,25 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
 CRedisClusterPubSubClientTopic::~CRedisClusterPubSubClientTopic()
 {GUCEF_TRACE;
 
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopic::Shutdown( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    m_client = GUCEF_NULL;
+
+    delete m_redisReconnectTimer;
+    m_redisReconnectTimer = GUCEF_NULL;
+    
     CleanupRedisReaderThread();
     Disconnect();    
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,15 +164,6 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
     SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
                  CORE::CPulseGenerator::PulseEvent                       ,
                  callback                                                );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CRedisClusterPubSubClientTopic::UnlinkFromParentClient( void )
-{GUCEF_TRACE;
-
-    m_client = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1285,6 +1293,16 @@ CRedisClusterPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CRedisClusterPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::REDISCLUSTER::CRedisClusterPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

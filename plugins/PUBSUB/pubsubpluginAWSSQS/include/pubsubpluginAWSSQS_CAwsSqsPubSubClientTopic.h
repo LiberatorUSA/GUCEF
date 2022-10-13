@@ -108,7 +108,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
+    virtual void Shutdown( void );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -121,6 +121,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
                   CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

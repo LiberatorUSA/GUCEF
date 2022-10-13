@@ -504,15 +504,8 @@ CStoragePubSubClientTopic::Shutdown( void )
 
     GUCEF_DELETE m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
-}
 
-/*-------------------------------------------------------------------------*/
-
-void
-CStoragePubSubClientTopic::UnlinkFromParentClient( void )
-{GUCEF_TRACE;
-
-    Shutdown();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3101,6 +3094,16 @@ CStoragePubSubClientTopic::OnVfsInitializationCompleted( CORE::CNotifier* notifi
 {GUCEF_TRACE;
 
     m_vfsInitIsComplete = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CStoragePubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::STORAGE::CStoragePubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

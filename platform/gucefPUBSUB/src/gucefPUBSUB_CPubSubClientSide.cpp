@@ -2376,6 +2376,16 @@ CPubSubClientSide::GetSideId( void ) const
     return m_sideId;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubClientSide::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubClientSide";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

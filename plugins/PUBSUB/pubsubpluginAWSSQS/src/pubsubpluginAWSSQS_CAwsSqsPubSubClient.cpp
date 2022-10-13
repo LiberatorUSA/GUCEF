@@ -121,11 +121,12 @@ CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,7 +194,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
         }
         else
         {
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -256,7 +257,7 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();        
     }
 }
@@ -489,6 +490,16 @@ CAwsSqsPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                           eventData );
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CAwsSqsPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::AWSSQS::CAwsSqsPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

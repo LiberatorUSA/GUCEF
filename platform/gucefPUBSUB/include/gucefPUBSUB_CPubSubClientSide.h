@@ -198,6 +198,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     void SetPerformConnectOnTaskStart( bool performConnectOnStart );
 
     static void RegisterEvents( void );
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     private:
 

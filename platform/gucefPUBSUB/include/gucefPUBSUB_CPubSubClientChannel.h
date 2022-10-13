@@ -181,6 +181,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
 
     void Clear( void );
 
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;

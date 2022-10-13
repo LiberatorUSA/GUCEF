@@ -211,9 +211,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
-
-    void Shutdown( void );
+    virtual void Shutdown( void );
 
     class TopicMetrics
     {
@@ -243,6 +241,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                          CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

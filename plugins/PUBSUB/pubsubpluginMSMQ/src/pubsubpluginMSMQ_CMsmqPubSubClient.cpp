@@ -124,7 +124,7 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
@@ -132,6 +132,8 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,7 +223,7 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         }
         else
         {
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -284,7 +286,7 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();        
     }
 }
@@ -995,6 +997,16 @@ CMsmqPubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CMsmqPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::MSMQ::CMsmqPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

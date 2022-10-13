@@ -111,6 +111,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClient : public PUBSUB::CP
 
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     /**
      *      @param cfg the data node structure where you'd like to serialize the config to
      *      @return wheter storing the config was successfull

@@ -370,6 +370,7 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_httpRouter()
     , m_globalConfig()
     , m_transmitMetrics( true )
+    , m_enableRestApi( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -450,11 +451,14 @@ PubSub2PubSub::Start( void )
 
     if ( !errorOccured )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
-        if ( !m_httpServer.Listen() )
+        if ( m_enableRestApi )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Failed to open REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
-            return false;
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
+            if ( !m_httpServer.Listen() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Failed to open REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
+                return false;
+            }
         }
     }
     return !errorOccured;
@@ -801,6 +805,7 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
         channelSettings->UpdateDerivedSettings();
     }
 
+    m_enableRestApi = appConfig->GetAttributeValueOrChildValueByName( "enableRestApi" ).AsBool( m_enableRestApi, true );
     m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
 
     m_httpRouter.SetResourceMapping( "/info", ( GUCEF_NEW RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );

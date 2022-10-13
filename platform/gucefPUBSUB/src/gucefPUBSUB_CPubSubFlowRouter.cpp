@@ -1943,6 +1943,17 @@ CPubSubFlowRouter::OnSidePubSubClientTopicsAutoCreation( CORE::CNotifier* notifi
     }
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubFlowRouter::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubFlowRouter";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

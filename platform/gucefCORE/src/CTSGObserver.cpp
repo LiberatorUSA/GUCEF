@@ -191,6 +191,21 @@ CTSGObserver::NotificationReadOnlyUnlock( void ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CTSGObserver::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->GetClassTypeName();
+    }
+    
+    static CString classTypeName = "GUCEF::CORE::CTSGObserver"; 
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -187,7 +187,7 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
     
-    void UnlinkFromParentClient( void );
+    virtual void Shutdown( void );
     
     class TopicMetrics
     {
@@ -207,6 +207,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
                          CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

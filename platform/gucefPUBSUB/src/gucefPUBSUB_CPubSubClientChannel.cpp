@@ -488,6 +488,16 @@ CPubSubClientChannel::GetChannelSettings( void ) const
     return m_channelSettings;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubClientChannel::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::PUBSUB::CPubSubClientChannel";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

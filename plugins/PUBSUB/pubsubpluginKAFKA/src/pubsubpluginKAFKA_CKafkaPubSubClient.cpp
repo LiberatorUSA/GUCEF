@@ -93,6 +93,7 @@ CKafkaPubSubClient::~CKafkaPubSubClient()
 {GUCEF_TRACE;
 
     Clear();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,7 +110,7 @@ CKafkaPubSubClient::Clear( void )
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
@@ -190,7 +191,7 @@ CKafkaPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& t
         }
         else
         {
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -253,7 +254,7 @@ CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();        
     }
 }
@@ -642,6 +643,16 @@ CKafkaPubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CKafkaPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::KAFKA::CKafkaPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

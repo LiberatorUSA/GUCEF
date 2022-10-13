@@ -138,11 +138,6 @@ CTCPServerSocket::CTCPServerSocket( const CORE::PulseGeneratorPtr& pulseGenerato
     _data->maxcon = maxConnections;
 
     _connections.reserve( maxConnections );
-    for ( UInt32 i=0; i<maxConnections; ++i )
-    {
-        _connections[ i ] = GUCEF_NEW CTCPServerConnection( this, i );
-        m_inactiveConnections.insert( _connections[ i ] );
-    }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
     SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
@@ -177,11 +172,6 @@ CTCPServerSocket::CTCPServerSocket( bool blocking         ,
     _data->maxcon = maxConnections;
 
     _connections.reserve( maxConnections );
-    for ( UInt32 i=0; i<maxConnections; ++i )
-    {
-        _connections[ i ] = GUCEF_NEW CTCPServerConnection( this, i );
-        m_inactiveConnections.insert( _connections[ i ] );
-    }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
     SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
@@ -546,6 +536,16 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
             Close();
     }
     m_port = servport;
+
+    UInt32 connectionIndex = 0;
+    if ( !_connections.empty() )
+        connectionIndex = (UInt32) _connections.size()-1;
+
+    for ( UInt32 i=connectionIndex; i<_data->maxcon; ++i )
+    {
+        _connections[ i ] = GUCEF_NEW CTCPServerConnection( this, i );
+        m_inactiveConnections.insert( _connections[ i ] );
+    }
 
     int error = 0;
     _data->sockid = dvsocket_socket( AF_INET     ,    /* Go over TCP/IP */

@@ -144,11 +144,12 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
     m_topicMap.clear();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -479,7 +480,7 @@ CRedisClusterPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):DestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
 
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -531,7 +532,7 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
                 m_topicMap.erase( topicName );                
                 {
                     CRedisClusterPubSubClientTopicBasicPtr topicAccess = tAccess.StaticCast< CRedisClusterPubSubClientTopic >();
-                    topicAccess->UnlinkFromParentClient();
+                    topicAccess->Shutdown();
                     topicAccess.Unlink();
                 }
                 tAccess.Unlink();
@@ -1335,6 +1336,16 @@ CRedisClusterPubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CRedisClusterPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::REDISCLUSTER::CRedisClusterPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

@@ -171,8 +171,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
-
     CORE::UInt64 GetMsmqErrorsOnReceiveCounter( bool resetCounter );
 
     CORE::UInt64 GetMsmqMessagesReceivedCounter( bool resetCounter );
@@ -237,6 +235,10 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     static bool StringToMsmqGUID( const CORE::CAsciiString& guidString ,
                                   GUID& guid                           );
 
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void Shutdown( void );
+    
     protected:
 
     virtual bool Lock( CORE::UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -283,8 +285,6 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
     typedef enum EMsmqHresultSeverityCode TMsmqHresultSeverityCode;
 
     void RegisterEventHandlers( void );
-
-    void Shutdown( void );
 
     bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
     bool PrepMsmqMsgsStorage( void );

@@ -132,7 +132,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
@@ -142,6 +142,8 @@ CStoragePubSubClient::~CStoragePubSubClient()
     
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -265,7 +267,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
         }
         else
         {
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -329,7 +331,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();
     }
 }
@@ -715,6 +717,16 @@ CStoragePubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CStoragePubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::STORAGE::CStoragePubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

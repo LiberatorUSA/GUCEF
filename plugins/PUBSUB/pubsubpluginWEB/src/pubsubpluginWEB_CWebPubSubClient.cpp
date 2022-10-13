@@ -119,7 +119,7 @@ CWebPubSubClient::~CWebPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
-        (*i).second->UnlinkFromParentClient();
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
@@ -127,6 +127,8 @@ CWebPubSubClient::~CWebPubSubClient()
 
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -196,6 +198,7 @@ CWebPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
         }
         else
         {
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -258,7 +261,7 @@ CWebPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
 
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();
     }
 }
@@ -510,6 +513,16 @@ CWebPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CWebPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::WEB::CWebPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

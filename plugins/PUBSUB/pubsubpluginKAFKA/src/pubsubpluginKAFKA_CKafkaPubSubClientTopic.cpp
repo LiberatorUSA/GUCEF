@@ -120,17 +120,22 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
 CKafkaPubSubClientTopic::~CKafkaPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Disconnect();
-    Clear();
+    Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CKafkaPubSubClientTopic::UnlinkFromParentClient( void )
+CKafkaPubSubClientTopic::Shutdown( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+
     m_client = GUCEF_NULL;
+    
+    Disconnect();
+    Clear();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,6 +153,8 @@ void
 CKafkaPubSubClientTopic::Clear( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
@@ -2422,6 +2429,16 @@ CKafkaPubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, 
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CKafkaPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::KAFKA::CKafkaPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

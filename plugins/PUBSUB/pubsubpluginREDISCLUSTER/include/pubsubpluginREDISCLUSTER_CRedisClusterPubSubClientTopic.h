@@ -137,8 +137,6 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
-
     class TopicMetrics
     {
         public:
@@ -174,6 +172,10 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
                   CORE::CICloneable* eventData );
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void Shutdown( void );
 
     protected:
 

@@ -230,9 +230,11 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 #undef GUCEF_CHECKALLOCPTR
 #undef GUCEF_CHECKMEM
 #undef GUCEF_CHECKMEMSEG
+#undef GUCEF_CHECKACCESS
 #define GUCEF_CHECKALLOCPTR( addr )             { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_ValidateKnownAllocPtr( addr, __FILE__, __LINE__ ); }
-#define GUCEF_CHECKMEM( addr, size )            { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ); }
+#define GUCEF_CHECKMEM( addr, size )            { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_ValidateKnownAllocBlock( addr, size, __FILE__, __LINE__ ); }
 #define GUCEF_CHECKMEMSEG( addr, chunk, size )  { if ( 0 < MEMMAN_LazyLoadMemoryManager() ) fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ); }
+#define GUCEF_CHECKACCESS( addr, size )         { MEMMAN_ValidateAccessibility( addr, size, __FILE__, __LINE__ ); }
 
 #ifdef GUCEF_MEMCHECK_OLEAPI
 

@@ -135,11 +135,12 @@ typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
 typedef void ( *TFP_MEMMAN_SetExhaustiveTesting )( unsigned __int32 test );
 typedef void ( *TFP_MEMMAN_SetPaddingSize )( unsigned __int32 clean );
 typedef void ( *TFP_MEMMAN_BreakOnAllocation )( int alloccount );
-typedef void ( *TFP_MEMMAN_BreakOnDeallocation )( void *address );
-typedef void ( *TFP_MEMMAN_BreakOnReallocation )( void *address );
-typedef void ( *TFP_MEMMAN_ValidateKnownAllocPtr )( const void* address, const char *file, int line );
-typedef void ( *TFP_MEMMAN_Validate )( const void* address, unsigned __int32 blocksize, const char *file, int line );
-typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chunk, unsigned __int32 blocksize, const char *file, int line );
+typedef void ( *TFP_MEMMAN_BreakOnDeallocation )( void* address );
+typedef void ( *TFP_MEMMAN_BreakOnReallocation )( void* address );
+typedef void ( *TFP_MEMMAN_ValidateKnownAllocPtr )( const void* address, const char* file, int line );
+typedef void ( *TFP_MEMMAN_ValidateKnownAllocBlock )( const void* address, unsigned __int32 blocksize, const char* file, int line );
+typedef void ( *TFP_MEMMAN_ValidateAccessibility )( const void* address, unsigned __int32 blocksize, const char* file, int line );
+typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chunk, unsigned __int32 blocksize, const char* file, int line );
 
 /*-------------------------------------------------------------------------*/
 
@@ -232,7 +233,8 @@ static TFP_MEMMAN_BreakOnAllocation fp_MEMMAN_BreakOnAllocation = 0;
 static TFP_MEMMAN_BreakOnDeallocation fp_MEMMAN_BreakOnDeallocation = 0;
 static TFP_MEMMAN_BreakOnReallocation fp_MEMMAN_BreakOnReallocation = 0;
 static TFP_MEMMAN_ValidateKnownAllocPtr fp_MEMMAN_ValidateKnownAllocPtr = 0;
-static TFP_MEMMAN_Validate fp_MEMMAN_Validate = 0;
+static TFP_MEMMAN_ValidateKnownAllocBlock fp_MEMMAN_ValidateKnownAllocBlock = 0;
+static TFP_MEMMAN_ValidateAccessibility fp_MEMMAN_ValidateAccessibility = 0;
 static TFP_MEMMAN_ValidateChunk fp_MEMMAN_ValidateChunk = 0;
 
 /*-------------------------------------------------------------------------*/
@@ -408,25 +410,27 @@ MEMMAN_LazyLoadMemoryManager( void )
     fp_MEMMAN_BreakOnDeallocation = (TFP_MEMMAN_BreakOnDeallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnDeallocation" );
     fp_MEMMAN_BreakOnReallocation = (TFP_MEMMAN_BreakOnReallocation) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_BreakOnReallocation" );
     fp_MEMMAN_ValidateKnownAllocPtr = (TFP_MEMMAN_ValidateKnownAllocPtr) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateKnownAllocPtr" );
-    fp_MEMMAN_Validate = (TFP_MEMMAN_Validate) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_Validate" );
+    fp_MEMMAN_ValidateKnownAllocBlock = (TFP_MEMMAN_ValidateKnownAllocBlock) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateKnownAllocBlock" );
+    fp_MEMMAN_ValidateAccessibility = (TFP_MEMMAN_ValidateAccessibility) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateAccessibility" );
     fp_MEMMAN_ValidateChunk = (TFP_MEMMAN_ValidateChunk) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateChunk" );
     fp_MEMMAN_AllocateMemory = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_AllocateMemory" );
     fp_MEMMAN_DeAllocateMemory = (TFP_MEMMAN_DeAllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemory" );
     fp_MEMMAN_DeAllocateMemoryEx = (TFP_MEMMAN_DeAllocateMemoryEx) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemoryEx" );
     fp_MEMMAN_SetOwner = (TFP_MEMMAN_SetOwner) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetOwner" );
 
-    if ( 0 == fp_MEMMAN_DumpMemoryAllocations ||
-         0 == fp_MEMMAN_SetExhaustiveTesting  ||
-         0 == fp_MEMMAN_SetPaddingSize        || 
-         0 == fp_MEMMAN_BreakOnAllocation     ||
-         0 == fp_MEMMAN_BreakOnDeallocation   ||
-         0 == fp_MEMMAN_BreakOnReallocation   ||
-         0 == fp_MEMMAN_ValidateKnownAllocPtr ||
-         0 == fp_MEMMAN_Validate              ||
-         0 == fp_MEMMAN_ValidateChunk         ||
-         0 == fp_MEMMAN_AllocateMemory        ||
-         0 == fp_MEMMAN_DeAllocateMemory      ||
-         0 == fp_MEMMAN_SetOwner              ) 
+    if ( 0 == fp_MEMMAN_DumpMemoryAllocations    ||
+         0 == fp_MEMMAN_SetExhaustiveTesting     ||
+         0 == fp_MEMMAN_SetPaddingSize           || 
+         0 == fp_MEMMAN_BreakOnAllocation        ||
+         0 == fp_MEMMAN_BreakOnDeallocation      ||
+         0 == fp_MEMMAN_BreakOnReallocation      ||
+         0 == fp_MEMMAN_ValidateKnownAllocPtr    ||
+         0 == fp_MEMMAN_ValidateKnownAllocBlock  ||
+         0 == fp_MEMMAN_ValidateAccessibility    ||
+         0 == fp_MEMMAN_ValidateChunk            ||
+         0 == fp_MEMMAN_AllocateMemory           ||
+         0 == fp_MEMMAN_DeAllocateMemory         ||
+         0 == fp_MEMMAN_SetOwner                  ) 
     {
         FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
         g_memoryManagerModulePtr = 0;
@@ -618,6 +622,16 @@ void
 MEMMAN_free( const char *file, int line, void* ptr )
 {
     ( 0 == MEMMAN_LazyLoadMemoryManager() ? free( ptr ) : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_ValidateAccessibility( const void* address, unsigned __int32 blocksize, const char* file, int line )
+{
+    if ( 0 != MEMMAN_LazyLoadMemoryManager() )
+        fp_MEMMAN_ValidateAccessibility( address, blocksize, file, line );
 }
 
 /*-------------------------------------------------------------------------*/

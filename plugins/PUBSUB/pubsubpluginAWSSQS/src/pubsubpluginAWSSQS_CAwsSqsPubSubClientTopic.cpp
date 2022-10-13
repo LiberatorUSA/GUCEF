@@ -122,16 +122,20 @@ CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client 
 CAwsSqsPubSubClientTopic::~CAwsSqsPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Disconnect();
+    Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CAwsSqsPubSubClientTopic::UnlinkFromParentClient( void )
+CAwsSqsPubSubClientTopic::Shutdown( void )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     m_client = GUCEF_NULL;
+    Disconnect();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -714,6 +718,16 @@ CAwsSqsPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CAwsSqsPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::AWSSQS::CAwsSqsPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

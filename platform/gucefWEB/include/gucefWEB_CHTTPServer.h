@@ -84,6 +84,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpServerSettings : public CORE::CIConfigurable
 
     static const CORE::CString ClassTypeName;
 
+    UInt32 maxClientConnections;
     bool keepAliveConnections;
     bool processRequestsAsync;
     bool allowWebSocketUpgrades;

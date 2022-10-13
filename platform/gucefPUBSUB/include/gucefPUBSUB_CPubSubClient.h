@@ -89,7 +89,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     public:
 
     static const CORE::CEvent TopicAccessCreatedEvent;                 /**< occurs when topic access is created programatically or via loading of config requesting the same */
-    static const CORE::CEvent TopicAccessDestroyedEvent;               /**< occurs when topic access is destroyed programatically */
+    static const CORE::CEvent TopicAccessDestroyedEvent;               /**< occurs when topic access is removed. You should clean up any outstanding references */
     static const CORE::CEvent TopicsAccessAutoCreatedEvent;            /**< occurs when topic access is automatically created following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent TopicsAccessAutoDestroyedEvent;          /**< occurs when topic access is automatically destroyed following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent TopicDiscoveryEvent;                     /**< occurs when available topic changes are detected. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */

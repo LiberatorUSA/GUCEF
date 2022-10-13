@@ -101,11 +101,9 @@ CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
     : STORAGE::CStoragePubSubClientTopic( client )
     , CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >( this )
     , m_hasFakeHealthIssue( false )
-    , m_healthyStatusToggleTimer()
-{GUCEF_TRACE;
+    , m_healthyStatusToggleTimer( m_client->GetConfig().pulseGenerator )
+{GUCEF_TRACE;                     
 
-    m_healthyStatusToggleTimer.SetPulseGenerator( m_client->GetConfig().pulseGenerator );
-    
     RegisterEventHandlers();
 }
 
@@ -114,7 +112,19 @@ CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
 CTestPubSubClientTopic::~CTestPubSubClientTopic()
 {GUCEF_TRACE;
 
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTestPubSubClientTopic::Shutdown( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
     m_healthyStatusToggleTimer.SetEnabled( false );
+    STORAGE::CStoragePubSubClientTopic::Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,6 +229,16 @@ CTestPubSubClientTopic::OnHealthyStatusToggleTimerCycle( CORE::CNotifier* notifi
 
     m_hasFakeHealthIssue = !m_hasFakeHealthIssue;
     IsHealthy();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CTestPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::TEST::CTestPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

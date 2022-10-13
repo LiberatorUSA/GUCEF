@@ -119,6 +119,7 @@ CUdpPubSubClient::~CUdpPubSubClient()
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
+        (*i).second->Shutdown();
         (*i).second.Unlink();
         ++i;
     }
@@ -132,6 +133,8 @@ CUdpPubSubClient::~CUdpPubSubClient()
 
     GUCEF_DELETE m_testUdpSocket;
     m_testUdpSocket = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -200,6 +203,7 @@ CUdpPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& top
         }
         else
         {
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -262,7 +266,7 @@ CUdpPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
         
-        topicAccess->UnlinkFromParentClient();
+        topicAccess->Shutdown();
         topicAccess.Unlink();        
     }
 }
@@ -547,6 +551,16 @@ CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
         }
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CUdpPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::UDP::CUdpPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

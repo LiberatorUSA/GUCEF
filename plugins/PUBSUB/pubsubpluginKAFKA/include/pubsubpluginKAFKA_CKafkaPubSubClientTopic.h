@@ -133,8 +133,6 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     virtual bool LoadConfig( const CKafkaPubSubClientTopicConfig& config );
 
-    void UnlinkFromParentClient( void );
-
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -175,6 +173,10 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     const TopicMetrics& GetMetrics( void ) const;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void Shutdown( void );
 
     protected:
 

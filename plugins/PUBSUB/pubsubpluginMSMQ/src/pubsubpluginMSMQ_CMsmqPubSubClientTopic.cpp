@@ -179,7 +179,7 @@ CMsmqPubSubClientTopic::CMsmqPubSubClientTopic( CMsmqPubSubClient* client )
 CMsmqPubSubClientTopic::~CMsmqPubSubClientTopic()
 {GUCEF_TRACE;
 
-    Shutdown();
+    Shutdown();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,6 +199,8 @@ CMsmqPubSubClientTopic::Shutdown( void )
 
     GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
+
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -231,15 +233,6 @@ CMsmqPubSubClientTopic::MsmqQueueProperties::ToString( void ) const
 {GUCEF_TRACE;
 
     return "queueLabel=" + queueLabel + ", typeId=" + typeId + ", quota=" + CORE::ToString( quota ) + ", pathName=" + pathName + ", pathNameDNS=" + pathNameDNS;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CMsmqPubSubClientTopic::UnlinkFromParentClient( void )
-{GUCEF_TRACE;
-
-    Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3181,6 +3174,16 @@ CMsmqPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
 {GUCEF_TRACE;
 
     return m_subscriptionIsAtEndOfData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CMsmqPubSubClientTopic::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::MSMQ::CMsmqPubSubClientTopic";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

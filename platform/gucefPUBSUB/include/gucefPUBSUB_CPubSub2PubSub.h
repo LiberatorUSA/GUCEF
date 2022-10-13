@@ -283,6 +283,7 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CDataNode m_globalConfig;
     bool m_transmitMetrics;
+    bool m_enableRestApi;
 };
 
 /*-------------------------------------------------------------------------//

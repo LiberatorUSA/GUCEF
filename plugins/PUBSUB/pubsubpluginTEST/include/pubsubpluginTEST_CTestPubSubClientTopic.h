@@ -75,6 +75,10 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORA
 
     const CTestPubSubClientTopicConfig& GetTopicConfig( void ) const;
 
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void Shutdown( void );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CTestPubSubClientTopic > TEventCallback;

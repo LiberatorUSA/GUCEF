@@ -88,6 +88,7 @@ CTestPubSubClient::CTestPubSubClient( const PUBSUB::CPubSubClientConfig& config 
 CTestPubSubClient::~CTestPubSubClient()
 {GUCEF_TRACE;
 
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,7 +118,7 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         }
         else
         {
-            topicAccess->UnlinkFromParentClient();
+            topicAccess->Shutdown();
             topicAccess.Unlink();
         }
     }
@@ -194,6 +195,16 @@ CTestPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CTestPubSubClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::TEST::CTestPubSubClient";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

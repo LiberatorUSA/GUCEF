@@ -1042,6 +1042,7 @@ CNotifierImplementor::ProcessCmdMailbox( void )
             }
             case REQUEST_UNSUBSCRIBE :
             {
+                GUCEF_CHECKMEM( cmdMailElement.observer, sizeof( CObserver ) );
                 if ( cmdMailElement.eventID.IsInitialized() )
                 {
                     Unsubscribe( cmdMailElement.observer ,
@@ -1059,6 +1060,7 @@ CNotifierImplementor::ProcessCmdMailbox( void )
             }
             case REQUEST_UNSUBSCRIBE_ALL :
             {
+                GUCEF_CHECKMEM( cmdMailElement.observer, sizeof( CObserver ) );
                 UnsubscribeAllFromNotifier( true );
                 break;
             }

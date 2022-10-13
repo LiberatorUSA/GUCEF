@@ -47,6 +47,17 @@
 #include "gucefMLF_MemoryManager.h"    
 
 #include <map>
+#include <string>
+#include <sstream>
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+#define PSAPI_VERSION 2
+#include <eh.h>
+#include <Psapi.h>
+#include <debugapi.h>
+
+#endif
 
 #ifndef GUCEF_MT_MUTEX_H
 #include "gucefMT_mutex.h"
@@ -68,6 +79,16 @@
 #define GUCEF_MT_CSCOPEMUTEX_H
 #endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
 
+#ifndef GUCEF_MT_CREADWRITELOCK_H
+#include "gucefMT_CReadWriteLock.h"
+#define GUCEF_MT_CREADWRITELOCK_H
+#endif /* GUCEF_MT_CREADWRITELOCK_H ? */
+
+#ifndef GUCEF_MT_CSCOPERWLOCK_H
+#include "gucefMT_CScopeRwLock.h"
+#define GUCEF_MT_CSCOPERWLOCK_H
+#endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
+
 #ifndef GUCEF_CALLSTACK_H
 #include "gucefMLF_callstack.h"
 #define GUCEF_CALLSTACK_H
@@ -85,6 +106,12 @@
 #undef GUCEF_USE_CALLSTACK_TRACING
 #undef GUCEF_USE_CALLSTACK_PLATFORM_TRACING
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
 #define GUCEF_MAX_DEALLOCS_TO_TRACK     10000000
 
 /*-------------------------------------------------------------------------//
@@ -99,8 +126,6 @@ namespace MLF {
 /*-------------------------------------------------------------------------*/
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-#include <debugapi.h>
 
 #define GUCEF_SETBREAKPOINT { DebugBreak(); }
 
@@ -247,12 +272,31 @@ class MemoryManager
     void dumpMemoryAllocations( FILE* fp );
     void dumpMemoryNode( FILE* fp, MemoryNode* node );
     void dumpExceptionLogReport( FILE* fp, void* faultAddress );
+
+    void dumpExceptionLogReport( const void* faultAddress           , 
+                                 UInt32 blocksize                   ,
+                                 MemoryNode* nearestCurrentNode     , 
+                                 MemoryNode* nearestDeallocatedNode ,
+                                 bool wouldHaveFitInDeallocatedNode ,
+                                 bool validateMemoryUnits           );
+
+    void dumpExceptionLogReport( FILE* fp                           , 
+                                 UInt32 blocksize                   ,
+                                 const void* faultAddress           , 
+                                 MemoryNode* nearestCurrentNode     , 
+                                 MemoryNode* nearestDeallocatedNode ,
+                                 bool wouldHaveFitInDeallocatedNode ,
+                                 bool validateMemoryUnits           );
+
     void dumpExceptionLogReport( void* faultAddress );
+
     void log( char *s, ... );
+    void log( FILE* fp, char *s, ... );
 
     // Looks through all nodes to find which one is nearest to the address given
     void FindNearestCurrentMemoryNodes( const void* address, UInt32 maxNrOfNodes, TUInt64ToMemoryNodeMap& nearestNodes );
-    void FindNearestDeallocatedMemoryNodes( const void* address, UInt32 maxNrOfNodes, TUInt64ToMemoryNodeMap& nearestNodes );
+    void FindNearestDeallocatedMemoryNodes( const void* address, UInt32 maxNrOfNodes, TUInt64ToMemoryNodeMap& nearestNodes );    
+    bool ValidateAddressIsAccessableViaAnyMemoryNode( const void* address, UInt32 blockSize, MemoryNode** locatedCurrentNode, MemoryNode** locatedDeallocatedNode, bool& wouldHaveFitInDeallocatedNode );
     
     // User programmable options
     int           m_breakOnAllocationCount;
@@ -283,7 +327,9 @@ class MemoryManager
     bool m_initialized;
     bool m_shutdownCalled;
     
+    MT::CReadWriteLock m_datalock;
     MT::CMutex m_mutex;
+
 
 private:
     int getHashIndex( const void *address );  // Given an address this returns the hash table index
@@ -326,6 +372,7 @@ char *memorySizeString( size_t size, bool lengthenString = true );
 MemoryManager::MemoryManager( void )
     : m_initialized( false ) 
     , m_shutdownCalled( false )
+    , m_datalock( true ) 
     , m_mutex()
     , m_hashTable()
     , m_deallocatedNodes( GUCEF_NULL )
@@ -373,13 +420,13 @@ MemoryManager::~MemoryManager()
  *  	ALLOC_TYPE type	     : The type of reallocation being performed.
  */
 void*
-MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type, void *address ) 
+MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type, void* address ) 
 {
     MemoryNode* memory = GUCEF_NULL;
 
     // If the memory manager has not yet been initialized due to the order in which static
     // variables are allocated, create the memory manager here.
-    if ( !MEMMAN_Initialize() ) 
+    if ( !manager_is_constructed && 0 == MEMMAN_Initialize() ) 
     {
         if (NumAllocations != 0) 
         {
@@ -418,15 +465,16 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         return address;
     }
     else
-    if (type == MM_REALLOC) 
+    if ( type == MM_REALLOC && GUCEF_NULL != address ) 
     {
         memory = g_manager.removeMemoryNode( address );
 
         // Validate that the memory exists
         m_assert( memory );
-        if (!memory) 
+        if ( GUCEF_NULL == memory ) 
         {
             g_manager.log( "MEMMAN: Request to reallocate RAM that was never allocated." );
+            return GUCEF_NULL;
         }
 
             // Validate that there is not a allocation/reallocation mismatch
@@ -438,11 +486,22 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         m_assert( (memory->options & BREAK_ON_REALLOC) == 0x0 );
 
         originalReportedSize = memory->reportedSize;
-        memory->actualSize    = size + g_manager.m_paddingSize * sizeof(long)*2;
-        memory->reportedSize  = size;
-        memory->actualAddress = realloc( memory->actualAddress, memory->actualSize );
+        size_t desiredNewSize = size + g_manager.m_paddingSize * sizeof(long)*2;
 
-
+        void* newAddress = realloc( memory->actualAddress, memory->actualSize );
+        if ( GUCEF_NULL != newAddress )
+        {
+            memory->actualSize    = desiredNewSize;
+            memory->actualAddress = newAddress;
+            memory->reportedSize  = size;
+        }
+        else
+        {
+            // could not realloc to the desired size
+            g_manager.log( "MEMMAN: Request to realloc() failed. New size %d. Old size %d", desiredNewSize, memory->actualSize );
+            //g_manager.dumpMemoryNode( memory );
+            return newAddress;
+        }
     }
     else 
     {
@@ -453,7 +512,8 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         m_assert( memory != NULL );
         if (memory == NULL) 
         {
-            g_manager.log( "MEMMAN: Could not allocate memory for memory tracking.  Out of memory." );
+            g_manager.log( "MEMMAN: Could not allocate memory tracking entry.  Out of memory." );
+            return GUCEF_NULL;
         }
 
         memory->actualSize        = size + g_manager.m_paddingSize * sizeof(long)*2;
@@ -479,11 +539,11 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
     if ( g_manager.m_logAlways ) 
     {
         g_manager.log( "MEMMAN: Allocation %-40s %8s(0x%08p) : %s", formatOwnerString( file, line ),
-        s_allocationTypes[type], memory->reportedAddress, memorySizeString( size ) );
+                s_allocationTypes[type], memory->reportedAddress, memorySizeString( size ) );
     }
 
     // Validate the memory allocated
-    m_assert( memory->actualAddress );
+    m_assert( GUCEF_NULL != memory->actualAddress );
     if ( !memory->actualAddress ) 
     {
         g_manager.log( "MEMMAN: Request for allocation failed.  Out of memory." );
@@ -499,7 +559,7 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         }
         case MM_REALLOC: 
         {
-            //memory->InitializeReallocMemory( 0xBAADC0DE, originalReportedSize );
+            memory->InitializeReallocMemory( 0xBAADC0DE, originalReportedSize );
             break;
         }
         default:
@@ -539,7 +599,7 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
 
     // If the memory manager has not yet been initialized due to the order in which static
     // variables are allocated, create the memory manager here.
-    if ( 0 == MEMMAN_Initialize() ) 
+    if ( !manager_is_constructed && 0 == MEMMAN_Initialize() ) 
     {
         if ( GUCEF_NULL != address )
             free( address );   // Release the memory
@@ -550,7 +610,7 @@ MEMMAN_DeAllocateMemory( void *address, ALLOC_TYPE type )
         return;
     }
 
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
 
     // The topStack contains the logged information, such as file name and line number.
     StackNode *info = g_manager.m_topStack.empty() ? NULL : g_manager.m_topStack.top();
@@ -660,7 +720,7 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
     
     // If the memory manager has not yet been initialized due to the order in which static
     // variables are allocated, create the memory manager here.
-    if ( 0 == MEMMAN_Initialize() ) 
+    if ( !manager_is_constructed && 0 == MEMMAN_Initialize() ) 
     {
         if ( GUCEF_NULL != address )
             free( address );   // Release the memory
@@ -671,7 +731,7 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
         return;
     }
 
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     MEMMAN_SetOwner( file, line );
     MEMMAN_DeAllocateMemory( address, type );
@@ -681,6 +741,77 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #if ( _WIN32_WINNT >= 0x0500 )
+
+    class Win32StructuredExceptionInfo
+    {
+    public:
+       typedef unsigned int exception_code_t;
+
+       static const char* GetOpCodeDescription( const ULONG_PTR opcode )
+       {
+          switch( opcode ) {
+          case 0: return "read";
+          case 1: return "write";
+          case 8: return "user-mode data execution prevention (DEP) violation";
+          default: return "unknown";
+          }
+       }
+
+       static const char* GetSeDescription( const exception_code_t& code )
+       {
+          switch( code ) {
+             case EXCEPTION_ACCESS_VIOLATION:         return "EXCEPTION_ACCESS_VIOLATION"         ;
+             case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:    return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED"    ;
+             case EXCEPTION_BREAKPOINT:               return "EXCEPTION_BREAKPOINT"               ;
+             case EXCEPTION_DATATYPE_MISALIGNMENT:    return "EXCEPTION_DATATYPE_MISALIGNMENT"    ;
+             case EXCEPTION_FLT_DENORMAL_OPERAND:     return "EXCEPTION_FLT_DENORMAL_OPERAND"     ;
+             case EXCEPTION_FLT_DIVIDE_BY_ZERO:       return "EXCEPTION_FLT_DIVIDE_BY_ZERO"       ;
+             case EXCEPTION_FLT_INEXACT_RESULT:       return "EXCEPTION_FLT_INEXACT_RESULT"       ;
+             case EXCEPTION_FLT_INVALID_OPERATION:    return "EXCEPTION_FLT_INVALID_OPERATION"    ;
+             case EXCEPTION_FLT_OVERFLOW:             return "EXCEPTION_FLT_OVERFLOW"             ;
+             case EXCEPTION_FLT_STACK_CHECK:          return "EXCEPTION_FLT_STACK_CHECK"          ;
+             case EXCEPTION_FLT_UNDERFLOW:            return "EXCEPTION_FLT_UNDERFLOW"            ;
+             case EXCEPTION_ILLEGAL_INSTRUCTION:      return "EXCEPTION_ILLEGAL_INSTRUCTION"      ;
+             case EXCEPTION_IN_PAGE_ERROR:            return "EXCEPTION_IN_PAGE_ERROR"            ;
+             case EXCEPTION_INT_DIVIDE_BY_ZERO:       return "EXCEPTION_INT_DIVIDE_BY_ZERO"       ;
+             case EXCEPTION_INT_OVERFLOW:             return "EXCEPTION_INT_OVERFLOW"             ;
+             case EXCEPTION_INVALID_DISPOSITION:      return "EXCEPTION_INVALID_DISPOSITION"      ;
+             case EXCEPTION_NONCONTINUABLE_EXCEPTION: return "EXCEPTION_NONCONTINUABLE_EXCEPTION" ;
+             case EXCEPTION_PRIV_INSTRUCTION:         return "EXCEPTION_PRIV_INSTRUCTION"         ;
+             case EXCEPTION_SINGLE_STEP:              return "EXCEPTION_SINGLE_STEP"              ;
+             case EXCEPTION_STACK_OVERFLOW:           return "EXCEPTION_STACK_OVERFLOW"           ;
+             default: return "UNKNOWN EXCEPTION" ;
+          }
+       }
+
+       static std::string GetDescription( struct _EXCEPTION_POINTERS* ep, bool has_exception_code = false, exception_code_t code = 0  )
+       {
+          HMODULE hm;
+          ::GetModuleHandleEx( GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, static_cast<LPCTSTR>( ep->ExceptionRecord->ExceptionAddress ), &hm );
+          MODULEINFO mi;
+          ::GetModuleInformation( ::GetCurrentProcess(), hm, &mi, sizeof(mi) );
+          char fn[MAX_PATH];
+          ::GetModuleFileNameExA( ::GetCurrentProcess(), hm, fn, MAX_PATH );
+
+          std::ostringstream oss;
+          oss << "SE " << ( has_exception_code ? GetSeDescription( code ):"") << " at address 0x" << std::hex << ep->ExceptionRecord->ExceptionAddress << std::dec 
+             << " inside " << fn << " loaded at base address 0x" << std::hex << mi.lpBaseOfDll << "\n"; 
+
+          if ( has_exception_code && (
+               code == EXCEPTION_ACCESS_VIOLATION || 
+               code == EXCEPTION_IN_PAGE_ERROR ) ) 
+          {
+             oss << "Invalid operation: " << GetOpCodeDescription( ep->ExceptionRecord->ExceptionInformation[0] ) << " at address 0x" << std::hex << ep->ExceptionRecord->ExceptionInformation[1] << std::dec << "\n";
+          }
+
+          if ( has_exception_code && code == EXCEPTION_IN_PAGE_ERROR ) 
+          {
+             oss << "Underlying NTSTATUS code that resulted in the exception " << ep->ExceptionRecord->ExceptionInformation[2] << "\n";
+          }
+
+          return oss.str();
+       }
+    };
 
     LONG WINAPI
     Win32VectoredExceptionHandler( struct _EXCEPTION_POINTERS* ExceptionInfo )
@@ -692,6 +823,12 @@ MEMMAN_DeAllocateMemoryEx( const char *file ,
             {
                 if ( manager_is_constructed )
                 {
+                    std::string exceptionDescription = Win32StructuredExceptionInfo::GetDescription( ExceptionInfo, true, ExceptionInfo->ExceptionRecord->ExceptionCode );
+                    g_manager.log( "MEMMAN: %s", exceptionDescription.c_str() );
+
+                    g_manager.ValidateMemory();
+
+
                     if ( ExceptionInfo->ExceptionRecord->NumberParameters > 1 )
                     {
                         ULONG_PTR faultAddressInt = ExceptionInfo->ExceptionRecord->ExceptionInformation[ 1 ];
@@ -986,6 +1123,64 @@ MemoryManager::FindNearestCurrentMemoryNodes( const void* address,
     }
 }
 
+bool 
+MemoryManager::ValidateAddressIsAccessableViaAnyMemoryNode( const void* address                 , 
+                                                            UInt32 blockSize                    , 
+                                                            MemoryNode** locatedCurrentNode     ,
+                                                            MemoryNode** locatedDeallocatedNode ,
+                                                            bool& wouldHaveFitInDeallocatedNode )
+{
+    *locatedCurrentNode = GUCEF_NULL;
+    *locatedDeallocatedNode = GUCEF_NULL;
+    wouldHaveFitInDeallocatedNode = false;
+
+    TUInt64ToMemoryNodeMap nearestNodes;
+    FindNearestCurrentMemoryNodes( address, 1, nearestNodes );
+    if ( !nearestNodes.empty() )
+    {
+        MemoryNode* testNode = (*nearestNodes.begin()).second;
+        const Int8* reportedTestAddress = (const Int8*) testNode->reportedAddress;
+        const Int8* accessTestAddress = (const Int8*) address;
+        *locatedCurrentNode = testNode;
+
+        UInt64 byteOffset = GUCEF_UINT64MAX;
+        if ( accessTestAddress > reportedTestAddress )
+            byteOffset = accessTestAddress - reportedTestAddress;
+        else
+            byteOffset = reportedTestAddress - accessTestAddress;
+
+        if ( testNode->reportedSize - byteOffset >= blockSize )                
+        {
+            // There is no issue
+            // The currently allocated nearest node can house the requested memory
+            return true; 
+        }
+    }
+
+    // The currently allocated nearest node cannot house the requested memory
+    // also check in deallocated memory for a potentially better match
+    nearestNodes.clear();
+    FindNearestDeallocatedMemoryNodes( address, 1, nearestNodes );
+    if ( !nearestNodes.empty() )
+    {
+        MemoryNode* testNode = (*nearestNodes.begin()).second;
+        const Int8* reportedTestAddress = (const Int8*) testNode->reportedAddress;
+        const Int8* accessTestAddress = (const Int8*) address;
+        *locatedDeallocatedNode = testNode;
+
+        UInt64 byteOffset = GUCEF_UINT64MAX;
+        if ( accessTestAddress > reportedTestAddress )
+            byteOffset = accessTestAddress - reportedTestAddress;
+        else
+            byteOffset = reportedTestAddress - accessTestAddress;
+
+        if ( testNode->reportedSize - byteOffset >= blockSize )                
+            wouldHaveFitInDeallocatedNode = true;
+    }
+
+    return false;
+}
+
 /*******************************************************************************************/
 
 /**
@@ -1037,7 +1232,8 @@ MemoryNode* MemoryManager::removeMemoryNode( void *address )
 bool 
 MemoryManager::validateMemoryUnit( MemoryNode *node ) 
 {
-        if ( !node ) return true;
+    if ( !node ) 
+        return true;
         
     bool success = true;
     unsigned int ii;
@@ -1055,7 +1251,8 @@ MemoryManager::validateMemoryUnit( MemoryNode *node )
         }
     }
 
-    if (!success) m_numBoundsViolations++;
+    if (!success) 
+        m_numBoundsViolations++;
 
     // Attempt to determine how much of the allocated memory was actually used.
     // Initialize the memory padding for detecting bounds violations.
@@ -1080,10 +1277,20 @@ MemoryManager::validateMemoryUnit( MemoryNode *node )
                              memorySizeString( node->reportedSize - totalBytesUsed ) );
     }   */
 
-    if (m_logAlways && !success) {                                      // Report the memory 
-        this->log( "Bounds Violation Detected: %-40s %8s(0x%08p)",        //  bounds violation.
+    if ( !success ) 
+    {   
+        // Report the bounds violation memory issue
+        log( "Bounds Violation Detected: %-40s %8s(0x%08p)",        
                      formatOwnerString( node->sourceFile, node->sourceLine ),
                      s_allocationTypes[node->allocationType], node->reportedAddress );
+
+        dumpExceptionLogReport( node->reportedAddress       , 
+                                (UInt32) node->reportedSize ,
+                                node                        ,
+                                GUCEF_NULL                  ,
+                                false                       ,
+                                false                       );
+                                
     }
 
     return success;
@@ -1094,15 +1301,15 @@ MemoryManager::validateMemoryUnit( MemoryNode *node )
 bool
 MemoryManager::ValidateMemory( void ) 
 {
-        bool retval = true;
-        for ( UInt32 i=0; i<HASH_SIZE; ++i )
-        {
-                if ( !validateMemoryUnit( m_hashTable[ i ] ) )
-                {
-                        retval = false;
-                }
-        }
-        return retval;
+    bool retval = true;
+    for ( UInt32 i=0; i<HASH_SIZE; ++i )
+    {
+            if ( !validateMemoryUnit( m_hashTable[ i ] ) )
+            {
+                    retval = false;
+            }
+    }
+    return retval;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1214,7 +1421,120 @@ MemoryNode* MemoryManager::allocateMemory( void )
 }
 
 void 
-MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
+MemoryManager::dumpExceptionLogReport( FILE* fp                           , 
+                                       UInt32 blocksize                   ,
+                                       const void* faultAddress           , 
+                                       MemoryNode* nearestCurrentNode     , 
+                                       MemoryNode* nearestDeallocatedNode ,
+                                       bool wouldHaveFitInDeallocatedNode ,
+                                       bool validateMemoryUnits           )
+{
+    if (!fp) 
+        return;
+
+    // Header Information
+    fprintf( fp, "\r\n" );
+    fprintf( fp, "******************************************************************************* \r\n");
+    fprintf( fp, "*********  Exception report for accessing %d bytes at fault address: %p            \r\n", blocksize, faultAddress );
+    fprintf( fp, "******************************************************************************* \r\n");
+    fprintf( fp, "\r\n" );
+    
+    TCallStack* currentCallstack = GUCEF_NULL;
+    MEMMAN_GetCallstackForCurrentThread( &currentCallstack );
+    if ( GUCEF_NULL != currentCallstack )
+    {
+        fprintf( fp, "             C U R R E N T  C A L L S T A C K       \r\n" );
+        GUCEF_PrintCallstackCopyTo( currentCallstack, fp );
+    }
+
+    if ( GUCEF_NULL != nearestDeallocatedNode )
+    {
+        fprintf( fp, "             N E A R E S T  D E A L L O C A T E D  M E M O R Y  N O D E       \r\n" );
+        fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+                
+        const Int8* reportedTestAddress = (const Int8*) nearestDeallocatedNode->reportedAddress;
+        const Int8* accessTestAddress = (const Int8*) faultAddress;
+        UInt64 byteOffset = GUCEF_UINT64MAX;
+        if ( accessTestAddress > reportedTestAddress )
+            byteOffset = accessTestAddress - reportedTestAddress;
+        else
+            byteOffset = reportedTestAddress - accessTestAddress;
+
+        #ifdef GUCEF_MSWIN_BUILD
+        fprintf( fp, "Distance in bytes : %I64u\r\n", byteOffset );
+        #else
+        fprintf( fp, "Distance in bytes : %llu\r\n", byteOffset );
+        #endif
+        
+        if ( validateMemoryUnits )
+            validateMemoryUnit( nearestDeallocatedNode );
+
+        dumpMemoryNode( fp, nearestDeallocatedNode );
+        fprintf( fp, "\r\n");
+    }
+
+    if ( GUCEF_NULL != nearestCurrentNode )
+    {
+        fprintf( fp, "                     N E A R E S T  C U R R E N T  M E M O R Y  N O D E       \r\n" );
+        fprintf( fp, "------------------------------------------------------------------------------- \r\n" );
+        
+        const Int8* reportedTestAddress = (const Int8*) nearestCurrentNode->reportedAddress;
+        const Int8* accessTestAddress = (const Int8*) faultAddress;
+        UInt64 byteOffset = GUCEF_UINT64MAX;
+        if ( accessTestAddress > reportedTestAddress )
+            byteOffset = accessTestAddress - reportedTestAddress;
+        else
+            byteOffset = reportedTestAddress - accessTestAddress;
+
+        #ifdef GUCEF_MSWIN_BUILD
+        fprintf( fp, "Distance in bytes : %I64u\r\n", byteOffset );
+        #else
+        fprintf( fp, "Distance in bytes : %llu\r\n", byteOffset );
+        #endif
+
+        if ( validateMemoryUnits )
+            validateMemoryUnit( nearestCurrentNode );
+
+        dumpMemoryNode( fp, nearestCurrentNode );
+        fprintf( fp, "\r\n");
+    }
+
+    dumpLogReport( fp );
+}
+
+void 
+MemoryManager::dumpExceptionLogReport( const void* faultAddress           , 
+                                       UInt32 blocksize                   ,
+                                       MemoryNode* nearestCurrentNode     , 
+                                       MemoryNode* nearestDeallocatedNode ,
+                                       bool wouldHaveFitInDeallocatedNode ,
+                                       bool validateMemoryUnits           )
+{
+    if (m_cleanLogFileOnFirstRun) 
+    {
+        // Cleanup the log?
+        _unlink( LOGFILE );                 // Delete the existing log file.
+        m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
+    }
+
+    FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
+    if ( GUCEF_NULL != fp )
+    {
+        dumpExceptionLogReport( fp, 
+                                blocksize,
+                                faultAddress,
+                                nearestCurrentNode,
+                                nearestDeallocatedNode,
+                                wouldHaveFitInDeallocatedNode ,
+                                validateMemoryUnits );
+        fclose( fp );
+    }
+    
+}
+
+void 
+MemoryManager::dumpExceptionLogReport( FILE* fp           , 
+                                       void* faultAddress )
 {
     if (!fp) 
         return;
@@ -1226,6 +1546,14 @@ MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
     fprintf( fp, "******************************************************************************* \r\n");
     fprintf( fp, "\r\n" );
     
+    TCallStack* currentCallstack = GUCEF_NULL;
+    MEMMAN_GetCallstackForCurrentThread( &currentCallstack );
+    if ( GUCEF_NULL != currentCallstack )
+    {
+        fprintf( fp, "             C U R R E N T  C A L L S T A C K       \r\n" );
+        GUCEF_PrintCallstackCopyTo( currentCallstack, fp );
+    }
+
     TUInt64ToMemoryNodeMap nearestNodes;
     FindNearestDeallocatedMemoryNodes( faultAddress, 10, nearestNodes );
     if ( !nearestNodes.empty() )
@@ -1269,8 +1597,6 @@ MemoryManager::dumpExceptionLogReport( FILE* fp, void* faultAddress )
             #else
             fprintf( fp, "Distance in bytes : %llu\r\n", (*i).first );
             #endif
-
-            fprintf( fp, "Distance in bytes : %d\r\n", (UInt32)(*i).first );
             dumpMemoryNode( fp, (*i).second );
             fprintf( fp, "\r\n");
             
@@ -1293,8 +1619,11 @@ MemoryManager::dumpExceptionLogReport( void* faultAddress )
     }
 
     FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
-    dumpExceptionLogReport( fp, faultAddress );
-    fclose( fp );
+    if ( GUCEF_NULL != fp )
+    {
+        dumpExceptionLogReport( fp, faultAddress );
+        fclose( fp );
+    }
 }
 
 void MemoryManager::dumpLogReport( FILE* fp )
@@ -1373,18 +1702,20 @@ void MemoryManager::dumpLogReport( void )
     }
 
     FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
-
-    dumpLogReport( fp );
-
-    if (m_numAllocations != 0) 
-    {  
-        // Are there memory leaks?        
-        dumpMemoryAllocations( fp );    // Display any memory leaks.
-        fclose( fp );               // Close the log file.
-    }
-    else 
+    if ( GUCEF_NULL != fp )
     {
-        fclose( fp );
+        dumpLogReport( fp );
+
+        if (m_numAllocations != 0) 
+        {  
+            // Are there memory leaks?        
+            dumpMemoryAllocations( fp );    // Display any memory leaks.
+            fclose( fp );               // Close the log file.
+        }
+        else 
+        {
+            fclose( fp );
+        }
     }
 }
 
@@ -1454,8 +1785,11 @@ void MemoryManager::dumpMemoryAllocations( void )
     }
 
     FILE* fp = fopen( LOGFILE, "ab" ); // Open the log file
-    dumpMemoryAllocations( fp );
-    fclose( fp );
+    if ( GUCEF_NULL != fp )
+    {
+        dumpMemoryAllocations( fp );
+        fclose( fp );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1486,10 +1820,22 @@ void MemoryManager::log( char *s, ... )
         //DEBUGOUTPUT( buffer ); 
 
     FILE	*fp = fopen( LOGFILE, "ab" );  // Open the log file
-    if (!fp) return;
+    if (!fp) 
+        return;
 
     fprintf( fp, "%s\r\n", buffer );     // Write the data to the log file
     fclose( fp );                        // Close the file
+}
+
+void MemoryManager::log( FILE* fp, char *s, ... )
+{
+    static char buffer[2048];    // Create the buffer
+    va_list	list;                // Replace the strings variable arguments with the provided
+    va_start( list, s );         //  arguments.
+    vsprintf( buffer, s, list );
+    va_end( list );
+
+    fprintf( fp, "%s\r\n", buffer );     // Write the data to the log file
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1568,56 +1914,95 @@ void
 MemoryNode::InitializeMemory( long body ) 
 {
     // Initialize the memory padding for detecting bounds violations.
+    // take care of the padding at the front
     long *beginning = (long*)actualAddress;
     long *ending    = (long*)((char*)actualAddress + actualSize - paddingSize*sizeof(long));
-    for (unsigned short ii = 0; ii < paddingSize; ++ii) {
+    for (unsigned short ii = 0; ii < paddingSize; ++ii) 
+    {
         beginning[ii] = ending[ii] = PADDING;
     }
 
     // Initialize the memory body for detecting unused memory.
+    // This initializes the majority of the memory
     beginning        = (long*)reportedAddress;
     unsigned int len = (UInt32)reportedSize / sizeof(long);
     unsigned int cnt;
-    for (cnt = 0; cnt < len; ++cnt) {                         // Initialize the majority of the memory
+    for (cnt = 0; cnt < len; ++cnt) 
+    {    
         beginning[cnt] = body;
     }
+    
+    // Initialize the remaining memory
+    // the padding at the end
     char *cptr = (char*)(&beginning[cnt]);
     len = (UInt32)reportedSize - len*sizeof(long);
-    for (cnt = 0; cnt < len; ++cnt) {    // Initialize the remaining memory
+    for (cnt = 0; cnt < len; ++cnt) 
+    {    
         cptr[cnt] = (char)body;
     }
 
     predefinedBody = body;
 }
 
-void MemoryNode::InitializeReallocMemory( long body, size_t originalContentSize ) 
+void 
+MemoryNode::InitializeReallocMemory( long bodyInitValue, size_t originalContentSize ) 
 {
-    // Initialize the memory padding for detecting bounds violations.    
-    long *beginning = (long*)actualAddress;
-    long *ending    = (long*)((char*)actualAddress + actualSize - paddingSize*sizeof(long));
-    for (unsigned short ii = 0; ii < paddingSize; ++ii) {
-        beginning[ii] = ending[ii] = PADDING;
-    }
+    if ( originalContentSize == reportedSize )
+        return;
 
-    size_t bytesToPreserve = originalContentSize;
-    if ( originalContentSize > reportedSize ) // did we shrink instead of grow?
-        bytesToPreserve = reportedSize;    
+    if ( 0 == originalContentSize )
+    {
+        InitializeMemory( bodyInitValue );
+        return;
+    }
     
-    // Initialize the memory body for detecting unused memory.
-    // we cannot override the pre-existing memory since it may contain data
-    beginning        = (long*)(((char*)reportedAddress)+bytesToPreserve);
-    unsigned int len = (UInt32)(reportedSize-bytesToPreserve) / sizeof(long);
-    unsigned int cnt;
-    for (cnt = 0; cnt < len; ++cnt) {                         // Initialize the majority of the memory
-        beginning[cnt] = body;
+    // With a realloc with memory that already had data we need to take into
+    // account that the memory was already either extended or relocated but that 
+    // either way we have real data in the memory block that needs to be preserved
+    // We just need to take care of the change at the end of the block
+    
+    // did we shrink instead of grow?
+    if ( originalContentSize < reportedSize ) 
+    {
+        // the memory block was enlarged
+        // we need to init the extra body and padding section at the end
+
+        // first write the new padding section which will include at least some uninitialized memory
+        char* actualEnding = (char*)actualAddress + actualSize;
+        long* padBlock = (long*)( actualEnding - sizeof(long) );
+        for ( unsigned short i=0; i<paddingSize; ++i ) 
+        {
+            *padBlock = PADDING;
+            --padBlock;
+        }
+        
+        char* originalReportedEnding = (char*)reportedAddress + originalContentSize;
+        char* newReportedEnding = (char*)reportedAddress + reportedSize;
+
+        size_t bodyBytesToInit = (size_t) ( newReportedEnding - originalReportedEnding );
+        size_t bodyInitBlocks = (size_t) ( bodyBytesToInit / sizeof(long) );
+        long* bodyBlock = (long*)( newReportedEnding - sizeof(long) );
+        for ( unsigned short i=0; i<bodyInitBlocks; ++i ) 
+        {
+            *bodyBlock = bodyInitValue;
+            --bodyBlock;
+        }
+
     }
-    char *cptr = (char*)(&beginning[cnt]);
-    len = (UInt32)reportedSize - len*sizeof(long);
-    for (cnt = 0; cnt < len; ++cnt) {    // Initialize the remaining memory
-        cptr[cnt] = (char)body;
+    else
+    {
+        // the memory block was shrunk
+        // we need to overwrite a piece of the former body with padding
+        char* ending = (char*)actualAddress + actualSize;
+        long* padBlock = (long*)( ending - sizeof(long) );
+        for ( unsigned short i=0; i<paddingSize; ++i ) 
+        {
+            *padBlock = PADDING;
+            --padBlock;
+        }
     }
 
-    predefinedBody = body;
+    predefinedBody = bodyInitValue;
 }
 
 
@@ -1682,6 +2067,7 @@ MEMMAN_Shutdown( void )
     if ( manager_is_constructed )
     {
         MT::CScopeMutex scopeLock( g_manager.m_mutex );
+        MT::CScopeWriterLock writeLock( g_manager.m_datalock );
         if ( g_manager.m_initialized ) 
         {
             NumAllocations = g_manager.m_numAllocations;
@@ -1840,9 +2226,11 @@ char* memorySizeString( size_t size, bool lengthenString /* = true */ )
 void 
 MEMMAN_DumpLogReport( void )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
     if ( g_manager.m_initialized ) 
+    {
+        MT::CScopeReaderLock readerLock( g_manager.m_datalock );
         g_manager.dumpLogReport();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1857,9 +2245,11 @@ MEMMAN_DumpLogReport( void )
 void 
 MEMMAN_DumpMemoryAllocations( void )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
     if (g_manager.m_initialized) 
+    {
+        MT::CScopeReaderLock readerLock( g_manager.m_datalock );
         g_manager.dumpMemoryAllocations();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1875,7 +2265,7 @@ MEMMAN_DumpMemoryAllocations( void )
 void 
 MEMMAN_SetLogFile( const char *file )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if ( GUCEF_NULL != file )
     {
         size_t count = SMALLEST( strlen( file ), 2048 );
@@ -1897,7 +2287,7 @@ MEMMAN_SetLogFile( const char *file )
 void 
 MEMMAN_SetExhaustiveTesting( UInt32 test /* = true */ )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if ( !g_manager.m_initialized ) return;
 
     if ( test > 0 ) 
@@ -1927,7 +2317,7 @@ MEMMAN_SetExhaustiveTesting( UInt32 test /* = true */ )
 void 
 MEMMAN_SetLogAlways( UInt32 log /* = true */ )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (g_manager.m_initialized) 
         g_manager.m_logAlways = (log > 0);
 } 
@@ -1945,7 +2335,7 @@ MEMMAN_SetLogAlways( UInt32 log /* = true */ )
 void 
 MEMMAN_SetPaddingSize( UInt32 size /* = 4 */ )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (g_manager.m_initialized && size > 0)    
         g_manager.m_paddingSize = size;
 }
@@ -1963,7 +2353,7 @@ MEMMAN_SetPaddingSize( UInt32 size /* = 4 */ )
 void 
 MEMMAN_CleanLogFile( UInt32 clean /* = true */ )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (g_manager.m_initialized) 
         g_manager.m_cleanLogFileOnFirstRun = true;
 }
@@ -1981,7 +2371,7 @@ MEMMAN_CleanLogFile( UInt32 clean /* = true */ )
 void 
 MEMMAN_BreakOnAllocation( int alloccount )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (g_manager.m_initialized && alloccount > 0) 
         g_manager.m_breakOnAllocationCount = alloccount;
 }
@@ -1999,7 +2389,7 @@ MEMMAN_BreakOnAllocation( int alloccount )
 void 
 MEMMAN_BreakOnDeallocation( void *address )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (!g_manager.m_initialized || !address) 
         return;
 
@@ -2021,7 +2411,7 @@ MEMMAN_BreakOnDeallocation( void *address )
 void 
 MEMMAN_BreakOnReallocation( void *address )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     if (!g_manager.m_initialized || !address) 
         return;
 
@@ -2036,7 +2426,7 @@ MEMMAN_ValidateKnownAllocPtr( const void* address ,
                               const char* file    ,
                               int line            )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeReaderLock readerLock( g_manager.m_datalock );
 
     if ( !g_manager.m_initialized || GUCEF_NULL == address ) 
         return;
@@ -2077,12 +2467,12 @@ MEMMAN_ValidateKnownAllocPtr( const void* address ,
 /*-------------------------------------------------------------------------*/
 
 void
-MEMMAN_Validate( const void* address ,
-                 UInt32 blocksize    ,
-                 const char* file    ,
-                 int line            )
+MEMMAN_ValidateKnownAllocBlock( const void* address ,
+                                UInt32 blocksize    ,
+                                const char* file    ,
+                                int line            )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeReaderLock readerLock( g_manager.m_datalock );
 
     if ( !g_manager.m_initialized || !address ) 
         return;
@@ -2137,7 +2527,7 @@ MEMMAN_ValidateChunk( const void* address ,
                       const char* file    ,
                       int line            )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeReaderLock readerLock( g_manager.m_datalock );
 
     if ( !g_manager.m_initialized || !address ) 
         return;
@@ -2188,6 +2578,53 @@ MEMMAN_ValidateChunk( const void* address ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+MEMMAN_ValidateAccessibility( const void* address ,
+                              UInt32 blocksize    ,
+                              const char* file    ,
+                              int line            )
+{
+    MT::CScopeReaderLock readerLock( g_manager.m_datalock );
+
+    if ( !g_manager.m_initialized || !address ) 
+        return;
+        
+    if ( g_manager.extremetest )
+    {
+        if ( !g_manager.ValidateMemory() )
+        {
+            g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
+            GUCEF_SETBREAKPOINT;
+            return;
+        }                 
+    }
+         
+    MemoryNode* locatedCurrentNode = GUCEF_NULL;
+    MemoryNode* locatedDeallocatedNode = GUCEF_NULL;
+    bool wouldHaveFitInDeallocatedNode = false;
+    if ( g_manager.ValidateAddressIsAccessableViaAnyMemoryNode( address, blocksize, &locatedCurrentNode, &locatedDeallocatedNode, wouldHaveFitInDeallocatedNode ) )
+    {
+        // All is well
+        return;
+    }
+        
+    g_manager.dumpExceptionLogReport( address                       ,
+                                      blocksize                     ,
+                                      locatedCurrentNode            ,
+                                      locatedDeallocatedNode        ,
+                                      wouldHaveFitInDeallocatedNode ,
+                                      true                          );
+    
+    if ( !g_manager.ValidateMemory() )
+    {
+        g_manager.log( "MEMMAN: Memory integrity check failed @ %s:%d\n", file, line );
+        GUCEF_SETBREAKPOINT;
+        return;
+    }                
+}
+
+/*-------------------------------------------------------------------------*/
+
 /**
  * setOwner():
  *  This method is only called by the delete macro defined within the MemoryManager.h header.
@@ -2202,7 +2639,7 @@ MEMMAN_ValidateChunk( const void* address ,
 __int32 
 MEMMAN_SetOwner( const char *file, int line )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
 
     if (g_manager.m_initialized) 
     {    
@@ -2227,7 +2664,7 @@ MEMMAN_SysAllocString( const char* file   ,
                        int line           ,
                        const wchar_t* str )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
 
     if ( NULL == str ) 
         return NULL;   
@@ -2256,7 +2693,7 @@ MEMMAN_SysAllocStringByteLen( const char* file        ,
                               const char* str         ,
                               unsigned int bufferSize )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     char* buffer = (char*) MEMMAN_AllocateMemory( file, line, (size_t)4+bufferSize, MM_OLE_ALLOC, NULL );
     if ( GUCEF_NULL != buffer )
@@ -2288,7 +2725,7 @@ MEMMAN_SysAllocStringLen( const char* file         ,
                           const wchar_t* str       ,
                           unsigned int charsToCopy )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     int bufferSize = (charsToCopy+1)*2;
     char* buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+bufferSize, MM_OLE_ALLOC, NULL );
@@ -2326,7 +2763,7 @@ MEMMAN_SysFreeString( const char *file    ,
                       int line            ,
                       wchar_t* bstrString )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     if ( NULL == bstrString )    
         return;
@@ -2344,7 +2781,7 @@ MEMMAN_SysReAllocString( const char *file    ,
                          wchar_t** pbstr     , 
                          const wchar_t* psz  )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     // per MSDN pbstr is not allowed to be NULL or the application would crash
     if ( NULL != pbstr )
@@ -2393,7 +2830,7 @@ MEMMAN_SysReAllocStringLen( const char *file    ,
                             const wchar_t* psz  ,
                             unsigned int len    )
 {
-    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    MT::CScopeWriterLock writerLock( g_manager.m_datalock );
     
     // per MSDN pbstr is not allowed to be NULL or the application would crash
     if ( NULL != pbstr )

@@ -101,6 +101,8 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClient : public STORAGE::C
 
     CTestPubSubClientConfig& GetConfig( void );
 
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
                                                                                
     CTestPubSubClient( void ); /**< not implemented */

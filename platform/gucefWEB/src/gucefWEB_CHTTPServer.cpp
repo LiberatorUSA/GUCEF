@@ -103,6 +103,7 @@ const CORE::CEvent CHTTPServer::WebSocketClientConnectedEvent = "GUCEF::WEB::CHT
 
 CHttpServerSettings::CHttpServerSettings( void )
     : CORE::CIConfigurable()
+    , maxClientConnections( 100 )
     , keepAliveConnections( true )
     , processRequestsAsync( false )
     , allowWebSocketUpgrades( false )
@@ -114,6 +115,7 @@ CHttpServerSettings::CHttpServerSettings( void )
 
 CHttpServerSettings::CHttpServerSettings( const CHttpServerSettings& src )
     : CORE::CIConfigurable( src )
+    , maxClientConnections( src.maxClientConnections )
     , keepAliveConnections( src.keepAliveConnections )
     , processRequestsAsync( src.processRequestsAsync )
     , allowWebSocketUpgrades( src.allowWebSocketUpgrades )
@@ -130,6 +132,7 @@ CHttpServerSettings::operator=( const CHttpServerSettings& src )
     if ( &src != this )
     {
         CORE::CIConfigurable::operator=( src );
+        maxClientConnections = src.maxClientConnections;
         keepAliveConnections = src.keepAliveConnections;
         processRequestsAsync = src.processRequestsAsync;
         allowWebSocketUpgrades = src.allowWebSocketUpgrades;
@@ -150,7 +153,8 @@ bool
 CHttpServerSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    bool totalSuccess = true;
+    bool totalSuccess = true;    
+    totalSuccess = cfg.SetAttribute( "maxClientConnections", maxClientConnections ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "keepAliveConnections", keepAliveConnections ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "processRequestsAsync", processRequestsAsync ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "allowWebSocketUpgrades", allowWebSocketUpgrades ) && totalSuccess;
@@ -163,6 +167,7 @@ bool
 CHttpServerSettings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
+    maxClientConnections = cfg.GetAttributeValueOrChildValueByName( "maxClientConnections" ).AsUInt32( maxClientConnections, true );     
     keepAliveConnections = cfg.GetAttributeValueOrChildValueByName( "keepAliveConnections" ).AsBool( keepAliveConnections, true ); 
     processRequestsAsync = cfg.GetAttributeValueOrChildValueByName( "processRequestsAsync" ).AsBool( processRequestsAsync, true );
     allowWebSocketUpgrades = cfg.GetAttributeValueOrChildValueByName( "allowWebSocketUpgrades" ).AsBool( allowWebSocketUpgrades, true );
@@ -184,7 +189,7 @@ CHttpServerSettings::GetClassTypeName( void ) const
 CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ ,
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
     : CORE::CObservingNotifier()              
-    , m_tcpServerSocket( false )
+    , m_tcpServerSocket( false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 )
     , m_requestHandler( GUCEF_NULL )
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
@@ -212,7 +217,7 @@ CHTTPServer::CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator          
                           THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ ,
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
     : CORE::CObservingNotifier()                               
-    , m_tcpServerSocket( pulsGenerator, false ) 
+    , m_tcpServerSocket( pulsGenerator, false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 ) 
     , m_requestHandler( GUCEF_NULL )
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
