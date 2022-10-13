@@ -345,8 +345,8 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static bool FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
                                CORE::CString::StringSet& foundQueues              );
         
-    void SetMetricCollectionBasedOnDiscoveryFilter( MsmqQueueVector& queues                      , 
-                                                    CORE::CString::StringSet& globPatternFilters );
+    void SetMetricCollectionBasedOnFilter( MsmqQueueVector& queues                      , 
+                                           CORE::CString::StringSet& globPatternFilters );
     
     private:
 

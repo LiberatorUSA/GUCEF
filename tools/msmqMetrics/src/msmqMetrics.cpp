@@ -2401,8 +2401,8 @@ MsmqMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-MsmqMetrics::SetMetricCollectionBasedOnDiscoveryFilter( MsmqQueueVector& queues                      , 
-                                                        CORE::CString::StringSet& globPatternFilters )
+MsmqMetrics::SetMetricCollectionBasedOnFilter( MsmqQueueVector& queues                      , 
+                                               CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
     
     if ( !globPatternFilters.empty() )
@@ -2597,7 +2597,7 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         }
     }
 
-    SetMetricCollectionBasedOnDiscoveryFilter( m_queues, discoverQueueFilters );
+    SetMetricCollectionBasedOnFilter( m_queues, queueMetricCollectionFilters );
 
     // Perform the initial update on queue active status
     UpdateMsmqActiveQueueStatus( m_hostnames, m_queues, m_discoverQueues );
