@@ -237,6 +237,7 @@ class MsmqMetrics : public CORE::CObservingNotifier
         MsmqQueueProperties queueProperties;
         bool isActive;
         bool isOutgoingQueue;
+        bool collectMetrics;
 
         MsmqQueue( const CORE::CString& qName                           , 
                    bool queueNamesAreMsmqFormatNames                    ,
@@ -344,6 +345,9 @@ class MsmqMetrics : public CORE::CObservingNotifier
     static bool FindAllQueues( const CORE::CString::StringSet& globPatternFilters ,
                                CORE::CString::StringSet& foundQueues              );
         
+    void SetMetricCollectionBasedOnDiscoveryFilter( MsmqQueueVector& queues                      , 
+                                                    CORE::CString::StringSet& globPatternFilters );
+    
     private:
 
     typedef CORE::CTEventHandlerFunctor< MsmqMetrics > TEventCallback;
