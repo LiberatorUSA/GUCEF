@@ -142,7 +142,7 @@ CPubSubClientSide::~CPubSubClientSide()
 {GUCEF_TRACE;
 
     DisconnectPubSubClient( true );
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

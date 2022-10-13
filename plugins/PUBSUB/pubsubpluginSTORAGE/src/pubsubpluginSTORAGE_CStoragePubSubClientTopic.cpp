@@ -505,7 +505,7 @@ CStoragePubSubClientTopic::Shutdown( void )
     GUCEF_DELETE m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

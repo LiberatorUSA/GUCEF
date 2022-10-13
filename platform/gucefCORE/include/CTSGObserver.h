@@ -84,6 +84,8 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 
     virtual bool NotificationReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void Shutdown( void );
+
     private:
     friend class CTSGNotifier;
 
@@ -93,8 +95,6 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     virtual ~CTSGObserver();
 
     void SetParent( CTSGNotifier* parentNotifier );
-    
-    void ForwardSignalOfUpcomingObserverDestruction( void );
     
     private:
 

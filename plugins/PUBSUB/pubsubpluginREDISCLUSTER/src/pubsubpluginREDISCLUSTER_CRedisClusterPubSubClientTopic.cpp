@@ -143,7 +143,7 @@ CRedisClusterPubSubClientTopic::Shutdown( void )
     
     CleanupRedisReaderThread();
     Disconnect();    
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

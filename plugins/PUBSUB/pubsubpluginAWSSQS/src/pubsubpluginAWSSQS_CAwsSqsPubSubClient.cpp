@@ -126,7 +126,7 @@ CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
         ++i;
     }
     m_topicMap.clear();
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

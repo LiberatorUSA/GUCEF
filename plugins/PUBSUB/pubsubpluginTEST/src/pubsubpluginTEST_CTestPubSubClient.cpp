@@ -88,7 +88,7 @@ CTestPubSubClient::CTestPubSubClient( const PUBSUB::CPubSubClientConfig& config 
 CTestPubSubClient::~CTestPubSubClient()
 {GUCEF_TRACE;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

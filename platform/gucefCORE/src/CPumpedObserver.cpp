@@ -218,10 +218,21 @@ CPumpedObserver::RegisterPulseGeneratorEventHandlers( void )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::Shutdown( void )
+{GUCEF_TRACE;
+
+    CObserverScopeLock lock( this );
+
+    ClearMailbox( false );
     SetPulseGenerator( PulseGeneratorPtr() );
     SignalUpcomingObserverDestruction();    
-    ClearMailbox( false );
-}
+}    
 
 /*-------------------------------------------------------------------------*/
 

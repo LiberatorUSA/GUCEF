@@ -135,7 +135,7 @@ CAwsSqsPubSubClientTopic::Shutdown( void )
     
     m_client = GUCEF_NULL;
     Disconnect();
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

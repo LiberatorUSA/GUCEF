@@ -149,7 +149,7 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
         ++i;
     }
     m_topicMap.clear();
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

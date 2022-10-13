@@ -100,7 +100,7 @@ CTaskConsumer::CTaskConsumer( void )
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
-    SignalUpcomingObserverDestruction();    
+    SignalUpcomingDestruction();    
     CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );    
 }
 

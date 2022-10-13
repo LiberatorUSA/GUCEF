@@ -115,7 +115,7 @@ CUdpPubSubClientTopic::Shutdown( void )
     
     Disconnect();
     UnsubscribeFrom( &m_udpSocket );
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

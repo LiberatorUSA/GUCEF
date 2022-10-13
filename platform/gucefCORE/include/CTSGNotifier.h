@@ -212,7 +212,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
                            const CEvent& eventId              ,
                            CICloneable* evenData = GUCEF_NULL );
 
-    void SignalUpcomingObserverDestruction( void );
+    void SignalUpcomingDestruction( void );
     
     private:
 

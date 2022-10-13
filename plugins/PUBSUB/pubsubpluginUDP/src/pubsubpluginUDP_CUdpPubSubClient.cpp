@@ -134,7 +134,7 @@ CUdpPubSubClient::~CUdpPubSubClient()
     GUCEF_DELETE m_testUdpSocket;
     m_testUdpSocket = GUCEF_NULL;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

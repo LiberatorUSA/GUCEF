@@ -65,7 +65,19 @@ CTSGObserver::CTSGObserver( const CTSGObserver& src )
 CTSGObserver::~CTSGObserver()
 {GUCEF_TRACE;
 
-    SignalUpcomingObserverDestruction();
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGObserver::Shutdown( void )
+{GUCEF_TRACE;
+
+    CObserverScopeLock lock( this );
+
+    CPumpedObserver::Shutdown();
+    m_parentNotifier = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,15 +114,6 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
                                           eventid   ,
                                           eventdata );
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTSGObserver::ForwardSignalOfUpcomingObserverDestruction( void )
-{GUCEF_TRACE;
-
-    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

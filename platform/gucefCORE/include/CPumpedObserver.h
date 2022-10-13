@@ -175,6 +175,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void Shutdown( void );
+
     private:
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;
     typedef CTEventHandlerFunctorProxy< CPumpedObserver > TEventCallbackProxy;

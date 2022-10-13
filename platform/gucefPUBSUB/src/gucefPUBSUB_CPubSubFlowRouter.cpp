@@ -1222,6 +1222,10 @@ CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientTopi
         SubscribeTo( topicAccess.GetPointerAlways()                 ,
                      CPubSubClientTopic::SubscriptionEndOfDataEvent ,
                      callback                                       );
+        
+        // Check init state in case we missed it before we set up the event handler
+        if ( topicAccess->IsSubscriptionAtEndOfData() )
+            OnSidePubSubClientTopicEndOfData( topicAccess.GetPointerAlways() );
     }
 }
 
@@ -1820,15 +1824,12 @@ CPubSubFlowRouter::OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier    ,
-                                                     const CORE::CEvent& eventId  ,
-                                                     CORE::CICloneable* eventData )
+CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CPubSubClientTopic* topic )
 {GUCEF_TRACE;
 
-    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier ); 
     if ( GUCEF_NULL == topic )
         return;
-
+    
     CPubSubClient* client = topic->GetClient();
     if ( GUCEF_NULL == client )
         return;
@@ -1875,7 +1876,21 @@ CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier  
             // we check to see if we need to update the active route            
             DetermineActiveRoute( *spilloverInfo.route );
         }
-    }    
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CORE::CNotifier* notifier    ,
+                                                     const CORE::CEvent& eventId  ,
+                                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier ); 
+    if ( GUCEF_NULL == topic )
+        return;
+    OnSidePubSubClientTopicEndOfData( topic );
 }
 
 /*-------------------------------------------------------------------------*/

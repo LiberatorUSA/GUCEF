@@ -114,7 +114,7 @@ CTaskManager::~CTaskManager( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
     m_threadPools.clear();
     lock.EarlyUnlock();
 }

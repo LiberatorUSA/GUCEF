@@ -215,7 +215,7 @@ CWebPubSubClientTopic::Shutdown( void )
     GUCEF_DELETE m_publishedMsgPrunerTimer;
     m_publishedMsgPrunerTimer = GUCEF_NULL;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

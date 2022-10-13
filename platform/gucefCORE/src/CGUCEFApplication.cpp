@@ -171,7 +171,7 @@ CGUCEFApplication::~CGUCEFApplication()
         }
     }
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

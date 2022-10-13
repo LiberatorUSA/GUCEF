@@ -598,31 +598,6 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
                                 CNotifier::UnsubscribeEvent );
         }
 
-        m_isBusy = wasBusy;
-
-        if ( m_scheduledForDestruction )
-        {
-            NotificationUnlock();
-            m_ownerNotifier->m_imp = GUCEF_NULL;
-            GUCEF_DELETE m_ownerNotifier;
-            return;
-        }
-
-        if ( !busyProcessingMailbox )
-            ProcessMailbox();
-    }
-    else
-    {
-        TCmdMailElement cmdMailElement;
-        cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
-        cmdMailElement.eventID = CEvent();    // <- not used in this context
-        cmdMailElement.observer = observer;
-        cmdMailElement.callback = GUCEF_NULL;
-        cmdMailElement.notify = notifyObserver;
-        cmdMailElement.observerIsDestroyed = observerDestruction;
-        m_cmdMailStack.push_back( cmdMailElement );
-    }
-
     if ( observerDestruction )
     {        
         // For a destroyed observer we also need to remove all remaining references in the mailboxes
@@ -649,6 +624,31 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             }
             ++c;
         }
+    }
+
+        m_isBusy = wasBusy;
+
+        if ( m_scheduledForDestruction )
+        {
+            NotificationUnlock();
+            m_ownerNotifier->m_imp = GUCEF_NULL;
+            GUCEF_DELETE m_ownerNotifier;
+            return;
+        }
+
+        if ( !busyProcessingMailbox )
+            ProcessMailbox();
+    }
+    else
+    {
+        TCmdMailElement cmdMailElement;
+        cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
+        cmdMailElement.eventID = CEvent();    // <- not used in this context
+        cmdMailElement.observer = observer;
+        cmdMailElement.callback = GUCEF_NULL;
+        cmdMailElement.notify = notifyObserver;
+        cmdMailElement.observerIsDestroyed = observerDestruction;
+        m_cmdMailStack.push_back( cmdMailElement );
     }
 }
 

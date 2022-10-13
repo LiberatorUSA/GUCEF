@@ -135,7 +135,7 @@ CKafkaPubSubClientTopic::Shutdown( void )
     
     Disconnect();
     Clear();
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

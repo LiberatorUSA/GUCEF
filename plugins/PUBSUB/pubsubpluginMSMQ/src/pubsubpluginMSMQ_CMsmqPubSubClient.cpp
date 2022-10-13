@@ -133,7 +133,7 @@ CMsmqPubSubClient::~CMsmqPubSubClient()
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

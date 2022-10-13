@@ -200,7 +200,7 @@ CMsmqPubSubClientTopic::Shutdown( void )
     GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
 
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

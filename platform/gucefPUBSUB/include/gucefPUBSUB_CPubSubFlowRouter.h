@@ -229,6 +229,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
                                       CORE::CICloneable* eventData );
 
     void
+    OnSidePubSubClientTopicEndOfData( CPubSubClientTopic* topic );
+    
+    void
     OnSideHealthStatusChange( CORE::CNotifier* notifier    ,
                               const CORE::CEvent& eventId  ,
                               CORE::CICloneable* eventData );

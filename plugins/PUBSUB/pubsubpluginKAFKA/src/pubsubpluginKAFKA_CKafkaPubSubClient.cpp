@@ -93,7 +93,7 @@ CKafkaPubSubClient::~CKafkaPubSubClient()
 {GUCEF_TRACE;
 
     Clear();
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

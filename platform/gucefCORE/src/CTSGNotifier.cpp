@@ -92,7 +92,7 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 CTSGNotifier::~CTSGNotifier()
 {GUCEF_TRACE;
    
-    SignalUpcomingObserverDestruction();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -333,13 +333,10 @@ CTSGNotifier::UnsubscribeAllFromObserver( void )
 /*-------------------------------------------------------------------------*/
 
 void 
-CTSGNotifier::SignalUpcomingObserverDestruction( void )
+CTSGNotifier::SignalUpcomingDestruction( void )
 {GUCEF_TRACE;
 
-    m_tsgObserver.ForwardSignalOfUpcomingObserverDestruction();
-    m_tsgObserver.ClearMailbox( false );
-    m_tsgObserver.SetPulseGenerator( PulseGeneratorPtr() );
-    m_tsgObserver.SetParent( GUCEF_NULL );         
+    m_tsgObserver.Shutdown();         
 }
 
 /*-------------------------------------------------------------------------*/
