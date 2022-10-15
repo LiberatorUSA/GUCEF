@@ -800,9 +800,13 @@ CNotifierImplementor::NotifyObservers( const CEvent& eventid  ,
                                        CICloneable* eventData )
 {GUCEF_TRACE;
 
-    return NotifyObservers( *m_ownerNotifier ,
-                            eventid          ,
-                            eventData        );
+    if ( GUCEF_NULL != m_ownerNotifier )
+    {
+        return NotifyObservers( *m_ownerNotifier ,
+                                eventid          ,
+                                eventData        );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -862,6 +866,16 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
                                                 eventid   ,
                                                 eventData );
                             notified = true;
+
+                            // Check if someone deleted our owner notifier
+                            if ( m_ownerNotifier == GUCEF_NULL )
+                            {
+                                // Gracefully handle the destruction sequence
+                                m_isBusy = wasBusy;
+                                lock.EarlyUnlock();
+                                Destroy( this );
+                                return false;
+                            }
                         }
                         ++m;
                     }

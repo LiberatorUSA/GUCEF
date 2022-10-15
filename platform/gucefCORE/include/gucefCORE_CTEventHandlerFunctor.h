@@ -150,6 +150,8 @@ template< typename IObserverDerived >
 CTEventHandlerFunctor< IObserverDerived >::~CTEventHandlerFunctor()
 {GUCEF_TRACE;
 
+    m_observer = GUCEF_NULL;
+    m_functor = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -189,12 +191,20 @@ CTEventHandlerFunctor< IObserverDerived >::OnNotify( CNotifier* notifier   ,
                                                      CICloneable* evenData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG_EVERYTHING( "CTEventHandlerFunctor(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
-        ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
+    if ( GUCEF_NULL != m_observer && GUCEF_NULL != m_functor )
+    {
+        GUCEF_DEBUG_LOG_EVERYTHING( "CTEventHandlerFunctor(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
+            ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
 
-    (m_observer->*m_functor)( notifier ,
-                              eventID  ,
-                              evenData );
+        (m_observer->*m_functor)( notifier ,
+                                  eventID  ,
+                                  evenData );
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "CTEventHandlerFunctor(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
+            ": Dispatching event \"" + eventID.GetName() + "\" to invalid functor destination" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

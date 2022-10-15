@@ -154,6 +154,9 @@ CTEventHandlerFunctorProxy< IObserverDerived >::~CTEventHandlerFunctorProxy()
 
     GUCEF_DELETE m_actualCallback;
     m_actualCallback = GUCEF_NULL;
+
+    m_observer = GUCEF_NULL;
+    m_functor = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -197,13 +200,21 @@ CTEventHandlerFunctorProxy< IObserverDerived >::OnNotify( CNotifier* notifier   
                                                           CICloneable* evenData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG_EVERYTHING( "CTEventHandlerFunctorProxy(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
-        ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
+    if ( GUCEF_NULL != m_observer && GUCEF_NULL != m_functor && GUCEF_NULL != m_actualCallback )
+    {
+        GUCEF_DEBUG_LOG_EVERYTHING( "CTEventHandlerFunctorProxy(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
+            ": Dispatching event \"" + eventID.GetName() + "\" to " + m_observer->GetClassTypeName() + "(" + CORE::PointerToString( m_observer ) + ")" );
 
-    (m_observer->*m_functor)( notifier         ,
-                              eventID          ,
-                              evenData         ,
-                              m_actualCallback ); // <- Adding the ability to pass in the original callback via indirection is the whole purpose of this template
+        (m_observer->*m_functor)( notifier         ,
+                                  eventID          ,
+                                  evenData         ,
+                                  m_actualCallback ); // <- Adding the ability to pass in the original callback via indirection is the whole purpose of this template
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "CTEventHandlerFunctorProxy(" + CORE::PointerToString( this ) + "): Class " + notifier->GetClassTypeName() + 
+            ": Dispatching event \"" + eventID.GetName() + "\" to invalid functor proxy destination" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

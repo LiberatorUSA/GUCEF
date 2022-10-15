@@ -354,6 +354,15 @@ CStoragePubSubClientTopic::GenerateDefaultVfsStorageContainerFileExt( void )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CStoragePubSubClientTopic::GenerateVfsStorageContainerFileExt( void )
+{GUCEF_TRACE;
+
+    return ".v" + CORE::ToString( PUBSUB::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) + '.' + m_config.vfsFileExtention;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::StorageToPubSubRequest::SaveConfig( CORE::CDataNode & tree ) const
 {GUCEF_TRACE;
@@ -983,6 +992,7 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
     m_config = config;
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );    
     m_vfsRootPath = ResolveVfsRootPath();    
+    m_vfsFilePostfix = GenerateVfsStorageContainerFileExt();
 
     if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
         m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
@@ -2000,15 +2010,18 @@ CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    
                                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( m_config.needPublishSupport )
-    {
-        StoreNextReceivedPubSubBuffer();
-    }
-    else
-    {
-        LocateFilesForStorageToPubSubRequest();
-        ProcessNextPubSubRequestRelatedFile();
-        TransmitNextPubSubMsgBuffer();
+    if ( m_vfsInitIsComplete )
+    {    
+        if ( m_config.needPublishSupport )
+        {
+            StoreNextReceivedPubSubBuffer();
+        }
+        else
+        {
+            LocateFilesForStorageToPubSubRequest();
+            ProcessNextPubSubRequestRelatedFile();
+            TransmitNextPubSubMsgBuffer();
+        }
     }
 }
 
@@ -2707,7 +2720,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
             else
             {
                 // No write buffer available, we need to wait before processing more requests
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: No write buffer available" );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: No write buffer available at this time for loading next data set" );
                 return totalSuccess;
             }
             ++n;

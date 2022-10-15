@@ -195,6 +195,26 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CPubSubClient::GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                    PubSubClientTopicSet& topicAccess           )
+{GUCEF_TRACE;
+
+    // The default implementation here assumes no 1:N pattern matching access is supported
+    // As such it redirects to the basic GetTopicAccess()
+    // Backends should override this if they support pattern matching access
+
+    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicConfig.topicName );
+    if ( !tAccess.IsNULL() )
+    {
+        topicAccess.insert( tAccess );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
                                     PubSubClientTopicSet& topicAccess )
 {GUCEF_TRACE;
@@ -227,6 +247,25 @@ CPubSubClient::GetMultiTopicAccess( const CString::StringSet& topicNames ,
         ++i;
     }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::GetOrCreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                            PubSubClientTopicSet& topicAccess           )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    // In the multi-topic scenario we'd expect the topic name to be a pattern to match
+    // As such the config applies to everything matching the pattern
+    // This also means there is no way of knowing if we obtained the 'correct' nr of topics here, just something vs nothing.
+    if ( !GetMultiTopicAccess( topicConfig, topicAccess ) || topicAccess.empty()  )
+    {
+        return CreateMultiTopicAccess( topicConfig, topicAccess );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -128,12 +128,18 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual CPubSubClientTopicPtr GetOrCreateTopicAccess( const CString& topicName );
 
+    virtual bool GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                      PubSubClientTopicSet& topicAccess           );
+
     virtual bool GetMultiTopicAccess( const CString& topicName          ,
                                       PubSubClientTopicSet& topicAccess );
 
     virtual bool GetMultiTopicAccess( const CString::StringSet& topicNames ,
                                       PubSubClientTopicSet& topicAccess    );
     
+    virtual bool GetOrCreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
+                                              PubSubClientTopicSet& topicAccess           );
+
     virtual bool GetOrCreateMultiTopicAccess( const CString& topicName          ,
                                               PubSubClientTopicSet& topicAccess );
 

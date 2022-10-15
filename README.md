@@ -128,6 +128,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - GucefLogService: Service which can accept GUCEF platform logs streamed via network connection. Aimed at situations where we cannot have/access local logs
 - ServerPortExtender: Service used to reverse inbound/outbound connection initiation for an application server port thus bypassing egress only restrictions
 - UdpTransformer: Service which takes ingress UDP and performs a simplistic transform followed by a retransmission
+- MsmqMetrics: Agent service which gathers information on MSMQ queues and subsequently gathers and transmits metrics for said queues
 
 ## Contained Tools
 - ProjectGenerator: Tool to auto generate various project/module files and different logical views of the same mono-repo

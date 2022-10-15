@@ -325,6 +325,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );
     static CORE::CString GenerateDefaultVfsStorageContainerFileExt( void );
 
+    CORE::CString GenerateVfsStorageContainerFileExt( void );
+
     template < typename T >
     bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds           , 
                             const std::vector< T, basic_allocator< T > >& msgs , 

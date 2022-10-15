@@ -2066,7 +2066,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     while ( i != pubSubConfig.topics.end() )
     {
         CPubSubClient::PubSubClientTopicSet topicAccess;
-        if ( m_pubsubClient->CreateMultiTopicAccess( (*i), topicAccess ) )
+        if ( m_pubsubClient->GetOrCreateMultiTopicAccess( (*i), topicAccess ) )
         {
             CPubSubClient::PubSubClientTopicSet::iterator a = topicAccess.begin();
             while ( a != topicAccess.end() )
