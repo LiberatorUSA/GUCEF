@@ -374,7 +374,29 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                     // All we have to do is make sure the callback is added
                     TEventHandlerFunctorInterfaceVector& callbacks = (*i).second;
                     if ( GUCEF_NULL != callback )
-                        callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
+                    {
+                        bool isReplacement = false;
+                        TEventHandlerFunctorInterfaceVector::iterator c = callbacks.begin();
+                        while ( c != callbacks.end() )
+                        {
+                            CIEventHandlerFunctorBase* functor = (*c);                        
+                            if ( functor == callback ||
+                                 functor->GetTargetObserver() == callback->GetTargetObserver() )
+                            {
+                                // This is the same callback.
+                                // We will treat this as an update/refresh but not as another independent subscription
+                                isReplacement = true;
+                                GUCEF_DELETE functor;
+                                (*c) = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
+                                break;
+                            }
+                            ++c;
+                        }
+
+                        if ( !isReplacement )
+                            callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
+                    }
+
                     m_isBusy = wasBusy;
                     return true;
                 }
