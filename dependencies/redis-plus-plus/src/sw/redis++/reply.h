@@ -19,17 +19,13 @@
 
 #include <cassert>
 #include <string>
+#include <iterator>
 #include <memory>
 #include <functional>
 #include <tuple>
 #include <hiredis/hiredis.h>
 #include "errors.h"
 #include "utils.h"
-
-/**
- *  DV Edit
- */
-#include <iterator>
 
 namespace sw {
 
@@ -77,6 +73,18 @@ std::pair<T, U> parse(ParseTag<std::pair<T, U>>, redisReply &reply);
 template <typename ...Args>
 std::tuple<Args...> parse(ParseTag<std::tuple<Args...>>, redisReply &reply);
 
+#ifdef REDIS_PLUS_PLUS_HAS_VARIANT
+
+inline Monostate parse(ParseTag<Monostate>, redisReply &) {
+    // Just ignore the reply
+    return {};
+}
+
+template <typename ...Args>
+Variant<Args...> parse(ParseTag<Variant<Args...>>, redisReply &reply);
+
+#endif
+
 template <typename T, typename std::enable_if<IsSequenceContainer<T>::value, int>::type = 0>
 T parse(ParseTag<T>, redisReply &reply);
 
@@ -115,11 +123,13 @@ std::string to_status(redisReply &reply);
 template <typename Output>
 void to_array(redisReply &reply, Output output);
 
-// Rewrite set reply to bool type
-void rewrite_set_reply(redisReply &reply);
+// Parse set reply to bool type
+bool parse_set_reply(redisReply &reply);
 
-// Rewrite georadius reply to OptionalLongLong type
-void rewrite_georadius_reply(redisReply &reply);
+// Some command might return an empty array reply as a nil reply,
+// e.g. georadius, zpopmin, zpopmax. In this case, we rewrite the
+// reply to a nil reply.
+void rewrite_empty_array_reply(redisReply &reply);
 
 template <typename Output>
 auto parse_xpending_reply(redisReply &reply, Output output)
@@ -221,6 +231,29 @@ auto parse_tuple(redisReply **reply, std::size_t idx) ->
                             parse_tuple<Args...>(reply, idx + 1));
 }
 
+#ifdef REDIS_PLUS_PLUS_HAS_VARIANT
+
+template <typename T>
+Variant<T> parse_variant(redisReply &reply) {
+    return parse<T>(reply);
+}
+
+template <typename T, typename ...Args>
+auto parse_variant(redisReply &reply) ->
+    typename std::enable_if<sizeof...(Args) != 0, Variant<T, Args...>>::type {
+    auto return_var = [](auto &&arg) {
+        return Variant<T, Args...>(std::move(arg));
+    };
+
+    try {
+        return std::visit(return_var, parse_variant<T>(reply));
+    } catch (const ProtoError &) {
+        return std::visit(return_var, parse_variant<Args...>(reply));
+    }
+}
+
+#endif
+
 }
 
 template <typename T>
@@ -299,6 +332,15 @@ std::tuple<Args...> parse(ParseTag<std::tuple<Args...>>, redisReply &reply) {
     return detail::parse_tuple<Args...>(reply.element, 0);
 }
 
+#ifdef REDIS_PLUS_PLUS_HAS_VARIANT
+
+template <typename ...Args>
+Variant<Args...> parse(ParseTag<Variant<Args...>>, redisReply &reply) {
+    return detail::parse_variant<Args...>(reply);
+}
+
+#endif
+
 template <typename T, typename std::enable_if<IsSequenceContainer<T>::value, int>::type>
 T parse(ParseTag<T>, redisReply &reply) {
     if (!is_array(reply)) {
@@ -338,7 +380,7 @@ long long parse_scan_reply(redisReply &reply, Output output) {
     }
 
     auto cursor_str = reply::parse<std::string>(*cursor_reply);
-    auto new_cursor = 0;
+    long long new_cursor = 0;
     try {
         new_cursor = std::stoll(cursor_str);
     } catch (const std::exception &e) {

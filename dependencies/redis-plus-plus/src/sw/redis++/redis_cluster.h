@@ -29,6 +29,7 @@
 #include "pipeline.h"
 #include "transaction.h"
 #include "redis.h"
+#include "connection.h"
 
 namespace sw {
 
@@ -44,8 +45,8 @@ using Pipeline = QueuedRedis<PipelineImpl>;
 class RedisCluster {
 public:
     RedisCluster(const ConnectionOptions &connection_opts,
-                    const ConnectionPoolOptions &pool_opts = {}) :
-                        _pool(pool_opts, connection_opts) {}
+                    const ConnectionPoolOptions &pool_opts = {},
+                    Role role = Role::MASTER) : _pool(pool_opts, connection_opts, role) {}
 
     // Construct RedisCluster with URI:
     // "tcp://127.0.0.1" or "tcp://127.0.0.1:6379"
@@ -58,11 +59,11 @@ public:
     RedisCluster(RedisCluster &&) = default;
     RedisCluster& operator=(RedisCluster &&) = default;
 
-    Redis redis(const StringView &hash_tag);
+    Redis redis(const StringView &hash_tag, bool new_connection = true);
 
-    Pipeline pipeline(const StringView &hash_tag);
+    Pipeline pipeline(const StringView &hash_tag, bool new_connection = true);
 
-    Transaction transaction(const StringView &hash_tag, bool piped = false);
+    Transaction transaction(const StringView &hash_tag, bool piped = false, bool new_connection = true);
 
     Subscriber subscriber();
 
@@ -261,6 +262,11 @@ public:
     bool set(const StringView &key,
                 const StringView &val,
                 const std::chrono::milliseconds &ttl = std::chrono::milliseconds(0),
+                UpdateType type = UpdateType::ALWAYS);
+
+    bool set(const StringView &key,
+                const StringView &val,
+                bool keepttl,
                 UpdateType type = UpdateType::ALWAYS);
 
     void setex(const StringView &key,
@@ -993,10 +999,25 @@ public:
 
     // SCRIPTING commands.
 
+    template <typename Result, typename Keys, typename Args>
+    Result eval(const StringView &script,
+                Keys keys_first,
+                Keys keys_last,
+                Args args_first,
+                Args args_last);
+
     template <typename Result>
     Result eval(const StringView &script,
                 std::initializer_list<StringView> keys,
                 std::initializer_list<StringView> args);
+
+    template <typename Keys, typename Args, typename Output>
+    void eval(const StringView &script,
+                Keys keys_first,
+                Keys keys_last,
+                Args args_first,
+                Args args_last,
+                Output output);
 
     template <typename Output>
     void eval(const StringView &script,
@@ -1004,10 +1025,25 @@ public:
                 std::initializer_list<StringView> args,
                 Output output);
 
+    template <typename Result, typename Keys, typename Args>
+    Result evalsha(const StringView &script,
+                    Keys keys_first,
+                    Keys keys_last,
+                    Args args_first,
+                    Args args_last);
+
     template <typename Result>
     Result evalsha(const StringView &script,
                     std::initializer_list<StringView> keys,
                     std::initializer_list<StringView> args);
+
+    template <typename Keys, typename Args, typename Output>
+    void evalsha(const StringView &script,
+                    Keys keys_first,
+                    Keys keys_last,
+                    Args args_first,
+                    Args args_last,
+                    Output output);
 
     template <typename Output>
     void evalsha(const StringView &script,

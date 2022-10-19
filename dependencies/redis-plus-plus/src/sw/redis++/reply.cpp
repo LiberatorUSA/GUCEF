@@ -16,6 +16,7 @@
 
 #include "reply.h"
 #include <cstdlib>
+#include <stdexcept>
 
 namespace sw {
 
@@ -60,7 +61,13 @@ long long parse(ParseTag<long long>, redisReply &reply) {
 }
 
 double parse(ParseTag<double>, redisReply &reply) {
-    return std::stod(parse<std::string>(reply));
+    try {
+        return std::stod(parse<std::string>(reply));
+    } catch (const std::invalid_argument &) {
+        throw ProtoError("not a double reply");
+    } catch (const std::out_of_range &) {
+        throw ProtoError("double reply out of range");
+    }
 }
 
 bool parse(ParseTag<bool>, redisReply &reply) {
@@ -94,29 +101,21 @@ void parse(ParseTag<void>, redisReply &reply) {
     }
 }
 
-void rewrite_set_reply(redisReply &reply) {
+bool parse_set_reply(redisReply &reply) {
     if (is_nil(reply)) {
         // Failed to set, and make it a FALSE reply.
-        reply.type = REDIS_REPLY_INTEGER;
-        reply.integer = 0;
-
-        return;
+        return false;
     }
 
     // Check if it's a "OK" status reply.
     reply::parse<void>(reply);
 
-    assert(is_status(reply) && reply.str != nullptr);
-
-    free(reply.str);
-
     // Make it a TRUE reply.
-    reply.type = REDIS_REPLY_INTEGER;
-    reply.integer = 1;
+    return true;
 }
 
-void rewrite_georadius_reply(redisReply &reply) {
-    if (is_array(reply) && reply.element == nullptr) {
+void rewrite_empty_array_reply(redisReply &reply) {
+    if (is_array(reply) && reply.elements == 0) {
         // Make it a nil reply.
         reply.type = REDIS_REPLY_NIL;
     }

@@ -19,9 +19,12 @@
 
 #include <cassert>
 #include <chrono>
+#include <memory>
 #include <initializer_list>
 #include <vector>
+#include <unordered_set>
 #include "connection.h"
+#include "connection_pool.h"
 #include "utils.h"
 #include "reply.h"
 #include "command.h"
@@ -42,9 +45,9 @@ public:
     QueuedRedis(QueuedRedis &&) = default;
     QueuedRedis& operator=(QueuedRedis &&) = default;
 
-    // When it destructs, the underlying *Connection* will be closed,
+    // When it destructs, the underlying *Connection* will be closed or return to pool,
     // and any command that has NOT been executed will be ignored.
-    ~QueuedRedis() = default;
+    ~QueuedRedis();
 
     Redis redis();
 
@@ -455,9 +458,18 @@ public:
                         const StringView &val,
                         const std::chrono::milliseconds &ttl = std::chrono::milliseconds(0),
                         UpdateType type = UpdateType::ALWAYS) {
-        _set_cmd_indexes.push_back(_cmd_num);
+        _set_cmd_indexes.insert(_cmd_num);
 
         return command(cmd::set, key, val, ttl.count(), type);
+    }
+
+    QueuedRedis& set(const StringView &key,
+                        const StringView &val,
+                        bool keepttl,
+                        UpdateType type = UpdateType::ALWAYS) {
+        _set_cmd_indexes.insert(_cmd_num);
+
+        return command(cmd::set_keepttl, key, val, keepttl, type);
     }
 
     QueuedRedis& setex(const StringView &key,
@@ -1101,6 +1113,8 @@ public:
     }
 
     QueuedRedis& zpopmax(const StringView &key) {
+        _empty_array_cmd_indexes.push_back(_cmd_num);
+
         return command(cmd::zpopmax, key, 1);
     }
 
@@ -1109,6 +1123,8 @@ public:
     }
 
     QueuedRedis& zpopmin(const StringView &key) {
+        _empty_array_cmd_indexes.push_back(_cmd_num);
+
         return command(cmd::zpopmin, key, 1);
     }
 
@@ -1407,7 +1423,7 @@ public:
                             const StringView &destination,
                             bool store_dist,
                             long long count) {
-        _georadius_cmd_indexes.push_back(_cmd_num);
+        _empty_array_cmd_indexes.push_back(_cmd_num);
 
         return command(cmd::georadius_store,
                         key,
@@ -1451,7 +1467,7 @@ public:
                                     const StringView &destination,
                                     bool store_dist,
                                     long long count) {
-        _georadius_cmd_indexes.push_back(_cmd_num);
+        _empty_array_cmd_indexes.push_back(_cmd_num);
 
         return command(cmd::georadiusbymember,
                         key,
@@ -1487,16 +1503,34 @@ public:
 
     // SCRIPTING commands.
 
+    template <typename Keys, typename Args>
+    QueuedRedis& eval(const StringView &script,
+                        Keys keys_first,
+                        Keys keys_last,
+                        Args args_first,
+                        Args args_last) {
+        return command(cmd::eval<Keys, Args>, script, keys_first, keys_last, args_first, args_last);
+    }
+
     QueuedRedis& eval(const StringView &script,
                         std::initializer_list<StringView> keys,
                         std::initializer_list<StringView> args) {
-        return command(cmd::eval, script, keys, args);
+        return eval(script, keys.begin(), keys.end(), args.begin(), args.end());
+    }
+
+    template <typename Keys, typename Args>
+    QueuedRedis& evalsha(const StringView &script,
+                            Keys keys_first,
+                            Keys keys_last,
+                            Args args_first,
+                            Args args_last) {
+        return command(cmd::evalsha<Keys, Args>, script, keys_first, keys_last, args_first, args_last);
     }
 
     QueuedRedis& evalsha(const StringView &script,
                             std::initializer_list<StringView> keys,
                             std::initializer_list<StringView> args) {
-        return command(cmd::evalsha, script, keys, args);
+        return evalsha(script, keys.begin(), keys.end(), args.begin(), args.end());
     }
 
     // Call reply::parse_leniently to parse the reply.
@@ -1694,7 +1728,7 @@ public:
                         const StringView &start,
                         const StringView &end,
                         long long count) {
-        return command(cmd::xrange, key, start, end, count);
+        return command(cmd::xrange_count, key, start, end, count);
     }
 
     QueuedRedis& xread(const StringView &key, const StringView &id, long long count) {
@@ -1896,7 +1930,7 @@ public:
                             const StringView &end,
                             const StringView &start,
                             long long count) {
-        return command(cmd::xrevrange, key, end, start, count);
+        return command(cmd::xrevrange_count, key, end, start, count);
     }
 
     QueuedRedis& xtrim(const StringView &key, long long count, bool approx = true) {
@@ -1909,13 +1943,19 @@ private:
     friend class RedisCluster;
 
     template <typename ...Args>
-    QueuedRedis(const ConnectionSPtr &connection, Args &&...args);
+    QueuedRedis(const ConnectionPoolSPtr &pool, bool new_connection, Args &&...args);
 
-    void _sanity_check() const;
+    Connection& _connection();
 
-    void _reset();
+    void _sanity_check();
+
+    void _reset(bool reset_connection = true);
+
+    void _return_connection();
 
     void _invalidate();
+
+    void _clean_up();
 
     void _rewrite_replies(std::vector<ReplyUPtr> &replies) const;
 
@@ -1924,27 +1964,58 @@ private:
                             Func rewriter,
                             std::vector<ReplyUPtr> &replies) const;
 
-    ConnectionSPtr _connection;
+    GuardedConnectionSPtr _guarded_connection;
+
+    ConnectionPoolSPtr _connection_pool;
+
+    bool _new_connection = true;
 
     Impl _impl;
 
     std::size_t _cmd_num = 0;
 
-    std::vector<std::size_t> _set_cmd_indexes;
+    std::unordered_set<std::size_t> _set_cmd_indexes;
 
-    std::vector<std::size_t> _georadius_cmd_indexes;
+    std::vector<std::size_t> _empty_array_cmd_indexes;
 
     bool _valid = true;
 };
 
 class QueuedReplies {
 public:
+    QueuedReplies() = default;
+
+    QueuedReplies(const QueuedReplies &) = delete;
+    QueuedReplies& operator=(const QueuedReplies &) = delete;
+
+    QueuedReplies(QueuedReplies &&) = default;
+    QueuedReplies& operator=(QueuedReplies &&) = default;
+
+    ~QueuedReplies() = default;
+
     std::size_t size() const;
 
     redisReply& get(std::size_t idx);
 
     template <typename Result>
-    Result get(std::size_t idx);
+    auto get(std::size_t idx)
+        -> typename std::enable_if<!std::is_same<Result, bool>::value, Result>::type {
+        auto &reply = get(idx);
+
+        return reply::parse<Result>(reply);
+    }
+
+    template <typename Result>
+    auto get(std::size_t idx)
+        -> typename std::enable_if<std::is_same<Result, bool>::value, Result>::type {
+        auto &reply = get(idx);
+
+        if (_set_cmd_indexes.count(idx) > 0) {
+            return reply::parse_set_reply(reply);
+        } else {
+            return reply::parse<Result>(reply);
+        }
+    }
 
     template <typename Output>
     void get(std::size_t idx, Output output);
@@ -1953,11 +2024,15 @@ private:
     template <typename Impl>
     friend class QueuedRedis;
 
-    explicit QueuedReplies(std::vector<ReplyUPtr> replies) : _replies(std::move(replies)) {}
+    QueuedReplies(std::vector<ReplyUPtr> replies,
+            std::unordered_set<std::size_t> set_cmd_indexes) :
+        _replies(std::move(replies)), _set_cmd_indexes(std::move(set_cmd_indexes)) {}
 
     void _index_check(std::size_t idx) const;
 
     std::vector<ReplyUPtr> _replies;
+
+    std::unordered_set<std::size_t> _set_cmd_indexes;
 };
 
 }

@@ -50,8 +50,9 @@ public:
     /// @see `ConnectionOptions`
     /// @see `ConnectionPoolOptions`
     /// @see https://github.com/sewenew/redis-plus-plus#connection
-    Redis(const ConnectionOptions &connection_opts,
-            const ConnectionPoolOptions &pool_opts = {}) : _pool(pool_opts, connection_opts) {}
+    explicit Redis(const ConnectionOptions &connection_opts,
+            const ConnectionPoolOptions &pool_opts = {}) :
+                _pool(std::make_shared<ConnectionPool>(pool_opts, connection_opts)) {}
 
     /// @brief Construct `Redis` instance with URI.
     /// @param uri URI, e.g. 'tcp://127.0.0.1', 'tcp://127.0.0.1:6379', or 'unix://path/to/socket'.
@@ -77,7 +78,9 @@ public:
             Role role,
             const ConnectionOptions &connection_opts,
             const ConnectionPoolOptions &pool_opts = {}) :
-                _pool(SimpleSentinel(sentinel, master_name, role), pool_opts, connection_opts) {}
+                _pool(std::make_shared<ConnectionPool>(SimpleSentinel(sentinel, master_name, role),
+                                                        pool_opts,
+                                                        connection_opts)) {}
 
     /// @brief `Redis` is not copyable.
     Redis(const Redis &) = delete;
@@ -92,21 +95,23 @@ public:
     Redis& operator=(Redis &&) = default;
 
     /// @brief Create a pipeline.
+    /// @param new_connection Whether creating a `Pipeline` object in a new connection.
     /// @return The created pipeline.
     /// @note Instead of picking a connection from the underlying connection pool,
     ///       this method will create a new connection to Redis. So it's not a cheap operation,
     ///       and you'd better reuse the returned object as much as possible.
     /// @see https://github.com/sewenew/redis-plus-plus#pipeline
-    Pipeline pipeline();
+    Pipeline pipeline(bool new_connection = true);
 
     /// @brief Create a transaction.
     /// @param piped Whether commands in a transaction should be sent in a pipeline to reduce RTT.
+    /// @param new_connection Whether creating a `Pipeline` object in a new connection.
     /// @return The created transaction.
     /// @note Instead of picking a connection from the underlying connection pool,
     ///       this method will create a new connection to Redis. So it's not a cheap operation,
     ///       and you'd better reuse the returned object as much as possible.
     /// @see https://github.com/sewenew/redis-plus-plus#transaction
-    Transaction transaction(bool piped = false);
+    Transaction transaction(bool piped = false, bool new_connection = true);
 
     /// @brief Create a subscriber.
     /// @return The created subscriber.
@@ -906,10 +911,14 @@ public:
     /// @retval true If the key has been set.
     /// @retval false If the key was not set, because of the given option.
     /// @see https://redis.io/commands/set
-    // TODO: Support KEEPTTL option for Redis 6.0
     bool set(const StringView &key,
                 const StringView &val,
                 const std::chrono::milliseconds &ttl = std::chrono::milliseconds(0),
+                UpdateType type = UpdateType::ALWAYS);
+
+    bool set(const StringView &key,
+                const StringView &val,
+                bool keepttl,
                 UpdateType type = UpdateType::ALWAYS);
 
     // TODO: add SETBIT command.
@@ -2150,7 +2159,10 @@ public:
     /// @param changed Whether change the return value from number of newly added member to
     ///                number of members changed (i.e. added and updated).
     /// @return Number of added members or number of added and updated members depends on `changed`.
-    /// @note We don't support the INCR option, since you can always use ZINCRBY instead.
+    /// @note We don't support the INCR option, because in this case, the return value of zadd
+    ///       command is NOT of type long long. However, you can always use the generic interface
+    ///       to send zadd command with INCR option:
+    ///       `auto score = redis.command<OptionalDouble>("ZADD", "key", "XX", "INCR", 10, "mem");`
     /// @see `UpdateType`
     /// @see https://redis.io/commands/zadd
     long long zadd(const StringView &key,
@@ -2176,7 +2188,10 @@ public:
     /// @param changed Whether change the return value from number of newly added member to
     ///                number of members changed (i.e. added and updated).
     /// @return Number of added members or number of added and updated members depends on `changed`.
-    /// @note We don't support the INCR option, since you can always use ZINCRBY instead.
+    /// @note We don't support the INCR option, because in this case, the return value of zadd
+    ///       command is NOT of type long long. However, you can always use the generic interface
+    ///       to send zadd command with INCR option:
+    ///       `auto score = redis.command<OptionalDouble>("ZADD", "key", "XX", "INCR", 10, "mem");`
     /// @see `UpdateType`
     /// @see https://redis.io/commands/zadd
     template <typename Input>
@@ -2202,7 +2217,10 @@ public:
     /// @param changed Whether change the return value from number of newly added member to
     ///                number of members changed (i.e. added and updated).
     /// @return Number of added members or number of added and updated members depends on `changed`.
-    /// @note We don't support the INCR option, since you can always use ZINCRBY instead.
+    /// @note We don't support the INCR option, because in this case, the return value of zadd
+    ///       command is NOT of type long long. However, you can always use the generic interface
+    ///       to send zadd command with INCR option:
+    ///       `auto score = redis.command<OptionalDouble>("ZADD", "key", "XX", "INCR", 10, "mem");`
     /// @see `UpdateType`
     /// @see https://redis.io/commands/zadd
     template <typename T>
@@ -2389,7 +2407,7 @@ public:
     /// @param key Key where the sorted set is stored.
     /// @return Member-score pair with the highest score.
     /// @note If sorted set is empty `zpopmax` returns
-    ///       `Optional<std::pair<std::string, double>>` (`std::nullopt`).
+    ///       `Optional<std::pair<std::string, double>>{}` (`std::nullopt`).
     /// @see `Redis::bzpopmax`
     /// @see https://redis.io/commands/zpopmax
     Optional<std::pair<std::string, double>> zpopmax(const StringView &key);
@@ -2408,7 +2426,7 @@ public:
     /// @param key Key where the sorted set is stored.
     /// @return Member-score pair with the lowest score.
     /// @note If sorted set is empty `zpopmin` returns
-    ///       `Optional<std::pair<std::string, double>>` (`std::nullopt`).
+    ///       `Optional<std::pair<std::string, double>>{}` (`std::nullopt`).
     /// @see `Redis::bzpopmin`
     /// @see https://redis.io/commands/zpopmin
     Optional<std::pair<std::string, double>> zpopmin(const StringView &key);
@@ -2431,8 +2449,8 @@ public:
     /// std::vector<std::string> result;
     /// redis.zrange("zset", 0, -1, std::back_inserter(result));
     /// // send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
-    /// redis.zrange("zset", 0, -1, std::inserter(with_score, with_score.end()));
+    /// std::vector<std::pair<std::string, double>> with_score;
+    /// redis.zrange("zset", 0, -1, std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param start Start rank. Inclusive and can be negative.
@@ -2515,10 +2533,10 @@ public:
     /// redis.zrangebyscore("zset", BoundedInterval<double>(3, 6, BoundType::OPEN),
     ///     std::back_inserter(result));
     /// // Send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
+    /// std::vector<std::pair<std::string, double>> with_score;
     /// // Get members whose score between [3, +inf).
     /// redis.zrangebyscore("zset", LeftBoundedInterval<double>(3, BoundType::RIGHT_OPEN),
-    ///     std::inserter(with_score, with_score.end()));
+    ///     std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param interval the min-max range by score.
@@ -2548,10 +2566,10 @@ public:
     /// redis.zrangebyscore("zset", BoundedInterval<double>(3, 6, BoundType::OPEN),
     ///     opts, std::back_inserter(result));
     /// // Send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
+    /// std::vector<std::pair<std::string, double>> with_score;
     /// // Get members whose score between [3, +inf).
     /// redis.zrangebyscore("zset", LeftBoundedInterval<double>(3, BoundType::RIGHT_OPEN),
-    ///     opts, std::inserter(with_score, with_score.end()));
+    ///     opts, std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param interval the min-max range by score.
@@ -2647,8 +2665,8 @@ public:
     /// std::vector<std::string> result;
     /// redis.zrevrange("key", 0, -1, std::back_inserter(result));
     /// // send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
-    /// redis.zrevrange("key", 0, -1, std::inserter(with_score, with_score.end()));
+    /// std::vector<std::pair<std::string, double>> with_score;
+    /// redis.zrevrange("key", 0, -1, std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param start Start rank. Inclusive and can be negative.
@@ -2731,10 +2749,10 @@ public:
     /// redis.zrevrangebyscore("zset", BoundedInterval<double>(3, 6, BoundType::OPEN),
     ///     std::back_inserter(result));
     /// // Send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
+    /// std::vector<std::pair<std::string, double>> with_score;
     /// // Get members whose score between [3, +inf) in reverse order.
     /// redis.zrevrangebyscore("zset", LeftBoundedInterval<double>(3, BoundType::RIGHT_OPEN),
-    ///     std::inserter(with_score, with_score.end()));
+    ///     std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param interval the min-max range by score.
@@ -2764,10 +2782,10 @@ public:
     /// redis.zrevrangebyscore("zset", BoundedInterval<double>(3, 6, BoundType::OPEN),
     ///     opts, std::back_inserter(result));
     /// // Send command with *WITHSCORES* option:
-    /// std::unordered_map<std::string, double> with_score;
+    /// std::vector<std::pair<std::string, double>> with_score;
     /// // Get members whose score between [3, +inf) in reverse order.
     /// redis.zrevrangebyscore("zset", LeftBoundedInterval<double>(3, BoundType::RIGHT_OPEN),
-    ///     opts, std::inserter(with_score, with_score.end()));
+    ///     opts, std::back_inserter(with_score));
     /// @endcode
     /// @param key Key where the sorted set is stored.
     /// @param interval the min-max range by score.
@@ -2800,10 +2818,10 @@ public:
     /// Example:
     /// @code{.cpp}
     /// auto cursor = 0LL;
-    /// std::unordered_map<std::string, double> members;
+    /// std::vector<std::pair<std::string, double>> members;
     /// while (true) {
     ///     cursor = redis.zscan("zset", cursor, "pattern:*",
-    ///         10, std::inserter(members, members.begin()));
+    ///         10, std::back_inserter(members));
     ///     if (cursor == 0) {
     ///         break;
     ///     }
@@ -3062,6 +3080,21 @@ public:
     // 1. since we have different overloads for georadius and georadius-store,
     //    we might use the GEORADIUS_RO command in the future.
     // 2. there're too many parameters for this method, we might refactor it.
+
+    /// @brief Get members in geo range, i.e. a circle, and store them in a sorted set.
+    /// @param key Key of the GEO set.
+    /// @param loc Location encoded with <longitude, latitude> pair.
+    /// @param radius Radius of the range.
+    /// @param unit Radius unit.
+    /// @param destination Key of the destination sorted set.
+    /// @param store_dist Whether store distance info instead of geo info to destination.
+    /// @param count Limit the first N members.
+    /// @return Number of members stored in destination.
+    /// @note Before Redis 6.2.6, if key does not exist, returns `OptionalLongLong{}` (`std::nullopt`).
+    ///       Since Redis 6.2.6, if key does not exist, returns 0.
+    /// @see `GeoUnit`
+    /// @see `Redis::georadiusbymember`
+    /// @see https://redis.io/commands/georadius
     OptionalLongLong georadius(const StringView &key,
                                 const std::pair<double, double> &loc,
                                 double radius,
@@ -3112,6 +3145,21 @@ public:
                     bool asc,
                     Output output);
 
+    /// @brief Get members in geo range, i.e. a circle, and store them in a sorted set.
+    /// @param key Key of the GEO set.
+    /// @param member Member which is the center of the circle.
+    /// @param radius Radius of the range.
+    /// @param unit Radius unit.
+    /// @param destination Key of the destination sorted set.
+    /// @param store_dist Whether store distance info instead of geo info to destination.
+    /// @param count Limit the first N members.
+    /// @return Number of members stored in destination.
+    /// @note Before Redis 6.2.6, if key does not exist, returns `OptionalLongLong{}` (`std::nullopt`).
+    ///       Since Redis 6.2.6, if key does not exist, returns 0.
+    /// @note If member does not exist, throw an `ReplyError`.
+    /// @see `GeoUnit`
+    /// @see `Redis::georadius`
+    /// @see https://redis.io/commands/georadiusbymember
     OptionalLongLong georadiusbymember(const StringView &key,
                                         const StringView &member,
                                         double radius,
@@ -3132,10 +3180,25 @@ public:
 
     // SCRIPTING commands.
 
+    template <typename Result, typename Keys, typename Args>
+    Result eval(const StringView &script,
+                Keys keys_first,
+                Keys keys_last,
+                Args args_first,
+                Args args_last);
+
     template <typename Result>
     Result eval(const StringView &script,
                 std::initializer_list<StringView> keys,
                 std::initializer_list<StringView> args);
+
+    template <typename Keys, typename Args, typename Output>
+    void eval(const StringView &script,
+                Keys keys_first,
+                Keys keys_last,
+                Args args_first,
+                Args args_last,
+                Output output);
 
     template <typename Output>
     void eval(const StringView &script,
@@ -3143,10 +3206,25 @@ public:
                 std::initializer_list<StringView> args,
                 Output output);
 
+    template <typename Result, typename Keys, typename Args>
+    Result evalsha(const StringView &script,
+                    Keys keys_first,
+                    Keys keys_last,
+                    Args args_first,
+                    Args args_last);
+
     template <typename Result>
     Result evalsha(const StringView &script,
                     std::initializer_list<StringView> keys,
                     std::initializer_list<StringView> args);
+
+    template <typename Keys, typename Args, typename Output>
+    void evalsha(const StringView &script,
+                    Keys keys_first,
+                    Keys keys_last,
+                    Args args_first,
+                    Args args_last,
+                    Output output);
 
     template <typename Output>
     void evalsha(const StringView &script,
@@ -3190,6 +3268,8 @@ public:
     void watch(std::initializer_list<T> il) {
         watch(il.begin(), il.end());
     }
+
+    void unwatch();
 
     // Stream commands.
 
@@ -3509,27 +3589,13 @@ public:
     long long xtrim(const StringView &key, long long count, bool approx = true);
 
 private:
-    class ConnectionPoolGuard {
-    public:
-        ConnectionPoolGuard(ConnectionPool &pool,
-                            Connection &connection) : _pool(pool), _connection(connection) {}
-
-        ~ConnectionPoolGuard() {
-            _pool.release(std::move(_connection));
-        }
-
-    private:
-        ConnectionPool &_pool;
-        Connection &_connection;
-    };
-
     template <typename Impl>
     friend class QueuedRedis;
 
     friend class RedisCluster;
 
     // For internal use.
-    explicit Redis(const ConnectionSPtr &connection);
+    explicit Redis(const GuardedConnectionSPtr &connection);
 
     template <std::size_t ...Is, typename ...Args>
     ReplyUPtr _command(const StringView &cmd_name, const IndexSequence<Is...> &, Args &&...args) {
@@ -3551,13 +3617,13 @@ private:
     // Pool Mode.
     // Public constructors create a *Redis* instance with a pool.
     // In this case, *_connection* is a null pointer, and is never used.
-    ConnectionPool _pool;
+    ConnectionPoolSPtr _pool;
 
     // Single Connection Mode.
-    // Private constructor creats a *Redis* instance with a single connection.
+    // Private constructor creates a *Redis* instance with a single connection.
     // This is used when we create Transaction, Pipeline and Subscriber.
     // In this case, *_pool* is empty, and is never used.
-    ConnectionSPtr _connection;
+    GuardedConnectionSPtr _connection;
 };
 
 }

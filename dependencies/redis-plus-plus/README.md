@@ -1,7 +1,12 @@
 # redis-plus-plus
 
+[![Build Status](https://travis-ci.org/sewenew/redis-plus-plus.svg?branch=master)](https://travis-ci.org/sewenew/redis-plus-plus)
+
+[中文交流群](http://github.com/sewenew/redis-plus-plus/blob/master/Chinese.md)
+
 - [Overview](#overview)
     - [Features](#features)
+    - [Branches](#branches)
 - [Installation](#installation)
     - [Install hiredis](#install-hiredis)
     - [Install redis-plus-plus](#install-redis-plus-plus)
@@ -19,13 +24,16 @@
     - [Redis Cluster](#redis-cluster)
     - [Redis Sentinel](#redis-sentinel)
     - [Redis Stream](#redis-stream)
+    - [Redis Modules](#redis-modules)
+    - [Async Interface](#async-interface)
+    - [Coroutine Interface](#coroutine-interface)
 - [Redis Recipes](#redis-recipes)
     - [Redlock](#redlock)
 - [Author](#author)
 
 ## Overview
 
-This is a C++ client for Redis. It's based on [hiredis](https://github.com/redis/hiredis), and written in C++ 11 / C++ 17.
+This is a C++ client library for Redis. It's based on [hiredis](https://github.com/redis/hiredis), and is compatible with C++ 17, C++ 14, and C++ 11.
 
 **NOTE**: I'm not a native speaker. So if the documentation is unclear, please feel free to open an issue or pull request. I'll response ASAP.
 
@@ -41,14 +49,30 @@ This is a C++ client for Redis. It's based on [hiredis](https://github.com/redis
 - Redis Sentinel.
 - STL-like interfaces.
 - Generic command interface.
+- Redis Stream.
+- Redlock.
+- Redis ACL.
+- TLS/SSL support.
+- Sync and Async interface.
+- Coroutine support.
+
+### Branches
+
+The master branch is the stable branch, which passes all tests. The dev branch is unstable. If you want to contribute, please create pull request on dev branch.
 
 ## Installation
 
 ### Install hiredis
 
-Since *redis-plus-plus* is based on *hiredis*, you should install *hiredis* first. The minimum version requirement for *hiredis* is **v0.12.1**, and you'd better use the latest release of *hiredis*.
+Since *redis-plus-plus* is based on *hiredis*, you should install *hiredis* first. The minimum version requirement for *hiredis* is **v0.12.1**. However, [the latest stable release](https://github.com/redis/hiredis/releases) of *hiredis* is always recommended.
 
-```
+**NOTE**: You must ensure that there's only 1 version of hiredis is installed. Otherwise, you might get some wired problems. Check the following issues for example: [issue 135](https://github.com/sewenew/redis-plus-plus/issues/135), [issue 140](https://github.com/sewenew/redis-plus-plus/issues/140) and [issue 158](https://github.com/sewenew/redis-plus-plus/issues/158).
+
+Normally, you can install *hiredis* with a C++ package manager, and that's the easiest way to do it, e.g. `sudo apt-get install libhiredis-dev`. However, if you want to install the latest code of hiredis, or a specified version (e.g. async support needs hiredis v1.0.0 or later), you can install it from source.
+
+Note again: DO NOT INSTALL MULTIPLE VERSIONS OF HIREDIS.
+
+```shell
 git clone https://github.com/redis/hiredis.git
 
 cd hiredis
@@ -60,7 +84,7 @@ make install
 
 By default, *hiredis* is installed at */usr/local*. If you want to install *hiredis* at non-default location, use the following commands to specify the installation path.
 
-```
+```shell
 make PREFIX=/non/default/path
 
 make PREFIX=/non/default/path install
@@ -70,16 +94,16 @@ make PREFIX=/non/default/path install
 
 *redis-plus-plus* is built with [CMAKE](https://cmake.org).
 
-```
+```shell
 git clone https://github.com/sewenew/redis-plus-plus.git
 
 cd redis-plus-plus
 
-mkdir compile
+mkdir build
 
-cd compile
+cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake ..
 
 make
 
@@ -90,33 +114,133 @@ cd ..
 
 If *hiredis* is installed at non-default location, you should use `CMAKE_PREFIX_PATH` to specify the installation path of *hiredis*. By default, *redis-plus-plus* is installed at */usr/local*. However, you can use `CMAKE_INSTALL_PREFIX` to install *redis-plus-plus* at non-default location.
 
-```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus ..
+```shell
+cmake -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus ..
 ```
 
-By default, *redis-plus-plus* is built with `-std=c++11` standard. If you want to use the [std::string_view](#stringview) and [std::optional](#optional) features, you can also build *redis-plus-plus* with `-std=c++17` standard by specifying the following cmake flag: `-DREDIS_PLUS_PLUS_CXX_STANDARD=17`.
+Since version 1.3.0, by default, *redis-plus-plus* is built with the `-std=c++17` standard. So that we can use the [std::string_view](#stringview) and [std::optional](#optional) features. However, it can also be built with the `-std=c++11` or `-std=c++14` standard, and in that case, we have our own simple implementation of `std::string_view` and `std::optional`. In order to explicitly specify c++ standard, you can use the following cmake flag: `-DREDIS_PLUS_PLUS_CXX_STANDARD=11`.
 
+```shell
+cmake -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus -DREDIS_PLUS_PLUS_CXX_STANDARD=11 ..
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus -DREDIS_PLUS_PLUS_CXX_STANDARD=17 ..
-```
+
+**NOTE**: You should build *redis-plus-plus* and your application with the same standard, e.g. if you build *redis-plus-plus* with C++17 standard, you MUST also build your application code with C++17 standard.
 
 When compiling *redis-plus-plus*, it also compiles a test program, which might take a while. However, you can disable building test with the following cmake option: `-DREDIS_PLUS_PLUS_BUILD_TEST=OFF`.
 
+```shell
+cmake -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus -DREDIS_PLUS_PLUS_BUILD_TEST=OFF ..
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/hiredis -DCMAKE_INSTALL_PREFIX=/path/to/install/redis-plus-plus -DREDIS_PLUS_PLUS_BUILD_TEST=OFF ..
+
+By default, *redis-plus-plus* builds both a static library and a shared library. If you only want to build one of them, you can disable the other with `-DREDIS_PLUS_PLUS_BUILD_STATIC=OFF` or `-DREDIS_PLUS_PLUS_BUILD_SHARED=OFF`.
+
+*redis-plus-plus* builds static library with `-fPIC` option, i.e. Position Independent Code, by default. However, you can disable it with `-DREDIS_PLUS_PLUS_BUILD_STATIC_WITH_PIC=OFF`.
+
+#### Windows Support
+
+Now *hiredis* has Windows support, and since Visual Studio 2017, Visual Studio has built-in support for CMake. So *redis-plus-plus* also supports Windows platform now. It has been fully tested with Visual Studio 2017 and later on Win 10. I'm not familiar with Visual Studio environment, and the following doc might not be accurate. If you're familiar with the Windows platform, feel free to update this doc on how to install *redis-plus-plus* on Windows.
+
+##### CMake Support On Visual Studio
+
+The following are some links on how to build CMake project with Visual Studio 2017 or later. If you're not familiar with it, you'd better read these instructions first:
+
+- [CMake support in Visual Studio](https://devblogs.microsoft.com/cppblog/cmake-support-in-visual-studio/)
+- [CMake projects in Visual Studio](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2017)
+- [CMakeSettings.json schema reference](https://docs.microsoft.com/en-us/cpp/build/cmakesettings-reference?view=vs-2017)
+- [Open a project from a GitHub repo](https://docs.microsoft.com/en-us/visualstudio/get-started/tutorial-open-project-from-repo?view=vs-2019#open-a-project-from-a-github-repo)
+
+**NOTE**: IMHO, Visual Studio 2017's support for CMake project is not very mature, and I recommend you to build *hiredis* and *redis-plus-plus with Visual Studio 2019.
+
+##### Build hiredis
+
+First of all, you need to get the latest code of *hiredis* on master branch. Older version might not support Windows platform. *hiredis*' CMakeLists.txt uses `add_compile_definitions` method, which is only supported by cmake 3.12 or later. However, Visual Studio 2017's cmake version is older than that. So if you're using Visual Studio 2017, you need to comment the following line in the CMakeLists.txt file:
+
+```cmake
+#IF(WIN32)
+#    ADD_COMPILE_DEFINITIONS(_CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN)
+#ENDIF()
+```
+
+You can use the **Open Folder** feature to open *hiredis* project, and build it with the instructions (links) mentioned above.
+
+##### Build redis-plus-plus
+
+Since *redis-plus-plus* depends on *hiredis*, we need to specify the installation paths of *hiredis* before building it. You can use the **Open Folder** feature to open *redis-plus-plus* project. You need to edit the *CMakeSetting.json* file (automatically generated by Visual Studio) to set *HIREDIS_HEADER*, *HIREDIS_LIB* and *TEST_HIREDIS_LIB* variables to specify the installation path of hiredis headers, installation path of hiredis dynamic library and installation path of hiredis static library. The following is an example of *CMakeSetting.json* file:
+
+```json
+{
+    "configurations": [
+      {
+        "name": "x64-Release",
+        "generator": "Visual Studio 15 2017 Win64",
+        "configurationType": "Release",
+        "buildRoot": "${env.LOCALAPPDATA}\\CMakeBuild\\${workspaceHash}\\build\\${name}",
+        "cmakeCommandArgs": "",
+        "buildCommandArgs": "-m -v:minimal",
+        "variables": [
+          {
+            "name": "HIREDIS_HEADER",
+            "value": "installation path of hiredis header files",
+            "type": "PATH"
+          },
+          {
+            "name": "HIREDIS_LIB",
+            "value": "installation path of dynamic library of hiredis",
+            "type": "FILEPATH"
+          },
+          {
+            "name": "TEST_HIREDIS_LIB",
+            "value": "installation path of static library of hiredis",
+            "type": "FILEPATH"
+          }
+        ]
+      }
+    ]
+}
+```
+
+Then you can build it the instructions (links) mentioned above. If you're building with Visual Studio 2017 in debug mode, you might get [/bigobj error](https://docs.microsoft.com/en-us/cpp/build/reference/bigobj-increase-number-of-sections-in-dot-obj-file?view=vs-2017) when building the test. In this case, you can disable building test by setting `-DREDIS_PLUS_PLUS_BUILD_TEST=OFF` or build it in Release mode.
+
+**NOTE**:
+
+- Since 1.3.0, *redis-puls-plus* is built with C++17 by default, and you should also set your application code to be built with C++17. If you still want to build the *redis-plus-plus* with C++11, you can set the `REDIS_PLUS_PLUS_CXX_STANDARD` cmake option to 11.
+- TLS/SSL support has not been tested on Windows yet.
+
+##### The Order of Header Files
+
+On Windows platform, if your application code also needs to include *windows.h*. You must ensure that *sw/redis++/redis++.h* is included before *windows.h*. Check [this issue](https://github.com/sewenew/redis-plus-plus/issues/194) for detail.
+
+#### Building a redis-plus-plus Debian Package (Optional)
+
+Basic support for building a GNU/Debian package is supplied with the use of cmake.
+The following example shows how to build the Debian package:
+
+```shell
+mkdir build; cd build
+cmake ..
+cpack -G DEB
+```
+
+The install prefix may be modified as follows:
+
+```shell
+mkdir build; cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+cpack -G DEB
 ```
 
 ### Run Tests (Optional)
 
 *redis-plus-plus* has been fully tested with the following compilers:
 
-```
+```shell
 gcc version 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC)
 gcc version 5.5.0 20171010 (Ubuntu 5.5.0-12ubuntu1)
 gcc version 6.5.0 20181026 (Ubuntu 6.5.0-2ubuntu1~18.04)
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1)
 gcc version 8.3.0 (Ubuntu 8.3.0-6ubuntu1~18.04.1)
 gcc version 9.2.1 20191008 (Ubuntu 9.2.1-9ubuntu2)
+gcc version 10.2.1 20210110 (Debian 10.2.1-6)
 clang version 3.9.1-19ubuntu1 (tags/RELEASE_391/rc2)
 clang version 4.0.1-10 (tags/RELEASE_401/final)
 clang version 5.0.1-4 (tags/RELEASE_501/final)
@@ -124,9 +248,11 @@ clang version 6.0.0-1ubuntu2 (tags/RELEASE_600/final)
 clang version 7.0.0-3~ubuntu0.18.04.1 (tags/RELEASE_700/final)
 clang version 8.0.1-3build1 (tags/RELEASE_801/final)
 Apple clang version 11.0.0 (clang-1100.0.33.12)
+Visual Studio 2017 (Win 10)
+Visual Studio 2019 (Win 10)
 ```
 
-If you build *redis-plus-plus* with `-DREDIS_PLUS_PLUS_BUILD_TEST=ON` (the default behavior), you'll get a test program in *compile/test* directory: *compile/test/test_redis++*.
+If you build *redis-plus-plus* with `-DREDIS_PLUS_PLUS_BUILD_TEST=ON` (the default behavior, and you can disable building test with `-DREDIS_PLUS_PLUS_BUILD_TEST=OFF`), you'll get a test program in *build/test* directory: *build/test/test_redis++*.
 
 In order to run the tests, you need to set up a Redis instance, and a Redis Cluster. Since the test program will send most of Redis commands to the server and cluster, you need to set up Redis of the latest version (by now, it's 5.0). Otherwise, the tests might fail. For example, if you set up Redis 4.0 for testing, the test program will fail when it tries to send the `ZPOPMAX` command (a Redis 5.0 command) to the server. If you want to run the tests with other Redis versions, you have to comment out commands that haven't been supported by your Redis, from test source files in *redis-plus-plus/test/src/sw/redis++/* directory. Sorry for the inconvenience, and I'll fix this problem to make the test program work with any version of Redis in the future.
 
@@ -136,8 +262,8 @@ In order to run the tests, you need to set up a Redis instance, and a Redis Clus
 
 In order to run tests with both Redis and Redis Cluster, you can run the test program with the following command:
 
-```
-./compile/test/test_redis++ -h host -p port -a auth -n cluster_node -c cluster_port
+```shell
+./build/test/test_redis++ -h host -p port -a auth -n cluster_node -c cluster_port
 ```
 
 - *host* and *port* are the host and port number of the Redis instance.
@@ -146,26 +272,25 @@ In order to run tests with both Redis and Redis Cluster, you can run the test pr
 
 If you only want to run tests with Redis, you only need to specify *host*, *port* and *auth* options:
 
-```
-./compile/test/test_redis++ -h host -p port -a auth
+```shell
+./build/test/test_redis++ -h host -p port -a auth
 ```
 
 Similarly, if you only want to run tests with Redis Cluster, just specify *cluster_node*, *cluster_port* and *auth* options:
 
-```
-./compile/test/test_redis++ -a auth -n cluster_node -c cluster_port
+```shell
+./build/test/test_redis++ -a auth -n cluster_node -c cluster_port
 ```
 
-The test program will test running *redis-plus-plus* in multi-threads environment, and this test will cost a long time. If you want to skip it (not recommended), just comment out the following lines in *test/src/sw/redis++/test_main.cpp* file.
+By default, the test program will not test running *redis-plus-plus* in multi-threads environment. If you want to do multi-threads test, which might cost a long time, you can specify the *-m* option:
 
-```C++
-sw::redis::test::ThreadsTest threads_test(opts, cluster_node_opts);
-threads_test.run();
+```shell
+./build/test/test_redis++ -h host -p port -a auth -n cluster_node -c cluster_port -m
 ```
 
 If all tests have been passed, the test program will print the following message:
 
-```
+```shell
 Pass all tests
 ```
 
@@ -175,8 +300,8 @@ Otherwise, it prints the error message.
 
 *redis-plus-plus* runs as fast as *hiredis*, since it's a wrapper of *hiredis*. You can run *test_redis++* in benchmark mode to check the performance in your environment.
 
-```
-./compile/test/test_redis++ -h host -p port -a auth -n cluster_node -c cluster_port -b -t thread_num -s connection_pool_size -r request_num -k key_len -v val_len
+```shell
+./build/test/test_redis++ -h host -p port -a auth -n cluster_node -c cluster_port -b -t thread_num -s connection_pool_size -r request_num -k key_len -v val_len
 ```
 
 - *-b* option turns the test program into benchmark mode.
@@ -190,43 +315,43 @@ The bechmark will generate `100` random binary keys for testing, and the size of
 
 ### Use redis-plus-plus In Your Project
 
-After compiling the code, you'll get both shared library and static library. Since *redis-plus-plus* depends on *hiredis*, you need to link both libraries to your Application. Also don't forget to specify the `-std=c++11` and thread-related option.
+After compiling the code, you'll get both shared library and static library. Since *redis-plus-plus* depends on *hiredis*, you need to link both libraries to your Application. Also don't forget to specify the c++ standard, `-std=c++17`, `-std=c++14` or `-std=c++11`, as well as the thread-related option.
 
 #### Use Static Libraries
 
 Take gcc as an example.
 
-```
-g++ -std=c++11 -o app app.cpp /path/to/libredis++.a /path/to/libhiredis.a -pthread
+```shell
+g++ -std=c++17 -o app app.cpp /path/to/libredis++.a /path/to/libhiredis.a -pthread
 ```
 
 If *hiredis* and *redis-plus-plus* are installed at non-default location, you should use `-I` option to specify the header path.
 
-```
-g++ -std=c++11 -I/non-default/install/include/path -o app app.cpp /path/to/libredis++.a /path/to/libhiredis.a -pthread
+```shell
+g++ -std=c++17 -I/non-default/install/include/path -o app app.cpp /path/to/libredis++.a /path/to/libhiredis.a -pthread
 ```
 
 #### Use Shared Libraries
 
-```
-g++ -std=c++11 -o app app.cpp -lredis++ -lhiredis -pthread
+```shell
+g++ -std=c++17 -o app app.cpp -lredis++ -lhiredis -pthread
 ```
 
 If *hiredis* and *redis-plus-plus* are installed at non-default location, you should use `-I` and `-L` options to specify the header and library paths.
 
-```
-g++ -std=c++11 -I/non-default/install/include/path -L/non-default/install/lib/path -o app app.cpp -lredis++ -lhiredis -pthread
+```shell
+g++ -std=c++17 -I/non-default/install/include/path -L/non-default/install/lib/path -o app app.cpp -lredis++ -lhiredis -pthread
 ```
 
 When linking with shared libraries, and running your application, you might get the following error message:
 
-```
+```shell
 error while loading shared libraries: xxx: cannot open shared object file: No such file or directory.
 ```
 
 That's because the linker cannot find the shared libraries. In order to solve the problem, you can add the path where you installed *hiredis* and *redis-plus-plus* libraries, to `LD_LIBRARY_PATH` environment variable. For example:
 
-```
+```shell
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
@@ -237,6 +362,11 @@ Check [this StackOverflow question](https://stackoverflow.com/questions/480764) 
 If you're using cmake to build your application, you need to add *hiredis* and *redis-plus-plus* dependencies in your *CMakeLists.txt*:
 
 ```CMake
+# <---------- set c++ standard ------------->
+# NOTE: you must build redis-plus-plus and your application code with the same standard.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # <------------ add hiredis dependency --------------->
 find_path(HIREDIS_HEADER hiredis)
 target_include_directories(target PUBLIC ${HIREDIS_HEADER})
@@ -347,11 +477,13 @@ try {
     };
     redis.zadd("sorted_set", scores.begin(), scores.end());
 
-    // Redis SORTED SET to std::unordered_map<std::string, double>.
-    scores.clear();
+    // Redis SORTED SET to std::vector<std::pair<std::string, double>>.
+    // NOTE: The return results of zrangebyscore are ordered, if you save the results
+    // in to `std::unordered_map<std::string, double>`, you'll lose the order.
+    std::vector<std::pair<std::string, double>> zset_result;
     redis.zrangebyscore("sorted_set",
             UnboundedInterval<double>{},            // (-inf, +inf)
-            std::inserter(scores, scores.begin()));
+            std::back_inserter(zset_result));
 
     // Only get member names:
     // pass an inserter of std::vector<std::string> type as output parameter.
@@ -361,11 +493,11 @@ try {
             std::back_inserter(without_score));
 
     // Get both member names and scores:
-    // pass an inserter of std::unordered_map<std::string, double> as output parameter.
-    std::unordered_map<std::string, double> with_score;
+    // pass an back_inserter of std::vector<std::pair<std::string, double>> as output parameter.
+    std::vector<std::pair<std::string, double>> with_score;
     redis.zrangebyscore("sorted_set",
             BoundedInterval<double>(1.5, 3.4, BoundType::LEFT_OPEN),    // (1.5, 3.4]
-            std::inserter(with_score, with_score.end()));
+            std::back_inserter(with_score));
 
     // ***** SCRIPTING commands *****
 
@@ -373,8 +505,23 @@ try {
     auto num = redis.eval<long long>("return 1", {}, {});
 
     // Script returns an array of elements.
-    std::vector<long long> nums;
+    std::vector<std::string> nums;
     redis.eval("return {ARGV[1], ARGV[2]}", {}, {"1", "2"}, std::back_inserter(nums));
+
+    // mset with TTL
+    auto mset_with_ttl_script = R"(
+        local len = #KEYS
+        if (len == 0 or len + 1 ~= #ARGV) then return 0 end
+        local ttl = tonumber(ARGV[len + 1])
+        if (not ttl or ttl <= 0) then return 0 end
+        for i = 1, len do redis.call("SET", KEYS[i], ARGV[i], "EX", ttl) end
+        return 1
+    )";
+
+    // Set multiple key-value pairs with TTL of 60 seconds.
+    auto keys = {"key1", "key2", "key3"};
+    std::vector<std::string> args = {"val1", "val2", "val3", "60"};
+    redis.eval<long long>(mset_with_ttl_script, keys.begin(), keys.end(), args.begin(), args.end());
 
     // ***** Pipeline *****
 
@@ -497,11 +644,22 @@ Redis redis1(connection_options);
 ConnectionPoolOptions pool_options;
 pool_options.size = 3;  // Pool size, i.e. max number of connections.
 
+// Optional. Max time to wait for a connection. 0ms by default, which means wait forever.
+// Say, the pool size is 3, while 4 threds try to fetch the connection, one of them will be blocked.
+pool_options.wait_timeout = std::chrono::milliseconds(100);
+
+// Optional. Max lifetime of a connection. 0ms by default, which means never expire the connection.
+// If the connection has been created for a long time, i.e. more than `connection_lifetime`,
+// it will be expired and reconnected.
+pool_options.connection_lifetime = std::chrono::minutes(10);
+
 // Connect to Redis server with a connection pool.
 Redis redis2(connection_options, pool_options);
 ```
 
-See [ConnectionOptions](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/connection.h#L40) and [ConnectionPoolOptions](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/connection_pool.h#L30) for more options.
+**NOTE**: if you set `ConnectionOptions::socket_timeout`, and try to call blocking commands, e.g. `Redis::brpop`, `Redis::blpop`, `Redis::bzpopmax`, `Redis::bzpopmin`, you must ensure that `ConnectionOptions::socket_timeout` is larger than the timeout specified with these blocking commands. Otherwise, you might get `TimeoutError`, and lose messages.
+
+See [ConnectionOptions](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/connection.h#L40) and [ConnectionPoolOptions](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/connection_pool.h#L30) for more options. Also see [issue 80](https://github.com/sewenew/redis-plus-plus/issues/80) for discussion on connection pool.
 
 **NOTE**: `Redis` class is movable but NOT copyable.
 
@@ -526,15 +684,19 @@ You can also connect to Redis server with a URI:
 ```
 tcp://[[username:]password@]host[:port][/db]
 
+redis://[[username:]password@]host[:port][/db]
+
 unix://[[username:]password@]path-to-unix-domain-socket[/db]
 ```
 
-The *scheme* and *host* parts are required, and others are optional. If you're connecting to Redis with Unix Domain Socket, you should use the *unix* scheme, otherwise, you should use *tcp* scheme. The following is a list of default values for those optional parts:
+The *scheme* and *host* parts are required, and others are optional. If you're connecting to Redis with Unix Domain Socket, you should use the *unix* scheme, otherwise, you should use *tcp* or *redis* scheme. The following is a list of default values for those optional parts:
 
 - username: *default*
 - password: empty string, i.e. no password
 - port: 6379
 - db: 0
+
+**NOTE**: If your password or username contains '@', or your username contains ':', you cannot construct `Redis` object with URI. Because *redis-plus-plus* will incorrectly parse the URI. In this case, you need to use `ConnectionOptions` to construct `Redis` object.
 
 **NOTE**: [Redis 6.0 supports ACL](https://redis.io/topics/acl), and you can specify a username for the connection. However, before Redis 6.0, you cannot do that.
 
@@ -602,6 +764,56 @@ for (auto idx = 0; idx < 100; ++idx) {
 }
 ```
 
+#### TLS/SSL Support
+
+*redis-plus-plus* also has TLS support. However, in order to use this feature, you need to enable it when building *hiredis* and *redis-plus-plus*.
+
+**NOTE**: So far, TLS feature has not been tested on Windows platform. I'll fix it in the future.
+
+##### Enable TLS/SSL support
+
+When building *hiredis* with TLS support, you need to download *hiredis* of version *v1.0.0* or latter, and specify `USE_SSL=1` flag:
+
+```shell
+make PREFIX=/non/default/path USE_SSL=1
+
+make PREFIX=/non/default/path USE_SSL=1 install
+```
+
+Then you can build *redis-plus-plus* to enable TLS support by specifying the `-DREDIS_PLUS_PLUS_USE_TLS=ON` option:
+
+```shell
+cmake -DREDIS_PLUS_PLUS_USE_TLS=ON ..
+```
+
+##### Connection Options
+
+In order to connect to Redis with TLS support, you need to specify the following connection options:
+
+```c++
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+
+opts.tls.enabled = true;    // Required. `false` by default.
+opts.tls.cert = "/path/to/client/certificate";  // Optional
+opts.tls.key = "/path/to/private/key/file"; // Optional
+opts.tls.cacert = "/path/to/CA/certificate/file";   // You can also set `opts.tls.cacertdir` instead.
+opts.tls.sni = "server-name-indication";    // Optional
+```
+
+Although `tls.cert` and `tls.key` are optional, if you specify one of them, you must also specify the other. Instead of specifying `tls.cacert`, you can also specify `tls.cacertdir` to the directory where certificates are stored.
+
+These options are the same as `redis-cli`'s TLS related command line arguments, so you can also run `redis-cli --help` to get the detailed explanation of these options.
+
+Then you can use this `ConnectionOptions` to create a `Redis` object to connect to Redis server with TLS support.
+
+**NOTE**: When building your application code, you also need to link it with `libhiredis.a`, `libhiredis_ssl.a`, `libredis++.a` (or the corresponding shared libraries), `-lssl` and `-lcrypto`.
+
+##### Automatically Initialize OpenSSL Library
+
+By default, *redis-plus-plus* automatically initializes OpenSSL library, i.e. calls `SSL_library_init` and initializes locks if needed. However, your application code might already initialize OpenSSL library. In this case, you can call `tls::disable_auto_init()` to disable the initialization. You should call this function only once and call it before any other *redis-plus-plus* operation. Otherwise, the behavior is undefined.
+
 ### Send Command to Redis Server
 
 You can send [Redis commands](https://redis.io/commands) through `Redis` object. `Redis` has one or more (overloaded) methods for each Redis command. The method has the same (lowercased) name as the corresponding command. For example, we have 3 overload methods for the `DEL key [key ...]` command:
@@ -641,7 +853,7 @@ Most of these methods have the same parameters as the corresponding commands. Th
 
 ##### StringView
 
-[std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view) is a good option for the type of string parameters. However, by now, not all compilers support `std::string_view`. So if you build *redis-plus-plus* with `-std=c++11` standard (i.e. the default behavior), we wrote a [simple version](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/utils.h#L56), i.e. `StringView`. Instead, if you build *redis-plus-plus* with `-std=c++17` standard (i.e. by specifying `-DREDIS_PLUS_PLUS_CXX_STANDARD=17` with cmake command), you can use `std::string_view`, and we have a typedef for it: `using StringView = std::string_view`.
+[std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view) is a good choice for read-only string parameter types. `std::string_view` was however only introduced in the C++ 17 standard, so if you build *redis-plus-plus* with the `-std=c++11` (i.e. by specifying `-DREDIS_PLUS_PLUS_CXX_STANDARD=11` with cmake command) or the `-std=c++14` standard, a [simple implementation](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/cxx11/cxx_utils.h) of `std::string_view`, called `StringView`, is available. You could build *redis-plus-plus* with the `-std=c++17` standard (i.e. the default behavior), which will supply `std::string_view` natively. The `StringView` implementation will then be disregarded by aliasing it to `std::string_view`. This is done inside the *redis-plus-plus* library with: `using StringView = std::string_view`.
 
 Since there are conversions from `std::string` and c-style string to `StringView`, you can just pass `std::string` or c-style string to methods that need a `StringView` parameter.
 
@@ -685,6 +897,8 @@ As we mentioned above, replies are parsed into return values of these methods. T
 | **std::tuple** | *Array Reply* with fixed length and has more than 2 elements. Since length of the returned array is fixed, we return the array as a `std::tuple` | *BZPOPMAX* | |
 | **output iterator** | General *Array Reply* with non-fixed/dynamic length. We use STL-like interface to return this kind of array replies, so that you can insert the return value into a STL container easily | *MGET*, *LRANGE* | Also, sometimes the type of output iterator decides which options to send with the command. See the [Examples section](#command-overloads) for details |
 | **Optional< T >** | For any reply of type `T` that might be *NULL* | *GET*, *LPOP*, *BLPOP*, *BZPOPMAX* | See the [Optional section](#optional) for details on `Optional<T>` |
+| **Variant< Args... >** | For reply that might be of serval different types | *MEMORY STATS* | NOTE: so far, this type is only supported when compiling redis-plus-plus with C++ 17 standard. This is normally used with [generic command interface](https://github.com/sewenew/redis-plus-plus#generic-command-interface). See the [Variant section](#variant) for details on `Variant<Args...>` |
+| **STL container** | General *Array Reply* | *CONFIG GET* | Both *output iterator* and *STL container* are used for array reply. The difference is that *STL container* is normally used with [generic command interface](https://github.com/sewenew/redis-plus-plus#generic-command-interface). See the [STL container section](#stl-container) for example |
 
 ##### Boolean Return Value
 
@@ -697,7 +911,7 @@ So, never use the return value to check if the command has been successfully sen
 
 ##### Optional
 
-[std::optional](http://en.cppreference.com/w/cpp/utility/optional) is a good option for return type, if Redis might return *NULL REPLY*. Again, since not all compilers support `std::optional` so far, if you build *redis-plus-plus* with `-std=c++11` standard (i.e. the default behavior), we implement our own [simple version](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/utils.h#L93), i.e. `template Optional<T>`. Instead, if you build *redis-plus-plus* with `-std=c++17` standard (i.e. by specifying `-DREDIS_PLUS_PLUS_CXX_STANDARD=17` with cmake command), you can use `std::optional`, and we have a typedef for it: `template <typename T> using Optional = std::optional<T>`.
+[std::optional](http://en.cppreference.com/w/cpp/utility/optional) is a good option for return type, if Redis might return *NULL REPLY*. However, `std::optional` is introduced in C++ 17 standard, and if you build *redis-plus-plus* with `-std=c++11` standard (i.e. by specifying `-DREDIS_PLUS_PLUS_CXX_STANDARD=11` with cmake command), we implement our own [simple version](https://github.com/sewenew/redis-plus-plus/blob/master/src/sw/redis%2B%2B/cxx11/cxx_utils.h), i.e. `template Optional<T>`. Instead, if you build *redis-plus-plus* with `-std=c++17` standard (i.e. the default behavior), you can use `std::optional`, and we have an alias for it: `template <typename T> using Optional = std::optional<T>`.
 
 Take the [GET](https://redis.io/commands/get) and [MGET](https://redis.io/commands/mget) commands for example:
 
@@ -737,6 +951,54 @@ using OptionalDouble = Optional<double>;
 
 using OptionalStringPair = Optional<std::pair<std::string, std::string>>;
 ```
+
+##### Variant
+
+[std::variant](https://en.cppreference.com/w/cpp/utility/variant) is a good option for return type, if the reply might be of different types. For example, the `MEMORY STATS` command returns an array reply, which is, in fact, a map of key-value pairs of configurations:
+
+```shell
+127.0.0.1:6379> memory stats
+ 1) "peak.allocated"
+ 2) (integer) 4471104
+ ...
+17) "db.0"
+18) 1) "overhead.hashtable.main"
+    2) (integer) 104
+    3) "overhead.hashtable.expires"
+    4) (integer) 32
+...
+27) "dataset.percentage"
+28) "9.70208740234375"
+...
+```
+
+However, as you can see, the value part of the result might be of type long long (key: *peak.allocated*), double (key: *dataset.percentage*) or even a map (key: *db.0*). So you cannot simply parse the result into a `std::unordered_map<std::string, long long>` or `std::unordered_map<std::string, double>`. A workaround is to parse the result into a `tuple`, however, this tuple solution is ugly and error-prone. Check [this issue](https://github.com/sewenew/redis-plus-plus/issues/138) for detail.
+
+In this case, `Variant`, which is a typedef of `std::variant` if you build redis-plus-plus with C++17 standard, is very helpful. You can parse the result into a `std::unordered_map<std::string, Variant<double, long long, std::unordered_map<std::string, long long>>>`.
+
+```c++
+using Var = Variant<double, long long, std::unordered_map<std::string, long long>>;
+auto r = Redis("tcp://127.0.0.1");
+auto v = r.command<std::unordered_map<std::string, Var>>("memory", "stats");
+```
+
+There're some limitations on `Variant` support:
+
+- The type arguments of `Variant`, cannot have duplicate items, e.g. `Variant<double, long long, double>` won't work.
+- `double` must be placed before `std::string`. Because `double` reply is, in fact, string reply, and when parsing variant, we try to parse the reply into the first matched type, specified with the type arguments from left to right. So if `double` is placed after `std::string`, i.e. on the right side of `std::string`, the reply will always be parsed into `std::string`.
+
+Also check the [generic command section](https://github.com/sewenew/redis-plus-plus#generic-command-interface) for more examples on generic command interface.
+
+##### STL container
+
+When using generic command interface, instead of parsing the reply to output iterator, you can also parse it into a STL container.
+
+```c++
+auto r = Redis("tcp://127.0.0.1");
+auto v = r.command<std::unordered_map<std::string, std::string>>("config", "get", "*");
+```
+
+Also check the [generic command section](https://github.com/sewenew/redis-plus-plus#generic-command-interface) for more examples on generic command interface.
 
 #### Examples
 
@@ -1008,8 +1270,8 @@ redis.zrange("list", 0, -1, std::back_inserter(members));
 
 // If it's an iterator of a container of a <string, double> pair,
 // we send *ZRANGE* command with *WITHSCORES* option.
-std::unordered_map<std::string, double> res_with_score;
-redis.zrange("list", 0, -1, std::inserter(res_with_score, res_with_score.end()));
+std::vector<std::pair<std::string, double>> res_with_score;
+redis.zrange("list", 0, -1, std::back_inserter(res_with_score));
 
 // The above examples also apply to other command with the *WITHSCORES* options,
 // e.g. *ZRANGEBYSCORE*, *ZREVRANGE*, *ZREVRANGEBYSCORE*.
@@ -1084,7 +1346,7 @@ Normally, when exception happens, you don't need to create a `Redis` object. It'
 
 The following is an example on how to catch these exceptions:
 
-```
+```c++
 try {
     redis.set("key", "value");
 
@@ -1241,6 +1503,32 @@ You can use `Redis::publish` to publish messages to channels. `Redis` randomly p
 
 When you subscribe to a channel with a connection, all messages published to the channel are sent back to that connection. So there's NO `Redis::subscribe` method. Instead, you can call `Redis::subscriber` to create a `Subscriber` and the `Subscriber` maintains a connection to Redis. The underlying connection is a new connection, NOT picked from the connection pool. This new connection has the same `ConnectionOptions` as the `Redis` object.
 
+If you want to have different connection options, e.g. `ConnectionOptions::socket_timeout`, for different channels, you should create `Redis` objects with different connection options, then you can create `Subscriber` objects with these `Redis` objects. Check [this issue](https://github.com/sewenew/redis-plus-plus/issues/307#issuecomment-1002015671) for a use case.
+
+```c++
+ConnectionOptions opts1;
+opts1.host = "127.0.0.1";
+opts1.port = 6379;
+opts1.socket_timeout = std::chrono::milliseconds(100);
+
+auto redis1 = Redis(opts1);
+
+// sub1's socket_timeout is 100ms.
+auto sub1 = redis1.subscriber();
+
+ConnectionOptions opts2;
+opts2.host = "127.0.0.1";
+opts2.port = 6379;
+opts2.socket_timeout = std::chrono::milliseconds(300);
+
+auto redis2 = Redis(opts2);
+
+// sub2's socket_timeout is 300ms.
+auto sub2 = redis2.subscriber();
+```
+
+**NOTE**: Although the above code creates two `Redis` objects, it has no performance penalty. Because `Redis` object creates connections lazily, i.e. no connection will be created until we send some command with `Redis` object, and the connection is created only when we call `Redis::subscriber` to create `Subscriber` object.
+
 With `Subscriber`, you can call `Subscriber::subscribe`, `Subscriber::unsubscribe`, `Subscriber::psubscribe` and `Subscriber::punsubscribe` to send *SUBSCRIBE*, *UNSUBSCRIBE*, *PSUBSCRIBE* and *PUNSUBSCRIBE* commands to Redis.
 
 #### Thread Safety
@@ -1276,7 +1564,7 @@ You can call `Subscriber::consume` to consume messages published to channels/pat
 
 `Subscriber::consume` waits for message from the underlying connection. If the `ConnectionOptions::socket_timeout` is reached, and there's no message sent to this connection, `Subscriber::consume` throws a `TimeoutError` exception. If `ConnectionOptions::socket_timeout` is `0ms`, `Subscriber::consume` blocks until it receives a message.
 
-After receiving the message, `Subscriber::consume` calls the callback function to process the message based on message type. However, if you don't set callback for a specific kind of message, `Subscriber::consume` will ignore the received message, i.e. no callback will be called.
+After receiving the message, `Subscriber::consume` calls the callback function to process the message based on message type. However, if you don't set callback for a specific kind of message, `Subscriber::consume` will consume the received message and discard it, i.e. `Subscriber::consume` returns without running the callback.
 
 #### Examples
 
@@ -1349,9 +1637,9 @@ Redis redis(connection_options, pool_options);
 auto pipe = redis.pipeline();
 ```
 
-When creating a `Pipeline` object, `Redis::pipeline` method creates a new connection to Redis server. This connection is NOT picked from the connection pool, but a newly created connection. This connection has the same `ConnectionOptions` as other connections in the connection pool. `Pipeline` object maintains the new connection, and all piped commands are sent through this connection.
+When creating a `Pipeline` object, by default, `Redis::pipeline` method creates a new connection to Redis server. This connection is NOT picked from the connection pool, but a newly created connection. This connection has the same `ConnectionOptions` as other connections in the connection pool. `Pipeline` object maintains the new connection, and all piped commands are sent through this connection.
 
-**NOTE**: Creating a `Pipeline` object is NOT cheap, since it creates a new connection. So you'd better reuse the `Pipeline` object as much as possible.
+**NOTE**: By default, creating a `Pipeline` object is NOT cheap, since it creates a new connection. So you'd better reuse the `Pipeline` object as much as possible. Check [this](#create-pipeline-without-creating-new-connection) to see how to create a `Pipeline` object without creating a new connection.
 
 #### Send Commands
 
@@ -1412,6 +1700,113 @@ If any of `Pipeline`'s method throws an exception other than `ReplyError`, the `
 
 `Pipeline` is NOT thread-safe. If you want to call its member functions in multi-thread environment, you need to synchronize between threads manually.
 
+#### Create Pipeline Without Creating New Connection
+
+**YOU MUST CAREFULLY READ ALL WORDS IN THIS SECTION AND THE VERY IMPORTANT NOTES BEFORE USING THIS FEATURE!!!**
+
+In fact, you can also create a `Pipeline` object with a connection from the underlying connection pool, so that calling `Redis::pipeline` method can be much cheaper (since it doesn't need to create a new connection).
+
+The prototype of `Redis::pipeline` is as follows: `Pipeline pipeline(bool new_connection = true);`. If `new_connection` is false, the `Pipeline` object will be created with a connection from the underlying pool.
+
+```c++
+ConnectionOptions connection_options;
+ConnectionPoolOptions pool_options;
+
+Redis redis(connection_options, pool_options);
+
+// Create a Pipeline without creating a new connection.
+auto pipe = redis.pipeline(false);
+```
+
+##### VERY IMPORTANT NOTES
+
+However, in this case, you MUST be very careful, otherwise, you might get bad performance or even dead lock. Because when you run command with `Pipeline` object, it will hold the connection until `Pipeline::exec`, `Pipeline::discard` or `Pipeline`'s destructor is called (the connection will also be released if any method of `Pipeline` throws `Exception`). If the `Pipeline` object holds the connection for a long time, other `Redis` methods might not be able to get a connection from the underlying pool.
+
+Check the following dead lock example:
+
+```c++
+// By defaul, create a `Redis` object with only ONE connection in pool.
+// Also by default, the `ConnectionPoolOptions::wait_timeout` is 0ms,
+// which means if the pool is empty, `Redis` method will be blocked until
+// the pool is not empty.
+Redis redis("tcp://127.0.0.1");
+
+// Create a `Pipeline` with a connection in the underlying pool.
+// In fact, the connection hasn't been fetched from the pool
+// until some method of `Pipeline` has been called.
+auto pipe = redis.pipeline(false);
+
+// Now the `Pipeline` object fetches a connection from the pool.
+pipe.set("key1", "val");
+
+// `Pipeline` object still holds the connection until `Pipeline::exec`,
+// `Pipeline::discard` or the destructor is called.
+pipe.set("key2", "val");
+
+// Try to send a command with `Redis` object.
+// However, the pool is empty, since the `Pipeline` object still holds
+// the connection, and this call will be blocked forever.
+// DEAD LOCK!!!
+redis.get("key");
+
+// NEVER goes here.
+pipe.exec();
+```
+
+**BEST PRACTICE**:
+
+When creating `Pipeline` without creating a new connection:
+
+- Always set `ConnectionPoolOptions::wait_timeout` larger than 0ms (i.e. when pool is empty, never block forever).
+- Avoid doing slow operation between `Pipeline`'s methods.
+- Better chain `Pipeline` methods and the `Pipeline::exec` in one statements.
+- Better leave `Pipeline` related code in a block scope.
+
+```c++
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+opts.socket_timeout = std::chrono::milliseconds(50);
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3;
+
+// Always set `wait_timeout` larger than 0ms.
+pool_opts.wait_timeout = std::chrono::milliseconds(50);
+
+auto redis = Redis(opts, pool_opts);
+
+{
+    // Better put `Pipeline` related code in a block scope.
+    auto pipe = redis.pipeline(false);
+
+    pipe.set("key1", "val");
+
+    // DON'T run slow operations here, since `Pipeline` object still holds
+    // the connection, other threads using this `Redis` object, might be blocked.
+
+    pipe.set("key2", "val");
+
+    // When `Pipeline::exec` finishes, `Pipeline` releases the connection, and returns it to pool.
+    auto replies = pipe.exec();
+
+    // This is even better, i.e. chain `Pipeline` methods with `Pipeline::exec`.
+    replies = pipe.set("key1", "val").set("key2", "val").exec();
+}
+
+for (auto i = 0; i < 10; ++i) {
+    // This operation, i.e. creating a `Pipeline` object with connection in pool, is cheap
+    auto pipe = redis.pipeline(false);
+
+    // Fetch a connection from the underlying pool, and hold it.
+    pipe.set("key1", "val").set("key2", "val");
+
+    // Although `Pipeline::exec` and `Pipeline::discard` haven't been called,
+    // when `Pipeline`'s destructor is called, the connection will also be
+    // returned to the pool.
+}
+```
+
 ### Transaction
 
 [Transaction](https://redis.io/topics/transactions) is used to make multiple commands runs atomically.
@@ -1431,7 +1826,7 @@ auto tx = redis.transaction();
 
 As the `Pipeline` class, `Transaction` maintains a newly created connection to Redis. This connection has the same `ConnectionOptions` as the `Redis` object.
 
-**NOTE**: Creating a `Transaction` object is NOT cheap, since it creates a new connection. So you'd better reuse the `Transaction` as much as possible.
+**NOTE**: Creating a `Transaction` object is NOT cheap, since it creates a new connection. So you'd better reuse the `Transaction` as much as possible. Check [this](#create-transaction-without-creating-new-connection) to see how to create a `Transaction` object without creating a new connection.
 
 Also you don't need to send [MULTI](https://redis.io/commands/multi) command to Redis. `Transaction` will do that for you automatically.
 
@@ -1543,13 +1938,107 @@ while (true) {
 }
 ```
 
+**NOTE**: in the example above, we create `Transaction` object outside the while loop, in order to avoid creating new connection again and again.
+
+#### Create Transaction Without Creating New Connection
+
+**NOTE**: YOU MUST CAREFULLY READ ALL WORDS AND THE VERY IMPORTANT NOTES LINK IN THIS SECTION BEFORE USING THIS FEATURE!!!
+
+In fact, you can also create a `transaction` object with a connection from the underlying connection pool, so that calling `Redis::transaction` method can be much cheaper (since it doesn't need to create a new connection).
+
+The prototype of `Redis::transaction` is as follows: `Transaction transaction(bool piped = false, bool new_connection = true);`. If `new_connection` is false, the `Transaction` object will be created with a connection from the underlying pool.
+
+```c++
+ConnectionOptions connection_options;
+ConnectionPoolOptions pool_options;
+
+Redis redis(connection_options, pool_options);
+
+// Create a Transaction without creating a new connection.
+auto tx = redis.transaction(false, false);
+```
+
+However, in this case, you MUST be very careful, otherwise, you might get bad performance or even dead lock. Please carefully check the similar pipeline's [VERY IMPORTANT NOTES section](#very-important-notes), before you use it!
+
+Besides those very important notes, there's another important note for `Transaction`:
+
+- Limit the scope of `Redis` object created by `Transaction::Redis`, i.e. destroy it ASAP.
+
+Check the following example:
+
+```C++
+auto redis = Redis(opts, pool_opts);
+
+// Create a `Transaction` object without creating a new connection.
+auto tx = redis.Transaction(false, false);
+
+// Create a `Redis`, and this `Redis` object shares the same connection with the `Transaction` object.
+auto r = tx.redis();
+
+// Other code here...
+
+// Execute the transaction.
+auto replies = tx.set("key", "val").exec();
+
+// Although `Transaction::exec` has been called, the connection has not been returned to pool.
+// Because the `Redis` object, i.e. `r`, still holds the connection.
+```
+
+So the above watch example should be modified as follows:
+
+```C++
+auto redis = Redis(opts, pool_opts);
+
+// If the watched key has been modified by other clients, the transaction might fail.
+// So we need to retry the transaction in a loop.
+while (true) {
+    try {
+        // Create a transaction without creating a new connection.
+        auto tx = redis.transaction(false, false);
+
+        // Create a Redis object from the Transaction object. Both objects share the same connection.
+        auto r = tx.redis();
+
+        // Watch a key.
+        r.watch("key");
+
+        // Get the old value.
+        auto val = r.get("key");
+        auto num = 0;
+        if (val) {
+            num = std::stoi(*val);
+        } // else use default value, i.e. 0.
+
+        // Incr value.
+        ++num;
+
+        // Execute the transaction.
+        auto replies = tx.set("key", std::to_string(num)).exec();
+
+        // Transaction has been executed successfully. Check the result and break.
+
+        assert(replies.size() == 1 && replies.get<bool>(0) == true);
+
+        break;
+    } catch (const WatchError &err) {
+        // Key has been modified by other clients, retry.
+        continue;
+    } catch (const Error &err) {
+        // Something bad happens, and the Transaction object is no longer valid.
+        throw;
+    }
+}
+```
+
+**NOTE**: The difference is that we create the `Transaction` object in the while loop (it's cheap, since it doesn't need to create a new connection). When the `Transaction` object and the `Redis` object created by `Transaction::redis` have been destroyed, the connection will be return to pool.
+
 ### Redis Cluster
 
 *redis-plus-plus* supports [Redis Cluster](https://redis.io/topics/cluster-tutorial). You can use `RedisCluster` class to send commands to Redis Cluster. It has similar interfaces as `Redis` class.
 
 #### Connection
 
-`RedisCluster` connects to all master nodes in the cluster. For each master node, it maintains a connection pool. By now, it doesn't connect to slave nodes.
+By default, `RedisCluster` connects to all master nodes in the cluster. For each master node, it maintains a connection pool. If you want to read from slave nodes, you need to explicitly set an option (see [below](#read-from-replica) for reference).
 
 You can initialize a `RedisCluster` instance with `ConnectionOptions` and `ConnectionPoolOptions`. You only need to set one master node's host & port in `ConnectionOptions`, and `RedisCluster` will get other nodes' info automatically (with the *CLUSTER SLOTS* command). For each master node, it creates a connection pool with the specified `ConnectionPoolOptions`. If `ConnectionPoolOptions` is not specified, `RedisCluster` maintains a single connection to every master node.
 
@@ -1581,6 +2070,20 @@ RedisCluster cluster3("tcp://127.0.0.1:7000");
 RedisCluster cluster4("tcp://127.0.0.1");
 ```
 
+##### Read From Replica
+
+If you want to scale read by reading (possible stale) data from slave nodes, you can specifiy `Role::SLAVE` as the third parameter of `RedisCluster`'s constructor. In this case, *redis-plus-plus* will randomly pick a replica node for each master node of the cluster, and create a connection pool for the replica node.
+
+```C++
+RedisCluster cluster(connection_options, pool_options, Role::SLAVE);
+
+auto val = cluster.get("key");
+```
+
+In this case, you can only send readonly commands to Redis Cluster. If you try to send a write command, e.g. `set`, `hset`, *redis-plus-plus* will throw an exception. Currently, *redis-plus-plus* doesn't handle this case, i.e. sending write command in `Role::SLAVE` mode, elegantly, and you might get some performance problem. So, NEVER send write command in `Role::SLAVE` mode. I'll fix this issue in the future.
+
+**NOTE**: In `Role::SLAVE` mode, you don't need to manually send [READONLY](https://redis.io/commands/readonly) command to slave nodes. Instead, *redis-plus-plus* will send *READONLY* command to slave nodes automatically.
+
 ##### Note
 
 - `RedisCluster` only works with tcp connection. It CANNOT connect to Unix Domain Socket. If you specify Unix Domain Socket in `ConnectionOptions`, it throws an exception.
@@ -1611,15 +2114,17 @@ You can publish and subscribe messages with `RedisCluster`. The interfaces are e
 
 You can also create `Pipeline` and `Transaction` objects with `RedisCluster`, but the interfaces are different from `Redis`. Since all commands in the pipeline and transaction should be sent to a single node in a single connection, we need to tell `RedisCluster` with which node the pipeline or transaction should be created.
 
-Instead of specifing the node's IP and port, `RedisCluster`'s pipeline and transaction interfaces allow you to specify the node with a *hash tag*. `RedisCluster` will calculate the slot number with the given *hash tag*, and create a pipeline or transaction with the node holding the slot.
+Instead of specifying the node's IP and port, `RedisCluster`'s pipeline and transaction interfaces allow you to specify the node with a *hash tag*. `RedisCluster` will calculate the slot number with the given *hash tag*, and create a pipeline or transaction with the node holding the slot.
 
 ```C++
-Pipeline RedisCluster::pipeline(const StringView &hash_tag);
+Pipeline RedisCluster::pipeline(const StringView &hash_tag, bool new_connection = true);
 
-Transaction RedisCluster::transaction(const StringView &hash_tag, bool piped = false);
+Transaction RedisCluster::transaction(const StringView &hash_tag, bool piped = false, bool new_connection = true);
 ```
 
 With the created `Pipeline` or `Transaction` object, you can send commands with keys located on the same node as the given *hash_tag*. See [Examples section](#examples-2) for an example.
+
+**NOTE**: By default, `Pipeline` and `Transaction` will be created with a new connection. In order to avoid creating new connection, you can pass `false` as the last parameter. However, in this case, you MUST be very careful, otherwise, you might get bad performance or even dead lock. Please carefully check the related [pipeline section](#very-important-notes) before using this feature.
 
 #### Examples
 
@@ -1664,7 +2169,7 @@ auto r = redis_cluster.redis("hash-tag");
 r.command("client", "setname", "connection-name");
 ```
 
-**NOTE**: When you use `RedisCluster::redis(const StringView &hash_tag)` to create a `Redis` object, instead of picking a connection from the underlying connection pool, it creates a new connection to the corresponding Redis server. So this is NOT a cheap operation, and you should try to reuse this newly created `Redis` object as much as possible.
+**NOTE**: By default, when you use `RedisCluster::redis(const StringView &hash_tag, bool new_connection = true)` to create a `Redis` object, instead of picking a connection from the underlying connection pool, it creates a new connection to the corresponding Redis server. So this is NOT a cheap operation, and you should try to reuse this newly created `Redis` object as much as possible. If you pass `false` as the second parameter, you can create a `Redis` object without creating a new connection. However, in this case, you should be very careful, otherwise, you might get bad performance or even dead lock. Please carefully check the related [pipeline section](#very-important-notes) before using this feature.
 
 ```C++
 // This is BAD! It's very inefficient.
@@ -1681,6 +2186,9 @@ auto redis = cluster.redis("key");
 
 redis.ping();
 redis.command("client", "setname", "hello");
+
+// This is GOOD! Create `Redis` object without creating a new connection. Use it, and destroy it ASAP.
+cluster.redis("key", false).ping();
 ```
 
 #### Details
@@ -1737,7 +2245,7 @@ Besides `std::shared_ptr<Sentinel>` and master name, you also need to specify a 
 
 With `Role::MASTER`, *redis-plus-plus* will always connect to current master instance, even if a failover occurs. Each time when *redis-plus-plus* needs to create a new connection to master, or a connection is broken, and it needs to reconnect to master, *redis-plus-plus* will ask master address from Redis Sentinel, and connects to current master. If a failover occurs, *redis-plus-plus* can automatically get the address of the new master, and refresh all connections in the underlying connection pool.
 
-Similarly, with `Role::SLAVE`, *redis-plus-plus* will always connect to a slave instance. A master might have several slaves, *redis-plus-plus* will randomly pick one, and connect to it, i.e. all connections in the underlying connection pool, connect to the same slave instance. If the connection is broken, while this slave instance is still an alive slave, *redis-plus-plus* will reconnect to this slave. However, if this slave instance is down, or it has been promoted to be the master, *redis-plus-plus* will randomly connect to another slave. If there's no slave alive, it throws an exception.
+Similarly, with `Role::SLAVE`, *redis-plus-plus* will always connect to a slave instance. A master might have several slaves, *redis-plus-plus* will randomly pick one, and connect to it, i.e. all connections in the underlying connection pool, connect to the same slave instance (check [this discussion](https://github.com/sewenew/redis-plus-plus/issues/99) on why *redis-plus-plus* not connect to all slaves). If the connection is broken, while this slave instance is still an alive slave, *redis-plus-plus* will reconnect to this slave. However, if this slave instance is down, or it has been promoted to be the master, *redis-plus-plus* will randomly connect to another slave. If there's no slave alive, it throws an exception.
 
 #### Create Redis With Sentinel
 
@@ -1796,8 +2304,9 @@ Attrs attrs = { {"f1", "v1"}, {"f2", "v2"} };
 // Add an item into the stream. This method returns the auto generated id.
 auto id = redis.xadd("key", "*", attrs.begin(), attrs.end());
 
-// Each item is assigned with an id: pair<id, attributes>.
-using Item = std::pair<std::string, Attrs>;
+// Each item is assigned with an id: pair<id, Optional<attributes>>.
+// NOTE: the attribute part might be nil reply, check [this issue](https://github.com/sewenew/redis-plus-plus/issues/283) for detail.
+using Item = std::pair<std::string, Optional<Attrs>>;
 using ItemStream = std::vector<Item>;
 
 // If you don't care the order of items in the stream, you can also use unordered_map:
@@ -1859,6 +2368,439 @@ redis.xgroup_destroy("key", "group");
 
 If you have any problem on sending stream commands to Redis, please feel free to let me know.
 
+### Redis Modules
+
+[Redis Modules](https://redis.io/modules) enrich Redis. However, *redis-plus-plus* does not have built-in support/method for these modules, although you can use the [generic interface](#generic-command-interface) to send commands related to these modules.
+
+Fortunately, [@wingunder](https://github.com/wingunder) did a great job to make the work easier. He wrote [redis-plus-plus-modules](https://github.com/wingunder/redis-plus-plus-modules), which is a header only project that has built-in support for some popular modules. If you need to work with Redis Modules, you should have a try.
+
+@wingunder also contributes a lot to *redis-plus-plus*. Many thanks to @wingunder!
+
+### Async Interface
+
+*redis-plus-plus* also supports async interface, however, async support for Transaction is still on the way.
+
+The async interface depends on third-party event library, and so far, only libuv is supported.
+
+#### Installation
+
+You must install *libuv*(e.g. *apt-get install libuv1-dev*) before install *hiredis* and *redis-plus-plus*. The required libuv version is *1.x*.
+
+*hiredis* v1.0.0's async interface is different from older version, and *redis-plus-plus* only supports *hiredis* v1.0.0 or later. So you need to ensure you've installed the right version of hiredis before installing *redis-plus-plus*. Also, you should NEVER install multiple versions of *hiredis*, otherwise, you'll get some wired problems. If you already installed an older version, remove it, and install a newer version.
+
+When installing *redis-plus-plus*, you should specify the following command line option: `-DREDIS_PLUS_PLUS_BUILD_ASYNC=libuv`.
+
+```shell
+cmake -DCMAKE_PREFIX_PATH=/installation/path/to/libuv/and/hiredis -DREDIS_PLUS_PLUS_BUILD_ASYNC=libuv ..
+
+make
+
+make install
+```
+
+#### Getting Started
+
+The async interface is similar to sync interface, except that you should include *sw/redis++/async_redis++.h*, and define an object of `sw::redis::AsyncRedis`, and the related methods return `Future` object (so far, only `std::future` and `boost::future` are supported, support for other implementations of *future* is on the way).
+
+However, C++'s support for continuation and executor is not done yet, so the async interface also supports the old callback way. The following is the callback interface:
+
+```
+template <typename ReplyType>
+void (sw::redis::Future<ReplyType> &&fut);
+```
+
+In the callback, in order to get the reply, you need to call `sw::redis::Future<ReplyType>::get()`. If something bad happened, `get` throws exception. So you need to catch possible exception in the callback. The callback runs in the underlying event loop thread, so DO NOT do slow operations in the callback, otherwise, it blocks the event loop and hurts performance.
+
+**NOTE**:
+
+- When building your application code, don't forget to link libuv.
+- So far, the callback interface only implements few built-in commands. For other commands, you need to use the generic interface to send command to Redis (see below for example). You're always welcome to contribute more built-in commands.
+- You must ensure `AsyncRedis` alive before all callbacks have been executed (with some synchronization work). Because, once `AsyncRedis` is destroyed, it will stop the underlying event loop. And any commands that haven't sent to Redis yet, might fail.
+
+These notes also work with `AsyncRedisCluster`.
+
+```c++
+#include <sw/redis++/async_redis++.h>
+
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3;
+
+auto async_redis = AsyncRedis(opts, pool_opts);
+
+Future<string> ping_res = async_redis.ping();
+
+// Async interface returning Future object.
+Future<bool> set_res = async_redis.set("key", "val");
+
+// Async interface with callback.
+async_redis.set("key", "val",
+        [](Future<bool> &&fut) {
+            try {
+                auto set_res = fut.get();
+            } catch (const Error &err) {
+                // handle error
+            }
+        });
+
+Future<Optional<string>> get_res = async_redis.get("key");
+
+async_redis.get("key", [](Future<OptionalString> &&fut) {
+            try {
+                auto val = fut.get();
+                if (val)
+                    cout << *val << endl;
+                else
+                    cout << "not exist" << endl;
+            } catch (const Error &err) {
+                // handle error
+            }
+        });
+
+unordered_map<string, string> m = {{"a", "b"}, {"c", "d"}};
+Future<void> hmset_res = async_redis.hmset("hash", m.begin(), m.end());
+
+auto hgetall_res = async_redis.hgetall<vector<string>>("hash");
+
+cout << ping_res.get() << endl;
+cout << set_res.get() << endl;
+auto val = get_res.get();
+if (val)
+    cout << *val << endl;
+else
+    cout << "not exist" << endl;
+
+hmset_res.get();
+
+for (const auto &ele : hgetall_res.get())
+    cout << ele << endl;
+
+// Generic interface.
+
+// There's no *AsyncRedis::client_getname* interface.
+// But you can use *Redis::command* to get the client name.
+auto getname_res = async_redis.command<OptionalString>("client", "getname");
+val = getname_res.get();
+if (val) {
+    std::cout << *val << std::endl;
+}
+
+async_redis.command<OptionalString>("client", "getname",
+        [](Future<OptionalString> &&fut) {
+            try {
+                auto val = fut.get();
+            } catch (const Error &e) {
+                // handle error
+            }
+        });
+
+async_redis.command<long long>("incr", "number",
+        [](Future<long long> &&fut) {
+            try {
+                cout << fut.get() << endl;
+            } catch (const Error &e) {
+                // handle error
+            }
+        });
+```
+
+#### Redis Sentinel
+
+Aysnc interface also supports Redis Sentinel.
+
+```c++
+#include <sw/redis++/async_redis++.h>
+
+SentinelOptions sentinel_opts;
+sentinel_opts.nodes = {
+    {"127.0.0.1", 8000},
+    {"127.0.0.1", 8001},
+    {"127.0.0.1", 8002}
+};
+
+sentinel_opts.connect_timeout = std::chrono::milliseconds(100);
+sentinel_opts.socket_timeout = std::chrono::milliseconds(100);
+
+auto sentinel = std::make_shared<AsyncSentinel>(sentinel_opts);
+
+onnectionOptions connection_opts;
+connection_opts.connect_timeout = std::chrono::milliseconds(100);   // Required.
+connection_opts.socket_timeout = std::chrono::milliseconds(100);   // Required.
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3; // Optional. The default size is 1.
+
+// Connect to master node.
+AsyncRedis redis(sentinel, "mymaster", Role::MASTER, connection_opts, pool_opts);
+
+// The following code randomly connects to one of the slave nodes.
+// AsyncRedis redis(sentinel, "mymaster", Role::SLAVE, connection_opts, pool_opts);
+
+redis.set("key", "value");
+
+auto value = redis.get("key").get();
+```
+
+The async support for sentinel is similar with the sync one, except that you need to create an `AsyncSentinel` object instead of a `Sentinel` object. Check [Redis Sentinel](#redis-sentinel) for more details on `SentinelOptions`, `ConnectionOptions` and `Role`.
+
+#### Redis Cluster
+
+Aysnc interface also supports Redis Cluster. Instead of `AsyncRedis`, you need to create an `AsyncRedisCluster` object.
+
+```c++
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3;
+
+auto async_cluster = AsyncRedisCluster(opts, pool_opts);
+
+Future<bool> set_res = async_cluster.set("key", "val");
+
+Future<Optional<string>> get_res = async_cluster.get("key");
+
+auto mget_res = async_cluster.mget<std::vector<OptionalString>>({"{hashtag}key1", "{hashhag}key2", "{hashtag}key3"});
+
+unordered_map<string, string> m = {{"a", "b"}, {"c", "d"}};
+Future<void> hmset_res = async_redis.hmset("hash", m.begin(), m.end());
+```
+
+#### Async Subscriber
+
+**NOTE**: I'm not quite satisfied with the interface of `AsyncSubscriber`. If you have a better idea, feel free to open an issue for discussion.
+
+You can use `AsyncSubscriber` to subscribe to channels or patterns asynchronously. The interface is similar to `Subscriber`, except a few differences (please read [Publish/Subscribe section](#publishsubscribe) first):
+
+- There's no `consume` method for `AsyncSubscriber`. Once you setup callbacks, and subscribe to some channel, redis-plus-plus will run callbacks with received messages in the underlying event loop.
+- `AsyncSubscriber::subscribe`, `AsyncSubscriber::psubscriber` and other related methods return `Future<void>`. You can use it to check if the subscription has been sent.
+- You need to setup a error callback with `AsyncSubscriber::on_error(ErrCallback &&)` to handle possible errors. The error callback interface is: `void (std::exception_ptr err)`, and you can get the exception with given exception pointer.
+
+##### Tips
+
+- Since redis-plus-plus runs callbacks in the event loop, you MUST NOT run slow operations, e.g. IO operation, in callbacks. Otherwise, you might get performance problem.
+- `AsyncSubscriber` is NOT thread-safe. If you want to call its member functions in multi-thread environment, you need to synchronize between threads manually.
+- You MUST setup callbacks before subscribing to some channel. Once the subscription begins, you cannot change the callback, otherwise, the behavior is undefined.
+- If you subscribe to multiple channels or patterns, error callback might called multiple times. Say, if you subscribe to 2 channels, and somehow, the server closes the connection, the error callback will be called twice. So you MUST ensure that the error callback can be run multiple times.
+- When `AsyncSubscriber` is destroyed, the underlying connection will be closed. If there're still channels or patterns not unsubscribed, the error callback will be called. In order to avoid it, you need to call `AsyncSubscriber::unsubscribe()` or `AsyncSubscriber::punsubscribe()` to unsubscribe all channels or patterns before destroying `AsyncSubscriber`. NOTE: this behavior might be changed in the future, i.e. we'll unsubscribe channels and patterns in the destructor of `AsyncSubscriber`.
+
+##### Examples
+
+The following example is a common pattern to use `AsyncSubscriber`:
+
+```c++
+// Create an `AsyncSubscriber`. You can create it with either an `AsyncRedis` or `AsyncRedisCluster` object.
+auto sub = async_redis.subscriber();
+
+// Set callbacks.
+sub.on_message([](std::string channel, std::string msg) {
+            // Process message of MESSAGE type.
+        });
+
+sub.on_pmessage([](std::string pattern, std::string channel, std::string msg) {
+            // Process message of PMESSAGE type.
+        });
+
+sub.on_meta([](Subscriber::MsgType type, OptionalString channel, long long num) {
+            // Process message of META type.
+        });
+
+// You need to set error callback to handle error.
+sub.on_error([](std::exception_ptr e) {
+            try {
+                std::rethrow_exception(e);
+            } catch (const std::exception &err) {
+                std::cerr << "err: " << err.what() << std::endl;
+            }
+        });
+
+// Subscribe to channels and patterns.
+Future<void> fut1 = sub.subscribe("channel");
+Future<void> fut2 = sub.psubscribe("pattern1*");
+
+// Once you call `subscribe` or `psubscribe`, callbacks will be run in the underlying
+// event loop automatically.
+```
+
+#### Event Loop
+
+**NOTE**: The following is an experimental feature, and might be modified or abandaned in the future.
+
+By default, `AsyncRedis` and `AsyncRedisCluster` create a default event loop, and runs the loop in a dedicated thread to handle read and write operations. However, you can also share the underlying event loop with multiple `AsyncRedis` and `AsyncRedisCluster` objects. In order to do that, you need to create a `std::shared_ptr<EventLoop>`, and pass it to the constructors of `AsyncRedis` and `AsyncRedisCluster`.
+
+```c++
+auto event_loop = std::make_shared<EventLoop>();
+
+auto redis = AsyncRedis(connection_opts, pool_opts, loop);
+
+auto cluster = AsyncRedisCluster(connection_opts, pool_opts, Role::MASTER, loop);
+```
+
+**NOTE**: You must ensure `event_loop` lives longer than `AsyncRedis` and `AsyncRedisCluster` objects.
+
+#### Future with Continuation
+
+Unfortunately, `std::future` doesn't support [continuation](https://en.cppreference.com/w/cpp/experimental/future/then) so far, which is inconvenient. However, some other libraries, e.g. boost and folly, have continuation support.
+
+By default, *redis-plus-plus* returns `std::future` for async interface. However, you can also make it return `boost::future` by specifying `-DREDIS_PLUS_PLUS_ASYNC_FUTURE=boost` when running cmake (`folly` and other libraries might be supported in the future). Of course, in this case, you need to install Boost first (the minimum version requirement for Boost is **1.55.0**).
+
+```shell
+cmake -DREDIS_PLUS_PLUS_BUILD_ASYNC=libuv -DREDIS_PLUS_PLUS_ASYNC_FUTURE=boost ..
+```
+
+**NOTE**: When building your application code, don't forget to link boost related libs, e.g. -lboost_thread, -lboost_system.
+
+Then you can take advantage of `boost::future`'s continuation support:
+
+```c++
+#include <sw/redis++/async_redis++.h>
+
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+auto redis = AsyncRedis(opts);
+auto fut = redis.get("key").then([](sw::redis::Future<sw::redis::Optional<std::string>> fut) {
+                                    auto val = fut.get();
+                                    if (val) cout << *val << endl;
+                                });
+// Do other things
+
+// Wait for the continuation finishes.
+fut.get();
+```
+
+You can also use a thread pool to run the continuation:
+
+```c++
+#define BOOST_THREAD_PROVIDES_EXECUTORS
+
+// You might also need to `#define BOOST_THREAD_USES_MOVE` with some version of Boost.
+// See [this issue](https://github.com/sewenew/redis-plus-plus/issues/272) for detail.
+
+#include <sw/redis++/async_redis++.h>
+#include <boost/thread/executors/basic_thread_pool.hpp>
+
+boost::executors::basic_thread_pool pool(3);
+auto fut = redis.get("key").then(pool,
+        [](sw::redis::Future<sw::redis::Optional<std::string>> fut) {
+            auto val = fut.get();
+            if (val) cout << *val << endl;
+        });
+
+// Do other things
+
+fut.get();
+```
+
+### Coroutine Interface
+
+*redis-plus-plus* also supports coroutine interface, however, coroutine support for Subscriber and Transaction is still on the way.
+
+#### Installation
+
+The coroutine interface depends on async interface, which depends on third-party event library. So you need to install *libuv* first, and *hiredis* v1.0.0 or later. Check [async interface](#async-interface) for detail.
+
+When installing *redis-plus-plus*, you should specify the following command line options: `-DREDIS_PLUS_PLUS_BUILD_ASYNC=libuv`, `-DREDIS_PLUS_PLUS_BUILD_CORO=ON` and `-DREDIS_PLUS_PLUS_CXX_STANDARD=20`.
+
+```shell
+cmake -DCMAKE_PREFIX_PATH=/installation/path/to/libuv/and/hiredis -DREDIS_PLUS_PLUS_CXX_STANDARD=20 -DREDIS_PLUS_PLUS_BUILD_ASYNC=libuv -DREDIS_PLUS_PLUS_BUILD_CORO=ON ..
+
+make
+
+make install
+```
+
+#### Getting Started
+
+The coroutine interface is similar to sync interface, except that you should include *sw/redis++/co_redis++.h*, and define an object of `sw::redis::CoRedis` or `sw::redis::CoRedisCluster`, and the related methods return `sw::redis::CoRedis::Awaiter<Result>` or `sw::redis::CoRedisCluster::Awaiter<Result>` object.
+
+**NOTE**:
+- So far, the coroutine interface only implements a few built-in commands. For other commands, you need to use the generic interface to send command to Redis (see below for example). You're always welcome to contribute more built-in commands.
+- Unfortunately, the C++ coroutine support is limited. In order to make it easier to use coroutine, you'd better take advantages of some third-party libs, e.g. [cppcoro](https://github.com/andreasbuhr/cppcoro).
+
+```c++
+#include <sw/redis++/co_redis++.h>
+#include <cppcoro/task.hpp>
+#include <cppcoro/sync_wait.hpp>
+
+ConnectionOptions opts;
+opts.host = "127.0.0.1";
+opts.port = 6379;
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3;
+
+// `CoRedisCluster` has similar inteface as `CoRedis`.
+// auto co_redis_cluster = CoRedisCluster(opts, pool_opts);
+auto co_redis = CoRedis(opts, pool_opts);
+cppcoro::sync_wait([&co_redis]() -> cppcoro::task<> {
+        try {
+            co_await co_redis.set("key", "val");
+            auto val = co_await co_redis.get("key");
+            if (val)
+                cout << *val << endl;
+            else
+                cout << "not exist" << endl;
+
+            co_await co_redis.command<long long>("incr", "num");
+            val = co_await co_redis.command<OptionalString>("get", "num");
+        } catch (const Error &e) {
+            cout << e.what() << endl;
+        }
+    }());
+```
+
+#### Redis Sentinel
+
+Coroutine interface also supports Redis Sentinel.
+
+```c++
+#include <sw/redis++/co_redis++.h>
+
+SentinelOptions sentinel_opts;
+sentinel_opts.nodes = {
+    {"127.0.0.1", 8000},
+    {"127.0.0.1", 8001},
+    {"127.0.0.1", 8002}
+};
+
+sentinel_opts.connect_timeout = std::chrono::milliseconds(100);
+sentinel_opts.socket_timeout = std::chrono::milliseconds(100);
+
+auto sentinel = std::make_shared<CoSentinel>(sentinel_opts);
+
+onnectionOptions connection_opts;
+connection_opts.connect_timeout = std::chrono::milliseconds(100);   // Required.
+connection_opts.socket_timeout = std::chrono::milliseconds(100);   // Required.
+
+ConnectionPoolOptions pool_opts;
+pool_opts.size = 3; // Optional. The default size is 1.
+
+// Connect to master node.
+CoRedis co_redis(sentinel, "mymaster", Role::MASTER, connection_opts, pool_opts);
+
+// The following code randomly connects to one of the slave nodes.
+// CoRedis co_redis(sentinel, "mymaster", Role::SLAVE, connection_opts, pool_opts);
+
+cppcoro::sync_wait([&co_redis]() -> cppcoro::task<> {
+        try {
+            auto val = co_await co_redis.get("key");
+            if (val)
+                cout << *val << endl;
+            else
+                cout << "not exist" << endl;
+        } catch (const Error &e) {
+            cout << e.what() << endl;
+        }
+    }());
+```
+
+The coroutine support for sentinel is similar with the sync one, except that you need to create an `CoSentinel` object instead of a `Sentinel` object. Check [Redis Sentinel](#redis-sentinel) for more details on `SentinelOptions`, `ConnectionOptions` and `Role`.
+
 ## Redis Recipes
 
 We can create many interesting data structures and algorithms based on Redis, such as [Redlock](https://redis.io/topics/distlock). We call these data structures and algorithms as **Redis Recipes**. *redis-plus-plus* will support some of these recipes.
@@ -1871,7 +2813,7 @@ We can create many interesting data structures and algorithms based on Redis, su
 
 #### Examples
 
-```
+```c++
 auto redis1 = Redis("tcp://127.0.0.1:7000");
 auto redis2 = Redis("tcp://127.0.0.1:7001");
 auto redis3 = Redis("tcp://127.0.0.1:7002");

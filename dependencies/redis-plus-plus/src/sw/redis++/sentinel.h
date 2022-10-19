@@ -25,6 +25,7 @@
 #include "connection.h"
 #include "shards.h"
 #include "reply.h"
+#include "tls.h"
 
 namespace sw {
 
@@ -44,6 +45,8 @@ struct SentinelOptions {
     std::chrono::milliseconds retry_interval{100};
 
     std::size_t max_retry = 2;
+
+    tls::TlsOptions tls;
 };
 
 class Sentinel {
@@ -128,7 +131,7 @@ public:
     StopIterError(StopIterError &&) = default;
     StopIterError& operator=(StopIterError &&) = default;
 
-    virtual ~StopIterError() = default;
+    virtual ~StopIterError() override = default;
 };
 
 }

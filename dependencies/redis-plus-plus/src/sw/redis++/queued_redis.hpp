@@ -23,15 +23,37 @@ namespace redis {
 
 template <typename Impl>
 template <typename ...Args>
-QueuedRedis<Impl>::QueuedRedis(const ConnectionSPtr &connection, Args &&...args) :
-            _connection(connection),
+QueuedRedis<Impl>::QueuedRedis(const ConnectionPoolSPtr &pool,
+                                bool new_connection,
+                                Args &&...args) :
+            _new_connection(new_connection),
             _impl(std::forward<Args>(args)...) {
-    assert(_connection);
+    assert(pool);
+
+    if (_new_connection) {
+        _connection_pool = std::make_shared<ConnectionPool>(pool->clone());
+    } else {
+        // Create a connection from the origin pool.
+        _connection_pool = pool;
+    }
+}
+
+template <typename Impl>
+QueuedRedis<Impl>::~QueuedRedis() {
+    try {
+        _clean_up();
+    } catch (const Error &e) {
+        // Ensure the destructor does not throw
+    }
 }
 
 template <typename Impl>
 Redis QueuedRedis<Impl>::redis() {
-    return Redis(_connection);
+    _sanity_check();
+
+    assert(_guarded_connection);
+
+    return Redis(_guarded_connection);
 }
 
 template <typename Impl>
@@ -42,7 +64,7 @@ auto QueuedRedis<Impl>::command(Cmd cmd, Args &&...args)
     try {
         _sanity_check();
 
-        _impl.command(*_connection, cmd, std::forward<Args>(args)...);
+        _impl.command(_connection(), cmd, std::forward<Args>(args)...);
 
         ++_cmd_num;
     } catch (const Error &e) {
@@ -56,9 +78,9 @@ auto QueuedRedis<Impl>::command(Cmd cmd, Args &&...args)
 template <typename Impl>
 template <typename ...Args>
 QueuedRedis<Impl>& QueuedRedis<Impl>::command(const StringView &cmd_name, Args &&...args) {
-    auto cmd = [](Connection &connection, const StringView &cmd_name, Args &&...args) {
+    auto cmd = [](Connection &connection, const StringView &name, Args &&...params) {
                     CmdArgs cmd_args;
-                    cmd_args.append(cmd_name, std::forward<Args>(args)...);
+                    cmd_args.append(name, std::forward<Args>(params)...);
                     connection.send(cmd_args);
     };
 
@@ -73,11 +95,11 @@ auto QueuedRedis<Impl>::command(Input first, Input last)
         throw Error("command: empty range");
     }
 
-    auto cmd = [](Connection &connection, Input first, Input last) {
+    auto cmd = [](Connection &connection, Input start, Input stop) {
                     CmdArgs cmd_args;
-                    while (first != last) {
-                        cmd_args.append(*first);
-                        ++first;
+                    while (start != stop) {
+                        cmd_args.append(*start);
+                        ++start;
                     }
                     connection.send(cmd_args);
     };
@@ -90,13 +112,21 @@ QueuedReplies QueuedRedis<Impl>::exec() {
     try {
         _sanity_check();
 
-        auto replies = _impl.exec(*_connection, _cmd_num);
+        auto replies = _impl.exec(_connection(), _cmd_num);
 
         _rewrite_replies(replies);
 
+        std::unordered_set<std::size_t> set_cmd_indexes;
+        set_cmd_indexes.swap(_set_cmd_indexes);
+
         _reset();
 
-        return QueuedReplies(std::move(replies));
+        return QueuedReplies(std::move(replies), std::move(set_cmd_indexes));
+    } catch (const WatchError &e) {
+        // In this case, we only clear some states and keep the connection,
+        // so that user can retry the transaction.
+        _reset(false);
+        throw;
     } catch (const Error &e) {
         _invalidate();
         throw;
@@ -108,7 +138,7 @@ void QueuedRedis<Impl>::discard() {
     try {
         _sanity_check();
 
-        _impl.discard(*_connection, _cmd_num);
+        _impl.discard(_connection(), _cmd_num);
 
         _reset();
     } catch (const Error &e) {
@@ -118,37 +148,71 @@ void QueuedRedis<Impl>::discard() {
 }
 
 template <typename Impl>
-void QueuedRedis<Impl>::_sanity_check() const {
+Connection& QueuedRedis<Impl>::_connection() {
+    assert(_valid);
+
+    if (!_guarded_connection) {
+        _guarded_connection = std::make_shared<GuardedConnection>(_connection_pool);
+    }
+
+    return _guarded_connection->connection();
+}
+
+template <typename Impl>
+void QueuedRedis<Impl>::_sanity_check() {
     if (!_valid) {
         throw Error("Not in valid state");
     }
 
-    if (_connection->broken()) {
+    if (_connection().broken()) {
         throw Error("Connection is broken");
     }
 }
 
 template <typename Impl>
-inline void QueuedRedis<Impl>::_reset() {
+inline void QueuedRedis<Impl>::_reset(bool reset_connection) {
+    if (reset_connection && !_new_connection) {
+        _return_connection();
+    }
+
     _cmd_num = 0;
 
     _set_cmd_indexes.clear();
 
-    _georadius_cmd_indexes.clear();
+    _empty_array_cmd_indexes.clear();
+}
+
+template <typename Impl>
+inline void QueuedRedis<Impl>::_return_connection() {
+    if (_guarded_connection.use_count() == 1) {
+        // If no one else holding the connection, return it back to pool.
+        // Instead, if some other `Redis` object holds the connection,
+        // e.g. `auto redis = transaction.redis();`, we cannot return the connection.
+        _guarded_connection.reset();
+    }
 }
 
 template <typename Impl>
 void QueuedRedis<Impl>::_invalidate() {
     _valid = false;
 
+    _clean_up();
+
     _reset();
 }
 
 template <typename Impl>
-void QueuedRedis<Impl>::_rewrite_replies(std::vector<ReplyUPtr> &replies) const {
-    _rewrite_replies(_set_cmd_indexes, reply::rewrite_set_reply, replies);
+void QueuedRedis<Impl>::_clean_up() {
+    if (_guarded_connection && !_new_connection) {
+        // Something bad happened, we need to close the current connection
+        // before returning it back to pool.
+        _guarded_connection->connection().invalidate();
+    }
+}
 
-    _rewrite_replies(_georadius_cmd_indexes, reply::rewrite_georadius_reply, replies);
+template <typename Impl>
+void QueuedRedis<Impl>::_rewrite_replies(std::vector<ReplyUPtr> &replies) const {
+    _rewrite_replies(_empty_array_cmd_indexes, reply::rewrite_empty_array_reply, replies);
 }
 
 template <typename Impl>
@@ -178,14 +242,11 @@ inline redisReply& QueuedReplies::get(std::size_t idx) {
 
     assert(reply);
 
+    if (reply::is_error(*reply)) {
+        throw_error(*reply);
+    }
+
     return *reply;
-}
-
-template <typename Result>
-inline Result QueuedReplies::get(std::size_t idx) {
-    auto &reply = get(idx);
-
-    return reply::parse<Result>(reply);
 }
 
 template <typename Output>

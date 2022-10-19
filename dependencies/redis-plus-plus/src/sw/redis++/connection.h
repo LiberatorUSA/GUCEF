@@ -28,6 +28,7 @@
 #include "errors.h"
 #include "reply.h"
 #include "utils.h"
+#include "tls.h"
 
 namespace sw {
 
@@ -71,6 +72,12 @@ public:
     std::chrono::milliseconds connect_timeout{0};
 
     std::chrono::milliseconds socket_timeout{0};
+
+    tls::TlsOptions tls;
+
+    // `readonly` is only used for reading from a slave node in Redis Cluster mode.
+    // Client code should never manually set/get it. This member might be removed in the future.
+    bool readonly = false;
 
 private:
     ConnectionOptions _parse_uri(const std::string &uri) const;
@@ -124,7 +131,16 @@ public:
         _ctx->err = 0;
     }
 
+    void invalidate() noexcept {
+        _ctx->err = REDIS_ERR;
+    }
+
     void reconnect();
+
+    auto create_time() const
+        -> std::chrono::time_point<std::chrono::steady_clock> {
+        return _create_time;
+    }
 
     auto last_active() const
         -> std::chrono::time_point<std::chrono::steady_clock> {
@@ -138,7 +154,7 @@ public:
 
     void send(CmdArgs &args);
 
-    ReplyUPtr recv();
+    ReplyUPtr recv(bool handle_error_reply = true);
 
     const ConnectionOptions& options() const {
         return _opts;
@@ -165,15 +181,23 @@ private:
 
     void _select_db();
 
+    void _enable_readonly();
+
     redisContext* _context();
 
     ContextUPtr _ctx;
 
+    // The time that the connection is created.
+    std::chrono::time_point<std::chrono::steady_clock> _create_time{};
+
     // The time that the connection is created or the time that
-    // the connection is used, i.e. *context()* is called.
+    // the connection is recently used, i.e. `_context()` is called.
     std::chrono::time_point<std::chrono::steady_clock> _last_active{};
 
     ConnectionOptions _opts;
+
+    // TODO: define _tls_ctx before _ctx
+    tls::TlsContextUPtr _tls_ctx;
 };
 
 using ConnectionSPtr = std::shared_ptr<Connection>;

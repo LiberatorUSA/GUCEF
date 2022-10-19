@@ -32,29 +32,28 @@ auto Redis::command(Cmd cmd, Args &&...args)
     if (_connection) {
         // Single Connection Mode.
         // TODO: In this case, should we reconnect?
-        if (_connection->broken()) {
+        auto &connection = _connection->connection();
+        if (connection.broken()) {
             throw Error("Connection is broken");
         }
 
-        return _command(*_connection, cmd, std::forward<Args>(args)...);
-    } else {
-        // Pool Mode, i.e. get connection from pool.
-        auto connection = _pool.fetch();
-
-        assert(!connection.broken());
-
-        ConnectionPoolGuard guard(_pool, connection);
-
         return _command(connection, cmd, std::forward<Args>(args)...);
+    } else {
+        assert(_pool);
+
+        // Pool Mode, i.e. get connection from pool.
+        SafeConnection connection(*_pool);
+
+        return _command(connection.connection(), cmd, std::forward<Args>(args)...);
     }
 }
 
 template <typename ...Args>
 auto Redis::command(const StringView &cmd_name, Args &&...args)
     -> typename std::enable_if<!IsIter<typename LastType<Args...>::type>::value, ReplyUPtr>::type {
-    auto cmd = [](Connection &connection, const StringView &cmd_name, Args &&...args) {
+    auto cmd = [](Connection &connection, const StringView &name, Args &&...params) {
                     CmdArgs cmd_args;
-                    cmd_args.append(cmd_name, std::forward<Args>(args)...);
+                    cmd_args.append(name, std::forward<Args>(params)...);
                     connection.send(cmd_args);
     };
 
@@ -66,11 +65,11 @@ auto Redis::command(Input first, Input last)
     -> typename std::enable_if<IsIter<Input>::value, ReplyUPtr>::type {
     range_check("command", first, last);
 
-    auto cmd = [](Connection &connection, Input first, Input last) {
+    auto cmd = [](Connection &connection, Input start, Input stop) {
                     CmdArgs cmd_args;
-                    while (first != last) {
-                        cmd_args.append(*first);
-                        ++first;
+                    while (start != stop) {
+                        cmd_args.append(*start);
+                        ++start;
                     }
                     connection.send(cmd_args);
     };
@@ -931,13 +930,37 @@ void Redis::georadiusbymember(const StringView &key,
 
 // SCRIPTING commands.
 
+template <typename Result, typename Keys, typename Args>
+Result Redis::eval(const StringView &script,
+                   Keys keys_first,
+                   Keys keys_last,
+                   Args args_first,
+                   Args args_last) {
+    auto reply = command(cmd::eval<Keys, Args>, script, keys_first, keys_last, args_first, args_last);
+
+    return reply::parse<Result>(*reply);
+}
+
 template <typename Result>
 Result Redis::eval(const StringView &script,
                     std::initializer_list<StringView> keys,
                     std::initializer_list<StringView> args) {
-    auto reply = command(cmd::eval, script, keys, args);
+    return eval<Result>(script, keys.begin(), keys.end(), args.begin(), args.end());
+}
 
-    return reply::parse<Result>(*reply);
+template <typename Keys, typename Args, typename Output>
+void Redis::eval(const StringView &script,
+                   Keys keys_first,
+                   Keys keys_last,
+                   Args args_first,
+                   Args args_last,
+                   Output output) {
+    auto reply = command(cmd::eval<Keys, Args>,
+                            script,
+                            keys_first, keys_last,
+                            args_first, args_last);
+
+    reply::to_array(*reply, output);
 }
 
 template <typename Output>
@@ -945,18 +968,41 @@ void Redis::eval(const StringView &script,
                     std::initializer_list<StringView> keys,
                     std::initializer_list<StringView> args,
                     Output output) {
-    auto reply = command(cmd::eval, script, keys, args);
+    eval(script, keys.begin(), keys.end(), args.begin(), args.end(), output);
+}
 
-    reply::to_array(*reply, output);
+template <typename Result, typename Keys, typename Args>
+Result Redis::evalsha(const StringView &script,
+                       Keys keys_first,
+                       Keys keys_last,
+                       Args args_first,
+                       Args args_last) {
+    auto reply = command(cmd::evalsha<Keys, Args>, script,
+            keys_first, keys_last, args_first, args_last);
+
+    return reply::parse<Result>(*reply);
 }
 
 template <typename Result>
 Result Redis::evalsha(const StringView &script,
                         std::initializer_list<StringView> keys,
                         std::initializer_list<StringView> args) {
-    auto reply = command(cmd::evalsha, script, keys, args);
+    return evalsha<Result>(script, keys.begin(), keys.end(), args.begin(), args.end());
+}
 
-    return reply::parse<Result>(*reply);
+template <typename Keys, typename Args, typename Output>
+void Redis::evalsha(const StringView &script,
+                       Keys keys_first,
+                       Keys keys_last,
+                       Args args_first,
+                       Args args_last,
+                       Output output) {
+    auto reply = command(cmd::evalsha<Keys, Args>,
+                            script,
+                            keys_first, keys_last,
+                            args_first, args_last);
+
+    reply::to_array(*reply, output);
 }
 
 template <typename Output>
@@ -964,9 +1010,7 @@ void Redis::evalsha(const StringView &script,
                         std::initializer_list<StringView> keys,
                         std::initializer_list<StringView> args,
                         Output output) {
-    auto reply = command(cmd::evalsha, script, keys, args);
-
-    reply::to_array(*reply, output);
+    evalsha(script, keys.begin(), keys.end(), args.begin(), args.end(), output);
 }
 
 template <typename Input, typename Output>

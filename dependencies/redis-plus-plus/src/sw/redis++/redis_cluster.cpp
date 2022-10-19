@@ -26,19 +26,34 @@ namespace redis {
 
 RedisCluster::RedisCluster(const std::string &uri) : RedisCluster(ConnectionOptions(uri)) {}
 
-Redis RedisCluster::redis(const StringView &hash_tag) {
-    auto opts = _pool.connection_options(hash_tag);
-    return Redis(std::make_shared<Connection>(opts));
+Redis RedisCluster::redis(const StringView &hash_tag, bool new_connection) {
+    auto pool = _pool.fetch(hash_tag);
+    if (new_connection) {
+        // Create a new pool
+        pool = std::make_shared<ConnectionPool>(pool->clone());
+    }
+
+    return Redis(std::make_shared<GuardedConnection>(pool));
 }
 
-Pipeline RedisCluster::pipeline(const StringView &hash_tag) {
-    auto opts = _pool.connection_options(hash_tag);
-    return Pipeline(std::make_shared<Connection>(opts));
+Pipeline RedisCluster::pipeline(const StringView &hash_tag, bool new_connection) {
+    auto pool = _pool.fetch(hash_tag);
+    if (new_connection) {
+        // Create a new pool
+        pool = std::make_shared<ConnectionPool>(pool->clone());
+    }
+
+    return Pipeline(pool, new_connection);
 }
 
-Transaction RedisCluster::transaction(const StringView &hash_tag, bool piped) {
-    auto opts = _pool.connection_options(hash_tag);
-    return Transaction(std::make_shared<Connection>(opts), piped);
+Transaction RedisCluster::transaction(const StringView &hash_tag, bool piped, bool new_connection) {
+    auto pool = _pool.fetch(hash_tag);
+    if (new_connection) {
+        // Create a new pool
+        pool = std::make_shared<ConnectionPool>(pool->clone());
+    }
+
+    return Transaction(pool, new_connection, piped);
 }
 
 Subscriber RedisCluster::subscriber() {
@@ -244,9 +259,16 @@ bool RedisCluster::set(const StringView &key,
                     UpdateType type) {
     auto reply = command(cmd::set, key, val, ttl.count(), type);
 
-    reply::rewrite_set_reply(*reply);
+    return reply::parse_set_reply(*reply);
+}
 
-    return reply::parse<bool>(*reply);
+bool RedisCluster::set(const StringView &key,
+                    const StringView &val,
+                    bool keepttl,
+                    UpdateType type) {
+    auto reply = command(cmd::set_keepttl, key, val, keepttl, type);
+
+    return reply::parse_set_reply(*reply);
 }
 
 void RedisCluster::setex(const StringView &key,
@@ -561,11 +583,15 @@ long long RedisCluster::zinterstore(const StringView &destination,
 Optional<std::pair<std::string, double>> RedisCluster::zpopmax(const StringView &key) {
     auto reply = command(cmd::zpopmax, key, 1);
 
+    reply::rewrite_empty_array_reply(*reply);
+
     return reply::parse<Optional<std::pair<std::string, double>>>(*reply);
 }
 
 Optional<std::pair<std::string, double>> RedisCluster::zpopmin(const StringView &key) {
     auto reply = command(cmd::zpopmin, key, 1);
+
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<Optional<std::pair<std::string, double>>>(*reply);
 }
@@ -676,7 +702,7 @@ OptionalLongLong RedisCluster::georadius(const StringView &key,
                             store_dist,
                             count);
 
-    reply::rewrite_georadius_reply(*reply);
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<OptionalLongLong>(*reply);
 }
@@ -697,7 +723,7 @@ OptionalLongLong RedisCluster::georadiusbymember(const StringView &key,
                             store_dist,
                             count);
 
-    reply::rewrite_georadius_reply(*reply);
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<OptionalLongLong>(*reply);
 }

@@ -83,12 +83,12 @@ auto RedisCluster::command(Input first, Input last)
     const auto &key = *first;
     ++first;
 
-    auto cmd = [&key](Connection &connection, Input first, Input last) {
+    auto cmd = [&key](Connection &connection, Input start, Input stop) {
                         CmdArgs cmd_args;
                         cmd_args.append(key);
-                        while (first != last) {
-                            cmd_args.append(*first);
-                            ++first;
+                        while (start != stop) {
+                            cmd_args.append(*start);
+                            ++start;
                         }
                         connection.send(cmd_args);
     };
@@ -887,17 +887,46 @@ void RedisCluster::georadiusbymember(const StringView &key,
 
 // SCRIPTING commands.
 
+template <typename Result, typename Keys, typename Args>
+Result RedisCluster::eval(const StringView &script,
+                          Keys keys_first,
+                          Keys keys_last,
+                          Args args_first,
+                          Args args_last) {
+    if (keys_first == keys_last) {
+        throw Error("DO NOT support Lua script without key");
+    }
+
+    auto reply = _command(cmd::eval<Keys, Args>, *keys_first, script, keys_first, keys_last, args_first, args_last);
+
+    return reply::parse<Result>(*reply);
+}
+
 template <typename Result>
 Result RedisCluster::eval(const StringView &script,
                             std::initializer_list<StringView> keys,
                             std::initializer_list<StringView> args) {
-    if (keys.size() == 0) {
+    return eval<Result>(script, keys.begin(), keys.end(), args.begin(), args.end());
+}
+
+template <typename Keys, typename Args, typename Output>
+void RedisCluster::eval(const StringView &script,
+                          Keys keys_first,
+                          Keys keys_last,
+                          Args args_first,
+                          Args args_last,
+                          Output output) {
+    if (keys_first == keys_last) {
         throw Error("DO NOT support Lua script without key");
     }
 
-    auto reply = _command(cmd::eval, *keys.begin(), script, keys, args);
+    auto reply = _command(cmd::eval<Keys, Args>,
+                            *keys_first,
+                            script,
+                            keys_first, keys_last,
+                            args_first, args_last);
 
-    return reply::parse<Result>(*reply);
+    reply::to_array(*reply, output);
 }
 
 template <typename Output>
@@ -905,26 +934,50 @@ void RedisCluster::eval(const StringView &script,
                         std::initializer_list<StringView> keys,
                         std::initializer_list<StringView> args,
                         Output output) {
-    if (keys.size() == 0) {
+    eval(script, keys.begin(), keys.end(), args.begin(), args.end(), output);
+}
+
+template <typename Result, typename Keys, typename Args>
+Result RedisCluster::evalsha(const StringView &script,
+                              Keys keys_first,
+                              Keys keys_last,
+                              Args args_first,
+                              Args args_last) {
+    if (keys_first == keys_last) {
         throw Error("DO NOT support Lua script without key");
     }
 
-    auto reply = _command(cmd::eval, *keys.begin(), script, keys, args);
+    auto reply = _command(cmd::evalsha<Keys, Args>, *keys_first, script,
+            keys_first, keys_last, args_first, args_last);
 
-    reply::to_array(*reply, output);
+    return reply::parse<Result>(*reply);
 }
 
 template <typename Result>
 Result RedisCluster::evalsha(const StringView &script,
                                 std::initializer_list<StringView> keys,
                                 std::initializer_list<StringView> args) {
-    if (keys.size() == 0) {
+    return evalsha<Result>(script, keys.begin(), keys.end(), args.begin(), args.end());
+}
+
+template <typename Keys, typename Args, typename Output>
+void RedisCluster::evalsha(const StringView &script,
+                              Keys keys_first,
+                              Keys keys_last,
+                              Args args_first,
+                              Args args_last,
+                              Output output) {
+    if (keys_first == keys_last) {
         throw Error("DO NOT support Lua script without key");
     }
 
-    auto reply = _command(cmd::evalsha, *keys.begin(), script, keys, args);
+    auto reply = _command(cmd::evalsha<Keys, Args>,
+                            *keys_first,
+                            script,
+                            keys_first, keys_last,
+                            args_first, args_last);
 
-    return reply::parse<Result>(*reply);
+    reply::to_array(*reply, output);
 }
 
 template <typename Output>
@@ -932,13 +985,7 @@ void RedisCluster::evalsha(const StringView &script,
                             std::initializer_list<StringView> keys,
                             std::initializer_list<StringView> args,
                             Output output) {
-    if (keys.size() == 0) {
-        throw Error("DO NOT support Lua script without key");
-    }
-
-    auto reply = command(cmd::evalsha, *keys.begin(), script, keys, args);
-
-    reply::to_array(*reply, output);
+    evalsha(script, keys.begin(), keys.end(), args.begin(), args.end(), output);
 }
 
 // Stream commands.
@@ -1285,15 +1332,17 @@ template <typename Cmd, typename ...Args>
 ReplyUPtr RedisCluster::_command(Cmd cmd, const StringView &key, Args &&...args) {
     for (auto idx = 0; idx < 2; ++idx) {
         try {
-            auto guarded_connection = _pool.fetch(key);
+            auto pool = _pool.fetch(key);
+            assert(pool);
+            SafeConnection safe_connection(*pool);
 
-            return _command(cmd, guarded_connection.connection(), std::forward<Args>(args)...);
-        } catch (const IoError &err) {
+            return _command(cmd, safe_connection.connection(), std::forward<Args>(args)...);
+        } catch (const IoError &) {
             // When master is down, one of its replicas will be promoted to be the new master.
             // If we try to send command to the old master, we'll get an *IoError*.
             // In this case, we need to update the slots mapping.
             _pool.update();
-        } catch (const ClosedError &err) {
+        } catch (const ClosedError &) {
             // Node might be removed.
             // 1. Get up-to-date slot mapping to check if the node still exists.
             _pool.update();
@@ -1301,12 +1350,14 @@ ReplyUPtr RedisCluster::_command(Cmd cmd, const StringView &key, Args &&...args)
             // TODO:
             // 2. If it's NOT exist, update slot mapping, and retry.
             // 3. If it's still exist, that means the node is down, NOT removed, throw exception.
-        } catch (const MovedError &err) {
+        } catch (const MovedError &) {
             // Slot mapping has been changed, update it and try again.
             _pool.update();
         } catch (const AskError &err) {
-            auto guarded_connection = _pool.fetch(err.node());
-            auto &connection = guarded_connection.connection();
+            auto pool = _pool.fetch(err.node());
+            assert(pool);
+            SafeConnection safe_connection(*pool);
+            auto &connection = safe_connection.connection();
 
             // 1. send ASKING command.
             _asking(connection);
@@ -1314,7 +1365,7 @@ ReplyUPtr RedisCluster::_command(Cmd cmd, const StringView &key, Args &&...args)
             // 2. resend last command.
             try {
                 return _command(cmd, connection, std::forward<Args>(args)...);
-            } catch (const MovedError &err) {
+            } catch (const MovedError &) {
                 throw Error("Slot migrating... ASKING node hasn't been set to IMPORTING state");
             }
         } // For other exceptions, just throw it.

@@ -30,34 +30,6 @@ namespace sw {
 
 namespace redis {
 
-using ConnectionPoolSPtr = std::shared_ptr<ConnectionPool>;
-
-class GuardedConnection {
-public:
-    GuardedConnection(const ConnectionPoolSPtr &pool) : _pool(pool),
-                                                        _connection(_pool->fetch()) {
-        assert(!_connection.broken());
-    }
-
-    GuardedConnection(const GuardedConnection &) = delete;
-    GuardedConnection& operator=(const GuardedConnection &) = delete;
-
-    GuardedConnection(GuardedConnection &&) = default;
-    GuardedConnection& operator=(GuardedConnection &&) = default;
-
-    ~GuardedConnection() {
-        _pool->release(std::move(_connection));
-    }
-
-    Connection& connection() {
-        return _connection;
-    }
-
-private:
-    ConnectionPoolSPtr _pool;
-    Connection _connection;
-};
-
 class ShardsPool {
 public:
     ShardsPool() = default;
@@ -71,22 +43,25 @@ public:
     ~ShardsPool() = default;
 
     ShardsPool(const ConnectionPoolOptions &pool_opts,
-                const ConnectionOptions &connection_opts);
+                const ConnectionOptions &connection_opts,
+                Role role);
 
     // Fetch a connection by key.
-    GuardedConnection fetch(const StringView &key);
+    ConnectionPoolSPtr fetch(const StringView &key);
 
     // Randomly pick a connection.
-    GuardedConnection fetch();
+    ConnectionPoolSPtr fetch();
 
     // Fetch a connection by node.
-    GuardedConnection fetch(const Node &node);
+    ConnectionPoolSPtr fetch(const Node &node);
 
     void update();
 
     ConnectionOptions connection_options(const StringView &key);
 
     ConnectionOptions connection_options();
+
+    Shards shards();
 
 private:
     void _move(ShardsPool &&that);
@@ -99,6 +74,10 @@ private:
 
     Shards _parse_reply(redisReply &reply) const;
 
+    Slot _parse_slot(redisReply *reply) const;
+
+    Node _parse_node(redisReply *reply) const;
+
     std::pair<SlotRange, Node> _parse_slot_info(redisReply &reply) const;
 
     // Get slot by key.
@@ -107,9 +86,12 @@ private:
     // Randomly pick a slot.
     std::size_t _slot() const;
 
+    // Get a random number between [min, max]
+    std::size_t _random(std::size_t min, std::size_t max) const;
+
     ConnectionPoolSPtr& _get_pool(Slot slot);
 
-    GuardedConnection _fetch(Slot slot);
+    ConnectionPoolSPtr _fetch(Slot slot);
 
     ConnectionOptions _connection_options(Slot slot);
 
@@ -126,6 +108,8 @@ private:
     NodeMap _pools;
 
     std::mutex _mutex;
+
+    Role _role = Role::MASTER;
 
     static const std::size_t SHARDS = 16383;
 };

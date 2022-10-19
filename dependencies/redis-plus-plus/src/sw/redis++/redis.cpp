@@ -26,20 +26,32 @@ namespace redis {
 
 Redis::Redis(const std::string &uri) : Redis(ConnectionOptions(uri)) {}
 
-Redis::Redis(const ConnectionSPtr &connection) : _connection(connection) {
+Redis::Redis(const GuardedConnectionSPtr &connection) : _connection(connection) {
     assert(_connection);
 }
 
-Pipeline Redis::pipeline() {
-    return Pipeline(std::make_shared<Connection>(_pool.create()));
+Pipeline Redis::pipeline(bool new_connection) {
+    if (!_pool) {
+        throw Error("cannot create pipeline in single connection mode");
+    }
+
+    return Pipeline(_pool, new_connection);
 }
 
-Transaction Redis::transaction(bool piped) {
-    return Transaction(std::make_shared<Connection>(_pool.create()), piped);
+Transaction Redis::transaction(bool piped, bool new_connection) {
+    if (!_pool) {
+        throw Error("cannot create transaction in single connection mode");
+    }
+
+    return Transaction(_pool, new_connection, piped);
 }
 
 Subscriber Redis::subscriber() {
-    return Subscriber(_pool.create());
+    if (!_pool) {
+        throw Error("cannot create subscriber in single connection mode");
+    }
+
+    return Subscriber(_pool->create());
 }
 
 // CONNECTION commands.
@@ -353,9 +365,16 @@ bool Redis::set(const StringView &key,
                     UpdateType type) {
     auto reply = command(cmd::set, key, val, ttl.count(), type);
 
-    reply::rewrite_set_reply(*reply);
+    return reply::parse_set_reply(*reply);
+}
 
-    return reply::parse<bool>(*reply);
+bool Redis::set(const StringView &key,
+                    const StringView &val,
+                    bool keepttl,
+                    UpdateType type) {
+    auto reply = command(cmd::set_keepttl, key, val, keepttl, type);
+
+    return reply::parse_set_reply(*reply);
 }
 
 void Redis::setex(const StringView &key,
@@ -668,11 +687,15 @@ long long Redis::zinterstore(const StringView &destination, const StringView &ke
 Optional<std::pair<std::string, double>> Redis::zpopmax(const StringView &key) {
     auto reply = command(cmd::zpopmax, key, 1);
 
+    reply::rewrite_empty_array_reply(*reply);
+
     return reply::parse<Optional<std::pair<std::string, double>>>(*reply);
 }
 
 Optional<std::pair<std::string, double>> Redis::zpopmin(const StringView &key) {
     auto reply = command(cmd::zpopmin, key, 1);
+
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<Optional<std::pair<std::string, double>>>(*reply);
 }
@@ -779,7 +802,7 @@ OptionalLongLong Redis::georadius(const StringView &key,
                             store_dist,
                             count);
 
-    reply::rewrite_georadius_reply(*reply);
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<OptionalLongLong>(*reply);
 }
@@ -800,7 +823,7 @@ OptionalLongLong Redis::georadiusbymember(const StringView &key,
                             store_dist,
                             count);
 
-    reply::rewrite_georadius_reply(*reply);
+    reply::rewrite_empty_array_reply(*reply);
 
     return reply::parse<OptionalLongLong>(*reply);
 }
@@ -843,6 +866,12 @@ long long Redis::publish(const StringView &channel, const StringView &message) {
 
 void Redis::watch(const StringView &key) {
     auto reply = command(cmd::watch, key);
+
+    reply::parse<void>(*reply);
+}
+
+void Redis::unwatch() {
+    auto reply = command(cmd::unwatch);
 
     reply::parse<void>(*reply);
 }

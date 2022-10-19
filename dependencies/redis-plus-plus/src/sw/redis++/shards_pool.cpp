@@ -25,9 +25,11 @@ namespace redis {
 const std::size_t ShardsPool::SHARDS;
 
 ShardsPool::ShardsPool(const ConnectionPoolOptions &pool_opts,
-                        const ConnectionOptions &connection_opts) :
+                        const ConnectionOptions &connection_opts,
+                        Role role) :
                             _pool_opts(pool_opts),
-                            _connection_opts(connection_opts) {
+                            _connection_opts(connection_opts),
+                            _role(role) {
     if (_connection_opts.type != ConnectionType::TCP) {
         throw Error("Only support TCP connection for Redis Cluster");
     }
@@ -57,19 +59,19 @@ ShardsPool& ShardsPool::operator=(ShardsPool &&that) {
     return *this;
 }
 
-GuardedConnection ShardsPool::fetch(const StringView &key) {
+ConnectionPoolSPtr ShardsPool::fetch(const StringView &key) {
     auto slot = _slot(key);
 
     return _fetch(slot);
 }
 
-GuardedConnection ShardsPool::fetch() {
+ConnectionPoolSPtr ShardsPool::fetch() {
     auto slot = _slot();
 
     return _fetch(slot);
 }
 
-GuardedConnection ShardsPool::fetch(const Node &node) {
+ConnectionPoolSPtr ShardsPool::fetch(const Node &node) {
     std::lock_guard<std::mutex> lock(_mutex);
 
     auto iter = _pools.find(node);
@@ -81,17 +83,27 @@ GuardedConnection ShardsPool::fetch(const Node &node) {
 
     assert(iter != _pools.end());
 
-    return GuardedConnection(iter->second);
+    return iter->second;
 }
 
 void ShardsPool::update() {
     // My might send command to a removed node.
-    // Try at most 3 times.
-    for (auto idx = 0; idx < 3; ++idx) {
+    // Try at most 3 times from the current shard masters and finally with the user given connection options.
+    for (auto idx = 0; idx < 4; ++idx) {
         try {
-            // Randomly pick a connection.
-            auto guarded_connection = fetch();
-            auto shards = _cluster_slots(guarded_connection.connection());
+            Shards shards;
+            if (idx < 3) {
+                // Randomly pick a connection.
+                auto pool = fetch();
+                assert(pool);
+                SafeConnection safe_connection(*pool);
+                shards = _cluster_slots(safe_connection.connection());
+            }
+            else {
+                Connection connection(_connection_opts);
+                shards = _cluster_slots(connection);
+            }
+
 
             std::unordered_set<Node, NodeHash> nodes;
             for (const auto &shard : shards) {
@@ -143,11 +155,19 @@ ConnectionOptions ShardsPool::connection_options() {
 
     return _connection_options(slot);
 }
+
+Shards ShardsPool::shards() {
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    return _shards;
+}
+
 void ShardsPool::_move(ShardsPool &&that) {
     _pool_opts = that._pool_opts;
     _connection_opts = that._connection_opts;
     _shards = std::move(that._shards);
     _pools = std::move(that._pools);
+    _role = that._role;
 }
 
 void ShardsPool::_init_pool(const Shards &shards) {
@@ -192,44 +212,69 @@ Shards ShardsPool::_parse_reply(redisReply &reply) const {
     return shards;
 }
 
+Slot ShardsPool::_parse_slot(redisReply *reply) const {
+    if (reply == nullptr) {
+        throw ProtoError("null slot id");
+    }
+
+    auto slot = reply::parse<long long>(*reply);
+    if (slot < 0) {
+        throw ProtoError("negative slot id");
+    }
+
+    return static_cast<Slot>(slot);
+}
+
+Node ShardsPool::_parse_node(redisReply *reply) const {
+    if (reply == nullptr
+            || !reply::is_array(*reply)
+            || reply->element == nullptr
+            || reply->elements < 2) {
+        throw ProtoError("invalid node info");
+    }
+
+    auto host = reply::parse<std::string>(*(reply->element[0]));
+    auto port = static_cast<int>(reply::parse<long long>(*(reply->element[1])));
+
+    return {host, port};
+}
+
 std::pair<SlotRange, Node> ShardsPool::_parse_slot_info(redisReply &reply) const {
+    // Slot info is an array reply: min slot, max slot, master node, [slave nodes]
     if (reply.elements < 3 || reply.element == nullptr) {
         throw ProtoError("Invalid slot info");
     }
 
-    // Min slot id
-    auto *min_slot_reply = reply.element[0];
-    if (min_slot_reply == nullptr) {
-        throw ProtoError("Invalid min slot");
-    }
-    std::size_t min_slot = reply::parse<long long>(*min_slot_reply);
+    auto min_slot = _parse_slot(reply.element[0]);
 
-    // Max slot id
-    auto *max_slot_reply = reply.element[1];
-    if (max_slot_reply == nullptr) {
-        throw ProtoError("Invalid max slot");
-    }
-    std::size_t max_slot = reply::parse<long long>(*max_slot_reply);
+    auto max_slot = _parse_slot(reply.element[1]);
 
     if (min_slot > max_slot) {
         throw ProtoError("Invalid slot range");
     }
 
-    // Master node info
-    auto *node_reply = reply.element[2];
-    if (node_reply == nullptr
-            || !reply::is_array(*node_reply)
-            || node_reply->element == nullptr
-            || node_reply->elements < 2) {
-        throw ProtoError("Invalid node info");
+    auto slot_range = SlotRange{min_slot, max_slot};
+
+    switch (_role) {
+    case Role::MASTER:
+        // Return master node, i.e. `reply.element[2]`.
+        return std::make_pair(slot_range, _parse_node(reply.element[2]));
+
+    case Role::SLAVE: {
+        auto size = reply.elements;
+        if (size <= 3) {
+            throw Error("no slave node available");
+        }
+
+        // Randomly pick a slave node.
+        auto *slave_node_reply = reply.element[_random(3, size - 1)];
+
+        return std::make_pair(slot_range, _parse_node(slave_node_reply));
     }
 
-    auto master_host = reply::parse<std::string>(*(node_reply->element[0]));
-    int master_port = reply::parse<long long>(*(node_reply->element[1]));
-
-    // By now, we ignore node id and other replicas' info.
-
-    return {SlotRange{min_slot, max_slot}, Node{master_host, master_port}};
+    default:
+        throw Error("unknown role");
+    }
 }
 
 Slot ShardsPool::_slot(const StringView &key) const {
@@ -237,11 +282,11 @@ Slot ShardsPool::_slot(const StringView &key) const {
     // And I did some minor changes.
 
     const auto *k = key.data();
-    auto keylen = key.size();
+    auto keylen = static_cast<int>(key.size());
 
     // start-end indexes of { and }.
-    std::size_t s = 0;
-    std::size_t e = 0;
+    int s = 0;
+    int e = 0;
 
     // Search the first occurrence of '{'.
     for (s = 0; s < keylen; s++)
@@ -263,9 +308,13 @@ Slot ShardsPool::_slot(const StringView &key) const {
 }
 
 Slot ShardsPool::_slot() const {
+    return _random(0, SHARDS);
+}
+
+std::size_t ShardsPool::_random(std::size_t min, std::size_t max) const {
     static thread_local std::default_random_engine engine;
 
-    std::uniform_int_distribution<std::size_t> uniform_dist(0, SHARDS);
+    std::uniform_int_distribution<std::size_t> uniform_dist(min, max);
 
     return uniform_dist(engine);
 }
@@ -286,14 +335,10 @@ ConnectionPoolSPtr& ShardsPool::_get_pool(Slot slot) {
     return node_iter->second;
 }
 
-GuardedConnection ShardsPool::_fetch(Slot slot) {
+ConnectionPoolSPtr ShardsPool::_fetch(Slot slot) {
     std::lock_guard<std::mutex> lock(_mutex);
 
-    auto &pool = _get_pool(slot);
-
-    assert(pool);
-
-    return GuardedConnection(pool);
+    return _get_pool(slot);
 }
 
 ConnectionOptions ShardsPool::_connection_options(Slot slot) {
@@ -310,6 +355,11 @@ auto ShardsPool::_add_node(const Node &node) -> NodeMap::iterator {
     auto opts = _connection_opts;
     opts.host = node.host;
     opts.port = node.port;
+
+    // TODO: Better set readonly an attribute of `Node`.
+    if (_role == Role::SLAVE) {
+        opts.readonly = true;
+    }
 
     return _pools.emplace(node, std::make_shared<ConnectionPool>(_pool_opts, opts)).first;
 }
