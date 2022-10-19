@@ -299,8 +299,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex msgOffsetIndex;
         PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector msgs;
         TMsgsRecievedEventData pubsubMsgsRefs;
-        TBoolVector msgAcks;
+        CORE::UInt32 msgsInFlight;
+        CORE::UInt32 lastMsgTransmittedIndex;
         CORE::UInt32 ackdMsgCount;
+        TBoolVector msgAcks;        
         CORE::UInt32 lastAckdMsgIndex;
         TPublishActionIdVector actionIds;         
         StorageToPubSubRequest* linkedRequest;
@@ -374,6 +376,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CORE::CDynamicBufferSwap& GetSerializedMsgBuffers( void );
     
     bool TransmitNextPubSubMsgBuffer( void );
+
+    bool TransmitNextPubSubMsgBatch( void );
 
     void ProgressRequest( StorageBufferMetaData* bufferMetaData ,
                           bool isTransmitted                    ,

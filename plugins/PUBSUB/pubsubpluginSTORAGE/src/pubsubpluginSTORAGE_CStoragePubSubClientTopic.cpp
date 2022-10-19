@@ -385,6 +385,8 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
     : msgOffsetIndex()
     , msgs()
     , pubsubMsgsRefs()
+    , msgsInFlight( 0 )
+    , lastMsgTransmittedIndex( 0 )
     , msgAcks()
     , ackdMsgCount( 0 )
     , lastAckdMsgIndex( 0 )
@@ -404,6 +406,8 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
     msgOffsetIndex.clear();
     msgs.clear();
     pubsubMsgsRefs.clear();
+    msgsInFlight = 0;
+    lastMsgTransmittedIndex = 0;
     msgAcks.clear();
     ackdMsgCount = 0;
     lastAckdMsgIndex = 0;
@@ -1575,7 +1579,9 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
         // most of the time an exact offset will be an exact match
         // we should only have gaps in case of errors
         CORE::UInt64 actionIdSearchOffset = receiveActionId - containerReceiveActionIdMin;
-        if ( receiveActionId == mData->actionIds[ actionIdSearchOffset ] )
+        if ( actionIdSearchOffset+1 <= mData->actionIds.size() &&
+             actionIdSearchOffset+1 <= mData->msgOffsetIndex.size() &&
+             receiveActionId == mData->actionIds[ actionIdSearchOffset ] )
         {
             bookmarkInfo.msgIndex = (CORE::UInt32) actionIdSearchOffset;
             bookmarkInfo.offsetInFile = mData->msgOffsetIndex[ actionIdSearchOffset ];
@@ -1587,7 +1593,20 @@ CStoragePubSubClientTopic::GetBookmarkInfoForReceiveActionId( CORE::UInt64 recei
             // its still likely to be around the offset we calculated so lets start there
             // and then fan out
 
-            CORE::UInt64 maxSearch = (CORE::UInt64) mData->actionIds.size(); 
+            CORE::UInt64 maxSearch = (CORE::UInt64) SMALLEST( mData->actionIds.size(), mData->msgOffsetIndex.size() ); 
+            if ( actionIdSearchOffset >= maxSearch )
+            {
+                // Something is wrong, we are out of range
+                // Switch to searching from the middle of the available range
+                actionIdSearchOffset = maxSearch / 2;
+
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:GetBookmarkInfoForReceiveActionId: min (" + 
+                        CORE::ToString( containerReceiveActionIdMin ) + ") and max (" + 
+                        CORE::ToString( containerReceiveActionIdMax ) + ") receiveActionId envelop given Id " + 
+                        CORE::ToString( receiveActionId ) + " but exceeds tracking storage size of " +
+                        CORE::ToString( maxSearch ) );
+            }
+            
             for ( CORE::UInt64 n=1; n<maxSearch; ++n )
             {
                 CORE::Int64 downIndex = ( (CORE::Int64) actionIdSearchOffset ) - n;
@@ -1699,6 +1718,7 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
             {
                 return AcknowledgeReceiptImpl( bmInfo, metaData );
             }
+            return false;
         }
         else
         {
@@ -1777,6 +1797,8 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
     // This message had not been previously ack'd yet
     ++metaData->ackdMsgCount;
     metaData->msgAcks[ bookmark.msgIndex ] = true;
+    if ( metaData->msgsInFlight > 0 )
+        --metaData->msgsInFlight;
 
     if ( desiredFeatures.supportsAckUsingLastMsgInBatch )
     {
@@ -1788,7 +1810,9 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
             if ( !metaData->msgAcks[ i ] )
             {
                 metaData->msgAcks[ i ] = true;
-                ++metaData->ackdMsgCount;
+                ++metaData->ackdMsgCount;                
+                if ( metaData->msgsInFlight > 0 )
+                    --metaData->msgsInFlight;
             }
         }
         metaData->lastAckdMsgIndex = bookmark.msgIndex;
@@ -2979,11 +3003,70 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
 /*-------------------------------------------------------------------------*/
 
 bool
+CStoragePubSubClientTopic::TransmitNextPubSubMsgBatch( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_currentReadBuffer )
+        return false;
+
+    // fetch the meta-data for this buffer
+    StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
+
+    // Check to see what that means for the current batch
+    // the max allowed vs whatever if already in flight gives us the allowed additional nr of messages to transmit
+    CORE::UInt32 msgsMaxLeftToTransmit = 0;
+    if ( m_maxTotalMsgsInFlight > 0 )
+    {
+        msgsMaxLeftToTransmit = (CORE::UInt32) ( m_maxTotalMsgsInFlight - bufferMetaData->msgsInFlight );
+        CORE::Int64 availableMsgs = bufferMetaData->msgs.size() - bufferMetaData->lastMsgTransmittedIndex; 
+        if ( availableMsgs < msgsMaxLeftToTransmit )
+            msgsMaxLeftToTransmit = (CORE::UInt32) availableMsgs;
+    }
+    else
+    {
+        msgsMaxLeftToTransmit = (CORE::UInt32) bufferMetaData->msgs.size() - bufferMetaData->lastMsgTransmittedIndex;
+    }
+
+    // If there is no capacity for extra messages in flight then come back later
+    if ( msgsMaxLeftToTransmit == 0 )
+        return true;
+    
+    bufferMetaData->pubsubMsgsRefs.clear();
+    bufferMetaData->pubsubMsgsRefs.reserve( msgsMaxLeftToTransmit );
+    
+    for ( UInt32 i=0; i<msgsMaxLeftToTransmit; ++i )
+    {
+        UInt32 msgIndex = bufferMetaData->lastMsgTransmittedIndex + i;
+        bufferMetaData->pubsubMsgsRefs.push_back( TPubSubMsgRef( &bufferMetaData->msgs[ msgIndex ] ) );
+    }
+    bufferMetaData->lastMsgTransmittedIndex += msgsMaxLeftToTransmit;
+    
+    // We use the 'msgsInFlight' counter to control whether we just notify in batches of max 'msgsInFlight' messages
+    // or whether we actually wait for acks to come back. If we don't increment it we fire-and-forget cut batches
+    if ( m_needToTrackAcks )
+        bufferMetaData->msgsInFlight += msgsMaxLeftToTransmit;
+                     
+    if ( !NotifyObservers( MsgsRecievedEvent, &bufferMetaData->pubsubMsgsRefs ) )
+        return true;
+
+    // increment metric
+    m_msgsNotifiedAsReceived += static_cast< CORE::UInt32 >( bufferMetaData->pubsubMsgsRefs.size() );
+
+    if ( bufferMetaData->lastMsgTransmittedIndex >= (bufferMetaData->msgs.size()-1) )
+    {
+        ProgressRequest( bufferMetaData, true, false );
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_currentReadBuffer )
-        return false;
+        return TransmitNextPubSubMsgBatch();
     
     CORE::CDateTime firstMsgDt;
     m_currentReadBuffer = m_buffers.GetNextReaderBuffer( firstMsgDt, false, 0 );
@@ -2999,8 +3082,10 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     // We now link logical message objects to the data in the buffer
     bool isCorrupted = false;
     CORE::UInt32 bytesRead = 0;    
+    bufferMetaData->msgsInFlight = 0;
+    bufferMetaData->lastMsgTransmittedIndex = 0;
     bufferMetaData->msgs.clear();
-    bufferMetaData->msgOffsetIndex.clear();
+    bufferMetaData->msgOffsetIndex.clear();              // @TODO: Only read subset needed with params
     if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::DeserializeWithRebuild( bufferMetaData->msgs, true, bufferMetaData->msgOffsetIndex, *m_currentReadBuffer, isCorrupted, m_config.bestEffortDeserializeIsAllowed ) )
     {
         // update metrics
@@ -3034,31 +3119,35 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
     m_msgsLoadedFromStorage += static_cast< CORE::UInt32 >( bufferMetaData->msgs.size() );
     m_msgBytesLoadedFromStorage += m_currentReadBuffer->GetDataSize();
 
-    bufferMetaData->actionIds.clear();
-    bufferMetaData->actionIds.reserve( bufferMetaData->msgs.size() );
-    bufferMetaData->pubsubMsgsRefs.clear();
-    bufferMetaData->pubsubMsgsRefs.reserve( bufferMetaData->msgs.size() );
-    if ( m_needToTrackAcks )
-    {
-        bufferMetaData->msgAcks.clear();
-        bufferMetaData->msgAcks.reserve( bufferMetaData->msgs.size() );
-    }
-
     PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator seriesEnd;
     PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator i = bufferMetaData->msgs.begin();
     if ( i != bufferMetaData->msgs.end() )
     {
+        UInt32 nrOfMessages = 0;
         i += bufferMetaData->linkedRequestEntry->msgIndex;
 
         if ( bufferMetaData->linkedRequestEntry->hasEndDelimiter )
         {
             seriesEnd = bufferMetaData->msgs.begin();
             seriesEnd += bufferMetaData->linkedRequestEntry->lastMsgIndex;
+            nrOfMessages = bufferMetaData->linkedRequestEntry->lastMsgIndex - bufferMetaData->linkedRequestEntry->msgIndex;
         }
         else
         {
             seriesEnd = bufferMetaData->msgs.end();
+            nrOfMessages = (UInt32) ( (bufferMetaData->msgs.size()-1) - bufferMetaData->linkedRequestEntry->msgIndex );
         }
+
+        bufferMetaData->actionIds.clear();
+        bufferMetaData->actionIds.reserve( nrOfMessages );
+        bufferMetaData->pubsubMsgsRefs.clear();
+        bufferMetaData->pubsubMsgsRefs.reserve( nrOfMessages );
+        if ( m_needToTrackAcks )
+        {
+            bufferMetaData->msgAcks.clear();
+            bufferMetaData->msgAcks.reserve( nrOfMessages );
+        }
+        bufferMetaData->lastMsgTransmittedIndex = 0;
 
         bufferMetaData->linkedRequestEntry->minActionId = m_currentReceiveActionId;
         while ( i != seriesEnd )
@@ -3070,8 +3159,6 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
             msg.SetReceiveActionId( m_currentReceiveActionId );
             bufferMetaData->actionIds.push_back( m_currentReceiveActionId );
             ++m_currentReceiveActionId;
-        
-            bufferMetaData->pubsubMsgsRefs.push_back( TPubSubMsgRef( &msg ) );
 
             if ( m_needToTrackAcks )
                 bufferMetaData->msgAcks.push_back( false );
@@ -3080,11 +3167,8 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         }
         bufferMetaData->linkedRequestEntry->maxActionId = m_currentReceiveActionId-1;
 
-        if ( !NotifyObservers( MsgsRecievedEvent, &bufferMetaData->pubsubMsgsRefs ) )
-            return true;
-        m_msgsNotifiedAsReceived += static_cast< CORE::UInt32 >( bufferMetaData->pubsubMsgsRefs.size() );
-
-        ProgressRequest( bufferMetaData, true, false );        
+        // Now that we have staged the messages, transmit the first batch
+        return TransmitNextPubSubMsgBatch();
     }
     return true;
 }
