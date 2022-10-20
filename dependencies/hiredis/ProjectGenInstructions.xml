@@ -3,6 +3,8 @@
 		<ITEM NAME="*" />
 	</EXCLUDES>
 	<INCLUDES PLATFORM="All">
+        <ITEM NAME="alloc.c" TYPE="FILE" />
+		<ITEM NAME="alloc.h" TYPE="FILE" />
         <ITEM NAME="async.c" TYPE="FILE" />
 		<ITEM NAME="async.h" TYPE="FILE" />
         <ITEM NAME="dict.c" TYPE="FILE" />

@@ -12,6 +12,7 @@
 # Configuration for module: hiredis
 
 set( HEADER_FILES 
+  alloc.h
   async.h
   dict.h
   hiredis.h
@@ -22,6 +23,7 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
+  alloc.c
   async.c
   dict.c
   hiredis.c
@@ -35,6 +37,7 @@ set( SOURCE_FILES
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -48,6 +51,7 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -62,6 +66,7 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -75,6 +80,7 @@ elseif (EMSCRIPTEN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -89,6 +95,7 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -102,6 +109,7 @@ elseif (GLX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -116,6 +124,7 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -129,6 +138,7 @@ elseif (GTK)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -143,6 +153,7 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -156,6 +167,7 @@ elseif (IOS)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -170,6 +182,7 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -183,6 +196,7 @@ elseif (LINUX32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -197,6 +211,7 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -210,6 +225,7 @@ elseif (LINUX64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -224,6 +240,7 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -237,6 +254,7 @@ elseif (NACL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -251,6 +269,7 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -264,6 +283,7 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -278,6 +298,7 @@ elseif (OSX)
 
 elseif (POSIX)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -291,6 +312,7 @@ elseif (POSIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -305,6 +327,7 @@ elseif (POSIX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -318,6 +341,7 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -332,6 +356,7 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -345,6 +370,7 @@ elseif (SYMBIAN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -359,6 +385,7 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -372,6 +399,7 @@ elseif (UNIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -386,6 +414,7 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -399,6 +428,7 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c
@@ -413,6 +443,7 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    alloc.h
     async.h
     dict.h
     hiredis.h
@@ -426,6 +457,7 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    alloc.c
     async.c
     dict.c
     hiredis.c

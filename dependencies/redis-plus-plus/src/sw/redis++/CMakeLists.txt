@@ -12,26 +12,13 @@
 # Configuration for module: redis-plus-plus
 
 set( HEADER_FILES 
-  async_connection.h
-  async_connection_pool.h
-  async_redis++.h
-  async_redis.h
-  async_redis_cluster.h
-  async_sentinel.h
-  async_shards_pool.h
-  async_subscriber.h
-  async_subscriber_impl.h
   cmd_formatter.h
-  co_redis++.h
-  co_redis.h
-  co_redis_cluster.h
   command.h
   command_args.h
   command_options.h
   connection.h
   connection_pool.h
   errors.h
-  event_loop.h
   pipeline.h
   queued_redis.h
   queued_redis.hpp
@@ -48,29 +35,16 @@ set( HEADER_FILES
   transaction.h
   utils.h
   cxx11/cxx_utils.h
-  cxx17/cxx_utils.h
-  future/boost/async_utils.h
-  future/std/async_utils.h
   no_tls/tls.h
-  tls/tls.h
 )
 
 set( SOURCE_FILES 
-  async_connection.cpp
-  async_connection_pool.cpp
-  async_redis.cpp
-  async_redis_cluster.cpp
-  async_sentinel.cpp
-  async_shards_pool.cpp
-  async_subscriber.cpp
-  async_subscriber_impl.cpp
   command.cpp
   command_options.cpp
   connection.cpp
   connection_pool.cpp
   crc16.cpp
   errors.cpp
-  event_loop.cpp
   pipeline.cpp
   redis.cpp
   redis_cluster.cpp
@@ -80,7 +54,6 @@ set( SOURCE_FILES
   shards_pool.cpp
   subscriber.cpp
   transaction.cpp
-  tls/tls.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -98,7 +71,7 @@ add_dependencies( ${MODULE_NAME} hiredis )
 target_link_libraries( ${MODULE_NAME} hiredis )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "REDIS_PLUS_PLUS_BUILD_TEST=OFF;REDIS_PLUS_PLUS_CXX_STANDARD=11" )
 
-include_directories( ../../../../ ../../../../hiredis future ../redis++ cxx11 cxx17 future/boost future/std no_tls tls )
+include_directories( ../../../../ ../../../../hiredis ../redis++ cxx11 no_tls )
 
 if ( ANDROID )
   include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Android ../../../../hiredis )

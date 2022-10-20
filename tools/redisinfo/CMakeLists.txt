@@ -40,7 +40,7 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB hiredis redis-plus-plus )
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB hiredis redis-plus-plus )
 
-include_directories( ../../common/include ../../dependencies/hiredis ../../dependencies/redis-plus-plus/../ ../../dependencies/redis-plus-plus/src/sw/redis++ ../../dependencies/redis-plus-plus/src/sw/redis++/cxx11 ../../dependencies/redis-plus-plus/src/sw/redis++/cxx17 ../../dependencies/redis-plus-plus/src/sw/redis++/future ../../dependencies/redis-plus-plus/src/sw/redis++/future/boost ../../dependencies/redis-plus-plus/src/sw/redis++/future/std ../../dependencies/redis-plus-plus/src/sw/redis++/no_tls ../../dependencies/redis-plus-plus/src/sw/redis++/tls ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../dependencies/hiredis ../../dependencies/redis-plus-plus/../ ../../dependencies/redis-plus-plus/src/sw/redis++ ../../dependencies/redis-plus-plus/src/sw/redis++/cxx11 ../../dependencies/redis-plus-plus/src/sw/redis++/no_tls ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
 if ( ANDROID )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
