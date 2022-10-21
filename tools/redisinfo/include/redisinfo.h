@@ -144,6 +144,10 @@ class Settings : public CORE::CIConfigurable
     bool gatherClusterInfo;
     bool gatherErrorReplyCount;
 
+    bool redisConnectionOptionKeepAlive;
+    UInt64 redisConnectionOptionConnectTimeoutInMs;
+    UInt64 redisConnectionOptionSocketTimeoutInMs;
+
     bool retainRedisInfo;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;

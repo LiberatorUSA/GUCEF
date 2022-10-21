@@ -103,6 +103,9 @@ Settings::Settings( void )
     , gatherInfoKeyspace( true )
     , gatherClusterInfo( true )
     , gatherErrorReplyCount( true )
+    , redisConnectionOptionKeepAlive( true )
+    , redisConnectionOptionConnectTimeoutInMs( 1000 )
+    , redisConnectionOptionSocketTimeoutInMs( 1000 )
     , retainRedisInfo( true )
 {GUCEF_TRACE;
 
@@ -128,6 +131,9 @@ Settings::Settings( const Settings& src )
     , gatherInfoKeyspace( src.gatherInfoKeyspace )
     , gatherClusterInfo( src.gatherClusterInfo )
     , gatherErrorReplyCount( src.gatherErrorReplyCount )
+    , redisConnectionOptionKeepAlive( src.redisConnectionOptionKeepAlive )
+    , redisConnectionOptionConnectTimeoutInMs( src.redisConnectionOptionConnectTimeoutInMs )
+    , redisConnectionOptionSocketTimeoutInMs( src.redisConnectionOptionSocketTimeoutInMs )
     , retainRedisInfo( src.retainRedisInfo )
 {GUCEF_TRACE;
 
@@ -158,6 +164,9 @@ Settings::operator=( const Settings& src )
         gatherInfoKeyspace = src.gatherInfoKeyspace;
         gatherClusterInfo = src.gatherClusterInfo;
         gatherErrorReplyCount = src.gatherErrorReplyCount;
+        redisConnectionOptionKeepAlive = src.redisConnectionOptionKeepAlive;
+        redisConnectionOptionConnectTimeoutInMs = src.redisConnectionOptionConnectTimeoutInMs;
+        redisConnectionOptionSocketTimeoutInMs = src.redisConnectionOptionSocketTimeoutInMs;
         retainRedisInfo = src.retainRedisInfo;
     }
     return *this;
@@ -186,6 +195,9 @@ Settings::SaveConfig( CORE::CDataNode& cfg ) const
     cfg.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
     cfg.SetAttribute( "gatherClusterInfo", gatherClusterInfo );
     cfg.SetAttribute( "gatherErrorReplyCount", gatherErrorReplyCount );
+    cfg.SetAttribute( "redisConnectionOptionKeepAlive", redisConnectionOptionKeepAlive );
+    cfg.SetAttribute( "redisConnectionOptionConnectTimeoutInMs", redisConnectionOptionConnectTimeoutInMs );
+    cfg.SetAttribute( "redisConnectionOptionSocketTimeoutInMs", redisConnectionOptionSocketTimeoutInMs );
     cfg.SetAttribute( "retainRedisInfo", retainRedisInfo );    
     return true;
 }
@@ -213,6 +225,9 @@ Settings::LoadConfig( const CORE::CDataNode& cfg )
     gatherInfoKeyspace = cfg.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ).AsBool( gatherInfoKeyspace, true );
     gatherClusterInfo = cfg.GetAttributeValueOrChildValueByName( "gatherClusterInfo" ).AsBool( gatherClusterInfo, true );
     gatherErrorReplyCount = cfg.GetAttributeValueOrChildValueByName( "gatherErrorReplyCount" ).AsBool( gatherErrorReplyCount, true );
+    redisConnectionOptionKeepAlive = cfg.GetAttributeValueOrChildValueByName( "redisConnectionOptionKeepAlive" ).AsBool( redisConnectionOptionKeepAlive, true );
+    redisConnectionOptionConnectTimeoutInMs = cfg.GetAttributeValueOrChildValueByName( "redisConnectionOptionConnectTimeoutInMs" ).AsUInt64( redisConnectionOptionConnectTimeoutInMs, true );
+    redisConnectionOptionSocketTimeoutInMs = cfg.GetAttributeValueOrChildValueByName( "redisConnectionOptionSocketTimeoutInMs" ).AsUInt64( redisConnectionOptionSocketTimeoutInMs, true );
     retainRedisInfo = cfg.GetAttributeValueOrChildValueByName( "retainRedisInfo" ).AsBool( retainRedisInfo, true );
     return true;
 }
@@ -1579,11 +1594,20 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
             return GetRedisInfo( reply.get(), type, kv, CORE::CString::Empty );
         }
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis++ TimeoutError exception: " + e.what() );
+        if ( GUCEF_NULL != node )
+            ++node->redisErrorReplies;
+        ++m_redisClusterErrorReplies;
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis++ exception: " + e.what() );
         if ( GUCEF_NULL != node )
             ++node->redisErrorReplies;
+        ++m_redisClusterErrorReplies;
         RedisDisconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
@@ -2222,10 +2246,10 @@ RedisInfoService::RedisConnect( void )
         // Optional. Timeout before we successfully send request to or receive response from redis.
         // By default, the timeout is 0ms, i.e. never timeout and block until we send or receive successfuly.
         // NOTE: if any command is timed out, we throw a TimeoutError exception.
-        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( 100 );
-        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( 100 );
+        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionSocketTimeoutInMs );
+        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionConnectTimeoutInMs );
 
-        rppConnectionOptions.keep_alive = true;
+        rppConnectionOptions.keep_alive = m_settings.redisConnectionOptionKeepAlive;
 
         // Connect to the Redis cluster
         delete m_redisContext;
