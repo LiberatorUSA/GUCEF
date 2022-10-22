@@ -2182,27 +2182,30 @@ RedisInfoService::RedisDisconnect( void )
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
-
-        RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
-        while ( i != m_redisNodesMap.end() )
+        if ( GUCEF_NULL != m_redisContext )
         {
-            sw::redis::Pipeline* redisPipe = (*i).second.redisPipe;
-            delete redisPipe;
-            redisPipe = GUCEF_NULL;
-            ++i;
-        }
-        m_redisNodesMap.clear();
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+
+            RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+            while ( i != m_redisNodesMap.end() )
+            {
+                sw::redis::Pipeline* redisPipe = (*i).second.redisPipe;
+                delete redisPipe;
+                redisPipe = GUCEF_NULL;
+                ++i;
+            }
+            m_redisNodesMap.clear();
         
-        delete m_redisContext;
-        m_redisContext = GUCEF_NULL;
+            delete m_redisContext;
+            m_redisContext = GUCEF_NULL;
 
-        {
-            MT::CScopeWriterLock lock( m_lock );
-            m_status[ "connected" ] = "false";
+            {
+                MT::CScopeWriterLock lock( m_lock );
+                m_status[ "connected" ] = "false";
+            }
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
         }
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
     }
     catch ( const sw::redis::OomError& e )
     {
