@@ -69,6 +69,9 @@
 #define GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE               25
 #define GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ     100
 #define GUCEF_DEFAULT_REDIS_RECONNECT_DELAY_IN_MS                   100
+#define GUCEF_DEFAULT_REDIS_KEEPALIVE                               true
+#define GUCEF_DEFAULT_REDIS_CONNECT_TIMEOUT_IN_MS                   1000
+#define GUCEF_DEFAULT_REDIS_SOCKET_TIMEOUT_IN_MS                    1000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,6 +99,9 @@ ChannelSettings::ChannelSettings( void )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
     , redisReconnectDelayInMs( GUCEF_DEFAULT_REDIS_RECONNECT_DELAY_IN_MS )
+    , redisConnectionOptionKeepAlive( GUCEF_DEFAULT_REDIS_KEEPALIVE )
+    , redisConnectionOptionConnectTimeoutInMs( GUCEF_DEFAULT_REDIS_CONNECT_TIMEOUT_IN_MS )
+    , redisConnectionOptionSocketTimeoutInMs( GUCEF_DEFAULT_REDIS_SOCKET_TIMEOUT_IN_MS )
 {GUCEF_TRACE;
 
 }
@@ -122,6 +128,9 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , redisXAddMaxLen( src.redisXAddMaxLen )
     , redisXAddMaxLenIsApproximate( src.redisXAddMaxLenIsApproximate )
     , redisReconnectDelayInMs( src.redisReconnectDelayInMs )
+    , redisConnectionOptionKeepAlive( src.redisConnectionOptionKeepAlive )
+    , redisConnectionOptionConnectTimeoutInMs( src.redisConnectionOptionConnectTimeoutInMs )
+    , redisConnectionOptionSocketTimeoutInMs( src.redisConnectionOptionSocketTimeoutInMs )
 {GUCEF_TRACE;
 
 }
@@ -153,6 +162,9 @@ ChannelSettings::operator=( const ChannelSettings& src )
         redisXAddMaxLen = src.redisXAddMaxLen;
         redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;
         redisReconnectDelayInMs = src.redisReconnectDelayInMs;
+        redisConnectionOptionKeepAlive = src.redisConnectionOptionKeepAlive;
+        redisConnectionOptionConnectTimeoutInMs = src.redisConnectionOptionConnectTimeoutInMs;
+        redisConnectionOptionSocketTimeoutInMs = src.redisConnectionOptionSocketTimeoutInMs;
     }
     return *this;
 }
@@ -160,27 +172,30 @@ ChannelSettings::operator=( const ChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+ChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    tree.SetAttribute( "channelId", channelId );
-    tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
-    tree.SetAttribute( "channelStreamName", channelStreamName );
-    tree.SetAttribute( "udpInterface", udpInterface.AddressAsString() );
-    tree.SetAttribute( "collectMetrics", collectMetrics );
-    tree.SetAttribute( "wantsTestPackage", wantsTestPackage );
-    tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
-    tree.SetAttribute( "nrOfUdpReceiveBuffersPerSocket", nrOfUdpReceiveBuffersPerSocket );
-    tree.SetAttribute( "udpSocketOsReceiveBufferSize", udpSocketOsReceiveBufferSize );
-    tree.SetAttribute( "udpSocketUpdateCyclesPerPulse", udpSocketUpdateCyclesPerPulse );
-    tree.SetAttribute( "performRedisWritesInDedicatedThread", performRedisWritesInDedicatedThread );
-    tree.SetAttribute( "maxSizeOfDedicatedRedisWriterBulkMailRead", maxSizeOfDedicatedRedisWriterBulkMailRead );
-    tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
-    tree.SetAttribute( "cpuAffinityForDedicatedRedisWriterThread", cpuAffinityForDedicatedRedisWriterThread );
-    tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
-    tree.SetAttribute( "redisXAddMaxLen", redisXAddMaxLen );
-    tree.SetAttribute( "redisXAddMaxLenIsApproximate", redisXAddMaxLenIsApproximate );
-    tree.SetAttribute( "redisReconnectDelayInMs", redisReconnectDelayInMs );
+    cfg.SetAttribute( "channelId", channelId );
+    cfg.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
+    cfg.SetAttribute( "channelStreamName", channelStreamName );
+    cfg.SetAttribute( "udpInterface", udpInterface.AddressAsString() );
+    cfg.SetAttribute( "collectMetrics", collectMetrics );
+    cfg.SetAttribute( "wantsTestPackage", wantsTestPackage );
+    cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
+    cfg.SetAttribute( "nrOfUdpReceiveBuffersPerSocket", nrOfUdpReceiveBuffersPerSocket );
+    cfg.SetAttribute( "udpSocketOsReceiveBufferSize", udpSocketOsReceiveBufferSize );
+    cfg.SetAttribute( "udpSocketUpdateCyclesPerPulse", udpSocketUpdateCyclesPerPulse );
+    cfg.SetAttribute( "performRedisWritesInDedicatedThread", performRedisWritesInDedicatedThread );
+    cfg.SetAttribute( "maxSizeOfDedicatedRedisWriterBulkMailRead", maxSizeOfDedicatedRedisWriterBulkMailRead );
+    cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
+    cfg.SetAttribute( "cpuAffinityForDedicatedRedisWriterThread", cpuAffinityForDedicatedRedisWriterThread );
+    cfg.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
+    cfg.SetAttribute( "redisXAddMaxLen", redisXAddMaxLen );
+    cfg.SetAttribute( "redisXAddMaxLenIsApproximate", redisXAddMaxLenIsApproximate );
+    cfg.SetAttribute( "redisReconnectDelayInMs", redisReconnectDelayInMs );
+    cfg.SetAttribute( "redisConnectionOptionKeepAlive", redisConnectionOptionKeepAlive );
+    cfg.SetAttribute( "redisConnectionOptionConnectTimeoutInMs", redisConnectionOptionConnectTimeoutInMs );
+    cfg.SetAttribute( "redisConnectionOptionSocketTimeoutInMs", redisConnectionOptionSocketTimeoutInMs );
     return true;
 }
 
@@ -208,6 +223,9 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     redisXAddMaxLen = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen );
     redisXAddMaxLenIsApproximate = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
     redisReconnectDelayInMs = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "redisReconnectDelayInMs", CORE::UInt32ToString( redisReconnectDelayInMs ) ) );
+    redisConnectionOptionKeepAlive = tree.GetAttributeValueOrChildValueByName( "redisConnectionOptionKeepAlive" ).AsBool( redisConnectionOptionKeepAlive, true );
+    redisConnectionOptionConnectTimeoutInMs = tree.GetAttributeValueOrChildValueByName( "redisConnectionOptionConnectTimeoutInMs" ).AsUInt64( redisConnectionOptionConnectTimeoutInMs, true );
+    redisConnectionOptionSocketTimeoutInMs = tree.GetAttributeValueOrChildValueByName( "redisConnectionOptionSocketTimeoutInMs" ).AsUInt64( redisConnectionOptionSocketTimeoutInMs, true );
     return true;
 }
 
@@ -956,15 +974,18 @@ ClusterChannelRedisWriter::RedisDisconnect( void )
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+        if ( GUCEF_NULL != m_redisContext )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
-        delete m_redisPipeline;
-        m_redisPipeline = GUCEF_NULL;
+            delete m_redisPipeline;
+            m_redisPipeline = GUCEF_NULL;
 
-        delete m_redisContext;
-        m_redisContext = GUCEF_NULL;
+            delete m_redisContext;
+            m_redisContext = GUCEF_NULL;
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+        }
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -1006,10 +1027,10 @@ ClusterChannelRedisWriter::RedisConnect( void )
         // Optional. Timeout before we successfully send request to or receive response from redis.
         // By default, the timeout is 0ms, i.e. never timeout and block until we send or receive successfuly.
         // NOTE: if any command is timed out, we throw a TimeoutError exception.
-        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( 100 );
-        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( 100 );
+        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( m_channelSettings.redisConnectionOptionSocketTimeoutInMs );
+        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( m_channelSettings.redisConnectionOptionConnectTimeoutInMs );
 
-        rppConnectionOptions.keep_alive = true;
+        rppConnectionOptions.keep_alive = m_channelSettings.redisConnectionOptionKeepAlive;
 
         // Connect to the Redis cluster
         delete m_redisContext;

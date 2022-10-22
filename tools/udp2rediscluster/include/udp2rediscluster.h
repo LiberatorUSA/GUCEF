@@ -132,6 +132,9 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::Int32 redisXAddMaxLen;
     bool redisXAddMaxLenIsApproximate;
     CORE::UInt32 redisReconnectDelayInMs;
+    bool redisConnectionOptionKeepAlive;
+    UInt64 redisConnectionOptionConnectTimeoutInMs;
+    UInt64 redisConnectionOptionSocketTimeoutInMs;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
