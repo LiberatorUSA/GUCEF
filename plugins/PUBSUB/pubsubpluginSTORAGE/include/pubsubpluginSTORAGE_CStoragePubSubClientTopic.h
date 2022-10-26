@@ -347,6 +347,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool GetStorageBufferMetaDataPtrForReceiveActionId( CORE::UInt64 receiveActionId     , 
                                                         StorageBufferMetaData** metaData );
 
+    bool GetStorageBufferMetaDataPtrForVfsContainerPath( const CORE::CString& vfsContainerPath , 
+                                                         bool onlyCurrentlyLoaded              ,
+                                                         StorageBufferMetaData** metaData      );
+
     bool
     GetPathsToPubSubStorageFiles( const CORE::CDateTime& startDt           ,
                                   const CORE::CDateTime& endDt             ,

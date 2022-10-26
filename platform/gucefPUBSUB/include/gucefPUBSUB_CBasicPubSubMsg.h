@@ -67,6 +67,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
 
     virtual ~CBasicPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
 
+    CBasicPubSubMsg& operator=( const CBasicPubSubMsg& src );
+
     bool operator==( const CBasicPubSubMsg& other ) const;
     bool operator!=( const CBasicPubSubMsg& other ) const;
 

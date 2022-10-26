@@ -1537,6 +1537,80 @@ CStoragePubSubClientTopic::GetStorageBufferMetaDataPtrForReceiveActionId( CORE::
 /*-------------------------------------------------------------------------*/
 
 bool
+CStoragePubSubClientTopic::GetStorageBufferMetaDataPtrForVfsContainerPath( const CORE::CString& vfsContainerPath , 
+                                                                           bool onlyCurrentlyLoaded              ,
+                                                                           StorageBufferMetaData** metaData      )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == metaData )
+        return false;
+
+    *metaData = GUCEF_NULL;
+    
+    TStorageBufferMetaDataMap::iterator i = m_storageBufferMetaData.begin();
+    while ( i != m_storageBufferMetaData.end() )
+    {
+        StorageBufferMetaData& metaDataEntry = (*i).second;
+
+        if ( onlyCurrentlyLoaded )
+        {
+            if ( !metaDataEntry.linkedRequestEntry.IsNULL() )
+            {                
+                if ( metaDataEntry.linkedRequestEntry->vfsFilePath == vfsContainerPath )
+                {
+                    *metaData = &metaDataEntry;
+                    return true;
+                }
+            }
+        }
+        else
+        {        
+            if ( GUCEF_NULL != metaDataEntry.linkedRequest )
+            {
+                StorageToPubSubRequest* request = metaDataEntry.linkedRequest;
+            
+                TCContainerRangeInfoReferenceSet::iterator n = request->vfsPubSubMsgContainersTransmitted.begin();
+                while ( n != request->vfsPubSubMsgContainersTransmitted.end() )
+                {
+                    if ( (*n)->vfsFilePath == vfsContainerPath )
+                    {
+                        *metaData = &metaDataEntry;
+                        return true;
+                    }
+                    ++n;
+                }
+
+                n = request->vfsPubSubMsgContainersPushed.begin();
+                while ( n != request->vfsPubSubMsgContainersPushed.end() )
+                {
+                    if ( (*n)->vfsFilePath == vfsContainerPath )
+                    {
+                        *metaData = &metaDataEntry;
+                        return true;
+                    }
+                    ++n;
+                }
+
+                n = request->vfsPubSubMsgContainersToPush.begin();
+                while ( n != request->vfsPubSubMsgContainersToPush.end() )
+                {
+                    if ( (*n)->vfsFilePath == vfsContainerPath )
+                    {
+                        *metaData = &metaDataEntry;
+                        return true;
+                    }
+                    ++n;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CStoragePubSubClientTopic::GetBookmarkForReceiveActionId( CORE::UInt64 receiveActionId      , 
                                                           PUBSUB::CPubSubBookmark& bookmark ) const
 {GUCEF_TRACE;
@@ -1744,7 +1818,11 @@ CStoragePubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bo
         if ( SyncBookmarkToBookmarkInfo( bookmark, bm ) )
         {
             MT::CScopeMutex lock( m_lock );
-            return AcknowledgeReceiptImpl( bm, GUCEF_NULL );
+
+            StorageBufferMetaData* metaData = GUCEF_NULL;
+            GetStorageBufferMetaDataPtrForVfsContainerPath( bm.vfsFilePath, true, &metaData );
+
+            return AcknowledgeReceiptImpl( bm, metaData );
         }
     
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Unable to interpret generic bookmark" );
@@ -1778,93 +1856,122 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
     if ( GUCEF_NULL == m_client )
         return false;
 
-    // Check if we were already done with this record
-    if ( GUCEF_NULL == metaData )
+    if ( GUCEF_NULL != metaData )
     {
-        return true;
-    }
+        CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
+        PUBSUB::CPubSubClientFeatures& desiredFeatures = clientConfig.desiredFeatures;
 
-    CStoragePubSubClientConfig& clientConfig = m_client->GetConfig();
-    PUBSUB::CPubSubClientFeatures& desiredFeatures = clientConfig.desiredFeatures;
-
-    if ( metaData->msgAcks[ bookmark.msgIndex ] )
-    {
-        // this message has already been ack'd before so we already took whatever action we were going to take
-        // treat as fyi no-op
-        return true;
-    }
-
-    // This message had not been previously ack'd yet
-    ++metaData->ackdMsgCount;
-    metaData->msgAcks[ bookmark.msgIndex ] = true;
-    if ( metaData->msgsInFlight > 0 )
-        --metaData->msgsInFlight;
-
-    if ( desiredFeatures.supportsAckUsingLastMsgInBatch )
-    {
-        // treat as a batch ack for this message and everything before it from the same file
-        // we know we publish messages in the order they are stored in the file
-
-        for ( CORE::UInt32 i=metaData->lastAckdMsgIndex; i<bookmark.msgIndex; ++i )
+        if ( metaData->msgAcks[ bookmark.msgIndex ] )
         {
-            if ( !metaData->msgAcks[ i ] )
-            {
-                metaData->msgAcks[ i ] = true;
-                ++metaData->ackdMsgCount;                
-                if ( metaData->msgsInFlight > 0 )
-                    --metaData->msgsInFlight;
-            }
+            // this message has already been ack'd before so we already took whatever action we were going to take
+            // treat as fyi no-op
+            return true;
         }
-        metaData->lastAckdMsgIndex = bookmark.msgIndex;
-    }
 
-    if ( metaData->ackdMsgCount >= metaData->msgAcks.size() )
-    {
-        // All messages from this container have been acknowledged
-        if ( m_config.moveContainersWithFullyAckdContent )
+        // This message had not been previously ack'd yet
+        ++metaData->ackdMsgCount;
+        metaData->msgAcks[ bookmark.msgIndex ] = true;
+        if ( metaData->msgsInFlight > 0 )
+            --metaData->msgsInFlight;
+
+        if ( desiredFeatures.supportsAckUsingLastMsgInBatch )
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
+            // treat as a batch ack for this message and everything before it from the same file
+            // we know we publish messages in the order they are stored in the file
 
-            CORE::CString containerFilename = metaData->linkedRequestEntry->vfsFilePath.SubstrToChar( '/', false, true );
-            containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
+            for ( CORE::UInt32 i=metaData->lastAckdMsgIndex; i<bookmark.msgIndex; ++i )
+            {
+                if ( !metaData->msgAcks[ i ] )
+                {
+                    metaData->msgAcks[ i ] = true;
+                    ++metaData->ackdMsgCount;                
+                    if ( metaData->msgsInFlight > 0 )
+                        --metaData->msgsInFlight;
+                }
+            }
+            metaData->lastAckdMsgIndex = bookmark.msgIndex;
+        }
+
+        if ( metaData->ackdMsgCount >= metaData->msgAcks.size() )
+        {
+            // All messages from this container have been acknowledged
+            if ( m_config.moveContainersWithFullyAckdContent )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
+
+                CORE::CString containerFilename = metaData->linkedRequestEntry->vfsFilePath.SubstrToChar( '/', false, true );
+                containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
             
-            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-            if ( !vfs.MoveFile( metaData->linkedRequestEntry->vfsFilePath, containerFilename, true ) )
-            {
-                // This might cause problems later like additional retransmission of data
-                // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to move container file from \"" + 
-                        metaData->linkedRequestEntry->vfsFilePath + "\" to \"" + containerFilename + "\"" );
+                VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                if ( !vfs.MoveFile( metaData->linkedRequestEntry->vfsFilePath, containerFilename, true ) )
+                {
+                    // This might cause problems later like additional retransmission of data
+                    // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to move container file from \"" + 
+                            metaData->linkedRequestEntry->vfsFilePath + "\" to \"" + containerFilename + "\"" );
+                }
             }
-        }
-        else // <- move overrides delete as the safer choice
-        if ( m_config.deleteContainersWithFullyAckdContent )
-        {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
-
-            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-            if ( !vfs.DeleteFile( metaData->linkedRequestEntry->vfsFilePath, true ) )
+            else // <- move overrides delete as the safer choice
+            if ( m_config.deleteContainersWithFullyAckdContent )
             {
-                // This might cause problems later like additional retransmission of data
-                // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to delete container file" );
-            }
-        }
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
 
-        ProgressRequest( metaData, true, true );
+                VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                if ( !vfs.DeleteFile( metaData->linkedRequestEntry->vfsFilePath, true ) )
+                {
+                    // This might cause problems later like additional retransmission of data
+                    // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to delete container file" );
+                }
+            }
+
+            ProgressRequest( metaData, true, true );
+        }
     }
+    else
+    {
+        // We no longer have associated buffer meta data
+        // This may be a bookmark ack that is a duplicate or arrived late
+        
+        if ( 0 != bookmark.doneWithFile && 0 != bookmark.offsetInFile )
+        {
+            // All messages from this container have been acknowledged
+            if ( m_config.moveContainersWithFullyAckdContent )
+            {
+                if ( 0 == bookmark.vfsFilePath.HasSubstr( m_config.vfsStorageRootPath, true ) ) 
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + bookmark.vfsFilePath );    
 
+                    CORE::CString containerFilename = bookmark.vfsFilePath.SubstrToChar( '/', false, true );
+                    containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
+            
+                    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                    if ( !vfs.MoveFile( bookmark.vfsFilePath, containerFilename, true ) )
+                    {
+                        // This might cause problems later like additional retransmission of data
+                        // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to move container file from \"" + 
+                                bookmark.vfsFilePath + "\" to \"" + containerFilename + "\"" );
+                    }
+                }
+                else // <- move overrides delete as the safer choice
+                if ( m_config.deleteContainersWithFullyAckdContent )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Deleting container since its content is fully ack'd: " + bookmark.vfsFilePath );
 
-    // store bm on disk, in-mem not good enough in case of crash (interval?)    
-    //
-    //
-    //if ( !m_pubsubBookmarkPersistence.IsNULL() )
-    //{
-    //    if ( m_pubsubBookmarkPersistence->StoreBookmark( CORE::CString::Empty, *m_client, *this, bookmark ) )
-    //    {
-    //        
-    //    }
-    //}
+                    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                    if ( !vfs.DeleteFile( bookmark.vfsFilePath, true ) )
+                    {
+                        // This might cause problems later like additional retransmission of data
+                        // plus the age old problem perhaps of running out of disk space eventually (assuming non-auto-scaling)
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Failed to delete container file" );
+                    }
+                }
+
+                //ProgressRequest( metaData, true, true );
+            }
+        }
+    }
 
     return true;
 }

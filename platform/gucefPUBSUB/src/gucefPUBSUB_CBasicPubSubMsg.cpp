@@ -104,6 +104,26 @@ CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
 
 /*-------------------------------------------------------------------------*/
 
+CBasicPubSubMsg& 
+CBasicPubSubMsg::operator=( const CBasicPubSubMsg& src )
+{GUCEF_TRACE;
+
+    CIPubSubMsg::operator=( src );
+    if ( &src != this )
+    {
+        m_msgId = src.m_msgId;
+        m_msgIndex = src.m_msgIndex;
+        m_msgDateTime = src.m_msgDateTime;
+        m_primaryPayload = src.m_primaryPayload;
+        m_keyValuePairs = src.m_keyValuePairs;
+        m_metaDataKeyValuePairs = src.m_metaDataKeyValuePairs;
+        m_msgOriginClientTopic = src.m_msgOriginClientTopic;
+        m_receiveActionId = src.m_receiveActionId;
+    }
+    return *this;
+}
+/*-------------------------------------------------------------------------*/
+
 CBasicPubSubMsg::~CBasicPubSubMsg()
 {GUCEF_TRACE;
 
@@ -292,7 +312,7 @@ CBasicPubSubMsg::Clear( void )
     m_primaryPayload.Clear();
     m_keyValuePairs.clear();    
     m_metaDataKeyValuePairs.clear(); 
-    m_msgOriginClientTopic = GUCEF_NULL;
+    m_msgOriginClientTopic.Unlink();
     m_receiveActionId = 0;
 }
 
