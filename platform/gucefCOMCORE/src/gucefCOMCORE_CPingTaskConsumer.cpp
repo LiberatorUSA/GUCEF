@@ -527,7 +527,7 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPingTaskConsumer: Sending ping to " + pingEntry.host->GetHostname() );
                     
                     IPAddr netIp;
-                    netIp.S_un.S_addr = pingEntry.host->GetAddress();
+                    netIp.S_un.S_addr = pingEntry.host->GetRandomIPv4Address().GetAddress();
                     pingEntry.areWeWaitingForPingResult = true;
                     
                     DWORD result = IcmpSendEcho2( ((TMsWinPingData*)m_platformData)->icmpHandle          ,

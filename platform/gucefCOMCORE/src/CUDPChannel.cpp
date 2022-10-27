@@ -64,7 +64,7 @@ CUDPChannel::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CUDPChannel::CUDPChannel( CUDPMasterSocket& parentSocket ,
-                          const CIPAddress& remoteAddr   )
+                          const CIPv4Address& remoteAddr   )
     : m_remotePeer( remoteAddr )      ,
       m_parentSocket( &parentSocket )
 {GUCEF_TRACE;
@@ -82,7 +82,7 @@ CUDPChannel::~CUDPChannel()
 
 /*-------------------------------------------------------------------------*/
 
-const CIPAddress&
+const CIPv4Address&
 CUDPChannel::GetRemoteAddress( void ) const
 {GUCEF_TRACE;
 

@@ -94,7 +94,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
                     UInt16 port                  ,
                     bool blocking = false        ); 
 
-    bool ConnectTo( const CIPAddress& address ,
+    bool ConnectTo( const CIPv4Address& address ,
                     bool blocking = false     );
 
     bool ConnectTo( const CHostAddress& address ,
@@ -169,7 +169,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     virtual UInt16 GetRemoteTCPPort( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CIPAddress GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CIPv4Address GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Allows you to set whether to use data coalescing on sends.
@@ -244,6 +244,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CORE::CDynamicBuffer m_sendOpBuffer;
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
     CHostAddress m_hostAddress;             /**< network order IP address */
+    CIPv4Address m_ipv4Target;
     CORE::PulseGeneratorPtr m_pulseGenerator;
     bool m_coaleseDataSends;
     UInt32 m_maxUpdatesPerCycle;            /**< setting aimed at preventing a busy socket from hogging all the processing */

@@ -201,7 +201,7 @@ class UdpTransformer : public CORE::CObservingNotifier
     
     bool
     TransformUdpPacket( const CORE::CDynamicBuffer& udpPacketBuffer      ,
-                        const COMCORE::CIPAddress& sourceAddress         ,
+                        const COMCORE::CIPv4Address& sourceAddress         ,
                         CORE::CDynamicBuffer& transformedUdpOutputBuffer );
 
     private:

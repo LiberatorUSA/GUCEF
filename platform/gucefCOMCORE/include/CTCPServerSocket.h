@@ -191,7 +191,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     bool SendToConnection( UInt32 connectionIndex                             ,
                            const void* dataSource                             , 
                            const UInt32 dataSize                              ,
-                           const CIPAddress* remoteClientIPCheck = GUCEF_NULL );
+                           const CIPv4Address* remoteClientIPCheck = GUCEF_NULL );
 
     void SetDisconnectClientConnectionIfIdle( bool disconnectIfIdle );
 

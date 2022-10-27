@@ -202,7 +202,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     bool SendResponseASync( UInt32 connectionId                  ,
                             const CORE::CDynamicBuffer& response ,
-                            const COMCORE::CIPAddress& remoteIP  );
+                            const COMCORE::CIPv4Address& remoteIP  );
 
     void OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
                              const CHttpRequestData& requestData       );

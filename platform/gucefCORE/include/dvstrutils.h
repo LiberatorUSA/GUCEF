@@ -376,7 +376,7 @@ Reverse( char *buffer );
  *      returns 1 if it's an IP address otherwise 0.
  */
 GUCEF_CORE_PUBLIC_C UInt32
-Check_If_IP( const char *buffer );
+Check_If_IPv4( const char* buffer );
 
 /*--------------------------------------------------------------------------*/
 

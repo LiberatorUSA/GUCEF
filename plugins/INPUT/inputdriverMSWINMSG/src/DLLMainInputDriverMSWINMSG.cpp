@@ -292,6 +292,18 @@ typedef struct SDriverData TDriverData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_64BIT
+  #define MSWIN_BITTARGET_GWL_WNDPROC       GWLP_WNDPROC
+#else
+  #define MSWIN_BITTARGET_GWL_WNDPROC       GWL_WNDPROC
+#endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -1117,8 +1129,8 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
      *      Retrieve a pointer to the current window message handler
      *      we will have to restore this link if the context is destroyed !!!
      */
-    data->PrevWindowProcedurePtr = (WNDPROC) GetWindowLongPtr( data->hWnd  ,
-                                                               GWL_WNDPROC );
+    data->PrevWindowProcedurePtr = (WNDPROC) GetWindowLongPtr( data->hWnd                  ,
+                                                               MSWIN_BITTARGET_GWL_WNDPROC );
 
     /*
      *      use per instance window sub-classing 
@@ -1126,9 +1138,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
      *      and then forward the messages
      */
     #pragma warning( disable: 4244 ) // 'argument' : conversion from 'LONG_PTR' to 'LONG', possible loss of data
-    SetWindowLong( data->hWnd                            ,
-                   GWL_WNDPROC                           ,
-                   (LONG_PTR) InputDriverProcessMSWINMSG );
+    SetWindowLongPtr( data->hWnd                            ,
+                      MSWIN_BITTARGET_GWL_WNDPROC           ,
+                      (LONG_PTR) InputDriverProcessMSWINMSG );
 
        /*
         *  Set mouse confinement and mouse visibility
@@ -1154,9 +1166,9 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
      *  Restore the link to the old window handler
      */        
     #pragma warning( disable: 4244 ) // 'argument' : conversion from 'LONG_PTR' to 'LONG', possible loss of data
-    SetWindowLong( data->hWnd                              ,
-                   GWL_WNDPROC                             ,
-                   (LONG_PTR) data->PrevWindowProcedurePtr );
+    SetWindowLongPtr( data->hWnd                              ,
+                      MSWIN_BITTARGET_GWL_WNDPROC             ,
+                      (LONG_PTR) data->PrevWindowProcedurePtr );
                                         
     /* make sure we release our grab on the cursor */
     GrabWindowCursorInput( data, 0 );

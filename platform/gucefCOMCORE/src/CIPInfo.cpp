@@ -60,8 +60,20 @@ CIPInfo::CIPInfo( const CString& ipAsString, const CString& subnetAsString, bool
 
     if ( resolveDns )
     {
-        ip.ResolveDNS( ipAsString, 0 );
-        subnet.ResolveDNS( subnetAsString, 0 );
+        CORE::CString::StringVector aliases;
+        CIPv4Address::TIPv4AddressVector ipv4s;
+        CIPv6Address::TIPv6AddressVector ipv6s;
+
+        CDnsResolver::Resolve( ipAsString, 0, aliases, ipv4s, ipv6s );        
+        if ( !ipv4s.empty() )
+            ip.SetAddress( ipv4s[ 0 ].GetAddress() );
+        
+        aliases.clear();
+        ipv4s.clear();
+        ipv6s.clear();
+        CDnsResolver::Resolve( subnetAsString, 0, aliases, ipv4s, ipv6s );        
+        if ( !ipv4s.empty() )
+            subnet.SetAddress( ipv4s[ 0 ].GetAddress() );
     }
     else
     {

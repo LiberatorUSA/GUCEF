@@ -66,7 +66,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPChannel : public CORE::CNotifier
     
     public:  
     
-    const CIPAddress& GetRemoteAddress( void ) const;
+    const CIPv4Address& GetRemoteAddress( void ) const;
     
     CUDPMasterSocket& GetParentSocket( void ) const;
     
@@ -86,7 +86,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPChannel : public CORE::CNotifier
     friend class CUDPMasterSocket; 
         
     CUDPChannel( CUDPMasterSocket& parentSocket ,
-                 const CIPAddress& remoteAddr   );
+                 const CIPv4Address& remoteAddr   );
     
     virtual ~CUDPChannel();
     
@@ -100,7 +100,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPChannel : public CORE::CNotifier
     
     private:
     
-    CIPAddress m_remotePeer;
+    CIPv4Address m_remotePeer;
     CUDPMasterSocket* m_parentSocket;
 };
 

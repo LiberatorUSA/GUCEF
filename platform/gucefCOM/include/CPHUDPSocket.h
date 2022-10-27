@@ -86,7 +86,7 @@ class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
     /*
      *      Typedef some shortcut types
      */
-    typedef COMCORE::CIPAddress CIPAddress;
+    typedef COMCORE::CIPv4Address CIPv4Address;
         
     static const CORE::CEvent PHUDPSocketErrorEvent;
     static const CORE::CEvent PHUDPSocketClosedEvent;
@@ -95,7 +95,7 @@ class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
     
     struct SPHUDPPacketRecievedEventData
     {
-        COMCORE::CIPAddress sourceAddress;          /**< the source address of the data */
+        COMCORE::CIPv4Address sourceAddress;          /**< the source address of the data */
         CORE::TLinkedCloneableBuffer dataBuffer;    /**< the received packet data's payload */
         UInt32 packetType;                          /**< type of the packet */
         UInt32 packetNumber;                        /**< ordering number of this packet for it's type */
@@ -198,7 +198,7 @@ class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
      *      @param deliveralways Whether the receiver should drop the packet if it already received a newer packet. false == drop.         
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
-    Int32 SendPacketTo( const CIPAddress& dest ,
+    Int32 SendPacketTo( const CIPv4Address& dest ,
                         const void* data       , 
                         UInt16 datasize        ,
                         UInt16 packettype      ,
@@ -221,7 +221,7 @@ class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
                     
     private:
 
-    void OnPacketRecieved( const CIPAddress& sourceAddress                     ,
+    void OnPacketRecieved( const CIPv4Address& sourceAddress                     ,
                            const CORE::TConstLinkedCloneableBuffer& dataBuffer );
 
     void BufferPacketSendInfo( const void* data         ,

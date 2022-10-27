@@ -204,7 +204,7 @@ CGUIManager::HasGenericFormType( const CString& formTypeName )
 
 /*-------------------------------------------------------------------------*/
     
-CForm*
+CFormPtr
 CGUIManager::CreateGenericForm( const CString& formTypeName )
 {GUCEF_TRACE;
 

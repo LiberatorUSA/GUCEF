@@ -315,7 +315,7 @@ CStatsDClient::Transmit( const CString& key      ,
 
         if ( m_transmit )
         {
-            if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize ) )
+            if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination.GetFirstIPv4Address(), buffer, (UInt16) msgSize ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Transmit: Failed to send stat via UDP of " + CORE::ToString( msgSize ) + " bytes: " + CORE::CString( buffer ) );
             }
@@ -337,7 +337,7 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
             return false;
     }
 
-    node->SetAttribute( "statsDestination", m_statsDestination.AddressAndPortAsString() );
+    node->SetAttribute( "statsDestination", m_statsDestination.HostnameAndPortAsString() );
     node->SetAttribute( "statsNamePrefix", m_statNamePrefix );
     node->SetAttribute( "statsInterface", m_statsInterface.AddressAndPortAsString() );
     node->SetAttribute( "transmit", m_transmit );
@@ -373,7 +373,7 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
 
         // Load extra settings for which the default can also be good enough
         m_statNamePrefix = node->GetAttributeValueOrChildValueByName( "statsNamePrefix" ).AsString( m_statNamePrefix, true );
-        m_statsInterface.SetHostnameAndPort( node->GetAttributeValueOrChildValueByName( "statsInterface" ).AsString( m_statsInterface.HostnameAndPortAsString(), true ) );
+        m_statsInterface.SetAddressAndPort( node->GetAttributeValueOrChildValueByName( "statsInterface" ).AsString( m_statsInterface.AddressAndPortAsString(), true ) );
         m_transmit = node->GetAttributeValueOrChildValueByName( "transmit" ).AsBool( m_transmit, true );
         m_logStats = node->GetAttributeValueOrChildValueByName( "logStats" ).AsBool( m_logStats, true );
     }
@@ -463,12 +463,12 @@ void
 CStatsDClient::SetStatsInterface( const COMCORE::CHostAddress& interface )
 {GUCEF_TRACE;
 
-    m_statsInterface = interface;
+    m_statsInterface = interface.GetFirstIPv4Address();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const COMCORE::CHostAddress&
+const COMCORE::CIPv4Address&
 CStatsDClient::GetStatsInterface( void ) const
 {GUCEF_TRACE;
 

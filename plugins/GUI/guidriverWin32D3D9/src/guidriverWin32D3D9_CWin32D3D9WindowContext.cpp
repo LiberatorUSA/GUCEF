@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #include "gucefCORE_CPulseGenerator.h"
 #define GUCEF_CORE_CPULSEGENERATOR_H
@@ -159,9 +164,9 @@ void
 CWin32D3D9WindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestStopOfPeriodicUpdates( this );
-    UnsubscribeFrom( &pulseGenerator );
+	CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestStopOfPeriodicUpdates( this );
+    UnsubscribeFrom( pulseGenerator.GetPointerAlways() );
     
     SAFE_RELEASE( m_pD3DDevice ); 
     SAFE_RELEASE( m_pD3D9 );
@@ -279,9 +284,9 @@ CWin32D3D9WindowContext::Initialize( const GUI::CString& title                ,
         m_window.GrabFocus();
 
         // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
-        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-        SubscribeTo( &pulseGenerator );
+        CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
+        pulseGenerator->RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+        SubscribeTo( pulseGenerator.GetPointerAlways() );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32D3D9WindowContext: Succesfully created Direct3D9 rendering context" );
         return true;

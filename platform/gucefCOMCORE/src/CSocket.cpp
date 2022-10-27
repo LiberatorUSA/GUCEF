@@ -133,10 +133,10 @@ CSocket::GetSocketID( void ) const
 bool
 CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
                              const UInt16 destport            ,
-                             CIPAddress& resolvedDest         )
+                             CIPv4Address& resolvedDest         )
 {GUCEF_TRACE;
 
-    if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
+    if ( CORE::Check_If_IPv4( destaddrstr.C_String() ) )
     {
         resolvedDest.SetAddress( inet_addr( destaddrstr.C_String() ) );
         if ( resolvedDest.GetAddress() == INADDR_NONE ) 
@@ -194,7 +194,7 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
+CSocket::ConvertFromIPAddress( const CIPv4Address& src     ,
                                CORE::CString& srcaddrstr ,
                                UInt16& srcport           )
 {GUCEF_TRACE;

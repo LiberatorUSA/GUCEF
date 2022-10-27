@@ -25,10 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#include "CIPAddress.h"      /* macros and build config for the COMCORE library */
-#define GUCEF_COMCORE_CIPADDRESS_H
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+#ifndef GUCEF_COMCORE_CIPV4ADDRESS_H
+#include "gucefCOMCORE_CIPv4Address.h"      
+#define GUCEF_COMCORE_CIPV4ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV4ADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CIPV6ADDRESS_H
+#include "gucefCOMCORE_CIPv6Address.h"      
+#define GUCEF_COMCORE_CIPV6ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV6ADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,12 +50,27 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class GUCEF_COMCORE_EXPORT_CPP CDnsResolver
+{
+    public:
+
+    static bool Resolve( const CORE::CString& dns               ,
+                         const UInt16 portInHostByteOrder       ,
+                         CORE::CString::StringVector& aliases   ,
+                         CIPv4Address::TIPv4AddressVector& ipv4 ,
+                         CIPv6Address::TIPv6AddressVector& ipv6 );
+};
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Class representing an internet address with host name in string form
- *  plus the IPv4 address with a port number included.
- *  Note that this class uses network byte order as its default.
+ *  plus the IPv4 or IPv6 addresses with a port number included.
+ *
+ *  Note that this class uses network byte order as its internal storage format.
+ *  The aim here is to pay setup cost in favor of ongoing cost performance wise
  */
-class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
+class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 {
     public:
 
@@ -72,7 +92,12 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      */
     CHostAddress( const CORE::CString& hostAndPort );
 
-    CHostAddress( const CIPAddress& ipAddress   ,
+    /**
+     *  Special case constructor in case you already have a dns plus a related IPv4
+     *  In such a case you likely dont want to take the performance hit of resolving the DNS yet again
+     *  this allows you to init a CHostAddress using those bits.
+     */
+    CHostAddress( const CIPv4Address& ipAddress ,
                   const CORE::CString& hostname );
 
     virtual ~CHostAddress();
@@ -89,7 +114,21 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 
     bool SetHostnameAndPort( const CORE::CString& host, UInt16 portInHostOrder );
 
+    bool SetPortInHostByteOrder( UInt16 portInHostOrder );
+
     const CORE::CString& GetHostname( void ) const;
+
+    CIPv4Address::TIPv4AddressVector& GetIPv4Addresses( void );
+
+    const CIPv4Address::TIPv4AddressVector& GetIPv4Addresses( void ) const;
+
+    const CIPv4Address& GetRandomIPv4Address( void ) const;
+
+    const CIPv4Address& GetFirstIPv4Address( void ) const;
+
+    CIPv6Address::TIPv6AddressVector& GetIPv6Addresses( void );
+
+    const CIPv6Address::TIPv6AddressVector& GetIPv6Addresses( void ) const;
 
     /**
      *  Refreshes the DNS resolution of the hostname
@@ -100,11 +139,15 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      *  Address and port as a string with the network to host
      *  conversion applied
      */
-    virtual CORE::CString HostnameAndPortAsString( void ) const;
+    CORE::CString HostnameAndPortAsString( void ) const;
+
+    CORE::CString PortAsString( void ) const;
+
+    UInt16 GetPortInHostByteOrder( void ) const;
 
     CHostAddress& operator=( const CHostAddress& src );
 
-    CHostAddress& operator=( const CIPAddress& src );
+    CHostAddress& operator=( const CIPv4Address& src );
 
     bool operator==( const CHostAddress& other ) const;
 
@@ -117,14 +160,14 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      */
     bool operator<( const CHostAddress& other ) const;
 
-    protected:
-
-    virtual void OnChange( const bool addressChanged ,
-                           const bool portChanged    );
+    void Clear( void );
 
     private:
 
     CORE::CString m_hostname;
+    CORE::CString::StringVector m_aliases;
+    CIPv4Address::TIPv4AddressVector m_ipv4;
+    CIPv6Address::TIPv6AddressVector m_ipv6;
 };
 
 /*-------------------------------------------------------------------------//
@@ -139,14 +182,3 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 08-04-2007 :
-        - Initial version
-
------------------------------------------------------------------------------*/

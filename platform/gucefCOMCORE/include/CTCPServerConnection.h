@@ -138,7 +138,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     
     virtual UInt16 GetRemoteTCPPort( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CIPAddress GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CIPv4Address GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CHostAddress GetRemoteHostAddress( void ) const;
 

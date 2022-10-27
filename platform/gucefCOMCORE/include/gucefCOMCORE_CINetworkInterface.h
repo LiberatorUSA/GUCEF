@@ -72,7 +72,7 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
     public:
 
     typedef std::vector< CHostAddress > THostAddressVector;
-    typedef std::vector< CIPAddress > TIPAddressVector;
+    typedef std::vector< CIPv4Address > TIPAddressVector;
     typedef std::vector< CIPInfo > TIPInfoVector;
     
     virtual ~CINetworkInterface();
@@ -101,9 +101,9 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     virtual bool IsWinsUsed( void ) const = 0;
 
-    virtual CIPAddress GetPrimaryWinsServer( void ) const = 0;
+    virtual CIPv4Address GetPrimaryWinsServer( void ) const = 0;
 
-    virtual CIPAddress GetSecondaryWinsServer( void ) const = 0;
+    virtual CIPv4Address GetSecondaryWinsServer( void ) const = 0;
 
     virtual UInt32 GetOsAdapterIndex( void ) const = 0;
 

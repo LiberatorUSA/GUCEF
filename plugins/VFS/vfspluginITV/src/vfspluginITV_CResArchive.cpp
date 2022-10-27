@@ -58,6 +58,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #include "vfspluginITV_CResArchive.h"
 
 /*-------------------------------------------------------------------------//
@@ -262,6 +267,30 @@ CResArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CResArchive::MoveFile( const VFS::CString& oldFilePath ,
+                       const VFS::CString& newFilePath ,
+                       const bool overwrite            )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CResArchive::DirExists( const VFS::CString& dirPath ) const
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CResArchive: request to check if dir exists: " +  dirPath );
+
+    // this container does not support sub-dirs
+    return dirPath.IsNULLOrEmpty();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CResArchive::GetResourceInfo( CORE::Int32 resourceId ,
                               CORE::Int32& offset    ,
@@ -438,7 +467,7 @@ CResArchive::LoadIndex( void )
         file.Close();
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully loaded " + CORE::UInt32ToString( m_index.index.size() ) + " entries from index"  );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully loaded " + CORE::ToString( m_index.index.size() ) + " entries from index"  );
     return true;
 }
 

@@ -16,6 +16,7 @@
         <Linker>
             <Dependency Name="Ws2_32.lib" />
 			<Dependency Name="winmm.lib" />
+			<Dependency Name="PowrProf.lib" />			
         </Linker>
     </Module>  	
     <Module Platform="Linux">

@@ -848,8 +848,7 @@ CTCPServerSocket::GetListenAddress( CHostAddress& listenAddress ) const
 {GUCEF_TRACE;
 
     _datalock.Lock();
-    listenAddress.SetPortInHostByteOrder( m_port );
-    listenAddress.SetHostname( "localhost" );
+    listenAddress.SetHostnameAndPort( "localhost", m_port );
     _datalock.Unlock();
 }
 
@@ -881,7 +880,7 @@ bool
 CTCPServerSocket::SendToConnection( UInt32 connectionIndex                ,
                                     const void* dataSource                , 
                                     const UInt32 dataSize                 ,
-                                    const CIPAddress* remoteClientIPCheck )
+                                    const CIPv4Address* remoteClientIPCheck )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock serverLock( AsLockable() );

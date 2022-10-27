@@ -838,7 +838,7 @@ Tab_To_Space( char *buffer, UInt32 numspace )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-Check_If_IP( const char *buffer )
+Check_If_IPv4( const char* buffer )
 {
     if ( NULL != buffer )
     {

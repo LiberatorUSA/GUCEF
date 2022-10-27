@@ -620,7 +620,7 @@ CHTTPServer::ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection
     }
     
     requestData.clientConnectionId = connection->GetConnectionIndex();
-    requestData.remoteClientAddress = connection->GetRemoteHostAddress();
+    requestData.remoteClientAddress = connection->GetRemoteHostAddress().GetFirstIPv4Address();
     requestData.keepConnectionsAlive = m_settings.keepAliveConnections;
     requestData.httpServer = this;
 
@@ -965,7 +965,7 @@ CHTTPServer::GetRequestHandlerFactory( void ) const
 bool 
 CHTTPServer::SendResponseASync( UInt32 connectionId                  ,
                                 const CORE::CDynamicBuffer& response ,
-                                const COMCORE::CIPAddress& remoteIP  )
+                                const COMCORE::CIPv4Address& remoteIP  )
 {GUCEF_TRACE;
 
     return m_tcpServerSocket.SendToConnection( connectionId                 , 

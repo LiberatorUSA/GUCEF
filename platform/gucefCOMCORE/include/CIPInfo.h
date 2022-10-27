@@ -25,10 +25,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#include "CIPAddress.h"     
-#define GUCEF_COMCORE_CIPADDRESS_H
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"     
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CIPV4ADDRESS_H
+#include "gucefCOMCORE_CIPv4Address.h"     
+#define GUCEF_COMCORE_CIPV4ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV4ADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CIPV6ADDRESS_H
+#include "gucefCOMCORE_CIPv6Address.h"     
+#define GUCEF_COMCORE_CIPV6ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV6ADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,8 +59,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPInfo
 {
     public:
 
-    CIPAddress ip;
-    CIPAddress subnet;
+    CIPv4Address ip;
+    CIPv4Address subnet;
 
     /**
      *  This operator is only implemented to facilitate ordering

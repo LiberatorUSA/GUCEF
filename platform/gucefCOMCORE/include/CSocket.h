@@ -91,7 +91,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CObservingNotifier
      */
     static bool ConvertToIPAddress( const CORE::CString& destaddrstr ,
                                     const UInt16 destport            ,  
-                                    CIPAddress& resolvedDest         );
+                                    CIPv4Address& resolvedDest         );
                                     
     /**
      *      Attempts to resolve the source information into a more human-friendly
@@ -101,7 +101,7 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CObservingNotifier
      *      @param srcaddrstr output variable for the source IP/DNS
      *      @param srcport output variable for the source port                     
      */
-    static bool ConvertFromIPAddress( const CIPAddress& src     ,
+    static bool ConvertFromIPAddress( const CIPv4Address& src     ,
                                       CORE::CString& srcaddrstr ,
                                       UInt16& srcport           );
         

@@ -87,7 +87,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     public:
     
     typedef CFormFactory::TConcreteFactory TConcreteFormFactory;
-    typedef std::set< CString > TStringSet;
+    typedef CString::StringSet TStringSet;
     typedef TStringSet TFormTypeSet;
     typedef TStringSet TDriverNameSet;
         
@@ -108,7 +108,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     // creates a generic form, this form will have to context
     // associated with it. It is recommended to create forms
     // via the gui context
-    CForm* CreateGenericForm( const CString& formTypeName );
+    CFormPtr CreateGenericForm( const CString& formTypeName );
     
     void DestroyGenericForm( CForm* genericForm );
     

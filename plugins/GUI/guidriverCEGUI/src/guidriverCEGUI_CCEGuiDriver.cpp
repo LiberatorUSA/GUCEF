@@ -60,16 +60,16 @@ namespace GUIDRIVERCEGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CCEGUIDriver::CCEGUIDriver( bool useglobalconfig )
-    : GUI::CGUIDriver( useglobalconfig ) ,
-      m_vfsResourceProvider()            ,
-      m_logAdapter()                     ,
-      m_imageCodecAdapter( 0 )           ,
-      m_xmlParserAdapter()               ,
-      m_schemeToUse()                    ,
-      m_defaultFont()                    ,
-      m_defaultCursorImage()             ,
-      m_schemasResourceGroup()
+CCEGUIDriver::CCEGUIDriver( void )
+    : GUI::CGUIDriver() 
+    , m_vfsResourceProvider()            
+    , m_logAdapter()                     
+    , m_imageCodecAdapter( 0 )           
+    , m_xmlParserAdapter()               
+    , m_schemeToUse()                    
+    , m_defaultFont()                    
+    , m_defaultCursorImage()             
+    , m_schemasResourceGroup()
 {GUCEF_TRACE;
 
     m_imageCodecAdapter = new ImageCodecAdapter( &m_vfsResourceProvider );

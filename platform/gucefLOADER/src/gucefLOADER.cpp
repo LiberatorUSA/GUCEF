@@ -49,6 +49,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #include "gucefLOADER.h"
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
@@ -111,8 +116,8 @@ namespace LOADER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef std::set< CORE::CString > TStringSet;
-typedef std::vector< CORE::CString > TStringVector;
+typedef CORE::CString::StringSet        TStringSet;
+typedef CORE::CString::StringVector     TStringVector;
 
 /*-------------------------------------------------------------------------*/
 

@@ -91,7 +91,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIDriver : public GUI::CGUIDriver
 {
     public:
 
-    CCEGUIDriver( bool useglobalconfig = true );
+    CCEGUIDriver( void );
 
     virtual ~CCEGUIDriver();
      

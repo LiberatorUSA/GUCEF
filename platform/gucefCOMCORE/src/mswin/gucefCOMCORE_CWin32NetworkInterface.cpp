@@ -112,7 +112,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	pNext = &( pAdaptInfo->GatewayList );
 	while( pNext ) 
 	{
-		CIPAddress address;
+		CIPv4Address address;
 		if ( address.SetAddress( pNext->IpAddress.String ) )
 			m_gatewayList.push_back( address );
 		pNext = pNext->Next;
@@ -409,7 +409,7 @@ CWin32NetworkInterface::IsWinsUsed( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPAddress
+CIPv4Address
 CWin32NetworkInterface::GetPrimaryWinsServer( void ) const
 {GUCEF_TRACE;
 
@@ -419,7 +419,7 @@ CWin32NetworkInterface::GetPrimaryWinsServer( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPAddress 
+CIPv4Address 
 CWin32NetworkInterface::GetSecondaryWinsServer( void ) const
 {GUCEF_TRACE;
 

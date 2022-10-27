@@ -126,7 +126,7 @@ class GUIDRIVERWIN32D3D9_PUBLIC_CPP CWin32D3D9WindowContext : public GUI::CWindo
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32D3D9WindowContext >  TWin32GLWindowContextPtr;
+typedef CORE::CTSharedPtr< CWin32D3D9WindowContext, MT::CMutex >  TWin32GLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

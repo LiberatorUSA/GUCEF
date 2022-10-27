@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H

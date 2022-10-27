@@ -143,6 +143,7 @@ CTCPClientSocket::CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
     , m_sendOpBuffer()                    
     , m_maxreadbytes( 0 )                 
     , m_hostAddress()                     
+    , m_ipv4Target()
     , m_isConnecting( false )             
     , m_pulseGenerator( pulseGenerator ) 
     , m_coaleseDataSends( true )
@@ -283,9 +284,10 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( remoteaddr.Length() == 0 ) return false;
 
     // Don't bother trying to connect if the DNS resolution fails
-    CHostAddress remoteAddress;
-    if ( !remoteAddress.SetHostname( remoteaddr ) ) return false;
-    remoteAddress.SetPortInHostByteOrder( port );
+    CHostAddress remoteAddress;    
+
+    if ( !remoteAddress.SetHostnameAndPort( remoteaddr, port ) ) 
+        return false;
 
     CloseImp();
 
@@ -298,7 +300,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::ConnectTo( const CIPAddress& address ,
+CTCPClientSocket::ConnectTo( const CIPv4Address& address ,
                              bool blocking             )
 {GUCEF_TRACE;
 
@@ -378,17 +380,20 @@ CTCPClientSocket::Connect( bool blocking )
 	 *  At this point, we've successfully retrieved vital information about the server,
 	 *  including its hostname, aliases, and IP addresses.
 	 */
+    m_ipv4Target = m_hostAddress.GetRandomIPv4Address(); 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Using IP " + m_ipv4Target.AddressAsString() + " for target " + m_hostAddress.GetHostname() );
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    _data->serverinfo.sin_addr.S_un.S_addr = m_hostAddress.GetAddress();
+    _data->serverinfo.sin_addr.S_un.S_addr = m_ipv4Target.GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    _data->serverinfo.sin_addr.s_addr = m_hostAddress.GetAddress();
+    _data->serverinfo.sin_addr.s_addr = destAddress.GetAddress();
     #endif
 
     /*
      *  Change port number to network-byte order and
      *  then insert into the server port info field
      */
-	_data->serverinfo.sin_port = m_hostAddress.GetPort();
+	_data->serverinfo.sin_port = m_ipv4Target.GetPort();
 
     int noDelayFlag = (m_coaleseDataSends ? 1 : 0);
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &noDelayFlag, sizeof(noDelayFlag), &errorCode ) )
@@ -528,11 +533,11 @@ CTCPClientSocket::GetRemoteTCPPort( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPAddress
+CIPv4Address
 CTCPClientSocket::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
-    return m_hostAddress;
+    return m_ipv4Target;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -85,7 +85,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     struct SPacketEntry
     {
-        CIPAddress sourceAddress;                      /**< the source address of the data */
+        CIPv4Address sourceAddress;                      /**< the source address of the data */
         CORE::TConstLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
     };
     typedef struct SPacketEntry TPacketEntry;
@@ -168,14 +168,14 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *
      *      @param localaddr local address and port to be used for this socket
      */
-    bool Open( const CIPAddress& localaddr );
+    bool Open( const CIPv4Address& localaddr );
 
     /**
      *  Attempts to set the default interface to be used for multicast   
      *
      *  @param multicastInterface The local interface to use by default
      */
-    bool SetDefaultMulticastInterface( const CIPAddress& multicastInterface );
+    bool SetDefaultMulticastInterface( const CIPv4Address& multicastInterface );
 
     /**
      *  Attempts to join the given multicast group using exclusive mode
@@ -186,7 +186,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param alwaysJoinOnAllNetworkInterfaces whether to auto join on all available network interfaces
      *  @param treatHostInterfaceOfAnyAsJoinOnAll whether to join on all available network interfaces if the host bind interface is set to ANY
      */
-    bool Join( const CIPAddress& multicastGroup                ,
+    bool Join( const CIPv4Address& multicastGroup                ,
                bool alwaysJoinOnAllNetworkInterfaces = false   ,
                bool treatHostInterfaceOfAnyAsJoinOnAll = false );
 
@@ -198,8 +198,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param multicastGroup The multicast group to join
      *  @param networkInterfaceToJoinOn which network interface to use for the join request
      */
-    bool JoinOnInterface( const CIPAddress& multicastGroup           ,
-                          const CIPAddress& networkInterfaceToJoinOn );
+    bool JoinOnInterface( const CIPv4Address& multicastGroup           ,
+                          const CIPv4Address& networkInterfaceToJoinOn );
 
     /**
      *  Attempts to join the given multicast group using inclusive mode
@@ -209,8 +209,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param multicastGroup The multicast group to join
      *  @param srcAddr The allowed source address of multicast data
      */
-    bool Join( const CIPAddress& multicastGroup ,
-               const CIPAddress& srcAddr        );
+    bool Join( const CIPv4Address& multicastGroup ,
+               const CIPv4Address& srcAddr        );
 
     /**
      *  Attempts to join the leave multicast group using exclusive mode
@@ -218,7 +218,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *
      *  @param multicastGroup The multicast group to join
      */
-    bool Leave( const CIPAddress& multicastGroup );
+    bool Leave( const CIPv4Address& multicastGroup );
 
     /**
      *  Attempts to leave the given multicast group using inclusive mode
@@ -228,8 +228,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param multicastGroup The multicast group to leave
      *  @param srcAddr The allowed source address of multicast data
      */
-    bool Leave( const CIPAddress& multicastGroup ,
-                const CIPAddress& srcAddr        );
+    bool Leave( const CIPv4Address& multicastGroup ,
+                const CIPv4Address& srcAddr        );
 
     /**
      *  Attempts to block data from the given multicast group for a specific source using exclusive mode
@@ -239,8 +239,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param multicastGroup The multicast group to leave
      *  @param srcAddr The allowed source address of multicast data
      */
-    bool Block( const CIPAddress& multicastGroup ,
-                const CIPAddress& srcAddr        );
+    bool Block( const CIPv4Address& multicastGroup ,
+                const CIPv4Address& srcAddr        );
 
     /**
      *   Attempts to unblock data from the given multicast group for a specific source using exclusive mode
@@ -250,8 +250,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  @param multicastGroup The multicast group to leave
      *  @param srcAddr The allowed source address of multicast data
      */
-    bool Unblock( const CIPAddress& multicastGroup ,
-                  const CIPAddress& srcAddr        );
+    bool Unblock( const CIPv4Address& multicastGroup ,
+                  const CIPv4Address& srcAddr        );
 
     UInt16 GetPort( void ) const;
 
@@ -289,7 +289,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      @param datasize size in bytes of the data block pointed to by data
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
-    Int32 SendPacketTo( const CIPAddress& dest ,
+    Int32 SendPacketTo( const CIPv4Address& dest ,
                         const void* data       ,
                         UInt16 datasize        );
 
@@ -303,7 +303,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      @param datasize size in bytes of the data block pointed to by data
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
-    Int32 SendPacketTo( const CIPAddress& dest ,
+    Int32 SendPacketTo( const CIPv4Address& dest ,
                         const void* data       ,
                         UInt16 datasize        ) const;
 
@@ -325,7 +325,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      @param bufsize size of the destination buffer in bytes.
      *      @return the number of bytes written to the given buffer, returns -1 on error.
      */
-    Int32 Recieve( CIPAddress& src ,
+    Int32 Recieve( CIPv4Address& src ,
                    void* destbuf   ,
                    UInt16 bufsize  );
 

@@ -52,6 +52,7 @@ namespace GUI {
 //-------------------------------------------------------------------------*/
 
 typedef GUCEF::CORE::CTAbstractFactory< CString, CForm, MT::CMutex >  CFormFactory;
+typedef CFormFactory::TProductPtr                                     CFormPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

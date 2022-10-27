@@ -80,7 +80,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 
     virtual ~CTCPConnection();
     
-    virtual CIPAddress GetRemoteIP( void ) const = 0;
+    virtual CIPv4Address GetRemoteIP( void ) const = 0;
     
     virtual const CORE::CString& GetRemoteHostName( void ) const = 0;
     

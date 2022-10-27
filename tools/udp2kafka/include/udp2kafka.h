@@ -274,7 +274,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     void RegisterEventHandlers( void );
     
-    RdKafka::ErrorCode KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
+    RdKafka::ErrorCode KafkaProduce( const COMCORE::CIPv4Address& sourceAddress ,
                                      const CORE::CDynamicBuffer& udpPacket    );
 
     bool CommitConsumerOffsets( void );

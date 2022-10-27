@@ -850,7 +850,7 @@ Udp2KafkaChannel::dr_cb( RdKafka::Message& message )
 /*-------------------------------------------------------------------------*/
 
 RdKafka::ErrorCode
-Udp2KafkaChannel::KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
+Udp2KafkaChannel::KafkaProduce( const COMCORE::CIPv4Address& sourceAddress ,
                                 const CORE::CDynamicBuffer& udpPacket    )
 {GUCEF_TRACE;
 
@@ -928,7 +928,7 @@ Udp2KafkaChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
         for ( CORE::UInt32 p=0; p<data.packetsReceived; ++p )
         {
             const CORE::CDynamicBuffer& udpPacketBuffer = data.packets[ p ].dataBuffer.GetData();
-            const COMCORE::CIPAddress& sourceAddress = data.packets[ p ].sourceAddress;
+            const COMCORE::CIPv4Address& sourceAddress = data.packets[ p ].sourceAddress;
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: UDP Socket received a packet from " + sourceAddress.AddressAndPortAsString() );
         

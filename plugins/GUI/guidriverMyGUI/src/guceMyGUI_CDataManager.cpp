@@ -149,17 +149,15 @@ CDataManager::getDataListNames( const std::string& pattern, bool fullpath )
     static MyGUI::VectorString result;
     result.clear();
 
-    GUCEF::VFS::CVFS::TStringSet vfsResultSet;
-    VFS::CVfsGlobal::Instance()->GetVfs().GetList( vfsResultSet ,
-                                                   ""           ,
-                                                   true         ,
-                                                   fullpath     ,
-                                                   pattern      ,
-                                                   true         ,
-                                                   false        );
+    GUCEF::VFS::CVFS::TStringVector vfsResultSet;
+    VFS::CVfsGlobal::Instance()->GetVfs().GetFileList( vfsResultSet   ,
+                                                       CString::Empty ,
+                                                       true           ,
+                                                       fullpath       ,
+                                                       pattern        );
 
 
-    GUCEF::VFS::CVFS::TStringSet::iterator i = vfsResultSet.begin();
+    GUCEF::VFS::CVFS::TStringVector::iterator i = vfsResultSet.begin();
     while ( i != vfsResultSet.end() )
     {
         result.push_back( (*i) );

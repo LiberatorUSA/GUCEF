@@ -102,7 +102,13 @@ class CZIPArchive : public VFS::CArchive
     
     virtual bool DeleteFile( const VFS::CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
     
+    virtual bool MoveFile( const VFS::CString& oldFilePath ,
+                           const VFS::CString& newFilePath ,
+                           const bool overwrite            ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool FileExists( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool DirExists( const VFS::CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual VFS::UInt32 GetFileSize( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     

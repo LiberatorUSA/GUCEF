@@ -269,7 +269,7 @@ UdpTransformer::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
 
 bool
 UdpTransformer::TransformUdpPacket( const CORE::CDynamicBuffer& udpPacketBuffer      ,
-                                    const COMCORE::CIPAddress& sourceAddress         ,
+                                    const COMCORE::CIPv4Address& sourceAddress         ,
                                     CORE::CDynamicBuffer& transformedUdpOutputBuffer )
 {GUCEF_TRACE;
 

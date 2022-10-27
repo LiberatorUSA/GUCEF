@@ -15,7 +15,6 @@ set( HEADER_FILES
   include/CCom.h
   include/CGUCEFCOMCOREModule.h
   include/CHostAddress.h
-  include/CIPAddress.h
   include/CIPInfo.h
   include/CPing.h
   include/CSocket.h
@@ -37,6 +36,8 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryEntry.h
   include/gucefCOMCORE_CIMessage.h
   include/gucefCOMCORE_CINetworkInterface.h
+  include/gucefCOMCORE_CIPv4Address.h
+  include/gucefCOMCORE_CIPv6Address.h
   include/gucefCOMCORE_CMessageSerializer.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CSerialPort.h
@@ -51,7 +52,6 @@ set( SOURCE_FILES
   src/CCom.cpp
   src/CGUCEFCOMCOREModule.cpp
   src/CHostAddress.cpp
-  src/CIPAddress.cpp
   src/CIPInfo.cpp
   src/CPing.cpp
   src/CSocket.cpp
@@ -73,6 +73,8 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
   src/gucefCOMCORE_CIMessage.cpp
   src/gucefCOMCORE_CINetworkInterface.cpp
+  src/gucefCOMCORE_CIPv4Address.cpp
+  src/gucefCOMCORE_CIPv6Address.cpp
   src/gucefCOMCORE_CMessageSerializer.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CSerialPort.cpp

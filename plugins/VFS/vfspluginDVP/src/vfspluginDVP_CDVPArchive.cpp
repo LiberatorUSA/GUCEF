@@ -133,11 +133,11 @@ CDVPArchive::GetFile( const VFS::CString& file      ,
                                                            file       ,
                                                            filePath   );
                                                            
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: providing access to file: " + file );        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: providing access to file: " + file );        
         return CVFSHandlePtr( fileHandle, this );
     }
     
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: Unable to provide access to file: " + file );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: Unable to provide access to file: " + file );
     return CVFSHandlePtr();
 }
 
@@ -149,6 +149,30 @@ CDVPArchive::DeleteFile( const VFS::CString& filePath )
 
     // Not implemented / supported at this time
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDVPArchive::MoveFile( const VFS::CString& oldFilePath ,
+                       const VFS::CString& newFilePath ,
+                       const bool overwrite            )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDVPArchive::DirExists( const VFS::CString& dirPath ) const
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: request to check if dir exists: " +  dirPath );
+
+    // this container does not support sub-dirs
+    return dirPath.IsNULLOrEmpty();
 }
 
 /*-------------------------------------------------------------------------*/

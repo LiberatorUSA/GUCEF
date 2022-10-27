@@ -214,9 +214,9 @@ VfsResourceProvider::getResourceGroupFileNames( std::vector<CEGUI::String>& out_
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
-    VFS::CVFS::TStringSet fileList;
-    vfs.GetList( fileList, filePath, false, false, file_pattern, true, false );
-    VFS::CVFS::TStringSet::iterator n = fileList.begin();
+    VFS::CVFS::TStringVector fileList;
+    vfs.GetFileList( fileList, filePath, false, false, file_pattern );
+    VFS::CVFS::TStringVector::iterator n = fileList.begin();
     while ( n != fileList.end() )
     {   
         out_vec.push_back( (*n) );

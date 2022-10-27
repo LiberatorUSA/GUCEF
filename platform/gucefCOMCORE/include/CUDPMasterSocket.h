@@ -190,7 +190,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
      *      @param datasize size in bytes of the data block pointed to by data
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
-    Int32 SendPacketTo( const CIPAddress& dest ,
+    Int32 SendPacketTo( const CIPv4Address& dest ,
                         const void* data       , 
                         UInt16 datasize        );
     
@@ -199,7 +199,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
      *
      *  @return the requested channel or NULL if no channel is found for the given address
      */
-    CUDPChannel* GetChannelForAddress( const CIPAddress& remoteAddr );
+    CUDPChannel* GetChannelForAddress( const CIPv4Address& remoteAddr );
     
     /**
      *  Attempts to obtain the channel for the given address.
@@ -207,14 +207,14 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
      *
      *  @return the requested channel for the given address
      */
-    CUDPChannel* ReserveChannelForAddress( const CIPAddress& remoteAddr );
+    CUDPChannel* ReserveChannelForAddress( const CIPv4Address& remoteAddr );
     
     /**
      *  Attempts to locate and then destroy a channel for the given address
      *
      *  @return whether or not a channel for the given address was found and destroyed
      */
-    bool DestroyChannelForAddress( const CIPAddress& remoteAddr );
+    bool DestroyChannelForAddress( const CIPv4Address& remoteAddr );
     
     /**
      *  Destroys all existing channels
@@ -229,7 +229,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPMasterSocket : public CORE::CObservingNotifie
     
     private:
 
-    typedef std::map< CIPAddress, CUDPChannel* > TChannelMap;
+    typedef std::map< CIPv4Address, CUDPChannel* > TChannelMap;
     
     CUDPSocket m_udpSocket;
     TChannelMap m_channelMap;

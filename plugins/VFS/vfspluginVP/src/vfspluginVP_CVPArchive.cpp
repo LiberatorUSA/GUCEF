@@ -169,6 +169,18 @@ CVPArchive::DeleteFile( const VFS::CString& filePath )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CVPArchive::MoveFile( const VFS::CString& oldFilePath ,
+                      const VFS::CString& newFilePath ,
+                      const bool overwrite            )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CVPArchive::StoreAsFile( const CORE::CString& filepath    ,
                          const CORE::CDynamicBuffer& data ,
                          const CORE::UInt64 offset        ,
@@ -315,6 +327,18 @@ CVPArchive::FileExists( const VFS::CString& filePath ) const
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: request to check if file exists: " +  filePath );
     return m_index.find( filePath.Lowercase().ReplaceChar( '/', '\\' ) ) != m_index.end();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVPArchive::DirExists( const VFS::CString& dirPath ) const
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: request to check if dir exists: " +  dirPath );
+
+    // this container does not support sub-dirs
+    return dirPath.IsNULLOrEmpty();
 }
 
 /*-------------------------------------------------------------------------*/

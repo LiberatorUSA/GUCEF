@@ -300,9 +300,9 @@ CUDPSocket::GetNrOfReceiveBuffers( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32
-CUDPSocket::SendPacketTo( const CIPAddress& dest ,
-                          const void* data       ,
-                          UInt16 datasize        )
+CUDPSocket::SendPacketTo( const CIPv4Address& dest ,
+                          const void* data         ,
+                          UInt16 datasize          )
 {GUCEF_TRACE;
 
     if ( !_data->sockid )
@@ -317,16 +317,16 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-CUDPSocket::SendPacketTo( const CIPAddress& dest ,
-                          const void* data       ,
-                          UInt16 datasize        ) const
+CUDPSocket::SendPacketTo( const CIPv4Address& dest ,
+                          const void* data         ,
+                          UInt16 datasize          ) const
 {GUCEF_TRACE;
 
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) );
     UInt32 destAddr = dest.GetAddress();
     if ( 0 == destAddr )
-        destAddr = CIPAddress::LoopbackIP.GetAddress();
+        destAddr = CIPv4Address::Loopback.GetAddress();
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     remote.sin_addr.S_un.S_addr = destAddr;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -350,12 +350,12 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
         ++m_nrOfDataSentEvents;
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Sent " + CORE::UInt16ToString( datasize ) +
-            " bytes to " + dest.AddressAndPortAsString() + " from " + m_hostAddress.AddressAndPortAsString() );
+            " bytes to " + dest.AddressAndPortAsString() + " from " + m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() );
     }
     else
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) +
-            " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.AddressAndPortAsString() + ". ErrorCode: " + CORE::Int32ToString( socketError ) );
+            " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() + ". ErrorCode: " + CORE::Int32ToString( socketError ) );
 
         TSocketErrorEventData eData( socketError );
         NotifyObservers( UDPSocketErrorEvent, &eData );
@@ -372,7 +372,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
                           UInt16 datasize              )
 {GUCEF_TRACE;
 
-    CIPAddress dest;
+    CIPv4Address dest;
     if ( ConvertToIPAddress( dnsname, port, dest ) )
     {
         return SendPacketTo( dest, data, datasize );
@@ -463,8 +463,9 @@ CUDPSocket::Update( bool performRead )
             else
             {
                 // select call failed
+                CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed) on socket " +
-                    m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
+                    ipv4Address.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
 
                 int closeError;
                 dvsocket_closesocket( _data->sockid, &closeError );
@@ -772,7 +773,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
         bufferLink.LinkTo( m_underlyingReceiveBuffer.GetBufferPtr( i * m_maxRecievedDataBufferSize ), (UInt32) _data->msgs[ i ].msg_len );
 
         // Fill in the remote source address from where the data originated
-        CIPAddress& sourceAddress = eventData.packets[ i ].sourceAddress;
+        CIPv4Address& sourceAddress = eventData.packets[ i ].sourceAddress;
 
         // The msg_name field of struct msghdr does not necessarily have to point to a struct sockaddr_in:
         // it points to a generic socket address; the exact structure depends on the socket family: if it's an AF_UNIX socket,
@@ -813,7 +814,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     {
         // recvfrom call failed
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Socket error occured (recvfrom call failed) on socket " +
-            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( sockError ) );
+            m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( sockError ) );
 
         packetsRead = 0;
         return false;
@@ -821,7 +822,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     if ( retval == 0 )
     {
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Discovered the socket was closed gracefully on socket " +
-            m_hostAddress.AddressAndPortAsString() );
+            m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() );
 
         // The read is telling us that the socket was closed
         packetsRead = 0;
@@ -836,7 +837,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     bufferLink.LinkTo( m_underlyingReceiveBuffer.GetBufferPtr( readIndex * m_maxRecievedDataBufferSize ), (UInt32) retval );
 
     // Fill in the remote source address from where the data originated
-    CIPAddress& sourceAddress = eventData.packets[ readIndex ].sourceAddress;
+    CIPv4Address& sourceAddress = eventData.packets[ readIndex ].sourceAddress;
     sourceAddress.SetPort( remote.sin_port );
     sourceAddress.SetAddress( remote.sin_addr.s_addr );
 
@@ -854,7 +855,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
 /*-------------------------------------------------------------------------*/
 
 Int32
-CUDPSocket::Recieve( CIPAddress& src ,
+CUDPSocket::Recieve( CIPv4Address& src ,
                      void* destbuf   ,
                      UInt16 bufsize  )
 {GUCEF_TRACE;
@@ -882,7 +883,7 @@ CUDPSocket::Recieve( void* destbuf  ,
                      UInt16 bufsize )
 {GUCEF_TRACE;
 
-    CIPAddress src;
+    CIPv4Address src;
     return Recieve( src     ,
                     destbuf ,
                     bufsize );
@@ -894,7 +895,12 @@ bool
 CUDPSocket::Open( void )
 {GUCEF_TRACE;
 
-    return Open( m_hostAddress );
+    if ( !m_hostAddress.GetIPv4Addresses().empty() )
+    {
+        CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];    
+        return Open( ipv4Address );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -903,7 +909,7 @@ bool
 CUDPSocket::Open( UInt16 port )
 {GUCEF_TRACE;
 
-    CIPAddress address( INADDR_ANY, htons( port ) );
+    CIPv4Address address( INADDR_ANY, htons( port ) );
     return Open( address );
 }
 
@@ -915,7 +921,9 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
 {GUCEF_TRACE;
 
     CHostAddress address( localaddr, port );
-    bool success = Open( address );
+    CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];
+
+    bool success = Open( ipv4Address );
     m_hostAddress = address;
     return success;
 }
@@ -923,12 +931,13 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Open( const CIPAddress& localaddr )
+CUDPSocket::Open( const CIPv4Address& localaddr )
 {GUCEF_TRACE;
 
     Close( false );
 
     m_hostAddress = localaddr;
+    CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];
 
     //create a UDP socket
     int errorCode = 0;
@@ -944,7 +953,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
             m_pulseGenerator->RequestPeriodicPulses( this, GUCEF_PULSE_UPDATE_INTERVAL );
 
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to open socket at " +
-            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
+            ipv4Address.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         return false;
     }
 
@@ -1024,10 +1033,10 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set broadcast option to \"" + CORE::BoolToString( m_allowBroadcast ) + "\" on socket" );
 
     _data->localaddress.sin_family = AF_INET;
-    _data->localaddress.sin_port = m_hostAddress.GetPort();
-    _data->localaddress.sin_addr.s_addr = m_hostAddress.GetAddress();
+    _data->localaddress.sin_port = ipv4Address.GetPort();
+    _data->localaddress.sin_addr.s_addr = ipv4Address.GetAddress();
 
-    SetDefaultMulticastInterface( m_hostAddress );
+    SetDefaultMulticastInterface( ipv4Address );
 
     if ( dvsocket_bind( _data->sockid                            ,
                         (struct sockaddr *) &_data->localaddress ,
@@ -1035,16 +1044,16 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         &errorCode                               ) == 0 )
     {
         // Did we ask the O/S to assign a port?
-        if ( 0 == m_hostAddress.GetPortInHostByteOrder() )
+        if ( 0 == ipv4Address.GetPortInHostByteOrder() )
         {
             struct sockaddr_in sin;
             socklen_t len = sizeof(sin);
             if ( 0 == getsockname( _data->sockid, (struct sockaddr*) &sin, &len ) )
-                m_hostAddress.SetPort( sin.sin_port );
+                ipv4Address.SetPort( sin.sin_port );
         }
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString()
-            + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + ipv4Address.AddressAndPortAsString()
+            + " aka " + CORE::UInt32ToString( ipv4Address.GetAddress() ) + ":" + CORE::UInt16ToString( ipv4Address.GetPort() ) + " in network format" );
         if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;
 
         // We will now be requiring periodic updates to poll for data
@@ -1054,7 +1063,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to bind to " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to bind to " + ipv4Address.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         TSocketErrorEventData eData( errorCode );
         if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
@@ -1147,7 +1156,7 @@ CUDPSocket::GetOsLevelSocketReceiveBufferSize( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::SetDefaultMulticastInterface( const CIPAddress& multicastInterface )
+CUDPSocket::SetDefaultMulticastInterface( const CIPv4Address& multicastInterface )
 {GUCEF_TRACE;
 
     struct in_addr interface_addr;
@@ -1172,8 +1181,8 @@ CUDPSocket::SetDefaultMulticastInterface( const CIPAddress& multicastInterface )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Join( const CIPAddress& multicastGroup ,
-                  const CIPAddress& srcAddr        )
+CUDPSocket::Join( const CIPv4Address& multicastGroup ,
+                  const CIPv4Address& srcAddr        )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr;
@@ -1181,35 +1190,35 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #endif
 
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to join multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString()
+            + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Joined multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
+        + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Join( const CIPAddress& multicastGroup        ,
+CUDPSocket::Join( const CIPv4Address& multicastGroup        ,
                   bool alwaysJoinOnAllNetworkInterfaces   ,
                   bool treatHostInterfaceOfAnyAsJoinOnAll )
 {GUCEF_TRACE;
 
-    if ( alwaysJoinOnAllNetworkInterfaces || ( treatHostInterfaceOfAnyAsJoinOnAll && ( 0 == m_hostAddress.GetAddress() ) ) )
+    if ( alwaysJoinOnAllNetworkInterfaces || ( treatHostInterfaceOfAnyAsJoinOnAll && ( 0 == m_hostAddress.GetFirstIPv4Address().GetAddress() ) ) )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Trying to joined multicast group " + multicastGroup.AddressAsString()
             + ", using all available network interfaces, for all data on the multicast group except explicit blocks" );
@@ -1234,14 +1243,14 @@ CUDPSocket::Join( const CIPAddress& multicastGroup        ,
         }
     }
 
-    return JoinOnInterface( multicastGroup, m_hostAddress );
+    return JoinOnInterface( multicastGroup, m_hostAddress.GetFirstIPv4Address() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::JoinOnInterface( const CIPAddress& multicastGroup           ,
-                             const CIPAddress& networkInterfaceToJoinOn )
+CUDPSocket::JoinOnInterface( const CIPv4Address& multicastGroup           ,
+                             const CIPv4Address& networkInterfaceToJoinOn )
 {GUCEF_TRACE;
 
     struct ip_mreq imr;
@@ -1272,8 +1281,8 @@ CUDPSocket::JoinOnInterface( const CIPAddress& multicastGroup           ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Leave( const CIPAddress& multicastGroup ,
-                   const CIPAddress& srcAddr        )
+CUDPSocket::Leave( const CIPv4Address& multicastGroup ,
+                   const CIPv4Address& srcAddr        )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr;
@@ -1281,7 +1290,7 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
@@ -1292,26 +1301,26 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup ,
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to leave multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
+            + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Left multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
+        + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Leave( const CIPAddress& multicastGroup )
+CUDPSocket::Leave( const CIPv4Address& multicastGroup )
 {GUCEF_TRACE;
 
     struct ip_mreq imr;
     memset( &imr, 0, sizeof( imr ) );
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_interface.s_addr = m_hostAddress.GetAddress();
@@ -1321,20 +1330,20 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup )
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to leave multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group"
+            + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for all data on the multicast group"
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Left multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group" );
+        + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for all data on the multicast group" );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Block( const CIPAddress& multicastGroup ,
-                   const CIPAddress& srcAddr        )
+CUDPSocket::Block( const CIPv4Address& multicastGroup ,
+                   const CIPv4Address& srcAddr        )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr;
@@ -1342,7 +1351,7 @@ CUDPSocket::Block( const CIPAddress& multicastGroup ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
@@ -1353,20 +1362,20 @@ CUDPSocket::Block( const CIPAddress& multicastGroup ,
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_BLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to block data for multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
+            + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Blocking data for multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
+        + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
-                     const CIPAddress& srcAddr        )
+CUDPSocket::Unblock( const CIPv4Address& multicastGroup ,
+                     const CIPv4Address& srcAddr        )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr;
@@ -1374,7 +1383,7 @@ CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
@@ -1385,12 +1394,12 @@ CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_UNBLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to unblock data for multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
+            + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Unblocking data for multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
+        + ", using interface " + m_hostAddress.GetFirstIPv4Address().AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
 
@@ -1411,7 +1420,7 @@ CUDPSocket::Close( bool shutdownOnly )
             int errorCode = 0;
             if ( 0 == dvsocket_closesocket( _data->sockid, &errorCode ) )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Closed socket at " + m_hostAddress.AddressAndPortAsString() );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Closed socket at " + m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() );
 
                 // We now no longer require periodic updates to poll for data
                 if ( !m_autoReopenOnError )
@@ -1421,7 +1430,7 @@ CUDPSocket::Close( bool shutdownOnly )
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed close socket at " + m_hostAddress.AddressAndPortAsString() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed close socket at " + m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() );
 
                 TSocketErrorEventData eData( errorCode );
                 NotifyObservers( UDPSocketErrorEvent, &eData );
@@ -1429,7 +1438,7 @@ CUDPSocket::Close( bool shutdownOnly )
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): shutting down socket at " + m_hostAddress.AddressAndPortAsString() );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): shutting down socket at " + m_hostAddress.GetFirstIPv4Address().AddressAndPortAsString() );
             shutdown( _data->sockid, 1 );
         }
     }

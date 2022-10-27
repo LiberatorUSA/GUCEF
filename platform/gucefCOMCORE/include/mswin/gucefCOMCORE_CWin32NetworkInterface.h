@@ -93,9 +93,9 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
 
     virtual bool IsWinsUsed( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CIPAddress GetPrimaryWinsServer( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CIPv4Address GetPrimaryWinsServer( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CIPAddress GetSecondaryWinsServer( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CIPv4Address GetSecondaryWinsServer( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual UInt32 GetOsAdapterIndex( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -118,10 +118,10 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
 
     CString m_name;
     CString m_desc;
-    CIPAddress m_priWins;
-    CIPAddress m_secWins;
-    CIPAddress m_defGateway;
-    CIPAddress m_dhcpAddr;
+    CIPv4Address m_priWins;
+    CIPv4Address m_secWins;
+    CIPv4Address m_defGateway;
+    CIPv4Address m_dhcpAddr;
     CIPInfo m_curIpAddr;    // this is also in the ip address list but this is the address currently active.
     UInt32 m_nicIndex;      // machine index of the adapter.
     UInt32 m_adapterType;	

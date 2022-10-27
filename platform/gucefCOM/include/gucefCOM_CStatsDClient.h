@@ -122,7 +122,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
 
     void SetStatsInterface( const COMCORE::CHostAddress& interface );
 
-    const COMCORE::CHostAddress& GetStatsInterface( void ) const;
+    const COMCORE::CIPv4Address& GetStatsInterface( void ) const;
 
     void SetStatNamePrefix( const CString& prefix );
 
@@ -148,7 +148,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
 
     COMCORE::CUDPSocket m_udpSender;
     COMCORE::CHostAddress m_statsDestination;
-    COMCORE::CHostAddress m_statsInterface;
+    COMCORE::CIPv4Address m_statsInterface;
     CString m_statNamePrefix;
     bool m_transmit;
     bool m_logStats;

@@ -95,7 +95,7 @@ class GUCEF_HIDDEN CAsyncHttpResponseData : public CHttpResponseData
 
     CHTTPServer* httpServer;
     UInt32 clientConnectionId;
-    COMCORE::CHostAddress remoteClientAddress;
+    COMCORE::CIPv4Address remoteClientAddress;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

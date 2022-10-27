@@ -137,17 +137,17 @@ CTCPServerConnection::GetRemoteHostName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPAddress
+CIPv4Address
 CTCPServerConnection::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return CIPAddress( _data->clientaddr.sin_addr.S_un.S_addr, _data->clientaddr.sin_port );
+    return CIPv4Address( _data->clientaddr.sin_addr.S_un.S_addr, _data->clientaddr.sin_port );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    return CIPAddress( _data->clientaddr.sin_addr.s_addr, _data->clientaddr.sin_port );
+    return CIPv4Address( _data->clientaddr.sin_addr.s_addr, _data->clientaddr.sin_port );
 
     #endif
 }

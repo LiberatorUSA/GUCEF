@@ -12,16 +12,33 @@
 # Configuration for module: gucefLOADER
 
 set( HEADER_FILES 
+  ../gucefCORE/include/CDynamicBuffer.h
+  ../gucefCORE/include/CException.h
+  ../gucefCORE/include/CICloneable.h
+  ../gucefCORE/include/CIOAccess.h
+  ../gucefCORE/include/CMsgException.h
   ../gucefCORE/include/DVCPPOSWRAP.h
   ../gucefCORE/include/DVOSWRAP.h
+  ../gucefCORE/include/IOACCESS.h
+  ../gucefCORE/include/MFILE.h
+  ../gucefCORE/include/PAFILE.h
+  ../gucefCORE/include/dvcppfileutils.h
   ../gucefCORE/include/dvcppstringutils.h
   ../gucefCORE/include/dvfileutils.h
   ../gucefCORE/include/dvmd5utils.h
   ../gucefCORE/include/dvstrutils.h
   ../gucefCORE/include/gucefCORE_CAsciiString.h
+  ../gucefCORE/include/gucefCORE_CDate.h
+  ../gucefCORE/include/gucefCORE_CDateTime.h
+  ../gucefCORE/include/gucefCORE_CIDate.h
+  ../gucefCORE/include/gucefCORE_CITime.h
   ../gucefCORE/include/gucefCORE_CString.h
+  ../gucefCORE/include/gucefCORE_CTime.h
   ../gucefCORE/include/gucefCORE_CUtf8String.h
+  ../gucefCORE/include/gucefCORE_CVariant.h
+  ../gucefCORE/include/gucefCORE_VariantData.h
   ../gucefCORE/include/md5.h
+  ../gucefMT/include/gucefMT_CICloneable.h
   ../gucefMT/include/gucefMT_CILockable.h
   ../gucefMT/include/gucefMT_CMutex.h
   ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -34,15 +51,32 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
+  ../gucefCORE/src/CDynamicBuffer.cpp
+  ../gucefCORE/src/CException.cpp
+  ../gucefCORE/src/CICloneable.cpp
+  ../gucefCORE/src/CIOAccess.cpp
+  ../gucefCORE/src/CMsgException.cpp
   ../gucefCORE/src/DVCPPOSWRAP.cpp
   ../gucefCORE/src/DVOSWRAP.cpp
+  ../gucefCORE/src/IOACCESS.c
+  ../gucefCORE/src/MFILE.c
+  ../gucefCORE/src/PAFILE.c
+  ../gucefCORE/src/dvcppfileutils.cpp
   ../gucefCORE/src/dvcppstringutils.cpp
   ../gucefCORE/src/dvfileutils.c
   ../gucefCORE/src/dvmd5utils.c
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+  ../gucefCORE/src/gucefCORE_CDate.cpp
+  ../gucefCORE/src/gucefCORE_CDateTime.cpp
+  ../gucefCORE/src/gucefCORE_CIDate.cpp
+  ../gucefCORE/src/gucefCORE_CITime.cpp
+  ../gucefCORE/src/gucefCORE_CTime.cpp
   ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+  ../gucefCORE/src/gucefCORE_CVariant.cpp
+  ../gucefCORE/src/gucefCORE_VariantData.c
   ../gucefCORE/src/md5.c
+  ../gucefMT/src/gucefMT_CICloneable.cpp
   ../gucefMT/src/gucefMT_CILockable.cpp
   ../gucefMT/src/gucefMT_CMutex.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -55,16 +89,33 @@ set( SOURCE_FILES
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -76,15 +127,32 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -97,16 +165,33 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -118,15 +203,32 @@ elseif (EMSCRIPTEN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -139,16 +241,33 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -160,15 +279,32 @@ elseif (GLX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -181,16 +317,33 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -202,15 +355,32 @@ elseif (GTK)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -223,16 +393,33 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -244,15 +431,32 @@ elseif (IOS)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -265,16 +469,33 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -286,15 +507,32 @@ elseif (LINUX32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -307,16 +545,33 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -328,15 +583,32 @@ elseif (LINUX64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -349,16 +621,33 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -370,15 +659,32 @@ elseif (NACL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -391,16 +697,33 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -412,15 +735,32 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -433,16 +773,33 @@ elseif (OSX)
 
 elseif (POSIX)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -454,15 +811,32 @@ elseif (POSIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -475,16 +849,33 @@ elseif (POSIX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -496,15 +887,32 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -517,16 +925,33 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -538,15 +963,32 @@ elseif (SYMBIAN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -559,16 +1001,33 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -580,15 +1039,32 @@ elseif (UNIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -601,16 +1077,33 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -622,15 +1115,32 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -643,16 +1153,33 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/IOACCESS.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
     ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_VariantData.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
@@ -664,15 +1191,32 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_VariantData.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
@@ -706,11 +1250,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib winmm.lib )
+  target_link_libraries( ${MODULE_NAME} PowrProf.lib Ws2_32.lib winmm.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib winmm.lib )
+  target_link_libraries( ${MODULE_NAME} PowrProf.lib Ws2_32.lib winmm.lib )
 endif( WIN64 )
 
 include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )

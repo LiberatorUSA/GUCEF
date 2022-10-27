@@ -136,17 +136,20 @@
 #if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         #ifdef _WIN64
-            #define GUCEF_64BIT
+            #define GUCEF_64BIT 1
         #endif
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
         #ifdef __LP64__
-            #define GUCEF_64BIT
+            #define GUCEF_64BIT 1
         #endif
     #endif
 #endif
 
+/*
+ *  Default to 32bit if detection fails
+ */
 #if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
-    #define GUCEF_32BIT
+    #define GUCEF_32BIT 1
 #endif
 
 /*-------------------------------------------------------------------------*/

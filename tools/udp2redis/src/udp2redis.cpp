@@ -110,8 +110,9 @@ Udp2RedisChannel::~Udp2RedisChannel()
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    delete m_redisOptions.timeout;
-    m_redisOptions.timeout = GUCEF_NULL;
+    delete m_redisOptions.command_timeout;
+    m_redisOptions.command_timeout = GUCEF_NULL;
+    m_redisOptions.connect_timeout = GUCEF_NULL;
 
     delete m_udpSocket;
     m_udpSocket = GUCEF_NULL;
@@ -637,15 +638,17 @@ Udp2RedisChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
 bool
 Udp2RedisChannel::RedisConnect( void )
 {
-    delete m_redisOptions.timeout;
-    m_redisOptions.timeout = GUCEF_NULL;
+    delete m_redisOptions.command_timeout;
+    m_redisOptions.command_timeout = GUCEF_NULL;
+    m_redisOptions.connect_timeout = GUCEF_NULL;
 
     memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
     REDIS_OPTIONS_SET_TCP( &m_redisOptions, m_channelSettings.redisAddress.GetHostname().C_String(), m_channelSettings.redisAddress.GetPortInHostByteOrder() );
     struct timeval* timeoutSetting = new struct timeval;
     timeoutSetting->tv_sec = 10;
     timeoutSetting->tv_usec = 0;
-    m_redisOptions.timeout = timeoutSetting;
+    m_redisOptions.command_timeout = timeoutSetting;
+    m_redisOptions.connect_timeout = timeoutSetting;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_channelSettings.redisAddress.AddressAndPortAsString() );
 

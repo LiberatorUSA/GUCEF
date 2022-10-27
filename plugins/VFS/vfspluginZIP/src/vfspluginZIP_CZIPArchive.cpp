@@ -182,6 +182,18 @@ CZIPArchive::DeleteFile( const VFS::CString& filePath )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CZIPArchive::MoveFile( const VFS::CString& oldFilePath ,
+                       const VFS::CString& newFilePath ,
+                       const bool overwrite            )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
                           const CORE::CDynamicBuffer& data ,
                           const CORE::UInt64 offset        ,
@@ -229,7 +241,19 @@ CZIPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     ZZIP_STAT zstat;
-    int res = zzip_dir_stat( m_zipRoot, filePath.C_String(), &zstat, ZZIP_CASEINSENSITIVE);
+    int res = zzip_dir_stat( m_zipRoot, filePath.C_String(), &zstat, ZZIP_CASEINSENSITIVE );
+
+    return (res == ZZIP_NO_ERROR);
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CZIPArchive::DirExists( const VFS::CString& dirPath ) const
+{GUCEF_TRACE;
+
+    ZZIP_STAT zstat;
+    int res = zzip_dir_stat( m_zipRoot, dirPath.C_String(), &zstat, ZZIP_CASEINSENSITIVE );
 
     return (res == ZZIP_NO_ERROR);
 }

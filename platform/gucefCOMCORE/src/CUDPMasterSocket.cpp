@@ -162,7 +162,7 @@ CUDPMasterSocket::IsBlocking( void ) const
 /*-------------------------------------------------------------------------*/    
 
 CUDPChannel*
-CUDPMasterSocket::GetChannelForAddress( const CIPAddress& remoteAddr )
+CUDPMasterSocket::GetChannelForAddress( const CIPv4Address& remoteAddr )
 {GUCEF_TRACE;
 
     TChannelMap::iterator i = m_channelMap.find( remoteAddr );
@@ -176,7 +176,7 @@ CUDPMasterSocket::GetChannelForAddress( const CIPAddress& remoteAddr )
 /*-------------------------------------------------------------------------*/
 
 CUDPChannel*
-CUDPMasterSocket::ReserveChannelForAddress( const CIPAddress& remoteAddr )
+CUDPMasterSocket::ReserveChannelForAddress( const CIPv4Address& remoteAddr )
 {GUCEF_TRACE;
 
     // Check for an existing channel for the given address
@@ -185,7 +185,7 @@ CUDPMasterSocket::ReserveChannelForAddress( const CIPAddress& remoteAddr )
     {
         // Reserve a new channel for the given address
         channel = GUCEF_NEW CUDPChannel( *this, remoteAddr );
-        m_channelMap.insert( std::pair< CIPAddress, CUDPChannel* >( remoteAddr, channel ) );
+        m_channelMap.insert( std::pair< CIPv4Address, CUDPChannel* >( remoteAddr, channel ) );
         
         UDPChannelCreatedEventData eData( channel );
         NotifyObservers( UDPChannelCreatedEvent, &eData );
@@ -196,7 +196,7 @@ CUDPMasterSocket::ReserveChannelForAddress( const CIPAddress& remoteAddr )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPMasterSocket::DestroyChannelForAddress( const CIPAddress& remoteAddr )
+CUDPMasterSocket::DestroyChannelForAddress( const CIPv4Address& remoteAddr )
 {GUCEF_TRACE;
 
     TChannelMap::iterator i = m_channelMap.find( remoteAddr );
@@ -302,7 +302,7 @@ CUDPMasterSocket::SendPacketTo( const CORE::CString& DNSName ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-CUDPMasterSocket::SendPacketTo( const CIPAddress& dest ,
+CUDPMasterSocket::SendPacketTo( const CIPv4Address& dest ,
                                 const void* data       , 
                                 UInt16 datasize        )
 {GUCEF_TRACE;
