@@ -53,6 +53,9 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 {
     public:
+
+    static const CORE::CString TaskType;
+    static const CORE::CString ClassTypeName;
     
     static const CORE::CEvent PingStartedEvent;
     static const CORE::CEvent PingReponseEvent;
@@ -142,8 +145,6 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 
     virtual CString GetType( void ) const;
     
-    static const CString& GetTypeString( void );
-    
     virtual const CString& GetClassTypeName( void ) const;
     
     virtual bool OnTaskStart( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
@@ -194,6 +195,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPingTaskConsumer, MT::CMutex > CPingTaskConsumerPtr;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_COMCORE_CDNSRESOLVER_H
+#include "gucefCOMCORE_CDnsResolver.h"      
+#define GUCEF_COMCORE_CDNSRESOLVER_H
+#endif /* GUCEF_COMCORE_CDNSRESOLVER_H ? */
+
 #ifndef GUCEF_COMCORE_CIPV4ADDRESS_H
 #include "gucefCOMCORE_CIPv4Address.h"      
 #define GUCEF_COMCORE_CIPV4ADDRESS_H
@@ -50,25 +55,15 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COMCORE_EXPORT_CPP CDnsResolver
-{
-    public:
-
-    static bool Resolve( const CORE::CString& dns               ,
-                         const UInt16 portInHostByteOrder       ,
-                         CORE::CString::StringVector& aliases   ,
-                         CIPv4Address::TIPv4AddressVector& ipv4 ,
-                         CIPv6Address::TIPv6AddressVector& ipv6 );
-};
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *  Class representing an internet address with host name in string form
  *  plus the IPv4 or IPv6 addresses with a port number included.
  *
  *  Note that this class uses network byte order as its internal storage format.
  *  The aim here is to pay setup cost in favor of ongoing cost performance wise
+ *
+ *  This class is not threadsafe and is intended to act as thread private information
+ *  for multi-threaded management of DNS resolution check out the DnsCache class instead
  */
 class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 {
@@ -130,10 +125,14 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 
     const CIPv6Address::TIPv6AddressVector& GetIPv6Addresses( void ) const;
 
+    CORE::CString GetFirstAddressAndPortAsString( void ) const;
+
+    CORE::CString GetFirstAddressAsString( void ) const;
+
     /**
-     *  Refreshes the DNS resolution of the hostname
+     *  Refreshes the contained data using DNS resolution
      */
-    virtual bool Refresh( void );
+    bool Refresh( void );
 
     /**
      *  Address and port as a string with the network to host
@@ -144,6 +143,8 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
     CORE::CString PortAsString( void ) const;
 
     UInt16 GetPortInHostByteOrder( void ) const;
+
+    UInt16 GetPortInNetworkByteOrder( void ) const;
 
     CHostAddress& operator=( const CHostAddress& src );
 
@@ -161,6 +162,10 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
     bool operator<( const CHostAddress& other ) const;
 
     void Clear( void );
+
+    void Assign( const CHostAddress& src, bool copyPort );
+
+    bool Equals( const CHostAddress& other, bool compareEverything );
 
     private:
 

@@ -209,7 +209,7 @@ CUdpPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::CIP
 
     if ( m_config.maxUdpPacketPayloadSizeInBytes >= payload.ByteSize() )
     {
-        CORE::Int32 bytesSent = m_udpSocket.SendPacketTo( m_config.udpInterface, payload.AsVoidPtr(), payload.ByteSize() );
+        CORE::Int32 bytesSent = m_udpSocket.SendPacketTo( m_config.udpInterface.GetFirstIPv4Address(), payload.AsVoidPtr(), payload.ByteSize() );
         if ( bytesSent == payload.ByteSize() )
             success = true;
     }
@@ -304,13 +304,13 @@ CUdpPubSubClientTopic::Subscribe( void )
 
     MT::CScopeMutex lock( m_lock );
 
-    if ( m_udpSocket.Open( m_config.udpInterface ) )
+    if ( m_udpSocket.Open( m_config.udpInterface.GetFirstIPv4Address() ) )
     {
-		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic:Subscribe: Successfully opened UDP socket on " + m_config.udpInterface.AddressAndPortAsString() );
+		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic:Subscribe: Successfully opened UDP socket on " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic:Subscribe: Failed to open UDP socket on " + m_config.udpInterface.AddressAndPortAsString() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic:Subscribe: Failed to open UDP socket on " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
     }
 
     return true;
@@ -502,15 +502,15 @@ CUdpPubSubClientTopic::OnUDPSocketClosing( CORE::CNotifier* notifier    ,
     while ( m != m_config.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket.Leave( multicastAddr ) )
+        if ( m_udpSocket.Leave( multicastAddr.GetFirstIPv4Address() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket bound to " + m_config.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.GetFirstIPv4Address().AddressAndPortAsString() +
+                    " for UDP socket bound to " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket bound to " + m_config.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.GetFirstIPv4Address().AddressAndPortAsString() +
+                    " for UDP socket bound to " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
         }
         ++m;
     }
@@ -530,15 +530,15 @@ CUdpPubSubClientTopic::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
     while ( m != m_config.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket.Join( multicastAddr ) )
+        if ( m_udpSocket.Join( multicastAddr.GetFirstIPv4Address() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket bound to " + m_config.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.GetFirstIPv4Address().AddressAndPortAsString() +
+                    " for UDP socket bound to " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketOpened: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket bound to " + m_config.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "):OnUDPSocketOpened: Failed to join multicast " + multicastAddr.GetFirstIPv4Address().AddressAndPortAsString() +
+                    " for UDP socket bound to " + m_config.udpInterface.GetFirstIPv4Address().AddressAndPortAsString() );
         }
         ++m;
     }

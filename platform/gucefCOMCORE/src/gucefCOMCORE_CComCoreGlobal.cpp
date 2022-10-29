@@ -82,6 +82,11 @@
 #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
 #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
 
+#ifndef GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H
+#include "gucefCOMCORE_CDnsCacheRefreshTaskConsumer.h"
+#define GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H
+#endif /* GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H ? */
+
 #ifndef GUCEF_COMCORE_CDISCOVERYMANAGER_H
 #include "gucefCOMCORE_CDiscoveryManager.h"
 #define GUCEF_COMCORE_CDISCOVERYMANAGER_H
@@ -100,14 +105,6 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsumerFactory;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -115,6 +112,7 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 MT::CMutex CComCoreGlobal::g_dataLock;
 CComCoreGlobal* CComCoreGlobal::g_instance = GUCEF_NULL;
 TPingTaskConsumerFactory g_pingTaskConsumerFactory;
+TDnsCacheRefreshTaskConsumerFactory g_dnsCacheRefreshTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -124,6 +122,7 @@ TPingTaskConsumerFactory g_pingTaskConsumerFactory;
 
 CComCoreGlobal::CComCoreGlobal( void )
     : m_com( GUCEF_NULL )
+    , m_dnsCache()
     , m_discoveryManager( GUCEF_NULL )
 {GUCEF_TRACE;
 
@@ -151,12 +150,19 @@ CComCoreGlobal::Initialize( void )
     CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
+    CDnsCache::RegisterEvents();
+    CDnsCacheEntry::RegisterEvents();
+    
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
     // Make the task manager capable of handling ping tasks
-    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
-                                                                                 &g_pingTaskConsumerFactory         );
+    taskManager.RegisterTaskConsumerFactory( CPingTaskConsumer::TaskType, &g_pingTaskConsumerFactory  );
+
+    // Make the task manager capable of handling dns cache refresh tasks
+    taskManager.RegisterTaskConsumerFactory( CDnsCacheRefreshTaskConsumer::TaskType, &g_dnsCacheRefreshTaskConsumerFactory  );
 
     m_com = GUCEF_NEW CCom();
+    m_dnsCache = CDnsCache::CreateSharedObj();
     m_discoveryManager = GUCEF_NEW CDiscoveryManager();
 }
 
@@ -167,10 +173,13 @@ CComCoreGlobal::~CComCoreGlobal()
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Global systems shutting down" );
 
-    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+    taskManager.UnregisterTaskConsumerFactory( CPingTaskConsumer::TaskType );
+    taskManager.UnregisterTaskConsumerFactory( CDnsCacheRefreshTaskConsumer::TaskType );
     
     GUCEF_DELETE m_discoveryManager;
     m_discoveryManager = GUCEF_NULL;
+    m_dnsCache.Unlink();
     GUCEF_DELETE m_com;
     m_com = GUCEF_NULL;
 
@@ -220,6 +229,15 @@ CComCoreGlobal::GetCom( void )
 {GUCEF_TRACE;
 
     return *m_com;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDnsCache&
+CComCoreGlobal::GetDnsCache( void )
+{GUCEF_TRACE;
+
+    return *m_dnsCache;
 }
 
 /*-------------------------------------------------------------------------*/

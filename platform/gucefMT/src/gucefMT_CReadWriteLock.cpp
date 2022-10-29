@@ -87,6 +87,25 @@ CReadWriteLock::RwLockIntStateToEnum( UInt32 intState )
 
 /*--------------------------------------------------------------------------*/
 
+bool 
+CReadWriteLock::RwLockStateToLockOpBool( TRWLockStates state )
+{GUCEF_TRACE;
+
+    switch ( state )
+    {
+        case ERWLockStates::RWLOCK_OPERATION_SUCCESS:
+        case ERWLockStates::RWLOCK_ABANDONED:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+/*--------------------------------------------------------------------------*/
+
 CReadWriteLock::TRWLockStates
 CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;

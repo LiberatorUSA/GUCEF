@@ -68,6 +68,9 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CORE::CString CPingTaskConsumer::TaskType = "PingTask";
+const CORE::CString CPingTaskConsumer::ClassTypeName = "GUCEF::COMCORE::CPingTaskConsumer";
+
 const CORE::CEvent CPingTaskConsumer::PingStartedEvent = "GUCEF::COMCORE::CPingTaskConsumer::PingStartedEvent";
 const CORE::CEvent CPingTaskConsumer::PingReponseEvent = "GUCEF::COMCORE::CPingTaskConsumer::PingReponseEvent";
 const CORE::CEvent CPingTaskConsumer::PingTimeoutEvent = "GUCEF::COMCORE::CPingTaskConsumer::PingTimeoutEvent";
@@ -338,16 +341,6 @@ CPingTaskConsumer::~CPingTaskConsumer()
     
     #endif
 }
-
-/*-------------------------------------------------------------------------*/
-
-const CString&
-CPingTaskConsumer::GetTypeString( void )
-{GUCEF_TRACE;
-
-    static CString typeName = "PingTask";
-    return typeName;
-}
     
 /*-------------------------------------------------------------------------*/
 
@@ -355,7 +348,7 @@ CString
 CPingTaskConsumer::GetType( void ) const
 {GUCEF_TRACE;
 
-    return GetTypeString();
+    return TaskType;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -364,8 +357,7 @@ const CString&
 CPingTaskConsumer::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CString typeName = "GUCEF::COMCORE::CPingTaskConsumer";
-    return typeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -35,6 +35,11 @@
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 
+#ifndef GUCEF_COMCORE_CDNSCACHE_H
+#include "gucefCOMCORE_CDnsCache.h"
+#define GUCEF_COMCORE_CDNSCACHE_H
+#endif /* GUCEF_COMCORE_CDNSCACHE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -51,6 +56,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 class CCom;
+class CDnsCache;
 class CDiscoveryManager;
 
 /*-------------------------------------------------------------------------*/
@@ -63,6 +69,8 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
     CCom& GetCom( void );
 
+    CDnsCache& GetDnsCache( void );
+    
     CDiscoveryManager& GetDiscoveryManager( void );
 
     private:
@@ -80,6 +88,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     private:
 
     CCom* m_com;
+    CDnsCachePtr m_dnsCache;
     CDiscoveryManager* m_discoveryManager;
 
     static MT::CMutex g_dataLock;

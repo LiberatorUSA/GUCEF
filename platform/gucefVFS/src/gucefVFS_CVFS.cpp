@@ -176,6 +176,7 @@ CVFS::CVFS( void )
 CVFS::~CVFS()
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );    
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
     SignalUpcomingDestruction();

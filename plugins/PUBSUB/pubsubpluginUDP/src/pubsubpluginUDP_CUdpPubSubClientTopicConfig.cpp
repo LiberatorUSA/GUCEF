@@ -128,7 +128,7 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
             udpInterface = networkInterface;
     }
     // Now again load the NIC to bind from the custom settings which may override the generic setting above
-    udpInterface.SetHostnameAndPort( config.GetAttributeValueOrChildValueByName( "udpInterface" ).AsString( udpInterface.AddressAndPortAsString(), true ) );
+    udpInterface.SetHostnameAndPort( config.GetAttributeValueOrChildValueByName( "udpInterface" ).AsString( udpInterface.HostnameAndPortAsString(), true ) );
 
     wantsTestPackage = config.GetAttributeValueOrChildValueByName( "wantsTestPackage" ).AsBool( wantsTestPackage, true );
     ticketRefillOnBusyCycle = config.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );

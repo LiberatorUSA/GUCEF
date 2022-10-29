@@ -16,57 +16,24 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_COMCORE_CDNSRESOLVER_H
+#define GUCEF_COMCORE_CDNSRESOLVER_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <string.h>
+#ifndef GUCEF_COMCORE_CIPV4ADDRESS_H
+#include "gucefCOMCORE_CIPv4Address.h"      
+#define GUCEF_COMCORE_CIPV4ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV4ADDRESS_H ? */
 
-#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"
-#define GUCEF_CORE_DVCPPSTRINGUTILS_H
-#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
-
-#ifndef GUCEF_CORE_DVSTRUTILS_H
-#include "dvstrutils.h"
-#define GUCEF_CORE_DVSTRUTILS_H
-#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
-
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"
-#define GUCEF_COMCORE_DVSOCKET_H
-#endif /* GUCEF_COMCORE_DVSOCKET_H ? */
-
-#include "gucefCOMCORE_CIPv6Address.h"
-
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-  #undef FD_SETSIZE
-  #define FD_SETSIZE 1      /* should set the size of the FD set struct to 1 for VC */
-  #include <winsock2.h>
-  #include <Ws2tcpip.h>
-  #include <Wspiapi.h>
-
-#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
-
-#else
-
-    #error Unsupported platform
-
-#endif
+#ifndef GUCEF_COMCORE_CIPV6ADDRESS_H
+#include "gucefCOMCORE_CIPv6Address.h"      
+#define GUCEF_COMCORE_CIPV6ADDRESS_H
+#endif /* GUCEF_COMCORE_CIPV6ADDRESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,17 +44,22 @@
 namespace GUCEF {
 namespace COMCORE {
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-// placeholder
+class GUCEF_COMCORE_EXPORT_CPP CDnsResolver
+{
+    public:
 
-
-bool 
-CIPv6Address::operator==( const CIPv6Address& other ) const
-{GUCEF_TRACE;
-    
-    return false;
-}
+    static bool Resolve( const CORE::CString& dns               ,
+                         const UInt16 portInHostByteOrder       ,
+                         CORE::CString::StringVector& aliases   ,
+                         CIPv4Address::TIPv4AddressVector& ipv4 ,
+                         CIPv6Address::TIPv6AddressVector& ipv6 );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,3 +71,5 @@ CIPv6Address::operator==( const CIPv6Address& other ) const
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_COMCORE_CDNSRESOLVER_H ? */

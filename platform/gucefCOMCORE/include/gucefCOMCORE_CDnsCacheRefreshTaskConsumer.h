@@ -16,24 +16,19 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CIPV6ADDRESS_H
-#define GUCEF_COMCORE_CIPV6ADDRESS_H
-
+#ifndef GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H
+#define GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "gucefCORE_CString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
-
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* macros and build config for the COMCORE library */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CITASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CITASKCONSUMER_H
+#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,18 +46,43 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class representing an IPv6 address
+ *  Internally used class to implement a background task for async refreshing
+ *  of a DNS cache
  */
-class GUCEF_COMCORE_EXPORT_CPP CIPv6Address
+class GUCEF_HIDDEN CDnsCacheRefreshTaskConsumer : public CORE::CTaskConsumer
 {
     public:
 
-    typedef std::vector< CIPv6Address, basic_allocator< CIPv6Address > > TIPv6AddressVector;
+    static const CORE::CString TaskType;
+    static const CORE::CString ClassTypeName;
+    
+    CDnsCacheRefreshTaskConsumer( void );
+    
+    virtual ~CDnsCacheRefreshTaskConsumer();
 
-    bool operator==( const CIPv6Address& other ) const;
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool OnTaskStart( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    // placeholder
+    virtual bool OnTaskCycle( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    private:
+    
+    CDnsCacheRefreshTaskConsumer( const CDnsCacheRefreshTaskConsumer& src );
+    CDnsCacheRefreshTaskConsumer& operator=( const CDnsCacheRefreshTaskConsumer& src );    
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CTaskConsumer, CDnsCacheRefreshTaskConsumer > TDnsCacheRefreshTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,4 +95,4 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv6Address
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CIPV6ADDRESS_H ? */
+#endif /* GUCEF_COMCORE_CDNSCACHEREFRESHTASKCONSUMER_H ? */

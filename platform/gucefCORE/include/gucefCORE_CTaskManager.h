@@ -66,9 +66,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     typedef CThreadPool::TTaskConsumerFactory TTaskConsumerFactory;
 
-    static const CString DefaultTreadPoolName; 
+    static const CString DefaultThreadPoolName; 
 
-    ThreadPoolPtr GetThreadPool( const CString& threadPoolName = DefaultTreadPoolName ) const;
+    ThreadPoolPtr GetThreadPool( const CString& threadPoolName = DefaultThreadPoolName ) const;
 
     ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName            , 
                                          PulseGeneratorPtr threadPoolPulseContext ,

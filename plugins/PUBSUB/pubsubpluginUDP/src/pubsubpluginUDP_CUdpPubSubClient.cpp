@@ -545,7 +545,7 @@ CUdpPubSubClient::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
 
         if ( topicConfig.wantsTestPackage )
         {
-            m_testUdpSocket->SendPacketTo( topicConfig.udpInterface, 
+            m_testUdpSocket->SendPacketTo( topicConfig.udpInterface.GetFirstIPv4Address(), 
                                            m_config.testPacket.GetBufferPtr(), 
                                            (CORE::UInt16) m_config.testPacket.GetDataSize() );
         }

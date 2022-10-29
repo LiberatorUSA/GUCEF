@@ -352,7 +352,7 @@ UdpViaTcp::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
         {
             COMCORE::CHostAddress multicastGroup;
             multicastGroup.SetHostname( (*i) );
-            m_udpReceiveSocket.Join( multicastGroup );
+            m_udpReceiveSocket.Join( multicastGroup.GetFirstIPv4Address() );
             ++i;
         }
     }
@@ -562,7 +562,7 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
         THostAddressVector::iterator i = m_udpDestinations.begin();
         while ( i != m_udpDestinations.end() )
         {
-            CORE::Int32 bytesTransmitted = m_udpTransmitSocket.SendPacketTo( (*i)                                       ,
+            CORE::Int32 bytesTransmitted = m_udpTransmitSocket.SendPacketTo( (*i).GetFirstIPv4Address()                 ,
                                                                              packetBuffer.GetConstBufferPtr( offset+7 ) ,
                                                                              packetSize                                 );
 
@@ -777,7 +777,7 @@ UdpViaTcp::Start( void )
 
         m_udpTransmitSocket.SetMaxUpdatesPerCycle( 10 );
         m_udpTransmitSocket.SetAutoReOpenOnError( true );
-        m_udpTransmitSocket.Open( m_udpTransmitter );
+        m_udpTransmitSocket.Open( m_udpTransmitter.GetFirstIPv4Address() );
     }
     if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
     {
@@ -789,7 +789,7 @@ UdpViaTcp::Start( void )
 
         m_udpReceiveSocket.SetMaxUpdatesPerCycle( 10 );
         m_udpReceiveSocket.SetAutoReOpenOnError( true );
-        m_udpReceiveSocket.Open( m_udpReceiver );
+        m_udpReceiveSocket.Open( m_udpReceiver.GetFirstIPv4Address() );
     }
 
     if ( m_transmitMetrics )

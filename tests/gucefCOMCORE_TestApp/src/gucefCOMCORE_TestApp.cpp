@@ -51,6 +51,14 @@ GUCEF_OSMAIN_BEGIN
 
     using namespace GUCEF::CORE;
     using namespace GUCEF::COMCORE;
+
+
+    CHostAddress testDns;
+    
+    testDns.SetHostnameAndPort( "google.com", 80 );
+    CIPv4Address testIPv4 = testDns.GetFirstIPv4Address();
+    CString str = testIPv4.AddressAndPortAsString();
+
             
     try 
     {                               

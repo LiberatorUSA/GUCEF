@@ -213,7 +213,7 @@ class SocketSink : public CORE::CObserver
 
                 if ( m_doUdpForwarding )
                 {
-                    m_udpSocket.SendPacketTo( m_udpFwdAddr, udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize() );
+                    m_udpSocket.SendPacketTo( m_udpFwdAddr.GetFirstIPv4Address(), udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize() );
                     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Forwarded UDP packet" );
                 }
             }
@@ -471,7 +471,7 @@ class SocketSink : public CORE::CObserver
             }
 
             CORE::UInt16 fwdPort = CORE::StringToUInt16( keyValueList.GetValueAlways( "UdpFwdPort" ) );
-            m_udpFwdAddr.ResolveDNS( keyValueList.GetValueAlways( "UdpFwdAddr" ), fwdPort );
+            m_udpFwdAddr.SetHostnameAndPort( keyValueList.GetValueAlways( "UdpFwdAddr" ), fwdPort );
         }
 
         if ( enableTcp )

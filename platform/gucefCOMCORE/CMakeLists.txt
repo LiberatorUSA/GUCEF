@@ -29,6 +29,10 @@ set( HEADER_FILES
   include/gucefCOMCORE.h
   include/gucefCOMCORE_CComCoreGlobal.h
   include/gucefCOMCORE_CDiscoveryManager.h
+  include/gucefCOMCORE_CDnsCache.h
+  include/gucefCOMCORE_CDnsCacheEntry.h
+  include/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.h
+  include/gucefCOMCORE_CDnsResolver.h
   include/gucefCOMCORE_CICommunicationInterface.h
   include/gucefCOMCORE_CIDiscovery.h
   include/gucefCOMCORE_CIDiscoveryCapability.h
@@ -66,6 +70,10 @@ set( SOURCE_FILES
   src/gucefCOMCORE.cpp
   src/gucefCOMCORE_CComCoreGlobal.cpp
   src/gucefCOMCORE_CDiscoveryManager.cpp
+  src/gucefCOMCORE_CDnsCache.cpp
+  src/gucefCOMCORE_CDnsCacheEntry.cpp
+  src/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.cpp
+  src/gucefCOMCORE_CDnsResolver.cpp
   src/gucefCOMCORE_CICommunicationInterface.cpp
   src/gucefCOMCORE_CIDiscovery.cpp
   src/gucefCOMCORE_CIDiscoveryCapability.cpp

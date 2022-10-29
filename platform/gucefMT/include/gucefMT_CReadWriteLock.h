@@ -183,6 +183,8 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 
     static TRWLockStates RwLockIntStateToEnum( UInt32 intState );
 
+    static bool RwLockStateToLockOpBool( TRWLockStates state );
+
     protected:
 
     /**

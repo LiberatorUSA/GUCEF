@@ -90,7 +90,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CString CTaskManager::DefaultTreadPoolName = "default";
+const CString CTaskManager::DefaultThreadPoolName = "default";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +105,7 @@ CTaskManager::CTaskManager( void )
     , m_threadPools()       
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultTreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
+    m_threadPools[ DefaultThreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
 }
 
 /*-------------------------------------------------------------------------*/

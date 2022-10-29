@@ -59,84 +59,6 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CDnsResolver::Resolve( const CORE::CString& dns               ,
-                       const UInt16 portInHostByteOrder       ,
-                       CORE::CString::StringVector& aliases   ,
-                       CIPv4Address::TIPv4AddressVector& ipv4 ,
-                       CIPv6Address::TIPv6AddressVector& ipv6 )
-{GUCEF_TRACE;
-
-    if ( dns.IsNULLOrEmpty() ) 
-        return false;
-    
-    if ( CORE::Check_If_IPv4( dns.C_String() ) )
-    {
-        // No DNS resolution is needed
-        
-        CIPv4Address ipv4Entry( dns, portInHostByteOrder );
-        if ( ipv4Entry.GetAddress() != INADDR_NONE )    
-        {
-            ipv4.push_back( ipv4Entry );
-            return true;
-        }
-        return false;
-    }
-
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CHostAddress: Resolving DNS name: " + dns );
-
-    /*
-        @TODO:
-        If the host specified in the name parameter has both IPv4 and IPv6 addresses, only the IPv4 addresses will be returned. 
-        The gethostbyname function can only return IPv4 addresses for the name parameter. 
-        The getaddrinfo function and associated addrinfo structure should be used if IPv6 addresses for the host are required or if both IPv4 and IPv6 addresses for the host are required.
-    */
-    
-    int errorCode = 0;
-    struct hostent* retval = dvsocket_gethostbyname( dns.C_String(), &errorCode );
-    if ( retval != GUCEF_NULL )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "CHostAddress: DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
-
-        if ( GUCEF_NULL != retval->h_aliases )
-        {
-            for ( char** alias = retval->h_aliases; *alias != 0; alias++ ) 
-            {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHostAddress: DNS resolution: Alternate name: " + CORE::CString( *alias ) );
-                aliases.push_back( *alias );
-            }
-        }
-
-        if ( GUCEF_NULL != retval->h_addr_list )
-        {
-            UInt32 i=0;
-            while ( retval->h_addr_list[ i ] != 0 ) 
-            {
-                UInt32 ipv4AddressInNetworkByteOrder = *(UInt32*) retval->h_addr_list[ i ];
-                CIPv4Address ipv4Addr( ipv4AddressInNetworkByteOrder, CIPv4Address::HostByteOrderToNetworkByteOrder( portInHostByteOrder ) );
-
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHostAddress: DNS resolution: IPv4: " + ipv4Addr.AddressAndPortAsString() );
-                ipv4.push_back( ipv4Addr );
-                ++i;
-            }
-
-            return true;
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CHostAddress: Could not obtain IPv4 result structure" );
-            return false;
-        }
-    }
-    else
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHostAddress: Failed to resolve DNS name: " + dns + " - ErrorCode: " + CORE::Int32ToString( errorCode ) );
-        return false;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 CHostAddress::CHostAddress( void )
     : m_hostname()
     , m_aliases()
@@ -360,6 +282,23 @@ CHostAddress::GetPortInHostByteOrder( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt16 
+CHostAddress::GetPortInNetworkByteOrder( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_ipv4.empty() )
+    {
+        return m_ipv4.front().GetPort();
+    }
+    if ( !m_ipv6.empty() )
+    {
+        //return m_ipv6.front().GetPort();
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 CHostAddress::PortAsString( void ) const
 {GUCEF_TRACE;
@@ -402,15 +341,69 @@ CHostAddress&
 CHostAddress::operator=( const CHostAddress& src )
 {GUCEF_TRACE;
 
-    if ( this != &src )
-    {
-        m_hostname = src.m_hostname;
-        m_aliases = src.m_aliases;
-        m_ipv4 = m_ipv4;
-        m_ipv6 = m_ipv6;
-    }
+    Assign( src, true );
     return *this;
 }
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CHostAddress::Assign( const CHostAddress& src, bool copyPort )
+{
+    if ( this != &src )
+    {
+        if ( copyPort )
+        {
+            m_hostname = src.m_hostname;
+            m_aliases = src.m_aliases;
+            m_ipv4 = src.m_ipv4;
+            m_ipv6 = src.m_ipv6;
+        }
+        else
+        {        
+            UInt16 currentPortInNetworkByteOrder = GetPortInNetworkByteOrder();
+            Clear();
+        
+            m_hostname = src.m_hostname;
+            m_aliases = src.m_aliases;
+
+            CIPv4Address::TIPv4AddressVector::const_iterator i = src.m_ipv4.begin();
+            while ( i != m_ipv4.end() )
+            {
+                const CIPv4Address& srcIpv4 = (*i);
+                m_ipv4.push_back( CIPv4Address( srcIpv4.GetAddress(), currentPortInNetworkByteOrder ) );
+                ++i;
+            }
+            CIPv6Address::TIPv6AddressVector::const_iterator n = src.m_ipv6.begin();
+            while ( n != m_ipv6.end() )
+            {
+                const CIPv6Address& srcIpv6 = (*n);
+                //m_ipv6.push_back( CIPv6Address( srcIpv6.GetAddress(), currentPortInNetworkByteOrder ) );
+                ++n;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHostAddress::Equals( const CHostAddress& other, bool compareEverything )
+{GUCEF_TRACE;
+
+    if ( m_hostname != other.m_hostname )
+        return false;
+    
+    if ( compareEverything )
+    {
+        return m_aliases == other.m_aliases &&
+               m_ipv4 == other.m_ipv4       &&
+               m_ipv6 == other.m_ipv6;
+    }
+
+    return true;
+}
+
 
 /*-------------------------------------------------------------------------*/
 
@@ -516,6 +509,40 @@ CHostAddress::GetIPv6Addresses( void ) const
 {GUCEF_TRACE;
 
     return m_ipv6;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CHostAddress::GetFirstAddressAndPortAsString( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_ipv4.empty() )
+    {
+        return m_ipv4.front().AddressAndPortAsString();
+    }
+    if ( !m_ipv6.empty() )
+    {
+        //return m_ipv6.front().AddressAndPortAsString();
+    }
+    return m_hostname;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CHostAddress::GetFirstAddressAsString( void ) const
+{GUCEF_TRACE;
+
+    if ( !m_ipv4.empty() )
+    {
+        return m_ipv4.front().AddressAsString();
+    }
+    if ( !m_ipv6.empty() )
+    {
+        //return m_ipv6.front().AddressAsString();
+    }
+    return m_hostname;
 }
 
 /*-------------------------------------------------------------------------//

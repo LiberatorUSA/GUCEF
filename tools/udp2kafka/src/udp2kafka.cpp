@@ -437,15 +437,15 @@ Udp2KafkaChannel::OnUDPSocketClosing( CORE::CNotifier* notifier    ,
     while ( m != m_channelSettings.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket->Leave( multicastAddr ) )
+        if ( m_udpSocket->Leave( multicastAddr.GetFirstIPv4Address() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.HostnameAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.HostnameAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
         }
         ++m;
     }
@@ -465,15 +465,15 @@ Udp2KafkaChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
     while ( m != m_channelSettings.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket->Join( multicastAddr, false, true ) )
+        if ( m_udpSocket->Join( multicastAddr.GetFirstIPv4Address(), false, true ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketOpened: Successfully joined multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketOpened: Successfully joined multicast " + multicastAddr.HostnameAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnUDPSocketOpened: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnUDPSocketOpened: Failed to join multicast " + multicastAddr.HostnameAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
         }
         ++m;
     }
@@ -496,7 +496,7 @@ Udp2KafkaChannel::UdpTransmit( RdKafka::Message& message )
     HostAddressVector::iterator i = m_channelSettings.consumerModeUdpDestinations.begin();
     while ( i != m_channelSettings.consumerModeUdpDestinations.end() )
     {
-        if ( 0 < m_udpSocket->SendPacketTo( (*i), message.payload(), (CORE::UInt16) message.len() ) )
+        if ( 0 < m_udpSocket->SendPacketTo( (*i).GetFirstIPv4Address(), message.payload(), (CORE::UInt16) message.len() ) )
             ++successCount;
         ++i;
     }
@@ -1314,13 +1314,13 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_udpSocket->SetMaxUpdatesPerCycle( 50 );
     m_udpSocket->SetAutoReOpenOnError( true );
     m_udpSocket->SetAllowBroadcast( true );
-    if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
+    if ( m_udpSocket->Open( m_channelSettings.udpInterface.GetFirstIPv4Address() ) )
     {
-		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
     }
     return true;
 }
@@ -1703,7 +1703,7 @@ Udp2Kafka::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
         const Udp2KafkaChannel::ChannelSettings& settings = (*i)->GetChannelSettings();
         if ( settings.wantsTestPackage )
         {
-            m_testUdpSocket.SendPacketTo( settings.udpInterface, "TEST", 4 );
+            m_testUdpSocket.SendPacketTo( settings.udpInterface.GetFirstIPv4Address(), "TEST", 4 );
         }
         ++i;
     }

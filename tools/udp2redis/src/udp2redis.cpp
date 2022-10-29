@@ -650,7 +650,7 @@ Udp2RedisChannel::RedisConnect( void )
     m_redisOptions.command_timeout = timeoutSetting;
     m_redisOptions.connect_timeout = timeoutSetting;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_channelSettings.redisAddress.AddressAndPortAsString() );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_channelSettings.redisAddress.HostnameAndPortAsString() );
 
     redisAsyncContext* rContext = redisAsyncConnectWithOptions( &m_redisOptions );
 	if ( rContext == GUCEF_NULL )
@@ -708,30 +708,30 @@ Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
     RedisConnect();
     m_udpSocket->SetMaxUpdatesPerCycle( 10 );
     m_udpSocket->SetAutoReOpenOnError( true );
-    if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
+    if ( m_udpSocket->Open( m_channelSettings.udpInterface.GetFirstIPv4Address() ) )
     {
-		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
 
         ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
         while ( m != m_channelSettings.udpMulticastToJoin.end() )
         {
             const COMCORE::CHostAddress& multicastAddr = (*m);
-            if ( m_udpSocket->Join( multicastAddr ) )
+            if ( m_udpSocket->Join( multicastAddr.GetFirstIPv4Address() ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
-                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.HostnameAndPortAsString() +
+                        " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
-                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to join multicast " + multicastAddr.HostnameAndPortAsString() +
+                        " for UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
             }
             ++m;
         }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.HostnameAndPortAsString() );
     }
     return true;
 }

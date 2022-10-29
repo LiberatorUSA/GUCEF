@@ -179,7 +179,7 @@ Settings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     cfg.SetAttribute( "clusterName", clusterName );
-    cfg.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
+    cfg.SetAttribute( "redisAddress", redisAddress.HostnameAndPortAsString() );
     cfg.SetAttribute( "collectMetrics", collectMetrics );
     cfg.SetAttribute( "metricPrefix", metricPrefix );
     cfg.SetAttribute( "gatherInfoReplication", gatherInfoReplication );
@@ -209,7 +209,7 @@ Settings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     clusterName = cfg.GetAttributeValueOrChildValueByName( "clusterName" ).AsString( clusterName, true );
-    redisAddress.SetHostnameAndPort( cfg.GetAttributeValueOrChildValueByName( "redisAddress" ).AsString( redisAddress.AddressAndPortAsString(), true ) );
+    redisAddress.SetHostnameAndPort( cfg.GetAttributeValueOrChildValueByName( "redisAddress" ).AsString( redisAddress.HostnameAndPortAsString(), true ) );
     collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     metricPrefix = cfg.GetAttributeValueOrChildValueByName( "metricPrefix" ).AsString( metricPrefix, true );
     gatherInfoReplication = cfg.GetAttributeValueOrChildValueByName( "gatherInfoReplication" ).AsBool( gatherInfoReplication, true );
@@ -2240,6 +2240,8 @@ RedisInfoService::RedisConnect( void )
     
     try
     {
+        m_settings.redisAddress.Refresh();
+        
         sw::redis::ConnectionOptions rppConnectionOptions;
         rppConnectionOptions.host = m_settings.redisAddress.GetHostname();  // Required.
         rppConnectionOptions.port = m_settings.redisAddress.GetPortInHostByteOrder(); // Optional. The default port is 6379.

@@ -176,9 +176,9 @@ ChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     cfg.SetAttribute( "channelId", channelId );
-    cfg.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
+    cfg.SetAttribute( "redisAddress", redisAddress.HostnameAndPortAsString() );
     cfg.SetAttribute( "channelStreamName", channelStreamName );
-    cfg.SetAttribute( "udpInterface", udpInterface.AddressAsString() );
+    cfg.SetAttribute( "udpInterface", udpInterface.HostnameAndPortAsString() );
     cfg.SetAttribute( "collectMetrics", collectMetrics );
     cfg.SetAttribute( "wantsTestPackage", wantsTestPackage );
     cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
@@ -206,9 +206,9 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
     channelId = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "channelId", CORE::Int32ToString( channelId ) ) );
-    redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) );
+    redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.HostnameAndPortAsString() ) );
     channelStreamName = tree.GetAttributeValueOrChildValueByName( "channelStreamName", channelStreamName );
-    udpInterface.SetAddress( tree.GetAttributeValueOrChildValueByName( "udpInterface", udpInterface.AddressAsString() ) );
+    udpInterface.SetHostname( tree.GetAttributeValueOrChildValueByName( "udpInterface", udpInterface.HostnameAndPortAsString() ) );
     collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics" ), collectMetrics );
     wantsTestPackage = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "wantsTestPackage" ), wantsTestPackage );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle", CORE::UInt32ToString( ticketRefillOnBusyCycle ) ) );
@@ -1018,6 +1018,8 @@ ClusterChannelRedisWriter::RedisConnect( void )
 
     try
     {
+        m_channelSettings.redisAddress.Refresh();
+        
         sw::redis::ConnectionOptions rppConnectionOptions;
         rppConnectionOptions.host = m_channelSettings.redisAddress.GetHostname();  // Required.
         rppConnectionOptions.port = m_channelSettings.redisAddress.GetPortInHostByteOrder(); // Optional. The default port is 6379.
@@ -1290,6 +1292,15 @@ Udp2RedisClusterChannel::OnUDPSocketError( CORE::CNotifier* notifier    ,
 
     COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel: UDP Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
+
+    m_channelSettings.udpInterface.Refresh();
+    ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
+    while ( m != m_channelSettings.udpMulticastToJoin.end() )
+    {
+        COMCORE::CHostAddress& multicastAddr = (*m);
+        multicastAddr.Refresh();
+        ++m;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1318,15 +1329,15 @@ Udp2RedisClusterChannel::OnUDPSocketClosing( CORE::CNotifier* notifier    ,
     while ( m != m_channelSettings.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket->Leave( multicastAddr ) )
+        if ( m_udpSocket->Leave( multicastAddr.GetFirstIPv4Address() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.GetFirstAddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.GetFirstAddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
         }
         ++m;
     }
@@ -1346,15 +1357,15 @@ Udp2RedisClusterChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
     while ( m != m_channelSettings.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket->Join( multicastAddr ) )
+        if ( m_udpSocket->Join( multicastAddr.GetFirstIPv4Address() ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.GetFirstAddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketOpened: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
-                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketOpened: Failed to join multicast " + multicastAddr.GetFirstAddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
         }
         ++m;
     }
@@ -1468,13 +1479,13 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_udpSocket->SetOsLevelSocketReceiveBufferSize( m_channelSettings.udpSocketOsReceiveBufferSize );
     m_udpSocket->SetNrOfReceiveBuffers( m_channelSettings.nrOfUdpReceiveBuffersPerSocket );
     m_udpSocket->SetAutoReOpenOnError( true );
-    if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
+    if ( m_udpSocket->Open( m_channelSettings.udpInterface.GetFirstIPv4Address() ) )
     {
-		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.GetFirstAddressAndPortAsString() );
     }
     return true;
 }
@@ -2256,7 +2267,7 @@ Udp2RedisCluster::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
         const ChannelSettings& settings = (*i).second->GetChannelSettings();
         if ( settings.wantsTestPackage )
         {
-            m_testUdpSocket.SendPacketTo( settings.udpInterface, "TEST", 4 );
+            m_testUdpSocket.SendPacketTo( settings.udpInterface.GetFirstIPv4Address(), "TEST", 4 );
         }
         ++i;
     }

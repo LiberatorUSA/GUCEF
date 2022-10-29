@@ -456,7 +456,7 @@ CLogSvcServer::OnServerSocketClientDisconnected( CORE::CNotifier* notifier    ,
         ++i;
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client from " + connectionInfo.hostAddress.AddressAndPortAsString() + " disconnected" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client from " + connectionInfo.hostAddress.HostnameAndPortAsString() + " disconnected" );
 }
 
 /*-------------------------------------------------------------------------*/
