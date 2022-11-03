@@ -22,6 +22,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <math.h>
+
 #ifndef GUCEF_COMCORE_SOCKETUTILS_H
 #include "socketutils.h"
 #define GUCEF_COMCORE_SOCKETUTILS_H
@@ -121,7 +123,7 @@ CHostAddress::CHostAddress( const CORE::CString& hostAndPort )
 
 CHostAddress::~CHostAddress()
 {GUCEF_TRACE;
-    
+
     Clear();
 }
 
@@ -132,7 +134,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
     if ( sepCharIndex >= 0 )
     {
@@ -145,7 +147,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
 
     if ( !m_hostname.IsNULLOrEmpty() )
     {
-        return CDnsResolver::Resolve( m_hostname               , 
+        return CDnsResolver::Resolve( m_hostname               ,
                                       GetPortInHostByteOrder() ,
                                       m_aliases                ,
                                       m_ipv4                   ,
@@ -158,12 +160,12 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
 /*-------------------------------------------------------------------------*/
 
 bool
-CHostAddress::SetHostnameAndPort( const CORE::CString& host , 
+CHostAddress::SetHostnameAndPort( const CORE::CString& host ,
                                   UInt16 portInHostOrder    )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     if ( !host.IsNULLOrEmpty() )
     {
         Int32 sepCharIndex = host.HasChar( ':', false );
@@ -171,14 +173,14 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& host ,
         {
             // we only take the dns portion not the port since a port was explicitly distinctly provided
             // as such we'd consider that an override
-            m_hostname = host.SubstrToIndex( sepCharIndex, true );            
+            m_hostname = host.SubstrToIndex( sepCharIndex, true );
         }
         else
         {
             m_hostname = host;
         }
-        
-        return CDnsResolver::Resolve( m_hostname      , 
+
+        return CDnsResolver::Resolve( m_hostname      ,
                                       portInHostOrder ,
                                       m_aliases       ,
                                       m_ipv4          ,
@@ -196,7 +198,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& host ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHostAddress::SetPortInHostByteOrder( UInt16 portInHostOrder )
 {GUCEF_TRACE;
 
@@ -226,9 +228,9 @@ CHostAddress::SetHostname( const CORE::CString& hostName )
     UInt16 currentPort = GetPortInHostByteOrder();
 
     Clear();
-    
+
     m_hostname = hostName;
-    return CDnsResolver::Resolve( m_hostname  , 
+    return CDnsResolver::Resolve( m_hostname  ,
                                   currentPort ,
                                   m_aliases   ,
                                   m_ipv4      ,
@@ -256,7 +258,7 @@ CHostAddress::Refresh( void )
     m_ipv4.clear();
     m_ipv6.clear();
 
-    return CDnsResolver::Resolve( m_hostname  , 
+    return CDnsResolver::Resolve( m_hostname  ,
                                   currentPort ,
                                   m_aliases   ,
                                   m_ipv4      ,
@@ -282,7 +284,7 @@ CHostAddress::GetPortInHostByteOrder( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt16 
+UInt16
 CHostAddress::GetPortInNetworkByteOrder( void ) const
 {GUCEF_TRACE;
 
@@ -347,7 +349,7 @@ CHostAddress::operator=( const CHostAddress& src )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHostAddress::Assign( const CHostAddress& src, bool copyPort )
 {
     if ( this != &src )
@@ -360,10 +362,10 @@ CHostAddress::Assign( const CHostAddress& src, bool copyPort )
             m_ipv6 = src.m_ipv6;
         }
         else
-        {        
+        {
             UInt16 currentPortInNetworkByteOrder = GetPortInNetworkByteOrder();
             Clear();
-        
+
             m_hostname = src.m_hostname;
             m_aliases = src.m_aliases;
 
@@ -387,13 +389,13 @@ CHostAddress::Assign( const CHostAddress& src, bool copyPort )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHostAddress::Equals( const CHostAddress& other, bool compareEverything )
 {GUCEF_TRACE;
 
     if ( m_hostname != other.m_hostname )
         return false;
-    
+
     if ( compareEverything )
     {
         return m_aliases == other.m_aliases &&
@@ -412,7 +414,7 @@ CHostAddress::operator=( const CIPv4Address& src )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     m_hostname = src.AddressAsString();
     m_ipv4.push_back( src );
 
@@ -448,7 +450,7 @@ CHostAddress::operator<( const CHostAddress& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPv4Address::TIPv4AddressVector& 
+CIPv4Address::TIPv4AddressVector&
 CHostAddress::GetIPv4Addresses( void )
 {GUCEF_TRACE;
 
@@ -457,7 +459,7 @@ CHostAddress::GetIPv4Addresses( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CIPv4Address::TIPv4AddressVector& 
+const CIPv4Address::TIPv4AddressVector&
 CHostAddress::GetIPv4Addresses( void ) const
 {GUCEF_TRACE;
 
@@ -466,7 +468,7 @@ CHostAddress::GetIPv4Addresses( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CIPv4Address& 
+const CIPv4Address&
 CHostAddress::GetRandomIPv4Address( void ) const
 {GUCEF_TRACE;
 
@@ -482,7 +484,7 @@ CHostAddress::GetRandomIPv4Address( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CIPv4Address& 
+const CIPv4Address&
 CHostAddress::GetFirstIPv4Address( void ) const
 {GUCEF_TRACE;
 
@@ -495,7 +497,7 @@ CHostAddress::GetFirstIPv4Address( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CIPv6Address::TIPv6AddressVector& 
+CIPv6Address::TIPv6AddressVector&
 CHostAddress::GetIPv6Addresses( void )
 {GUCEF_TRACE;
 
@@ -504,7 +506,7 @@ CHostAddress::GetIPv6Addresses( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CIPv6Address::TIPv6AddressVector& 
+const CIPv6Address::TIPv6AddressVector&
 CHostAddress::GetIPv6Addresses( void ) const
 {GUCEF_TRACE;
 
@@ -513,7 +515,7 @@ CHostAddress::GetIPv6Addresses( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString 
+CORE::CString
 CHostAddress::GetFirstAddressAndPortAsString( void ) const
 {GUCEF_TRACE;
 
@@ -530,7 +532,7 @@ CHostAddress::GetFirstAddressAndPortAsString( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString 
+CORE::CString
 CHostAddress::GetFirstAddressAsString( void ) const
 {GUCEF_TRACE;
 

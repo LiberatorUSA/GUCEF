@@ -29,7 +29,7 @@
 #endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 #ifndef GUCEF_CORE_DVCPPFILEUTILS_H
-#include "dvcppfileutils.h"        
+#include "dvcppfileutils.h"
 #define GUCEF_CORE_DVCPPFILEUTILS_H
 #endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
@@ -140,7 +140,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         if ( options.watchForFileModifications )
             notifyFilter |= FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_LAST_ACCESS | FILE_NOTIFY_CHANGE_SECURITY;
         if ( options.watchForDirRenames || options.watchForDirCreation || options.watchForDirDeletion )
-            notifyFilter |= FILE_NOTIFY_CHANGE_DIR_NAME;            
+            notifyFilter |= FILE_NOTIFY_CHANGE_DIR_NAME;
         return notifyFilter;
     }
 
@@ -864,7 +864,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     }
 
     OSSpecificDirectoryWatcher( CFileSystemDirectoryWatcher* wrapper ,
-                                CPulseGenerator& pulseGenerator      )
+                                PulseGeneratorPtr pulseGenerator     )
         : m_osPollingTimer( pulseGenerator )
         , m_wrapper( wrapper )
         , m_dirsToWatch()
@@ -1068,7 +1068,7 @@ CFileSystemDirectoryWatcher::operator=( const CFileSystemDirectoryWatcher& src )
     if ( this != &src )
     {
         CIDirectoryWatcher::operator=( src );
-        
+
         GUCEF_DELETE m_osSpecificImpl;
         m_osSpecificImpl = GUCEF_NULL;
 
@@ -1079,7 +1079,7 @@ CFileSystemDirectoryWatcher::operator=( const CFileSystemDirectoryWatcher& src )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CFileSystemDirectoryWatcher::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 

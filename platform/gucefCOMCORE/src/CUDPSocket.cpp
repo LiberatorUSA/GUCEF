@@ -550,7 +550,7 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
         if ( cycleCount >= m_maxUpdatesPerCycle )
         {
             // This is a busy socket, don't yield to the scheduler
-            if ( GUCEF_NULL != m_pulseGenerator )
+            if ( !m_pulseGenerator.IsNULL() )
             {
                 m_pulseGenerator->RequestImmediatePulse();
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):OnPulse: Max update cycles per pulse reached, will request an immediate pulse (CPU burst mode)" );
@@ -748,7 +748,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
         if ( ENETRESET == sockError )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Discovered the socket was closed gracefully on socket " +
-                m_hostAddress.AddressAndPortAsString() );
+                m_hostAddress.HostnameAndPortAsString() );
 
             packetsRead = 0;
             Close( false );
@@ -756,7 +756,7 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
         }
 
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Socket error occured (recvmmsg call failed) on socket " +
-            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errno ) );
+            m_hostAddress.HostnameAndPortAsString() + ". Error code: " + CORE::Int32ToString( errno ) );
 
         packetsRead = 0;
         return false;
@@ -897,7 +897,7 @@ CUDPSocket::Open( void )
 
     if ( !m_hostAddress.GetIPv4Addresses().empty() )
     {
-        CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];    
+        CIPv4Address& ipv4Address = m_hostAddress.GetIPv4Addresses()[ 0 ];
         return Open( ipv4Address );
     }
     return false;
@@ -1095,7 +1095,7 @@ CUDPSocket::SetOsLevelSocketReceiveBufferSize( UInt32 osLevelSocketReceiveBuffer
                 + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize )
                 + ". Will try to force which requires elevated rights" );
 
-            // Using the SO_SNDBUFFORCE socket option, a privileged (CAP_NET_ADMIN) process can perform the same task as SO_SNDBUF, 
+            // Using the SO_SNDBUFFORCE socket option, a privileged (CAP_NET_ADMIN) process can perform the same task as SO_SNDBUF,
             // but the wmem_max limit can be overridden. (since Linux 2.6.14)
             int newActualSocketReceiveBufferSize = 0; actualParamSize = sizeof(int);
             if ( 0 > dvsocket_setsockopt_and_validate( _data->sockid, SOL_SOCKET, SO_RCVBUFFORCE, (const char*) &socketReceiveBufferSize, sizeof(int), (char*) &actualSocketReceiveBufferSize, &actualParamSize, &errorCode ) )
@@ -1222,9 +1222,9 @@ CUDPSocket::Join( const CIPv4Address& multicastGroup        ,
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Trying to joined multicast group " + multicastGroup.AddressAsString()
             + ", using all available network interfaces, for all data on the multicast group except explicit blocks" );
-        
+
         CCom& allCom = CComCoreGlobal::Instance()->GetCom();
-        
+
         CINetworkInterface::TIPInfoVector allIpInfo;
         if ( allCom.GetAllNetworkInterfaceIPInfo( allIpInfo ) )
         {
@@ -1232,7 +1232,7 @@ CUDPSocket::Join( const CIPv4Address& multicastGroup        ,
             CINetworkInterface::TIPInfoVector::iterator i = allIpInfo.begin();
             while ( i != allIpInfo.end() )
             {
-                totalSuccess = totalSuccess && JoinOnInterface( multicastGroup, (*i).ip ); 
+                totalSuccess = totalSuccess && JoinOnInterface( multicastGroup, (*i).ip );
                 ++i;
             }
             return totalSuccess;
@@ -1294,7 +1294,7 @@ CUDPSocket::Leave( const CIPv4Address& multicastGroup ,
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #endif
 
     int errorCode = 0;
@@ -1323,7 +1323,7 @@ CUDPSocket::Leave( const CIPv4Address& multicastGroup )
     imr.imr_interface.S_un.S_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #endif
 
     int errorCode = 0;
@@ -1355,7 +1355,7 @@ CUDPSocket::Block( const CIPv4Address& multicastGroup ,
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #endif
 
     int errorCode = 0;
@@ -1387,7 +1387,7 @@ CUDPSocket::Unblock( const CIPv4Address& multicastGroup ,
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = m_hostAddress.GetFirstIPv4Address().GetAddress();
     #endif
 
     int errorCode = 0;

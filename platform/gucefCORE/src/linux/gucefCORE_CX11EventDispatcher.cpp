@@ -27,6 +27,11 @@
 
 #ifdef GUCEF_LINUX_BUILD
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -72,9 +77,9 @@ CX11EventDispatcher::CX11EventDispatcher( void )
       m_display( NULL )
 {GUCEF_TRACE;
 
-    CPulseGenerator& pulseGenerator = CCoreGlobal::Instance()->GetPulseGenerator();
-    SubscribeTo( &pulseGenerator, CPulseGenerator::PulseEvent );
-    pulseGenerator.RequestPeriodicPulses( this, 10 );
+    PulseGeneratorPtr pulseGenerator = CCoreGlobal::Instance()->GetPulseGenerator();
+    SubscribeTo( pulseGenerator.GetPointerAlways(), CPulseGenerator::PulseEvent );
+    pulseGenerator->RequestPeriodicPulses( this, 10 );
 
     // Open the connection to the X client
     m_display = ::XOpenDisplay( NULL );

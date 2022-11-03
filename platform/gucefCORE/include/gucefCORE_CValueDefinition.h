@@ -69,8 +69,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueDefinition : public CIDataNodeSerializable
     public:
 
     typedef std::vector< CValueDefinition >  ValueDefinitionVector;
-   
-    CVariant default;
+
+    CVariant defaultValue;
     bool isRequired;
     CValueConstraintList constraints;
 
@@ -83,7 +83,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueDefinition : public CIDataNodeSerializable
     CValueDefinition( void );
 
     CValueDefinition( const CValueDefinition& src );
-    
+
     virtual ~CValueDefinition();
 
     CValueDefinition& operator=( const CValueDefinition& src );

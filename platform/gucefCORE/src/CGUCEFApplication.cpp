@@ -116,8 +116,8 @@ const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplicatio
 CGUCEFApplication::CGUCEFApplication( void )
     : CGloballyConfigurable( false )
     , CTSGNotifier()
-    , _initialized( false )                                  
-    , m_shutdownRequested( false )                                                            
+    , _initialized( false )
+    , m_shutdownRequested( false )
     , m_busyWaitPulseDriver()
     , m_forcedMinimalCycleDeltaInMilliSecs( 25 )
     , m_desiredMaximumCycleDeltaInMilliSecs( 100 )
@@ -160,7 +160,7 @@ CGUCEFApplication::~CGUCEFApplication()
     MT::CObjectScopeLock lock( this );
 
     PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
-    if ( GUCEF_NULL != pulseGenerator )
+    if ( !pulseGenerator.IsNULL() )
     {
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
         if ( &m_busyWaitPulseDriver == pulseDriver )
@@ -182,7 +182,7 @@ CGUCEFApplication::MainLoop( void )
 
     Lock();
     PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
-    if ( GUCEF_NULL != pulseGenerator )
+    if ( !pulseGenerator.IsNULL() )
     {
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
         if ( GUCEF_NULL == pulseDriver )
@@ -198,10 +198,10 @@ CGUCEFApplication::MainLoop( void )
         if ( pulseGenerator->GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
         {
             Unlock();
-                    
+
             // Notify that the first app cycle is starting
-            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
-            
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
+
             // Now keep looping until we are externally triggered to break out of the loop
             m_busyWaitPulseDriver.Run( *pulseGenerator.GetPointerAlways(), m_forcedMinimalCycleDeltaInMilliSecs, m_desiredMaximumCycleDeltaInMilliSecs );
             return 0;
@@ -332,7 +332,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         else
         {
             // Notify that the first app cycle is starting
-            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
         }
     }
 
@@ -399,7 +399,7 @@ CGUCEFApplication::main( int argc    ,
         else
         {
             // Notify that the first app cycle is starting
-            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
         }
     }
     return appReturnCode;
@@ -441,12 +441,12 @@ CGUCEFApplication::Stop( bool wait )
         if ( !m_shutdownRequested )
         {
             if ( !NotifyObservers( AppShutdownEvent ) ) return;
-       
+
             PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
             if ( !pulseGenerator.IsNULL() )
             {
                 pulseGenerator->ForceStopOfPeriodicPulses();
-                
+
                 // Once last round for pumped observers
                 pulseGenerator->ForceDirectPulse();
             }
@@ -467,7 +467,7 @@ CGUCEFApplication::Stop( bool wait )
             pulseGenerator->ForceDirectPulse();
         }
     }
-    
+
     CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 }
 
@@ -510,12 +510,12 @@ CGUCEFApplication::LoadConfig( const CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CGUCEFApplication::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString classTypeName = "GUCEF::CORE::CGUCEFApplication";
-    return classTypeName; 
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

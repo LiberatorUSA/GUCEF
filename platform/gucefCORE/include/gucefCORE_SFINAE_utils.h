@@ -152,6 +152,8 @@ struct TypeHasMemberFunctionClone
 
 /*-------------------------------------------------------------------------*/
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
 /**
  *  C++98 compatible SFINAE template helper
  *  Allows for checking for the existance of the member function MT::CICloneable* T::Clone()
@@ -165,12 +167,14 @@ struct TypeHasAssignmentOperator
 
     template <typename U, U u> struct reallyHas;
 
-    template < typename TestClass > static yes& test( reallyHas< typename TestClass& (TestClass::*)(), &TestClass::operator= >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( reallyHas< typename TestClass& (TestClass::*)(), (&TestClass::operator=) >* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
     enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
 };
+
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

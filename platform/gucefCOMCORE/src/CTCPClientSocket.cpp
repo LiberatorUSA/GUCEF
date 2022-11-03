@@ -134,18 +134,18 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 
 CTCPClientSocket::CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
                                     bool blocking                          )
-    : CTCPConnection()                    
-    , _blocking( blocking )               
-    , _active( false )                    
-    , datalock()                          
-    , m_readbuffer()                      
-    , m_sendBuffer()                      
-    , m_sendOpBuffer()                    
-    , m_maxreadbytes( 0 )                 
-    , m_hostAddress()                     
+    : CTCPConnection()
+    , _blocking( blocking )
+    , _active( false )
+    , datalock()
+    , m_readbuffer()
+    , m_sendBuffer()
+    , m_sendOpBuffer()
+    , m_maxreadbytes( 0 )
+    , m_hostAddress()
     , m_ipv4Target()
-    , m_isConnecting( false )             
-    , m_pulseGenerator( pulseGenerator ) 
+    , m_isConnecting( false )
+    , m_pulseGenerator( pulseGenerator )
     , m_coaleseDataSends( true )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReconnectOnError( false )
@@ -171,17 +171,17 @@ CTCPClientSocket::CTCPClientSocket( CORE::PulseGeneratorPtr pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::CTCPClientSocket( bool blocking )
-    : CTCPConnection()         
-    , _blocking( blocking )    
-    , _active( false )         
-    , datalock()               
-    , m_readbuffer()           
-    , m_sendBuffer()           
-    , m_sendOpBuffer()         
-    , m_maxreadbytes( 0 )      
-    , m_hostAddress()          
-    , m_isConnecting( false )  
-    , m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
+    : CTCPConnection()
+    , _blocking( blocking )
+    , _active( false )
+    , datalock()
+    , m_readbuffer()
+    , m_sendBuffer()
+    , m_sendOpBuffer()
+    , m_maxreadbytes( 0 )
+    , m_hostAddress()
+    , m_isConnecting( false )
+    , m_pulseGenerator( CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_coaleseDataSends( true )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReconnectOnError( false )
@@ -284,9 +284,9 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( remoteaddr.Length() == 0 ) return false;
 
     // Don't bother trying to connect if the DNS resolution fails
-    CHostAddress remoteAddress;    
+    CHostAddress remoteAddress;
 
-    if ( !remoteAddress.SetHostnameAndPort( remoteaddr, port ) ) 
+    if ( !remoteAddress.SetHostnameAndPort( remoteaddr, port ) )
         return false;
 
     CloseImp();
@@ -380,13 +380,13 @@ CTCPClientSocket::Connect( bool blocking )
 	 *  At this point, we've successfully retrieved vital information about the server,
 	 *  including its hostname, aliases, and IP addresses.
 	 */
-    m_ipv4Target = m_hostAddress.GetRandomIPv4Address(); 
+    m_ipv4Target = m_hostAddress.GetRandomIPv4Address();
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Using IP " + m_ipv4Target.AddressAsString() + " for target " + m_hostAddress.GetHostname() );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     _data->serverinfo.sin_addr.S_un.S_addr = m_ipv4Target.GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    _data->serverinfo.sin_addr.s_addr = destAddress.GetAddress();
+    _data->serverinfo.sin_addr.s_addr = m_ipv4Target.GetAddress();
     #endif
 
     /*
@@ -400,7 +400,7 @@ CTCPClientSocket::Connect( bool blocking )
     {
         _active = m_lastConnFailed = false;
 
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set no delay mode \"" + CORE::BoolToString( m_coaleseDataSends ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set no delay mode \"" + CORE::BoolToString( m_coaleseDataSends )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
         Unlock();
         return false;
@@ -410,17 +410,17 @@ CTCPClientSocket::Connect( bool blocking )
     int allowAddressReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     else
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Successfully set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket" );
-                
+
     #ifdef SO_REUSEPORT
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     else
@@ -430,16 +430,16 @@ CTCPClientSocket::Connect( bool blocking )
     int keepAlive = (m_useTcpKeepAlive ? 1 : 0);
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_KEEPALIVE, (const char*) &keepAlive, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set keep alive mode \"" + CORE::BoolToString( m_useTcpKeepAlive ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set keep alive mode \"" + CORE::BoolToString( m_useTcpKeepAlive )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     else
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Successfully set keep alive mode \"" + CORE::BoolToString( m_useTcpKeepAlive ) + "\" on socket" );
-    
+
     //int maxFails = (int)m_maxKeepAliveProbeFails;
     //if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_TCP, TCP_KEEPCNT, (const char*) &maxFails, sizeof(int), &errorCode ) )
     //{
-    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set keep alive max probe failures \"" + CORE::Int32ToString( maxFails ) 
+    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set keep alive max probe failures \"" + CORE::Int32ToString( maxFails )
     //        + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     //}
     //else
@@ -495,7 +495,7 @@ CTCPClientSocket::Connect( bool blocking )
                              CORE::CPulseGenerator::PulseEvent ,
                              NULL                              );
 
-                    if ( m_isConnecting && _active ) 
+                    if ( m_isConnecting && _active )
                         MT::PrecisionDelay( 25 );
                 }
 
@@ -596,7 +596,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             {
                 // For the purpose of reconnecting we consider the connection failed if is closed for any reason other than
                 // purposefully closing it on the client's side as the reconnect setting indicates the intent of a persistent connection
-                m_lastConnFailed = true; 
+                m_lastConnFailed = true;
 
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): The server has closed the connection" );
 
@@ -651,7 +651,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
     {
         Reconnect( false );
     }
-    
+
     if ( !_blocking && _active )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Pulse received" );
@@ -684,10 +684,10 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
             if ( FD_ISSET( _data->sockid, &exceptfds ) )
             {
-                // This set is watched for "exceptional conditions". 
-                // In practice, only one such exceptional condition is common: the availability of out-of-band (OOB) data for reading from a TCP socket. 
-                // (One other less common case where select() indicates an exceptional condition occurs with pseudoterminals in packet mode; 
-                // see tty_ioctl().) After select() has returned, exceptfds will be cleared of all file descriptors except for those for which an 
+                // This set is watched for "exceptional conditions".
+                // In practice, only one such exceptional condition is common: the availability of out-of-band (OOB) data for reading from a TCP socket.
+                // (One other less common case where select() indicates an exceptional condition occurs with pseudoterminals in packet mode;
+                // see tty_ioctl().) After select() has returned, exceptfds will be cleared of all file descriptors except for those for which an
                 // exceptional condition has occurred.
 
                 m_lastConnFailed = true;
@@ -725,7 +725,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             m_lastConnFailed = true;
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
             Unlock();
-           
+
            /* select call failed */
             TSocketErrorEventData eData( errorCode );
             if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
@@ -808,7 +808,7 @@ CTCPClientSocket::Close( void )
 
     // This is an explicit close request so clear the last fail flag to prevent reconnects
     m_lastConnFailed = false;
-    
+
     CloseImp();
 }
 
@@ -851,7 +851,7 @@ CTCPClientSocket::CloseImp( void )
 
         if ( !NotifyObservers( DisconnectedEvent ) ) return;
     }
-    else 
+    else
         Unlock();
 }
 
@@ -869,7 +869,7 @@ CTCPClientSocket::Send( const void* dataSource ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CTCPClientSocket::GetBufferedDataToSendInBytes( void ) const
 {GUCEF_TRACE;
 
@@ -897,7 +897,7 @@ CTCPClientSocket::GetBytesReceived( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CTCPClientSocket::GetBytesTransmitted( bool resetCounter )
 {GUCEF_TRACE;
 
@@ -1031,7 +1031,7 @@ CTCPClientSocket::SetUseTcpSendCoalescing( bool coaleseData )
         int flag = (coaleseData ? 1 : 0);
         if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof(flag), &errorCode ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply data coalescing (TCP_NODELAY) setting \"" 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply data coalescing (TCP_NODELAY) setting \""
                 + CORE::BoolToString( coaleseData ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
             return false;
         }
@@ -1060,7 +1060,7 @@ CTCPClientSocket::SetUseTcpKeepAlive( bool keepAlive )
         int flag = (keepAlive ? 1 : 0);
         if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_KEEPALIVE, (const char*) &flag, sizeof(flag), &errorCode ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply keep alive (TCP_NODELAY) setting \"" 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply keep alive (TCP_NODELAY) setting \""
                 + CORE::BoolToString( keepAlive ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
             return false;
         }
@@ -1084,14 +1084,14 @@ bool
 CTCPClientSocket::SetTcpKeepAliveProbeFailMax( UInt8 maxFails )
 {
     // @TODO
-    
+
     //if ( _active )
     //{
     //    int errorCode = 0;
     //    int flag = (int)maxFails;
     //    if ( 0 > ( _data->sockid, IPPROTO_TCP, TCP_KEEPCNT, (const char*) &flag, sizeof(flag), &errorCode ) )
     //    {
-    //        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply max keep alive probe failures setting \"" 
+    //        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply max keep alive probe failures setting \""
     //            + CORE::Int32ToString( flag ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
     //        return false;
     //    }

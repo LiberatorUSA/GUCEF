@@ -142,7 +142,7 @@ CMutex::~CMutex()
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &((TMutexData*)_mutexdata->id );
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &((TMutexData*)_mutexdata)->id );
     pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
     GUCEF_DELETE (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
@@ -196,12 +196,12 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 ) 
+    if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 )
     {
         return false;
     }
-    
-    ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+
+    ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) pthread_self();
     ((TMutexData*)_mutexdata)->isLocked = true;
     GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &((TMutexData*)_mutexdata)->id );
     return true;
@@ -236,7 +236,7 @@ CMutex::Unlock( void ) const
     ((TMutexData*)_mutexdata)->isLocked = false;
     GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( ((TMutexData*)_mutexdata)->id );
 
-    if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 ) 
+    if ( pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id ) < 0 )
     {
         ((TMutexData*)_mutexdata)->isLocked = true;
         GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
@@ -280,14 +280,14 @@ CMutex::IsLocked( void ) const
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     /* lock with a timeout of 0. Note this is not a cheap operation */
-    if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id , 0 ) == WAIT_FAILED ) 
+    if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id , 0 ) == WAIT_FAILED )
         return true;
     ReleaseMutex( ((TMutexData*)_mutexdata)->id );
     return false;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) != 0 ) 
+    if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) != 0 )
         return false;
     pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id );
     return true;

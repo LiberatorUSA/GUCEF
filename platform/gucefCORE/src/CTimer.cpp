@@ -75,8 +75,8 @@ const CEvent CTimer::TimerIntervalChangedEvent = "GUCEF::CORE::CTimer::TimerInte
 
 CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : CObservingNotifier()
-    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
-    , m_lastTimerCycle( 0 )                                    
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+    , m_lastTimerCycle( 0 )
     , m_tickCount( 0 )
     , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
     , m_activationTickCount( 0 )
@@ -101,8 +101,8 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
 CTimer::CTimer( PulseGeneratorPtr pulseGenerator               ,
                 const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : CObservingNotifier()
-    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
-    , m_lastTimerCycle( 0 )                                    
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+    , m_lastTimerCycle( 0 )
     , m_tickCount( 0 )
     , m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )
     , m_activationTickCount( 0 )
@@ -126,8 +126,8 @@ CTimer::CTimer( PulseGeneratorPtr pulseGenerator               ,
 
 CTimer::CTimer( const CTimer& src )
     : CObservingNotifier( src )
-    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )   
-    , m_lastTimerCycle( src.m_lastTimerCycle )                                    
+    , m_timerFreq( MT::PrecisionTimerResolution() / 1000.0 )
+    , m_lastTimerCycle( src.m_lastTimerCycle )
     , m_tickCount( 0 )
     , m_updateDeltaInMilliSecs( src.m_updateDeltaInMilliSecs )
     , m_activationTickCount( 0 )
@@ -151,7 +151,7 @@ CTimer::CTimer( const CTimer& src )
 
 CTimer::~CTimer()
 {GUCEF_TRACE;
-    
+
     SetEnabled( false );
     SignalUpcomingObserverDestruction();
 
@@ -242,7 +242,7 @@ CTimer::SetEnabled( const bool enabled )
         m_enabled = enabled;
         return false;
     }
-    
+
     if ( m_enabled != enabled )
     {
         m_enabled = enabled;
@@ -258,7 +258,7 @@ CTimer::SetEnabled( const bool enabled )
             // Make sure we get an update and tell the pump about our update requirement
             m_pulseGenerator->RequestPeriodicPulses( this, m_updateDeltaInMilliSecs );
             NotifyObservers( TimerStartedEvent );
-            
+
         }
         else
         {
@@ -291,7 +291,7 @@ CTimer::SetOpaqueUserData( void* opaqueUserData )
 
 /*-------------------------------------------------------------------------*/
 
-void* 
+void*
 CTimer::GetOpaqueUserData( void ) const
 {GUCEF_TRACE;
 
@@ -383,10 +383,10 @@ CTimer::Reset( void )
 
 /*-------------------------------------------------------------------------*/
 
- void 
+ void
  CTimer::TriggerNow( void )
  {GUCEF_TRACE;
- 
+
     UInt64 newTickCount = MT::PrecisionTickCount();
     UInt64 deltaTicks = ( newTickCount - m_lastTimerCycle );
 	Float64 deltaMilliSecs = deltaTicks / m_timerFreq;
@@ -396,17 +396,17 @@ CTimer::Reset( void )
     updateData.tickCount = m_tickCount;
     updateData.updateDeltaInMilliSecs = deltaMilliSecs;
     if ( !NotifyObservers( TimerUpdateEvent, &cuData ) ) return;
- 
+
     Reset();
  }
 
  /*-------------------------------------------------------------------------*/
 
- void 
+ void
  CTimer::RequestImmediateTrigger( void )
  {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_pulseGenerator )
+    if (  !m_pulseGenerator.IsNULL() )
     {
         m_immediateTriggerRequested = true;
         m_pulseGenerator->RequestImmediatePulse();
@@ -433,29 +433,29 @@ CTimer::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 bool
 CTimer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
-    
+
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 bool
 CTimer::Unlock( void ) const
 {GUCEF_TRACE;
-    
+
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTimer::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
-    
+
     bool wasEnabled = m_enabled;
     UnsubscribeFrom( m_pulseGenerator.GetPointerAlways() );
 

@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality 
+ *  gucefWEB: GUCEF module providing Web application functionality
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -116,7 +116,8 @@ CHTTPURLHandler::Activate( CORE::CURL& url )
     m_transferFinished = false;
 
     GUCEF_DELETE m_httpClient;
-    m_httpClient = GUCEF_NEW CHTTPClient( url.GetPulseGenerator() );
+    CORE::PulseGeneratorPtr pulseGenerator( url.GetPulseGenerator() );
+    m_httpClient = GUCEF_NEW CHTTPClient( pulseGenerator );
     SubscribeTo( m_httpClient );
 
     return m_httpClient->Get( url.GetURL() );

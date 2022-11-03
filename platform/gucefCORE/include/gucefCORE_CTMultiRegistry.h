@@ -56,7 +56,7 @@ template < class T, class LockType >
 class CTMultiRegistry : public MT::CILockable
 {
     public:
-    
+
     typedef CTRegistry< T, LockType >                               TSubRegistry;
     typedef CTSharedPtr< CTRegistry< T, LockType >, LockType >      TSubRegistryPtr;
     typedef typename CTRegistry< T, LockType >::TRegisteredObjPtr   TRegisteredObjPtr;
@@ -78,29 +78,29 @@ class CTMultiRegistry : public MT::CILockable
     /**
      *  Check whether the named entry exists in the given registry
      */
-    virtual bool IsRegistered( const CString& registryName  , 
+    virtual bool IsRegistered( const CString& registryName  ,
                                const CString& registryEntry ) const;
 
-    virtual TRegisteredObjPtr Lookup( const CString& registryName  , 
+    virtual TRegisteredObjPtr Lookup( const CString& registryName  ,
                                       const CString& registryEntry ) const;
 
-    virtual bool TryLookup( const CString& registryName   , 
+    virtual bool TryLookup( const CString& registryName   ,
                             const CString& registryEntry  ,
                             TRegisteredObjPtr& locatedObj ,
                             bool caseSensitive = true     ) const;
 
-    virtual void Register( const CString& registryName        ,  
+    virtual void Register( const CString& registryName        ,
                            const CString& registryEntry       ,
                            const TRegisteredObjPtr& sharedPtr );
 
-    virtual bool TryRegister( const CString& registryName        , 
+    virtual bool TryRegister( const CString& registryName        ,
                               const CString& registryEntry       ,
                               const TRegisteredObjPtr& sharedPtr );
 
-    virtual void Unregister( const CString& registryName  , 
+    virtual void Unregister( const CString& registryName  ,
                              const CString& registryEntry );
 
-    virtual bool TryUnregister( const CString& registryName  , 
+    virtual bool TryUnregister( const CString& registryName  ,
                                 const CString& registryEntry );
 
     virtual void UnregisterAll( void );
@@ -149,7 +149,7 @@ CTMultiRegistry< T, LockType >::CTMultiRegistry( const CTMultiRegistry& src )
     , m_lock()
 {GUCEF_TRACE;
 
-    
+
     MT::CObjectScopeReadOnlyLock lock( src.m_lock );
     typename TRegistryList::const_iterator i = src.m_list.begin();
     while ( i != src.m_list.end() )
@@ -178,7 +178,7 @@ CTMultiRegistry< T, LockType >::operator=( const CTMultiRegistry& src )
     if ( &src != this )
     {
         MT::CObjectScopeLock lock( m_lock );
-        
+
         UnregisterAll();
 
         typename TRegistryList::const_iterator i = src.m_list.begin();
@@ -215,7 +215,7 @@ CTMultiRegistry< T, LockType >::IsRegistered( const CString& registryName  ,
     if ( i != m_list.end() )
     {
         TSubRegistryPtr registry( (*i) );
-        lock.UnlockEarly();
+        lock.EarlyReaderUnlock();
 
         return registry->IsRegistered( registryEntry );
     }
@@ -235,12 +235,12 @@ CTMultiRegistry< T, LockType >::Lookup( const CString& registryName  ,
     if ( i != m_list.end() )
     {
         TSubRegistryPtr registry( (*i) );
-        lock.UnlockEarly();
+        lock.EarlyReaderUnlock();
 
         return registry->Lookup( registryEntry );
     }
 
-    GUCEF_EMSGTHROW( EUnregisteredName, "gucefCORE::CTMultiRegistry::Lookup(): unregistered name given" );
+    throw std::exception( "gucefCORE::CTMultiRegistry::Lookup(): unregistered name given" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +258,7 @@ CTMultiRegistry< T, LockType >::TryLookup( const CString& registryName   ,
     if ( i != m_list.end() )
     {
         TSubRegistryPtr registry( (*i) );
-        lock.UnlockEarly();
+        lock.EarlyReaderUnlock();
 
         return registry->TryLookup( registryEntry ,
                                     locatedObj    ,
@@ -290,7 +290,7 @@ CTMultiRegistry< T, LockType >::Register( const CString& registryName        ,
             m_list[ registryName ] = registry;
         }
     }
-        
+
     return registry->Register( registryEntry ,
                                sharedPtr     );
 }
@@ -318,7 +318,7 @@ CTMultiRegistry< T, LockType >::TryRegister( const CString& registryName        
             m_list[ registryName ] = registry;
         }
     }
-        
+
     return registry->TryRegister( registryEntry ,
                                   sharedPtr     );
 }
@@ -345,7 +345,7 @@ CTMultiRegistry< T, LockType >::Unregister( const CString& registryName  ,
             m_list[ registryName ] = registry;
         }
     }
-        
+
     registry->Unregister( registryEntry );
 }
 
@@ -371,7 +371,7 @@ CTMultiRegistry< T, LockType >::TryUnregister( const CString& registryName  ,
             m_list[ registryName ] = registry;
         }
     }
-        
+
     return registry->TryUnregister( registryEntry );
 }
 
@@ -381,7 +381,7 @@ template< class T, class LockType >
 void
 CTMultiRegistry< T, LockType >::UnregisterAll( void )
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeLock lock( this );
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TMultiRegistry<>(" + CORE::ToString( this ) + "): Unregistering All" );
 
@@ -399,7 +399,7 @@ template< class T, class LockType >
 UInt32
 CTMultiRegistry< T, LockType >::GetCount( void ) const
 {GUCEF_TRACE;
-    
+
     UInt32 totalCount = 0;
     MT::CObjectScopeReadOnlyLock lock( m_lock );
     typename TRegistryList::const_iterator i = m_list.begin();
@@ -417,13 +417,13 @@ template< class T, class LockType >
 UInt32
 CTMultiRegistry< T, LockType >::GetCount( const CString& registryName ) const
 {GUCEF_TRACE;
-    
+
     MT::CObjectScopeReadOnlyLock lock( m_lock );
     typename TRegistryList::const_iterator i = m_list.find( registryName );
     if ( i != m_list.end() )
     {
         TSubRegistryPtr registry( (*i) );
-        lock.UnlockEarly();
+        lock.EarlyReaderUnlock();
 
         return registry->GetCount();
     }

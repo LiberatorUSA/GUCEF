@@ -25,7 +25,7 @@
 #ifndef GUCEF_MT_CSCOPERWLOCK_H
 #include "gucefMT_CScopeRwLock.h"
 #define GUCEF_MT_CSCOPERWLOCK_H
-#endif /* GUCEF_MT_CSCOPERWLOCK_H ? */ 
+#endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
 
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
@@ -70,7 +70,7 @@ const CORE::CEvent CDnsCache::DnsCacheRefreshStoppedEvent = "GUCEF::COMCORE::CDn
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void 
+void
 CDnsCache::RegisterEvents( void )
 {GUCEF_TRACE;
 
@@ -121,7 +121,7 @@ CDnsCache::GetAsyncRefreshIntervalInMs( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDnsCache::ClearCache( void )
 {GUCEF_TRACE;
 
@@ -131,7 +131,7 @@ CDnsCache::ClearCache( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDnsCacheEntryPtr 
+CDnsCacheEntryPtr
 CDnsCache::GetOrAddCacheEntryForDns( const CString& dns )
 {GUCEF_TRACE;
 
@@ -139,7 +139,7 @@ CDnsCache::GetOrAddCacheEntryForDns( const CString& dns )
 
     TDnsCacheEntryMap::iterator i = m_dnsEntryCache.find( dns );
     if ( i != m_dnsEntryCache.end() )
-    {       
+    {
         return (*i).second;
     }
 
@@ -179,7 +179,7 @@ CDnsCache::Refresh( void )
 
     // we take a read lock since we only need to gaurd against the cache index changing
     // the entries themselves have their own lock
-    MT::CScopeReaderLock readLock( m_lock );   
+    MT::CScopeReaderLock readLock( m_lock );
 
     if ( !NotifyObservers( DnsCacheRefreshStartedEvent ) ) return;
 
@@ -196,17 +196,18 @@ CDnsCache::Refresh( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDnsCache::StartRefreshingASync( void )
 {GUCEF_TRACE;
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CDnsCacheRefreshTaskConsumer::TaskType , 
-                                                                                       &CreateSharedPtr()                     );
+    CDnsCachePtr thisPtr( CreateSharedPtr() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CDnsCacheRefreshTaskConsumer::TaskType ,
+                                                                                       &thisPtr                               );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDnsCache::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -215,7 +216,7 @@ CDnsCache::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDnsCache::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -224,7 +225,7 @@ CDnsCache::Unlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDnsCache::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -233,7 +234,7 @@ CDnsCache::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDnsCache::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 

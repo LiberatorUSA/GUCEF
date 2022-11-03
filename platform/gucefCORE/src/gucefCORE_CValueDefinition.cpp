@@ -47,7 +47,7 @@ namespace CORE {
 
 CValueDefinition::CValueDefinition( void )
     : CIDataNodeSerializable()
-    , default()
+    , defaultValue()
     , isRequired( false )
     , constraints()
 {GUCEF_TRACE;
@@ -58,7 +58,7 @@ CValueDefinition::CValueDefinition( void )
 
 CValueDefinition::CValueDefinition( const CValueDefinition& src )
     : CIDataNodeSerializable( src )
-    , default( src.default )
+    , defaultValue( src.defaultValue )
     , isRequired( src.isRequired )
     , constraints( src.constraints )
 {GUCEF_TRACE;
@@ -74,7 +74,7 @@ CValueDefinition::~CValueDefinition()
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CValueDefinition::AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) const
 {GUCEF_TRACE;
 
@@ -86,14 +86,14 @@ CValueDefinition::AreConstraintsSatisfiedBy( const CVariant& valueToConstrain ) 
 
 /*-------------------------------------------------------------------------*/
 
-CValueDefinition& 
-CValueDefinition::operator=( const CValueDefinition& src ) 
+CValueDefinition&
+CValueDefinition::operator=( const CValueDefinition& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
-        CIDataNodeSerializable::operator=( src );        
-        default = src.default;
+        CIDataNodeSerializable::operator=( src );
+        defaultValue = src.defaultValue;
         isRequired = src.isRequired;
         constraints = src.constraints;
     }
@@ -102,22 +102,22 @@ CValueDefinition::operator=( const CValueDefinition& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CValueDefinition::operator==( const CValueDefinition& other ) const
 {GUCEF_TRACE;
 
-    return default == other.default &&
+    return defaultValue == other.defaultValue &&
            isRequired == other.isRequired &&
            constraints == other.constraints;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CValueDefinition::operator!=( const CValueDefinition& other ) const
 {GUCEF_TRACE;
 
-    return default != other.default ||
+    return defaultValue != other.defaultValue ||
            isRequired != other.isRequired ||
            constraints != other.constraints;
 }
@@ -134,7 +134,7 @@ CValueDefinition::Serialize( CDataNode& domRootNode                        ,
     domRootNode.Clear();
     domRootNode.SetName( "ValueDefinition" );
 
-    totalSuccess = domRootNode.SetAttribute( "default", default ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "defaultValue", defaultValue ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "isRequired", isRequired ) && totalSuccess;
 
     CDataNode* constraintsNode = domRootNode.AddChild( "constraints", GUCEF_DATATYPE_ARRAY );
@@ -154,8 +154,8 @@ CValueDefinition::Deserialize( const CDataNode& domRootNode                  ,
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
-    
-    default = domRootNode.GetAttributeValueOrChildValueByName( "default", default );
+
+    defaultValue = domRootNode.GetAttributeValueOrChildValueByName( "defaultValue", defaultValue );
     isRequired = domRootNode.GetAttributeValueOrChildValueByName( "isRequired", isRequired ).AsBool();
 
     const CDataNode* constraintsNode = domRootNode.FindChild( "constraints" );
