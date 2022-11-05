@@ -102,6 +102,7 @@ namespace STORAGE {
 
 #define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
 #define GUCEF_DEFAULT_VFS_CONTAINER_FILE_EXTENSION                  ".pubsubmsgs"
+#define GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS        30000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -390,9 +391,12 @@ CStoragePubSubClientTopic::StorageBufferMetaData::StorageBufferMetaData( void )
     , msgAcks()
     , ackdMsgCount( 0 )
     , lastAckdMsgIndex( 0 )
+    , lastAckdMsgTime( CORE::CDateTime::PastMax )
     , actionIds()
     , linkedRequest( GUCEF_NULL )
     , linkedRequestEntry()    
+    , isReleased( true )
+    , isBeingWritten( false )
 {GUCEF_TRACE;
 
 }
@@ -411,9 +415,12 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
     msgAcks.clear();
     ackdMsgCount = 0;
     lastAckdMsgIndex = 0;
+    lastAckdMsgTime = CORE::CDateTime::PastMax;
     actionIds.clear();    
     linkedRequest = GUCEF_NULL;
     linkedRequestEntry.Unlink();
+    isReleased = true;
+    isBeingWritten = false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -426,6 +433,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_config()
     , m_syncVfsOpsTimer( GUCEF_NULL )
     , m_reconnectTimer( GUCEF_NULL )
+    , m_noAckRetransmitTimer( GUCEF_NULL )
     , m_bufferContentTimeWindowCheckTimer( GUCEF_NULL )
     , m_lock()
     , m_currentPublishActionId( 1 )
@@ -483,6 +491,11 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
 
     m_pubsubBookmarkPersistence = m_client->GetBookmarkPersistence();
     m_needToTrackAcks = m_client->IsTrackingAcksNeeded(); 
+
+    if ( m_needToTrackAcks )
+    {
+        m_noAckRetransmitTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS );
+    }
     
     RegisterEventHandlers();
 }
@@ -514,6 +527,9 @@ CStoragePubSubClientTopic::Shutdown( void )
     
     GUCEF_DELETE m_reconnectTimer;
     m_reconnectTimer = GUCEF_NULL;
+
+    GUCEF_DELETE m_noAckRetransmitTimer;
+    m_noAckRetransmitTimer = GUCEF_NULL;
 
     GUCEF_DELETE m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
@@ -558,6 +574,14 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
         SubscribeTo( m_bufferContentTimeWindowCheckTimer ,
                      CORE::CTimer::TimerUpdateEvent      ,
                      callback                            );
+    }
+
+    if ( GUCEF_NULL != m_bufferContentTimeWindowCheckTimer )
+    {
+        TEventCallback callback( this, &CStoragePubSubClientTopic::OnNoAckRetransmitCheckCycle );
+        SubscribeTo( m_noAckRetransmitTimer         ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback                       );
     }
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
@@ -886,6 +910,7 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( StorageBufferMetaData* bufferMet
     // Now that the async threaded work is done signal that we are finished writing
     // this releases the write buffer for reading as a read buffer
     m_buffers.SignalEndOfWriting();
+    bufferMetaData->isBeingWritten = false;
 
     m_lastWriteBlockCompletion = CORE::CDateTime::NowUTCDateTime();
     m_bufferContentTimeWindowCheckTimer->SetEnabled( false );
@@ -1002,6 +1027,9 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
         m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
     else
         m_maxTotalMsgsInFlight = m_client->GetConfig().maxTotalMsgsInFlight;
+
+    if ( GUCEF_NULL != m_noAckRetransmitTimer )
+        m_noAckRetransmitTimer->SetInterval( m_config.nonAckdMsgCheckIntervalInMs );
 
     return true;
 }
@@ -1891,6 +1919,27 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
             }
             metaData->lastAckdMsgIndex = bookmark.msgIndex;
         }
+        else
+        {
+            // We are not allowed to consider anything ack'd unless done so explicitly
+            // However we can still recieve acks out of order so we need to check if potentially
+            // gaps are getting filled allowing us to advance the 'lastAckdMsgIndex' by more than
+            // just 1 message
+            
+            for ( CORE::UInt32 i=metaData->lastAckdMsgIndex; i<bookmark.msgIndex; ++i )
+            {
+                if ( metaData->msgAcks[ i ] )
+                {
+                    metaData->lastAckdMsgIndex = i;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        
+        metaData->lastAckdMsgTime = CORE::CDateTime::NowUTCDateTime();
 
         if ( metaData->ackdMsgCount >= metaData->msgAcks.size() )
         {
@@ -1974,6 +2023,61 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::OnNoAckRetransmitCheckCycle( CORE::CNotifier* notifier    ,
+                                                        const CORE::CEvent& eventId  ,
+                                                        CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    TStorageBufferMetaDataMap::iterator i = m_storageBufferMetaData.begin();
+    while ( i != m_storageBufferMetaData.end() )
+    {
+        StorageBufferMetaData& metaDataEntry = (*i).second;
+
+        // Check to see if acks apply to this buffer still
+        if ( !metaDataEntry.isBeingWritten && !metaDataEntry.isReleased )
+        {
+            // Check if this buffer has messages which have not been ack'd yet
+            if ( metaDataEntry.ackdMsgCount < metaDataEntry.actionIds.size() )
+            {
+                // Check to see if the max permissable amount of time to ack all the messages in the batch has expired
+                if ( metaDataEntry.lastAckdMsgTime.GetTimeDifferenceInMillisecondsToNow() > m_config.maxTimeToWaitForAllMsgBatchAcksInMs )
+                {
+                    // Lets try to deliniate which messages to resend
+                    // if we find an non-ack'd message then everything after that point will be sent again
+                    // this is to ensure ordering in the retransmission similar to how Kafka and the like resend 
+                    // since the last successfully persisted bookmark
+
+                    if ( metaDataEntry.lastAckdMsgIndex < metaDataEntry.lastMsgTransmittedIndex )
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnNoAckRetransmitCheckCycle: Not all (" + CORE::ToString( metaDataEntry.actionIds.size() ) + 
+                                ") messages have been ack'd (" + CORE::ToString( metaDataEntry.ackdMsgCount ) + ") in time for messages sourced from container " + metaDataEntry.linkedRequestEntry->vfsFilePath +
+                                " . Resetting last transmitted msg index to " + CORE::ToString( metaDataEntry.lastAckdMsgIndex ) + " from " + CORE::ToString( metaDataEntry.lastMsgTransmittedIndex )  );    
+
+                        metaDataEntry.lastMsgTransmittedIndex = metaDataEntry.lastAckdMsgIndex;
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnNoAckRetransmitCheckCycle: Not all (" + CORE::ToString( metaDataEntry.actionIds.size() ) + 
+                                ") messages have been ack'd (" + CORE::ToString( metaDataEntry.ackdMsgCount ) + ") in time for messages sourced from container " + metaDataEntry.linkedRequestEntry->vfsFilePath +
+                                " . Last transmitted msg index " + CORE::ToString( metaDataEntry.lastAckdMsgIndex ) + " is less than last ack index " + CORE::ToString( metaDataEntry.lastMsgTransmittedIndex )  );    
+                    }
+
+                    // Reset the clock before transmitting to provide a new time window for the newly retransmitted messages to be ack'd
+                    metaDataEntry.lastAckdMsgTime = CORE::CDateTime::NowUTCDateTime();
+                    
+                    // Begin actuall retransmission
+                    TransmitNextPubSubMsgBatch( (*i).first, &metaDataEntry );
+                }
+            }
+        }
+
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2717,7 +2821,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
             if ( GUCEF_NULL != m_currentWriteBuffer )
             {
                 StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-                bufferMetaData->msgOffsetIndex.clear();
+                bufferMetaData->Clear();
                 bufferMetaData->linkedRequest = &queuedRequest;
                 bufferMetaData->linkedRequestEntry = (*n); 
                 m_currentWriteBuffer->SetDataSize( 0 );
@@ -2823,6 +2927,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                         ++containersProcessed;
                         m_currentWriteBuffer = GUCEF_NULL;
                         m_buffers.SignalEndOfWriting();
+                        bufferMetaData->isBeingWritten = false;
                         continue;
                     }
                     else
@@ -3099,8 +3204,9 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
                     }
                 }
 
-                // @TODO: multiple in-flight read buffers for speed
+                // @TODO: multiple in-flight read buffers for speed                
                 m_buffers.SignalEndOfReading();
+                bufferMetaData->isReleased = true;
                 m_currentReadBuffer = GUCEF_NULL;
             }
         }
@@ -3110,15 +3216,19 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::TransmitNextPubSubMsgBatch( void )
+CStoragePubSubClientTopic::TransmitNextPubSubMsgBatch( CORE::CDynamicBuffer* readBuffer      ,
+                                                       StorageBufferMetaData* bufferMetaData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_currentReadBuffer )
+    if ( GUCEF_NULL == readBuffer )
         return false;
 
-    // fetch the meta-data for this buffer
-    StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
-
+    if ( GUCEF_NULL == bufferMetaData )
+    {
+        // fetch the meta-data for this buffer
+        bufferMetaData = &( m_storageBufferMetaData[ readBuffer ] );
+    }
+    
     // Check to see what that means for the current batch
     // the max allowed vs whatever if already in flight gives us the allowed additional nr of messages to transmit
     CORE::UInt32 msgsMaxLeftToTransmit = 0;
@@ -3173,7 +3283,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_currentReadBuffer )
-        return TransmitNextPubSubMsgBatch();
+        return TransmitNextPubSubMsgBatch( m_currentReadBuffer, GUCEF_NULL );
     
     CORE::CDateTime firstMsgDt;
     m_currentReadBuffer = m_buffers.GetNextReaderBuffer( firstMsgDt, false, 0 );
@@ -3275,7 +3385,7 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         bufferMetaData->linkedRequestEntry->maxActionId = m_currentReceiveActionId-1;
 
         // Now that we have staged the messages, transmit the first batch
-        return TransmitNextPubSubMsgBatch();
+        return TransmitNextPubSubMsgBatch( m_currentReadBuffer, GUCEF_NULL );
     }
     return true;
 }

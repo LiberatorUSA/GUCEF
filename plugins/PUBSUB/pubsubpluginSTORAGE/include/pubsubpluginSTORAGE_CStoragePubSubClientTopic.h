@@ -304,9 +304,12 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         CORE::UInt32 ackdMsgCount;
         TBoolVector msgAcks;        
         CORE::UInt32 lastAckdMsgIndex;
+        CORE::CDateTime lastAckdMsgTime;
         TPublishActionIdVector actionIds;         
         StorageToPubSubRequest* linkedRequest;
         TCContainerRangeInfoReference linkedRequestEntry;
+        bool isReleased;
+        bool isBeingWritten;
 
         void Clear( void );
 
@@ -381,7 +384,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     
     bool TransmitNextPubSubMsgBuffer( void );
 
-    bool TransmitNextPubSubMsgBatch( void );
+    bool TransmitNextPubSubMsgBatch( CORE::CDynamicBuffer* readBuffer      ,
+                                     StorageBufferMetaData* bufferMetaData );
 
     void ProgressRequest( StorageBufferMetaData* bufferMetaData ,
                           bool isTransmitted                    ,
@@ -393,6 +397,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventId  ,
                            CORE::CICloneable* eventData );
+
+    void
+    OnNoAckRetransmitCheckCycle( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
     
     void
     OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    ,
@@ -448,6 +457,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CStoragePubSubClientTopicConfig m_config;
     CORE::CTimer* m_syncVfsOpsTimer;    
     CORE::CTimer* m_reconnectTimer;
+    CORE::CTimer* m_noAckRetransmitTimer;
     CORE::CTimer* m_bufferContentTimeWindowCheckTimer;
     MT::CMutex m_lock;
     CORE::UInt64 m_currentPublishActionId;

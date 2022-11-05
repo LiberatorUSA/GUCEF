@@ -259,12 +259,17 @@ CDynamicBufferSwap::GetCurrenReaderBuffer( CDateTime& associatedDt    ,
 CDynamicBuffer* 
 CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                                          bool alwaysBlockForBufferAvailability ,
-                                         UInt32 lockWaitTimeoutInMs            )
+                                         UInt32 lockWaitTimeoutInMs            ,
+                                         Int32* currentReaderBufferIndex       )
 {GUCEF_TRACE;
 
     if ( !SignalEndOfReading() )
     {
         associatedDt = CDateTime::Empty;
+
+        if ( GUCEF_NULL != currentReaderBufferIndex )
+            *currentReaderBufferIndex = -1;
+
         return GUCEF_NULL;
     }
     
@@ -280,6 +285,9 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                 associatedDt = firstBuffer.associatedDt;
                 m_currentReaderBufferIndex = 0;
 
+                if ( GUCEF_NULL != currentReaderBufferIndex )
+                    *currentReaderBufferIndex = m_currentReaderBufferIndex;
+
                 m_readingIsOngoing = true;
                 return &firstBuffer.buffer;
             }
@@ -294,6 +302,10 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
                 else
                 {
                     associatedDt = CDateTime::Empty;
+
+                    if ( GUCEF_NULL != currentReaderBufferIndex )
+                        *currentReaderBufferIndex = -1;
+
                     return GUCEF_NULL;
                 }
             }
@@ -302,7 +314,7 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
         Int32 nextReaderBufferIndex = m_currentReaderBufferIndex+1;
     
         // loop around as needed
-        if ( nextReaderBufferIndex == m_buffers.size() )
+        if ( nextReaderBufferIndex >= m_buffers.size() )
             nextReaderBufferIndex = 0;
 
         //// Cheap early out check
@@ -326,6 +338,9 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
             m_currentReaderBufferIndex = nextReaderBufferIndex;  
             associatedDt = nextBuffer.associatedDt;
 
+            if ( GUCEF_NULL != currentReaderBufferIndex )
+                *currentReaderBufferIndex = m_currentReaderBufferIndex;
+
             m_readingIsOngoing = true;
             return &nextBuffer.buffer;
         }
@@ -340,11 +355,18 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
             else
             {
                 associatedDt = CDateTime::Empty;
+
+                if ( GUCEF_NULL != currentReaderBufferIndex )
+                    *currentReaderBufferIndex = -1;
+
                 return GUCEF_NULL;
             }
         }
     }
     while ( alwaysBlockForBufferAvailability );
+
+    if ( GUCEF_NULL != currentReaderBufferIndex )
+        *currentReaderBufferIndex = -1;
 
     associatedDt = CDateTime::Empty;
     return GUCEF_NULL;
@@ -354,106 +376,58 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
 
 CDynamicBuffer* 
 CDynamicBufferSwap::GetNextReaderBuffer( bool alwaysBlockForBufferAvailability ,
-                                         UInt32 lockWaitTimeoutInMs            )
+                                         UInt32 lockWaitTimeoutInMs            ,
+                                         Int32* currentReaderBufferIndex       )
 {GUCEF_TRACE;
 
     CDateTime associatedDt; 
     return GetNextReaderBuffer( associatedDt                     , 
                                 alwaysBlockForBufferAvailability ,
-                                lockWaitTimeoutInMs              );
+                                lockWaitTimeoutInMs              ,
+                                currentReaderBufferIndex         );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDynamicBuffer* 
 CDynamicBufferSwap::PeekNextReaderBuffer( CDateTime& associatedDt               ,
-                                          bool alwaysBlockForBufferAvailability ,
-                                          UInt32 lockWaitTimeoutInMs            )
+                                          Int32 peekReaderBufferIndex           ,
+                                          Int32* newPeekReaderBufferIndex       )
+
 {GUCEF_TRACE;
-                // @TODO: Make me
-    if ( true ) //!SignalEndOfReading() )
+
+    if ( GUCEF_NULL == newPeekReaderBufferIndex )
+        return GUCEF_NULL;
+    
+    if ( peekReaderBufferIndex < 0 )
     {
-        associatedDt = CDateTime::Empty;
+        *newPeekReaderBufferIndex = -1;
         return GUCEF_NULL;
     }
     
-    do
+    MT::CScopeMutex lock( m_lock );          
+    
+    if ( !m_readingIsOngoing )
     {
-        MT::CScopeMutex lock( m_lock );          
-
-        if ( m_currentReaderBufferIndex < 0 )
-        {
-            CBufferEntry& firstBuffer = m_buffers[ 0 ];        
-            if ( firstBuffer.hasUnreadData && firstBuffer.lock.Lock( lockWaitTimeoutInMs ) )
-            {
-                associatedDt = firstBuffer.associatedDt;
-                m_currentReaderBufferIndex = 0;
-
-                m_readingIsOngoing = true;
-                return &firstBuffer.buffer;
-            }
-            else
-            {
-                if ( alwaysBlockForBufferAvailability )
-                {
-                    lock.EarlyUnlock();
-                    MT::PrecisionDelay( 100 );
-                    continue;
-                }
-                else
-                {
-                    associatedDt = CDateTime::Empty;
-                    return GUCEF_NULL;
-                }
-            }
-        }
-    
-        Int32 nextReaderBufferIndex = m_currentReaderBufferIndex+1;
-    
-        // loop around as needed
-        if ( nextReaderBufferIndex == m_buffers.size() )
-            nextReaderBufferIndex = 0;
-
-        //// Cheap early out check
-        //// The reader and the writer should never be on the same index
-        //if ( nextReaderBufferIndex == m_currentWriterBufferIndex )
-        //{
-        //    if ( alwaysBlockForBufferAvailability )
-        //    {
-        //        // Wait on the writer to finish a buffer
-        //        lock.EarlyUnlock();
-        //        MT::PrecisionDelay( 100 );
-        //        continue;
-        //    }
-        //    else
-        //        return GUCEF_NULL;
-        //}
-
-        CBufferEntry& nextBuffer = m_buffers[ nextReaderBufferIndex ];
-        if ( nextBuffer.hasUnreadData && nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
-        {           
-            m_currentReaderBufferIndex = nextReaderBufferIndex;  
-            associatedDt = nextBuffer.associatedDt;
-
-            m_readingIsOngoing = true;
-            return &nextBuffer.buffer;
-        }
-        else
-        {
-            if ( alwaysBlockForBufferAvailability )
-            {
-                lock.EarlyUnlock();
-                MT::PrecisionDelay( 100 );
-                continue;
-            }
-            else
-            {
-                associatedDt = CDateTime::Empty;
-                return GUCEF_NULL;
-            }
-        }
+        // Peeking is supposed to be used in conjunction with GetNextReaderBuffer()
+        *newPeekReaderBufferIndex = -1;
+        return GUCEF_NULL;
     }
-    while ( alwaysBlockForBufferAvailability );
+        
+    Int32 nextReaderBufferIndex = peekReaderBufferIndex+1;
+    
+    // loop around as needed
+    if ( nextReaderBufferIndex >= m_buffers.size() )
+        nextReaderBufferIndex = 0;
+
+    CBufferEntry& nextBuffer = m_buffers[ nextReaderBufferIndex ];
+    if ( nextBuffer.hasUnreadData )
+    {           
+        *newPeekReaderBufferIndex = nextReaderBufferIndex;  
+        associatedDt = nextBuffer.associatedDt;
+
+        return &nextBuffer.buffer;
+    }
 
     associatedDt = CDateTime::Empty;
     return GUCEF_NULL;
@@ -462,14 +436,14 @@ CDynamicBufferSwap::PeekNextReaderBuffer( CDateTime& associatedDt               
 /*-------------------------------------------------------------------------*/
 
 CDynamicBuffer* 
-CDynamicBufferSwap::PeekNextReaderBuffer( bool alwaysBlockForBufferAvailability ,
-                                          UInt32 lockWaitTimeoutInMs            )
+CDynamicBufferSwap::PeekNextReaderBuffer( Int32 peekReaderBufferIndex     ,
+                                          Int32* newPeekReaderBufferIndex )
 {GUCEF_TRACE;
 
     CDateTime associatedDt; 
-    return PeekNextReaderBuffer( associatedDt                     , 
-                                 alwaysBlockForBufferAvailability ,
-                                 lockWaitTimeoutInMs              );
+    return PeekNextReaderBuffer( associatedDt             ,
+                                 peekReaderBufferIndex    ,
+                                 newPeekReaderBufferIndex );
 }
 
 /*-------------------------------------------------------------------------*/

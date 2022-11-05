@@ -101,20 +101,40 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferSwap : public MT::CILockable
      */
     CDynamicBuffer* GetNextReaderBuffer( CDateTime& associatedDt                       ,
                                          bool alwaysBlockForBufferAvailability = false ,
-                                         UInt32 lockWaitTimeoutInMs = 1000             );
-
-    CDynamicBuffer* GetNextReaderBuffer( bool alwaysBlockForBufferAvailability = false ,
-                                         UInt32 lockWaitTimeoutInMs = 1000             );
+                                         UInt32 lockWaitTimeoutInMs = 1000             ,
+                                         Int32* currentReaderBufferIndex = GUCEF_NULL  );
 
     /**
-     *
+     *  Same as the other variant of GetNextReaderBuffer() except you dont have to pass along a
+     *  associatedDt if you dont care about that information    
      */
-    CDynamicBuffer* PeekNextReaderBuffer( CDateTime& associatedDt                      ,
-                                         bool alwaysBlockForBufferAvailability = false ,
-                                         UInt32 lockWaitTimeoutInMs = 1000             );
+    CDynamicBuffer* GetNextReaderBuffer( bool alwaysBlockForBufferAvailability = false ,
+                                         UInt32 lockWaitTimeoutInMs = 1000             ,
+                                         Int32* currentReaderBufferIndex = GUCEF_NULL  );
 
-    CDynamicBuffer* PeekNextReaderBuffer( bool alwaysBlockForBufferAvailability = false ,
-                                         UInt32 lockWaitTimeoutInMs = 1000              );
+    /**
+     *  Once a read buffer has been obtained using GetNextReaderBuffer() you can also 'peek' at the
+     *  next available read buffer if any exists. This operation does not move the actual read cursor state
+     *  Only the passed-in indeces are used as cursors and hence this does not advance the read positon 
+     *  to the next buffer (if any) nor does it signal the end of reading. 
+     *  The first call to PeekNextReaderBuffer() should use the GetNextReaderBuffer()'s 'currentReaderBufferIndex' value for 'peekReaderBufferIndex'
+     *  
+     *  Note that the multi-threading lock protection is linked to your lifecycle of GetNextReaderBuffer()
+     *  calls and SignalEndOfReading() utilizing either of those invalidates the lock protection for the buffer 
+     *  that was returned as part of a PeekNextReaderBuffer()
+     *  As such the expectation is that you always combine your GetNextReaderBuffer, PeekNextReaderBuffer and SignalEndOfReading
+     *  calls in the same thread as part of a sequenctial calling sequence
+     */
+    CDynamicBuffer* PeekNextReaderBuffer( CDateTime& associatedDt         ,
+                                          Int32 peekReaderBufferIndex     ,
+                                          Int32* newPeekReaderBufferIndex );
+
+    /**
+     *  Same as the other variant of PeekNextReaderBuffer() except you dont have to pass along a
+     *  associatedDt if you dont care about that information    
+     */
+    CDynamicBuffer* PeekNextReaderBuffer( Int32 peekReaderBufferIndex     ,
+                                          Int32* newPeekReaderBufferIndex );
     
     /**
      *  Re-obtains the currently assigned reader buffer, if any

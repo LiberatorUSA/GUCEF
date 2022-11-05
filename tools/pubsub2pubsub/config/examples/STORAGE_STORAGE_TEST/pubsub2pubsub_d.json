@@ -91,8 +91,10 @@
 												"treatEveryFullfilledRequestAsEODEvent": false,
 												"deleteContainersWithFullyAckdContent": false,
 												"moveContainersWithFullyAckdContent": true,
-												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed"
-												"maxCompletedContainerRefsToRetain": 50
+												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed",
+												"maxCompletedContainerRefsToRetain": 50,
+												"nonAckdMsgCheckIntervalInMs": 30000,
+												"maxTimeToWaitForAllMsgBatchAcksInMs": 30000
 											}
 										}
 									}
@@ -160,7 +162,7 @@
 							"PubSubClientConfig": {
 								"pubsubClientType": "STORAGE",
 								"reconnectDelayInMs": 0,
-								"maxTotalMsgsInFlight": 1000,								
+								"maxTotalMsgsInFlight": 1000,
 								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
@@ -203,8 +205,10 @@
 												"treatEveryFullfilledRequestAsEODEvent": false,
 												"deleteContainersWithFullyAckdContent": false,
 												"moveContainersWithFullyAckdContent": true,
-												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/spillover-temp-storage/processed"
-												"maxCompletedContainerRefsToRetain": 50
+												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/spillover-temp-storage/processed",
+												"maxCompletedContainerRefsToRetain": 50,
+												"nonAckdMsgCheckIntervalInMs": 30000,
+												"maxTimeToWaitForAllMsgBatchAcksInMs": 30000
 											}
 										}
 									}
@@ -272,7 +276,7 @@
 							"PubSubClientConfig": {
 								"pubsubClientType": "TEST",
 								"reconnectDelayInMs": 0,
-								"maxTotalMsgsInFlight": 1000,								
+								"maxTotalMsgsInFlight": 1000,
 								"pubsubIdPrefix": "{auto}",
 								"CustomConfig": {},
 								"Topics": {
@@ -317,6 +321,8 @@
 												"moveContainersWithFullyAckdContent": true,
 												"vfsStorageRootPathForFullyAckdContainers": "InstallPath/test-sink/processed",
 												"maxCompletedContainerRefsToRetain": 50,
+												"nonAckdMsgCheckIntervalInMs": 30000,
+												"maxTimeToWaitForAllMsgBatchAcksInMs": 30000,
 
 
 

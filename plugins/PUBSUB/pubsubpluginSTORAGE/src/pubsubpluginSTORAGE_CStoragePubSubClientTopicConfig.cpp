@@ -53,6 +53,8 @@ namespace STORAGE {
 #define GUCEF_DEFAULT_DECODE_GROWTH_RATIO_EXPECTATION               6.0f
 #define GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS                    2
 #define GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN         50
+#define GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS        30000         // 30 secs
+#define GUCEF_DEFAULT_MAX_TIME_FOR_ACKING_ALL_IN_MSG_BATHC_IN_MS    30000         // 30 secs
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -93,6 +95,8 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , moveContainersWithFullyAckdContent( false )
     , vfsStorageRootPathForFullyAckdContainers()
     , maxCompletedContainerRefsToRetain( GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN )
+    , nonAckdMsgCheckIntervalInMs( GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS )
+    , maxTimeToWaitForAllMsgBatchAcksInMs( GUCEF_DEFAULT_MAX_TIME_FOR_ACKING_ALL_IN_MSG_BATHC_IN_MS )
 {GUCEF_TRACE;
     
 }
@@ -132,6 +136,8 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , moveContainersWithFullyAckdContent( src.moveContainersWithFullyAckdContent )
     , vfsStorageRootPathForFullyAckdContainers( src.vfsStorageRootPathForFullyAckdContainers )
     , maxCompletedContainerRefsToRetain( src.maxCompletedContainerRefsToRetain )
+    , nonAckdMsgCheckIntervalInMs( src.nonAckdMsgCheckIntervalInMs )
+    , maxTimeToWaitForAllMsgBatchAcksInMs( src.maxTimeToWaitForAllMsgBatchAcksInMs )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -171,7 +177,9 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , deleteContainersWithFullyAckdContent( false )
     , moveContainersWithFullyAckdContent( false )
     , vfsStorageRootPathForFullyAckdContainers()
-    , maxCompletedContainerRefsToRetain()
+    , maxCompletedContainerRefsToRetain( GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN )
+    , nonAckdMsgCheckIntervalInMs( GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS )
+    , maxTimeToWaitForAllMsgBatchAcksInMs( GUCEF_DEFAULT_MAX_TIME_FOR_ACKING_ALL_IN_MSG_BATHC_IN_MS )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -220,6 +228,8 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     moveContainersWithFullyAckdContent = config.GetAttributeValueOrChildValueByName( "moveContainersWithFullyAckdContent" ).AsBool( moveContainersWithFullyAckdContent, true );
     vfsStorageRootPathForFullyAckdContainers = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPathForFullyAckdContainers" ).AsString( vfsStorageRootPathForFullyAckdContainers, true ); 
     maxCompletedContainerRefsToRetain = config.GetAttributeValueOrChildValueByName( "maxCompletedContainerRefsToRetain" ).AsUInt32( maxCompletedContainerRefsToRetain, true );
+    nonAckdMsgCheckIntervalInMs = config.GetAttributeValueOrChildValueByName( "nonAckdMsgCheckIntervalInMs" ).AsUInt32( nonAckdMsgCheckIntervalInMs, true );
+    maxTimeToWaitForAllMsgBatchAcksInMs = config.GetAttributeValueOrChildValueByName( "maxTimeToWaitForAllMsgBatchAcksInMs" ).AsUInt32( maxTimeToWaitForAllMsgBatchAcksInMs, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -269,6 +279,8 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "moveContainersWithFullyAckdContent", moveContainersWithFullyAckdContent ) && success;                    
     success = config.SetAttribute( "vfsStorageRootPathForFullyAckdContainers", vfsStorageRootPathForFullyAckdContainers ) && success;
     success = config.SetAttribute( "maxCompletedContainerRefsToRetain", maxCompletedContainerRefsToRetain ) && success;    
+    success = config.SetAttribute( "nonAckdMsgCheckIntervalInMs", nonAckdMsgCheckIntervalInMs ) && success;        
+    success = config.SetAttribute( "maxTimeToWaitForAllMsgBatchAcksInMs", maxTimeToWaitForAllMsgBatchAcksInMs ) && success;            
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -338,6 +350,8 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         moveContainersWithFullyAckdContent = src.moveContainersWithFullyAckdContent;
         vfsStorageRootPathForFullyAckdContainers = src.vfsStorageRootPathForFullyAckdContainers;
         maxCompletedContainerRefsToRetain = src.maxCompletedContainerRefsToRetain;
+        nonAckdMsgCheckIntervalInMs = src.nonAckdMsgCheckIntervalInMs;
+        maxTimeToWaitForAllMsgBatchAcksInMs = src.maxTimeToWaitForAllMsgBatchAcksInMs;
 
         customConfig = src.customConfig;
     }
