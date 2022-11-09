@@ -2969,6 +2969,19 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                 CORE::ToString( queuedRequest.startDt ) + ", End=" + CORE::ToString( queuedRequest.endDt ) +
                 " Proccessed " + CORE::ToString( containersProcessed ) + "/" + CORE::ToString( containersToProcess ) + " files successfully" );
         }
+
+        if ( queuedRequest.vfsPubSubMsgContainersPushed.empty()      &&
+             queuedRequest.vfsPubSubMsgContainersToPush.empty()      &&
+             queuedRequest.vfsPubSubMsgContainersTransmitted.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Storage request. Start=" +
+                CORE::ToString( queuedRequest.startDt ) + ", End=" + CORE::ToString( queuedRequest.endDt ) +
+                " has no associated containers, considering the request complete" );
+            
+            ProgressRequest( &queuedRequest, true );
+            
+            m_stage2StorageToPubSubRequests.erase( i );
+        }
     }
 
     return totalSuccess;
@@ -3098,6 +3111,69 @@ CStoragePubSubClientTopic::GetStorageDeserializationFailuresCounter( bool resetC
 /*-------------------------------------------------------------------------*/
 
 void
+CStoragePubSubClientTopic::ProgressRequest( StorageToPubSubRequest* request ,
+                                            bool isAcked                    )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == request || GUCEF_NULL == m_client )
+        return;
+
+    // Check to see if there is no additional work related to the overall request
+    // if not we can perform some additional progression & cleanup
+    if ( request->vfsPubSubMsgContainersToPush.empty() &&
+         request->vfsPubSubMsgContainersPushed.empty()  )
+    {
+        // All containers for this request have had their content transmitted
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProgressRequest: Completed storage request. Start=" +
+            CORE::ToString( request->startDt ) + ", End=" + CORE::ToString( request->endDt ) +
+            ". Transmitted content of " + CORE::ToString( request->vfsPubSubMsgContainersTransmitted.size() ) + " containers. isAcked=" + CORE::ToString( isAcked ) );
+
+        // Are end-of-data (EOD) event messages desired?
+        if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+        {
+            if ( m_config.treatEveryFullfilledRequestAsEODEvent )
+            {
+                m_subscriptionIsAtEndOfData = true;
+                NotifyObservers( SubscriptionEndOfDataEvent );
+            }
+            else
+            {
+                // Only send end of data event if all requests have been fullfilled
+                if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.size() <= 1 )
+                {
+                    m_subscriptionIsAtEndOfData = true;
+                    NotifyObservers( SubscriptionEndOfDataEvent );    
+                }
+            }
+        }
+
+        if ( m_needToTrackAcks && isAcked )
+        {
+            // Retain the container references a little longer for bookmarking purposes
+            TCContainerRangeInfoReferenceSet::iterator c = request->vfsPubSubMsgContainersTransmitted.begin();
+            while ( c != request->vfsPubSubMsgContainersTransmitted.end() )
+            {
+                (*c)->doneWithFile = 1;
+                m_completedContainers.insert( (*c) );                        
+                ++c;
+            }
+
+            // let's not keep an unlimited amount of these old references as we'd run out of memory over time                        
+            if ( m_completedContainers.size() > m_config.maxCompletedContainerRefsToRetain )
+            {
+                UInt32 referencesToPrune = (UInt32) m_completedContainers.size() - m_config.maxCompletedContainerRefsToRetain;
+                for ( UInt32 pruned=0; pruned < referencesToPrune; ++pruned )
+                {
+                    m_completedContainers.erase( m_completedContainers.begin() );
+                }
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaData ,
                                             bool isTransmitted                    ,
                                             bool isAcked                          )
@@ -3137,57 +3213,13 @@ CStoragePubSubClientTopic::ProgressRequest( StorageBufferMetaData* bufferMetaDat
                     bufferMetaData->linkedRequestEntry->offsetInFile = bufferMetaData->msgOffsetIndex[ bufferMetaData->linkedRequestEntry->msgIndex ];
                 }
 
+                ProgressRequest( request, isAcked );
+
                 // Check to see if there is no additional work related to the overall request
                 // if not we can perform some additional progression & cleanup
                 if ( request->vfsPubSubMsgContainersToPush.empty() &&
                      request->vfsPubSubMsgContainersPushed.empty()  )
                 {
-                    // All containers for this request have had their content transmitted
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProgressRequest: Completed storage request. Start=" +
-                        CORE::ToString( request->startDt ) + ", End=" + CORE::ToString( request->endDt ) +
-                        ". Transmitted content of " + CORE::ToString( request->vfsPubSubMsgContainersTransmitted.size() ) + " containers. isAcked=" + CORE::ToString( isAcked ) );
-
-                    // Are end-of-data (EOD) event messages desired?
-                    if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
-                    {
-                        if ( m_config.treatEveryFullfilledRequestAsEODEvent )
-                        {
-                            m_subscriptionIsAtEndOfData = true;
-                            NotifyObservers( SubscriptionEndOfDataEvent );
-                        }
-                        else
-                        {
-                            // Only send end of data event if all requests have been fullfilled
-                            if ( m_stage1StorageToPubSubRequests.empty() && m_stage2StorageToPubSubRequests.size() <= 1 )
-                            {
-                                m_subscriptionIsAtEndOfData = true;
-                                NotifyObservers( SubscriptionEndOfDataEvent );    
-                            }
-                        }
-                    }
-
-                    if ( m_needToTrackAcks && isAcked )
-                    {
-                        // Retain the container references a little longer for bookmarking purposes
-                        TCContainerRangeInfoReferenceSet::iterator c = request->vfsPubSubMsgContainersTransmitted.begin();
-                        while ( c != request->vfsPubSubMsgContainersTransmitted.end() )
-                        {
-                            (*c)->doneWithFile = 1;
-                            m_completedContainers.insert( (*c) );                        
-                            ++c;
-                        }
-
-                        // let's not keep an unlimited amount of these old references as we'd run out of memory over time                        
-                        if ( m_completedContainers.size() > m_config.maxCompletedContainerRefsToRetain )
-                        {
-                            UInt32 referencesToPrune = (UInt32) m_completedContainers.size() - m_config.maxCompletedContainerRefsToRetain;
-                            for ( UInt32 pruned=0; pruned < referencesToPrune; ++pruned )
-                            {
-                                m_completedContainers.erase( m_completedContainers.begin() );
-                            }
-                        }
-                    }
-
                     // get rid of the request itself since its completed
                     StorageToPubSubRequestDeque::iterator i = m_stage2StorageToPubSubRequests.begin();
                     while ( i != m_stage2StorageToPubSubRequests.end() )

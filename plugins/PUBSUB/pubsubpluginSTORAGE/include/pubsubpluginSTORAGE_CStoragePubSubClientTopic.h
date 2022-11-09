@@ -391,6 +391,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                           bool isTransmitted                    ,
                           bool isAcked                          );
 
+    void ProgressRequest( StorageToPubSubRequest* request ,
+                          bool isAcked                    );
+
     void OnStoredPubSubMsgTransmissionFailure( const CORE::CDateTime& firstMsgDt );
 
     void
