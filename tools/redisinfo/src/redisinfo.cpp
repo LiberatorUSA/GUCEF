@@ -729,12 +729,13 @@ RedisInfoService::RefreshRedisNodePipes( void )
                 {
                     GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: Redis++ exception: " + e.what() );
                     ++m_redisClusterErrorReplies;
-                    RedisDisconnect();
+                    RedisReconnect();
                     return false;
                 }
                 catch ( const std::exception& e )
                 {
                     GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: exception: " + e.what() );
+                    RedisReconnect();
                     return false;
                 }
             }
@@ -1608,13 +1609,13 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
         if ( GUCEF_NULL != node )
             ++node->redisErrorReplies;
         ++m_redisClusterErrorReplies;
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 
@@ -1780,8 +1781,7 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ Moved exception: " + e.what() );
         if ( GUCEF_NULL != node )
             ++node->redisErrorReplies;
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const sw::redis::Error& e )
@@ -1789,8 +1789,7 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ exception: " + e.what() );
         if ( GUCEF_NULL != node )
             ++node->redisErrorReplies;
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
@@ -1907,13 +1906,13 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Redis Node " + node.nodeId + " : Redis++ exception: " + e.what() );
         ++node.redisErrorReplies;
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Redis Node " + node.nodeId + " : exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 
@@ -2139,13 +2138,13 @@ RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterSlots: Redis++ exception: " + e.what() );
         ++m_redisClusterErrorReplies;
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterSlots: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 
@@ -2201,7 +2200,7 @@ RedisInfoService::RedisDisconnect( void )
 
             {
                 MT::CScopeWriterLock lock( m_lock );
-                m_status[ "connected" ] = "false";
+                m_status[ "connected" ] = false;
             }
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
@@ -2217,13 +2216,13 @@ RedisInfoService::RedisDisconnect( void )
     {
 		++m_redisClusterErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 
@@ -2290,7 +2289,7 @@ RedisInfoService::RedisConnect( void )
         
         {
             MT::CScopeWriterLock lock( m_lock );
-            m_status[ "connected" ] = "true";
+            m_status[ "connected" ] = true;
         }
         
         return true;
@@ -2299,15 +2298,26 @@ RedisInfoService::RedisConnect( void )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
         ++m_redisClusterErrorReplies;
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+RedisInfoService::RedisReconnect( void )
+{GUCEF_TRACE;
+
+    RedisDisconnect();
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisReconnect: starting reconnect timer" );
+    m_redisReconnectTimer->SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2417,13 +2427,13 @@ RedisInfoService::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
     {
         {
             MT::CScopeWriterLock lock( m_lock );
-            m_status[ "reconnecting" ] = "true";
+            m_status[ "reconnecting" ] = true;
         }
         m_redisReconnectTimer->SetEnabled( true );
     }
     {
         MT::CScopeWriterLock lock( m_lock );
-        m_status[ "reconnecting" ] = "false";
+        m_status[ "reconnecting" ] = false;
     }
 }
 

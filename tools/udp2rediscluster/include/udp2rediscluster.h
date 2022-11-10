@@ -238,6 +238,8 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     private:
 
+    void RedisReconnect( void );
+
     ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src ); // not implemented
 
     typedef std::deque< TPacketEntry > TPacketEntryQueue;

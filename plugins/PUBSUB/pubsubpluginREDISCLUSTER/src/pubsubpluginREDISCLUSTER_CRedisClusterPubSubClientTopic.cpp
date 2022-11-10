@@ -391,8 +391,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
     }
     catch ( const sw::redis::RedirectionError& e )
     {
@@ -401,8 +400,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
     }
     catch ( const sw::redis::ReplyError& e )
     {
@@ -418,12 +416,12 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        Reconnect();
     }
 
     if ( notify )
@@ -632,8 +630,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
     }
     catch ( const sw::redis::RedirectionError& e )
     {
@@ -642,20 +639,19 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
-        Disconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
         UpdateIsHealthyStatus( false );
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        Reconnect();
         UpdateIsHealthyStatus( false );
     }
 
@@ -756,16 +752,27 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Redis++ exception: " + e.what() );        
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: exception: " + e.what() );        
         return false;
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopic::Reconnect( void )
+{GUCEF_TRACE;
+
+    Disconnect();
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):RedisReconnect: starting reconnect timer" );
+    m_redisReconnectTimer->SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -854,13 +861,13 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Redis++ exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        Reconnect();
         return false;
     }
 }
@@ -1179,11 +1186,13 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
         ++m_metrics.redisClusterErrorReplies;
+        Reconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        Reconnect();
         return false;
     }
 }

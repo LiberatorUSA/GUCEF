@@ -185,6 +185,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     private:
 
+    void Reconnect( void );
+
     void RegisterEventHandlers( void );
 
     bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );

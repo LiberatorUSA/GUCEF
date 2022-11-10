@@ -682,7 +682,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             {
                 case REDIS_OK:
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent " +
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent " +
                         CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
                         " sets of packages. MsgID=" + CORE::ToString( reply.str ) );
 
@@ -697,7 +697,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
                     totalSuccess = false;
                     ++m_redisErrorReplies;
 
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending " +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending " +
                         CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
                         " sets of packages. Error=" + CORE::ToString( reply.str ) );
                     break;
@@ -710,41 +710,39 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const sw::redis::RedirectionError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        RedisReconnect();
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
-        RedisDisconnect();
-        m_redisReconnectTimer->SetEnabled( true );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 }
@@ -947,19 +945,20 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
 
@@ -976,7 +975,7 @@ ClusterChannelRedisWriter::RedisDisconnect( void )
     {
         if ( GUCEF_NULL != m_redisContext )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
             delete m_redisPipeline;
             m_redisPipeline = GUCEF_NULL;
@@ -984,24 +983,24 @@ ClusterChannelRedisWriter::RedisDisconnect( void )
             delete m_redisContext;
             m_redisContext = GUCEF_NULL;
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
         }
     }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
         return false;
     }
 
@@ -1038,13 +1037,13 @@ ClusterChannelRedisWriter::RedisConnect( void )
         delete m_redisContext;
         m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
 
         // The following is not a must-have for connectivity
         RedisNodeMap nodeMap;
         if ( GetRedisClusterNodeMap( nodeMap ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully obtained Redis cluster nodes" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully obtained Redis cluster nodes" );
 
             RedisNodeMap::iterator i = nodeMap.begin();
             while ( i != nodeMap.end() )
@@ -1055,7 +1054,7 @@ ClusterChannelRedisWriter::RedisConnect( void )
                 {
                     m_redisShardHost = (*i).second.host;
                     m_redisShardNodeId = (*i).second.nodeId;
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Stream \"" + m_channelSettings.channelStreamName +
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Stream \"" + m_channelSettings.channelStreamName +
                         "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which lives at " + (*i).second.host.HostnameAndPortAsString() + " with node id " + (*i).second.nodeId );
                     break;
                 }
@@ -1068,28 +1067,39 @@ ClusterChannelRedisWriter::RedisConnect( void )
         delete m_redisPipeline;
         m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
         return true;
     }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
-        m_redisReconnectTimer->SetEnabled( true );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        RedisReconnect();
         return false;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ClusterChannelRedisWriter::RedisReconnect( void )
+{GUCEF_TRACE;
+
+    RedisDisconnect();    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::ToString( this ) + "):RedisReconnect: starting reconnect timer" );
+    m_redisReconnectTimer->SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/

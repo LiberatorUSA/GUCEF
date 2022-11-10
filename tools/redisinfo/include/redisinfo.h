@@ -261,6 +261,8 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool RedisDisconnect( void );
 
+    void RedisReconnect( void );
+
     void RegisterEventHandlers( void );
 
     bool RefreshRedisNodePipes( void );
