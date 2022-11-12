@@ -157,6 +157,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
 {
     public:
 
+    static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the channel which provides an aggregate health state */
+
+    typedef CORE::TCloneableBool            THealthStatusChangeEventData;           /**< boolean flag indicating the health status */
+
+    static void RegisterEvents( void );
+    
     CPubSubClientChannel( void );
         
     virtual ~CPubSubClientChannel();
@@ -199,9 +205,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
                                     const CORE::CEvent& eventId  ,
                                     CORE::CICloneable* eventData );
 
+    void
+    OnClientSideHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
     bool InitializeChannel( bool force );
     
     void RegisterEventHandlers( void );
+
+    void RegisterSideEventHandlers( CPubSubClientSidePtr side );  
     
     private:
 
@@ -213,6 +226,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientChannel : public CORE::CTaskConsumer
     bool m_isInitialized;
     bool m_globalConfigLoadCompleted;
     CORE::CTimer m_metricsTimer;
+    mutable bool m_isHealthy;
 };
 
 /*-------------------------------------------------------------------------*/

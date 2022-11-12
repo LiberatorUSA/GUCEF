@@ -1,46 +1,148 @@
 {
 	"info": {
-		"_postman_id": "f0fcea89-2525-45c2-98c6-aa8e510faf53",
+		"_postman_id": "46c1ba26-5ad7-4939-9641-6fb427c25224",
 		"name": "pubsub2pubsub",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10563112"
 	},
 	"item": [
-		{
-			"name": "get channel stats",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": ""
-				}
-			},
-			"response": []
-		},
 		{
 			"name": "get info",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": ""
+					"raw": "http://localhost:10000/info",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"info"
+					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "get clients index",
+			"name": "get config",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:50321/clients",
+					"raw": "http://localhost:10000/config",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "50321",
+					"port": "10000",
 					"path": [
-						"clients"
+						"config"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get channels",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/channels",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"channels"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get config channel index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/config/channels?view=index",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"config",
+						"channels"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "index"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get config appargs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/config/appargs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"config",
+						"appargs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get basic health (for load balancer)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/health/basic",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"health",
+						"basic"
 					]
 				}
 			},
@@ -75,25 +177,6 @@
 					"port": "10000",
 					"path": [
 						"config"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "get client topic index",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:50321/clients",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "50321",
-					"path": [
-						"clients"
 					]
 				}
 			},

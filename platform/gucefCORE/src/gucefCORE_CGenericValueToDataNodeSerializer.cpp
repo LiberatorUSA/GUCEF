@@ -284,6 +284,15 @@ CGenericValueToDataNodeSerializer::Serialize( const CUtf8String::StringVector& v
 /*-------------------------------------------------------------------------*/
 
 bool 
+CGenericValueToDataNodeSerializer::Serialize( const CIConfigurable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+{GUCEF_TRACE;
+
+    return value.SaveConfig( domNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CGenericValueToDataNodeSerializer::Serialize( const CIDataNodeSerializable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
@@ -476,6 +485,15 @@ CGenericValueToDataNodeSerializer::Deserialize( CIDataNodeSerializable& value, c
 {GUCEF_TRACE;
 
     return value.Deserialize( domNode, settings );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGenericValueToDataNodeSerializer::Deserialize( CIConfigurable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+
+    return value.LoadConfig( domNode );
 }
 
 /*-------------------------------------------------------------------------//

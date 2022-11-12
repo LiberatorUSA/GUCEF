@@ -182,6 +182,41 @@ RestApiPubSub2PubSubInfoResource::Serialize( const CORE::CString& resourcePath  
 
 /*-------------------------------------------------------------------------*/
 
+RestApiPubSub2PubSubHealthResource::RestApiPubSub2PubSubHealthResource( PubSub2PubSub* app )
+    : WEB::CCodecBasedHTTPServerResource()
+    , m_app( app )
+{GUCEF_TRACE;
+
+    m_allowSerialize = true;
+    m_allowDeserialize = false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiPubSub2PubSubHealthResource::~RestApiPubSub2PubSubHealthResource()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RestApiPubSub2PubSubHealthResource::Serialize( const CORE::CString& resourcePath   ,
+                                               CORE::CDataNode& output             ,
+                                               const CORE::CString& representation ,
+                                               const CORE::CString& params         )
+{GUCEF_TRACE;
+
+    output.Clear();
+    output.SetName( "health" );
+    output.SetNodeType( GUCEF_DATATYPE_OBJECT );
+    output.SetAttribute( "isHealthy", CORE::CVariant( m_app->GetLatestIsHealthyState() ) );
+    output.SetAttribute( "isHealthyLastChange", m_app->GetLatestIsHealthyStateChangeDt().ToIso8601DateTimeString( true, true ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 RestApiPubSub2PubSubConfigResource::RestApiPubSub2PubSubConfigResource( PubSub2PubSub* app, bool appConfig )
     : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
@@ -371,6 +406,9 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_globalConfig()
     , m_transmitMetrics( true )
     , m_enableRestApi( true )
+    , m_isHealthy( true )
+    , m_lastIsHealthyChange( CORE::CDateTime::NowUTCDateTime() )
+    , m_lock()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -394,6 +432,23 @@ PubSub2PubSub::RegisterEventHandlers( void )
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() ,
                  CORE::CGUCEFApplication::AppShutdownEvent        ,
                  callback                                         );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+PubSub2PubSub::RegisterChannelEventHandlers( CPubSubClientChannelPtr channel )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &PubSub2PubSub::OnChannelHealthStatusChanged );
+    SubscribeTo( channel.GetPointerAlways()                    ,
+                 CPubSubClientChannel::HealthStatusChangeEvent ,
+                 callback                                      );
+    
+    bool wasHealthy = m_isHealthy;
+    m_isHealthy = m_isHealthy && channel->IsHealthy();
+    if ( m_isHealthy != wasHealthy )
+        m_lastIsHealthyChange = CORE::CDateTime::NowUTCDateTime();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -426,18 +481,65 @@ bool
 PubSub2PubSub::IsHealthy( void ) const
 {GUCEF_TRACE;
 
-    PubSubClientChannelMap::const_iterator i = m_channels.begin();
-    while ( i != m_channels.end() )
+    MT::CObjectScopeLock lock( this );
+    
+    // Aggregate the health status across all channels
+    bool fullyHealthy = true;
+    try
     {
-        CPubSubClientChannelPtr channel = (*i).second;
-        if ( !channel->IsHealthy() )
+        PubSubClientChannelMap::const_iterator i = m_channels.begin();
+        while ( i != m_channels.end() )
         {
-            return false;
+            CPubSubClientChannelPtr channel = (*i).second;
+            if ( !channel.IsNULL() && !channel->IsHealthy() )
+            {
+                fullyHealthy = false;
+                break;
+            }
+            ++i;
         }
-        ++i;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:IsHealthy: std exception while checking for channel health. what=" + CORE::ToString( e.what() ) );
+        fullyHealthy = false;
     }
 
-    return true;
+    // Log if there was a change in status
+    if ( fullyHealthy != m_isHealthy )
+    {
+        m_isHealthy = fullyHealthy;        
+        m_lastIsHealthyChange = CORE::CDateTime::NowUTCDateTime();
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:IsHealthy: overall health is now Ok" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:IsHealthy: overall health status is now unhealthy" );         
+        }    
+    }
+    
+    return fullyHealthy;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSub::GetLatestIsHealthyState( void ) const
+{GUCEF_TRACE;
+
+    return m_isHealthy;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CDateTime
+PubSub2PubSub::GetLatestIsHealthyStateChangeDt( void ) const
+{GUCEF_TRACE;
+
+    return m_lastIsHealthyChange;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -811,7 +913,9 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
     m_httpRouter.SetResourceMapping( "/info", ( GUCEF_NEW RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/config/appargs", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, true ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/config", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, false ) )->CreateSharedPtr()  );
-    m_httpRouter.SetResourceMapping( "/config/channels/*", ( GUCEF_NEW RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config/channels/", ( GUCEF_NEW TWebChannelCfgMapIndexMap( "channels", "channel", GUCEF_NULL, &m_channelSettings, &m_lock, false ) )->CreateSharedPtr() );
+    //m_httpRouter.SetResourceMapping( "/config/channels/*", ( GUCEF_NEW RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/health", ( GUCEF_NEW RestApiPubSub2PubSubHealthResource( this ) )->CreateSharedPtr() );    
     m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), ( GUCEF_NEW WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
@@ -856,6 +960,18 @@ PubSub2PubSub::OnAppShutdown( CORE::CNotifier* notifier    ,
 
     // Now get rid of all the channels we created based on the settings
     m_channels.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PubSub2PubSub::OnChannelHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // things could have changed since the event message was sent, we reevaluate etc
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/

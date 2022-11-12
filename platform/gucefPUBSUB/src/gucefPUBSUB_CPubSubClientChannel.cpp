@@ -73,11 +73,22 @@ namespace PUBSUB {
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 
+const CORE::CEvent CPubSubClientChannel::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClientChannel::HealthStatusChangeEvent";
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientChannel::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    HealthStatusChangeEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CPubSubClientChannel::CPubSubClientChannel( void )
     : CORE::CTaskConsumer()
@@ -86,8 +97,10 @@ CPubSubClientChannel::CPubSubClientChannel( void )
     , m_isInitialized( false )
     , m_globalConfigLoadCompleted( false )
     , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
+    , m_isHealthy( true )
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,6 +138,19 @@ CPubSubClientChannel::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CPubSubClientChannel::RegisterSideEventHandlers( CPubSubClientSidePtr side )
+{GUCEF_TRACE;
+    
+    TEventCallback callback( this, &CPubSubClientChannel::OnClientSideHealthStatusChanged );
+    SubscribeTo( side.GetPointerAlways()                    ,
+                 CPubSubClientSide::HealthStatusChangeEvent ,
+                 callback                                   );
+    m_isHealthy = m_isHealthy && side->IsHealthy();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPubSubClientChannel::Clear( void )
 {GUCEF_TRACE;
 
@@ -144,6 +170,7 @@ CPubSubClientChannel::Clear( void )
             // lets make sure we decouple it
             side->SetTaskDelegator( TTaskDelegatorBasicPtr() );
         }
+        UnsubscribeFrom( side.GetPointerAlways() );
         ++i;
     }
 
@@ -160,15 +187,51 @@ bool
 CPubSubClientChannel::IsHealthy( void ) const
 {GUCEF_TRACE;
 
-    TPubSubClientSidePtrVector::const_iterator i = m_sides.begin();
-    while ( i != m_sides.end() )
+    MT::CObjectScopeLock lock( this );
+    
+    // Aggregate the health status across all sides
+    bool fullyHealthy = true;
+    try
     {
-        if ( !(*i)->IsHealthy() )
-            return false;
-        ++i;
+        TPubSubClientSidePtrVector::const_iterator i = m_sides.begin();
+        while ( i != m_sides.end() )
+        {
+            const CPubSubClientSidePtr& side = (*i);
+            if ( !side.IsNULL() && !side->IsHealthy() )
+            {
+                fullyHealthy = false;
+                break;
+            }
+            ++i;
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:IsHealthy: std exception caught on channel " + CORE::ToString( m_channelSettings.channelId ) 
+            + " while checking for side health. what=" + CORE::ToString( e.what() ) );
+        fullyHealthy = false;
     }
 
-    return true;
+    // Notify if there was a change in status
+    if ( fullyHealthy != m_isHealthy )
+    {
+        m_isHealthy = fullyHealthy;        
+
+        if ( m_isHealthy )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:IsHealthy: overall health is now Ok for channel with id " + CORE::ToString( m_channelSettings.channelId ) );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel:IsHealthy: overall health status is now unhealthy for channel with id " + CORE::ToString( m_channelSettings.channelId ) );         
+        }
+
+        lock.EarlyUnlock();
+        THealthStatusChangeEventData eData( fullyHealthy ); 
+        NotifyObservers( HealthStatusChangeEvent, &eData );         
+    }
+    
+    return fullyHealthy;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -243,6 +306,7 @@ CPubSubClientChannel::InitializeChannel( bool force )
         }
 
         m_sides.push_back( side );
+        RegisterSideEventHandlers( side );
         ++c;
     }
 
@@ -352,7 +416,7 @@ CPubSubClientChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
         if ( !side->IsRunningInDedicatedThread() )
         {
             // This side does not have its own thread
-            // we will have let it use the channel's thread so its fate was tied wrt OnTaskEnded timing
+            // we have let it use the channel's thread so its fate was tied wrt OnTaskEnded timing
             side->OnTaskEnding( taskdata, willBeForced );
         }
         else
@@ -423,6 +487,24 @@ CPubSubClientChannel::OnGlobalConfigLoadCompleted( CORE::CNotifier* notifier    
     // without potentially causing issues
     m_globalConfigLoadCompleted = true;
     InitializeChannel( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnClientSideHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClientSide* side = static_cast< CPubSubClientSide* >( notifier ); 
+    CPubSubClientSide::THealthStatusChangeEventData* healthStatus = static_cast< CPubSubClientSide::THealthStatusChangeEventData* >( eventData );
+
+    if ( GUCEF_NULL == side || GUCEF_NULL == healthStatus )
+        return;
+
+    // things could have changed since the event message was sent, we reevaluate etc
+    IsHealthy();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -56,6 +56,11 @@
 #define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
 #endif /* GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
 #include "gucefCORE_CIDataNodeSerializable.h"
 #define GUCEF_CORE_CIDATANODESERIALIZABLE_H
@@ -112,6 +117,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     virtual bool Serialize( const CUtf8String::StringSet& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Serialize( const CUtf8String::StringVector& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Serialize( const CIDataNodeSerializable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
+    virtual bool Serialize( const CIConfigurable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Serialize( const CDataNode& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     
     virtual bool Deserialize( bool& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
@@ -132,6 +138,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     virtual bool Deserialize( CUtf8String::StringSet& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( CUtf8String::StringVector& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( CIDataNodeSerializable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
+    virtual bool Deserialize( CIConfigurable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
 
 };
 

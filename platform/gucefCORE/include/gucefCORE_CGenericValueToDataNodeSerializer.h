@@ -106,6 +106,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericValueToDataNodeSerializer : public CIValueTo
     virtual bool Serialize( const CUtf8String::StringSet& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Serialize( const CUtf8String::StringVector& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Serialize( const CIDataNodeSerializable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;    
+    virtual bool Serialize( const CIConfigurable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Serialize( const CDataNode& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;    
 
     virtual bool Deserialize( bool& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
@@ -126,6 +127,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericValueToDataNodeSerializer : public CIValueTo
     virtual bool Deserialize( CUtf8String::StringSet& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Deserialize( CUtf8String::StringVector& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Deserialize( CIDataNodeSerializable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Deserialize( CIConfigurable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
 
     static CGenericValueToDataNodeSerializer* Instance( void );
 };

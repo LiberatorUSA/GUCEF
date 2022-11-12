@@ -97,6 +97,16 @@
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTReadableMapIndexHttpServerResource.h"
+#define GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTREADABLEMAPINDEXHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTDataNodeSerializableMapHttpServerResource.h"
+#define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
+
 #ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
 #include "gucefPUBSUB_CPubSubClient.h"
 #define GUCEF_PUBSUB_CPUBSUBCLIENT_H
@@ -156,6 +166,26 @@ class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubInfoResource : public WEB::CCo
     RestApiPubSub2PubSubInfoResource( PubSub2PubSub* app );
 
     virtual ~RestApiPubSub2PubSubInfoResource();
+
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    PubSub2PubSub* m_app;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSub2PubSubHealthResource : public WEB::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiPubSub2PubSubHealthResource( PubSub2PubSub* app );
+
+    virtual ~RestApiPubSub2PubSubHealthResource();
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -233,6 +263,10 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
 
     bool IsHealthy( void ) const;
 
+    bool GetLatestIsHealthyState( void ) const;
+
+    CORE::CDateTime GetLatestIsHealthyStateChangeDt( void ) const;
+
     bool LoadConfig( const CORE::CValueList& appConfig );
 
     const CORE::CDataNode& GetGlobalConfig( void ) const;
@@ -262,7 +296,14 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
                    const CORE::CEvent& eventId  ,
                    CORE::CICloneable* eventData );
 
+    void
+    OnChannelHealthStatusChanged( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+
     void RegisterEventHandlers( void );
+
+    void RegisterChannelEventHandlers( CPubSubClientChannelPtr channel );
     
     private:
 
@@ -270,6 +311,7 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     typedef std::map< CORE::Int32, CPubSubClientChannelPtr > PubSubClientChannelMap;
     typedef std::map< CORE::CString, CORE::CDataNode > TChannelCfgMap;
     typedef std::set< CORE::Int32 > Int32Set;
+    typedef WEB::CTDataNodeSerializableMapHttpServerResource< CORE::Int32, CPubSubChannelSettings >        TWebChannelCfgMapIndexMap;
 
     bool m_isInStandby;
     bool m_globalStandbyEnabled;
@@ -284,6 +326,9 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     CORE::CDataNode m_globalConfig;
     bool m_transmitMetrics;
     bool m_enableRestApi;
+    mutable bool m_isHealthy;
+    mutable CORE::CDateTime m_lastIsHealthyChange;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//
