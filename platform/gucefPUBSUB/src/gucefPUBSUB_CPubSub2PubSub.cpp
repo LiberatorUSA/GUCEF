@@ -390,24 +390,791 @@ RestApiPubSub2PubSubConfigResource::Deserialize( const CORE::CString& resourcePa
 
 /*-------------------------------------------------------------------------*/
 
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::ExplicitChannelSideTopicOverlayConfig( void )
+    : CORE::CIConfigurable()
+    , topicName()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::ExplicitChannelSideTopicOverlayConfig( const ExplicitChannelSideTopicOverlayConfig& src )
+    : CORE::CIConfigurable( src )
+    , topicName( src.topicName )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::~ExplicitChannelSideTopicOverlayConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    totalSuccess = cfg.SetAttribute( "topicName", topicName ) && totalSuccess;
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    topicName = cfg.GetAttributeValue( "topicName" ).AsString( topicName, true );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverlayConfig( void )
+    : CORE::CIConfigurable()
+    , sideId()
+    , topics()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverlayConfig( const ExplicitChannelSideOverlayConfig& src )
+    : CORE::CIConfigurable( src )
+    , sideId( src.sideId )
+    , topics( src.topics )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::~ExplicitChannelSideOverlayConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "sideId", sideId ) && totalSuccess;
+
+    CORE::CDataNode* topicsNode = cfg.FindOrAddChild( "topics" );
+    if ( GUCEF_NULL == topicsNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:SaveConfig: config is malformed, failed to save a mandatory topics section" );
+        return false;
+    }
+    topicsNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+
+    ExplicitChannelSideTopicOverlayConfigVector::const_iterator i = topics.begin();
+    while ( i != topics.end() )
+    {
+        CORE::CDataNode* topicConfigNode = topicsNode->AddChild( "ExplicitChannelSideTopicOverlayConfig", GUCEF_DATATYPE_OBJECT );
+        if ( GUCEF_NULL != topicConfigNode )
+        {
+            const ExplicitChannelSideTopicOverlayConfig& topicCfg = (*i);
+            if ( !topicCfg.SaveConfig( *topicConfigNode ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:SaveConfig: Unable to save a child node in the topics section as ExplicitChannelSideTopicOverlayConfig with topic name \"" + topicCfg.topicName + "\"" );
+            }
+        }
+
+        ++i;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    sideId = cfg.GetAttributeValue( "sideId" ).AsString( sideId, true );
+
+    const CORE::CDataNode* topicsNode = cfg.FindChild( "topics" );
+    if ( GUCEF_NULL == topicsNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: config is malformed, failed to find a mandatory topics section" );
+        return false;
+    }
+
+    // try to parse each child in the topics section
+    CORE::CDataNode::const_iterator i = topicsNode->ConstBegin();
+    while ( i != topicsNode->ConstEnd() )
+    {        
+        ExplicitChannelSideTopicOverlayConfig topicConfig;
+        if ( topicConfig.LoadConfig( *(*i) ) )
+        {            
+            topics.push_back( topicConfig );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to load a child node in the topics section as ExplicitChannelSideTopicOverlayConfig" );
+        }
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::ExplicitChannelOverlayConfig( void )
+    : CORE::CIConfigurable()
+    , usingTemplate()
+    , channelId( -1 )
+    , channelName()
+    , sides()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::ExplicitChannelOverlayConfig( const ExplicitChannelOverlayConfig& src )
+    : CORE::CIConfigurable( src )
+    , usingTemplate( src.usingTemplate )
+    , channelId( src.channelId )
+    , channelName( src.channelName )
+    , sides( src.sides )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::~ExplicitChannelOverlayConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "usingTemplate", usingTemplate ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "channelId", channelId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "channelName", channelName ) && totalSuccess;
+
+    CORE::CDataNode* sidesNode = cfg.FindOrAddChild( "sides" );
+    if ( GUCEF_NULL == sidesNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelOverlayConfig:SaveConfig: config is malformed, failed to save a mandatory sides section" );
+        return false;
+    }
+    sidesNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+
+    ExplicitChannelSideOverlayConfigVector::const_iterator i = sides.begin();
+    while ( i != sides.end() )
+    {
+        CORE::CDataNode* sideConfigNode = sidesNode->AddChild( "ExplicitChannelSideOverlayConfig", GUCEF_DATATYPE_OBJECT );
+        if ( GUCEF_NULL != sideConfigNode )
+        {
+            const ExplicitChannelSideOverlayConfig& sideCfg = (*i);
+            if ( !sideCfg.SaveConfig( *sideConfigNode ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelOverlayConfig:SaveConfig: Unable to save a child node in the sides section as ExplicitChannelSideOverlayConfig with side id \"" + sideCfg.sideId + "\"" );
+            }
+        }
+
+        ++i;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    usingTemplate = cfg.GetAttributeValue( "usingTemplate" ).AsString( usingTemplate, true );
+    channelId = cfg.GetAttributeValue( "channelId" ).AsInt32( channelId, true );
+    channelName = cfg.GetAttributeValue( "channelName" ).AsString( channelName, true );
+
+    const CORE::CDataNode* sidesNode = cfg.FindChild( "sides" );
+    if ( GUCEF_NULL == sidesNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelOverlayConfig:LoadConfig: config is malformed, failed to find a mandatory sides section" );
+        return false;
+    }
+
+    // try to parse each child in the topics section
+    CORE::CDataNode::const_iterator i = sidesNode->ConstBegin();
+    while ( i != sidesNode->ConstEnd() )
+    {        
+        ExplicitChannelSideOverlayConfig sideConfig;
+        if ( sideConfig.LoadConfig( *(*i) ) )
+        {            
+            sides.push_back( sideConfig );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelOverlayConfig:LoadConfig: Unable to load a child node in the sides section as ExplicitChannelSideOverlayConfig" );
+        }
+        ++i;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSub2PubSubConfig::ExplicitChannelOverlayConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSubConfig::ExplicitChannelOverlayConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::NumericalAutoChannelConfig::NumericalAutoChannelConfig( void )
+    : CORE::CIConfigurable()
+    , usingTemplate()
+    , channelCount( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::NumericalAutoChannelConfig::NumericalAutoChannelConfig( const NumericalAutoChannelConfig& src )
+    : CORE::CIConfigurable( src )
+    , usingTemplate( src.usingTemplate )
+    , channelCount( src.channelCount )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::NumericalAutoChannelConfig::~NumericalAutoChannelConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::NumericalAutoChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "usingTemplate", usingTemplate ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "channelCount", channelCount ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "firstChannelId", firstChannelId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "channelIds", CORE::ToString( channelIds ) ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::NumericalAutoChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    usingTemplate = cfg.GetAttributeValue( "usingTemplate" ).AsString( usingTemplate, true );
+    channelCount = cfg.GetAttributeValue( "channelCount" ).AsUInt32( channelCount, true );
+    firstChannelId = cfg.GetAttributeValue( "firstChannelId" ).AsUInt32( firstChannelId, true );
+    channelIds = cfg.GetAttributeValueOrChildValueByName( "channelIds" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSub2PubSubConfig::NumericalAutoChannelConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSubConfig::NumericalAutoChannelConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::PubSub2PubSubConfig( void )
+    : CORE::CIConfigurable()
+    , channelConfigTemplates()
+    , explicitOverlayChannels()
+    , numericalAutoChannelConfig()
+    , channelConfigs()
+    , globalStandbyEnabled( false )
+    , applyCpuThreadAffinityByDefault( false )
+    , enableRestApi( true )
+    , restApiPort( 10000 )
+    , restBasicHealthUri( "/health/basic" )
+    , transmitMetrics( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::PubSub2PubSubConfig( const PubSub2PubSubConfig& src )
+    : CORE::CIConfigurable( src )
+    , channelConfigTemplates( src.channelConfigTemplates )
+    , explicitOverlayChannels( src.explicitOverlayChannels )
+    , numericalAutoChannelConfig( src.numericalAutoChannelConfig )
+    , channelConfigs( src.channelConfigs )
+    , globalStandbyEnabled( src.globalStandbyEnabled )
+    , applyCpuThreadAffinityByDefault( src.applyCpuThreadAffinityByDefault )
+    , enableRestApi( src.enableRestApi )
+    , restApiPort( src.restApiPort )
+    , restBasicHealthUri( src.restBasicHealthUri )
+    , transmitMetrics( src.transmitMetrics )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+PubSub2PubSubConfig::~PubSub2PubSubConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "globalStandbyEnabled", globalStandbyEnabled ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "applyCpuThreadAffinityByDefault", applyCpuThreadAffinityByDefault ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "enableRestApi", enableRestApi ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "restApiPort", restApiPort ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "restBasicHealthUri", restBasicHealthUri ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "transmitMetrics", transmitMetrics ) && totalSuccess;    
+    
+
+    CORE::CDataNode* channelConfigTemplatesNode = cfg.FindOrAddChild( "channelConfigTemplates" );
+    if ( GUCEF_NULL == channelConfigTemplatesNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:SaveConfig: config is malformed, failed to save a mandatory channelConfigTemplates section" );
+        return false;
+    }
+    channelConfigTemplatesNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+
+    StringToPubSubChannelConfigMap::const_iterator i = channelConfigTemplates.begin();
+    while ( i != channelConfigTemplates.end() )
+    {
+        CORE::CDataNode* pubSubChannelConfigNode = channelConfigTemplatesNode->AddChild( "PubSubChannelConfig", GUCEF_DATATYPE_OBJECT );
+        if ( GUCEF_NULL != pubSubChannelConfigNode )
+        {
+            const CPubSubChannelSettings& channelCfg = (*i).second;
+            if ( !channelCfg.SaveConfig( *pubSubChannelConfigNode ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:SaveConfig: Unable to save a child node in the channelConfigTemplates section as PubSubChannelConfig with template name \"" + channelCfg.channelName + "\"" );
+            }
+        }
+
+        ++i;
+    }
+
+    CORE::CDataNode* explicitChannelOverlaysNode = cfg.FindOrAddChild( "explicitChannelOverlays" );
+    if ( GUCEF_NULL == explicitChannelOverlaysNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: config is malformed, failed to save a mandatory explicitChannelOverlays section" );
+        return false;
+    }
+    explicitChannelOverlaysNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+    
+    // try to parse each child in the explicit channels section
+    ExplicitChannelOverlayConfigVector::const_iterator n = explicitOverlayChannels.begin();
+    while ( n != explicitOverlayChannels.end() )
+    {        
+        CORE::CDataNode* pubSubExplicitChannelConfigNode = explicitChannelOverlaysNode->AddChild( "ExplicitChannelOverlayConfig", GUCEF_DATATYPE_OBJECT );
+        if ( GUCEF_NULL != pubSubExplicitChannelConfigNode )
+        {
+            const ExplicitChannelOverlayConfig& explicitChannelConfig = (*n);
+            if ( !explicitChannelConfig.SaveConfig( *pubSubExplicitChannelConfigNode ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:SaveConfig: Unable to save a child node in the explicitChannelOverlays section as ExplicitChannelOverlayConfig" );
+            }
+        }
+        ++n;
+    }
+
+    CORE::CDataNode* numericalAutoChannelsConfigNode = cfg.FindOrAddChild( "numericalAutoChannels" );
+    if ( GUCEF_NULL == numericalAutoChannelsConfigNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: config is malformed, failed to save a mandatory numericalAutoChannels section" );
+        return false;
+    }
+    totalSuccess = numericalAutoChannelConfig.SaveConfig( *numericalAutoChannelsConfigNode ) && totalSuccess; 
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PubSub2PubSubConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    
+    globalStandbyEnabled = cfg.GetAttributeValueOrChildValueByName( "globalStandbyEnabled" ).AsBool( globalStandbyEnabled, true );
+    applyCpuThreadAffinityByDefault = cfg.GetAttributeValueOrChildValueByName( "applyCpuThreadAffinityByDefault" ).AsBool( false, true );
+    enableRestApi = cfg.GetAttributeValueOrChildValueByName( "enableRestApi" ).AsBool( enableRestApi, true );
+    restApiPort = cfg.GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( restApiPort, true );
+    restBasicHealthUri = cfg.GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( restBasicHealthUri, true );
+    transmitMetrics = cfg.GetAttributeValueOrChildValueByName( "transmitMetrics" ).AsBool( transmitMetrics, true );
+
+    const CORE::CDataNode* channelConfigTemplateRefsNode = cfg.FindChild( "channelConfigTemplateRefs" );
+    if ( GUCEF_NULL == channelConfigTemplateRefsNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: config is malformed, failed to find a mandatory channelConfigTemplateRefs section" );
+        return false;
+    }
+
+    // try to parse each child in the template refs section
+    CORE::CDataNode::const_iterator i = channelConfigTemplateRefsNode->ConstBegin();
+    while ( i != channelConfigTemplateRefsNode->ConstEnd() )
+    {        
+        CORE::CString templateRef = (*i)->GetValue().AsString();
+
+        // @TODO: Later this would be resolved more generically but for now we just code the 'uri' handling here
+        if ( 0 == templateRef.HasSubstr( "vfs://", true ) )
+        {
+            templateRef = templateRef.CutChars( 6, true );
+            
+            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+            
+            CORE::CDataNode channelTemplate;            
+            if ( vfs.LoadFile( channelTemplate, templateRef ) )
+            {
+                CPubSubChannelSettings channelConfig;
+                if ( channelConfig.LoadConfig( channelTemplate ) )
+                {            
+                    channelConfigTemplates[ channelConfig.channelName ] = channelConfig;
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Loaded a channel config template with name \"" + channelConfig.channelName + "\"" );
+                }
+                else
+                {
+                    totalSuccess = false;
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to parse PubSubChannelConfig from content from vfs file: " + templateRef );
+                }                    
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to load vfs file " + templateRef + " as document for further processing as a template PubSubChannelConfig" );
+            }
+        }
+        ++i;
+    }
+
+    const CORE::CDataNode* channelConfigTemplatesNode = cfg.FindChild( "channelConfigTemplates" );
+    if ( GUCEF_NULL == channelConfigTemplatesNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: config is malformed, failed to find a mandatory channelConfigTemplates section" );
+        return false;
+    }
+
+    // try to parse each child in the template section
+    i = channelConfigTemplatesNode->ConstBegin();
+    while ( i != channelConfigTemplatesNode->ConstEnd() )
+    {        
+        CPubSubChannelSettings channelConfig;
+        if ( channelConfig.LoadConfig( *(*i) ) )
+        {            
+            channelConfigTemplates[ channelConfig.channelName ] = channelConfig;
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Loaded a channel config template with name \"" + channelConfig.channelName + "\"" );
+        }
+        else
+        {
+            totalSuccess = false;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to load a child node in the channelConfigTemplates section as PubSubChannelConfig" );
+        }
+        ++i;
+    }
+
+    const CORE::CDataNode* explicitChannelOverlaysNode = cfg.FindChild( "explicitChannelOverlays" );
+    if ( GUCEF_NULL == explicitChannelOverlaysNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: config is malformed, failed to find a mandatory explicitChannelOverlays section" );
+        return false;
+    }
+    
+    // try to parse each child in the explicit channels section
+    i = explicitChannelOverlaysNode->ConstBegin();
+    while ( i != explicitChannelOverlaysNode->ConstEnd() )
+    {        
+        ExplicitChannelOverlayConfig explicitChannelOverlayConfig;
+        if ( explicitChannelOverlayConfig.LoadConfig( *(*i) ) )
+        {            
+            explicitOverlayChannels.push_back( explicitChannelOverlayConfig );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Loaded an explicit channel overlay config with name \"" + explicitChannelOverlayConfig.channelName + "\"" );
+        }
+        else
+        {
+            totalSuccess = false;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to load a child node in the explicitChannelOverlays section as ExplicitChannelOverlayConfig" );
+        }
+        ++i;
+    }
+
+    const CORE::CDataNode* numericalAutoChannelsConfigNode = cfg.FindChild( "numericalAutoChannels" );
+    if ( GUCEF_NULL == numericalAutoChannelsConfigNode )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Unable to find mandatory numericalAutoChannels section" );
+        return false;
+    }
+    totalSuccess = numericalAutoChannelConfig.LoadConfig( *numericalAutoChannelsConfigNode ) && totalSuccess; 
+    
+    return NormalizeConfig() && totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+PubSub2PubSubConfig::NormalizeConfig( void )
+{GUCEF_TRACE;
+
+    // @TODO: We dont have generic datanode merge/overlay functionality yet and as such we make do with the below use-case specific code
+    
+    bool totalSuccess = true;
+    channelConfigs.clear();
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:NormalizeConfig: Normalizing " + CORE::ToString( explicitOverlayChannels.size() ) + " explicit channel overlay configs" )
+
+    ExplicitChannelOverlayConfigVector::iterator i = explicitOverlayChannels.begin();
+    while ( i != explicitOverlayChannels.end() )
+    {
+        ExplicitChannelOverlayConfig& overlayConfig = (*i);
+        
+        StringToPubSubChannelConfigMap::iterator n = channelConfigTemplates.find( overlayConfig.usingTemplate );
+        if ( n != channelConfigTemplates.end() )
+        {
+            // grab a copy from the template and apply the overlay values
+
+            CPubSubChannelSettings channelConfig( (*n).second );
+
+            // apply the overlay values
+            channelConfig.channelId = overlayConfig.channelId;
+            channelConfig.channelName = overlayConfig.channelName;
+            
+            ExplicitChannelOverlayConfig::ExplicitChannelSideOverlayConfigVector::iterator s = overlayConfig.sides.begin();
+            while ( s != overlayConfig.sides.end() )
+            {
+                ExplicitChannelSideOverlayConfig& sideOverlayConfig = (*s);
+                CPubSubSideChannelSettings* sideConfig = channelConfig.GetPubSubSideSettings( sideOverlayConfig.sideId );
+                if ( GUCEF_NULL != sideConfig )
+                {
+                    if ( !sideConfig->pubsubClientConfig.topics.empty() )
+                    {
+                        // grab a topic config template copy and prep for 'real' config
+                        CPubSubClientTopicConfig topicConfigTemplate( sideConfig->pubsubClientConfig.topics.front() );    
+                        sideConfig->pubsubClientConfig.topics.clear();
+
+                        ExplicitChannelSideOverlayConfig::ExplicitChannelSideTopicOverlayConfigVector::iterator t = sideOverlayConfig.topics.begin();
+                        while ( t != sideOverlayConfig.topics.end() )
+                        {
+                            ExplicitChannelSideTopicOverlayConfig& topicOverlayConfig = (*t);
+                            CPubSubClientTopicConfig topicConfig( topicConfigTemplate );
+                            
+                            // apply the overlay values
+                            topicConfig.topicName = topicOverlayConfig.topicName;
+
+                            sideConfig->pubsubClientConfig.topics.push_back( topicConfig );
+                            ++t;
+                        }
+                    }
+                    
+                }
+                
+                ++s;
+            }
+
+            channelConfigs[ channelConfig.channelId ] = channelConfig;
+        }
+        ++i;
+    }
+
+    // Now normalize the auto numeric channels
+
+    // Validate the channel IDs.
+    // Depending on the use case these could be vital identifiers not just an index so some validation is in order
+    Int32Set channelIds;
+    CORE::CString::StringSet::iterator n = numericalAutoChannelConfig.channelIds.begin();
+    while ( n != numericalAutoChannelConfig.channelIds.end() )
+    {
+        const CORE::CString& str = (*n);
+        if ( str.HasChar( '-' ) >= 0 )
+        {
+            CORE::Int32 startId = GUCEF_MT_INT32MIN;
+            CORE::Int32 endId = GUCEF_MT_INT32MIN;
+
+            CORE::CString::StringVector rangeStrs = str.ParseElements( '-', false );
+            if ( rangeStrs.size() > 0 )
+                startId = CORE::StringToInt32( rangeStrs[ 0 ], GUCEF_MT_INT32MIN );
+            if ( rangeStrs.size() > 1 )
+                endId = CORE::StringToInt32( rangeStrs[ 1 ], GUCEF_MT_INT32MIN );
+
+            if ( startId != GUCEF_MT_INT32MIN && endId != GUCEF_MT_INT32MIN )
+            {
+                if ( endId < startId )
+                {
+                    CORE::Int32 tmp = startId;
+                    startId = endId;
+                    endId = tmp;
+                }
+
+                for ( CORE::Int32 i=startId; i<=endId; i++ )
+                    channelIds.insert( i );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSubConfig:NormalizeConfig: Invalid channel ID range provided. Fix the config. Str: " + str );
+                return false;
+            }
+        }
+        else
+        {
+            CORE::Int32 id = CORE::StringToInt32( str, GUCEF_MT_INT32MIN );
+            if ( id != GUCEF_MT_INT32MIN )
+                channelIds.insert( id );
+        }
+        ++n;
+    }
+    if ( channelIds.size() < numericalAutoChannelConfig.channelIds.size() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSubConfig:NormalizeConfig: Only " + CORE::ToString( channelIds.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
+        return false;
+    }
+
+    // Make sure we have enough channel IDs specified to cover the channel count
+    if ( channelIds.size() < numericalAutoChannelConfig.channelCount )
+    {
+        // auto-generate additional channel IDs
+        // This allows a configuration style where you don't have to specify all channel IDs
+        CORE::Int32 lastAutoGenChannelId = numericalAutoChannelConfig.firstChannelId;
+        CORE::Int32 missingChannels = numericalAutoChannelConfig.channelCount - (CORE::Int32) channelIds.size();
+        for ( CORE::Int32 i=0; i<missingChannels; ++i )
+        {
+            while ( channelIds.find( lastAutoGenChannelId ) != channelIds.end() )
+                ++lastAutoGenChannelId;
+            channelIds.insert( lastAutoGenChannelId );
+            ++lastAutoGenChannelId;
+        }
+    }
+    else
+    if ( numericalAutoChannelConfig.channelCount < channelIds.size() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSubConfig::NormalizeConfig: " + CORE::ToString( channelIds.size() ) + " numerical channel IDs were provided but a total channel count of " +
+            CORE::ToString( numericalAutoChannelConfig.channelCount ) + " was configured. Channel count will be increased to match the nr of IDs" );
+        numericalAutoChannelConfig.channelCount = (CORE::UInt32) channelIds.size();
+    }
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSubConfig:NormalizeConfig: There are now " + CORE::ToString( channelConfigs.size() ) + " channel configs defined" );
+
+    // Auto assign CPU affinity, if desired, now that we have defined all the channel configs
+    
+    CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
+
+    CORE::UInt32 currentCpu = 0;
+    Int32ToPubSubChannelConfigMap::iterator c = channelConfigs.begin();
+    while ( c != channelConfigs.end() )
+    {
+        Int32 channelId = (*c).first;
+        CPubSubChannelSettings& channelConfig = (*c).second;
+
+        // Assign CPU affinity but note that channels have X sides and each side can potentially have their own thread
+        CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::iterator n = channelConfig.pubSubSideChannelSettingsMap.begin();
+        while ( n != channelConfig.pubSubSideChannelSettingsMap.end() )
+        {
+            CPubSubSideChannelSettings& sideSettings = (*n).second;
+            if ( sideSettings.applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
+            {
+                if ( sideSettings.performPubSubInDedicatedThread )
+                {
+                    sideSettings.cpuAffinityForPubSubThread = currentCpu;
+
+                    ++currentCpu;
+                    if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
+                        currentCpu = 0;
+                }
+            }
+
+            ++n;
+        }
+        ++c;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+PubSub2PubSubConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSubConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PubSub2PubSub::PubSub2PubSub( void )
     : CORE::CObserver()
     , CORE::CGloballyConfigurable( false )
     , m_isInStandby( false )
-    , m_globalStandbyEnabled( false )
-    , m_udpStartPort()
-    , m_channelCount()
-    , m_pubSub2PubSubStartChannelID( 1 )
+    , m_desiredInStandby( false )
     , m_channels()
-    , m_channelSettings()
-    , m_templateChannelSettings()
     , m_httpServer()
     , m_httpRouter()
-    , m_globalConfig()
-    , m_transmitMetrics( true )
-    , m_enableRestApi( true )
     , m_isHealthy( true )
     , m_lastIsHealthyChange( CORE::CDateTime::NowUTCDateTime() )
+    , m_config()
+    , m_globalConfig()
     , m_lock()
 {GUCEF_TRACE;
 
@@ -428,10 +1195,17 @@ void
 PubSub2PubSub::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
-    TEventCallback callback( this, &PubSub2PubSub::OnAppShutdown );
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    TEventCallback callback( this, &PubSub2PubSub::OnVfsInit );
+    SubscribeTo( &vfs                                       ,
+                 VFS::CVFS::VfsInitializationCompletedEvent ,
+                 callback                                   );
+
+    TEventCallback callback2( this, &PubSub2PubSub::OnAppShutdown );
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() ,
                  CORE::CGUCEFApplication::AppShutdownEvent        ,
-                 callback                                         );
+                 callback2                                        );
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -472,7 +1246,7 @@ bool
 PubSub2PubSub::IsGlobalStandbyEnabled( void ) const
 {GUCEF_TRACE;
 
-    return m_globalStandbyEnabled;
+    return m_config.globalStandbyEnabled;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -549,11 +1323,11 @@ PubSub2PubSub::Start( void )
 {GUCEF_TRACE;
 
     m_isInStandby = true;
-    bool errorOccured = !SetStandbyMode( m_globalStandbyEnabled );
+    bool errorOccured = !SetStandbyMode( m_config.globalStandbyEnabled );
 
     if ( !errorOccured )
     {
-        if ( m_enableRestApi )
+        if ( m_config.enableRestApi )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
             if ( !m_httpServer.Listen() )
@@ -571,7 +1345,14 @@ PubSub2PubSub::Start( void )
 bool
 PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
 {GUCEF_TRACE;
-
+        
+    if ( !VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:SetStandbyMode( " + CORE::BoolToString( putInStandbyMode ) + " ): Deferring state change attempt since the VFS is not initialized yet" );
+        m_desiredInStandby = putInStandbyMode;
+        return true;
+    }
+    
     // Check if we need to do anything
     if ( m_isInStandby == putInStandbyMode )
     {
@@ -632,8 +1413,8 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
         while ( i != m_channels.end() )
         {
             CORE::Int32 channelId = (*i).first;
-            ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
-            if ( n == m_channelSettings.end() )
+            PubSub2PubSubConfig::Int32ToPubSubChannelConfigMap::iterator n = m_config.channelConfigs.find( channelId );
+            if ( n == m_config.channelConfigs.end() )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel which no longer has corresponding channel settings, deleting channel with ID " + CORE::Int32ToString( channelId ) );
                 m_channels.erase( i );
@@ -644,15 +1425,15 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
         }
 
         // Alternatively channel config could have changed such that we have new channels
-        ChannelSettingsMap::iterator n = m_channelSettings.begin();
-        while ( n != m_channelSettings.end() )
+        PubSub2PubSubConfig::Int32ToPubSubChannelConfigMap::iterator n = m_config.channelConfigs.begin();
+        while ( n != m_config.channelConfigs.end() )
         {
             CORE::Int32 channelId = (*n).first;
             PubSubClientChannelMap::iterator i = m_channels.find( channelId );
             if ( i == m_channels.end() )
             {
                 // This is a brand new channel. Lets add the channel object for it
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating GUCEF_NEW channel with ID " + CORE::Int32ToString( channelId ) );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:SetStandbyMode( false ): Found channel settings whith no corresponding channel object, creating new channel with ID " + CORE::Int32ToString( channelId ) );
                 m_channels[ channelId ] = CPubSubClientChannelPtr( GUCEF_NEW CPubSubClientChannel() );
             }
             ++n;
@@ -660,8 +1441,8 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
 
         CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
-        n = m_channelSettings.begin();
-        while ( n != m_channelSettings.end() )
+        n = m_config.channelConfigs.begin();
+        while ( n != m_config.channelConfigs.end() )
         {
             CORE::Int32 channelId = (*n).first;
             PubSubClientChannelMap::iterator i = m_channels.find( channelId );
@@ -695,13 +1476,10 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2PubSub::SaveConfig( CORE::CDataNode& tree ) const
+PubSub2PubSub::SaveConfig( CORE::CDataNode& outCfg ) const
 {GUCEF_TRACE;
 
-    // not fully supported right now
-
-    tree.Copy( m_globalConfig );
-    return true;
+    return m_config.SaveConfig( outCfg );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -710,69 +1488,7 @@ bool
 PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    // First we load the channel related info.
-    // We begin with that because we want to load especially the template definitions before we load the app settings as we might need the template
-    
-    // First store the per channel configs in a more conveniently accessable manner
-    // splitting them out from the global config document
-    TChannelCfgMap channelMap;
-    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = globalConfig.FindChildrenOfType( "Channels", true );
-    CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
-    while ( i != channelParentCfgs.end() )
-    {
-        CORE::CDataNode::const_iterator n = (*i)->ConstBegin();
-        while ( n != (*i)->ConstEnd() )
-        {
-            const CORE::CString& channelIndex = (*n)->GetName();
-            channelMap[ channelIndex ] = *(*n);
-            ++n;
-        }
-        ++i;
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for pubsub2pubsub channels" );
-
-    // load the template config if any
-    // This is especially important in conjunction with command line params that would rely on a template config
-    TChannelCfgMap::iterator m = channelMap.find( "*" );
-    if ( m != channelMap.end() )
-    {
-        if ( m_templateChannelSettings.LoadConfig( (*m).second ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for pubsub2pubsub channels" );
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for pubsub2pubsub channels" );
-            return false;
-        }
-    }
-
-    // load the specifically configured channels if any
-    // Such channels would not be defined via command line params but can possibly be influenced by such params with combined usage
-    m = channelMap.begin();
-    while ( m != channelMap.end() )
-    {
-        const CORE::CString& channelIndexStr = (*m).first;
-        if ( channelIndexStr != '*' )
-        {
-            CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
-            CPubSubChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
-
-            if ( channelSettings.LoadConfig( (*m).second ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for pubsub2pubsub channels " + channelIndexStr );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for pubsub2pubsub channels " + channelIndexStr );
-                return false;
-            }
-        }
-        ++m;
-    }
-
-    // Now on to the main application config ...
-
+    // input sanity check for the main application config ...
     const CORE::CDataNode* appConfig = GetAppConfig( globalConfig );
     if ( GUCEF_NULL == appConfig )
     {
@@ -780,148 +1496,48 @@ PubSub2PubSub::LoadConfig( const CORE::CDataNode& globalConfig )
         return false;
     }
 
-    m_globalStandbyEnabled = appConfig->GetAttributeValueOrChildValueByName( "globalStandbyEnabled" ).AsBool( m_globalStandbyEnabled, true );
+    m_globalConfig.Copy( globalConfig );
 
-    m_pubSub2PubSubStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "pubSub2PubSubStartChannelID" ).AsInt32( m_pubSub2PubSubStartChannelID, true );
-    CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "channelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
-    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "channelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : (CORE::UInt16) channelIDStrs.size(), true );
+    if ( VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized() )
+        return LoadConfigAfterVfsInit( globalConfig );    
+    
+    // defer load until after VFS init
+    return true;
+}
 
-    bool applyCpuThreadAffinityByDefault = appConfig->GetAttributeValueOrChildValueByName( "applyCpuThreadAffinityByDefault" ).AsBool( false, true );
-    CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
+/*-------------------------------------------------------------------------*/
 
-    // We will assume we are always given a full not a partial config so we clear the existing channel settings
-    m_channelSettings.clear();
+bool
+PubSub2PubSub::LoadConfigAfterVfsInit( const CORE::CDataNode& globalConfig )
+{GUCEF_TRACE;
 
-    // Validate the channel IDs.
-    // Depending on the use case these could be vital identifiers not just an index so some validation is in order
-    Int32Set channelIDs;
-    CORE::CString::StringSet::iterator n = channelIDStrs.begin();
-    while ( n != channelIDStrs.end() )
+    // First we parse the config
+    const CORE::CDataNode* pubsub2pubsubConfigNode = globalConfig.FindChild( "PubSub2PubSubConfig" );
+    if ( GUCEF_NULL == pubsub2pubsubConfigNode )
     {
-        const CORE::CString& str = (*n);
-        if ( str.HasChar( '-' ) >= 0 )
-        {
-            CORE::Int32 startId = GUCEF_MT_INT32MIN;
-            CORE::Int32 endId = GUCEF_MT_INT32MIN;
-
-            CORE::CString::StringVector rangeStrs = str.ParseElements( '-', false );
-            if ( rangeStrs.size() > 0 )
-                startId = CORE::StringToInt32( rangeStrs[ 0 ], GUCEF_MT_INT32MIN );
-            if ( rangeStrs.size() > 1 )
-                endId = CORE::StringToInt32( rangeStrs[ 1 ], GUCEF_MT_INT32MIN );
-
-            if ( startId != GUCEF_MT_INT32MIN && endId != GUCEF_MT_INT32MIN )
-            {
-                if ( endId < startId )
-                {
-                    CORE::Int32 tmp = startId;
-                    startId = endId;
-                    endId = tmp;
-                }
-
-                for ( CORE::Int32 i=startId; i<=endId; i++ )
-                    channelIDs.insert( i );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: Invalid channel ID range provided. Fix the config. Str: " + str );
-                return false;
-            }
-        }
-        else
-        {
-            CORE::Int32 id = CORE::StringToInt32( str, GUCEF_MT_INT32MIN );
-            if ( id != GUCEF_MT_INT32MIN )
-                channelIDs.insert( id );
-        }
-        ++n;
-    }
-    if ( channelIDs.size() < channelIDStrs.size() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:LoadConfig: Only " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were obtained from the channel list which contained more strings. Fix the config" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:LoadConfig: config is malformed, failed to find a mandatory PubSub2PubSubConfig section" );
         return false;
     }
 
-    // Make sure we have enough channel IDs specified to cover the channel count
-    if ( channelIDs.size() < m_channelCount )
+    if ( !m_config.LoadConfig( *pubsub2pubsubConfigNode ) )
     {
-        // auto-generate additional channel IDs
-        // This allows a configuration style where you don't have to specify all channel IDs
-        CORE::Int32 lastAutoGenChannelId = m_pubSub2PubSubStartChannelID;
-        CORE::Int32 missingChannels = m_channelCount - (CORE::Int32) channelIDs.size();
-        for ( CORE::Int32 i=0; i<missingChannels; ++i )
-        {
-            while ( channelIDs.find( lastAutoGenChannelId ) != channelIDs.end() )
-                ++lastAutoGenChannelId;
-            channelIDs.insert( lastAutoGenChannelId );
-            ++lastAutoGenChannelId;
-        }
-    }
-    else
-    if ( m_channelCount < channelIDs.size() )
-    {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub::LoadConfig: " + CORE::ToString( channelIDs.size() ) + " numerical channel IDs were provided but a total channel count of " +
-            CORE::ToString( m_channelCount ) + " was configured. Channel count will be increased to match the nr of IDs" );
-        m_channelCount = (CORE::UInt16) channelIDs.size();
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSub:LoadConfig: config load failed" );
+        return false;
     }
 
-    CORE::UInt32 currentCpu = 0;
-    Int32Set::iterator idListIttr = channelIDs.begin();
-    for ( CORE::Int32 i=0; i<m_channelCount; ++i )
-    {
-        CORE::Int32 channelId = (*idListIttr);
-
-        CPubSubChannelSettings* channelSettings = GUCEF_NULL;
-        ChannelSettingsMap::iterator s = m_channelSettings.find( channelId );
-        if ( s == m_channelSettings.end() )
-        {
-            channelSettings = &m_channelSettings[ channelId ];
-            *channelSettings = m_templateChannelSettings;
-        }
-        else
-        {
-            channelSettings = &m_channelSettings[ channelId ];
-        }
-        channelSettings->channelId = channelId;
-
-        // Assign CPU affinity
-        CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::iterator n = channelSettings->pubSubSideChannelSettingsMap.begin();
-        while ( n != channelSettings->pubSubSideChannelSettingsMap.end() )
-        {
-            CPubSubSideChannelSettings& sideSettings = (*n).second;
-            if ( sideSettings.applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
-            {
-                if ( sideSettings.performPubSubInDedicatedThread )
-                {
-                    sideSettings.cpuAffinityForPubSubThread = currentCpu;
-
-                    ++currentCpu;
-                    if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
-                        currentCpu = 0;
-                }
-            }
-
-            ++n;
-        }
-
-        channelSettings->UpdateDerivedSettings();
-    }
-
-    m_enableRestApi = appConfig->GetAttributeValueOrChildValueByName( "enableRestApi" ).AsBool( m_enableRestApi, true );
-    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
+    m_httpServer.SetPort( m_config.restApiPort );
 
     m_httpRouter.SetResourceMapping( "/info", ( GUCEF_NEW RestApiPubSub2PubSubInfoResource( this ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/config/appargs", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, true ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/config", ( GUCEF_NEW RestApiPubSub2PubSubConfigResource( this, false ) )->CreateSharedPtr()  );
-    m_httpRouter.SetResourceMapping( "/config/channels/", ( GUCEF_NEW TWebChannelCfgMapIndexMap( "channels", "channel", GUCEF_NULL, &m_channelSettings, &m_lock, false ) )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( "/config/channels/", ( GUCEF_NEW TWebChannelCfgMapIndexMap( "channels", "channel", GUCEF_NULL, &m_config.channelConfigs, &m_lock, false ) )->CreateSharedPtr() );
     //m_httpRouter.SetResourceMapping( "/config/channels/*", ( GUCEF_NEW RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/health", ( GUCEF_NEW RestApiPubSub2PubSubHealthResource( this ) )->CreateSharedPtr() );    
-    m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "restBasicHealthUri" ).AsString( "/health/basic", true ), ( GUCEF_NEW WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
+    m_httpRouter.SetResourceMapping( m_config.restBasicHealthUri, ( GUCEF_NEW WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
-    m_globalConfig.Copy( globalConfig );
-    return true;
+    return SetStandbyMode( m_desiredInStandby );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -942,6 +1558,17 @@ PubSub2PubSub::GetClassTypeName( void ) const
 
     static const CORE::CString classTypeName = "GUCEF::PUBSUB::PubSub2PubSub";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PubSub2PubSub::OnVfsInit( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    LoadConfigAfterVfsInit( m_globalConfig );
 }
 
 /*-------------------------------------------------------------------------*/

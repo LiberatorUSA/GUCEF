@@ -436,6 +436,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                     const bool caseSensitive = true ) const;
 
     CUtf8String Combine( const StringVector& elements, Int32 seperator ) const;
+    CUtf8String Combine( const StringSet& elements, Int32 seperator ) const;
     
     void Clear( void );
 

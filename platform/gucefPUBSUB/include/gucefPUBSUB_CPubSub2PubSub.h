@@ -247,6 +247,127 @@ class GUCEF_PUBSUB_EXPORT_CPP RestApiPubSubClientChannelConfigResource : public 
 
 /*-------------------------------------------------------------------------*/
 
+class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSubConfig : public CORE::CIConfigurable
+{
+    public:
+
+    class GUCEF_PUBSUB_EXPORT_CPP ExplicitChannelSideTopicOverlayConfig : public CORE::CIConfigurable
+    {
+        public:
+
+        CORE::CString topicName;
+
+        ExplicitChannelSideTopicOverlayConfig( void );
+        ExplicitChannelSideTopicOverlayConfig( const ExplicitChannelSideTopicOverlayConfig& src );
+        virtual ~ExplicitChannelSideTopicOverlayConfig();
+
+        virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    };
+
+    class GUCEF_PUBSUB_EXPORT_CPP ExplicitChannelSideOverlayConfig : public CORE::CIConfigurable
+    {
+        public:
+
+        typedef std::vector< ExplicitChannelSideTopicOverlayConfig >   ExplicitChannelSideTopicOverlayConfigVector;
+
+        CORE::CString sideId;
+        ExplicitChannelSideTopicOverlayConfigVector topics;
+
+        ExplicitChannelSideOverlayConfig( void );
+        ExplicitChannelSideOverlayConfig( const ExplicitChannelSideOverlayConfig& src );
+        virtual ~ExplicitChannelSideOverlayConfig();
+
+        virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    };
+
+    class GUCEF_PUBSUB_EXPORT_CPP ExplicitChannelOverlayConfig : public CORE::CIConfigurable
+    {
+        public:
+
+        typedef std::vector< ExplicitChannelSideOverlayConfig >   ExplicitChannelSideOverlayConfigVector;
+
+        CORE::CString usingTemplate;
+        CORE::Int32 channelId;
+        CORE::CString channelName;
+        ExplicitChannelSideOverlayConfigVector sides;
+
+        ExplicitChannelOverlayConfig( void );
+        ExplicitChannelOverlayConfig( const ExplicitChannelOverlayConfig& src );
+        virtual ~ExplicitChannelOverlayConfig();
+
+        virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    };
+
+    class GUCEF_PUBSUB_EXPORT_CPP NumericalAutoChannelConfig : public CORE::CIConfigurable
+    {
+        public:
+
+        typedef std::vector< ExplicitChannelSideOverlayConfig >   ExplicitChannelSideOverlayConfigVector;
+
+        CORE::CString usingTemplate;
+        UInt32 channelCount;
+        Int32 firstChannelId;
+        CORE::CString::StringSet channelIds;
+
+        NumericalAutoChannelConfig( void );
+        NumericalAutoChannelConfig( const NumericalAutoChannelConfig& src );
+        virtual ~NumericalAutoChannelConfig();
+
+        virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    };
+
+    typedef std::map< CORE::CString, CPubSubChannelSettings >   StringToPubSubChannelConfigMap;
+    typedef std::map< Int32, CPubSubChannelSettings >           Int32ToPubSubChannelConfigMap;
+    typedef std::vector< ExplicitChannelOverlayConfig >         ExplicitChannelOverlayConfigVector;
+    typedef std::set< CORE::Int32 >                             Int32Set;
+
+    StringToPubSubChannelConfigMap channelConfigTemplates;
+    ExplicitChannelOverlayConfigVector explicitOverlayChannels;
+    NumericalAutoChannelConfig numericalAutoChannelConfig;
+    Int32ToPubSubChannelConfigMap channelConfigs;
+
+    bool globalStandbyEnabled;
+    bool applyCpuThreadAffinityByDefault;
+    bool enableRestApi;
+    UInt16 restApiPort;
+    CORE::CString restBasicHealthUri;
+    bool transmitMetrics;
+
+    bool NormalizeConfig( void );
+
+    PubSub2PubSubConfig( void );
+    PubSub2PubSubConfig( const PubSub2PubSubConfig& src );
+    virtual ~PubSub2PubSubConfig();
+
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver             ,
                                               public CORE::CGloballyConfigurable
 {
@@ -266,8 +387,6 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     bool GetLatestIsHealthyState( void ) const;
 
     CORE::CDateTime GetLatestIsHealthyStateChangeDt( void ) const;
-
-    bool LoadConfig( const CORE::CValueList& appConfig );
 
     const CORE::CDataNode& GetGlobalConfig( void ) const;
 
@@ -292,6 +411,11 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     typedef CORE::CTEventHandlerFunctor< PubSub2PubSub > TEventCallback;
 
     void
+    OnVfsInit( CORE::CNotifier* notifier    ,
+               const CORE::CEvent& eventId  ,
+               CORE::CICloneable* eventData );
+
+    void
     OnAppShutdown( CORE::CNotifier* notifier    ,
                    const CORE::CEvent& eventId  ,
                    CORE::CICloneable* eventData );
@@ -304,30 +428,23 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     void RegisterEventHandlers( void );
 
     void RegisterChannelEventHandlers( CPubSubClientChannelPtr channel );
+
+    bool LoadConfigAfterVfsInit( const CORE::CDataNode& globalConfig );
     
     private:
 
-    typedef std::map< CORE::Int32, CPubSubChannelSettings > ChannelSettingsMap;
     typedef std::map< CORE::Int32, CPubSubClientChannelPtr > PubSubClientChannelMap;
-    typedef std::map< CORE::CString, CORE::CDataNode > TChannelCfgMap;
-    typedef std::set< CORE::Int32 > Int32Set;
     typedef WEB::CTDataNodeSerializableMapHttpServerResource< CORE::Int32, CPubSubChannelSettings >        TWebChannelCfgMapIndexMap;
 
     bool m_isInStandby;
-    bool m_globalStandbyEnabled;
-    CORE::UInt16 m_udpStartPort;
-    CORE::UInt16 m_channelCount;
-    CORE::Int32 m_pubSub2PubSubStartChannelID;
+    bool m_desiredInStandby;
     PubSubClientChannelMap m_channels;
-    ChannelSettingsMap m_channelSettings;
-    CPubSubChannelSettings m_templateChannelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
-    CORE::CDataNode m_globalConfig;
-    bool m_transmitMetrics;
-    bool m_enableRestApi;
     mutable bool m_isHealthy;
     mutable CORE::CDateTime m_lastIsHealthyChange;
+    PubSub2PubSubConfig m_config;
+    CORE::CDataNode m_globalConfig;
     MT::CMutex m_lock;
 };
 

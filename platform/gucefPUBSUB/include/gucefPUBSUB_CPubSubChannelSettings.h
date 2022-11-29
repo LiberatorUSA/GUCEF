@@ -55,7 +55,44 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurable
+/**
+ *  Class that conveys config for a pub sub channel
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelConfig : public CORE::CIConfigurable
+{
+    public:
+
+    typedef std::map< CORE::CString, CPubSubSideChannelSettings > TStringToPubSubSideChannelSettingsMap;
+
+    CPubSubChannelConfig( void );
+    CPubSubChannelConfig( const CPubSubChannelConfig& src );
+    virtual ~CPubSubChannelConfig();
+    CPubSubChannelConfig& operator=( const CPubSubChannelConfig& src );
+
+    CPubSubSideChannelSettings* GetPubSubSideSettings( const CORE::CString& sideId );
+
+    TStringToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
+    CPubSubFlowRouterConfig flowRouterConfig;
+
+    CORE::Int32 channelId;
+    CORE::CString channelName;
+    CORE::UInt32 ticketRefillOnBusyCycle;
+    bool collectMetrics;                                                   
+    CORE::UInt32 metricsIntervalInMs;
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class that conveys runtime relevant settings and config for a pub sub channel
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CPubSubChannelConfig
 {
     public:
 
@@ -63,19 +100,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CORE::CIConfigurab
 
     CPubSubChannelSettings( void );
     CPubSubChannelSettings( const CPubSubChannelSettings& src );
+    virtual ~CPubSubChannelSettings();
     CPubSubChannelSettings& operator=( const CPubSubChannelSettings& src );
-
-    CPubSubSideChannelSettings* GetPubSubSideSettings( const CORE::CString& sideId );
 
     void UpdateDerivedSettings( void );
 
-    TStringToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
-    CPubSubFlowRouterConfig flowRouterConfig;
-
-    CORE::Int32 channelId;
-    CORE::UInt32 ticketRefillOnBusyCycle;
-    bool collectMetrics;                                                   
-    CORE::UInt32 metricsIntervalInMs;
     CORE::CString metricsPrefix;                                          //< this setting is derived and cached from other settings
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;

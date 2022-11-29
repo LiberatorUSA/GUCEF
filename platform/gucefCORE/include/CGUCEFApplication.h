@@ -92,9 +92,7 @@ namespace CORE {
  *
  *      Dispatches the following events:
  *       - AppInitEvent:
- *              Indicates that the application is now initialized
- *              at the GUCEF level. All higher level code should
- *              now begin initialization.
+ *              Indicates that the application is now initializing
  *       - AppShutdownEvent
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown as well

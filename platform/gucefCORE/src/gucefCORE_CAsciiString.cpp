@@ -1621,6 +1621,28 @@ CAsciiString::Combine( const StringVector& elements, char seperator ) const
 
 /*-------------------------------------------------------------------------*/
 
+CAsciiString
+CAsciiString::Combine( const StringSet& elements, char seperator ) const
+{GUCEF_TRACE;
+
+    CAsciiString currentStr( *this );
+    if ( !currentStr.IsNULLOrEmpty() && !elements.empty() )
+        currentStr += seperator;
+
+    StringSet::const_iterator i = elements.begin();
+    while ( i != elements.end() )
+    {
+        if ( !(*i).IsNULLOrEmpty() )
+            currentStr += (*i);
+        ++i;
+        if ( i != elements.end() && !(*i).IsNULLOrEmpty() )
+            currentStr += seperator;
+    }
+    return currentStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CAsciiString::IsFormattingValid( void ) const
 {GUCEF_TRACE;

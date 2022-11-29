@@ -101,7 +101,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
+CPubSubSideChannelConfig::CPubSubSideChannelConfig( void )
     : CORE::CIConfigurable()
     , pubsubClientConfig()
     , pubsubBookmarkPersistenceConfig()
@@ -121,15 +121,13 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
     , collectMetrics( true )
     , metricsIntervalInMs( 1000 )
     , pubsubIdPrefix()
-    , needToTrackInFlightPublishedMsgsForAck( false )                                                   // composite cached value: based on backend features plus desired behaviour
-    , metricsPrefix()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src )
+CPubSubSideChannelConfig::CPubSubSideChannelConfig( const CPubSubSideChannelConfig& src )
     : CORE::CIConfigurable( src )
     , pubsubClientConfig( src.pubsubClientConfig )
     , pubsubBookmarkPersistenceConfig( src.pubsubBookmarkPersistenceConfig )
@@ -149,16 +147,21 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannel
     , collectMetrics( src.collectMetrics )
     , metricsIntervalInMs( src.metricsIntervalInMs )
     , pubsubIdPrefix( src.pubsubIdPrefix )
-    , needToTrackInFlightPublishedMsgsForAck( false )
-    , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubSideChannelSettings&
-CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
+CPubSubSideChannelConfig::~CPubSubSideChannelConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelConfig&
+CPubSubSideChannelConfig::operator=( const CPubSubSideChannelConfig& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
@@ -183,9 +186,6 @@ CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
         collectMetrics = src.collectMetrics;
         metricsIntervalInMs = src.metricsIntervalInMs;
         pubsubIdPrefix = src.pubsubIdPrefix;
-
-        needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
-        metricsPrefix = src.metricsPrefix;
     }
     return *this;
 }
@@ -193,21 +193,21 @@ CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
+CPubSubSideChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
     CORE::CDataNode* psClientConfig = cfg.Structure( "PubSubClientConfig", '/' );
     if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:SaveConfig: config is malformed, failed to save a mandatory PubSubClientConfig section" );
         return false;
     }
 
     CORE::CDataNode* psBookmarkPersistenceConfig = cfg.Structure( "PubSubBookmarkPersistenceConfig", '/' );
     if ( !pubsubBookmarkPersistenceConfig.SaveConfig( *psBookmarkPersistenceConfig ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:SaveConfig: config is malformed, failed to save PubSubBookmarkPersistenceConfig section" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:SaveConfig: config is malformed, failed to save PubSubBookmarkPersistenceConfig section" );
         return false;
     }    
 
@@ -228,17 +228,13 @@ CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "metricsIntervalInMs", metricsIntervalInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "pubsubIdPrefix", pubsubIdPrefix ) && totalSuccess;    
 
-    // Derived settings are advisory outputs only meaning we will save them but we wont load them
-    totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
-
     return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
+CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     const CORE::CDataNode* psClientConfig = cfg.Search( "PubSubClientConfig", '/', false );
@@ -246,7 +242,7 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     {
         if ( !pubsubClientConfig.LoadConfig( *psClientConfig ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
             return false;
         }
 
@@ -254,7 +250,7 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
         // as such this is a mandatory setting to provide
         if ( pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
             return false;
         }
 
@@ -262,13 +258,13 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
         // As such the config must have yielded at least 1 topic
         if ( pubsubClientConfig.topics.empty() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, having at least one topic configured for the client section is mandatory" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is malformed, having at least one topic configured for the client section is mandatory" );
             return false;
         }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, a PubSubClientConfig section is mandatory" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is malformed, a PubSubClientConfig section is mandatory" );
         return false;
     }
 
@@ -277,13 +273,13 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     {
         if ( !pubsubBookmarkPersistenceConfig.LoadConfig( *psBookmarkPersistenceConfig ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelSettings:LoadConfig: failed to load mandatory PubSubBookmarkPersistenceConfig section" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: failed to load mandatory PubSubBookmarkPersistenceConfig section" );
             return false;
         }
     }
     else
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: a PubSubBookmarkPersistenceConfig section is expected, will use defaults" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: a PubSubBookmarkPersistenceConfig section is expected, will use defaults" );
     }
 
     performPubSubInDedicatedThread = cfg.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
@@ -307,17 +303,17 @@ CPubSubSideChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&
-CPubSubSideChannelSettings::GetClassTypeName( void ) const
+CPubSubSideChannelConfig::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubSideChannelSettings";
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubSideChannelConfig";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientTopicConfig*
-CPubSubSideChannelSettings::GetTopicConfig( const CORE::CString& topicName )
+CPubSubSideChannelConfig::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
@@ -327,6 +323,76 @@ CPubSubSideChannelSettings::GetTopicConfig( const CORE::CString& topicName )
             return &(*i);
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
+    : CPubSubSideChannelConfig()
+    , needToTrackInFlightPublishedMsgsForAck( false )  // composite cached value: based on backend features plus desired behaviour
+    , metricsPrefix()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src )
+    : CPubSubSideChannelConfig( src )
+    , needToTrackInFlightPublishedMsgsForAck( false )
+    , metricsPrefix( src.metricsPrefix )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings::~CPubSubSideChannelSettings()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubSideChannelSettings&
+CPubSubSideChannelSettings::operator=( const CPubSubSideChannelSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CPubSubSideChannelConfig::operator=( src );
+
+        needToTrackInFlightPublishedMsgsForAck = src.needToTrackInFlightPublishedMsgsForAck;
+        metricsPrefix = src.metricsPrefix;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubSideChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = CPubSubSideChannelConfig::SaveConfig( cfg ) && totalSuccess;
+
+    // Derived settings are advisory outputs only meaning we will save them but we wont load them
+    totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAck", needToTrackInFlightPublishedMsgsForAck ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CPubSubSideChannelSettings::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubSideChannelSettings";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

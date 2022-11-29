@@ -2242,6 +2242,86 @@ CUtf8String::Combine( const StringVector& elements, Int32 seperator ) const
 
 /*-------------------------------------------------------------------------*/
 
+CUtf8String
+CUtf8String::Combine( const StringSet& elements, Int32 seperator ) const
+{GUCEF_TRACE;
+
+    if ( elements.empty() && 0 == m_length )
+        return CUtf8String();
+
+    // Determine storage size needed
+
+    size_t cpSize = utf8codepointsize( seperator );
+    UInt32 bufferSize = 1;
+    if ( m_byteSize > 0 )
+        bufferSize += m_byteSize + (UInt32) cpSize;
+
+    StringSet::const_iterator i = elements.begin();
+    while ( i != elements.end() )
+    {
+        bool elementAdded = false;
+        if ( !(*i).IsNULLOrEmpty() )
+        {
+            bufferSize += (*i).m_byteSize-1;
+            elementAdded = true;
+        }
+        ++i;
+        if ( elementAdded && i != elements.end() && !(*i).IsNULLOrEmpty() )
+        {
+            bufferSize += (UInt32) cpSize;
+        }
+    }
+
+    // Allocate total storage
+
+    CUtf8String comboStr;
+    if ( GUCEF_NULL == comboStr.Reserve( bufferSize ) )
+        return CUtf8String::Empty;
+
+    // Write contents
+    char* cpPos = comboStr.m_string;
+    size_t bufferSpaceLeft = bufferSize;
+    if ( GUCEF_NULL != m_string && 0 < m_length )
+    {
+        memcpy( comboStr.m_string, m_string, m_byteSize );
+        bufferSpaceLeft -= m_byteSize;
+
+        cpPos = (char*) utf8catcodepoint( cpPos, seperator, bufferSpaceLeft );
+        bufferSpaceLeft -= cpSize;
+    }
+    else
+    {
+        comboStr.m_string[ 0 ] = '\0';
+    }
+    i = elements.begin();
+    while ( i != elements.end() )
+    {
+        bool elementAdded = false;
+        if ( !(*i).IsNULLOrEmpty() )
+        {
+            size_t bytesWritten = (*i).m_byteSize-1;
+            memcpy( cpPos, (*i).m_string, bytesWritten );
+            cpPos += bytesWritten;
+            *cpPos = '\0';
+            bufferSpaceLeft -= bytesWritten;
+            elementAdded = true;
+        }
+        ++i;
+        if ( elementAdded && i != elements.end() && !(*i).IsNULLOrEmpty() )
+        {
+            cpPos = (char*) utf8catcodepoint( cpPos, seperator, bufferSpaceLeft );
+            bufferSpaceLeft -= cpSize;
+        }
+    }
+
+    // Determine new string length codepoint wise
+    comboStr.m_length = (UInt32) utf8len( comboStr.m_string );
+    comboStr.m_string[ comboStr.m_byteSize-1 ] = '\0';
+    return comboStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CUtf8String::IsFormattingValid( void ) const
 {GUCEF_TRACE;

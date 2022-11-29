@@ -210,6 +210,15 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     bool LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
                    const CORE::CString& file               ,
                    const char* mode = "rb"                 );
+
+    /**
+     *  Loads the entire file at the given location and converts it using the
+     *  given codec if possible. If no DataNode codec is named the file extension will be 
+     *  used to determine the DataNode codec to use
+     */
+    bool LoadFile( CORE::CDataNode& destination                           ,
+                   const CORE::CString& file                              ,
+                   const CORE::CString& codecToUse = CORE::CString::Empty );
                                   
     /**
      *  Attempts to store the provided data as file content

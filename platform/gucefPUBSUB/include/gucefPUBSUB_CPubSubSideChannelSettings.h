@@ -75,13 +75,17 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CORE::CIConfigurable
+/**
+ *  Class that conveys config for a pub sub channel's side
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigurable
 {
     public:
 
-    CPubSubSideChannelSettings( void );
-    CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src );
-    CPubSubSideChannelSettings& operator=( const CPubSubSideChannelSettings& src );
+    CPubSubSideChannelConfig( void );
+    CPubSubSideChannelConfig( const CPubSubSideChannelConfig& src );
+    virtual ~CPubSubSideChannelConfig();
+    CPubSubSideChannelConfig& operator=( const CPubSubSideChannelConfig& src );    
 
     CPubSubClientConfig pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig pubsubBookmarkPersistenceConfig;
@@ -101,15 +105,34 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CORE::CIConfig
     bool collectMetrics;                                                   
     CORE::UInt32 metricsIntervalInMs;
     CORE::CString pubsubIdPrefix;
-    
-    bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
-    CORE::CString metricsPrefix;                       //< this setting is derived and cached from other settings   
 
     CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class that conveys runtime relevant settings and config for a pub sub channel's side
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CPubSubSideChannelConfig
+{
+    public:
+
+    CPubSubSideChannelSettings( void );
+    CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src );
+    virtual ~CPubSubSideChannelSettings();
+    CPubSubSideChannelSettings& operator=( const CPubSubSideChannelSettings& src );
+    
+    bool needToTrackInFlightPublishedMsgsForAck;       //< this setting is derived and cached from other settings 
+    CORE::CString metricsPrefix;                       //< this setting is derived and cached from other settings   
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };

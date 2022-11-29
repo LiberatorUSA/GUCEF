@@ -1,0 +1,80 @@
+{
+	"AWSSDK": {
+		"AWSCredentialsProviders": "Environment;Config;ProfileConfigFile;InstanceProfile",
+		"AWS_ACCESS_KEY_ID": "",
+		"AWS_SECRET_ACCESS_KEY": "",
+		"AWS_SESSION_TOKEN": "",
+		"DefaultClientConfig.region": "us-east-2",
+		"LogLevel": 5
+	},
+	"StatsDClient": {
+		"statsDestination": "127.0.0.1:8125",
+		"statsNamePrefix": "myenv.$HOSTNAME$.pubsub2pubsub.",
+		"transmit": false,
+		"logStats": false
+	},
+	"VFS": {
+		"ArchiveSettings": {
+			"ActualArchivePath": "$MODULEDIR$",
+			"MountPath": "InstallPath",
+			"ArchiveName": "InstallPath",
+			"ArchiveType": "FileSystem",
+			"MountArchives": false,
+			"MountArchivesIsRecursive": false,
+			"Writeable": true,
+			"Readable": true
+		}
+	},
+	"PubSub2PubSubConfig": {
+		"channelConfigTemplateRefs": ["vfs://InstallPath/channel_templates/msmq2kafka.json",
+			"vfs://InstallPath/channel_templates/msmq2storage.json",
+			"vfs://InstallPath/channel_templates/msmq2web.json",
+			"vfs://InstallPath/channel_templates/redis2storage.json",
+			"vfs://InstallPath/channel_templates/storage2kafka.json",
+			"vfs://InstallPath/channel_templates/storage2storage2test.json",
+			"vfs://InstallPath/channel_templates/udp2kafka.json",
+			"vfs://InstallPath/channel_templates/udp2redis.json",
+			"vfs://InstallPath/channel_templates/udp2storage.json"
+		],
+		"channelConfigTemplates": [],
+		"explicitChannelOverlays": [{
+			"usingTemplate": "storage2storage2test",
+			"channelId": 0,
+			"channelName": "example",
+			"sides": [{
+				"sideId": "storage-source",
+				"topics": [{
+					"topicName": "source"
+				}]
+			}, {
+				"sideId": "spillover-temp-storage",
+				"topics": [{
+					"topicName": "spillover"
+				}]
+
+			}, {
+				"sideId": "test-sink",
+				"topics": [{
+					"topicName": "sink"
+				}]
+			}]
+		}],
+		"numericalAutoChannels": {
+			"usingTemplate": "storage2storage2test",
+			"channelCount": 0,
+			"firstChannelId": 0,
+			"channelIds": ""
+		},
+		"globalStandbyEnabled": false,
+		"enableRestApi": true,
+		"restApiPort": 10000,
+		"restBasicHealthUri": "/health/basic",
+		"transmitMetrics": true
+	},
+	"Main": {
+		"AppArgs": {
+			"outputDir": "$MODULEDIR$",
+			"minimalLogLevel": 1
+		}
+	}
+}

@@ -77,38 +77,45 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPubSubChannelSettings::CPubSubChannelSettings( void )
+CPubSubChannelConfig::CPubSubChannelConfig( void )
     : CORE::CIConfigurable()
     , pubSubSideChannelSettingsMap()
     , flowRouterConfig()
     , channelId( -1 )
+    , channelName()
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , collectMetrics( true )
     , metricsIntervalInMs( 1000 )
-    , metricsPrefix()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubChannelSettings::CPubSubChannelSettings( const CPubSubChannelSettings& src )
+CPubSubChannelConfig::CPubSubChannelConfig( const CPubSubChannelConfig& src )
     : CORE::CIConfigurable( src )
     , pubSubSideChannelSettingsMap( src.pubSubSideChannelSettingsMap )
     , flowRouterConfig( src.flowRouterConfig )
     , channelId( src.channelId )
+    , channelName( src.channelName )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , collectMetrics( src.collectMetrics )
     , metricsIntervalInMs( src.metricsIntervalInMs )
-    , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubChannelSettings&
-CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
+CPubSubChannelConfig::~CPubSubChannelConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubChannelConfig&
+CPubSubChannelConfig::operator=( const CPubSubChannelConfig& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
@@ -116,10 +123,10 @@ CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
         pubSubSideChannelSettingsMap = src.pubSubSideChannelSettingsMap;
         flowRouterConfig = src.flowRouterConfig;
         channelId = src.channelId;
+        channelName = src.channelName;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         collectMetrics = src.collectMetrics;
         metricsIntervalInMs = src.metricsIntervalInMs;
-        metricsPrefix = src.metricsPrefix;
     }
     return *this;
 }
@@ -127,7 +134,7 @@ CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
 /*-------------------------------------------------------------------------*/
 
 CPubSubSideChannelSettings*
-CPubSubChannelSettings::GetPubSubSideSettings( const CORE::CString& sideId )
+CPubSubChannelConfig::GetPubSubSideSettings( const CORE::CString& sideId )
 {GUCEF_TRACE;
 
     TStringToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.find( sideId );
@@ -141,8 +148,10 @@ CPubSubChannelSettings::GetPubSubSideSettings( const CORE::CString& sideId )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
+CPubSubChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
+
+    bool totalSuccess = true;
 
     CORE::CDataNode* pubSubSidesCollection = cfg.Structure( "PubSubSides", '/' );
     pubSubSidesCollection->SetNodeType( GUCEF_DATATYPE_ARRAY );
@@ -158,18 +167,16 @@ CPubSubChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
         CORE::CDataNode* sideSettingsNode = pubSubSidesCollection->FindOrAddChild( "PubSubSideChannelSettings" );
         if ( !sideSettings.SaveConfig( *sideSettingsNode ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:SaveConfig: config is malformed, failed to save a mandatory PubSubSideChannelSettings section" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:SaveConfig: config is malformed, failed to save a mandatory PubSubSideChannelSettings section" );
             return false;
         }
         ++i;
     }
 
-    cfg.SetAttribute( "channelId", channelId );
-    cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
-    cfg.SetAttribute( "collectMetrics", collectMetrics );
-
-    // Derived settings are advisory outputs only meaning we will save them but we wont load them
-    cfg.SetAttribute( "metricsPrefix", metricsPrefix );
+    totalSuccess = cfg.SetAttribute( "channelId", channelId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "channelName", channelName ) && totalSuccess;    
+    totalSuccess = cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "collectMetrics", collectMetrics ) && totalSuccess;
 
     CORE::CDataNode* pubSubFlowRouterConfigNode = cfg.FindOrAddChild( "PubSubFlowRouterConfig" );
     if ( GUCEF_NULL != pubSubFlowRouterConfigNode )
@@ -179,19 +186,21 @@ CPubSubChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
     }
     else
     {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:SaveConfig: config is malformed, failed to save a mandatory PubSubFlowRouterConfig section" );
         return false;
     }
 
-    return true;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
+CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     channelId = cfg.GetAttributeValueOrChildValueByName( "channelId" ).AsInt32( channelId, true );
+    channelName = cfg.GetAttributeValueOrChildValueByName( "channelName" ).AsString( channelName, true );
     ticketRefillOnBusyCycle = cfg.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
     collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     metricsIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "metricsIntervalInMs" ).AsUInt32( metricsIntervalInMs, true );
@@ -205,7 +214,7 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
             CPubSubSideChannelSettings sideSettings;
             if ( !sideSettings.LoadConfig( *(*n) ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config entry failed to load from collection entry" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config entry failed to load from collection entry" );
                 return false;
             }
 
@@ -213,7 +222,7 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
             // as such this is a mandatory setting to provide
             if ( sideSettings.pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, \"pubsubClientType\" was not provided" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, \"pubsubClientType\" was not provided" );
                 return false;
             }
 
@@ -221,27 +230,26 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
             // As such the config must have yielded at least 1 topic
             if ( sideSettings.pubsubClientConfig.topics.empty() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, having at least one topic configured for the client section is mandatory" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, having at least one topic configured for the client section is mandatory" );
                 return false;
             }
 
             if ( (*n)->GetName().IsNULLOrEmpty() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side config is malformed, we need a valid name for the side" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, we need a valid name for the side" );
                 return false;
             }
 
             const CORE::CString& sideId = (*n)->GetName();
-            sideSettings.metricsPrefix = metricsPrefix + "side." + sideId + ".";
             pubSubSideChannelSettingsMap[ sideId ] = sideSettings;
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: Side \'" + CORE::CString( sideId ) + "\' config successfully loaded" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side \'" + CORE::CString( sideId ) + "\' config successfully loaded" );
 
             ++n;
         }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: PubSubSides collection section is mandatory" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: PubSubSides collection section is mandatory" );
         return false;
     }
 
@@ -257,7 +265,7 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
     }
     else
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: No PubSubFlowRouterConfig was found, will use default implicit config" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: No PubSubFlowRouterConfig was found, will use default implicit config" );
         
         // If we do not have a flow router config we take it as allowing * -> * implicitly
         // this setting matches the historical behaviour, this route wont have any failover or spillover or dead letter
@@ -272,9 +280,81 @@ CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
         flowRouterConfig.ackStyle = CPubSubFlowRouterConfig::AckStyle::AllOrNothing;
     }
 
-    UpdateDerivedSettings();
-
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CPubSubChannelConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubChannelConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubChannelSettings::CPubSubChannelSettings( void )
+    : CPubSubChannelConfig()
+    , metricsPrefix()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubChannelSettings::CPubSubChannelSettings( const CPubSubChannelSettings& src )
+    : CPubSubChannelConfig( src )
+    , metricsPrefix( src.metricsPrefix )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubChannelSettings::~CPubSubChannelSettings()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubChannelSettings&
+CPubSubChannelSettings::operator=( const CPubSubChannelSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CPubSubChannelConfig::operator=( src );
+        metricsPrefix = src.metricsPrefix;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubChannelSettings::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = CPubSubChannelConfig::SaveConfig( cfg );
+
+    // Derived settings are advisory outputs only meaning we will save them but we wont load them
+    totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubChannelSettings::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    bool totalSuccess = CPubSubChannelConfig::LoadConfig( cfg );
+    UpdateDerivedSettings();
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -291,7 +371,6 @@ CPubSubChannelSettings::UpdateDerivedSettings( void )
         CPubSubSideChannelSettings& sideSettings = (*i).second;
 
         sideSettings.metricsPrefix = metricsPrefix + "side." + (*i).first + ".";
-
         ++i;
     }
 }

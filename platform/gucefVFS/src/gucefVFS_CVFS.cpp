@@ -68,6 +68,11 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define CMFILEACCESS_H
@@ -1079,6 +1084,52 @@ CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
 
     // When we leave this scope the VFS reference is released
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::LoadFile( CORE::CDataNode& destination    ,
+                const CORE::CString& filePath   ,
+                const CORE::CString& codecToUse )
+{GUCEF_TRACE;
+
+    
+    CORE::CString actualCodecToUse = codecToUse;
+    if ( actualCodecToUse.IsNULLOrEmpty() )
+        actualCodecToUse = CORE::ExtractFileExtention( filePath ); 
+    if ( actualCodecToUse.IsNULLOrEmpty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs:LoadFile: No codec type name or file extension provided for file: " + filePath );
+        return false;
+    }
+
+    // First load the file as a VFS reference as usual
+    CVFSHandlePtr fileReference = GetFile( filePath, "rb", false );
+    if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
+        return false;
+    
+    // Now obtain the codec
+    CORE::CDStoreCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
+    if ( codecRegistry.TryLookup( actualCodecToUse, codec, false ) && !codec.IsNULL() )
+    {
+        // Now pass the I/O access to the codec
+        if ( codec->BuildDataTree( &destination, fileReference->GetAccess() ) ) 
+        {
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs:LoadFile: Could not obtain a DataNode codec for type \"" + actualCodecToUse + "\"" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs:LoadFile: Could not obtain a DataNode codec for type \"" + actualCodecToUse + "\"" );
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -314,6 +314,7 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                     const bool caseSensitive = true ) const;
 
     CAsciiString Combine( const StringVector& elements, char seperator ) const;
+    CAsciiString Combine( const StringSet& elements, char seperator ) const;
 
     void Clear( void );
 
