@@ -2405,7 +2405,7 @@ MsmqMetrics::SetMetricCollectionBasedOnFilter( MsmqQueueVector& queues          
                                                CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
     
-    if ( !globPatternFilters.empty() )
+    if ( globPatternFilters.empty() )
         return;
     
     UInt32 metricEnabledQueues = 0;

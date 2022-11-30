@@ -256,6 +256,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "MsmqMetrics" )
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
+    WEB::CWebGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
