@@ -449,7 +449,9 @@ PubSub2PubSubConfig::ExplicitChannelSideTopicOverlayConfig::GetClassTypeName( vo
 PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverlayConfig( void )
     : CORE::CIConfigurable()
     , sideId()
+    , remoteAddresses()
     , topics()
+    , autoPopulateTopicsUsingFromSide( false )
 {GUCEF_TRACE;
 
 }
@@ -459,7 +461,9 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverla
 PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverlayConfig( const ExplicitChannelSideOverlayConfig& src )
     : CORE::CIConfigurable( src )
     , sideId( src.sideId )
+    , remoteAddresses( src.remoteAddresses )
     , topics( src.topics )
+    , autoPopulateTopicsUsingFromSide( src.autoPopulateTopicsUsingFromSide )
 {GUCEF_TRACE;
 
 }
@@ -480,7 +484,21 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::SaveConfig( CORE::CDataNo
     bool totalSuccess = true;
 
     totalSuccess = cfg.SetAttribute( "sideId", sideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "autoPopulateTopicsUsingFromSide", autoPopulateTopicsUsingFromSide ) && totalSuccess; 
 
+    CORE::CDataNode* remoteAddressesNode = cfg.FindOrAddChild( "remoteAddresses" );
+    if ( GUCEF_NULL != remoteAddressesNode )
+    {
+        remoteAddressesNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+
+        THostAddressVector::const_iterator a = remoteAddresses.begin();
+        while ( a != remoteAddresses.end() )
+        {
+            remoteAddressesNode->AddValueAsChild( (*a).HostnameAndPortAsString() );
+            ++a;
+        }
+    }
+    
     CORE::CDataNode* topicsNode = cfg.FindOrAddChild( "topics" );
     if ( GUCEF_NULL == topicsNode )
     {
@@ -515,11 +533,34 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::LoadConfig( const CORE::C
 {GUCEF_TRACE;
 
     sideId = cfg.GetAttributeValue( "sideId" ).AsString( sideId, true );
+    autoPopulateTopicsUsingFromSide = cfg.GetAttributeValue( "autoPopulateTopicsUsingFromSide" ).AsBool( autoPopulateTopicsUsingFromSide, true );
+    
+    // Find the optional list of remote addressess
+    // If it exists we apply it otherwise assume the default template setting is sufficient
+    const CORE::CDataNode* remoteAddressesNode = cfg.FindChild( "remoteAddresses" );
+    if ( GUCEF_NULL != remoteAddressesNode )
+    {
+        CORE::CDataNode::TVariantVector values = remoteAddressesNode->GetChildrenValues();
+        CORE::CDataNode::TVariantVector::iterator v = values.begin();
+        while ( v != values.end() )
+        {
+            COMCORE::CHostAddress hostAddress;
+            if ( !hostAddress.SetHostnameAndPort( (*v).AsString() ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: Failed to resolve remote address: " + (*v).AsString() );
+            }
+            remoteAddresses.push_back( hostAddress );
+            ++v;
+        }
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: Loaded " + CORE::ToString( remoteAddresses.size() ) + " remote addresses for side overlay" );
+    }
+
+    autoPopulateTopicsUsingFromSide = cfg.GetAttributeValueOrChildValueByName( "autoPopulateTopicsUsingFromSide" ).AsBool( autoPopulateTopicsUsingFromSide, true );
 
     const CORE::CDataNode* topicsNode = cfg.FindChild( "topics" );
     if ( GUCEF_NULL == topicsNode )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: config is malformed, failed to find a mandatory topics section" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: config is malformed, failed to find a mandatory topics section in absence of auto 'from side' topic matching" );
         return false;
     }
 
@@ -1008,6 +1049,9 @@ PubSub2PubSubConfig::NormalizeConfig( void )
                 CPubSubSideChannelSettings* sideConfig = channelConfig.GetPubSubSideSettings( sideOverlayConfig.sideId );
                 if ( GUCEF_NULL != sideConfig )
                 {
+                    if ( !sideOverlayConfig.remoteAddresses.empty() )
+                        sideConfig->pubsubClientConfig.remoteAddresses = sideOverlayConfig.remoteAddresses;
+                    
                     if ( !sideConfig->pubsubClientConfig.topics.empty() )
                     {
                         // grab a topic config template copy and prep for 'real' config

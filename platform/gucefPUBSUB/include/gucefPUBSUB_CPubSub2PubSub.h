@@ -274,9 +274,12 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSubConfig : public CORE::CIConfigurable
         public:
 
         typedef std::vector< ExplicitChannelSideTopicOverlayConfig >   ExplicitChannelSideTopicOverlayConfigVector;
+        typedef CPubSubClientConfig::THostAddressVector                THostAddressVector;
 
         CORE::CString sideId;
+        THostAddressVector remoteAddresses;
         ExplicitChannelSideTopicOverlayConfigVector topics;
+        bool autoPopulateTopicsUsingFromSide;
 
         ExplicitChannelSideOverlayConfig( void );
         ExplicitChannelSideOverlayConfig( const ExplicitChannelSideOverlayConfig& src );
