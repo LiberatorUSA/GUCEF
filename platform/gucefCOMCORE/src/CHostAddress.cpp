@@ -133,25 +133,30 @@ bool
 CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
 {GUCEF_TRACE;
 
-    Clear();
+    UInt16 newPort = 0;
+    UInt16 currentPort = GetPortInHostByteOrder();
 
+    Clear();
+    
     Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
     if ( sepCharIndex >= 0 )
     {
         m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
+        newPort = CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex+1, false ), currentPort );
     }
     else
     {
         m_hostname = hostAndPort;
+        newPort = currentPort;
     }
 
     if ( !m_hostname.IsNULLOrEmpty() )
     {
-        return CDnsResolver::Resolve( m_hostname               ,
-                                      GetPortInHostByteOrder() ,
-                                      m_aliases                ,
-                                      m_ipv4                   ,
-                                      m_ipv6                   );
+        return CDnsResolver::Resolve( m_hostname ,
+                                      newPort    ,
+                                      m_aliases  ,
+                                      m_ipv4     ,
+                                      m_ipv6     );
     }
 
     return false;
