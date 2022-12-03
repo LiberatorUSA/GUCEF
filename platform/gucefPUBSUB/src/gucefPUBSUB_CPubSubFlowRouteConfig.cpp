@@ -44,13 +44,113 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfig( void )
+    : CORE::CIConfigurable() 
+    , fromSideTopicName()
+    , toSideTopicName()
+    , failoverSideTopicName()
+    , spilloverSideTopicName()
+    , deadLetterSideTopicName()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfig( const CPubSubFlowRouteTopicConfig& src )
+    : CORE::CIConfigurable( src ) 
+    , fromSideTopicName( src.fromSideTopicName )
+    , toSideTopicName( src.toSideTopicName )
+    , failoverSideTopicName( src.failoverSideTopicName )
+    , spilloverSideTopicName( src.spilloverSideTopicName )
+    , deadLetterSideTopicName( src.deadLetterSideTopicName )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig::~CPubSubFlowRouteTopicConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig& 
+CPubSubFlowRouteTopicConfig::operator=( const CPubSubFlowRouteTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIConfigurable::operator=( src ) ;
+        fromSideTopicName = src.fromSideTopicName;
+        toSideTopicName = src.toSideTopicName;
+        failoverSideTopicName = src.failoverSideTopicName;
+        spilloverSideTopicName = src.spilloverSideTopicName;
+        deadLetterSideTopicName = src.deadLetterSideTopicName;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubFlowRouteTopicConfig::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "fromSideTopicName", fromSideTopicName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "toSideTopicName", toSideTopicName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "failoverSideTopicName", failoverSideTopicName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "spilloverSideTopicName", spilloverSideTopicName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "deadLetterSideTopicName", deadLetterSideTopicName ) && totalSuccess;
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubFlowRouteTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+
+    fromSideTopicName = cfg.GetAttributeValueOrChildValueByName( "fromSideTopicName" ).AsString( fromSideTopicName, true ); 
+    toSideTopicName = cfg.GetAttributeValueOrChildValueByName( "toSideTopicName" ).AsString( toSideTopicName, true ); 
+    failoverSideTopicName = cfg.GetAttributeValueOrChildValueByName( "failoverSideTopicName" ).AsString( failoverSideTopicName, true ); 
+    spilloverSideTopicName = cfg.GetAttributeValueOrChildValueByName( "spilloverSideTopicName" ).AsString( spilloverSideTopicName, true ); 
+    deadLetterSideTopicName = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideTopicName" ).AsString( deadLetterSideTopicName, true ); 
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubFlowRouteTopicConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubFlowRouteTopicConfig";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
     : CORE::CIConfigurable() 
-    , fromSide()
-    , toSide()
-    , failoverSide()
-    , spilloverBufferSide()
-    , deadLetterSide()
+    , fromSideId()
+    , toSideId()
+    , failoverSideId()
+    , spilloverBufferSideId()
+    , deadLetterSideId()
+    , topicAssociations()
+    , toSideTopicsAutoMatchFromSide( false )
+    , failoverSideTopicsAutoMatchFromSide( false )
+    , spilloverSideTopicsAutoMatchFromSide( false )
+    , deadLetterSideTopicsAutoMatchFromSide( false )
 {GUCEF_TRACE;
 
 }
@@ -59,11 +159,16 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
 
 CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& src )
     : CORE::CIConfigurable( src ) 
-    , fromSide( src.fromSide )
-    , toSide( src.toSide )
-    , failoverSide( src.failoverSide )
-    , spilloverBufferSide( src.spilloverBufferSide )
-    , deadLetterSide( src.deadLetterSide )
+    , fromSideId( src.fromSideId )
+    , toSideId( src.toSideId )
+    , failoverSideId( src.failoverSideId )
+    , spilloverBufferSideId( src.spilloverBufferSideId )
+    , deadLetterSideId( src.deadLetterSideId )
+    , topicAssociations( src.topicAssociations )
+    , toSideTopicsAutoMatchFromSide( src.toSideTopicsAutoMatchFromSide )
+    , failoverSideTopicsAutoMatchFromSide( src.failoverSideTopicsAutoMatchFromSide )
+    , spilloverSideTopicsAutoMatchFromSide( src.spilloverSideTopicsAutoMatchFromSide )
+    , deadLetterSideTopicsAutoMatchFromSide( src.deadLetterSideTopicsAutoMatchFromSide )
 {GUCEF_TRACE;
 
 }
@@ -84,11 +189,16 @@ CPubSubFlowRouteConfig::operator=( const CPubSubFlowRouteConfig& src )
     if ( this != &src )
     {
         CORE::CIConfigurable::operator=( src ) ;
-        fromSide = src.fromSide;
-        toSide = src.toSide;
-        failoverSide = src.failoverSide;
-        spilloverBufferSide = src.spilloverBufferSide;
-        deadLetterSide = src.deadLetterSide;
+        fromSideId = src.fromSideId;
+        toSideId = src.toSideId;
+        failoverSideId = src.failoverSideId;
+        spilloverBufferSideId = src.spilloverBufferSideId;
+        deadLetterSideId = src.deadLetterSideId;
+        topicAssociations = src.topicAssociations;
+        toSideTopicsAutoMatchFromSide = src.toSideTopicsAutoMatchFromSide;
+        failoverSideTopicsAutoMatchFromSide = src.failoverSideTopicsAutoMatchFromSide;
+        spilloverSideTopicsAutoMatchFromSide = src.spilloverSideTopicsAutoMatchFromSide;
+        deadLetterSideTopicsAutoMatchFromSide = src.deadLetterSideTopicsAutoMatchFromSide;
     }
     return *this;
 }
@@ -100,12 +210,31 @@ CPubSubFlowRouteConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
-    totalSuccess = cfg.SetAttribute( "fromSide", fromSide ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "toSide", toSide ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "failoverSide", failoverSide ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "spilloverBufferSide", spilloverBufferSide ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "deadLetterSide", deadLetterSide ) && totalSuccess;
-    
+    totalSuccess = cfg.SetAttribute( "fromSideId", fromSideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "toSideId", toSideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "failoverSideId", failoverSideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "spilloverBufferSideId", spilloverBufferSideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "deadLetterSideId", deadLetterSideId ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "toSideTopicsAutoMatchFromSide", toSideTopicsAutoMatchFromSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "failoverSideTopicsAutoMatchFromSide", failoverSideTopicsAutoMatchFromSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "spilloverSideTopicsAutoMatchFromSide", spilloverSideTopicsAutoMatchFromSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "deadLetterSideTopicsAutoMatchFromSide", deadLetterSideTopicsAutoMatchFromSide ) && totalSuccess;
+
+    CORE::CDataNode* topicAssociationsNode = cfg.FindOrAddChild( "topicAssociations" );
+    if ( GUCEF_NULL != topicAssociationsNode )
+    {
+        topicAssociationsNode->DelSubTree();
+        topicAssociationsNode->SetNodeType( GUCEF_DATATYPE_ARRAY );
+        PubSubFlowRouteTopicConfigVector::const_iterator i = topicAssociations.begin();
+        while ( i != topicAssociations.end() )
+        {
+            const CPubSubFlowRouteTopicConfig& topicConfig = (*i);
+            CORE::CDataNode* topicConfigNode = topicAssociationsNode->AddChild();
+            totalSuccess = topicConfig.SaveConfig( *topicConfigNode ) && totalSuccess;
+            ++i;
+        }
+    }    
+
     return totalSuccess;
 }
 
@@ -115,13 +244,38 @@ bool
 CPubSubFlowRouteConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    fromSide = cfg.GetAttributeValueOrChildValueByName( "fromSide" ).AsString( fromSide, true ); 
-    toSide = cfg.GetAttributeValueOrChildValueByName( "toSide" ).AsString( toSide, true ); 
-    failoverSide = cfg.GetAttributeValueOrChildValueByName( "failoverSide" ).AsString( failoverSide, true ); 
-    spilloverBufferSide = cfg.GetAttributeValueOrChildValueByName( "spilloverBufferSide" ).AsString( spilloverBufferSide, true ); 
-    deadLetterSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSide" ).AsString( deadLetterSide, true ); 
+    bool totalSuccess = true;
 
-    return true;
+    fromSideId = cfg.GetAttributeValueOrChildValueByName( "fromSideId" ).AsString( fromSideId, true ); 
+    toSideId = cfg.GetAttributeValueOrChildValueByName( "toSideId" ).AsString( toSideId, true ); 
+    failoverSideId = cfg.GetAttributeValueOrChildValueByName( "failoverSideId" ).AsString( failoverSideId, true ); 
+    spilloverBufferSideId = cfg.GetAttributeValueOrChildValueByName( "spilloverBufferSideId" ).AsString( spilloverBufferSideId, true ); 
+    deadLetterSideId = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideId" ).AsString( deadLetterSideId, true ); 
+    toSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "toSideTopicsAutoMatchFromSide" ).AsBool( toSideTopicsAutoMatchFromSide, true ); 
+    failoverSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "failoverSideTopicsAutoMatchFromSide" ).AsBool( failoverSideTopicsAutoMatchFromSide, true ); 
+    spilloverSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "spilloverSideTopicsAutoMatchFromSide" ).AsBool( spilloverSideTopicsAutoMatchFromSide, true ); 
+    deadLetterSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideTopicsAutoMatchFromSide" ).AsBool( deadLetterSideTopicsAutoMatchFromSide, true ); 
+
+    const CORE::CDataNode* topicAssociationsNode = cfg.FindChild( "topicAssociations" );
+    if ( GUCEF_NULL != topicAssociationsNode )
+    {
+        CORE::CDataNode::const_iterator i = topicAssociationsNode->ConstBegin();
+        while ( i != topicAssociationsNode->ConstEnd() )
+        {
+            CPubSubFlowRouteTopicConfig topicConfig;
+            if ( topicConfig.LoadConfig( *(*i) ) )
+            {
+                topicAssociations.push_back( topicConfig );
+            }
+            else
+            {
+                totalSuccess = false;
+            }            
+            ++i;
+        }
+    }
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,6 +286,18 @@ CPubSubFlowRouteConfig::GetClassTypeName( void ) const
 
     static CORE::CString classTypeName = "GUCEF::PUBSUB::CPubSubFlowRouteConfig";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubFlowRouteConfig::IsAnyAutoTopicMatchingNeeded( void ) const
+{GUCEF_TRACE;
+
+    return toSideTopicsAutoMatchFromSide        ||
+           failoverSideTopicsAutoMatchFromSide  ||
+           spilloverSideTopicsAutoMatchFromSide ||
+           deadLetterSideTopicsAutoMatchFromSide;
 }
 
 /*-------------------------------------------------------------------------//

@@ -226,14 +226,6 @@ CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
                 return false;
             }
 
-            // We are fully config driven with no programatically defined topics
-            // As such the config must have yielded at least 1 topic
-            if ( sideSettings.pubsubClientConfig.topics.empty() )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, having at least one topic configured for the client section is mandatory" );
-                return false;
-            }
-
             if ( (*n)->GetName().IsNULLOrEmpty() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, we need a valid name for the side" );
@@ -271,8 +263,8 @@ CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
         // this setting matches the historical behaviour, this route wont have any failover or spillover or dead letter
         flowRouterConfig.Clear();        
         CPubSubFlowRouteConfig implicitRoute;
-        implicitRoute.fromSide = "*";
-        implicitRoute.toSide = "*";
+        implicitRoute.fromSideId = "*";
+        implicitRoute.toSideId = "*";
         flowRouterConfig.routes.push_back( implicitRoute );
 
         // We also use the safest setting for the ack style

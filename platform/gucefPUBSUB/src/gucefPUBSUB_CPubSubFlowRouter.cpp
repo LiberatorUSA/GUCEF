@@ -316,6 +316,46 @@ CPubSubFlowRouter::ClearRoutes( void )
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientSidePtr
+CPubSubFlowRouter::GetSideWithId( const TPubSubClientSidePtrVector& sides ,
+                                  const CORE::CString& sideId             )
+{GUCEF_TRACE;
+
+    TPubSubClientSidePtrVector::const_iterator i = sides.begin();
+    while ( i != sides.end() )
+    {
+        const CPubSubClientSidePtr& side = (*i);
+        if ( side->GetSideId() == sideId )
+        {
+            return side;
+        }
+        ++i;
+    }
+    return CPubSubClientSidePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig* 
+CPubSubFlowRouter::FindTopicConfig( CPubSubFlowRouteConfig::PubSubFlowRouteTopicConfigVector& topicAssociations ,
+                                    const CORE::CString& fromSideTopicName                                      )
+{GUCEF_TRACE;
+
+    CPubSubFlowRouteConfig::PubSubFlowRouteTopicConfigVector::iterator i = topicAssociations.begin();
+    while ( i != topicAssociations.end() )
+    {
+        CPubSubFlowRouteTopicConfig& topicConfig = (*i);
+        if ( topicConfig.fromSideTopicName == fromSideTopicName )
+        {
+            return &topicConfig;
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfig ,
                                     TPubSubClientSidePtrVector& sides             ,
@@ -339,10 +379,10 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::const_iterator n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" != (*n).toSide )
-            knownSides.insert( (*n).toSide );
-        if ( "*" != (*n).fromSide )
-            knownSides.insert( (*n).fromSide );
+        if ( "*" != (*n).toSideId )
+            knownSides.insert( (*n).toSideId );
+        if ( "*" != (*n).fromSideId )
+            knownSides.insert( (*n).fromSideId );
         ++n;
     }
 
@@ -356,16 +396,16 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" != (*n).fromSide &&  "*" != (*n).toSide )
+        if ( "*" != (*n).fromSideId &&  "*" != (*n).toSideId )
         {
-            explicitRoutes.Set( (*n).fromSide, (*n).toSide );
+            explicitRoutes.Set( (*n).fromSideId, (*n).toSideId );
             
             // Nothing to normalize, just copy to the normalized output
             normalizedConfig.routes.push_back( (*n) );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: We have an explicit route from \"" + 
-                    (*n).fromSide + "\" to \"" + (*n).toSide + "\" with failover side \"" + (*n).failoverSide + "\" and spillover side \"" +
-                    (*n).spilloverBufferSide + "\" and deadletter side \"" + (*n).deadLetterSide + "\"" );
+                    (*n).fromSideId + "\" to \"" + (*n).toSideId + "\" with failover side \"" + (*n).failoverSideId + "\" and spillover side \"" +
+                    (*n).spilloverBufferSideId + "\" and deadletter side \"" + (*n).deadLetterSideId + "\"" );
         }
         ++n;
     }
@@ -377,54 +417,54 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" == (*n).toSide && "*" != (*n).fromSide )
+        if ( "*" == (*n).toSideId && "*" != (*n).fromSideId )
         {
              // Try to generate routes using all known sides
              CORE::CString::StringSet::iterator m = knownSides.begin();
              while ( m != knownSides.end() )
              {
                 // Don't generate a route where the 'from' and 'to' are the same side
-                if ( (*n).fromSide != (*m) )
+                if ( (*n).fromSideId != (*m) )
                 {
                     // Don't generate a route if an explicit route was specified
-                    if ( !explicitRoutes.HasKeyAndValue( (*n).fromSide, (*m) ) )
+                    if ( !explicitRoutes.HasKeyAndValue( (*n).fromSideId, (*m) ) )
                     {
                         CPubSubFlowRouteConfig route( (*n) );
-                        route.toSide = (*m);
+                        route.toSideId = (*m);
                         normalizedConfig.routes.push_back( route );
 
-                        explicitRoutes.Set( route.fromSide, route.toSide );
+                        explicitRoutes.Set( route.fromSideId, route.toSideId );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
-                                route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
+                                route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
+                                route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
                     }                
                 }
                 ++m;
              }
         }
         else
-        if ( "*" == (*n).fromSide && "*" != (*n).toSide )
+        if ( "*" == (*n).fromSideId && "*" != (*n).toSideId )
         {
              // Try to generate routes using all known sides
              CORE::CString::StringSet::iterator m = knownSides.begin();
              while ( m != knownSides.end() )
              {
                 // Don't generate a route where the 'from' and 'to' are the same side
-                if ( (*n).toSide != (*m) )
+                if ( (*n).toSideId != (*m) )
                 {
                     // Don't generate a route if an explicit route was specified
-                    if ( !explicitRoutes.HasKeyAndValue( (*n).toSide, (*m) ) )
+                    if ( !explicitRoutes.HasKeyAndValue( (*n).toSideId, (*m) ) )
                     {
                         CPubSubFlowRouteConfig route( (*n) );
-                        route.fromSide = (*m);
+                        route.fromSideId = (*m);
                         normalizedConfig.routes.push_back( route );
 
-                        explicitRoutes.Set( route.fromSide, route.toSide );
+                        explicitRoutes.Set( route.fromSideId, route.toSideId );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
-                                route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
+                                route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
+                                route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
                     }                
                 }
                 ++m;
@@ -439,7 +479,7 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" == (*n).fromSide &&  "*" == (*n).toSide )
+        if ( "*" == (*n).fromSideId &&  "*" == (*n).toSideId )
         {
             if ( !foundCatchAll )
             {
@@ -459,15 +499,15 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                             if ( !explicitRoutes.HasKeyAndValue( (*m), (*k) ) )
                             {
                                 CPubSubFlowRouteConfig route( (*n) );
-                                route.fromSide = (*m);
-                                route.toSide = (*k);
+                                route.fromSideId = (*m);
+                                route.toSideId = (*k);
                                 normalizedConfig.routes.push_back( route );
 
-                                explicitRoutes.Set( route.fromSide, route.toSide );
+                                explicitRoutes.Set( route.fromSideId, route.toSideId );
 
                                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated catch-all route from \"" + 
-                                        route.fromSide + "\" to \"" + route.toSide + "\" with failover side \"" + route.failoverSide + "\" and spillover side \"" +
-                                        route.spilloverBufferSide + "\" and deadletter side \"" + route.deadLetterSide + "\"" );
+                                        route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
+                                        route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
                             }
                         }
                         ++k;
@@ -481,6 +521,53 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
             }
         }
         ++n;
+    }
+
+    // if the router config dictates that we should match topics mappings across sides we will do so now
+
+    CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::iterator r = normalizedConfig.routes.begin();
+    while ( r != normalizedConfig.routes.end() )
+    {
+        CPubSubFlowRouteConfig& routeConfig = (*r);
+        CPubSubClientSidePtr fromSide = GetSideWithId( sides, routeConfig.fromSideId );
+        if ( !fromSide.IsNULL() )
+        {   
+            if ( routeConfig.IsAnyAutoTopicMatchingNeeded() )
+            {
+                CORE::CString::StringSet fromSideTopicNames;
+                if ( fromSide->GetCurrentTopicNames( fromSideTopicNames ) )
+                {
+                    CORE::CString::StringSet::iterator t = fromSideTopicNames.begin();
+                    while ( t != fromSideTopicNames.end() )
+                    {                    
+                        const CORE::CString& fromSideTopicName = (*t);
+                        CPubSubFlowRouteTopicConfig* topicRouteConfig = FindTopicConfig( routeConfig.topicAssociations, fromSideTopicName ); 
+                        if ( GUCEF_NULL == topicRouteConfig )
+                        {
+                            CPubSubFlowRouteTopicConfig newRoute;
+                            newRoute.fromSideTopicName = fromSideTopicName;
+                            routeConfig.topicAssociations.push_back( newRoute );
+                            topicRouteConfig = &routeConfig.topicAssociations.back();
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Auto added new topic association entry for side " + routeConfig.fromSideId + 
+                                " + and from-topic " + fromSideTopicName );
+                        }
+                
+                        if ( routeConfig.toSideTopicsAutoMatchFromSide && !routeConfig.toSideId.IsNULLOrEmpty() && topicRouteConfig->toSideTopicName.IsNULLOrEmpty() )
+                            topicRouteConfig->toSideTopicName = fromSideTopicName;    
+                        if ( routeConfig.failoverSideTopicsAutoMatchFromSide && !routeConfig.failoverSideId.IsNULLOrEmpty() && topicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() )
+                            topicRouteConfig->failoverSideTopicName = fromSideTopicName; 
+                        if ( routeConfig.spilloverSideTopicsAutoMatchFromSide && !routeConfig.spilloverBufferSideId.IsNULLOrEmpty() && topicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() )
+                            topicRouteConfig->spilloverSideTopicName = fromSideTopicName; 
+                        if ( routeConfig.deadLetterSideTopicsAutoMatchFromSide && !routeConfig.deadLetterSideId.IsNULLOrEmpty() && topicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() )
+                            topicRouteConfig->deadLetterSideTopicName = fromSideTopicName; 
+               
+                        ++t;
+                    }
+                }
+            }
+        }
+        ++r;
     }
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: There are now " + CORE::ToString( normalizedConfig.routes.size() ) + " explicit routes configured" );
@@ -529,28 +616,28 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
             CORE::CString sideId = (*n)->GetSideId();
             if ( !sideId.IsNULLOrEmpty() )
             {
-                if ( routeConfig.fromSide == sideId )
+                if ( routeConfig.fromSideId == sideId )
                     fromSide = (*n);
                 else
-                if ( routeConfig.toSide == sideId )
+                if ( routeConfig.toSideId == sideId )
                 {
                     toSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.failoverSide == sideId )
+                if ( routeConfig.failoverSideId == sideId )
                 {
                     failoverSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.spilloverBufferSide == sideId )
+                if ( routeConfig.spilloverBufferSideId == sideId )
                 {
                     spilloverSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.deadLetterSide == sideId )
+                if ( routeConfig.deadLetterSideId == sideId )
                 {
                     deadletterSide = (*n);
                     ++possibleRoutes;
@@ -577,7 +664,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Unable to find sides referenced in route " +
-                routeConfig.fromSide + " -> " + routeConfig.toSide + ". Route has no effect" );
+                routeConfig.fromSideId + " -> " + routeConfig.toSideId + ". Route has no effect" );
         }
 
         ++i;

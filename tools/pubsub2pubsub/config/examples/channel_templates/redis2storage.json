@@ -1,6 +1,6 @@
 {
 	"channelId": "-1",
-	"channelName": "redis2storage",		
+	"channelName": "redis2storage",
 	"collectMetrics": "true",
 	"metricsIntervalInMs": "1000",
 	"ticketRefillOnBusyCycle": "10000",
@@ -23,28 +23,25 @@
 				"maxTotalMsgsInFlight": 100000,
 				"RemoteAddresses": ["127.0.0.1:6379"],
 				"CustomConfig": {},
-				"Topics": {
-					"0": {
-						"PubSubClientTopicConfig": {
-							"isOptional": false,
-							"needSubscribeSupport": true,
-							"needPublishSupport": false,
-							"preferDedicatedConnection": false,
-							"topicName": "put-your-redis-stream-name-here",
-							"consumerGroupName": "",
-							"consumerName": "",
-							"useTopicLevelMaxTotalMsgsInFlight": false,
-							"maxTotalMsgsInFlight": -1,
-							"CustomConfig": {
-								"redisXAddMaxLen": -1,
-								"redisXAddMaxLenIsApproximate": true,
-								"redisXAddIgnoreMsgId": true,
-								"redisXReadDefaultOffset": "0",
-								"redisXReadBlockTimeoutInMs": 1000,
-								"treatXReadBlockTimeoutAsEndOfDataEvent": true,
-								"minAvailableInFlightSlotsBeforeRead": 900
-							}
-						}
+				"Topics": [],
+				"defaultTopicConfig": {
+					"isOptional": false,
+					"needSubscribeSupport": true,
+					"needPublishSupport": false,
+					"preferDedicatedConnection": false,
+					"topicName": "put-your-redis-stream-name-here",
+					"consumerGroupName": "",
+					"consumerName": "",
+					"useTopicLevelMaxTotalMsgsInFlight": false,
+					"maxTotalMsgsInFlight": -1,
+					"CustomConfig": {
+						"redisXAddMaxLen": -1,
+						"redisXAddMaxLenIsApproximate": true,
+						"redisXAddIgnoreMsgId": true,
+						"redisXReadDefaultOffset": "0",
+						"redisXReadBlockTimeoutInMs": 1000,
+						"treatXReadBlockTimeoutAsEndOfDataEvent": true,
+						"minAvailableInFlightSlotsBeforeRead": 900
 					}
 				},
 				"DesiredFeatures": {
@@ -113,50 +110,47 @@
 				"pubsubIdPrefix": "{auto}",
 				"maxTotalMsgsInFlight": 100000,
 				"CustomConfig": {},
-				"Topics": {
-					"0": {
-						"PubSubClientTopicConfig": {
-							"isOptional": false,
-							"needSubscribeSupport": false,
-							"needPublishSupport": true,
-							"preferDedicatedConnection": false,
-							"topicName": "msgcapture",
-							"consumerGroupName": "",
-							"consumerName": "",
-							"useTopicLevelMaxTotalMsgsInFlight": false,
-							"maxTotalMsgsInFlight": -1,
-							"CustomConfig": {
-								"desiredNrOfBuffers": 3,
-								"desiredMinimalSerializedBlockSize": 52428800,
-								"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 30000,
-								"vfsStorageRootPath": "InstallPath/pubsub/storage/{pubsubIdPrefix}/{metricsFriendlyTopicName}",
-								"vfsFileExtention": "pubsubcapture",
-								"encodeCodecFamily": "",
-								"encodeCodecName": "",
-								"decodeCodecFamily": "",
-								"decodeCodecName": "",
-								"ticketRefillOnBusyCycle": 10000,
-								"performVfsOpsASync": false,
-								"performVfsOpsInDedicatedThread": false,
-								"applyDedicatedVfsOpsThreadCpuAffinity": false,
-								"cpuAffinityForDedicatedVfsOpsThread": 0,
-								"collectMetrics": true,
-								"subscribeWithoutBookmarkIfNoneIsPersisted": true,
-								"autoPushAfterStartupIfStorageToPubSub": true,
-								"autoPushAfterStartupIsPersistent": true,
-								"youngestStoragePubSubMsgFileToLoad": "",
-								"oldestStoragePubSubMsgFileToLoad": "",
-								"defaultCodecDecodeGrowthRatioExpectation": 6.0,
-								"bestEffortDeserializeIsAllowed": true,
-								"maxStorageCorruptionDetectionsToBeHealthy": 0,
-								"maxStorageDeserializationFailuresToBeHealthy": 0,
-								"treatEveryFullfilledRequestAsEODEvent": false,
-								"deleteContainersWithFullyAckdContent": false,
-								"moveContainersWithFullyAckdContent": true,
-								"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
-								"maxCompletedContainerRefsToRetain": 50
-							}
-						}
+				"Topics": [],
+				"defaultTopicConfig": {
+					"isOptional": false,
+					"needSubscribeSupport": false,
+					"needPublishSupport": true,
+					"preferDedicatedConnection": false,
+					"topicName": "msgcapture",
+					"consumerGroupName": "",
+					"consumerName": "",
+					"useTopicLevelMaxTotalMsgsInFlight": false,
+					"maxTotalMsgsInFlight": -1,
+					"CustomConfig": {
+						"desiredNrOfBuffers": 3,
+						"desiredMinimalSerializedBlockSize": 52428800,
+						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 30000,
+						"vfsStorageRootPath": "InstallPath/pubsub/storage/{pubsubIdPrefix}/{metricsFriendlyTopicName}",
+						"vfsFileExtention": "pubsubcapture",
+						"encodeCodecFamily": "",
+						"encodeCodecName": "",
+						"decodeCodecFamily": "",
+						"decodeCodecName": "",
+						"ticketRefillOnBusyCycle": 10000,
+						"performVfsOpsASync": false,
+						"performVfsOpsInDedicatedThread": false,
+						"applyDedicatedVfsOpsThreadCpuAffinity": false,
+						"cpuAffinityForDedicatedVfsOpsThread": 0,
+						"collectMetrics": true,
+						"subscribeWithoutBookmarkIfNoneIsPersisted": true,
+						"autoPushAfterStartupIfStorageToPubSub": true,
+						"autoPushAfterStartupIsPersistent": true,
+						"youngestStoragePubSubMsgFileToLoad": "",
+						"oldestStoragePubSubMsgFileToLoad": "",
+						"defaultCodecDecodeGrowthRatioExpectation": 6.0,
+						"bestEffortDeserializeIsAllowed": true,
+						"maxStorageCorruptionDetectionsToBeHealthy": 0,
+						"maxStorageDeserializationFailuresToBeHealthy": 0,
+						"treatEveryFullfilledRequestAsEODEvent": false,
+						"deleteContainersWithFullyAckdContent": false,
+						"moveContainersWithFullyAckdContent": true,
+						"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
+						"maxCompletedContainerRefsToRetain": 50
 					}
 				},
 				"DesiredFeatures": {
@@ -218,11 +212,16 @@
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
 		"routes": [{
-			"fromSide": "redis-source",
-			"toSide": "storage-sink",
-			"failoverSide": "",
-			"spilloverBufferSide": "",
-			"deadLetterSide": ""
+			"fromSideId": "redis-source",
+			"toSideId": "storage-sink",
+			"failoverSideId": "",
+			"spilloverBufferSideId": "",
+			"deadLetterSideId": "",
+			"toSideTopicsAutoMatchFromSide": true,
+			"failoverSideTopicsAutoMatchFromSide": true,
+			"spilloverSideTopicsAutoMatchFromSide": true,
+			"deadLetterSideTopicsAutoMatchFromSide": true,
+			"topicAssociations": []
 		}]
 	}
 }

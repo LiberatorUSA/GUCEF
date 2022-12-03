@@ -253,14 +253,6 @@ CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
             return false;
         }
-
-        // We are fully config driven with no programatically defined topics
-        // As such the config must have yielded at least 1 topic
-        if ( pubsubClientConfig.topics.empty() )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubSideChannelConfig:LoadConfig: config is malformed, having at least one topic configured for the client section is mandatory" );
-            return false;
-        }
     }
     else
     {

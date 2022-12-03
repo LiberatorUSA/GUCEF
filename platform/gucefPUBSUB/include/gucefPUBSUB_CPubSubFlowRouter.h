@@ -111,7 +111,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
                                     CIPubSubMsg::TNoLockSharedPtr& msg );
     
     virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    static CPubSubClientSidePtr GetSideWithId( const TPubSubClientSidePtrVector& sides ,
+                                               const CORE::CString& sideId             );
 
+    static CPubSubFlowRouteTopicConfig* FindTopicConfig( CPubSubFlowRouteConfig::PubSubFlowRouteTopicConfigVector& topicAssociations ,
+                                                         const CORE::CString& fromSideTopicName                                      );
+    
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     protected:

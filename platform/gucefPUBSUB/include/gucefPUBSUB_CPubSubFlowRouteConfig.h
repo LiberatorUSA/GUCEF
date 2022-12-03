@@ -55,17 +55,65 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
+/**
+ *  Class which hold the configuration representing a pubsub route between named topics of known pubsub 'sides'
+ * 
+ *  Using the topic names for known sides it logically refers to said topics to spell out a mapping between them that the sides themselves are oblivious of
+ *  The flow router uses this information to correctly route data between sides and their associated client's topics for a given channel
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteTopicConfig : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< CPubSubFlowRouteConfig >   PubSubFlowRouteConfigVector;
+    typedef std::vector< CPubSubFlowRouteTopicConfig, basic_allocator< CPubSubFlowRouteTopicConfig > >   PubSubFlowRouteTopicConfigVector;
 
-    CORE::CString fromSide;             /**< primary 'from' side for this route */
-    CORE::CString toSide;               /**< primary 'to' side for this route */
-    CORE::CString failoverSide;         /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
-    CORE::CString spilloverBufferSide;  /**< if the primary and failover is unhealthy or is a slow consumer the spill over acts as buffer for the route publishing/subscribing to said side */
-    CORE::CString deadLetterSide;       /**< unable-to-publish messages on configured channels with no remaining remedies go here */
+    CORE::CString fromSideTopicName;        /**< primary 'from' side topic for this route */
+    CORE::CString toSideTopicName;          /**< primary 'to' side topic for this route */
+    CORE::CString failoverSideTopicName;    /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
+    CORE::CString spilloverSideTopicName;   /**< if the primary and failover is unhealthy or is a slow consumer the spill over acts as buffer for the route publishing/subscribing to said side */
+    CORE::CString deadLetterSideTopicName;  /**< unable-to-publish messages on configured channels with no remaining remedies go here */
+
+    CPubSubFlowRouteTopicConfig( void );
+
+    CPubSubFlowRouteTopicConfig( const CPubSubFlowRouteTopicConfig& src );
+
+    virtual ~CPubSubFlowRouteTopicConfig();
+
+    CPubSubFlowRouteTopicConfig& operator=( const CPubSubFlowRouteTopicConfig& src );
+
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class which hold the configuration representing a pubsub route between pubsub 'sides'
+ * 
+ *  Using the ids of sides it logically refers to said sides to spell out a mapping between them that the sides themselves are oblivious of
+ *  The flow router uses this information to correctly route data between sides for a given channel
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
+{
+    public:
+                                                                            
+    typedef std::vector< CPubSubFlowRouteConfig, basic_allocator< CPubSubFlowRouteConfig > >        PubSubFlowRouteConfigVector;                                                
+    typedef CPubSubFlowRouteTopicConfig::PubSubFlowRouteTopicConfigVector                           PubSubFlowRouteTopicConfigVector;
+
+    CORE::CString fromSideId;                              /**< primary 'from' side for this route */
+    CORE::CString toSideId;                                /**< primary 'to' side for this route */
+    CORE::CString failoverSideId;                          /**< if the primary flow fails traffic would be rerouted here as a equivelant */ 
+    CORE::CString spilloverBufferSideId;                   /**< if the primary and failover is unhealthy or is a slow consumer the spill over acts as buffer for the route publishing/subscribing to said side */
+    CORE::CString deadLetterSideId;                        /**< unable-to-publish messages on configured channels with no remaining remedies go here */
+    PubSubFlowRouteTopicConfigVector topicAssociations;    /**< Beyond the sides there is the mapping of which topics are associated with what other topic on the other sides if any, this holds that information */
+    bool toSideTopicsAutoMatchFromSide;                    /**< Whether 'to' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
+    bool failoverSideTopicsAutoMatchFromSide;              /**< Whether 'failover' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
+    bool spilloverSideTopicsAutoMatchFromSide;             /**< Whether 'spillover' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
+    bool deadLetterSideTopicsAutoMatchFromSide;            /**< Whether 'deadletter' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
 
     CPubSubFlowRouteConfig( void );
 
@@ -80,6 +128,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
     virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool IsAnyAutoTopicMatchingNeeded( void ) const;
 
 };
 

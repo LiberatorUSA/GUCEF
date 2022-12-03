@@ -87,15 +87,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
     
     // The following are runtime and config time available:
 
-    CORE::CString pubsubClientType;          /**< the string form type name of the pub-sub client */
-    CPubSubClientFeatures desiredFeatures;   /**< desired feature set of the client */ 
-    CORE::CDataNode customConfig;            /**< client type specific configuration, if any */    
-    CORE::UInt32 reconnectDelayInMs;         /**< minimal time to wait before attempting a reconnect if the client supports auto reconnects */
-    CORE::Int64 maxTotalMsgsInFlight;        /**< desired max nr of messages in transit, -1 is infinite */
-    THostAddressVector remoteAddresses;      /**< primary addresses of the remote host(s) if applicable */
-    TPubSubClientTopicConfigVector topics;   /**< config related to specific topics you want the client to deal with */
-    CORE::CString metricsPrefix;             /**< metric key prefix to apply if metrics are enabled */
-    CORE::CString pubsubIdPrefix;            /**< unique but consistent prefix for the pubsub instance, can be used for persistance addressability */
+    CORE::CString pubsubClientType;                 /**< the string form type name of the pub-sub client */
+    CPubSubClientFeatures desiredFeatures;          /**< desired feature set of the client */ 
+    CORE::CDataNode customConfig;                   /**< client type specific configuration, if any */    
+    CORE::UInt32 reconnectDelayInMs;                /**< minimal time to wait before attempting a reconnect if the client supports auto reconnects */
+    CORE::Int64 maxTotalMsgsInFlight;               /**< desired max nr of messages in transit, -1 is infinite */
+    THostAddressVector remoteAddresses;             /**< primary addresses of the remote host(s) if applicable */
+    TPubSubClientTopicConfigVector topics;          /**< config related to specific topics you want the client to deal with, explicitly configured per topic */
+    CPubSubClientTopicConfig defaultTopicConfig;    /**< config used as the default topic config when creating new topic access */
+    CORE::CString metricsPrefix;                    /**< metric key prefix to apply if metrics are enabled */
+    CORE::CString pubsubIdPrefix;                   /**< unique but consistent prefix for the pubsub instance, can be used for persistance addressability */
     
     // The following are runtime available:
 

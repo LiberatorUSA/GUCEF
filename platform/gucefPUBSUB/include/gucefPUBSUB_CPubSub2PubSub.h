@@ -279,7 +279,6 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSubConfig : public CORE::CIConfigurable
         CORE::CString sideId;
         THostAddressVector remoteAddresses;
         ExplicitChannelSideTopicOverlayConfigVector topics;
-        bool autoPopulateTopicsUsingFromSide;
 
         ExplicitChannelSideOverlayConfig( void );
         ExplicitChannelSideOverlayConfig( const ExplicitChannelSideOverlayConfig& src );

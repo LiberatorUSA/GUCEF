@@ -61,6 +61,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_CLIENT_MAX_IN_FLIGHT )
     , remoteAddresses()
     , topics()
+    , defaultTopicConfig()
     , metricsPrefix()
     , pubsubIdPrefix()
     , pulseGenerator( GUCEF_NULL )
@@ -79,6 +80,7 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , remoteAddresses( src.remoteAddresses )
     , topics( src.topics )
+    , defaultTopicConfig( src.defaultTopicConfig )
     , metricsPrefix( src.metricsPrefix )
     , pubsubIdPrefix( src.pubsubIdPrefix )
     , pulseGenerator( src.pulseGenerator )
@@ -109,6 +111,7 @@ CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
         maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
         remoteAddresses = src.remoteAddresses;
         topics = src.topics;
+        defaultTopicConfig = src.defaultTopicConfig;
         metricsPrefix = src.metricsPrefix;
         pubsubIdPrefix = src.pubsubIdPrefix;
 
@@ -147,13 +150,9 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
        
     cfg.CopySubTree( customConfig );    
 
-    CORE::CDataNode* desiredFeaturesCfg = cfg.FindChild( "DesiredFeatures" );
+    CORE::CDataNode* desiredFeaturesCfg = cfg.FindOrAddChild( "DesiredFeatures" );
     if ( GUCEF_NULL == desiredFeaturesCfg )
-    {
-        desiredFeaturesCfg = cfg.AddChild( "DesiredFeatures", GUCEF_DATATYPE_OBJECT );
-        if ( GUCEF_NULL == desiredFeaturesCfg )
-            return false;
-    }
+       return false;
     totalSuccess = desiredFeatures.SaveConfig( *desiredFeaturesCfg ) && totalSuccess;
 
     if ( !topics.empty() )
@@ -173,6 +172,11 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
             }            
         }
     }
+
+    CORE::CDataNode* defaultTopicCfgNode = cfg.FindOrAddChild( "defaultTopicConfig" );
+    if ( GUCEF_NULL == defaultTopicCfgNode )
+        return false;
+    totalSuccess = defaultTopicConfig.SaveConfig( *defaultTopicCfgNode ) && totalSuccess;
 
     return totalSuccess;
 }
@@ -239,6 +243,16 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
                 }
                 ++i; ++n;            
             }
+        }
+    }
+
+    const CORE::CDataNode* defaultTopicConfigNode = cfg.FindChild( "defaultTopicConfig" );
+    if ( GUCEF_NULL != defaultTopicConfigNode )
+    {
+        if ( !defaultTopicConfig.LoadConfig( *defaultTopicConfigNode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load defaultTopicConfig section" );
+            return false;
         }
     }
 

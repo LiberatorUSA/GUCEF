@@ -1,6 +1,6 @@
 {
 	"channelId": -1,
-	"channelName": "msmq2kafka",
+	"channelName": "msmq2web",
 	"collectMetrics": true,
 	"metricsIntervalInMs": 1000,
 	"ticketRefillOnBusyCycle": 10000,

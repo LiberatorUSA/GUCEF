@@ -795,7 +795,8 @@ CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVec
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                                CPubSubClientTopic* specificTargetTopic              )
 {GUCEF_TRACE;
     
     // We need to determine if the caller is running in the same thread
@@ -2374,6 +2375,25 @@ CPubSubClientSide::GetSideId( void ) const
 {GUCEF_TRACE;
 
     return m_sideId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientSide::GetCurrentTopicNames( CORE::CString::StringSet& topicNames ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator t = m_sideSettings.pubsubClientConfig.topics.begin();
+    while ( t != m_sideSettings.pubsubClientConfig.topics.end() )
+    {
+        const CPubSubClientTopicConfig& topicConfig = (*t);
+        topicNames.insert( topicConfig.topicName );
+        ++t;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

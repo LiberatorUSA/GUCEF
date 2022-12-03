@@ -179,7 +179,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool HasSubscribersNeedingAcks( void ) const;
 
-    bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                      CPubSubClientTopic* specificTargetTopic = GUCEF_NULL );
 
     virtual bool IsHealthy( void ) const;
 
@@ -196,6 +197,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CPubSubClientPtr GetCurrentUnderlyingPubSubClient( void );
 
     void SetPerformConnectOnTaskStart( bool performConnectOnStart );
+
+    bool GetCurrentTopicNames( CORE::CString::StringSet& topicNames ) const;
 
     static void RegisterEvents( void );
 

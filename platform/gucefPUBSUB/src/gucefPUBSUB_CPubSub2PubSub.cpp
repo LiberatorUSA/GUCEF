@@ -451,7 +451,6 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverla
     , sideId()
     , remoteAddresses()
     , topics()
-    , autoPopulateTopicsUsingFromSide( false )
 {GUCEF_TRACE;
 
 }
@@ -463,7 +462,6 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::ExplicitChannelSideOverla
     , sideId( src.sideId )
     , remoteAddresses( src.remoteAddresses )
     , topics( src.topics )
-    , autoPopulateTopicsUsingFromSide( src.autoPopulateTopicsUsingFromSide )
 {GUCEF_TRACE;
 
 }
@@ -484,7 +482,6 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::SaveConfig( CORE::CDataNo
     bool totalSuccess = true;
 
     totalSuccess = cfg.SetAttribute( "sideId", sideId ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "autoPopulateTopicsUsingFromSide", autoPopulateTopicsUsingFromSide ) && totalSuccess; 
 
     CORE::CDataNode* remoteAddressesNode = cfg.FindOrAddChild( "remoteAddresses" );
     if ( GUCEF_NULL != remoteAddressesNode )
@@ -533,7 +530,6 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::LoadConfig( const CORE::C
 {GUCEF_TRACE;
 
     sideId = cfg.GetAttributeValue( "sideId" ).AsString( sideId, true );
-    autoPopulateTopicsUsingFromSide = cfg.GetAttributeValue( "autoPopulateTopicsUsingFromSide" ).AsBool( autoPopulateTopicsUsingFromSide, true );
     
     // Find the optional list of remote addressess
     // If it exists we apply it otherwise assume the default template setting is sufficient
@@ -554,8 +550,6 @@ PubSub2PubSubConfig::ExplicitChannelSideOverlayConfig::LoadConfig( const CORE::C
         }
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:ExplicitChannelSideOverlayConfig:LoadConfig: Loaded " + CORE::ToString( remoteAddresses.size() ) + " remote addresses for side overlay" );
     }
-
-    autoPopulateTopicsUsingFromSide = cfg.GetAttributeValueOrChildValueByName( "autoPopulateTopicsUsingFromSide" ).AsBool( autoPopulateTopicsUsingFromSide, true );
 
     const CORE::CDataNode* topicsNode = cfg.FindChild( "topics" );
     if ( GUCEF_NULL == topicsNode )
@@ -715,6 +709,8 @@ PubSub2PubSubConfig::NumericalAutoChannelConfig::NumericalAutoChannelConfig( voi
     : CORE::CIConfigurable()
     , usingTemplate()
     , channelCount( 0 )
+    , firstChannelId( 1 )
+    , channelIds()
 {GUCEF_TRACE;
 
 }
@@ -725,6 +721,8 @@ PubSub2PubSubConfig::NumericalAutoChannelConfig::NumericalAutoChannelConfig( con
     : CORE::CIConfigurable( src )
     , usingTemplate( src.usingTemplate )
     , channelCount( src.channelCount )
+    , firstChannelId( src.firstChannelId )
+    , channelIds( src.channelIds )
 {GUCEF_TRACE;
 
 }
@@ -1052,26 +1050,19 @@ PubSub2PubSubConfig::NormalizeConfig( void )
                     if ( !sideOverlayConfig.remoteAddresses.empty() )
                         sideConfig->pubsubClientConfig.remoteAddresses = sideOverlayConfig.remoteAddresses;
                     
-                    if ( !sideConfig->pubsubClientConfig.topics.empty() )
+                    ExplicitChannelSideOverlayConfig::ExplicitChannelSideTopicOverlayConfigVector::iterator t = sideOverlayConfig.topics.begin();
+                    while ( t != sideOverlayConfig.topics.end() )
                     {
-                        // grab a topic config template copy and prep for 'real' config
-                        CPubSubClientTopicConfig topicConfigTemplate( sideConfig->pubsubClientConfig.topics.front() );    
-                        sideConfig->pubsubClientConfig.topics.clear();
-
-                        ExplicitChannelSideOverlayConfig::ExplicitChannelSideTopicOverlayConfigVector::iterator t = sideOverlayConfig.topics.begin();
-                        while ( t != sideOverlayConfig.topics.end() )
-                        {
-                            ExplicitChannelSideTopicOverlayConfig& topicOverlayConfig = (*t);
-                            CPubSubClientTopicConfig topicConfig( topicConfigTemplate );
+                        ExplicitChannelSideTopicOverlayConfig& topicOverlayConfig = (*t);
+                        CPubSubClientTopicConfig topicConfig( sideConfig->pubsubClientConfig.defaultTopicConfig );
                             
-                            // apply the overlay values
-                            topicConfig.topicName = topicOverlayConfig.topicName;
+                        // apply the overlay values
+                        topicConfig.topicName = topicOverlayConfig.topicName;
 
-                            sideConfig->pubsubClientConfig.topics.push_back( topicConfig );
-                            ++t;
-                        }
-                    }
-                    
+                        sideConfig->pubsubClientConfig.topics.push_back( topicConfig );
+
+                        ++t;
+                    }                    
                 }
                 
                 ++s;
