@@ -131,6 +131,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
 
     bool IsAnyAutoTopicMatchingNeeded( void ) const;
 
+    CPubSubFlowRouteTopicConfig* FindTopicAssociation( const CORE::CString& fromTopicName );
+
+    CPubSubFlowRouteTopicConfig* FindOrCreateTopicAssociation( const CORE::CString& fromTopicName );
+
 };
 
 /*-------------------------------------------------------------------------//

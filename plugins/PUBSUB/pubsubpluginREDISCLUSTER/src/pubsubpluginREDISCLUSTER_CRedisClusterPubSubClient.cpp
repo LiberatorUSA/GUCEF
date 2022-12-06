@@ -565,7 +565,7 @@ CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return &m_config.defaultTopicConfig;
 }
 
 /*-------------------------------------------------------------------------*/

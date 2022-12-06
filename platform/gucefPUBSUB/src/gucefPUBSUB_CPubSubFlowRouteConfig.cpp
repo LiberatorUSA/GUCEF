@@ -300,6 +300,58 @@ CPubSubFlowRouteConfig::IsAnyAutoTopicMatchingNeeded( void ) const
            deadLetterSideTopicsAutoMatchFromSide;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig*
+CPubSubFlowRouteConfig::FindTopicAssociation( const CORE::CString& fromTopicName )
+{GUCEF_TRACE;
+
+    PubSubFlowRouteTopicConfigVector::iterator i = topicAssociations.begin();
+    while ( i != topicAssociations.end() )
+    {
+        CPubSubFlowRouteTopicConfig& topicConfig = (*i);
+        if ( topicConfig.fromSideTopicName == fromTopicName )
+            return &topicConfig;
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubFlowRouteTopicConfig*
+CPubSubFlowRouteConfig::FindOrCreateTopicAssociation( const CORE::CString& fromTopicName )
+{GUCEF_TRACE;
+
+    CPubSubFlowRouteTopicConfig* topicRouteConfig = FindTopicAssociation( fromTopicName );
+    if ( GUCEF_NULL != topicRouteConfig )
+        return topicRouteConfig;
+
+    if ( IsAnyAutoTopicMatchingNeeded() )
+    {
+        // Create the new association
+
+        CPubSubFlowRouteTopicConfig newTopicRouteConfig;
+        newTopicRouteConfig.fromSideTopicName = fromTopicName;
+        topicAssociations.push_back( newTopicRouteConfig );
+        topicRouteConfig = &topicAssociations.back();
+
+        // Init with matching topic names as desired
+        // Once initialized we respect the state as-is but at init the other config plays a role in the manner of initialization
+        
+        if ( toSideTopicsAutoMatchFromSide && !toSideId.IsNULLOrEmpty() && topicRouteConfig->toSideTopicName.IsNULLOrEmpty() )
+            topicRouteConfig->toSideTopicName = fromTopicName;    
+        if ( failoverSideTopicsAutoMatchFromSide && !failoverSideId.IsNULLOrEmpty() && topicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() )
+            topicRouteConfig->failoverSideTopicName = fromTopicName; 
+        if ( spilloverSideTopicsAutoMatchFromSide && !spilloverBufferSideId.IsNULLOrEmpty() && topicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() )
+            topicRouteConfig->spilloverSideTopicName = fromTopicName; 
+        if ( deadLetterSideTopicsAutoMatchFromSide && !deadLetterSideId.IsNULLOrEmpty() && topicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() )
+            topicRouteConfig->deadLetterSideTopicName = fromTopicName; 
+    }
+
+    return topicRouteConfig;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

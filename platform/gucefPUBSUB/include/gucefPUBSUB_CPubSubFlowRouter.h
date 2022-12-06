@@ -114,9 +114,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     
     static CPubSubClientSidePtr GetSideWithId( const TPubSubClientSidePtrVector& sides ,
                                                const CORE::CString& sideId             );
-
-    static CPubSubFlowRouteTopicConfig* FindTopicConfig( CPubSubFlowRouteConfig::PubSubFlowRouteTopicConfigVector& topicAssociations ,
-                                                         const CORE::CString& fromSideTopicName                                      );
     
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -136,6 +133,26 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     typedef std::vector< CPubSubClientSidePtr, basic_allocator< CPubSubClientSidePtr > >    TPubSubClientSideVector;
 
     class CSpilloverInfo;
+
+    class CRouteTopicLinks
+    {
+        public:
+        
+        CPubSubClientTopic* fromTopic;
+        CPubSubClientTopic* activeTopic;
+
+        CPubSubClientTopic* toTopic;
+        CPubSubClientTopic* failoverTopic;
+        CPubSubClientTopic* spilloverTopic;
+        CPubSubClientTopic* deadletterTopic;
+
+        CRouteTopicLinks( void );
+        CRouteTopicLinks( const CRouteTopicLinks& src );
+    };
+    typedef std::pair< const CPubSubClientTopic*, CRouteTopicLinks* >        TTopicRawPtrAndRouteTopicLinksPtrPair;
+    typedef std::pair< const CORE::CString, CRouteTopicLinks >               TStringAndRouteTopicLinksPair;
+    typedef std::map< CPubSubClientTopic*, CRouteTopicLinks*, std::less< CPubSubClientTopic* >, basic_allocator< TTopicRawPtrAndRouteTopicLinksPtrPair > >  TTopicRawPtrToRouteTopicLinksRawPtrMap;
+    typedef std::map< CORE::CString, CRouteTopicLinks, std::less< CORE::CString >, basic_allocator< TStringAndRouteTopicLinksPair > >                       TStringToRouteTopicLinksMap;
     
     class CRouteInfo
     {
@@ -162,12 +179,19 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
 
         CORE::CTimer routeSwitchingTimer;
         CSpilloverInfo* spilloverInfo;
+        const CPubSubFlowRouteConfig* routeConfig;
+
+        TTopicRawPtrToRouteTopicLinksRawPtrMap    fromSideTopicLinks;
+        TStringToRouteTopicLinksMap               fromSideTopicNameLinks;
 
         bool IsSpilloverEgressActive( void ) const;
         bool IsSpilloverEgressOngoing( void ) const;
         bool IsSpilloverIngressOngoing( void ) const;
         bool DidMsgsFlowIntoSpillover( void ) const;
         bool IsSpilloverInActiveUse( void ) const;
+        void SwitchAllTopicLinksActiveTopic( RouteType activeSide );
+        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig );
+        bool MatchAllTopicRouteConfigs( void );
 
         CRouteInfo( void );
         CRouteInfo( const CRouteInfo& src );
@@ -264,6 +288,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
                                          bool isHealthy          );
     
+    void CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasicPtr topicAccess );
+    
     bool ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover );
 
     bool ConnectRoutesForFromSide( CPubSubClientSide* fromSide );
@@ -277,6 +303,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     private:
     
     CPubSubFlowRouterConfig m_config;
+    CPubSubFlowRouterConfig m_normalizedConfig;
     TSidePtrToRouteInfoVectorMap m_routeMap;
     TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
     TSidePtrToSpilloverInfoMap m_spilloverInfoMap;

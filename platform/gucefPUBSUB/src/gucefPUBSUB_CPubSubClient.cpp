@@ -168,7 +168,7 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
     MT::CObjectScopeLock lock( this );
 
     CPubSubClientTopicPtr topicAccess = GetTopicAccess( topicName );
-    if ( !topicAccess.IsNULL() )
+    if ( topicAccess.IsNULL() )
     {
         topicAccess = CreateTopicAccess( topicName );
     }
