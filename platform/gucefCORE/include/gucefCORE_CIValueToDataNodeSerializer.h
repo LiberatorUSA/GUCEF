@@ -159,7 +159,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     // SFINAE variant for shared pointers where the caller intent is to utilize the referenced object via the pointer to said object
     template < typename S >
     bool SerializeType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-        { return GUCEF_NULL != mappedType.GetPointerAlways() ? SerializeType< S >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
+        { return GUCEF_NULL != mappedType.GetPointerAlways() ? SerializeType< typename S::TContainedType >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
 
     // SFINAE variant in case the variant for shared pointers does not apply. This variant is for remaining reference types
     template < typename S >
@@ -179,7 +179,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     // SFINAE variant for shared pointers where the caller intent is to utilize the referenced object via the pointer to said object
     template < typename S >
     bool DeserializeType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-       { return GUCEF_NULL != mappedType.GetPointerAlways() ? DeserializeType< S >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
+       { return GUCEF_NULL != mappedType.GetPointerAlways() ? DeserializeType< typename S::TContainedType >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
 
     // SFINAE variant in case the variant for shared pointers does not apply. This variant is for remaining reference types
     template < typename S >
