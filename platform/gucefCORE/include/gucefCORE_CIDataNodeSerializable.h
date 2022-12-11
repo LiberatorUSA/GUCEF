@@ -98,6 +98,56 @@ class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializable
 
 };
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows for checking for the existance of the CIDataNodeSerializable or compatible 
+ *  member function 
+ *           bool T::Serialize( CDataNode& domRootNode                        ,
+ *                              const CDataNodeSerializableSettings& settings ) const
+ */
+template < class T >
+struct TypeHasMemberFunctionForDataNodeSerialization
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template <typename U, U u> struct reallyHas;
+
+    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)( CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ) const, &TestClass::Serialize >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows for checking for the existance of the CIDataNodeSerializable or compatible 
+ *  member function 
+ *           bool T::Deserialize( const CDataNode& domRootNode                  ,
+ *                                const CDataNodeSerializableSettings& settings ) 
+ */
+template < class T >
+struct TypeHasMemberFunctionForDataNodeDeserialization
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template <typename U, U u> struct reallyHas;
+
+    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)( const CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ), &TestClass::Deserialize >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

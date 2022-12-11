@@ -337,6 +337,16 @@ CPubSubClientSide::RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubCl
                  CPubSubClient::HealthStatusChangeEvent ,
                  callback3                              );
 
+    TEventCallback callback4( this, &CPubSubClientSide::OnTopicAccessCreated );
+    SubscribeTo( pubsubClient.GetPointerAlways()        ,
+                 CPubSubClient::TopicAccessCreatedEvent ,
+                 callback4                              );
+
+    TEventCallback callback5( this, &CPubSubClientSide::OnTopicAccessDestroyed );
+    SubscribeTo( pubsubClient.GetPointerAlways()          ,
+                 CPubSubClient::TopicAccessDestroyedEvent ,
+                 callback5                                );
+
     // register event handlers for any topics the client may already have
     RegisterTopicEventHandlers( pubsubClient );
 }
@@ -594,6 +604,62 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+CPubSubClientSide::OnTopicAccessCreated( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClient* pubsubClient = static_cast< CPubSubClient* >( notifier ); 
+    if ( GUCEF_NULL == pubsubClient || GUCEF_NULL == eventData )
+        return;
+
+    CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
+    CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
+    if ( !topicAccess.IsNULL() ) 
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):OnTopicAccessCreated: Configuring topic link for new topic " + topicAccess->GetTopicName() );
+
+        if ( ConfigureTopicLink( m_sideSettings, topicAccess ) )
+        {
+            ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings );
+        }  
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnTopicAccessCreated: Failed configuring topic link for new topic " + topicAccess->GetTopicName() );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CPubSubClient* pubsubClient = static_cast< CPubSubClient* >( notifier ); 
+    if ( GUCEF_NULL == pubsubClient || GUCEF_NULL == eventData )
+        return;
+
+    CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
+    CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
+    if ( !topicAccess.IsNULL() ) 
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() );
+
+        // @TODO: What to do about in-flight messages etc? Any special action?
+        //      send them to dead letter ?
+        m_topics.erase( topicAccess.GetPointerAlways() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
                                               CORE::CICloneable* eventData )
@@ -606,12 +672,20 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
         CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
         while ( i != topicsAccess.end() )
         {
-            CPubSubClientTopicBasicPtr tAccess = (*i);
-            if ( !tAccess.IsNULL() )
+            CPubSubClientTopicBasicPtr topicAccess = (*i);
+            if ( !topicAccess.IsNULL() )
             {
-                if ( ConfigureTopicLink( m_sideSettings, tAccess ) )
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnTopicsAccessAutoCreated: Configuring topic link for new auto topic " + topicAccess->GetTopicName() );
+
+                if ( ConfigureTopicLink( m_sideSettings, topicAccess ) )
                 {
-                    ConnectPubSubClientTopic( *tAccess, m_clientFeatures, m_sideSettings );
+                    ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnTopicsAccessAutoCreated: Failed configuring topic link for new auto topic " + topicAccess->GetTopicName() );
                 }
             }
             ++i;
@@ -637,6 +711,9 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
             CPubSubClientTopicBasicPtr tAccess = (*i);
             if ( !tAccess.IsNULL() )
             {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):OnTopicsAccessAutoDestroyed: Removing topic link info for auto destroyed topic " + tAccess->GetTopicName() );
+
                 // @TODO: What to do about in-flight messages etc? Any special action?
                 //      send them to dead letter ?
                 m_topics.erase( tAccess.GetPointerAlways() );

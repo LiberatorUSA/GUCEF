@@ -353,7 +353,23 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
         }
         ++i;
     }
-    return &m_config.defaultTopicConfig;
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const PUBSUB::CPubSubClientTopicConfig* 
+CStoragePubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
+    if ( GUCEF_NULL != preExistingConfig )
+        return preExistingConfig;
+    
+    m_config.topics.push_back( m_config.defaultTopicConfig );
+    PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
+    newTopicConfig->topicName = topicName;
+    return newTopicConfig;
 }
 
 /*-------------------------------------------------------------------------*/

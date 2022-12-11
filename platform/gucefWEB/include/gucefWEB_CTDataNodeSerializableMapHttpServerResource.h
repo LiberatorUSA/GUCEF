@@ -168,30 +168,6 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 
     private:
 
-    template < typename S >
-    bool SerializeMappedType( const S* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-        { return GUCEF_NULL != mappedType ? m_valueSerializer->Serialize( *mappedType, domRootNode, serializerOptions ) : false; }
-
-    template < typename S >
-    bool SerializeMappedType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-        { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Serialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
-
-    template < typename S >
-    bool SerializeMappedType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions)
-        { return m_valueSerializer->Serialize( mappedType, domRootNode, serializerOptions ); }
-
-    template < typename S >
-    bool DeserializeMappedType( S* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-        { return GUCEF_NULL != mappedType ? m_valueSerializer->Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
-
-    template < typename S >
-    bool DeserializeMappedType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-       { return GUCEF_NULL != mappedType.GetPointerAlways() ? m_valueSerializer->Deserialize( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
-
-    template < typename S >
-    bool DeserializeMappedType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
-       { return m_valueSerializer->Deserialize( mappedType, domRootNode, serializerOptions ); }
-
     CTDataNodeSerializableMapHttpServerResource( void );
     CTDataNodeSerializableMapHttpServerResource( const CTDataNodeSerializableMapHttpServerResource& src );
     CTDataNodeSerializableMapHttpServerResource& operator=( const CTDataNodeSerializableMapHttpServerResource& src );
@@ -324,7 +300,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
             CORE::CDataNode* childNode = output.AddChild( CORE::ToString( (*i).first ) );
             if ( GUCEF_NULL != childNode )
             {
-                if ( SerializeMappedType< SerializableObj >( (*i).second, *childNode, *serializerOptions ) )
+                if ( m_valueSerializer->SerializeType< SerializableObj >( (*i).second, *childNode, *serializerOptions ) )
                 {
 
                 }
@@ -384,7 +360,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     SerializableObj& newEntry = (*m_collection)[ entryKey ];
     if ( GUCEF_NULL != m_serializerOptions )
     {
-        if ( !DeserializeMappedType< SerializableObj >( newEntry, input, *m_serializerOptions ) )
+        if ( !m_valueSerializer->DeserializeType< SerializableObj >( newEntry, input, *m_serializerOptions ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
@@ -393,7 +369,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     else
     {
         CORE::CDataNodeSerializableSettings defaultSerializableSettings;
-        if ( !DeserializeMappedType< SerializableObj >( newEntry, input, defaultSerializableSettings ) )
+        if ( !m_valueSerializer->DeserializeType< SerializableObj >( newEntry, input, defaultSerializableSettings ) )
         {
             m_collection->erase( entryKey );
             return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;

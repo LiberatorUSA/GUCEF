@@ -227,7 +227,17 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     OnClientHealthStatusChanged( CORE::CNotifier* notifier    ,
                                  const CORE::CEvent& eventId  ,
                                  CORE::CICloneable* eventData );
-    
+
+    void
+    OnTopicAccessDestroyed( CORE::CNotifier* notifier   ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+                          
+    void
+    OnTopicAccessCreated( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
+
     void
     OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
                                const CORE::CEvent& eventId  ,

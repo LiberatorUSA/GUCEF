@@ -183,7 +183,7 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
 
     MT::CObjectScopeLock lock( this );
     
-    const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
+    const CPubSubClientTopicConfig* topicConfig = GetOrCreateTopicConfig( topicName );
     if ( GUCEF_NULL != topicConfig )
     {
         CPubSubClientTopicPtr topicAccess = CreateTopicAccess( *topicConfig );

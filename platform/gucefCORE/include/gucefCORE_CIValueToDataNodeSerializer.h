@@ -51,6 +51,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_SFINAE_UTILS_H
+#include "gucefCORE_SFINAE_utils.h"
+#define GUCEF_CORE_SFINAE_UTILS_H
+#endif /* GUCEF_CORE_SFINAE_UTILS_H ? */
+
 #ifndef GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
 #include "gucefCORE_CDataNodeSerializableSettings.h"
 #define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
@@ -139,6 +144,47 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     virtual bool Deserialize( CUtf8String::StringVector& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( CIDataNodeSerializable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( CIConfigurable& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
+
+
+    template < typename S >
+    bool SerializeType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionForDataNodeSerialization< S >::value, S >::type* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType ? Serialize( *mappedType, domRootNode, serializerOptions ) : false; }
+
+    // We provide a specialization for CIDataNodeSerializable since that type should take priority
+    // reason being that it can handle CDataNodeSerializableSettings plus helps to disambiguate in the case of multiple inhertitance
+    template < typename S >
+    bool SerializeType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionForDataNodeSerialization< S >::value, S >::type* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType ? Serialize( *static_cast< const CIDataNodeSerializable* >( mappedType ), domRootNode, serializerOptions ) : false; }
+
+    // SFINAE variant for shared pointers where the caller intent is to utilize the referenced object via the pointer to said object
+    template < typename S >
+    bool SerializeType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType.GetPointerAlways() ? SerializeType< S >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
+
+    // SFINAE variant in case the variant for shared pointers does not apply. This variant is for remaining reference types
+    template < typename S >
+    bool SerializeType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return SerializeType< S >( &mappedType, domRootNode, serializerOptions ); }
+
+    template < typename S >
+    bool DeserializeType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionForDataNodeDeserialization< S >::value, S >::type* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType ? Deserialize( *mappedType, domRootNode, serializerOptions ) : false; }
+
+    // We provide a specialization for CIDataNodeSerializable since that type should take priority
+    // reason being that it can handle CDataNodeSerializableSettings plus helps to disambiguate in the case of multiple inhertitance
+    template < typename S >
+    bool DeserializeType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionForDataNodeDeserialization< S >::value, S >::type* mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+        { return GUCEF_NULL != mappedType ? Deserialize( *static_cast< CIDataNodeSerializable* >( mappedType ), domRootNode, serializerOptions ) : false; }
+
+    // SFINAE variant for shared pointers where the caller intent is to utilize the referenced object via the pointer to said object
+    template < typename S >
+    bool DeserializeType( typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+       { return GUCEF_NULL != mappedType.GetPointerAlways() ? DeserializeType< S >( mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false; }
+
+    // SFINAE variant in case the variant for shared pointers does not apply. This variant is for remaining reference types
+    template < typename S >
+    bool DeserializeType( typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+       { return DeserializeType< S >( &mappedType, domRootNode, serializerOptions ); }
 
 };
 

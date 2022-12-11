@@ -60,11 +60,29 @@ struct EnableIf {};
 template<class T>
 struct EnableIf< true, T > { typedef T type; };
 
+template<bool B, bool B2, class T = void, class T2 = void>
+struct EnableIf2 {};
+
+template<class T, class T2>
+struct EnableIf2< true, true, T, T2 > { typedef T type; typedef T2 type2; };
+
+template<bool B, bool B2, class T = void, class T2 = void>
+struct EnableIfFirstOf2 {};
+
+template<class T, class T2>
+struct EnableIfFirstOf2< true, false, T, T2 > { typedef T type; typedef T2 type2; };
+
 template<bool B, class T = void>
 struct EnableIfNot {};
 
 template<class T>
 struct EnableIfNot< false, T > { typedef T type; };
+
+template<bool B, bool B2, class T = void, class T2 = void>
+struct EnableIfNot2 {};
+
+template<class T, class T2>
+struct EnableIfNot2< false, false, T, T2 > { typedef T type; typedef T2 type2; };
 
 /*-------------------------------------------------------------------------*/
 
@@ -152,11 +170,33 @@ struct TypeHasMemberFunctionClone
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows for checking for the existance of the member function bool T::LoadConfig( ... )
+ */
+template < class T >
+struct TypeHasMemberFunctionLoadConfig
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template <typename U, U u> struct reallyHas;
+
+    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)(), &TestClass::LoadConfig >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test<T>(0) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 /**
  *  C++98 compatible SFINAE template helper
- *  Allows for checking for the existance of the member function MT::CICloneable* T::Clone()
+ *  Allows for checking for the existance of the accessible assignement operator
  */
 template < class T >
 struct TypeHasAssignmentOperator
