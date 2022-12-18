@@ -331,7 +331,7 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
 
 CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src )
     : CPubSubSideChannelConfig( src )
-    , needToTrackInFlightPublishedMsgsForAck( false )
+    , needToTrackInFlightPublishedMsgsForAck( src.needToTrackInFlightPublishedMsgsForAck )
     , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
 

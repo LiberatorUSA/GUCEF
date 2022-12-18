@@ -279,11 +279,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                         CORE::CICloneable* eventData );
 
     bool ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                             CPubSubClientTopicBasicPtr topic                     );
+                             CPubSubClientTopicBasicPtr topic                     ,
+                             bool reset                                           );
     
     bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                            ,
                                    const CPubSubClientFeatures& clientFeatures          ,
-                                   const CPubSubSideChannelSettings& pubSubSideSettings );
+                                   const CPubSubSideChannelSettings& pubSubSideSettings ,
+                                   bool reset                                           );
     
     protected:
 

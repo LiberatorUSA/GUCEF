@@ -182,7 +182,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
      *  Backends should be implement such that if no explicit call to InitializeConnectivity() is made and such a call is relevant that 
      *  lazy initialization is used upon subscribe/publish
      */
-    virtual bool InitializeConnectivity( void ) = 0;
+    virtual bool InitializeConnectivity( bool reset ) = 0;
 
     virtual bool Subscribe( void ) = 0;                                                /**< attempt to commence subscription. This will subscribe per config and defaults of the given backend */
     virtual bool SubscribeStartingAtBookmark( const CPubSubBookmark& bookmark ) = 0;   /**< attempt to commence subscription starting at the given client-side provided bookmark */

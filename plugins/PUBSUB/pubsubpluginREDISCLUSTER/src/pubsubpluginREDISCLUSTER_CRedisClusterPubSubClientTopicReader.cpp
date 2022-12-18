@@ -57,6 +57,7 @@ namespace REDISCLUSTER {
 
 CRedisClusterPubSubClientTopicReader::CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic )
     : CORE::CTaskConsumer()
+    , CORE::CTSharedPtrCreator< CRedisClusterPubSubClientTopicReader, MT::CMutex >( this )
     , m_ownerTopic( ownerTopic )
 {GUCEF_TRACE;
 

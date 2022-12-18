@@ -593,7 +593,7 @@ PubSub2PubSubConfig::ExplicitChannelOverlayConfig::ExplicitChannelOverlayConfig(
     : CORE::CIConfigurable()
     , usingTemplate()
     , channelId( -1 )
-    , channelName()
+    , channelName( "ch{channelId}" ) 
     , sides()
 {GUCEF_TRACE;
 
@@ -1038,7 +1038,7 @@ PubSub2PubSubConfig::NormalizeConfig( void )
 
             // apply the overlay values
             channelConfig.channelId = overlayConfig.channelId;
-            channelConfig.channelName = overlayConfig.channelName;
+            channelConfig.channelName = overlayConfig.channelName.ReplaceSubstr( "{channelId}", CORE::ToString( channelConfig.channelId ) );
             
             ExplicitChannelOverlayConfig::ExplicitChannelSideOverlayConfigVector::iterator s = overlayConfig.sides.begin();
             while ( s != overlayConfig.sides.end() )

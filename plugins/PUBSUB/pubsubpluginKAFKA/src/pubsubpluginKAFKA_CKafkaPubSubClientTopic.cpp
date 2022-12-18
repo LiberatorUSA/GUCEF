@@ -1347,7 +1347,7 @@ CKafkaPubSubClientTopic::IsHealthy( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::InitializeConnectivity( void )
+CKafkaPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
     // We dont have any per-topic connectivity setup work that is

@@ -129,7 +129,7 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     virtual PUBSUB::CPubSubClient* GetClient( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool InitializeConnectivity( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool InitializeConnectivity( bool reset ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 

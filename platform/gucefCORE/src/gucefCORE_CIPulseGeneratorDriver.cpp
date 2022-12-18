@@ -79,7 +79,12 @@ void
 CIPulseGeneratorDriver::SendDriverPulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    pulseGenerator.OnDriverPulse();
+    if ( GUCEF_NULL != &pulseGenerator )
+        pulseGenerator.OnDriverPulse();
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CIPulseGeneratorDriver:SendDriverPulse: Attempt to access NULL pulseGenerator" );
+    }
 }
 
 /*-------------------------------------------------------------------------//

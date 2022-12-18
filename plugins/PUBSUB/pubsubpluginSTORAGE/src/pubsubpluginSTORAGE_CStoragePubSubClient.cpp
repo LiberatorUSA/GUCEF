@@ -543,7 +543,7 @@ CStoragePubSubClient::Connect( void )
         TTopicMap::iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
-            allConnected = (*i).second->InitializeConnectivity() && allConnected;
+            allConnected = (*i).second->InitializeConnectivity( false ) && allConnected;
             ++i;
         }
         return allConnected;

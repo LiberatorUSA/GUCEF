@@ -839,14 +839,21 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
 
         if ( m_readerThread.IsNULL() )
         {
-            m_readerThread = RedisClusterPubSubClientTopicReaderPtr( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) );
+            m_readerThread = ( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) )->CreateSharedPtr();
         }
         if ( !m_readerThread.IsNULL() )
         {
-            if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
+            if ( !m_readerThread->IsActive() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Failed to start blocking reader thread for async subscription" );
-                return false;
+                if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Failed to start blocking reader thread for async subscription" );
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: blocking reader thread for async subscription was already active, no need to activate" );
             }
         }
         return true;
@@ -1027,10 +1034,14 @@ CRedisClusterPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
+CRedisClusterPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
-    Disconnect();
+    if ( reset )
+    {
+        if ( !Disconnect() )
+            return false;
+    }
 
     MT::CScopeMutex lock( m_lock );
     try
@@ -1059,12 +1070,15 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( void )
 
         if ( m_config.preferDedicatedConnection )
         {
-            // Connect to the specific shard used for this channel's stream with a single dedicated connection
-            sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
-            GUCEF_DELETE m_redisPipeline;
-            m_redisPipeline = GUCEF_NEW sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
+            if ( reset || GUCEF_NULL == m_redisPipeline )
+            {
+                // Connect to the specific shard used for this channel's stream with a single dedicated connection
+                sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
+                GUCEF_DELETE m_redisPipeline;
+                m_redisPipeline = GUCEF_NEW sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+            }
         }
 
         return true;
@@ -1251,7 +1265,7 @@ CRedisClusterPubSubClientTopic::OnRedisReconnectTimerCycle( CORE::CNotifier* not
                                                             CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( InitializeConnectivity() )
+    if ( InitializeConnectivity( true ) )
     {
         m_redisReconnectTimer->SetEnabled( false );
     }

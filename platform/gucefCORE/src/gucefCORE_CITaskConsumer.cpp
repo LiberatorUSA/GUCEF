@@ -327,6 +327,20 @@ CTaskConsumer::IsDeactivationRequested( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
+CTaskConsumer::IsActive( void ) const
+{GUCEF_TRACE;
+
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
+    {
+        return delegator->IsActive();
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CTaskConsumer::RequestTaskToStop( bool waitOnStop )
 {GUCEF_TRACE;
 

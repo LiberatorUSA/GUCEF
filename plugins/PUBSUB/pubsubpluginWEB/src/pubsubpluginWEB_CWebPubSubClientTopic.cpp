@@ -603,7 +603,7 @@ CWebPubSubClientTopic::IsHealthy( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClientTopic::InitializeConnectivity( void )
+CWebPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
@@ -629,7 +629,7 @@ CWebPubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
 
     bool totalSuccess = true;
     if ( m_config.needPublishSupport )
-        totalSuccess = InitializeConnectivity() && totalSuccess;
+        totalSuccess = InitializeConnectivity( true ) && totalSuccess;
     if ( m_config.needSubscribeSupport )
         totalSuccess = Subscribe() && totalSuccess;
 

@@ -130,6 +130,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     bool IsDeactivationRequested( void ) const;
 
     /**
+     *  Flag that indicates whether the task is currently active
+     */
+    bool IsActive( void ) const;
+
+    /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */

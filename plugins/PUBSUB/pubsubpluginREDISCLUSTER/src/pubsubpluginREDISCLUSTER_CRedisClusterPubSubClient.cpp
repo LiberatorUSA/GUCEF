@@ -952,10 +952,11 @@ CRedisClusterPubSubClient::Connect( void )
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully obtained Redis cluster nodes" );
         }
 
+        // Init connectivity for all topics we already know about
         TTopicMap::iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
-            (*i).second->InitializeConnectivity();
+            (*i).second->InitializeConnectivity( false );
             ++i;
         }
 

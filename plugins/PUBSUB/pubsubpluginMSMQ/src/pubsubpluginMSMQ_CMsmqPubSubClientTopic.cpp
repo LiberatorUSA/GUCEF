@@ -1116,12 +1116,15 @@ CMsmqPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClientTopic::InitializeConnectivity( void )
+CMsmqPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
     if ( m_config.needPublishSupport )
     {
+        if ( !reset && GUCEF_NULL != m_sendQueueHandle )
+            return true;
+        
         if ( GUCEF_NULL != m_sendQueueHandle )
         {
             ::MQCloseQueue( m_sendQueueHandle );
@@ -2642,7 +2645,7 @@ CMsmqPubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
 
     bool totalSuccess = true;
     if ( m_config.needPublishSupport )
-        totalSuccess = InitializeConnectivity() && totalSuccess;
+        totalSuccess = InitializeConnectivity( true ) && totalSuccess;
     if ( m_config.needSubscribeSupport )
         totalSuccess = Subscribe() && totalSuccess;
 

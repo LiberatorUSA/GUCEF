@@ -620,9 +620,11 @@ CPubSubClientSide::OnTopicAccessCreated( CORE::CNotifier* notifier    ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):OnTopicAccessCreated: Configuring topic link for new topic " + topicAccess->GetTopicName() );
 
-        if ( ConfigureTopicLink( m_sideSettings, topicAccess ) )
+        // Configure the link to the topic if needed
+        // leave pre-existing topics alone
+        if ( ConfigureTopicLink( m_sideSettings, topicAccess, false ) )
         {
-            ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings );
+            ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
         }  
         else
         {
@@ -678,9 +680,11 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):OnTopicsAccessAutoCreated: Configuring topic link for new auto topic " + topicAccess->GetTopicName() );
 
-                if ( ConfigureTopicLink( m_sideSettings, topicAccess ) )
+                // Configure the link to the topic if needed
+                // leave pre-existing topics alone
+                if ( ConfigureTopicLink( m_sideSettings, topicAccess, false ) )
                 {
-                    ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings );
+                    ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
                 }
                 else
                 {
@@ -1898,19 +1902,24 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 
 bool
 CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                                       CPubSubClientTopicBasicPtr topic                     )
+                                       CPubSubClientTopicBasicPtr topic                     ,
+                                       bool reset                                           )
 {GUCEF_TRACE;                                                              
 
-    RegisterTopicEventHandlers( topic );
+    TopicMap::iterator i = m_topics.find( topic.GetPointerAlways() ); 
+    if ( reset || i == m_topics.end() )
+    {
+        RegisterTopicEventHandlers( topic );
 
-    TopicLink& topicLink = m_topics[ topic.GetPointerAlways() ];
-    topicLink.topic = topic;
-    topicLink.metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
-    topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
-    topicLink.metrics->hasSupportForPublishing = topic->IsPublishingSupported();
-    topicLink.metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
+        TopicLink& topicLink = m_topics[ topic.GetPointerAlways() ];
+        topicLink.topic = topic;
+        topicLink.metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
+        topicLink.metrics = &m_metricsMap[ topicLink.metricFriendlyTopicName ];
+        topicLink.metrics->hasSupportForPublishing = topic->IsPublishingSupported();
+        topicLink.metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
 
-    UpdateTopicMetrics( topicLink );
+        UpdateTopicMetrics( topicLink );
+    }
 
     return true;
 }
@@ -1933,11 +1942,16 @@ CPubSubClientSide::GetLatestBookmark( const CPubSubClientTopic& topic ,
 bool
 CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic                             ,
                                              const CPubSubClientFeatures& clientFeatures           ,
-                                             const CPubSubSideChannelSettings& pubSubSideSettings  )
+                                             const CPubSubSideChannelSettings& pubSubSideSettings  ,
+                                             bool reset                                            )
 {GUCEF_TRACE;
     
-    if ( topic.InitializeConnectivity() )
+    if ( topic.InitializeConnectivity( reset ) )
     {
+        // do we even need to do anything?
+        if ( !reset && ( topic.IsConnected() && topic.IsHealthy() ) )
+            return true;
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClientTopic: Successfully requested connectivity initialization for topic \"" + topic.GetTopicName() + "\". Proceeding" );
 
@@ -1945,7 +1959,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
         // saves us an extra setting
         const CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
         if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
-        {
+        {            
             // The method of subscription depends on the supported feature set
             bool subscribeSuccess = false;
             if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
@@ -2118,6 +2132,9 @@ CPubSubClientSide::ConnectPubSubClient( void )
     if ( GUCEF_NULL != m_flowRouter )
         m_sideSettings.needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        "):ConnectPubSubClient: needToTrackInFlightPublishedMsgsForAck=" + CORE::ToString( m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) );
+
     if ( m_pubsubBookmarkPersistence.IsNULL() )
     {
         // Create and configure the pub-sub bookmark persistence
@@ -2167,7 +2184,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 }
                 else
                 {
-                    ConfigureTopicLink( m_sideSettings, topic );
+                    ConfigureTopicLink( m_sideSettings, topic, true );
                 }
                 ++a;
             }
@@ -2200,7 +2217,8 @@ CPubSubClientSide::ConnectPubSubClient( void )
         
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
                                                              m_clientFeatures ,
-                                                             m_sideSettings   ) && totalTopicConnectSuccess;
+                                                             m_sideSettings   ,
+                                                             true             ) && totalTopicConnectSuccess;
 
         ++t;
     }

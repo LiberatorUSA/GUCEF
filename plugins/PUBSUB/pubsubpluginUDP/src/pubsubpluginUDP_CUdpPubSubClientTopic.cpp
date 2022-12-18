@@ -380,7 +380,7 @@ CUdpPubSubClientTopic::IsHealthy( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientTopic::InitializeConnectivity( void )
+CUdpPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );

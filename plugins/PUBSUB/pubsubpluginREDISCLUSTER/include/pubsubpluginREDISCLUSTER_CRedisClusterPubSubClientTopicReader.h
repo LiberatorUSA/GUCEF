@@ -57,7 +57,8 @@ class CRedisClusterPubSubClientTopic;
  *  Provides a blocking thread to act as a dedicated reader from a Redis stream
  *  This allows simulation of push mechanics
  */
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicReader : public CORE::CTaskConsumer
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicReader : public CORE::CTaskConsumer ,
+                                                                                          public CORE::CTSharedPtrCreator< CRedisClusterPubSubClientTopicReader, MT::CMutex >
 {
     public:
 
@@ -84,7 +85,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CRedisClusterPubSubClientTopic* m_ownerTopic;
 };
 
-typedef CORE::CTSharedPtr< CRedisClusterPubSubClientTopicReader, MT::CMutex >   RedisClusterPubSubClientTopicReaderPtr;
+typedef CRedisClusterPubSubClientTopicReader::TSharedPtrType   RedisClusterPubSubClientTopicReaderPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -576,7 +576,7 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                      callback                            );
     }
 
-    if ( GUCEF_NULL != m_bufferContentTimeWindowCheckTimer )
+    if ( GUCEF_NULL != m_noAckRetransmitTimer )
     {
         TEventCallback callback( this, &CStoragePubSubClientTopic::OnNoAckRetransmitCheckCycle );
         SubscribeTo( m_noAckRetransmitTimer         ,
@@ -2163,7 +2163,7 @@ CStoragePubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::InitializeConnectivity( void )
+CStoragePubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
     m_buffers.SetNrOfBuffers( m_config.desiredNrOfBuffers );
@@ -2196,7 +2196,7 @@ CStoragePubSubClientTopic::OnReconnectTimerCycle( CORE::CNotifier* notifier    ,
 
     bool totalSuccess = true;
     if ( m_config.needPublishSupport )
-        totalSuccess = InitializeConnectivity() && totalSuccess;
+        totalSuccess = InitializeConnectivity( true ) && totalSuccess;
     if ( m_config.needSubscribeSupport )
         totalSuccess = Subscribe() && totalSuccess;
 

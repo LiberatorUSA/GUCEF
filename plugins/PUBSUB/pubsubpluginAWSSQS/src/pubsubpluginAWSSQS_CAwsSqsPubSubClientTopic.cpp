@@ -672,10 +672,14 @@ CAwsSqsPubSubClientTopic::IsHealthy( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClientTopic::InitializeConnectivity( void )
+CAwsSqsPubSubClientTopic::InitializeConnectivity( bool reset )
 {GUCEF_TRACE;
 
-    Disconnect();
+    if ( reset )
+    {
+        if ( !Disconnect() )
+            return false;
+    }
     
     MT::CScopeMutex lock( m_lock );
 
