@@ -87,6 +87,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopic : public PUBSUB:
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscribed( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;

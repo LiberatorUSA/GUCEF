@@ -366,6 +366,17 @@ CUdpPubSubClientTopic::IsConnected( void ) const
     return m_udpSocket.IsActive();           
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CUdpPubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_udpSocket.IsActive(); 
+}
+
 /*-------------------------------------------------------------------------*/
 
 bool 

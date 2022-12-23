@@ -97,6 +97,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsSubscribed( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

@@ -98,6 +98,7 @@ Settings::Settings( void )
     , gatherStreamInfo( true )
     , streamsToGatherInfoFrom()
     , streamIndexingInterval( 1000 * 60 )
+    , redisScanCountSize( 1000 )
     , gatherInfoClients( true )
     , gatherInfoCpu( true )
     , gatherInfoKeyspace( true )
@@ -126,6 +127,7 @@ Settings::Settings( const Settings& src )
     , gatherStreamInfo( src.gatherStreamInfo )
     , streamsToGatherInfoFrom( src.streamsToGatherInfoFrom )
     , streamIndexingInterval( src.streamIndexingInterval )
+    , redisScanCountSize( src.redisScanCountSize )
     , gatherInfoClients( src.gatherInfoClients )
     , gatherInfoCpu( src.gatherInfoCpu )
     , gatherInfoKeyspace( src.gatherInfoKeyspace )
@@ -159,6 +161,7 @@ Settings::operator=( const Settings& src )
         gatherStreamInfo = src.gatherStreamInfo;
         streamsToGatherInfoFrom = src.streamsToGatherInfoFrom;
         streamIndexingInterval = src.streamIndexingInterval;
+        redisScanCountSize = src.redisScanCountSize;
         gatherInfoClients = src.gatherInfoClients;
         gatherInfoCpu = src.gatherInfoCpu;
         gatherInfoKeyspace = src.gatherInfoKeyspace;
@@ -189,7 +192,8 @@ Settings::SaveConfig( CORE::CDataNode& cfg ) const
     cfg.SetAttribute( "gatherInfoMemory", gatherInfoMemory );
     cfg.SetAttribute( "gatherStreamInfo", gatherStreamInfo );
     cfg.SetAttribute( "streamsToGatherInfoFrom", CORE::ToString( streamsToGatherInfoFrom ) ); 
-    cfg.SetAttribute( "streamIndexingInterval", CORE::ToString( streamIndexingInterval ) );
+    cfg.SetAttribute( "streamIndexingInterval", streamIndexingInterval );
+    cfg.SetAttribute( "redisScanCountSize", redisScanCountSize );    
     cfg.SetAttribute( "gatherInfoClients", gatherInfoClients );
     cfg.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
     cfg.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
@@ -220,6 +224,7 @@ Settings::LoadConfig( const CORE::CDataNode& cfg )
     gatherStreamInfo = cfg.GetAttributeValueOrChildValueByName( "gatherStreamInfo" ).AsBool( gatherStreamInfo, true );
     streamsToGatherInfoFrom = CORE::StringToStringVector( cfg.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ).AsString( CORE::StringVectorToString( streamsToGatherInfoFrom ), true ) );
     streamIndexingInterval = cfg.GetAttributeValueOrChildValueByName( "streamIndexingInterval" ).AsInt32( streamIndexingInterval, true );
+    redisScanCountSize = cfg.GetAttributeValueOrChildValueByName( "redisScanCountSize" ).AsUInt32( redisScanCountSize, true );
     gatherInfoClients = cfg.GetAttributeValueOrChildValueByName( "gatherInfoClients" ).AsBool( gatherInfoClients, true );
     gatherInfoCpu = cfg.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ).AsBool( gatherInfoCpu, true );
     gatherInfoKeyspace = cfg.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ).AsBool( gatherInfoKeyspace, true );
@@ -1853,6 +1858,8 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
         static const CORE::CString scanCmd( "SCAN" );
         CORE::CString itteratorParam( "0" );
         static const CORE::CString typeParam( "TYPE" );
+        static const CORE::CString countParam( "COUNT" );         
+        CORE::CString countValueParam( CORE::ToString( m_settings.redisScanCountSize ) );
 
         CORE::UInt32 iterationCounter = 0;
         sw::redis::StringView scanCmdSV( scanCmd.C_String(), scanCmd.Length() );        
@@ -1861,8 +1868,10 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
             sw::redis::StringView itteratorParamSV( itteratorParam.C_String(), itteratorParam.Length() );
             sw::redis::StringView typeParamSV( typeParam.C_String(), typeParam.Length() );
             sw::redis::StringView typeValueParamSV( keyType.C_String(), keyType.Length() );
+            sw::redis::StringView countParamSV( countParam.C_String(), countParam.Length() );
+            sw::redis::StringView countValueParamSV( countValueParam.C_String(), countValueParam.Length() );
 
-            node.redisPipe->command( scanCmdSV, itteratorParamSV, typeParamSV, typeValueParamSV );
+            node.redisPipe->command( scanCmdSV, itteratorParamSV, typeParamSV, typeValueParamSV, countParamSV, countValueParamSV );
             sw::redis::QueuedReplies redisReplies = node.redisPipe->exec();
             size_t replyCount = redisReplies.size();
 
@@ -2382,6 +2391,8 @@ RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Attempting to scan all keys in the target node for matches to the configured streams names with wildcards" );
     
+    m_streamIndexingTimer->SetEnabled( false );
+
     // First we will need to fetch all stream names in the cluster
     // Redis does not support a wildcard filter for this so we have to fetch everything
     CORE::CString::StringVector allStreamNames;
@@ -2411,6 +2422,8 @@ RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
             CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
             " streams which we will collect metric for"  );
     }
+
+    m_streamIndexingTimer->SetEnabled( IsStreamIndexingNeeded() );
 }
 
 /*-------------------------------------------------------------------------*/

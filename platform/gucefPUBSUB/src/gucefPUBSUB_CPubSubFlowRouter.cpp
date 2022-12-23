@@ -1609,7 +1609,7 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
     {
         if ( spilloverSide->LoadConfig( sideSettings ) )
         {
-            return spilloverSide->ConnectPubSubClient();
+            return spilloverSide->ConnectPubSubClient( true );
         }
     }
     return false;
@@ -1627,7 +1627,7 @@ CPubSubFlowRouter::ConnectSide( CPubSubClientSide* sideToConnect )
         {
             if ( sideToConnect->IsPubSubClientInfraReadyToConnect() )
             {
-                if ( sideToConnect->ConnectPubSubClient() )
+                if ( sideToConnect->ConnectPubSubClient( false ) )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
                         "):ConnectSide: side successfully connected: " + sideToConnect->GetSideId() ); 

@@ -874,18 +874,22 @@ CRedisClusterPubSubClient::Disconnect( void )
     try
     {
         MT::CScopeMutex lock( m_lock );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
-        TTopicMap::iterator i = m_topicMap.begin();
-        while ( i != m_topicMap.end() )
+        if ( !m_topicMap.empty() && !m_redisContext.IsNULL() )
         {
-            (*i).second->Disconnect();
-            ++i;
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+
+            TTopicMap::iterator i = m_topicMap.begin();
+            while ( i != m_topicMap.end() )
+            {
+                (*i).second->Disconnect();
+                ++i;
+            }
+
+            m_redisContext.Unlink();
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
         }
-
-        m_redisContext.Unlink();
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
     }
     catch ( const sw::redis::OomError& e )
     {

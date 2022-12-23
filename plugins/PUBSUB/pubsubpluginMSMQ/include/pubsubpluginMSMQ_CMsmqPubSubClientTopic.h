@@ -137,6 +137,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscribed( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;

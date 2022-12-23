@@ -742,7 +742,7 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
     {    
         if ( m_clientFeatures.supportsAutoReconnect )
         {
-            if ( ConnectPubSubClient() )
+            if ( ConnectPubSubClient( true ) )
                 return; // no need to resume the timer
         }
         else
@@ -752,7 +752,7 @@ CPubSubClientSide::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier 
             // properly handling the state transition
             if ( DisconnectPubSubClient( true ) )
             {
-                if ( ConnectPubSubClient() )
+                if ( ConnectPubSubClient( true ) )
                     return; // no need to resume the timer
             }
         }
@@ -1948,17 +1948,37 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
     
     if ( topic.InitializeConnectivity( reset ) )
     {
+        const CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
+        if ( GUCEF_NULL == topicConfig )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):ConnectPubSubClientTopic: config for topic is not available" );
+            return false;
+        }
+
         // do we even need to do anything?
         if ( !reset && ( topic.IsConnected() && topic.IsHealthy() ) )
-            return true;
+        {
+            if ( !topicConfig->needSubscribeSupport )
+            {
+                // No subscription needed so merely having a connection is good enough
+                return true;
+            }
+            else
+            {
+                // We need to also be actively subscribed if we need a subscription
+                if ( topic.IsSubscribed() )
+                    return true;
+            }
+        }
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClientTopic: Successfully requested connectivity initialization for topic \"" + topic.GetTopicName() + "\". Proceeding" );
 
         // We use the 'desired' feature to also drive whether we actually subscribe at this point
         // saves us an extra setting
-        const CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
-        if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
+        
+        if ( topicConfig->needSubscribeSupport )
         {            
             // The method of subscription depends on the supported feature set
             bool subscribeSuccess = false;
@@ -2104,13 +2124,13 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConnectPubSubClient( void )
+CPubSubClientSide::ConnectPubSubClient( bool reset )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
     
     // Make sure setup was completed before connecting
-    if ( !PerformPubSubClientSetup( false ) )
+    if ( !PerformPubSubClientSetup( reset ) )
         return false;
     
     if ( !IsPubSubClientInfraReadyToConnect() )
@@ -2135,7 +2155,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
         "):ConnectPubSubClient: needToTrackInFlightPublishedMsgsForAck=" + CORE::ToString( m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) );
 
-    if ( m_pubsubBookmarkPersistence.IsNULL() )
+    if ( m_pubsubBookmarkPersistence.IsNULL() || reset )
     {
         // Create and configure the pub-sub bookmark persistence
         m_pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
@@ -2184,7 +2204,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
                 }
                 else
                 {
-                    ConfigureTopicLink( m_sideSettings, topic, true );
+                    ConfigureTopicLink( m_sideSettings, topic, reset );
                 }
                 ++a;
             }
@@ -2218,7 +2238,7 @@ CPubSubClientSide::ConnectPubSubClient( void )
         totalTopicConnectSuccess = ConnectPubSubClientTopic( *topicLink.topic ,
                                                              m_clientFeatures ,
                                                              m_sideSettings   ,
-                                                             true             ) && totalTopicConnectSuccess;
+                                                             reset            ) && totalTopicConnectSuccess;
 
         ++t;
     }
@@ -2337,7 +2357,7 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     {
         if ( IsPubSubClientInfraReadyToConnect() )
         {
-            if ( !ConnectPubSubClient() )
+            if ( !ConnectPubSubClient( false ) )
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );

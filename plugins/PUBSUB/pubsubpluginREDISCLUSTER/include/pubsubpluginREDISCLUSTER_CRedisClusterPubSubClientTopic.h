@@ -106,6 +106,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscribed( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
@@ -240,6 +242,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
     bool m_needToTrackAcks;
     bool m_subscriptionIsAtEndOfData;
+    bool m_isSubscribed;
     CORE::Int64 m_maxTotalMsgsInFlight;
     CORE::UInt64 m_msgsInFlight;
     CORE::UInt64 m_currentPublishActionId;

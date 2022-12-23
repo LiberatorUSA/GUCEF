@@ -94,6 +94,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_readerThread()
     , m_needToTrackAcks( true )
     , m_subscriptionIsAtEndOfData( false )
+    , m_isSubscribed( false )
     , m_maxTotalMsgsInFlight( 1000 )
     , m_msgsInFlight( 0 )
     , m_currentPublishActionId( 1 )
@@ -293,6 +294,9 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
             m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
         else
             m_maxTotalMsgsInFlight = m_client->GetConfig().maxTotalMsgsInFlight;
+
+        if ( m_config.minAvailableInFlightSlotsBeforeRead > m_maxTotalMsgsInFlight )
+            m_config.minAvailableInFlightSlotsBeforeRead = m_maxTotalMsgsInFlight;    
         
         if ( !m_needToTrackAcks )
         {
@@ -622,12 +626,12 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Redis++ OOM exception: " + e.what() );
     }
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
         Reconnect();
@@ -635,7 +639,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     catch ( const sw::redis::RedirectionError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
@@ -644,19 +648,22 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Redis++ exception: " + e.what() );
         Reconnect();
         UpdateIsHealthyStatus( false );
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: exception: " + e.what() );
         Reconnect();
         UpdateIsHealthyStatus( false );
     }
 
     if ( totalSuccess )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: read " + 
+            CORE::ToString( m_pubsubMsgsRefs.size() ) + " messages" );
+        
         // Communicate all the messages received via an event notification
         if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 
         {
@@ -719,29 +726,33 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Beginning cleanup" );
-
-        RedisClusterPubSubClientTopicReaderPtr redisReader = m_readerThread;
-        if ( !redisReader.IsNULL() )
+        if ( !m_redisContext.IsNULL() )
         {
-            lock.EarlyUnlock();
-
-            if ( !redisReader->RequestTaskToStop( true ) )
+            RedisClusterPubSubClientTopicReaderPtr redisReader = m_readerThread;
+            if ( !redisReader.IsNULL() )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Failed to stop reader thread" );
-                return false;
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Beginning cleanup" );
+            
+                lock.EarlyUnlock();
+
+                if ( !redisReader->RequestTaskToStop( true ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):Disconnect: Failed to stop reader thread" );
+                    return false;
+                }
+
+                lock.ReLock();
+                m_isSubscribed = false;
             }
 
-            lock.ReLock();
+            GUCEF_DELETE m_redisPipeline;
+            m_redisPipeline = GUCEF_NULL;
+
+            // the parent client owns the context, we just null it
+            m_redisContext.Unlink();
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Finished cleanup" );
         }
-
-        GUCEF_DELETE m_redisPipeline;
-        m_redisPipeline = GUCEF_NULL;
-
-        // the parent client owns the context, we just null it
-        m_redisContext.Unlink();
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Finished cleanup" );
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -828,9 +839,37 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
     MT::CScopeMutex lock( m_lock );
 
     try
-    {
-        // reset the oed flag, once we read we will see what the new status is
-        m_subscriptionIsAtEndOfData = false;
+    {        
+        if ( m_redisContext.IsNULL() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: No redis context is available" );
+            return false;
+        }
+
+        sw::redis::StringView topicNameSV( m_config.topicName.C_String(), m_config.topicName.Length() );
+        UInt64 streamLength = m_redisContext->xlen( topicNameSV );
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: current stream length for steam with name \"" + 
+            m_config.topicName + "\" is " + CORE::ToString( streamLength ) );
+
+        if ( 0 == streamLength )
+        {
+            m_subscriptionIsAtEndOfData = true;
+
+            if ( GUCEF_NULL != m_client )
+            {
+                if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+                {                         
+                    if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
+                        return true;
+                }
+            }
+        }
+        else
+        {
+            // reset the oed flag
+            m_subscriptionIsAtEndOfData = false;
+        }
 
         m_readOffset = readOffset;
         
@@ -856,6 +895,8 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: blocking reader thread for async subscription was already active, no need to activate" );
             }
         }
+        
+        m_isSubscribed = true;
         return true;
     }
     catch ( const sw::redis::OomError& e )
@@ -978,6 +1019,16 @@ CRedisClusterPubSubClientTopic::IsConnected( void ) const
 
     MT::CScopeMutex lock( m_lock );
     return !m_redisContext.IsNULL() && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRedisClusterPubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return !m_redisContext.IsNULL() && m_isSubscribed && ( !m_config.preferDedicatedConnection || ( GUCEF_NULL != m_redisPipeline ) );
 }
 
 /*-------------------------------------------------------------------------*/

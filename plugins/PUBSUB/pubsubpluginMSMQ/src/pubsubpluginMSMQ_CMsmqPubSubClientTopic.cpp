@@ -1052,6 +1052,16 @@ CMsmqPubSubClientTopic::IsConnected( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
+CMsmqPubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    // Snapshot in time as such no lock needed.
+    return GUCEF_NULL != m_receiveQueueHandle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CMsmqPubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;
 

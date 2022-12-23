@@ -2095,6 +2095,40 @@ CStoragePubSubClientTopic::IsConnected( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CStoragePubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+    if ( vfs.IsHealthy() && vfs.IsConnected() )
+    {
+        if ( !m_config.performVfsOpsASync )
+        {
+            if ( GUCEF_NULL != m_syncVfsOpsTimer && m_syncVfsOpsTimer->GetEnabled() )
+                return true;
+        }
+        else
+        {
+            if ( m_config.performVfsOpsInDedicatedThread )
+            {
+                if ( !m_vfsOpsThread.IsNULL() && m_vfsOpsThread->IsActive() )
+                    return true;
+            }
+            else
+            {
+                // we rely on defining 'work' tasks as work arrives
+                return m_config.needSubscribeSupport;
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;

@@ -1306,6 +1306,16 @@ CKafkaPubSubClientTopic::IsConnected( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CKafkaPubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    // Snapshot in time as such no lock needed.
+    return GUCEF_NULL != m_kafkaConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CKafkaPubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;

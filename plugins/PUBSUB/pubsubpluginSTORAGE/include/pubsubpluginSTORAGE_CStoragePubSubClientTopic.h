@@ -171,6 +171,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsSubscribed( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;

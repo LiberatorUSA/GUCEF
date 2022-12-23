@@ -138,6 +138,7 @@ class Settings : public CORE::CIConfigurable
     bool gatherStreamInfo;
     CORE::CString::StringVector streamsToGatherInfoFrom;
     CORE::Int32 streamIndexingInterval;
+    CORE::UInt32 redisScanCountSize;
     bool gatherInfoClients;
     bool gatherInfoCpu;
     bool gatherInfoKeyspace;

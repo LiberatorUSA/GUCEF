@@ -215,7 +215,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
 
     virtual bool Disconnect( void ) = 0;
 
+    /**
+     *  Allows checking if connectivity is currently established to whatever the backend system is
+     */
     virtual bool IsConnected( void ) const = 0;
+
+    /**
+     *  Allows checking if we have an active subscription
+     */
+    virtual bool IsSubscribed( void ) const = 0;
 
     virtual bool IsHealthy( void ) const = 0;
 

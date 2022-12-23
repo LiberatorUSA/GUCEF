@@ -592,6 +592,16 @@ CWebPubSubClientTopic::IsConnected( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
+CWebPubSubClientTopic::IsSubscribed( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_httpServer.IsActive();     
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CWebPubSubClientTopic::IsHealthy( void ) const
 {GUCEF_TRACE;
 

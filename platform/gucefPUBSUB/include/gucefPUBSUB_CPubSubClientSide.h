@@ -169,7 +169,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     bool PerformPubSubClientSetup( bool hardReset = false );
     
-    bool ConnectPubSubClient( void );
+    bool ConnectPubSubClient( bool reset );
 
     bool DisconnectPubSubClient( bool destroyClient = false );
 
