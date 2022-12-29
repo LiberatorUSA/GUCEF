@@ -109,6 +109,7 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( void )
     , applyThreadCpuAffinity( false )                                                                   // if we don't have a dedicated host this may cause bigger problems so safer to go with false
     , cpuAffinityForPubSubThread( 0 )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )                                                 // best effort
+    , treatPublishWithoutTargetTopicAsBroadcast( true )                                                 // for simpler side to side operation where topic mappings are not provided
     , retryFailedPublishAttempts( true )                                                                // safer default, assume we don't want fire-and-forget but want the extra safegaurds
     , allowOutOfOrderPublishRetry( false )                                                              // safer default, assume we don't want out-of-order messages. this reduces performance if there are publish errors
     , maxMsgPublishRetryAttempts( -1 )                                                                  // safer default is no max nr of publish retries
@@ -135,6 +136,7 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( const CPubSubSideChannelConf
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
+    , treatPublishWithoutTargetTopicAsBroadcast( src.treatPublishWithoutTargetTopicAsBroadcast )
     , retryFailedPublishAttempts( src.retryFailedPublishAttempts )
     , allowOutOfOrderPublishRetry( src.allowOutOfOrderPublishRetry )
     , maxMsgPublishRetryAttempts( src.maxMsgPublishRetryAttempts )
@@ -174,6 +176,7 @@ CPubSubSideChannelConfig::operator=( const CPubSubSideChannelConfig& src )
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
+        treatPublishWithoutTargetTopicAsBroadcast = src.treatPublishWithoutTargetTopicAsBroadcast;
         retryFailedPublishAttempts = src.retryFailedPublishAttempts;
         allowOutOfOrderPublishRetry = src.allowOutOfOrderPublishRetry;
         maxMsgPublishRetryAttempts = src.maxMsgPublishRetryAttempts;
@@ -215,6 +218,7 @@ CPubSubSideChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "treatPublishWithoutTargetTopicAsBroadcast", treatPublishWithoutTargetTopicAsBroadcast ) && totalSuccess;    
     totalSuccess = cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts ) && totalSuccess;
@@ -278,6 +282,7 @@ CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
     applyThreadCpuAffinity = cfg.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = cfg.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = cfg.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );
+    treatPublishWithoutTargetTopicAsBroadcast = cfg.GetAttributeValueOrChildValueByName( "treatPublishWithoutTargetTopicAsBroadcast" ).AsBool( treatPublishWithoutTargetTopicAsBroadcast, true );
     retryFailedPublishAttempts = cfg.GetAttributeValueOrChildValueByName( "retryFailedPublishAttempts" ).AsBool( retryFailedPublishAttempts, true );
     allowOutOfOrderPublishRetry = cfg.GetAttributeValueOrChildValueByName( "allowOutOfOrderPublishRetry" ).AsBool( allowOutOfOrderPublishRetry, true );
     maxMsgPublishRetryAttempts = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryAttempts" ).AsInt32( maxMsgPublishRetryAttempts, true );

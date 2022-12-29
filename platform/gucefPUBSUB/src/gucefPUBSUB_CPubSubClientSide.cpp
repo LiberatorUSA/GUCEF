@@ -120,7 +120,7 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_topics()
     , m_metricsMap()
     , m_sideSettings()
-    , m_mailbox()
+    , m_broadcastMailbox()
     , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
     , m_pubsubClientReconnectTimer( CORE::PulseGeneratorPtr(), 1000 )
     , m_timedOutInFlightMessagesCheckTimer( CORE::PulseGeneratorPtr(), 5000 )
@@ -156,6 +156,20 @@ CPubSubClientSide::GetCurrentUnderlyingPubSubClient( void )
 
 /*-------------------------------------------------------------------------*/
 
+CPubSubClientTopicBasicPtr 
+CPubSubClientSide::GetCurrentUnderlyingPubSubClientTopicByName( const CORE::CString& topicName ) const
+{GUCEF_TRACE;
+
+    CPubSubClientPtr client = m_pubsubClient;
+    if ( !client.IsNULL() )
+    {
+        return client->GetTopicAccess( topicName );
+    }
+    return CPubSubClientTopicBasicPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPubSubClientSide::TopicLink::TopicLink( void )
     : topic()
     , currentPublishActionIds()
@@ -167,6 +181,7 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
     , msgsSinceLastBookmarkPersist( 0 )
     , bookmarksOnMsgReceived()
+    , msgMailbox()
 {GUCEF_TRACE;
 
 }
@@ -184,6 +199,7 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     , lastBookmarkPersistSuccess( CORE::CDateTime::PastMax )
     , msgsSinceLastBookmarkPersist( 0 )
     , bookmarksOnMsgReceived()
+    , msgMailbox()
 {GUCEF_TRACE;
 
 }
@@ -653,7 +669,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() );
 
-        // @TODO: What to do about in-flight messages etc? Any special action?
+        // @TODO: What to do about in-flight messages, mailbox, etc? Any special action?
         //      send them to dead letter ?
         m_topics.erase( topicAccess.GetPointerAlways() );
     }
@@ -802,7 +818,7 @@ CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
 
 template < typename TMsgCollection >
 bool
-CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
+CPubSubClientSide::BroadcastPublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
     CORE::UInt64 totalMsgsInFlight = 0;
@@ -834,7 +850,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
                     publishSuccess = false;
 
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                        "):PublishMsgsSync: Failed to publish messages to topic" );
+                        "):BroadcastPublishMsgsSync: Failed to publish messages to topic" );
 
                     if ( m_sideSettings.retryFailedPublishAttempts )
                     {
@@ -854,7 +870,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
     if ( publishSuccess )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):PublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " +
+            "):BroadcastPublishMsgsSync: Successfully published messages to " + CORE::ToString( topicsPublishedOn ) + " topics, " +
             CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
     }
 
@@ -864,13 +880,151 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs )
 
 /*-------------------------------------------------------------------------*/
 
+template < typename TMsgCollection >
 bool
-CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs )
+CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
+                                    CPubSubClientTopic* specificTargetTopic )
+{GUCEF_TRACE;
+
+    try
+    {
+        if ( GUCEF_NULL == specificTargetTopic )
+        {
+            if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+            {
+                // No target topic is specific, treat as broadcast to all topics
+                return BroadcastPublishMsgsSync( msgs );    
+            }
+            return false;
+        }
+
+        TopicMap::iterator i = m_topics.find( specificTargetTopic );
+        if ( i != m_topics.end() )
+        {
+            return PublishMsgsSync( msgs, specificTargetTopic, (*i).second );
+        }
+        else
+        {
+            // it is possible the underlying implementation was swapped out
+            CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
+            if ( !newTopicObj.IsNULL() )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                    " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                    " for topic " + newTopicObj->GetTopicName() );
+            
+                return PublishMsgsSync( msgs, newTopicObj.GetPointerAlways() );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                    " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
+                return false;
+            }
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):PublishMsgsSync: exception occured: " + CORE::ToString( e.what() ) );
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TMsgCollection >
+bool
+CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
+                                    CPubSubClientTopic* specificTargetTopic ,
+                                    TopicLink& topicLink                    )
+{GUCEF_TRACE;
+
+    if ( specificTargetTopic->IsPublishingSupported() )
+    {
+        topicLink.currentPublishActionIds.clear();
+        if ( specificTargetTopic->Publish( topicLink.currentPublishActionIds, msgs, m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) )
+        {
+            m_totalMsgsInFlight += msgs.size();
+
+            if ( m_sideSettings.needToTrackInFlightPublishedMsgsForAck )
+                topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, true );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):PublishMsgsSync: Successfully published " + CORE::ToString( msgs.size() ) + " messages to " + specificTargetTopic->GetTopicName() );
+
+            UpdateTopicMetrics( topicLink );
+            return true;
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):PublishMsgsSync: Failed to publish messages to topic " + specificTargetTopic->GetTopicName() );
+
+            if ( m_sideSettings.retryFailedPublishAttempts )
+            {
+                topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, false );
+                m_awaitingFailureReport = true;
+            }
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + " does not support publishing" );
+    }
+        
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                                     CPubSubClientTopic* specificTargetTopic              )
 {GUCEF_TRACE;
 
     // Add the messages in bulk to the mailbox. Since we use pointer semantics we are actually
     // Adding the IPubSubMsg* elements since the ref will be dereferenced
-    return m_mailbox.AddPtrBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+    
+    if ( GUCEF_NULL == specificTargetTopic )
+    {    
+        if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+            return m_broadcastMailbox.AddPtrBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+        else
+            return false;
+    }
+
+    TopicMap::iterator i = m_topics.find( specificTargetTopic );
+    if ( i != m_topics.end() )
+    {
+        TopicLink& topicLink = (*i).second;
+        return topicLink.msgMailbox.AddPtrBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+    }
+    else
+    {
+        // it is possible the underlying implementation was swapped out
+        CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
+        if ( !newTopicObj.IsNULL() )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                " for topic " + newTopicObj->GetTopicName() );
+            
+            return PublishMsgsASync( msgs, newTopicObj.GetPointerAlways() );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
+            return false;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -881,25 +1035,28 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
 {GUCEF_TRACE;
     
     // We need to determine if the caller is running in the same thread
-    // We only want to take the hit of using the mailbox if we are multi-threaded as its a performance trade-off
+    // We only want to take the hit of using the mailbox (requires dynamic mem usage) if we are multi-threaded as its a performance trade-off
     if ( m_threadIdOfSide == MT::GetCurrentTaskID() )
     {
         if ( !m_awaitingFailureReport )
         {
-            return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+            return PublishMsgsSync< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs, specificTargetTopic );
         }
         else
         {
             // The pipe is jammed up due to a failure
-            // use the mailbox as a queue while we wait to resolve the issue
-            return PublishMsgsASync( msgs );
+            // use the mailbox as a temp queue while we wait to resolve the issue
+            //
+            // this is a performance tradeoff where pulling messages in-proc as a prefetch is expected 
+            // to provide faster recovery
+            return PublishMsgsASync( msgs, specificTargetTopic );
         }
     }
     else
     {
         // caller is in a different thread from this side
         // always use the mailbox
-        return PublishMsgsASync( msgs );
+        return PublishMsgsASync( msgs, specificTargetTopic );
     }
 }
 
@@ -1283,21 +1440,54 @@ bool
 CPubSubClientSide::PublishMailboxMsgs( void )
 {GUCEF_TRACE;
 
-    CORE::Int32 maxMailItemsToGrab = -1;
-    if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+    bool totalSuccess = true;
+    
+    // Are we supporting blanket cross-topic broadcasts?
+    if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
     {
-        CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - m_totalMsgsInFlight;
-        if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
-            maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
+        CORE::Int32 maxMailItemsToGrab = -1;
+        if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+        {
+            CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - m_totalMsgsInFlight;
+            if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
+                maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
+        }
+
+        CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
+        if ( m_broadcastMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+        {
+            totalSuccess = BroadcastPublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+        }
     }
 
-    CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
-    if ( m_mailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+    // Now publish messages intended for specific topics if any exist
+    TopicMap::iterator i = m_topics.begin();
+    while ( i != m_topics.end() )
     {
-        bool publishResult = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
-        return publishResult;
+        TopicLink& topicLink = (*i).second;
+        CPubSubClientTopicBasicPtr topic = topicLink.topic;
+
+        if ( !topic.IsNULL() )
+        { 
+            CORE::Int32 maxMailItemsToGrab = -1;
+            if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+            {
+                CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - topicLink.inFlightMsgs.size();
+                if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
+                    maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
+            }
+
+            CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
+            if ( topicLink.msgMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+            {
+                totalSuccess = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs, topic.GetPointerAlways(), topicLink ) && totalSuccess;
+            }
+        }
+
+        ++i;
     }
-    return true;
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2434,7 +2624,24 @@ CPubSubClientSide::OnTaskEnding( CORE::CICloneable* taskdata ,
     if ( willBeForced )
     {
         // reduce memory leaks
-        m_mailbox.Clear();
+        // Mailboxes of messages will have the largest expected memory footprints but also their own locks
+        // as such its safe to wipe those here
+
+        m_broadcastMailbox.Clear();
+
+        try 
+        {
+            // Its possible the iterator becomes invalid here, its best effort
+            TopicMap::iterator i = m_topics.begin();
+            while ( i != m_topics.end() )
+            {
+                (*i).second.msgMailbox.Clear();
+                ++i;
+            }
+        }
+        catch ( const std::exception& )
+        {
+        }
     }
 }
 

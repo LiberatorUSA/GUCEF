@@ -735,6 +735,8 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
     {
         MT::CScopeMutex lock( m_lock );
 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:PublishViaMsgPtrs: Given " + CORE::ToString( msgs.size() ) + " msgs" );
+
         TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
         typename std::vector< T >::const_iterator i = msgs.begin();
         bool work = true;

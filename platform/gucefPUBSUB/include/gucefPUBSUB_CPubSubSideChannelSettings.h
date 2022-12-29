@@ -93,6 +93,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;
+    bool treatPublishWithoutTargetTopicAsBroadcast;
     bool retryFailedPublishAttempts;
     bool allowOutOfOrderPublishRetry;
     CORE::Int32 maxMsgPublishRetryAttempts;

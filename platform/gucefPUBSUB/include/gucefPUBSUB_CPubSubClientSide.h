@@ -192,9 +192,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     
     /**
      *  Provides access to the current instantiation of the underlying pubsub client for this side
-     *  Note that the lifecycle of the client is controlled by the side hence it the active side instance could be replaced
+     *  Note that the lifecycle of the client is controlled by the side hence it is possible the underlying instance will be swapped out
      */
     CPubSubClientPtr GetCurrentUnderlyingPubSubClient( void );
+
+    /**
+     *  Provides access to the current instantiation of the underlying pubsub client for this side
+     *  Note that the lifecycle of the client is controlled by the side hence it is possible the underlying instance will be swapped out
+     */
+    CPubSubClientTopicBasicPtr GetCurrentUnderlyingPubSubClientTopicByName( const CORE::CString& topicName ) const;
 
     void SetPerformConnectOnTaskStart( bool performConnectOnStart );
 
@@ -289,10 +295,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     
     protected:
 
-    bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+    bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
+                           CPubSubClientTopic* specificTargetTopic              );
 
     template < typename TMsgCollection >
-    bool PublishMsgsSync( const TMsgCollection& msgs );
+    bool BroadcastPublishMsgsSync( const TMsgCollection& msgs );
+
+    template < typename TMsgCollection >
+    bool PublishMsgsSync( const TMsgCollection& msgs              ,
+                          CPubSubClientTopic* specificTargetTopic );
 
     bool PublishMailboxMsgs( void );
 
@@ -307,6 +318,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool GetLatestBookmark( const CPubSubClientTopic& topic ,
                             CPubSubBookmark& bookmark       );
 
+    typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
+    
     class TopicLink
     {
         public:
@@ -344,6 +357,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CORE::CDateTime lastBookmarkPersistSuccess;
         CORE::Int32 msgsSinceLastBookmarkPersist;
         TUInt64ToBookmarkMap bookmarksOnMsgReceived;
+        TPubSubMsgMailbox msgMailbox;
 
         TopicLink( void );
         TopicLink( CPubSubClientTopicBasicPtr t );
@@ -400,7 +414,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     TopicMap m_topics;
     StringToPubSubClientSideMetricsMap m_metricsMap;
     CPubSubSideChannelSettings m_sideSettings;
-    TPubSubMsgMailbox m_mailbox;
+    TPubSubMsgMailbox m_broadcastMailbox;
     CORE::CTimer m_metricsTimer;
     CORE::CTimer m_pubsubClientReconnectTimer;    
     CORE::CTimer m_timedOutInFlightMessagesCheckTimer;
@@ -413,6 +427,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool m_connectOnTaskStart;
 
     private:
+
+    template < typename TMsgCollection >
+    bool PublishMsgsSync( const TMsgCollection& msgs              ,
+                          CPubSubClientTopic* specificTargetTopic ,
+                          TopicLink& topicLink                    );
 
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 };

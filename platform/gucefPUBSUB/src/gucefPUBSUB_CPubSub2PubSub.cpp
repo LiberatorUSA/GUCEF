@@ -990,7 +990,9 @@ PubSub2PubSubConfig::LoadConfig( const CORE::CDataNode& cfg )
         if ( explicitChannelOverlayConfig.LoadConfig( *(*i) ) )
         {            
             explicitOverlayChannels.push_back( explicitChannelOverlayConfig );
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Loaded an explicit channel overlay config with name \"" + explicitChannelOverlayConfig.channelName + "\"" );
+            
+            CORE::CString channelName = explicitChannelOverlayConfig.channelName.ReplaceSubstr( "{channelId}", CORE::ToString( explicitChannelOverlayConfig.channelId ) );            
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2PubSubConfig:LoadConfig: Loaded an explicit channel overlay config with name \"" + channelName + "\"" );
         }
         else
         {
