@@ -1623,22 +1623,19 @@ CPubSubFlowRouter::ConnectSide( CPubSubClientSide* sideToConnect )
 
     if ( GUCEF_NULL != sideToConnect )
     {
-        if ( !sideToConnect->IsConnected() )
+        if ( sideToConnect->ConnectPubSubClient( false ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                "):ConnectSide: side successfully connected: " + sideToConnect->GetSideId() ); 
+            return true;
+        }
+        else
         {
             if ( sideToConnect->IsPubSubClientInfraReadyToConnect() )
             {
-                if ( sideToConnect->ConnectPubSubClient( false ) )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
-                        "):ConnectSide: side successfully connected: " + sideToConnect->GetSideId() ); 
-                    return true;
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
-                        "):ConnectSide: side did not connect successfully: " + sideToConnect->GetSideId() ); 
-                    return false;
-                }
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                    "):ConnectSide: side did not connect successfully: " + sideToConnect->GetSideId() ); 
+                return false;
             }
             else
             {
@@ -1646,13 +1643,7 @@ CPubSubFlowRouter::ConnectSide( CPubSubClientSide* sideToConnect )
                     "):ConnectSide: side is not ready to connect, need to defer for side: " + sideToConnect->GetSideId() ); 
                 return false;
             }
-        }
-        else
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
-                "):ConnectSide: side which is already connected: " + sideToConnect->GetSideId() ); 
-            return true;
-        }        
+        }       
     }
     return false;
 }

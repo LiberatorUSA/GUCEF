@@ -308,6 +308,10 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
 
     bool returnStatus = false;
 
+    // Create local refs for the invocation duration to avoid external interference
+    PulseGeneratorPtr pulseGenerator = m_pulseGenerator;
+    TBasicThreadPoolPtr threadPool = m_threadPool;
+
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
     // This means the task is now assigned to the thread which is represented by this delegator
@@ -319,7 +323,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     {
         if ( !IsDeactivationRequested() )
         {
-            m_pulseGenerator->WaitTillNextPulseWindow( 25 );
+            pulseGenerator->WaitTillNextPulseWindow( 25 );
         }
         else
         {
@@ -347,7 +351,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 }
 
                 if ( m_sendRegularPulses || m_immediatePulseTickets > 0 )
-                    SendDriverPulse( *m_pulseGenerator.GetPointerAlways() );
+                    SendDriverPulse( *pulseGenerator.GetPointerAlways() );
 
                 if ( m_immediatePulseTickets > 0 )
                 {
@@ -357,25 +361,27 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 {
                     if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
                     {
-                        m_pulseGenerator->WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
+                        pulseGenerator->WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
                         m_taskRequestedCycleDelayInMs = 0;
                     }
                     else
                     {
-                        m_pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                        pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
                     }
                 }
             }
 
             taskConsumer->OnTaskEnding( taskData, false );
             taskConsumer->OnTaskEnded( taskData, false );
-            m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+            if ( !threadPool.IsNULL() )
+                threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
             returnStatus = true;
         }
         else
         {
             taskConsumer->OnTaskStartupFailed( taskData );
-            m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+            if ( !threadPool.IsNULL() )
+                threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         }
         m_consumerBusy = false;    
     }
@@ -383,7 +389,8 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     {
         // We never even got to start the consumer's work
         // not an error, just an efficiency thing so we still return success
-        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+        if ( !threadPool.IsNULL() )
+            threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         returnStatus = true;
     }
     return returnStatus;
@@ -460,7 +467,8 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
     {
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
 
-        m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+        if ( !m_threadPool.IsNULL() )
+            m_threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
         taskConsumer->SetTaskDelegator( CTaskDelegatorPtr() );
     }
 

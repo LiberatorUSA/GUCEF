@@ -1132,7 +1132,9 @@ CStoragePubSubClientTopic::StopVfsOps( void )
 
     if ( GUCEF_NULL != m_syncVfsOpsTimer )
     {
-        success = m_syncVfsOpsTimer->SetEnabled( false ) && success;
+        // we intentionally dont use the return value of setting the timer because we just need to store the state, the pulse generator may be missing
+        m_syncVfsOpsTimer->SetEnabled( false );
+
         m_buffers.SignalEndOfWriting();
     }
 

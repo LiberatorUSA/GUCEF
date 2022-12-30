@@ -909,11 +909,25 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
             CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
             if ( !newTopicObj.IsNULL() )
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
-                    " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
-                    " for topic " + newTopicObj->GetTopicName() );
-            
+                if ( newTopicObj == specificTargetTopic )
+                {
+                    // This is a publish on a topic for which we have not received the topic creation event notification yet
+                    // in multi-threaded setups the order in which the events arrive vs other event listeners on the same can vary depending 
+                    // depending on thread timings
+                    ConfigureTopicLink( m_sideSettings, newTopicObj, true );
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                        " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                        " for topic " + newTopicObj->GetTopicName() );
+                }
+                else
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                        " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                        " for topic " + newTopicObj->GetTopicName() );            
+                }
                 return PublishMsgsSync( msgs, newTopicObj.GetPointerAlways() );
             }
             else
@@ -1010,11 +1024,25 @@ CPubSubClientSide::PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVec
         CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
         if ( !newTopicObj.IsNULL() )
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
-                " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
-                " for topic " + newTopicObj->GetTopicName() );
-            
+            if ( newTopicObj == specificTargetTopic )
+            {
+                // This is a publish on a topic for which we have not received the topic creation event notification yet
+                // in multi-threaded setups the order in which the events arrive vs other event listeners on the same can vary depending 
+                // depending on thread timings
+                ConfigureTopicLink( m_sideSettings, newTopicObj, true );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                    " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                    " for topic " + newTopicObj->GetTopicName() );
+            }
+            else
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) + 
+                    " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) + 
+                    " for topic " + newTopicObj->GetTopicName() );
+            }            
             return PublishMsgsASync( msgs, newTopicObj.GetPointerAlways() );
         }
         else
@@ -2241,8 +2269,11 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 
     MT::CObjectScopeLock lock( this );
     
-    if ( !DisconnectPubSubClient( hardReset ) )
-        return false;
+    if ( hardReset )
+    {    
+        if ( !DisconnectPubSubClient( hardReset ) )
+            return false;
+    }
     
     CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
@@ -2262,7 +2293,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         pubSubConfig.pubsubIdPrefix = m_sideSettings.pubsubIdPrefix + '.' + m_sideId; 
 
     bool clientSetupWasNeeded = false;
-    if ( m_pubsubClient.IsNULL() )
+    if ( hardReset || m_pubsubClient.IsNULL() )
     {
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
@@ -2667,7 +2698,7 @@ CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettings& sideSettings )
     if ( DisconnectPubSubClient( true ) )
     {
         m_sideSettings = sideSettings;
-        return  true;
+        return true;
     }
     return false;
 }
