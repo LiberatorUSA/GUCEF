@@ -27,7 +27,7 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
-#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.h"
+#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientConfig.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,36 +41,36 @@ namespace REDISCLUSTER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_DEFAULT_REDIS_KEEPALIVE                               true
+#define GUCEF_DEFAULT_REDIS_CONNECT_TIMEOUT_IN_MS                   1000
+#define GUCEF_DEFAULT_REDIS_SOCKET_TIMEOUT_IN_MS                    1000
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
-    : PUBSUB::CPubSubClientTopicConfig()
-    , redisXAddMaxLen( -1 )
-    , redisXAddMaxLenIsApproximate( true )    
-    , redisXAddIgnoreMsgId( true )
-    , redisXReadDefaultOffset( "0" )
-    , redisXReadCount( -1 )
-    , redisXReadBlockTimeoutInMs( 1000 )
-    , treatXReadBlockTimeoutAsEndOfDataEvent( true )
-    , minAvailableInFlightSlotsBeforeRead( 100 )
+CRedisClusterPubSubClientConfig::CRedisClusterPubSubClientConfig( void )
+    : PUBSUB::CPubSubClientConfig()
+    , redisConnectionOptionKeepAlive( GUCEF_DEFAULT_REDIS_KEEPALIVE )
+    , redisConnectionOptionConnectTimeoutInMs( GUCEF_DEFAULT_REDIS_CONNECT_TIMEOUT_IN_MS )
+    , redisConnectionOptionSocketTimeoutInMs( GUCEF_DEFAULT_REDIS_SOCKET_TIMEOUT_IN_MS )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
-    : PUBSUB::CPubSubClientTopicConfig( genericConfig )
-    , redisXAddMaxLen( -1 )
-    , redisXAddMaxLenIsApproximate( true )    
-    , redisXAddIgnoreMsgId( true )
-    , redisXReadDefaultOffset( "0" )
-    , redisXReadCount( -1 )
-    , redisXReadBlockTimeoutInMs( 1000 )
-    , treatXReadBlockTimeoutAsEndOfDataEvent( true )
-    , minAvailableInFlightSlotsBeforeRead( 100 )
+CRedisClusterPubSubClientConfig::CRedisClusterPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig )
+    : PUBSUB::CPubSubClientConfig( genericConfig )
+    , redisConnectionOptionKeepAlive( GUCEF_DEFAULT_REDIS_KEEPALIVE )
+    , redisConnectionOptionConnectTimeoutInMs( GUCEF_DEFAULT_REDIS_CONNECT_TIMEOUT_IN_MS )
+    , redisConnectionOptionSocketTimeoutInMs( GUCEF_DEFAULT_REDIS_SOCKET_TIMEOUT_IN_MS )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -78,7 +78,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( cons
 
 /*-------------------------------------------------------------------------*/
 
-CRedisClusterPubSubClientTopicConfig::~CRedisClusterPubSubClientTopicConfig()
+CRedisClusterPubSubClientConfig::~CRedisClusterPubSubClientConfig()
 {GUCEF_TRACE;
 
 }
@@ -86,29 +86,24 @@ CRedisClusterPubSubClientTopicConfig::~CRedisClusterPubSubClientTopicConfig()
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
+CRedisClusterPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
-    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );    
-    redisXAddIgnoreMsgId = config.GetAttributeValueOrChildValueByName( "redisXAddIgnoreMsgId" ).AsBool( redisXAddIgnoreMsgId, true ); 
-    redisXReadDefaultOffset = config.GetAttributeValueOrChildValueByName( "redisXReadDefaultOffset" ).AsString( redisXReadDefaultOffset, true );
-    redisXReadCount = config.GetAttributeValueOrChildValueByName( "redisXReadCount" ).AsInt32( redisXReadCount, true ); 
-    redisXReadBlockTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisXReadBlockTimeoutInMs" ).AsUInt32( redisXReadBlockTimeoutInMs );
-    treatXReadBlockTimeoutAsEndOfDataEvent = config.GetAttributeValueOrChildValueByName( "treatXReadBlockTimeoutAsEndOfDataEvent" ).AsBool( treatXReadBlockTimeoutAsEndOfDataEvent, true ); 
-    minAvailableInFlightSlotsBeforeRead = config.GetAttributeValueOrChildValueByName( "minAvailableInFlightSlotsBeforeRead" ).AsInt32( minAvailableInFlightSlotsBeforeRead );
+    redisConnectionOptionKeepAlive = config.GetAttributeValueOrChildValueByName( "redisConnectionOptionKeepAlive" ).AsBool( redisConnectionOptionKeepAlive, true );
+    redisConnectionOptionConnectTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisConnectionOptionConnectTimeoutInMs" ).AsUInt64( redisConnectionOptionConnectTimeoutInMs, true );
+    redisConnectionOptionSocketTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisConnectionOptionSocketTimeoutInMs" ).AsUInt64( redisConnectionOptionSocketTimeoutInMs, true );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CRedisClusterPubSubClientTopicConfig& 
-CRedisClusterPubSubClientTopicConfig::operator=( const PUBSUB::CPubSubClientTopicConfig& src )
+CRedisClusterPubSubClientConfig& 
+CRedisClusterPubSubClientConfig::operator=( const PUBSUB::CPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        PUBSUB::CPubSubClientConfig::operator=( src );
         LoadCustomConfig( src.customConfig );    
     }
     return *this;
@@ -116,21 +111,17 @@ CRedisClusterPubSubClientTopicConfig::operator=( const PUBSUB::CPubSubClientTopi
 
 /*-------------------------------------------------------------------------*/
 
-CRedisClusterPubSubClientTopicConfig& 
-CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClientTopicConfig& src )
+CRedisClusterPubSubClientConfig& 
+CRedisClusterPubSubClientConfig::operator=( const CRedisClusterPubSubClientConfig& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        PUBSUB::CPubSubClientTopicConfig::operator=( src );
-        redisXAddMaxLen = src.redisXAddMaxLen; 
-        redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;   
-        redisXAddIgnoreMsgId = src.redisXAddIgnoreMsgId;
-        redisXReadDefaultOffset = src.redisXReadDefaultOffset;
-        redisXReadCount = src.redisXReadCount;
-        redisXReadBlockTimeoutInMs = src.redisXReadBlockTimeoutInMs;
-        treatXReadBlockTimeoutAsEndOfDataEvent = src.treatXReadBlockTimeoutAsEndOfDataEvent;
-        minAvailableInFlightSlotsBeforeRead = src.minAvailableInFlightSlotsBeforeRead;
+        PUBSUB::CPubSubClientConfig::operator=( src );
+
+        redisConnectionOptionKeepAlive = src.redisConnectionOptionKeepAlive;
+        redisConnectionOptionConnectTimeoutInMs = src.redisConnectionOptionConnectTimeoutInMs;
+        redisConnectionOptionSocketTimeoutInMs = src.redisConnectionOptionSocketTimeoutInMs;
     }
     return *this;
 }

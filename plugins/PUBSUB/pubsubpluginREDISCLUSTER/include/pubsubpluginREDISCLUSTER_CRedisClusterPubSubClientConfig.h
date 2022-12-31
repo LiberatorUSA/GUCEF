@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
-#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,10 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
-#include "gucefPUBSUB_CPubSubClientTopicConfig.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPICCONFIG_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#include "gucefPUBSUB_CPubSubClientConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 #include "pubsubpluginREDISCLUSTER_macros.h"
@@ -57,28 +57,23 @@ class CRedisClusterPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientConfig : public PUBSUB::CPubSubClientConfig
 {
     public:
 
-    CORE::Int32 redisXAddMaxLen;
-    bool redisXAddMaxLenIsApproximate;
-    bool redisXAddIgnoreMsgId;
-    CORE::CString redisXReadDefaultOffset;
-    CORE::Int32 redisXReadCount;
-    CORE::UInt32 redisXReadBlockTimeoutInMs;
-    bool treatXReadBlockTimeoutAsEndOfDataEvent;
-    CORE::Int32 minAvailableInFlightSlotsBeforeRead;  /**< if a max nr of msgs in flight is being enforced then this controls the min free slots there have to be before the overhead of another read attemps */
+    bool redisConnectionOptionKeepAlive;
+    UInt64 redisConnectionOptionConnectTimeoutInMs;
+    UInt64 redisConnectionOptionSocketTimeoutInMs;
+
+    CRedisClusterPubSubClientConfig( void );
     
-    CRedisClusterPubSubClientTopicConfig( void );
-    
-    CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
+    CRedisClusterPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig );
 
-    virtual ~CRedisClusterPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CRedisClusterPubSubClientConfig() GUCEF_VIRTUAL_OVERRIDE;
 
-    CRedisClusterPubSubClientTopicConfig& operator=( const PUBSUB::CPubSubClientTopicConfig& src );
+    CRedisClusterPubSubClientConfig& operator=( const PUBSUB::CPubSubClientConfig& src );
 
-    CRedisClusterPubSubClientTopicConfig& operator=( const CRedisClusterPubSubClientTopicConfig& src );
+    CRedisClusterPubSubClientConfig& operator=( const CRedisClusterPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 };
@@ -95,4 +90,4 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPICCONFIG_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H ? */

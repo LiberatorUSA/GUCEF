@@ -125,6 +125,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     const CORE::CString& GetMetricFriendlyTopicName( void ) const;
+    const CORE::CString& GetMetricsPrefix( void ) const;
 
     virtual bool Publish( CORE::UInt64& publishActionId, const PUBSUB::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -139,16 +140,34 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
 
+    const CRedisClusterPubSubClientTopicConfig& GetTopicConfig( void ) const;
+
     class TopicMetrics
     {
         public:
 
         TopicMetrics( void );
 
-        CORE::UInt32 redisClusterErrorReplies;
+        CORE::UInt32 redisErrorReplies;
+        CORE::UInt32 redisTimeouts;
+        CORE::UInt32 msgsReceived;
+        CORE::Float32 fieldsInMsgsReceivedRatio;
+        CORE::UInt32 msgsBytesReceived;
+        CORE::UInt32 msgsTransmitted;        
+        CORE::Float32 fieldsInMsgsTransmittedRatio;
+        CORE::UInt32 msgsInFlight;
     };
 
     const TopicMetrics& GetMetrics( void ) const;
+
+    CORE::UInt32 GetMsgsInFlightGauge( void ) const;
+    CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
+    CORE::UInt32 GetRedisTimeoutsCounter( bool resetCounter );
+    CORE::UInt32 GetMsgsTransmittedCounter( bool resetCounter );
+    CORE::UInt32 GetFieldsInMsgsTransmittedCounter( bool resetCounter );
+    CORE::UInt32 GetMsgsReceivedCounter( bool resetCounter );
+    CORE::UInt32 GetFieldsInMsgsReceivedCounter( bool resetCounter );
+    CORE::UInt32 GetMsgsBytesReceivedCounter( bool resetCounter );
 
     bool RedisSendSyncImpl( CORE::UInt64& publishActionId, const sw::redis::StringView& msgId, const TRedisArgs& kvPairs, bool notify );
 
@@ -222,12 +241,14 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     sw::redis::Pipeline* m_redisPipeline;
     RedisClusterPtr m_redisContext;
     CORE::UInt32 m_redisErrorReplies;
-    CORE::UInt32 m_redisTransmitQueueSize;
+    CORE::UInt32 m_redisTimeoutErrors;
+    CORE::UInt32 m_msgsReceived;
+    CORE::UInt32 m_fieldsInMsgsReceived;
+    CORE::UInt32 m_msgsBytesReceived;
     CORE::UInt32 m_redisMsgsTransmitted;
     CORE::UInt32 m_redisFieldsInMsgsTransmitted;
-    CORE::UInt32 m_redisFieldsInMsgsRatio;
     CORE::UInt32 m_redisHashSlot;
-    CORE::UInt32 m_redisXreadCount;
+    CORE::Int32 m_redisMaxXreadCount;
     CORE::UInt32 m_redisXreadBlockTimeoutInMs;
     TRedisMsgByStream m_redisReadMsgs;
     TPubSubMsgsVector m_pubsubMsgs;
@@ -243,8 +264,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     bool m_needToTrackAcks;
     bool m_subscriptionIsAtEndOfData;
     bool m_isSubscribed;
-    CORE::Int64 m_maxTotalMsgsInFlight;
-    CORE::UInt64 m_msgsInFlight;
+    CORE::Int32 m_maxTotalMsgsInFlight;
+    CORE::Int64 m_msgsInFlight;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;
     TPublishActionIdVector m_publishSuccessActionIds;
@@ -253,6 +274,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     CORE::CString m_metricFriendlyTopicName;
+    CORE::CString m_metricsPrefix;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };

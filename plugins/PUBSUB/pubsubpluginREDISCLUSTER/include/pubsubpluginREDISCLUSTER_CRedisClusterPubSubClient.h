@@ -59,6 +59,11 @@
 #define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H
 #endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTTOPIC_H ? */
 
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H
+#include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientConfig.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENTCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -161,7 +166,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
      */
     virtual bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
-    PUBSUB::CPubSubClientConfig& GetConfig( void );
+    CRedisClusterPubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );
     
@@ -229,7 +234,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClient > TEventCallback;
     typedef std::map< CORE::CString, CRedisClusterPubSubClientTopicPtr > TTopicMap;
 
-    PUBSUB::CPubSubClientConfig m_config;
+    CRedisClusterPubSubClientConfig m_config;
     RedisNodeMap m_nodeMap;
     RedisClusterPtr m_redisContext;
     CORE::UInt32 m_redisErrorReplies;

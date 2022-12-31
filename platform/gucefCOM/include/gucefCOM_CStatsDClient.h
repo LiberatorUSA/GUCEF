@@ -95,6 +95,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
     virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Count( const CString& key, const CORE::CVariant& delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate

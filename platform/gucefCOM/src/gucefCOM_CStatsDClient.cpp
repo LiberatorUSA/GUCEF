@@ -162,6 +162,16 @@ CStatsDClient::Count( const CString& key, const UInt64 delta, const Float32 freq
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::Count( const CString& key, const CORE::CVariant& delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "c";
+    Transmit( key, delta, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStatsDClient::Gauge( const CString& key, const Int32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 

@@ -154,7 +154,7 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientConfig&
+CRedisClusterPubSubClientConfig&
 CRedisClusterPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
@@ -939,10 +939,10 @@ CRedisClusterPubSubClient::Connect( void )
         // Optional. Timeout before we successfully send request to or receive response from redis.
         // By default, the timeout is 0ms, i.e. never timeout and block until we send or receive successfuly.
         // NOTE: if any command is timed out, we throw a TimeoutError exception.
-        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( 100 );
-        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( 100 );
+        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( m_config.redisConnectionOptionSocketTimeoutInMs );
+        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( m_config.redisConnectionOptionConnectTimeoutInMs );
 
-        rppConnectionOptions.keep_alive = true;
+        rppConnectionOptions.keep_alive = m_config.redisConnectionOptionKeepAlive;
 
         // Connect to the Redis cluster
         m_redisContext.Unlink();
@@ -950,7 +950,7 @@ CRedisClusterPubSubClient::Connect( void )
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
 
-        // The following is not a must-have for connectivity
+        // The following is not a must-have for connectivity, its for diagnostic logging
         if ( GetRedisClusterNodeMap( m_nodeMap ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully obtained Redis cluster nodes" );
@@ -1138,12 +1138,24 @@ CRedisClusterPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     {
         CRedisClusterPubSubClientTopicPtr topic = (*i).second;
         const CRedisClusterPubSubClientTopic::TopicMetrics& topicMetrics = topic->GetMetrics();
-        const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
-        //const CRedisClusterPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
-        CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
+        const CRedisClusterPubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
+        const CORE::CString& topicMetricsPrefix = topic->GetMetricsPrefix();
 
-        GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".redisErrorReplies", topicMetrics.redisClusterErrorReplies, 1.0f );
-
+        GUCEF_METRIC_COUNT( topicMetricsPrefix + ".redisErrorReplies", topicMetrics.redisErrorReplies, 1.0f );
+        GUCEF_METRIC_COUNT( topicMetricsPrefix + ".redisTimeouts", topicMetrics.redisTimeouts, 1.0f );
+        GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsInFlight", topicMetrics.msgsInFlight, 1.0f );
+        
+        if ( topicConfig.needSubscribeSupport )
+        {
+            GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsReceived", topicMetrics.msgsReceived, 1.0f );
+            GUCEF_METRIC_COUNT( topicMetricsPrefix + ".fieldsInMsgsReceivedRatio", CORE::CVariant( topicMetrics.fieldsInMsgsReceivedRatio ), 1.0f );
+            GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsBytesReceived", topicMetrics.msgsBytesReceived, 1.0f );
+        }
+        if ( topicConfig.needPublishSupport )
+        {
+            GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsTransmitted", topicMetrics.msgsTransmitted, 1.0f );
+            GUCEF_METRIC_COUNT( topicMetricsPrefix + ".fieldsInMsgsTransmittedRatio", CORE::CVariant( topicMetrics.fieldsInMsgsTransmittedRatio ), 1.0f );
+        }
         ++i;
     }
 

@@ -77,12 +77,14 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_redisPipeline( GUCEF_NULL )
     , m_redisContext()
     , m_redisErrorReplies( 0 )
-    , m_redisTransmitQueueSize( 0 )
+    , m_redisTimeoutErrors( 0 )
+    , m_msgsReceived( 0 )
+    , m_fieldsInMsgsReceived( 0 )
+    , m_msgsBytesReceived( 0 )
     , m_redisMsgsTransmitted( 0 )
     , m_redisFieldsInMsgsTransmitted( 0 )
-    , m_redisFieldsInMsgsRatio( 0 )
     , m_redisHashSlot( GUCEFMT_UINT32MAX )
-    , m_redisXreadCount( 1000 )
+    , m_redisMaxXreadCount( 1000 )
     , m_redisXreadBlockTimeoutInMs( 1000 )
     , m_redisReadMsgs()
     , m_redisMsgArgs()
@@ -104,6 +106,8 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_publishFailureActionIds()
     , m_publishFailureActionEventData()
     , m_metrics()
+    , m_metricFriendlyTopicName()
+    , m_metricsPrefix()
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
@@ -287,37 +291,58 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
         m_redisHashSlot = CalculateRedisHashSlot( m_config.topicName );
         m_readOffset = m_config.redisXReadDefaultOffset;
         m_redisXreadBlockTimeoutInMs = m_config.redisXReadBlockTimeoutInMs;
+        if ( GUCEF_NULL != m_client )
+        {
+            // sanity check the read timeout
+            // note that a connection timeout of 0 means infinite for redis++
+            if ( m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs > 0 && m_config.redisXReadBlockTimeoutInMs >= m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: redisXReadBlockTimeoutInMs (" + CORE::ToString( m_config.redisXReadBlockTimeoutInMs ) + 
+                        ") at the topic level should be configured to a lower value than the client's overall socket timeout (" +
+                    CORE::ToString( m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs ) + "). Will clamp the value." );
+
+                // clamp the value
+                m_config.redisXReadBlockTimeoutInMs = (UInt32) m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs - 1;
+            }
+        }
 
         m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
+        
+        if ( GUCEF_NULL != m_client )
+            m_metricsPrefix = m_client->GetConfig().metricsPrefix + m_metricFriendlyTopicName;
+        else
+            m_metricsPrefix = m_metricFriendlyTopicName;    
 
         if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
-            m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
+            m_maxTotalMsgsInFlight = (Int32) SMALLEST( m_config.maxTotalMsgsInFlight, GUCEF_INT32MAX );
         else
-            m_maxTotalMsgsInFlight = m_client->GetConfig().maxTotalMsgsInFlight;
+            m_maxTotalMsgsInFlight = (Int32) SMALLEST( m_client->GetConfig().maxTotalMsgsInFlight, GUCEF_INT32MAX );
 
         if ( m_config.minAvailableInFlightSlotsBeforeRead > m_maxTotalMsgsInFlight )
             m_config.minAvailableInFlightSlotsBeforeRead = m_maxTotalMsgsInFlight;    
         
-        if ( !m_needToTrackAcks )
-        {
-            // We are in fire and forget mode so max in flight means per notification of received messages
-            // for that there is no point in reading more from redis than we are willing to notify
-            // as such we take the lesser of the 2
-            if ( m_maxTotalMsgsInFlight > 0 )
-                m_redisXreadCount = SMALLEST( m_config.redisXReadCount, m_maxTotalMsgsInFlight );
-            else
-                m_redisXreadCount = m_config.redisXReadCount;
-        }
+        // No point in reading more from redis than we are willing to notify
+        // as such we take the lesser of the 2
+        if ( m_maxTotalMsgsInFlight > 0 && m_config.redisXReadCount > 0 )
+            m_redisMaxXreadCount = SMALLEST( m_config.redisXReadCount, m_maxTotalMsgsInFlight );
         else
-        {
-            // We are tracking acks
-            // as such we will be waiting on acks as an independent check
-            m_redisXreadCount = m_config.redisXReadCount;
-        }
+        if ( m_maxTotalMsgsInFlight > 0 )
+            m_redisMaxXreadCount = m_maxTotalMsgsInFlight;    
+        else
+            m_redisMaxXreadCount = m_config.redisXReadCount;
         
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CRedisClusterPubSubClientTopicConfig& 
+CRedisClusterPubSubClientTopic::GetTopicConfig( void ) const
+{GUCEF_TRACE;
+
+    return m_config;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -331,6 +356,15 @@ CRedisClusterPubSubClientTopic::GetMetricFriendlyTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CRedisClusterPubSubClientTopic::GetMetricsPrefix( void ) const
+{GUCEF_TRACE;
+
+    return m_metricsPrefix;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId      ,
                                                    const sw::redis::StringView& msgId ,
@@ -338,56 +372,67 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
                                                    bool notify                        )
 {GUCEF_TRACE;
 
-    if ( m_redisContext.IsNULL() || GUCEF_NULL == m_redisPipeline )
+    if ( m_redisContext.IsNULL() || ( m_config.preferDedicatedConnection && GUCEF_NULL == m_redisPipeline ) )
         return false;
 
     static const sw::redis::StringView autoGenMsgId = sw::redis::StringView( "*", 1 );
     const sw::redis::StringView& msgIdToUse = m_config.redisXAddIgnoreMsgId ? autoGenMsgId : msgId;
-    bool totalSuccess = true;
+    bool totalSuccess = false;
 
     try
     {
         sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
 
-        if ( m_config.redisXAddMaxLen >= 0 )
-            m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
-        else
-            m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
-
-        sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
-
-        size_t replyCount = redisReplies.size();
-        for ( size_t r=0; r<replyCount; ++r )
+        if ( m_config.preferDedicatedConnection && GUCEF_NULL != m_redisPipeline )
         {
-            redisReply& reply = redisReplies.get( r );
+            if ( m_config.redisXAddMaxLen >= 0 )
+                m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
+            else
+                m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
 
-            switch ( reply.integer )
+            sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();                                                   
+            
+            size_t replyCount = redisReplies.size();
+            for ( size_t r=0; r<replyCount; ++r )
             {
-                case REDIS_OK:
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent message with " +
-                        CORE::ToString( kvPairs.size() ) + " fields. MsgID=" + CORE::ToString( reply.str ) );
+                redisReply& reply = redisReplies.get( r );
 
-                    ++m_redisMsgsTransmitted;
-                    m_redisFieldsInMsgsTransmitted += (CORE::UInt32) kvPairs.size();
-                    m_redisFieldsInMsgsRatio = (CORE::UInt32) kvPairs.size();       // <- @TODO doesnt look like this was ported correctly
-                    break;
-                }
-                default:
-                case REDIS_ERR:
+                switch ( reply.integer )
                 {
-                    totalSuccess = false;
-                    ++m_redisErrorReplies;
+                    case REDIS_OK:
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent message with " +
+                            CORE::ToString( kvPairs.size() ) + " fields. MsgID=" + CORE::ToString( reply.str ) );
 
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending message with " +
-                        CORE::ToString( kvPairs.size() ) + " fields. Error=" + CORE::ToString( reply.str ) );
-                    break;
+                        ++m_redisMsgsTransmitted;
+                        m_redisFieldsInMsgsTransmitted += (CORE::UInt32) kvPairs.size();
+                        totalSuccess = totalSuccess && true;
+                        break;
+                    }
+                    default:
+                    case REDIS_ERR:
+                    {
+                        ++m_redisErrorReplies;
+
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending message with " +
+                            CORE::ToString( kvPairs.size() ) + " fields. Error=" + CORE::ToString( reply.str ) );
+                        break;
+                    }
                 }
             }
         }
-
-        // We will count the ability (or lack thereof) to send messages as proof of health
-        UpdateIsHealthyStatus( totalSuccess );
+        else
+        {
+            if ( m_config.redisXAddMaxLen >= 0 )
+                m_redisContext->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
+            else
+                m_redisContext->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end() );
+        }
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        ++m_redisTimeoutErrors;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ Timeout exception: " + e.what() );        
     }
     catch ( const sw::redis::MovedError& e )
     {
@@ -427,6 +472,9 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
         Reconnect();
     }
+
+    // We will count the ability (or lack thereof) to send messages as proof of health
+    UpdateIsHealthyStatus( totalSuccess );
 
     if ( notify )
     {
@@ -491,127 +539,318 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         if ( m_redisContext.IsNULL() || m_config.topicName.IsNULLOrEmpty() )
             return totalSuccess;
 
-        CORE::UInt64 maxMsgsToRead = m_redisXreadCount;
-        if ( m_needToTrackAcks || m_maxTotalMsgsInFlight > 0 )
+        CORE::Int32 maxMsgsToRead = m_redisMaxXreadCount;
+        if ( maxMsgsToRead > 0 && m_maxTotalMsgsInFlight > 0 )
         {
-            if ( m_msgsInFlight >= m_maxTotalMsgsInFlight )
+            if ( m_needToTrackAcks )
             {
-                // We already have too many messages 'in flight' 
-                // wait for this number to go down before reading more
-                return true;
-            }
+                if ( m_msgsInFlight >= m_maxTotalMsgsInFlight )
+                {
+                    // We already have too many messages 'in flight' 
+                    // wait for this number to go down before reading more
+                    return true;
+                }
 
-            maxMsgsToRead = m_maxTotalMsgsInFlight - m_msgsInFlight; 
-            if ( m_config.minAvailableInFlightSlotsBeforeRead > maxMsgsToRead )
-            {
-                // Based on settings lets not take the overhead of another read call to Redis right now
-                // wait for some more 'in flight' slots to open up
-                return true;
-            }
-        }    
+                maxMsgsToRead = m_maxTotalMsgsInFlight - (Int32) m_msgsInFlight; 
+                if ( m_config.minAvailableInFlightSlotsBeforeRead > maxMsgsToRead )
+                {
+                    // Based on settings lets not take the overhead of another read call to Redis right now
+                    // wait for some more 'in flight' slots to open up
+                    return true;
+                }
+            }    
+        }
 
         sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
         std::chrono::milliseconds readBlockTimeout( m_redisXreadBlockTimeoutInMs );
 
-        TRedisMsgByStreamInserter inserter = std::inserter( m_redisReadMsgs, m_redisReadMsgs.end() );
-
-        if ( maxMsgsToRead > 0 )
-            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) maxMsgsToRead, inserter );
-        else
-            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, inserter );
-
-        // Do we have data from any streams?
-        if ( !m_redisReadMsgs.empty() )
+        if ( m_config.preferDedicatedConnection && GUCEF_NULL != m_redisPipeline )
         {
-            // Since we received messages we cannot be 'at end of data'
-            m_subscriptionIsAtEndOfData = false;
-            
-            // Process messages for every stream
-            TRedisMsgByStream::iterator s = m_redisReadMsgs.begin();
-            while ( s != m_redisReadMsgs.end() )
+            if ( maxMsgsToRead > 0 )
+                m_redisPipeline->xread( topicSV, readOffsetSV, readBlockTimeout, (long long) maxMsgsToRead );
+            else
+                m_redisPipeline->xread( topicSV, readOffsetSV, readBlockTimeout );            
+
+            sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
+
+            size_t replyCount = redisReplies.size();
+            for ( size_t r=0; r<replyCount; ++r )
             {
-                // Get the actual msgs
-                TRedisMsgVector& msgs = (*(m_redisReadMsgs.begin())).second;
-
-                // Make sure we have enough storage to construct our generic representations
-                PrepStorageForReadMsgs( (CORE::UInt32) msgs.size() );
-
-                // Cycle through the messages received and build the generic representations
-                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
-                TRedisMsgVector::iterator i = msgs.begin();
-                while ( i != msgs.end() )
+                redisReply& reply = redisReplies.get( r );
+                int type = reply.type;
+                if ( REDIS_REPLY_ARRAY == type )
                 {
-                    std::string& msgId = (*i).first;
-                    TRedisMsgAttributes& msgAttribs = (*i).second;
-
-                    m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
-                    PUBSUB::CBasicPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
-                    msgRefs.push_back( TPubSubMsgRef() );
-                    TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
-                    pubsubMsgRef.LinkTo( &pubsubMsg );
-                    pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
-
-                    pubsubMsg.SetReceiveActionId( m_currentReceiveActionId );
-                    ++m_currentReceiveActionId;
-
-                    // set basic message properties
-
-                    pubsubMsg.GetMsgId().LinkTo( msgId );
-                    CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
-                    pubsubMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( unixUtcDt );
-
-                    // set the message attributes
-
-                    if ( msgAttribs.size() > m_pubsubMsgAttribs.size() )
-                        m_pubsubMsgAttribs.resize( msgAttribs.size() );
-                    pubsubMsg.GetKeyValuePairs().clear();
-                    pubsubMsg.GetKeyValuePairs().reserve( msgAttribs.size() );
-
-                    TBufferVector::iterator a = m_pubsubMsgAttribs.begin();
-                    TRedisMsgAttributes::iterator n = msgAttribs.begin();
-                    while ( n != msgAttribs.end() )
+                    // Process messages for every stream
+                    size_t max = reply.elements;
+                    for ( size_t i=0; i<max; ++i )
                     {
-                        std::string& keyAtt = (*n).first;
-                        std::string& valueAtt = (*n).second;
+                        const struct redisReply* e = reply.element[ i ];
+                        int eType = e->type;
+                        if ( REDIS_REPLY_ARRAY == eType )
+                        {
+                            size_t streamResultElements = e->elements;
 
-                        CORE::CDynamicBuffer& keyAttBuffer = (*a).first;
-                        CORE::CDynamicBuffer& valueAttBuffer = (*a).second;
+                            // Do we have data from any streams?
+                            char* streamName = GUCEF_NULL;
+                            if ( streamResultElements > 0 && REDIS_REPLY_STRING == e->element[ 0 ]->type )
+                                streamName = e->element[ 0 ]->str;
+                            else
+                                return false;
 
-                        keyAttBuffer.LinkTo( keyAtt );
-                        valueAttBuffer.LinkTo( valueAtt );
+                            if ( streamResultElements > 1 && REDIS_REPLY_ARRAY == e->element[ 1 ]->type )
+                            {
+                                size_t msgCount = e->element[ 1 ]->elements;
+                                if ( msgCount > 0 )
+                                {
+                                    // Since we received messages we cannot be 'at end of data'
+                                    m_subscriptionIsAtEndOfData = false;
 
-                        pubsubMsg.GetKeyValuePairs().push_back( PUBSUB::CBasicPubSubMsg::TKeyValuePair() );
-                        PUBSUB::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
+                                    // Make sure we have enough storage to construct our generic representations
+                                    PrepStorageForReadMsgs( (CORE::UInt32) msgCount );
+                                    m_msgsReceived += (UInt32) msgCount;
+                                
+                                    // Cycle through the messages received and build the generic representations
+                                    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
+                                    for ( size_t m=0; m<msgCount; ++m )
+                                    {
+                                        const struct redisReply* msg = e->element[ 1 ]->element[ m ];                                    
+                                        if ( msg->elements >= 2 )
+                                        {
+                                            // prep generic storage object for linkage
+                                            m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
+                                            PUBSUB::CBasicPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
+                                            msgRefs.push_back( TPubSubMsgRef() );
+                                            TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
+                                            pubsubMsgRef.LinkTo( &pubsubMsg );
+                                            pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
 
-                        kvLink.first.LinkTo( keyAttBuffer );
-                        kvLink.second.LinkTo( valueAttBuffer );
+                                            if ( REDIS_REPLY_STRING == msg->element[ 0 ]->type )
+                                            {
+                                                // set basic message properties
+                                                char* msgIdStr = msg->element[ 0 ]->str;
+                                                pubsubMsg.GetMsgId().LinkTo( msgIdStr, (UInt32) msg->element[ 0 ]->len, GUCEF_DATATYPE_ASCII_STRING );
+                                                CORE::UInt64 unixUtcDt = pubsubMsg.GetMsgId().AsUInt64();
+                                                pubsubMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( unixUtcDt );
+                                            }
+                                            if ( REDIS_REPLY_ARRAY == msg->element[ 1 ]->type )
+                                            {
+                                                // set message attributes
+                                                size_t msgAttribElements = msg->element[ 1 ]->elements;                                    
+                                                size_t msgKvPairs = msgAttribElements / 2;
 
-                        ++n; ++a;
+                                                pubsubMsg.GetKeyValuePairs().clear();
+                                                pubsubMsg.GetKeyValuePairs().reserve( msgKvPairs );
+
+                                                for ( size_t k=0; k<msgAttribElements; )
+                                                {
+                                                    char* keyStr = GUCEF_NULL;                                        
+                                                    size_t keySize = 0;
+                                                    char* valueStr = GUCEF_NULL;
+                                                    size_t valueSize = 0;
+
+                                                    const struct redisReply* key = msg->element[ 1 ]->element[ k ];
+
+                                                    if ( REDIS_REPLY_STRING == key->type )
+                                                    {
+                                                        keyStr = key->str;
+                                                        keySize = key->len;
+                                                        ++k;
+                                                    }
+                                                    else
+                                                        return false;
+
+                                                    const struct redisReply* value = msg->element[ 1 ]->element[ k ];
+
+                                                    if ( REDIS_REPLY_STRING == value->type )
+                                                    {
+                                                        valueStr = value->str;
+                                                        valueSize = value->len;
+                                                        ++k;
+                                                    }
+                                                    else
+                                                        return false;
+
+                                                    pubsubMsg.GetKeyValuePairs().push_back( PUBSUB::CBasicPubSubMsg::TKeyValuePair() );
+                                                    PUBSUB::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
+
+                                                    kvLink.first.LinkTo( keyStr, keySize, GUCEF_DATATYPE_BINARY_BLOB );
+                                                    kvLink.second.LinkTo( valueStr, valueSize, GUCEF_DATATYPE_BINARY_BLOB );
+
+                                                    m_msgsBytesReceived += ( keySize + valueSize );
+                                                    
+                                                    ++m_fieldsInMsgsReceived;
+                                                }
+                                            }
+
+                                            pubsubMsg.SetReceiveActionId( m_currentReceiveActionId );
+                                            ++m_currentReceiveActionId;
+                                        }
+                                    }
+
+                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: read " + 
+                                        CORE::ToString( msgCount ) + " messages" );
+        
+                                    // Communicate all the messages received via an event notification
+                                    if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 
+                                    {
+                                        m_msgsInFlight += (CORE::Int64) m_pubsubMsgsRefs.size();
+
+                                        PUBSUB::CBasicPubSubMsg& lastMsg = m_pubsubMsgs.back();
+                                        m_readOffset = lastMsg.GetMsgId().AsString();
+
+                                        m_redisReadMsgs.clear();
+                                        m_pubsubMsgsRefs.clear();
+                                        m_pubsubMsgAttribs.clear();
+                                    }
+                                    else
+                                    {
+                                        return totalSuccess;
+                                    }
+                                }
+                                else
+                                {
+                                    // we have a valid reply but 0 messages
+                                    // we are at the end of the stream
+                                }
+                            }
+                            else
+                                return false;
+                        }
                     }
-                    ++i;
                 }
-
-                m_readOffset = (*msgs.rbegin()).first;
-
-                ++s;
+                else
+                {
+                    if ( REDIS_REPLY_ERROR == type )
+                    {
+                        ++m_redisErrorReplies;
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Error using pipeline to receive messages. Error=" + CORE::ToString( reply.str ) );
+                        return false;
+                    }
+                }
             }
         }
         else
         {
-            // xread timeout occured since we returned without any data
-            if ( m_config.treatXReadBlockTimeoutAsEndOfDataEvent )
-            {   
-                if ( !m_subscriptionIsAtEndOfData )
-                {
-                    m_subscriptionIsAtEndOfData = true;
+            TRedisMsgByStreamInserter inserter = std::inserter( m_redisReadMsgs, m_redisReadMsgs.end() );
 
-                    if ( GUCEF_NULL != m_client )
+            if ( maxMsgsToRead > 0 )
+                m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) maxMsgsToRead, inserter );
+            else
+                m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, inserter );
+
+            // Do we have data from any streams?
+            if ( !m_redisReadMsgs.empty() )
+            {
+                // Since we received messages we cannot be 'at end of data'
+                m_subscriptionIsAtEndOfData = false;
+            
+                // Process messages for every stream
+                TRedisMsgByStream::iterator s = m_redisReadMsgs.begin();
+                while ( s != m_redisReadMsgs.end() )
+                {
+                    // Get the actual msgs
+                    TRedisMsgVector& msgs = (*(m_redisReadMsgs.begin())).second;
+                    m_msgsReceived += (UInt32) msgs.size();
+
+                    // Make sure we have enough storage to construct our generic representations
+                    PrepStorageForReadMsgs( (CORE::UInt32) msgs.size() );
+
+                    // Cycle through the messages received and build the generic representations
+                    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
+                    TRedisMsgVector::iterator i = msgs.begin();
+                    while ( i != msgs.end() )
                     {
-                        if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
-                        {                         
-                             if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
-                                return totalSuccess;
+                        std::string& msgId = (*i).first;                        
+
+                        m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
+                        PUBSUB::CBasicPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
+                        msgRefs.push_back( TPubSubMsgRef() );
+                        TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
+                        pubsubMsgRef.LinkTo( &pubsubMsg );
+                        pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
+
+                        pubsubMsg.SetReceiveActionId( m_currentReceiveActionId );
+                        ++m_currentReceiveActionId;
+
+                        // set basic message properties
+
+                        pubsubMsg.GetMsgId().LinkTo( msgId );
+                        CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
+                        pubsubMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( unixUtcDt );
+
+                        // set the message attributes
+                        TRedisMsgAttributes& msgAttribs = (*i).second;
+                        if ( msgAttribs.size() > m_pubsubMsgAttribs.size() )
+                            m_pubsubMsgAttribs.resize( msgAttribs.size() );
+                        pubsubMsg.GetKeyValuePairs().clear();
+                        pubsubMsg.GetKeyValuePairs().reserve( msgAttribs.size() );
+
+                        TBufferVector::iterator a = m_pubsubMsgAttribs.begin();
+                        TRedisMsgAttributes::iterator n = msgAttribs.begin();
+                        while ( n != msgAttribs.end() )
+                        {
+                            std::string& keyAtt = (*n).first;
+                            std::string& valueAtt = (*n).second;
+
+                            CORE::CDynamicBuffer& keyAttBuffer = (*a).first;
+                            CORE::CDynamicBuffer& valueAttBuffer = (*a).second;
+
+                            keyAttBuffer.LinkTo( keyAtt );
+                            valueAttBuffer.LinkTo( valueAtt );
+
+                            m_msgsBytesReceived += ( keyAttBuffer.GetDataSize() + valueAttBuffer.GetDataSize() );
+                            
+                            pubsubMsg.GetKeyValuePairs().push_back( PUBSUB::CBasicPubSubMsg::TKeyValuePair() );
+                            PUBSUB::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
+
+                            kvLink.first.LinkTo( keyAttBuffer );
+                            kvLink.second.LinkTo( valueAttBuffer );
+
+                            ++m_fieldsInMsgsReceived;
+                            ++n; ++a;
+                        }
+                        ++i;
+                    }
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: read " + 
+                        CORE::ToString( m_pubsubMsgsRefs.size() ) + " messages" );
+        
+                    // Communicate all the messages received via an event notification
+                    if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 
+                    {
+                        m_msgsInFlight += (CORE::Int64) m_pubsubMsgsRefs.size();
+
+                        m_readOffset = (*msgs.rbegin()).first;
+
+                        m_redisReadMsgs.clear();
+                        m_pubsubMsgsRefs.clear();
+                        m_pubsubMsgAttribs.clear();
+                    }
+                    else
+                    {
+                        return totalSuccess;
+                    }
+
+                    ++s;
+                }
+            }
+            else
+            {
+                // xread timeout occured since we returned without any data
+                if ( m_config.treatXReadBlockTimeoutAsEndOfDataEvent )
+                {   
+                    if ( !m_subscriptionIsAtEndOfData )
+                    {
+                        m_subscriptionIsAtEndOfData = true;
+
+                        if ( GUCEF_NULL != m_client )
+                        {
+                            if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+                            {                         
+                                 if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
+                                    return totalSuccess;
+                            }
                         }
                     }
                 }
@@ -622,6 +861,11 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         UpdateIsHealthyStatus( true );
         
         totalSuccess = true;
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        ++m_redisTimeoutErrors;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: Redis++ Timeout exception: " + e.what() );        
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -659,21 +903,6 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         UpdateIsHealthyStatus( false );
     }
 
-    if ( totalSuccess )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: read " + 
-            CORE::ToString( m_pubsubMsgsRefs.size() ) + " messages" );
-        
-        // Communicate all the messages received via an event notification
-        if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 
-        {
-            m_msgsInFlight += (CORE::UInt64) m_pubsubMsgsRefs.size();
-        }
-        else
-        {
-            return totalSuccess;
-        }
-    }
     m_redisReadMsgs.clear();
     m_pubsubMsgsRefs.clear();
     m_pubsubMsgAttribs.clear();
@@ -753,6 +982,12 @@ CRedisClusterPubSubClientTopic::Disconnect( void )
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Finished cleanup" );
         }
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        ++m_redisTimeoutErrors;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Redis++ Timeout exception: " + e.what() );        
+        return false;
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -898,6 +1133,12 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
         
         m_isSubscribed = true;
         return true;
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        ++m_redisTimeoutErrors;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Redis++ Timeout exception: " + e.what() );        
+        return false;
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -1112,7 +1353,7 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( bool reset )
             {
                 m_redisShardHost = (*i).second.host;
                 m_redisShardNodeId = (*i).second.nodeId;
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Stream \"" + m_config.topicName +
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: Stream \"" + m_config.topicName +
                     "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which lives at " + (*i).second.host.HostnameAndPortAsString() + " with node id " + (*i).second.nodeId );
                 break;
             }
@@ -1128,28 +1369,34 @@ CRedisClusterPubSubClientTopic::InitializeConnectivity( bool reset )
                 GUCEF_DELETE m_redisPipeline;
                 m_redisPipeline = GUCEF_NEW sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
             }
         }
 
         return true;
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        ++m_redisTimeoutErrors;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: Redis++ Timeout exception: " + e.what() );        
+        return false;
+    }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: Redis++ exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):InitializeConnectivity: exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -1247,10 +1494,16 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
         }
         return true;
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ Timeout exception: " + e.what() );
+        ++m_redisTimeoutErrors;
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
-        ++m_metrics.redisClusterErrorReplies;
+        ++m_redisErrorReplies;
         Reconnect();
         return false;
     }
@@ -1264,8 +1517,136 @@ CRedisClusterPubSubClientTopic::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetMsgsInFlightGauge( void ) const
+{GUCEF_TRACE;
+
+    return m_msgsInFlight;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetRedisErrorRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisErrorReplies = m_redisErrorReplies;
+        m_redisErrorReplies = 0;
+        return redisErrorReplies;
+    }
+    else
+        return m_redisErrorReplies;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetRedisTimeoutsCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisTimeoutErrors = m_redisTimeoutErrors;
+        m_redisTimeoutErrors = 0;
+        return redisTimeoutErrors;
+    }
+    else
+        return m_redisTimeoutErrors;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetMsgsTransmittedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisMsgsTransmitted = m_redisMsgsTransmitted;
+        m_redisMsgsTransmitted = 0;
+        return redisMsgsTransmitted;
+    }
+    else
+        return m_redisMsgsTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetFieldsInMsgsTransmittedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisFieldsInMsgsTransmitted = m_redisFieldsInMsgsTransmitted;
+        m_redisFieldsInMsgsTransmitted = 0;
+        return redisFieldsInMsgsTransmitted;
+    }
+    else
+        return m_redisFieldsInMsgsTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetMsgsReceivedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 msgsReceived = m_msgsReceived;
+        m_msgsReceived = 0;
+        return msgsReceived;
+    }
+    else
+        return m_msgsReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetMsgsBytesReceivedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 msgsBytesReceived = m_msgsBytesReceived;
+        m_msgsBytesReceived = 0;
+        return msgsBytesReceived;
+    }
+    else
+        return m_msgsBytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+CRedisClusterPubSubClientTopic::GetFieldsInMsgsReceivedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisFieldsInMsgsTransmitted = m_redisFieldsInMsgsTransmitted;
+        m_redisFieldsInMsgsTransmitted = 0;
+        return redisFieldsInMsgsTransmitted;
+    }
+    else
+        return m_redisFieldsInMsgsTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientTopic::TopicMetrics::TopicMetrics( void )
-    : redisClusterErrorReplies( 0 )
+    : redisErrorReplies( 0 )
+    , redisTimeouts( 0 )
+    , msgsReceived( 0 )
+    , fieldsInMsgsReceivedRatio( 0.0f )
+    , msgsBytesReceived( 0 )
+    , msgsTransmitted( 0 )
+    , fieldsInMsgsTransmittedRatio( 0.0f )
+    , msgsInFlight( 0 )
 {GUCEF_TRACE;
 
 }
@@ -1305,6 +1686,25 @@ CRedisClusterPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier  
                                                      CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    m_metrics.msgsInFlight = GetMsgsInFlightGauge();
+
+    m_metrics.redisErrorReplies = GetRedisErrorRepliesCounter( true );
+    m_metrics.redisTimeouts = GetRedisTimeoutsCounter( true );
+
+    m_metrics.msgsTransmitted = GetMsgsTransmittedCounter( true );    
+    UInt32 fieldsInMsgsTransmitted = GetFieldsInMsgsTransmittedCounter( true );
+    if ( m_metrics.msgsTransmitted > 0 )
+        m_metrics.fieldsInMsgsTransmittedRatio = fieldsInMsgsTransmitted / m_metrics.msgsTransmitted;
+    else
+        m_metrics.fieldsInMsgsTransmittedRatio = 0.0f;    
+
+    m_metrics.msgsReceived = GetMsgsReceivedCounter( true );    
+    m_metrics.msgsBytesReceived = GetMsgsBytesReceivedCounter( true );    
+    UInt32 fieldsInMsgsReceived = GetFieldsInMsgsReceivedCounter( true );
+    if ( m_metrics.msgsReceived > 0 )
+        m_metrics.fieldsInMsgsReceivedRatio = fieldsInMsgsReceived / m_metrics.msgsReceived;
+    else
+        m_metrics.fieldsInMsgsReceivedRatio = 0.0f;
 
 }
 

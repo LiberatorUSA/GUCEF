@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #ifndef GUCEF_CORE_CINAMEDINSTANCE_H
 #include "CINamedInstance.h"
 #define GUCEF_CORE_CINAMEDINSTANCE_H
@@ -95,6 +100,7 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable  ,
     virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const = 0;
     virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const = 0;
     virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Count( const CString& key, const CVariant& delta, const Float32 frequency = 1.0f ) const = 0;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate
