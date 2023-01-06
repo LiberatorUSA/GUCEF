@@ -1945,6 +1945,10 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
     const CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
     CPubSubClientTopic* topic = static_cast< CPubSubClientTopic* >( notifier );
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnPubSubTopicMsgsPublished: Received " + CORE::ToString( publishActionIds->size() ) + 
+                        " msg acks from client" );
+
     // Here we translate the publish action IDs back into the original messages
     // Subsequently we use said original messages to ack that to the message origin that we received the message
     // This is what allows us to provide a garanteed handling garantee since its an explicit handoff all the way through
@@ -2012,7 +2016,18 @@ CPubSubClientSide::OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
             ++n;
         }
 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):OnPubSubTopicMsgsPublished: Processed " + CORE::ToString( publishActionIds->size() ) + 
+                            " msg acks from client" );
+
         UpdateTopicMetrics( topicLink );
+    }
+    else
+    {
+        // This should not happen
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            "):OnPubSubTopicMsgsPublished: Could not process " + CORE::ToString( publishActionIds->size() ) + 
+                            " msg acks from client because the topic obj is unknown to us" );
     }
 }
 

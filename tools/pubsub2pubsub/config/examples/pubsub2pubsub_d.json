@@ -31,6 +31,7 @@
 			"vfs://InstallPath/channel_templates/msmq2web.json",
 			"vfs://InstallPath/channel_templates/redis2storage.json",
 			"vfs://InstallPath/channel_templates/storage2kafka.json",
+			"vfs://InstallPath/channel_templates/kafka2storage.json",
 			"vfs://InstallPath/channel_templates/storage2storage2test.json",
 			"vfs://InstallPath/channel_templates/udp2kafka.json",
 			"vfs://InstallPath/channel_templates/udp2redis.json",
@@ -38,27 +39,45 @@
 		],
 		"channelConfigTemplates": [],
 		"explicitChannelOverlays": [{
-			"usingTemplate": "storage2storage2test",
-			"channelId": 0,
-			"channelName": "example",
-			"sides": [{
-				"sideId": "storage-source",
-				"topics": [{
-					"topicName": "source"
-				}]
-			}, {
-				"sideId": "spillover-temp-storage",
-				"topics": [{
-					"topicName": "spillover"
-				}]
+				"usingTemplate": "storage2storage2test",
+				"channelId": 0,
+				"channelName": "example",
+				"sides": [{
+					"sideId": "storage-source",
+					"topics": [{
+						"topicName": "source"
+					}]
+				}, {
+					"sideId": "spillover-temp-storage",
+					"topics": [{
+						"topicName": "spillover"
+					}]
 
-			}, {
-				"sideId": "test-sink",
-				"topics": [{
-					"topicName": "sink"
+				}, {
+					"sideId": "test-sink",
+					"topics": [{
+						"topicName": "sink"
+					}]
 				}]
-			}]
-		}],
+			},
+			{
+				"usingTemplate": "redis2storage",
+				"channelId": 1500,
+				"sides": [{
+						"sideId": "redis-source",
+						"remoteAddresses": ["127.0.0.1:6379"],
+						"topics": [{
+							"topicName": "my-example-stream-name-v1"
+						}]
+					},
+					{
+						"sideId": "storage-sink",
+						"topics": []
+					}
+				]
+
+			}
+		],
 		"numericalAutoChannels": {
 			"usingTemplate": "storage2storage2test",
 			"channelCount": 0,

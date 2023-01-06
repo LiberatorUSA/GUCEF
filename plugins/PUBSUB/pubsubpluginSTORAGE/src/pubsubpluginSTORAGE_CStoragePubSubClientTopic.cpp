@@ -2308,11 +2308,13 @@ CStoragePubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
 
     if ( !m_publishSuccessActionIds.empty() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnPulseCycle: Notifying MsgsPublishedEvent for " + CORE::ToString( m_publishSuccessActionIds.size() ) + " messages" );
         if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
         m_publishSuccessActionIds.clear();
     }
     if ( !m_publishFailureActionIds.empty() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnPulseCycle: Notifying MsgsPublishFailureEvent for " + CORE::ToString( m_publishFailureActionIds.size() ) + " messages" );
         if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
         m_publishFailureActionIds.clear();
     }
@@ -2365,6 +2367,7 @@ CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle( CORE::CNotifier*
     {
         if ( m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnBufferContentTimeWindowCheckCycle: Finalizing write buffer due to waiting for data longer then " + CORE::ToString( m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) );
             FinalizeWriteBuffer();
         }
     }

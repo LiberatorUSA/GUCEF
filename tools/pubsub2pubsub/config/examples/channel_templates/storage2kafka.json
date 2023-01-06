@@ -21,50 +21,47 @@
 				"pubsubClientType": "STORAGE",
 				"reconnectDelayInMs": 0,
 				"CustomConfig": {},
-				"Topics": {
-					"0": {
-						"PubSubClientTopicConfig": {
-							"isOptional": false,
-							"needSubscribeSupport": true,
-							"needPublishSupport": false,
-							"preferDedicatedConnection": false,
-							"topicName": "source",
-							"consumerGroupName": "",
-							"consumerName": "",
-							"useTopicLevelMaxTotalMsgsInFlight": false,
-							"maxTotalMsgsInFlight": -1,
-							"CustomConfig": {
-								"desiredNrOfBuffers": 3,
-								"desiredMinimalSerializedBlockSize": 2560000,
-								"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-								"vfsStorageRootPath": "InstallPath/storage-source",
-								"vfsFileExtention": "pubsubmsgs",
-								"encodeCodecFamily": "",
-								"encodeCodecName": "",
-								"decodeCodecFamily": "",
-								"decodeCodecName": "",
-								"ticketRefillOnBusyCycle": 10000,
-								"performVfsOpsASync": false,
-								"performVfsOpsInDedicatedThread": false,
-								"applyDedicatedVfsOpsThreadCpuAffinity": false,
-								"cpuAffinityForDedicatedVfsOpsThread": 0,
-								"collectMetrics": true,
-								"subscribeWithoutBookmarkIfNoneIsPersisted": true,
-								"autoPushAfterStartupIfStorageToPubSub": true,
-								"autoPushAfterStartupIsPersistent": true,
-								"youngestStoragePubSubMsgFileToLoad": "",
-								"oldestStoragePubSubMsgFileToLoad": "",
-								"defaultCodecDecodeGrowthRatioExpectation": 6.0,
-								"bestEffortDeserializeIsAllowed": true,
-								"maxStorageCorruptionDetectionsToBeHealthy": 0,
-								"maxStorageDeserializationFailuresToBeHealthy": 0,
-								"treatEveryFullfilledRequestAsEODEvent": false,
-								"deleteContainersWithFullyAckdContent": false,
-								"moveContainersWithFullyAckdContent": true,
-								"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed",
-								"maxCompletedContainerRefsToRetain": 50
-							}
-						}
+				"Topics": [],
+				"defaultTopicConfig": {
+					"isOptional": false,
+					"needSubscribeSupport": true,
+					"needPublishSupport": false,
+					"preferDedicatedConnection": false,
+					"topicName": "source",
+					"consumerGroupName": "",
+					"consumerName": "",
+					"useTopicLevelMaxTotalMsgsInFlight": false,
+					"maxTotalMsgsInFlight": -1,
+					"CustomConfig": {
+						"desiredNrOfBuffers": 3,
+						"desiredMinimalSerializedBlockSize": 2560000,
+						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
+						"vfsStorageRootPath": "InstallPath/storage-source",
+						"vfsFileExtention": "pubsubmsgs",
+						"encodeCodecFamily": "",
+						"encodeCodecName": "",
+						"decodeCodecFamily": "",
+						"decodeCodecName": "",
+						"ticketRefillOnBusyCycle": 10000,
+						"performVfsOpsASync": false,
+						"performVfsOpsInDedicatedThread": false,
+						"applyDedicatedVfsOpsThreadCpuAffinity": false,
+						"cpuAffinityForDedicatedVfsOpsThread": 0,
+						"collectMetrics": true,
+						"subscribeWithoutBookmarkIfNoneIsPersisted": true,
+						"autoPushAfterStartupIfStorageToPubSub": true,
+						"autoPushAfterStartupIsPersistent": true,
+						"youngestStoragePubSubMsgFileToLoad": "",
+						"oldestStoragePubSubMsgFileToLoad": "",
+						"defaultCodecDecodeGrowthRatioExpectation": 6.0,
+						"bestEffortDeserializeIsAllowed": true,
+						"maxStorageCorruptionDetectionsToBeHealthy": 0,
+						"maxStorageDeserializationFailuresToBeHealthy": 0,
+						"treatEveryFullfilledRequestAsEODEvent": false,
+						"deleteContainersWithFullyAckdContent": false,
+						"moveContainersWithFullyAckdContent": true,
+						"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed",
+						"maxCompletedContainerRefsToRetain": 50
 					}
 				},
 				"DesiredFeatures": {
@@ -145,42 +142,39 @@
 						"log_level": 7
 					}
 				},
-				"Topics": {
-					"0": {
-						"PubSubClientTopicConfig": {
-							"isOptional": false,
-							"needPublishSupport": true,
-							"needSubscribeSupport": false,
-							"preferDedicatedConnection": false,
-							"topicName": "pubsub2pubsub-storage-load-test",
-							"CustomConfig": {
-								"addProducerHostnameAsKafkaMsgHeader": false,
-								"consumerModeStartOffset": "",
-								"kafkaMsgHeaderUsedForFiltering": "",
-								"kafkaMsgValuesUsedForFiltering": "",
-								"prefixToAddForKvPairs": "",
-								"prefixToAddForMetaDataKvPairs": "",
-								"stripPrefixForKvPairs": false,
-								"stripPrefixForMetaDataKvPairs": false,
-								"useKafkaMsgHeadersForConsumerFiltering": false,
-								"maxKafkaErrorsToBeHealthy": 0,
-								"KafkaProducerGlobalConfig": {
-									"auto.offset.reset": "largest",
-									"compression.codec": "inherit",
-									"compression.level": "-1",
-									"compression.type": "none",
-									"message.timeout.ms": "300000",
-									"partitioner": "consistent",
-									"request.required.acks": "-1",
-									"request.timeout.ms": "30000",
-									"log_level": "7"
-								},
-								"KafkaConsumerGlobalConfig": {
-									"auto.offset.reset": "largest",
-									"consume.callback.max.messages": "0",
-									"log_level": "7"
-								}
-							}
+				"Topics": [],
+				"defaultTopicConfig": {
+					"isOptional": false,
+					"needPublishSupport": true,
+					"needSubscribeSupport": false,
+					"preferDedicatedConnection": false,
+					"topicName": "pubsub2pubsub-storage-load-test",
+					"CustomConfig": {
+						"addProducerHostnameAsKafkaMsgHeader": false,
+						"consumerModeStartOffset": "",
+						"kafkaMsgHeaderUsedForFiltering": "",
+						"kafkaMsgValuesUsedForFiltering": "",
+						"prefixToAddForKvPairs": "",
+						"prefixToAddForMetaDataKvPairs": "",
+						"stripPrefixForKvPairs": false,
+						"stripPrefixForMetaDataKvPairs": false,
+						"useKafkaMsgHeadersForConsumerFiltering": false,
+						"maxKafkaErrorsToBeHealthy": 0,
+						"KafkaProducerGlobalConfig": {
+							"auto.offset.reset": "largest",
+							"compression.codec": "inherit",
+							"compression.level": "-1",
+							"compression.type": "none",
+							"message.timeout.ms": "300000",
+							"partitioner": "consistent",
+							"request.required.acks": "-1",
+							"request.timeout.ms": "30000",
+							"log_level": "7"
+						},
+						"KafkaConsumerGlobalConfig": {
+							"auto.offset.reset": "largest",
+							"consume.callback.max.messages": "0",
+							"log_level": "7"
 						}
 					}
 				},
