@@ -7,6 +7,11 @@
 		"DefaultClientConfig.region": "us-east-2",
 		"LogLevel": 5
 	},
+	"GlobalDnsCache": {
+		"asyncRefreshIntervalInMs": 300000,
+		"asyncUpdateCache": true,
+		"DnsEntries": []
+	},	
 	"StatsDClient": {
 		"statsDestination": "127.0.0.1:8125",
 		"statsNamePrefix": "myenv.$HOSTNAME$.pubsub2pubsub.",

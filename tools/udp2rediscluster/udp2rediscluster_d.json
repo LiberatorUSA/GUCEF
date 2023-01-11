@@ -1,4 +1,9 @@
 {
+  "GlobalDnsCache": {
+    "asyncRefreshIntervalInMs": 300000,
+    "asyncUpdateCache": true,
+    "DnsEntries": []
+  },
   "StatsDClient": {
     "statsDestination": "127.0.0.1:8125",
     "statsNamePrefix": "$HOSTNAME$.",

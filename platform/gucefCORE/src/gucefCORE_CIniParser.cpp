@@ -152,9 +152,7 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
             CValueList::TVariantVector::const_iterator m = values.begin();
             while ( m != values.end() )
             {
-                CDataNode* keyValueNode = sectionNode->AddChild( key );
-                keyValueNode->SetValue( (*m) );
-
+                sectionNode->AddChildWithValue( key, (*m), (*m).GetTypeId() );
                 ++m;
             }
             ++n;
@@ -290,7 +288,7 @@ CIniParser::LoadFrom( const CDataNode& node       ,
     }
     else
     {
-        if ( NULL != iniSection )
+        if ( GUCEF_NULL != iniSection )
         {
             if ( !value.IsNULLOrEmpty() )
             {

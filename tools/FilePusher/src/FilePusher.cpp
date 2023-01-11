@@ -230,7 +230,7 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
+FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool logFailuresAsErrors )
 {GUCEF_TRACE;
 
     transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), transmitMetrics );
@@ -246,13 +246,15 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
     filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
     if ( filePushDestinationUri.IsNULLOrEmpty() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
+        if ( logFailuresAsErrors )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
         return false;
     }
     CORE::CString protocolSanityCheckUri = filePushDestinationUri.Lowercase();
     if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) && 0 != protocolSanityCheckUri.HasSubstr( "vfs://", true ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: The specified push Uri \"" + filePushDestinationUri + "\" does not specify a valid supported protocol" );
+        if ( logFailuresAsErrors )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: The specified push Uri \"" + filePushDestinationUri + "\" does not specify a valid supported protocol" );
         return false;
     }
 
@@ -266,7 +268,8 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
     }
     if ( dirsToWatch.empty() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
+        if ( logFailuresAsErrors )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
         return false;
     }
     watchSubDirsOfDirsToWatch = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "WatchSubDirsOfDirsToWatch" ) ), watchSubDirsOfDirsToWatch );
@@ -297,7 +300,8 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
     }
     if ( fileMatchPatterns.empty() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"FilePatternForNewFilesWithRestPeriod\" or \"FilePatternForRolledOverFiles\". Currently there are none with a value" );
+        if ( logFailuresAsErrors )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"FilePatternForNewFilesWithRestPeriod\" or \"FilePatternForRolledOverFiles\". Currently there are none with a value" );
         return false;
     }
 
@@ -1668,8 +1672,10 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
                         const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
+    // @deprecated: try to load a file push destination from the app config
+    //              this is to be removed in the future, please update your configs
     FilePushDestinationSettings appConfigSettings;
-    if ( appConfigSettings.LoadConfig( appConfig ) )
+    if ( appConfigSettings.LoadConfig( appConfig, false ) )
     {
         FilePushDestination appConfigDestination;
         if ( appConfigDestination.LoadConfig( appConfigSettings ) )

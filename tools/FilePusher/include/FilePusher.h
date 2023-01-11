@@ -149,7 +149,9 @@ class FilePushDestinationSettings
     typedef std::map< CORE::UInt32, CORE::CString >               TUInt32StringMap;
     typedef std::map< CORE::UInt64, CORE::CString::StringVector > TUInt64StringVectorMap;
 
-    bool LoadConfig( const CORE::CValueList& config );
+    // @deprecated
+    bool LoadConfig( const CORE::CValueList& config, bool logFailures );
+
     bool LoadConfig( const CORE::CDataNode& rootNode );
 
     FilePushDestinationSettings( void );
