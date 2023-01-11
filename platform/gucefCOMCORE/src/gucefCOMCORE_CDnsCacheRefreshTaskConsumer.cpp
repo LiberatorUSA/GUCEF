@@ -139,7 +139,8 @@ CDnsCacheRefreshTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
     // Update the task cycle interval
     RequestTaskCycleDelayInMs( dnsCache->GetAsyncRefreshIntervalInMs() );
 
-    return true;
+    // We are never 'done' as this is an on-going background task
+    return false;
 }
 
 /*-------------------------------------------------------------------------//
