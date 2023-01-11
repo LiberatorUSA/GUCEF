@@ -225,7 +225,7 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
     typedef typename TBasicSharedPtrCreatorBase::TBasicSharedPtrLockType         TSharedPtrLockType;
     typedef CTSharedPtr< T, LockType >                                           TSharedPtrType;
 
-    CTSharedPtr< T, LockType > CreateSharedPtr( void ) const;
+    virtual CTSharedPtr< T, LockType > CreateSharedPtr( void ) const;
 
     CTSharedPtrCreator( T* derived );
     virtual ~CTSharedPtrCreator();
@@ -246,7 +246,7 @@ class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
 
     typedef CTSharedPtrCreator< T, LockType >                           TSharedPtrCreatorBase;
 
-    static CTSharedPtr< T, LockType > CreateSharedObj( void );
+    static CTSharedPtr< T, LockType > CreateSharedObj( T* dummyForType = GUCEF_NULL );
 
     //template < typename Param >
     //static CTSharedPtr< T, LockType > CreateSharedObj( const typename CORE::EnableIf< CORE::TypeHasAssignmentOperator< Param >::value, Param >::type& objToCopy );
@@ -606,7 +606,7 @@ CTSharedPtrCreator< T, LockType >::~CTSharedPtrCreator( void )
 
 template< typename T, class LockType >
 CTSharedPtr< T, LockType >
-CTSharedObjCreator< T, LockType >::CreateSharedObj( void )
+CTSharedObjCreator< T, LockType >::CreateSharedObj( T* )
 {GUCEF_TRACE;
 
     T* obj = GUCEF_NULL;

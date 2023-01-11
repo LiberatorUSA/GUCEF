@@ -162,7 +162,7 @@ CComCoreGlobal::Initialize( void )
     taskManager.RegisterTaskConsumerFactory( CDnsCacheRefreshTaskConsumer::TaskType, &g_dnsCacheRefreshTaskConsumerFactory  );
 
     m_com = GUCEF_NEW CCom();
-    m_dnsCache = CDnsCache::CreateSharedObj();
+    m_dnsCache = ( GUCEF_NEW CGlobalDnsCache() )->CreateSharedPtr();
     m_discoveryManager = GUCEF_NEW CDiscoveryManager();
 }
 

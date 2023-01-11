@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CTSGNOTIFIER_H
 #endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#include "gucefCORE_CGloballyConfigurable.h"
+#define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
+#endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
 #define GUCEF_CORE_CTSHAREDPTR_H
@@ -70,8 +75,10 @@ namespace COMCORE {
  *  Helps avoid redundant DNS resolution which can be expensive plus provides an easy
  *  method of ensure the DNS provided information does not become stale via the refresh
  *  mechanisms and associated event messages.
+ * 
+ *  This class is threadsafe 
  */
-class GUCEF_COMCORE_EXPORT_CPP CDnsCache : public CORE::CTSGNotifier  ,
+class GUCEF_COMCORE_EXPORT_CPP CDnsCache : public CORE::CTSGNotifier          ,
                                            public CORE::CTSharedObjCreator< CDnsCache, MT::CMutex >
 {
     public:
@@ -86,6 +93,8 @@ class GUCEF_COMCORE_EXPORT_CPP CDnsCache : public CORE::CTSGNotifier  ,
     virtual ~CDnsCache();
 
     CDnsCacheEntryPtr GetOrAddCacheEntryForDns( const CString& dns );
+
+    CDnsCacheEntryPtr AddOrUpdateCacheEntryForDns( const CString& dns );
 
     void RemoveCacheEntryForDns( const CString& dns );
 
@@ -109,12 +118,10 @@ class GUCEF_COMCORE_EXPORT_CPP CDnsCache : public CORE::CTSGNotifier  ,
 
     virtual bool ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    private:
+    protected:
 
     CDnsCache( const CDnsCache& src );              /**< not implemented, not wanted */
     CDnsCache& operator=( const CDnsCache& src );   /**< not implemented, not wanted */
-    
-    private:
 
     typedef std::pair< CString, CDnsCacheEntryPtr >   TDnsCacheEntryMapPair;
     typedef std::map< CString, CDnsCacheEntryPtr, std::less< CString >, basic_allocator< TDnsCacheEntryMapPair > > TDnsCacheEntryMap;
@@ -122,6 +129,44 @@ class GUCEF_COMCORE_EXPORT_CPP CDnsCache : public CORE::CTSGNotifier  ,
     TDnsCacheEntryMap m_dnsEntryCache;
     UInt32 m_asyncRefreshIntervalInMs;
     MT::CReadWriteLock m_lock;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Same as regular DNS Cache but set up as a globally configurable
+ *  Used internally as part of ComCoreGlobal
+ * 
+ *  This class is threadsafe
+ */
+class GUCEF_HIDDEN CGlobalDnsCache : public CDnsCache                   ,
+                                     public CORE::CGloballyConfigurable 
+{
+    public:
+
+    static const CORE::CString ClassTypeName;
+
+    CGlobalDnsCache( void );
+
+    virtual ~CGlobalDnsCache();
+
+    /**
+     *      @param cfg the config data you wish to store the config
+     *      @return wheter storing all the config information to the provided tree was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *      @param cfg node that is to act as root of the relevant config data
+     *      @return whether loading required/mandatory settings from the given config was successfull
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    bool m_asyncUpdateCache;
 };
 
 /*-------------------------------------------------------------------------*/

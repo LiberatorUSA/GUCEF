@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
 #endif /* GUCEF_CORE_CGLOBALLYCONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
 #ifndef GUCEF_COMCORE_CUDPSOCKET_H
 #include "CUDPSocket.h"
 #define GUCEF_COMCORE_CUDPSOCKET_H
@@ -61,7 +66,8 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
+class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CTSGNotifier          ,
+                                           public CORE::CGloballyConfigurable ,
                                            public CORE::CIMetricsSystemClient
 {
     public:
@@ -117,7 +123,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    void SetStatsDestination( const COMCORE::CHostAddress& dest );
+    bool SetStatsDestination( const COMCORE::CHostAddress& dest );
 
     const COMCORE::CHostAddress& GetStatsDestination( void ) const;
 
@@ -134,6 +140,12 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CGloballyConfigurable ,
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
+
+    typedef CORE::CTEventHandlerFunctor< CStatsDClient > TEventCallback;
+
+    void OnStatsDTargetDnsChange( CORE::CNotifier* notifier                 ,
+                                  const CORE::CEvent& eventId               ,
+                                  CORE::CICloneable* eventdata = GUCEF_NULL );
 
     CStatsDClient( const CStatsDClient& src );             /** not implemented */
     CStatsDClient& operator=( const CStatsDClient& src );  /** not implemented */

@@ -167,6 +167,12 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 
     bool Equals( const CHostAddress& other, bool compareEverything );
 
+    bool IsIPv4Only( void ) const;
+
+    bool IsDnsWithIPv4Only( void ) const;
+
+    bool HasDnsBasedHostname( void ) const;
+
     private:
 
     CORE::CString m_hostname;

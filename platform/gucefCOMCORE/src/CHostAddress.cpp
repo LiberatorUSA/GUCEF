@@ -282,6 +282,7 @@ CHostAddress::GetPortInHostByteOrder( void ) const
     }
     if ( !m_ipv6.empty() )
     {
+        // @TODO: IPv6 support
         //return m_ipv6.front().GetPortInHostByteOrder();
     }
     return 0;
@@ -299,6 +300,7 @@ CHostAddress::GetPortInNetworkByteOrder( void ) const
     }
     if ( !m_ipv6.empty() )
     {
+        // @TODO: IPv6 support
         //return m_ipv6.front().GetPort();
     }
     return 0;
@@ -384,6 +386,7 @@ CHostAddress::Assign( const CHostAddress& src, bool copyPort )
             CIPv6Address::TIPv6AddressVector::const_iterator n = src.m_ipv6.begin();
             while ( n != m_ipv6.end() )
             {
+                // @TODO: IPv6 support
                 const CIPv6Address& srcIpv6 = (*n);
                 //m_ipv6.push_back( CIPv6Address( srcIpv6.GetAddress(), currentPortInNetworkByteOrder ) );
                 ++n;
@@ -530,6 +533,7 @@ CHostAddress::GetFirstAddressAndPortAsString( void ) const
     }
     if ( !m_ipv6.empty() )
     {
+        // @TODO: IPv6 support
         //return m_ipv6.front().AddressAndPortAsString();
     }
     return m_hostname;
@@ -547,9 +551,44 @@ CHostAddress::GetFirstAddressAsString( void ) const
     }
     if ( !m_ipv6.empty() )
     {
+        // @TODO: IPv6 support
         //return m_ipv6.front().AddressAsString();
     }
     return m_hostname;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHostAddress::IsIPv4Only( void ) const
+{GUCEF_TRACE;
+
+    bool hostnameIsIPv4 = false;
+    if ( !m_hostname.IsNULLOrEmpty() )
+    {
+        hostnameIsIPv4 = ( 0 != CORE::Check_If_IPv4( m_hostname.C_String() ) );
+    }    
+    
+    return hostnameIsIPv4 && !m_ipv4.empty() && m_ipv6.empty(); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHostAddress::IsDnsWithIPv4Only( void ) const
+{GUCEF_TRACE;
+
+    return !m_hostname.IsNULLOrEmpty() && !m_ipv4.empty() && m_ipv6.empty(); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHostAddress::HasDnsBasedHostname( void ) const
+{GUCEF_TRACE;
+
+    // @TODO: IPv6 support
+    return !m_hostname.IsNULLOrEmpty() && ( 0 == CORE::Check_If_IPv4( m_hostname.C_String() ) ); 
 }
 
 /*-------------------------------------------------------------------------//

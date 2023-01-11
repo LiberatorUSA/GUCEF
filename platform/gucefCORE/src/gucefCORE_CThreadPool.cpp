@@ -785,7 +785,7 @@ CThreadPool::StartTask( const CString& taskType ,
     {
         // No pool local factory registered capable of handling the task type
         // We now check the global factory for the same
-        CTaskConsumerPtr taskConsumer = CCoreGlobal::Instance()->GetTaskManager().CreateTaskConsumer( taskType );
+        taskConsumer = CCoreGlobal::Instance()->GetTaskManager().CreateTaskConsumer( taskType );
     }
     if ( !taskConsumer.IsNULL() )
     {
@@ -810,7 +810,7 @@ CThreadPool::StartTask( const CString& taskType ,
         }
         else
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to task immediatly of type \"" + taskType + "\" with ID " +
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to active task immediatly of type \"" + taskType + "\" with ID " +
                                                 UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
 
             m_taskDelegators.erase( delegator );
@@ -818,6 +818,36 @@ CThreadPool::StartTask( const CString& taskType ,
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::StartTaskIfNoneExists( const CString& taskType ,
+                                    CICloneable* taskData   ,
+                                    CTaskConsumerPtr* task  )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    // Check if a task of the type given already exists while we have the lock
+    
+    TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
+    while ( i != m_taskConsumerMap.end() )
+    {
+        CTaskConsumerPtr& taskConsumer = (*i).second;
+        if ( !taskConsumer.IsNULL() && taskType == taskConsumer->GetType() )
+        {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" with ID " +
+                                                UInt32ToString( taskConsumer->GetTaskId() ) + " already exists and its using thread with ID " + UInt32ToString( taskConsumer->GetDelegatorThreadId() ) );
+            return true;
+        }
+        ++i;
+    }
+
+    // No such task exists, just create a new one
+    
+    return StartTask( taskType, taskData, task );
 }
 
 /*-------------------------------------------------------------------------*/

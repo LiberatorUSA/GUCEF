@@ -36,6 +36,16 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_COMCORE_CDNSCACHE_H
+#include "gucefCOMCORE_CDnsCache.h"
+#define GUCEF_COMCORE_CDNSCACHE_H
+#endif /* GUCEF_COMCORE_CDNSCACHE_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
 #include "gucefCOM_CStatsDClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -62,7 +72,8 @@ const CORE::CString CStatsDClient::Type = "StatsDClient";
 //-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( void )
-    : CORE::CGloballyConfigurable()
+    : CORE::CTSGNotifier()
+    , CORE::CGloballyConfigurable()
     , CORE::CIMetricsSystemClient()
     , m_udpSender( false )
     , m_statsDestination()
@@ -78,7 +89,8 @@ CStatsDClient::CStatsDClient( void )
 /*-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( const CORE::PulseGeneratorPtr& pulseGenerator )
-    : CGloballyConfigurable()
+    : CORE::CTSGNotifier( pulseGenerator )
+    , CGloballyConfigurable()
     , CORE::CIMetricsSystemClient()
     , m_udpSender( pulseGenerator, false )
     , m_statsDestination()
@@ -97,6 +109,7 @@ CStatsDClient::~CStatsDClient()
 {GUCEF_TRACE;
 
     m_udpSender.Close();
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -369,7 +382,8 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
         value = node->GetAttributeValueOrChildValueByName( "statsDestination" );
         if ( !value.IsNULLOrEmpty() )
         {
-            if ( !m_statsDestination.SetHostnameAndPort( value.AsString( CString::Empty, true ) ) )
+            COMCORE::CHostAddress dest( value.AsString() );
+            if ( !SetStatsDestination( dest ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:LoadConfig(): Failed set host and port to: " + value.AsString( CString::Empty, true ) );
                 return false;
@@ -452,10 +466,59 @@ CStatsDClient::Close( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::OnStatsDTargetDnsChange( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    COMCORE::CDnsCacheEntry* dnsCacheEntry = static_cast< COMCORE::CDnsCacheEntry* >( notifier );
+    if ( dnsCacheEntry->GetPrivateCopy( m_statsDestination, false ) )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Updated underlying for DNS target " + m_statsDestination.GetHostname() );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Failed to update DNS target for " + m_statsDestination.GetHostname() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CStatsDClient::SetStatsDestination( const COMCORE::CHostAddress& dest )
 {GUCEF_TRACE;
 
     m_statsDestination = dest;
+    
+    if ( m_statsDestination.HasDnsBasedHostname() )
+    {    
+        COMCORE::CDnsCacheEntryPtr dnsEntry = COMCORE::CComCoreGlobal::Instance()->GetDnsCache().GetOrAddCacheEntryForDns( dest.GetHostname() );
+        if ( !dnsEntry.IsNULL() )
+        {
+            TEventCallback callback( this, &CStatsDClient::OnStatsDTargetDnsChange );
+            if ( SubscribeTo( dnsEntry.GetPointerAlways()                  , 
+                              COMCORE::CDnsCacheEntry::DnsInfoChangedEvent ,
+                              callback                                     ) )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient: Subscribed to dns cache entry for " + dest.GetHostname() );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient: Failed to subscribe to dns cache entry for " + dest.GetHostname() );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient: Failed to obtain dns cache entry for " + dest.GetHostname() );
+        }
+
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

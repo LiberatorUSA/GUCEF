@@ -378,7 +378,7 @@ class CTBasicSharedPtrCreator
     typedef LockType                            TBasicSharedPtrLockType;
     typedef CTBasicSharedPtr< T, LockType >     TBasicSharedPtrType;
 
-    CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void ) const;
+    virtual CTBasicSharedPtr< T, LockType > CreateBasicSharedPtr( void ) const;
 
     CTBasicSharedPtrCreator( T* derived );
     virtual ~CTBasicSharedPtrCreator();

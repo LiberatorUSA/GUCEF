@@ -128,6 +128,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
                     CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
+     *  Checks if a task of the given type already exists, if yes nothing new happens
+     *  If no a new task one would be started right away
+     */
+    bool StartTaskIfNoneExists( const CString& taskType                        ,
+                                CICloneable* taskData = GUCEF_NULL             ,
+                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+
+    /**
      *  Immediatly starts executing a task using the task consumer provided.
      *
      *  Note that any task that was setup using SetupTask() still requires to be started via a call to

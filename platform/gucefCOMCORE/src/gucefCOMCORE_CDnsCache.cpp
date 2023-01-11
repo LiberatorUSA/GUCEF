@@ -32,6 +32,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -63,6 +68,8 @@ namespace COMCORE {
 
 const CORE::CEvent CDnsCache::DnsCacheRefreshStartedEvent = "GUCEF::COMCORE::CDnsCache::DnsCacheRefreshStartedEvent";
 const CORE::CEvent CDnsCache::DnsCacheRefreshStoppedEvent = "GUCEF::COMCORE::CDnsCache::DnsCacheRefreshStoppedEvent";
+
+const CORE::CString CGlobalDnsCache::ClassTypeName = "GUCEF::COMCORE::CGlobalDnsCache";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -140,17 +147,49 @@ CDnsCache::GetOrAddCacheEntryForDns( const CString& dns )
     TDnsCacheEntryMap::iterator i = m_dnsEntryCache.find( dns );
     if ( i != m_dnsEntryCache.end() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DnsCache:GetOrAddCacheEntryForDns: Found cache entry in dns cache for " + dns );
         return (*i).second;
     }
 
-    MT::CScopeWriterLock writeLock( m_lock );
+    MT::CScopeWriterLock writeLock( readLock );
 
     CDnsCacheEntryPtr dnsEntry = ( GUCEF_NEW CDnsCacheEntry() )->CreateSharedPtr();
     dnsEntry->SetPulseGenerator( GetPulseGenerator() );
     if ( dnsEntry->SetDnsNameAndResolve( dns ) )
     {
         m_dnsEntryCache.insert( TDnsCacheEntryMap::value_type( dns, dnsEntry ) );
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "DnsCache:GetOrAddCacheEntryForDns: Added entry to dns cache for " + dns );
         return dnsEntry;
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "DnsCache:GetOrAddCacheEntryForDns: Failed to resolve entry dns for " + dns );
+    }
+
+    return CDnsCacheEntryPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDnsCacheEntryPtr
+CDnsCache::AddOrUpdateCacheEntryForDns( const CString& dns )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock writeLock( m_lock );
+    
+    CDnsCacheEntryPtr dnsEntry = ( GUCEF_NEW CDnsCacheEntry() )->CreateSharedPtr();
+    dnsEntry->SetPulseGenerator( GetPulseGenerator() );
+    if ( dnsEntry->SetDnsNameAndResolve( dns ) )
+    {
+        m_dnsEntryCache.insert( TDnsCacheEntryMap::value_type( dns, dnsEntry ) );
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "DnsCache:AddOrUpdateCacheEntryForDns: Added entry to dns cache for " + dns );
+        return dnsEntry;
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "DnsCache:AddOrUpdateCacheEntryForDns: Failed to resolve entry dns for " + dns );
     }
 
     return CDnsCacheEntryPtr();
@@ -201,8 +240,8 @@ CDnsCache::StartRefreshingASync( void )
 {GUCEF_TRACE;
 
     CDnsCachePtr thisPtr( CreateSharedPtr() );
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CDnsCacheRefreshTaskConsumer::TaskType ,
-                                                                                       &thisPtr                               );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->StartTaskIfNoneExists( CDnsCacheRefreshTaskConsumer::TaskType ,
+                                                                                                   &thisPtr                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -239,6 +278,103 @@ CDnsCache::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
     return MT::CReadWriteLock::RwLockStateToLockOpBool( m_lock.ReaderStop() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGlobalDnsCache::CGlobalDnsCache( void )
+    : CDnsCache()
+    , CORE::CGloballyConfigurable()
+    , m_asyncUpdateCache( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGlobalDnsCache::~CGlobalDnsCache()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGlobalDnsCache::SaveConfig( CORE::CDataNode& cfg ) const
+{GUCEF_TRACE;
+
+    CORE::CDataNode* cfgNode = cfg.FindOrAddChild( "GlobalDnsCache" );
+    if ( GUCEF_NULL != cfgNode )
+    {
+        bool totalSuccess = true;
+        
+        totalSuccess = cfgNode->SetAttribute( "asyncRefreshIntervalInMs", m_asyncRefreshIntervalInMs ) && totalSuccess;
+        totalSuccess = cfgNode->SetAttribute( "asyncUpdateCache", m_asyncUpdateCache ) && totalSuccess;
+        
+        CORE::CDataNode* dnsEntriesNode = cfgNode->FindOrAddChild( "DnsEntries", GUCEF_DATATYPE_ARRAY );
+        if ( GUCEF_NULL != dnsEntriesNode )
+        {
+            dnsEntriesNode->DelSubTree();
+            
+            TDnsCacheEntryMap::const_iterator i = m_dnsEntryCache.begin();
+            while ( i != m_dnsEntryCache.end() )
+            {
+                CORE::CDataNode* dnsEntryNode = cfgNode->AddChild( "DnsEntry", GUCEF_DATATYPE_OBJECT );
+                if ( GUCEF_NULL != dnsEntryNode )
+                    totalSuccess = dnsEntryNode->SetAttribute( "dnsName", (*i).first ) && totalSuccess;
+                ++i;
+            }
+        }
+
+        return totalSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGlobalDnsCache::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* cfgNode = cfg.FindChild( "GlobalDnsCache" );
+    if ( GUCEF_NULL != cfgNode )
+    {
+        MT::CScopeWriterLock writeLock( m_lock );
+
+        m_asyncRefreshIntervalInMs = cfgNode->GetAttributeValueOrChildValueByName( "asyncRefreshIntervalInMs" ).AsUInt32( m_asyncRefreshIntervalInMs, true );
+        m_asyncUpdateCache = cfgNode->GetAttributeValueOrChildValueByName( "asyncUpdateCache" ).AsBool( m_asyncUpdateCache, true );
+                
+        const CORE::CDataNode* dnsEntriesNode = cfgNode->FindChild( "DnsEntries" );
+        if ( GUCEF_NULL != dnsEntriesNode )
+        {
+            CORE::CDataNode::const_iterator i = dnsEntriesNode->ConstBegin();
+            while ( i != dnsEntriesNode->ConstEnd() )
+            {
+                const CORE::CDataNode* dnsEntryNode = (*i);
+                if ( GUCEF_NULL != dnsEntryNode )
+                {
+                    CORE::CString dnsName = dnsEntryNode->GetAttributeValueOrChildValueByName( "dnsName" ).AsString( CORE::CString::Empty, true );
+                    AddOrUpdateCacheEntryForDns( dnsName );
+                }
+                ++i;
+            }
+        }
+    }
+
+    if ( m_asyncUpdateCache )
+        StartRefreshingASync();
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
+CGlobalDnsCache::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

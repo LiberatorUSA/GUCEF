@@ -30,7 +30,7 @@ seq:
     repeat: until
     repeat-until: _io.pos == _io.size - (msg_offset_idx_size * 4) - 4 - 10
   - id: footer
-    type: gucef_pubsub_container_footer
+    type: gucef_pubsub_msgcontainer_footer
 instances:
   msg_offset_idx_size:
     pos: _io.size - 14

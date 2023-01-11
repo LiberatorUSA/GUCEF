@@ -755,13 +755,13 @@ CDataNode::FindChild( const CString& name         ,
 /*-------------------------------------------------------------------------*/
 
 CDataNode*
-CDataNode::FindOrAddChild( const CString& name )
+CDataNode::FindOrAddChild( const CString& name, int typeOfNode )
 {GUCEF_TRACE;
 
     CDataNode* child = FindChild( name );
     if ( GUCEF_NULL != child )
         return child;
-    return AddChild( name );    
+    return AddChild( name, typeOfNode );    
 }
 
 /*-------------------------------------------------------------------------*/
