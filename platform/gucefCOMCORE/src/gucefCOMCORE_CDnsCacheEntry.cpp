@@ -231,7 +231,7 @@ CDnsCacheEntry::Refresh( void )
     {
         if ( !m_data.Equals( preRefreshData, true ) )
         {
-            NotifyObservers( DnsInfoChangedEvent );
+            NotifyObserversFromThread( DnsInfoChangedEvent );
         }
         return true;
     }
