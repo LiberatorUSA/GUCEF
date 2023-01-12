@@ -547,7 +547,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
         {
             // No pool local factory registered capable of handling the task type
             // We now check the global factory for the same
-            CTaskConsumerPtr taskConsumer = CCoreGlobal::Instance()->GetTaskManager().CreateTaskConsumer( taskType );
+            taskConsumer = CCoreGlobal::Instance()->GetTaskManager().CreateTaskConsumer( taskType );
         }
         if ( !taskConsumer.IsNULL() )
         {
