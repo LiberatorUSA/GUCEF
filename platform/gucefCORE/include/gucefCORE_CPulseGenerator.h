@@ -129,9 +129,12 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier ,
      *  Blocks the calling thread until at least the next pulse time window
      *  If there is a minimum time you at minimum want to wait regardless of the minimum need of pulse clients
      *  you can specify non-zero for "forcedMinimalDeltaInMilliSecs" 
+     * 
+     *  @param elapsedTimeInMilliSecs optional output param of actual ellapsed time post-wait
      */
     void WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs = 25    ,
-                                  UInt32 desiredMaximumDeltaInMilliSecs = 1000 ) const;
+                                  UInt32 desiredMaximumDeltaInMilliSecs = 1000 ,
+                                  UInt32* elapsedTimeInMilliSecs = GUCEF_NULL  ) const;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

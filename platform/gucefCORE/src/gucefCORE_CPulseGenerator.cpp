@@ -355,7 +355,8 @@ CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 
 void
 CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  ,
-                                          UInt32 desiredMaximumDeltaInMilliSecs ) const
+                                          UInt32 desiredMaximumDeltaInMilliSecs ,
+                                          UInt32* elapsedTimeInMilliSecs        ) const
 {GUCEF_TRACE;
    
     MT::CScopeMutex dataLock( m_dataLock );
@@ -382,6 +383,11 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
     dataLock.EarlyUnlock();
 
     MT::PrecisionDelay( timeLeftToWaitInMs );
+
+    if ( GUCEF_NULL != elapsedTimeInMilliSecs )
+    {
+        *elapsedTimeInMilliSecs = (UInt32) GetActualPulseDeltaInMilliSecs();
+    }
 }
 
 /*--------------------------------------------------------------------------*/

@@ -377,14 +377,14 @@ CHostAddress::Assign( const CHostAddress& src, bool copyPort )
             m_aliases = src.m_aliases;
 
             CIPv4Address::TIPv4AddressVector::const_iterator i = src.m_ipv4.begin();
-            while ( i != m_ipv4.end() )
+            while ( i != src.m_ipv4.end() )
             {
                 const CIPv4Address& srcIpv4 = (*i);
                 m_ipv4.push_back( CIPv4Address( srcIpv4.GetAddress(), currentPortInNetworkByteOrder ) );
                 ++i;
             }
             CIPv6Address::TIPv6AddressVector::const_iterator n = src.m_ipv6.begin();
-            while ( n != m_ipv6.end() )
+            while ( n != src.m_ipv6.end() )
             {
                 // @TODO: IPv6 support
                 const CIPv6Address& srcIpv6 = (*n);

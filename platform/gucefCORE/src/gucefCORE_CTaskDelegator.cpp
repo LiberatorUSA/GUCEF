@@ -361,7 +361,26 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 {
                     if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
                     {
-                        pulseGenerator->WaitTillNextPulseWindow( m_taskRequestedCycleDelayInMs );
+                        UInt32 timeLeftToWait = m_taskRequestedCycleDelayInMs; 
+                        while ( !IsDeactivationRequested() && timeLeftToWait >= m_minimalCycleDeltaInMilliSecs )
+                        {
+                            UInt32 elapsedWaitTimeInMilliSecs = 0;
+                            pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs, timeLeftToWait, &elapsedWaitTimeInMilliSecs  );
+
+                            Int64 timeLeftToWaitResult = ((Int64)timeLeftToWait) - elapsedWaitTimeInMilliSecs;
+                            if ( timeLeftToWaitResult < m_minimalCycleDeltaInMilliSecs )
+                                timeLeftToWait = 0;
+                            else
+                                timeLeftToWait = (UInt32) timeLeftToWaitResult;
+
+                            // While we dont trigger OnTaskCycle for an extended period, we do still send out out driver pulses
+                            if ( m_sendRegularPulses )
+                                SendDriverPulse( *pulseGenerator.GetPointerAlways() );
+
+                            // Any immediate pulse requests cause us to bust out of the extended cycle delay as it counts as an override
+                            if ( m_immediatePulseTickets > 0 )
+                                break;
+                        }
                         m_taskRequestedCycleDelayInMs = 0;
                     }
                     else
