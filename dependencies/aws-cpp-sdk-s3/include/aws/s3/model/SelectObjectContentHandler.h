@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/core/utils/HashingUtils.h>
@@ -40,7 +30,7 @@ namespace Model
         UNKNOWN
     };
 
-    class AWS_S3_API SelectObjectContentHandler : public Aws::Utils::Event::EventStreamHandler
+    class SelectObjectContentHandler : public Aws::Utils::Event::EventStreamHandler
     {
         typedef std::function<void(const RecordsEvent&)> RecordsEventCallback;
         typedef std::function<void(const StatsEvent&)> StatsEventCallback;
@@ -50,10 +40,10 @@ namespace Model
         typedef std::function<void(const Aws::Client::AWSError<S3Errors>& error)> ErrorCallback;
 
     public:
-        SelectObjectContentHandler();
-        SelectObjectContentHandler& operator=(const SelectObjectContentHandler& handler) = default;
+        AWS_S3_API SelectObjectContentHandler();
+        AWS_S3_API SelectObjectContentHandler& operator=(const SelectObjectContentHandler&) = default;
 
-        virtual void OnEvent() override;
+        AWS_S3_API virtual void OnEvent() override;
 
         inline void SetRecordsEventCallback(const RecordsEventCallback& callback) { m_onRecordsEvent = callback; }
         inline void SetStatsEventCallback(const StatsEventCallback& callback) { m_onStatsEvent = callback; }
@@ -63,9 +53,9 @@ namespace Model
         inline void SetOnErrorCallback(const ErrorCallback& callback) { m_onError = callback; }
 
     private:
-        void HandleEventInMessage();
-        void HandleErrorInMessage();
-        void MarshallError(const Aws::String& errorCode, const Aws::String& errorMessage);
+        AWS_S3_API void HandleEventInMessage();
+        AWS_S3_API void HandleErrorInMessage();
+        AWS_S3_API void MarshallError(const Aws::String& errorCode, const Aws::String& errorMessage);
 
         RecordsEventCallback m_onRecordsEvent;
         StatsEventCallback m_onStatsEvent;

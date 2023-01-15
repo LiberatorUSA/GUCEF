@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/s3/model/Object.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -34,6 +24,7 @@ Object::Object() :
     m_keyHasBeenSet(false),
     m_lastModifiedHasBeenSet(false),
     m_eTagHasBeenSet(false),
+    m_checksumAlgorithmHasBeenSet(false),
     m_size(0),
     m_sizeHasBeenSet(false),
     m_storageClass(ObjectStorageClass::NOT_SET),
@@ -46,6 +37,7 @@ Object::Object(const XmlNode& xmlNode) :
     m_keyHasBeenSet(false),
     m_lastModifiedHasBeenSet(false),
     m_eTagHasBeenSet(false),
+    m_checksumAlgorithmHasBeenSet(false),
     m_size(0),
     m_sizeHasBeenSet(false),
     m_storageClass(ObjectStorageClass::NOT_SET),
@@ -70,7 +62,7 @@ Object& Object::operator =(const XmlNode& xmlNode)
     XmlNode lastModifiedNode = resultNode.FirstChild("LastModified");
     if(!lastModifiedNode.IsNull())
     {
-      m_lastModified = DateTime(StringUtils::Trim(Aws::Utils::Xml::DecodeEscapedXmlText(lastModifiedNode.GetText()).c_str()).c_str(), DateFormat::ISO_8601);
+      m_lastModified = DateTime(StringUtils::Trim(Aws::Utils::Xml::DecodeEscapedXmlText(lastModifiedNode.GetText()).c_str()).c_str(), Aws::Utils::DateFormat::ISO_8601);
       m_lastModifiedHasBeenSet = true;
     }
     XmlNode eTagNode = resultNode.FirstChild("ETag");
@@ -78,6 +70,18 @@ Object& Object::operator =(const XmlNode& xmlNode)
     {
       m_eTag = Aws::Utils::Xml::DecodeEscapedXmlText(eTagNode.GetText());
       m_eTagHasBeenSet = true;
+    }
+    XmlNode checksumAlgorithmNode = resultNode.FirstChild("ChecksumAlgorithm");
+    if(!checksumAlgorithmNode.IsNull())
+    {
+      XmlNode checksumAlgorithmMember = checksumAlgorithmNode;
+      while(!checksumAlgorithmMember.IsNull())
+      {
+        m_checksumAlgorithm.push_back(ChecksumAlgorithmMapper::GetChecksumAlgorithmForName(StringUtils::Trim(checksumAlgorithmMember.GetText().c_str())));
+        checksumAlgorithmMember = checksumAlgorithmMember.NextNode("ChecksumAlgorithm");
+      }
+
+      m_checksumAlgorithmHasBeenSet = true;
     }
     XmlNode sizeNode = resultNode.FirstChild("Size");
     if(!sizeNode.IsNull())
@@ -114,13 +118,23 @@ void Object::AddToNode(XmlNode& parentNode) const
   if(m_lastModifiedHasBeenSet)
   {
    XmlNode lastModifiedNode = parentNode.CreateChildElement("LastModified");
-   lastModifiedNode.SetText(m_lastModified.ToGmtString(DateFormat::ISO_8601));
+   lastModifiedNode.SetText(m_lastModified.ToGmtString(Aws::Utils::DateFormat::ISO_8601));
   }
 
   if(m_eTagHasBeenSet)
   {
    XmlNode eTagNode = parentNode.CreateChildElement("ETag");
    eTagNode.SetText(m_eTag);
+  }
+
+  if(m_checksumAlgorithmHasBeenSet)
+  {
+   XmlNode checksumAlgorithmParentNode = parentNode.CreateChildElement("ChecksumAlgorithm");
+   for(const auto& item : m_checksumAlgorithm)
+   {
+     XmlNode checksumAlgorithmNode = checksumAlgorithmParentNode.CreateChildElement("ChecksumAlgorithm");
+     checksumAlgorithmNode.SetText(ChecksumAlgorithmMapper::GetNameForChecksumAlgorithm(item));
+   }
   }
 
   if(m_sizeHasBeenSet)

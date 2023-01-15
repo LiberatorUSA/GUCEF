@@ -12,12 +12,14 @@
 # Configuration for module: aws-cpp-sdk-s3
 
 set( HEADER_FILES 
-  include/aws/s3/S3ARN.h
   include/aws/s3/S3Client.h
-  include/aws/s3/S3Endpoint.h
+  include/aws/s3/S3ClientConfiguration.h
+  include/aws/s3/S3EndpointProvider.h
+  include/aws/s3/S3EndpointRules.h
   include/aws/s3/S3ErrorMarshaller.h
   include/aws/s3/S3Errors.h
   include/aws/s3/S3Request.h
+  include/aws/s3/S3ServiceClientModel.h
   include/aws/s3/S3_EXPORTS.h
   include/aws/s3/model/AbortIncompleteMultipartUpload.h
   include/aws/s3/model/AbortMultipartUploadRequest.h
@@ -31,6 +33,7 @@ set( HEADER_FILES
   include/aws/s3/model/AnalyticsFilter.h
   include/aws/s3/model/AnalyticsS3BucketDestination.h
   include/aws/s3/model/AnalyticsS3ExportFileFormat.h
+  include/aws/s3/model/ArchiveStatus.h
   include/aws/s3/model/Bucket.h
   include/aws/s3/model/BucketAccelerateStatus.h
   include/aws/s3/model/BucketCannedACL.h
@@ -43,6 +46,9 @@ set( HEADER_FILES
   include/aws/s3/model/CORSRule.h
   include/aws/s3/model/CSVInput.h
   include/aws/s3/model/CSVOutput.h
+  include/aws/s3/model/Checksum.h
+  include/aws/s3/model/ChecksumAlgorithm.h
+  include/aws/s3/model/ChecksumMode.h
   include/aws/s3/model/CloudFunctionConfiguration.h
   include/aws/s3/model/CommonPrefix.h
   include/aws/s3/model/CompleteMultipartUploadRequest.h
@@ -65,9 +71,11 @@ set( HEADER_FILES
   include/aws/s3/model/DeleteBucketAnalyticsConfigurationRequest.h
   include/aws/s3/model/DeleteBucketCorsRequest.h
   include/aws/s3/model/DeleteBucketEncryptionRequest.h
+  include/aws/s3/model/DeleteBucketIntelligentTieringConfigurationRequest.h
   include/aws/s3/model/DeleteBucketInventoryConfigurationRequest.h
   include/aws/s3/model/DeleteBucketLifecycleRequest.h
   include/aws/s3/model/DeleteBucketMetricsConfigurationRequest.h
+  include/aws/s3/model/DeleteBucketOwnershipControlsRequest.h
   include/aws/s3/model/DeleteBucketPolicyRequest.h
   include/aws/s3/model/DeleteBucketReplicationRequest.h
   include/aws/s3/model/DeleteBucketRequest.h
@@ -91,6 +99,7 @@ set( HEADER_FILES
   include/aws/s3/model/Error.h
   include/aws/s3/model/ErrorDocument.h
   include/aws/s3/model/Event.h
+  include/aws/s3/model/EventBridgeConfiguration.h
   include/aws/s3/model/ExistingObjectReplication.h
   include/aws/s3/model/ExistingObjectReplicationStatus.h
   include/aws/s3/model/ExpirationStatus.h
@@ -108,6 +117,8 @@ set( HEADER_FILES
   include/aws/s3/model/GetBucketCorsResult.h
   include/aws/s3/model/GetBucketEncryptionRequest.h
   include/aws/s3/model/GetBucketEncryptionResult.h
+  include/aws/s3/model/GetBucketIntelligentTieringConfigurationRequest.h
+  include/aws/s3/model/GetBucketIntelligentTieringConfigurationResult.h
   include/aws/s3/model/GetBucketInventoryConfigurationRequest.h
   include/aws/s3/model/GetBucketInventoryConfigurationResult.h
   include/aws/s3/model/GetBucketLifecycleConfigurationRequest.h
@@ -120,6 +131,8 @@ set( HEADER_FILES
   include/aws/s3/model/GetBucketMetricsConfigurationResult.h
   include/aws/s3/model/GetBucketNotificationConfigurationRequest.h
   include/aws/s3/model/GetBucketNotificationConfigurationResult.h
+  include/aws/s3/model/GetBucketOwnershipControlsRequest.h
+  include/aws/s3/model/GetBucketOwnershipControlsResult.h
   include/aws/s3/model/GetBucketPolicyRequest.h
   include/aws/s3/model/GetBucketPolicyResult.h
   include/aws/s3/model/GetBucketPolicyStatusRequest.h
@@ -136,6 +149,9 @@ set( HEADER_FILES
   include/aws/s3/model/GetBucketWebsiteResult.h
   include/aws/s3/model/GetObjectAclRequest.h
   include/aws/s3/model/GetObjectAclResult.h
+  include/aws/s3/model/GetObjectAttributesParts.h
+  include/aws/s3/model/GetObjectAttributesRequest.h
+  include/aws/s3/model/GetObjectAttributesResult.h
   include/aws/s3/model/GetObjectLegalHoldRequest.h
   include/aws/s3/model/GetObjectLegalHoldResult.h
   include/aws/s3/model/GetObjectLockConfigurationRequest.h
@@ -159,6 +175,12 @@ set( HEADER_FILES
   include/aws/s3/model/IndexDocument.h
   include/aws/s3/model/Initiator.h
   include/aws/s3/model/InputSerialization.h
+  include/aws/s3/model/IntelligentTieringAccessTier.h
+  include/aws/s3/model/IntelligentTieringAndOperator.h
+  include/aws/s3/model/IntelligentTieringConfiguration.h
+  include/aws/s3/model/IntelligentTieringFilter.h
+  include/aws/s3/model/IntelligentTieringStatus.h
+  include/aws/s3/model/InvalidObjectState.h
   include/aws/s3/model/InventoryConfiguration.h
   include/aws/s3/model/InventoryDestination.h
   include/aws/s3/model/InventoryEncryption.h
@@ -180,6 +202,8 @@ set( HEADER_FILES
   include/aws/s3/model/LifecycleRuleFilter.h
   include/aws/s3/model/ListBucketAnalyticsConfigurationsRequest.h
   include/aws/s3/model/ListBucketAnalyticsConfigurationsResult.h
+  include/aws/s3/model/ListBucketIntelligentTieringConfigurationsRequest.h
+  include/aws/s3/model/ListBucketIntelligentTieringConfigurationsResult.h
   include/aws/s3/model/ListBucketInventoryConfigurationsRequest.h
   include/aws/s3/model/ListBucketInventoryConfigurationsResult.h
   include/aws/s3/model/ListBucketMetricsConfigurationsRequest.h
@@ -212,6 +236,7 @@ set( HEADER_FILES
   include/aws/s3/model/NotificationConfigurationDeprecated.h
   include/aws/s3/model/NotificationConfigurationFilter.h
   include/aws/s3/model/Object.h
+  include/aws/s3/model/ObjectAttributes.h
   include/aws/s3/model/ObjectCannedACL.h
   include/aws/s3/model/ObjectIdentifier.h
   include/aws/s3/model/ObjectLockConfiguration.h
@@ -222,6 +247,8 @@ set( HEADER_FILES
   include/aws/s3/model/ObjectLockRetention.h
   include/aws/s3/model/ObjectLockRetentionMode.h
   include/aws/s3/model/ObjectLockRule.h
+  include/aws/s3/model/ObjectOwnership.h
+  include/aws/s3/model/ObjectPart.h
   include/aws/s3/model/ObjectStorageClass.h
   include/aws/s3/model/ObjectVersion.h
   include/aws/s3/model/ObjectVersionStorageClass.h
@@ -229,6 +256,8 @@ set( HEADER_FILES
   include/aws/s3/model/OutputSerialization.h
   include/aws/s3/model/Owner.h
   include/aws/s3/model/OwnerOverride.h
+  include/aws/s3/model/OwnershipControls.h
+  include/aws/s3/model/OwnershipControlsRule.h
   include/aws/s3/model/ParquetInput.h
   include/aws/s3/model/Part.h
   include/aws/s3/model/Payer.h
@@ -243,11 +272,13 @@ set( HEADER_FILES
   include/aws/s3/model/PutBucketAnalyticsConfigurationRequest.h
   include/aws/s3/model/PutBucketCorsRequest.h
   include/aws/s3/model/PutBucketEncryptionRequest.h
+  include/aws/s3/model/PutBucketIntelligentTieringConfigurationRequest.h
   include/aws/s3/model/PutBucketInventoryConfigurationRequest.h
   include/aws/s3/model/PutBucketLifecycleConfigurationRequest.h
   include/aws/s3/model/PutBucketLoggingRequest.h
   include/aws/s3/model/PutBucketMetricsConfigurationRequest.h
   include/aws/s3/model/PutBucketNotificationConfigurationRequest.h
+  include/aws/s3/model/PutBucketOwnershipControlsRequest.h
   include/aws/s3/model/PutBucketPolicyRequest.h
   include/aws/s3/model/PutBucketReplicationRequest.h
   include/aws/s3/model/PutBucketRequestPaymentRequest.h
@@ -273,6 +304,8 @@ set( HEADER_FILES
   include/aws/s3/model/RecordsEvent.h
   include/aws/s3/model/Redirect.h
   include/aws/s3/model/RedirectAllRequestsTo.h
+  include/aws/s3/model/ReplicaModifications.h
+  include/aws/s3/model/ReplicaModificationsStatus.h
   include/aws/s3/model/ReplicationConfiguration.h
   include/aws/s3/model/ReplicationRule.h
   include/aws/s3/model/ReplicationRuleAndOperator.h
@@ -318,6 +351,7 @@ set( HEADER_FILES
   include/aws/s3/model/TaggingDirective.h
   include/aws/s3/model/TargetGrant.h
   include/aws/s3/model/Tier.h
+  include/aws/s3/model/Tiering.h
   include/aws/s3/model/TopicConfiguration.h
   include/aws/s3/model/TopicConfigurationDeprecated.h
   include/aws/s3/model/Transition.h
@@ -329,14 +363,17 @@ set( HEADER_FILES
   include/aws/s3/model/UploadPartResult.h
   include/aws/s3/model/VersioningConfiguration.h
   include/aws/s3/model/WebsiteConfiguration.h
+  include/aws/s3/model/WriteGetObjectResponseRequest.h
 )
 
 set( SOURCE_FILES 
-  source/S3ARN.cpp
   source/S3Client.cpp
-  source/S3Endpoint.cpp
+  source/S3ClientConfiguration.cpp
+  source/S3EndpointProvider.cpp
+  source/S3EndpointRules.cpp
   source/S3ErrorMarshaller.cpp
   source/S3Errors.cpp
+  source/S3Request.cpp
   source/model/AbortIncompleteMultipartUpload.cpp
   source/model/AbortMultipartUploadRequest.cpp
   source/model/AbortMultipartUploadResult.cpp
@@ -349,6 +386,7 @@ set( SOURCE_FILES
   source/model/AnalyticsFilter.cpp
   source/model/AnalyticsS3BucketDestination.cpp
   source/model/AnalyticsS3ExportFileFormat.cpp
+  source/model/ArchiveStatus.cpp
   source/model/Bucket.cpp
   source/model/BucketAccelerateStatus.cpp
   source/model/BucketCannedACL.cpp
@@ -361,6 +399,9 @@ set( SOURCE_FILES
   source/model/CORSRule.cpp
   source/model/CSVInput.cpp
   source/model/CSVOutput.cpp
+  source/model/Checksum.cpp
+  source/model/ChecksumAlgorithm.cpp
+  source/model/ChecksumMode.cpp
   source/model/CloudFunctionConfiguration.cpp
   source/model/CommonPrefix.cpp
   source/model/CompleteMultipartUploadRequest.cpp
@@ -383,9 +424,11 @@ set( SOURCE_FILES
   source/model/DeleteBucketAnalyticsConfigurationRequest.cpp
   source/model/DeleteBucketCorsRequest.cpp
   source/model/DeleteBucketEncryptionRequest.cpp
+  source/model/DeleteBucketIntelligentTieringConfigurationRequest.cpp
   source/model/DeleteBucketInventoryConfigurationRequest.cpp
   source/model/DeleteBucketLifecycleRequest.cpp
   source/model/DeleteBucketMetricsConfigurationRequest.cpp
+  source/model/DeleteBucketOwnershipControlsRequest.cpp
   source/model/DeleteBucketPolicyRequest.cpp
   source/model/DeleteBucketReplicationRequest.cpp
   source/model/DeleteBucketRequest.cpp
@@ -409,6 +452,7 @@ set( SOURCE_FILES
   source/model/Error.cpp
   source/model/ErrorDocument.cpp
   source/model/Event.cpp
+  source/model/EventBridgeConfiguration.cpp
   source/model/ExistingObjectReplication.cpp
   source/model/ExistingObjectReplicationStatus.cpp
   source/model/ExpirationStatus.cpp
@@ -426,6 +470,8 @@ set( SOURCE_FILES
   source/model/GetBucketCorsResult.cpp
   source/model/GetBucketEncryptionRequest.cpp
   source/model/GetBucketEncryptionResult.cpp
+  source/model/GetBucketIntelligentTieringConfigurationRequest.cpp
+  source/model/GetBucketIntelligentTieringConfigurationResult.cpp
   source/model/GetBucketInventoryConfigurationRequest.cpp
   source/model/GetBucketInventoryConfigurationResult.cpp
   source/model/GetBucketLifecycleConfigurationRequest.cpp
@@ -438,6 +484,8 @@ set( SOURCE_FILES
   source/model/GetBucketMetricsConfigurationResult.cpp
   source/model/GetBucketNotificationConfigurationRequest.cpp
   source/model/GetBucketNotificationConfigurationResult.cpp
+  source/model/GetBucketOwnershipControlsRequest.cpp
+  source/model/GetBucketOwnershipControlsResult.cpp
   source/model/GetBucketPolicyRequest.cpp
   source/model/GetBucketPolicyResult.cpp
   source/model/GetBucketPolicyStatusRequest.cpp
@@ -454,6 +502,9 @@ set( SOURCE_FILES
   source/model/GetBucketWebsiteResult.cpp
   source/model/GetObjectAclRequest.cpp
   source/model/GetObjectAclResult.cpp
+  source/model/GetObjectAttributesParts.cpp
+  source/model/GetObjectAttributesRequest.cpp
+  source/model/GetObjectAttributesResult.cpp
   source/model/GetObjectLegalHoldRequest.cpp
   source/model/GetObjectLegalHoldResult.cpp
   source/model/GetObjectLockConfigurationRequest.cpp
@@ -477,6 +528,12 @@ set( SOURCE_FILES
   source/model/IndexDocument.cpp
   source/model/Initiator.cpp
   source/model/InputSerialization.cpp
+  source/model/IntelligentTieringAccessTier.cpp
+  source/model/IntelligentTieringAndOperator.cpp
+  source/model/IntelligentTieringConfiguration.cpp
+  source/model/IntelligentTieringFilter.cpp
+  source/model/IntelligentTieringStatus.cpp
+  source/model/InvalidObjectState.cpp
   source/model/InventoryConfiguration.cpp
   source/model/InventoryDestination.cpp
   source/model/InventoryEncryption.cpp
@@ -498,6 +555,8 @@ set( SOURCE_FILES
   source/model/LifecycleRuleFilter.cpp
   source/model/ListBucketAnalyticsConfigurationsRequest.cpp
   source/model/ListBucketAnalyticsConfigurationsResult.cpp
+  source/model/ListBucketIntelligentTieringConfigurationsRequest.cpp
+  source/model/ListBucketIntelligentTieringConfigurationsResult.cpp
   source/model/ListBucketInventoryConfigurationsRequest.cpp
   source/model/ListBucketInventoryConfigurationsResult.cpp
   source/model/ListBucketMetricsConfigurationsRequest.cpp
@@ -530,6 +589,7 @@ set( SOURCE_FILES
   source/model/NotificationConfigurationDeprecated.cpp
   source/model/NotificationConfigurationFilter.cpp
   source/model/Object.cpp
+  source/model/ObjectAttributes.cpp
   source/model/ObjectCannedACL.cpp
   source/model/ObjectIdentifier.cpp
   source/model/ObjectLockConfiguration.cpp
@@ -540,6 +600,8 @@ set( SOURCE_FILES
   source/model/ObjectLockRetention.cpp
   source/model/ObjectLockRetentionMode.cpp
   source/model/ObjectLockRule.cpp
+  source/model/ObjectOwnership.cpp
+  source/model/ObjectPart.cpp
   source/model/ObjectStorageClass.cpp
   source/model/ObjectVersion.cpp
   source/model/ObjectVersionStorageClass.cpp
@@ -547,6 +609,8 @@ set( SOURCE_FILES
   source/model/OutputSerialization.cpp
   source/model/Owner.cpp
   source/model/OwnerOverride.cpp
+  source/model/OwnershipControls.cpp
+  source/model/OwnershipControlsRule.cpp
   source/model/ParquetInput.cpp
   source/model/Part.cpp
   source/model/Payer.cpp
@@ -561,11 +625,13 @@ set( SOURCE_FILES
   source/model/PutBucketAnalyticsConfigurationRequest.cpp
   source/model/PutBucketCorsRequest.cpp
   source/model/PutBucketEncryptionRequest.cpp
+  source/model/PutBucketIntelligentTieringConfigurationRequest.cpp
   source/model/PutBucketInventoryConfigurationRequest.cpp
   source/model/PutBucketLifecycleConfigurationRequest.cpp
   source/model/PutBucketLoggingRequest.cpp
   source/model/PutBucketMetricsConfigurationRequest.cpp
   source/model/PutBucketNotificationConfigurationRequest.cpp
+  source/model/PutBucketOwnershipControlsRequest.cpp
   source/model/PutBucketPolicyRequest.cpp
   source/model/PutBucketReplicationRequest.cpp
   source/model/PutBucketRequestPaymentRequest.cpp
@@ -590,6 +656,8 @@ set( SOURCE_FILES
   source/model/QuoteFields.cpp
   source/model/Redirect.cpp
   source/model/RedirectAllRequestsTo.cpp
+  source/model/ReplicaModifications.cpp
+  source/model/ReplicaModificationsStatus.cpp
   source/model/ReplicationConfiguration.cpp
   source/model/ReplicationRule.cpp
   source/model/ReplicationRuleAndOperator.cpp
@@ -635,6 +703,7 @@ set( SOURCE_FILES
   source/model/TaggingDirective.cpp
   source/model/TargetGrant.cpp
   source/model/Tier.cpp
+  source/model/Tiering.cpp
   source/model/TopicConfiguration.cpp
   source/model/TopicConfigurationDeprecated.cpp
   source/model/Transition.cpp
@@ -646,6 +715,7 @@ set( SOURCE_FILES
   source/model/UploadPartResult.cpp
   source/model/VersioningConfiguration.cpp
   source/model/WebsiteConfiguration.cpp
+  source/model/WriteGetObjectResponseRequest.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -659,11 +729,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "aws-cpp-sdk-s3" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums aws-cpp-sdk-core )
-target_link_libraries( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums aws-cpp-sdk-core )
+add_dependencies( ${MODULE_NAME} aws-cpp-sdk-core aws-crt-cpp )
+target_link_libraries( ${MODULE_NAME} aws-cpp-sdk-core aws-crt-cpp )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_S3_EXPORTS;USE_IMPORT_EXPORT=1" )
 
-include_directories( ../aws-c-common/include ../aws-c-event-stream/include ../aws-checksums/include ../aws-checksums/include/aws ../aws-checksums/include/aws/checksums ../aws-checksums/include/aws/checksums/private ../aws-cpp-sdk-core/include ../aws-cpp-sdk-core/include/aws ../aws-cpp-sdk-core/include/aws/core ../aws-cpp-sdk-core/include/aws/core/auth ../aws-cpp-sdk-core/include/aws/core/client ../aws-cpp-sdk-core/include/aws/core/config ../aws-cpp-sdk-core/include/aws/core/external ../aws-cpp-sdk-core/include/aws/core/external/cjson ../aws-cpp-sdk-core/include/aws/core/external/tinyxml2 ../aws-cpp-sdk-core/include/aws/core/http ../aws-cpp-sdk-core/include/aws/core/http/curl ../aws-cpp-sdk-core/include/aws/core/http/standard ../aws-cpp-sdk-core/include/aws/core/internal ../aws-cpp-sdk-core/include/aws/core/monitoring ../aws-cpp-sdk-core/include/aws/core/net ../aws-cpp-sdk-core/include/aws/core/platform ../aws-cpp-sdk-core/include/aws/core/platform/refs ../aws-cpp-sdk-core/include/aws/core/utils ../aws-cpp-sdk-core/include/aws/core/utils/base64 ../aws-cpp-sdk-core/include/aws/core/utils/crypto ../aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt ../aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto ../aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl ../aws-cpp-sdk-core/include/aws/core/utils/event ../aws-cpp-sdk-core/include/aws/core/utils/json ../aws-cpp-sdk-core/include/aws/core/utils/logging ../aws-cpp-sdk-core/include/aws/core/utils/memory ../aws-cpp-sdk-core/include/aws/core/utils/memory/stl ../aws-cpp-sdk-core/include/aws/core/utils/ratelimiter ../aws-cpp-sdk-core/include/aws/core/utils/stream ../aws-cpp-sdk-core/include/aws/core/utils/threading ../aws-cpp-sdk-core/include/aws/core/utils/xml ../curl/include ../curl/include/curl ../curl/lib ../curl/lib/vauth ../curl/lib/vquic ../curl/lib/vssh ../curl/lib/vtls include include/aws include/aws/s3 include/aws/s3/model )
+include_directories( ../aws-cpp-sdk-core/include ../aws-cpp-sdk-core/include/aws ../aws-cpp-sdk-core/include/aws/core ../aws-cpp-sdk-core/include/aws/core/auth ../aws-cpp-sdk-core/include/aws/core/auth/bearer-token-provider ../aws-cpp-sdk-core/include/aws/core/auth/signer ../aws-cpp-sdk-core/include/aws/core/auth/signer-provider ../aws-cpp-sdk-core/include/aws/core/client ../aws-cpp-sdk-core/include/aws/core/config ../aws-cpp-sdk-core/include/aws/core/config/defaults ../aws-cpp-sdk-core/include/aws/core/endpoint ../aws-cpp-sdk-core/include/aws/core/endpoint/internal ../aws-cpp-sdk-core/include/aws/core/external ../aws-cpp-sdk-core/include/aws/core/external/cjson ../aws-cpp-sdk-core/include/aws/core/external/tinyxml2 ../aws-cpp-sdk-core/include/aws/core/http ../aws-cpp-sdk-core/include/aws/core/http/curl ../aws-cpp-sdk-core/include/aws/core/http/standard ../aws-cpp-sdk-core/include/aws/core/internal ../aws-cpp-sdk-core/include/aws/core/monitoring ../aws-cpp-sdk-core/include/aws/core/net ../aws-cpp-sdk-core/include/aws/core/platform ../aws-cpp-sdk-core/include/aws/core/platform/refs ../aws-cpp-sdk-core/include/aws/core/utils ../aws-cpp-sdk-core/include/aws/core/utils/base64 ../aws-cpp-sdk-core/include/aws/core/utils/crypto ../aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt ../aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto ../aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl ../aws-cpp-sdk-core/include/aws/core/utils/event ../aws-cpp-sdk-core/include/aws/core/utils/json ../aws-cpp-sdk-core/include/aws/core/utils/logging ../aws-cpp-sdk-core/include/aws/core/utils/memory ../aws-cpp-sdk-core/include/aws/core/utils/memory/stl ../aws-cpp-sdk-core/include/aws/core/utils/ratelimiter ../aws-cpp-sdk-core/include/aws/core/utils/stream ../aws-cpp-sdk-core/include/aws/core/utils/threading ../aws-cpp-sdk-core/include/aws/core/utils/xml ../aws-crt-cpp/crt/aws-c-auth/include ../aws-crt-cpp/crt/aws-c-cal/include ../aws-crt-cpp/crt/aws-c-common/include ../aws-crt-cpp/crt/aws-c-compression/include ../aws-crt-cpp/crt/aws-c-event-stream/include ../aws-crt-cpp/crt/aws-c-http/include ../aws-crt-cpp/crt/aws-c-io/include ../aws-crt-cpp/crt/aws-c-io/source ../aws-crt-cpp/crt/aws-c-mqtt/include ../aws-crt-cpp/crt/aws-c-s3/include ../aws-crt-cpp/crt/aws-c-sdkutils/include ../aws-crt-cpp/crt/aws-checksums/include ../aws-crt-cpp/include ../curl/include ../curl/include/curl ../curl/lib ../curl/lib/vauth ../curl/lib/vquic ../curl/lib/vssh ../curl/lib/vtls include include/aws include/aws/s3 include/aws/s3/model )
 
 if ( ANDROID )
   include_directories( ../aws-cpp-sdk-core/include/aws/core/utils/logging/android )

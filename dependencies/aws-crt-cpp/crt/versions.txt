@@ -1,0 +1,11 @@
+aws-c-common-d6a6a6057afd8024cf2790a50de4a9818014cec6
+aws-c-event-stream-39bfa94a14b7126bf0c1330286ef8db452d87e66
+aws-c-io-d353ffde788b70f39e7da889784262e4d4eb5101
+aws-checksums-48e7c0e01479232f225c8044d76c84e74192889d
+aws-c-cal-ac4216b78d5323b5b8ce95a3dd4a8fc0f95e2d33
+aws-c-mqtt-882c689561a3db1466330ccfe3b63637e0a575d3
+aws-c-http-2c5a2a7d5556600b9782ffa6c9d7e09964df1abc
+aws-c-auth-30df6c407e2df43bd244e2c34c9b4a4b87372bfb
+aws-c-compression-b517b7decd0dac30be2162f5186c250221c53aff
+aws-c-sdkutils-25bf5cf225f977c3accc6a05a0a7a181ef2a4a30
+aws-c-s3-a41255ece72a7c887bba7f9d998ca3e14f4c8a1b

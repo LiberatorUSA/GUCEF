@@ -1,22 +1,12 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
-#include <aws/core/utils/memory/stl/AWSVector.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
+#include <aws/core/utils/memory/stl/AWSVector.h>
 #include <utility>
 
 namespace Aws
@@ -39,14 +29,63 @@ namespace Model
    * href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/CORSRule">AWS API
    * Reference</a></p>
    */
-  class AWS_S3_API CORSRule
+  class CORSRule
   {
   public:
-    CORSRule();
-    CORSRule(const Aws::Utils::Xml::XmlNode& xmlNode);
-    CORSRule& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API CORSRule();
+    AWS_S3_API CORSRule(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API CORSRule& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
 
-    void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
+    AWS_S3_API void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
+
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline const Aws::String& GetID() const{ return m_iD; }
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline bool IDHasBeenSet() const { return m_iDHasBeenSet; }
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline void SetID(const Aws::String& value) { m_iDHasBeenSet = true; m_iD = value; }
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline void SetID(Aws::String&& value) { m_iDHasBeenSet = true; m_iD = std::move(value); }
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline void SetID(const char* value) { m_iDHasBeenSet = true; m_iD.assign(value); }
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline CORSRule& WithID(const Aws::String& value) { SetID(value); return *this;}
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline CORSRule& WithID(Aws::String&& value) { SetID(std::move(value)); return *this;}
+
+    /**
+     * <p>Unique identifier for the rule. The value cannot be longer than 255
+     * characters.</p>
+     */
+    inline CORSRule& WithID(const char* value) { SetID(value); return *this;}
 
 
     /**
@@ -331,20 +370,23 @@ namespace Model
 
   private:
 
+    Aws::String m_iD;
+    bool m_iDHasBeenSet = false;
+
     Aws::Vector<Aws::String> m_allowedHeaders;
-    bool m_allowedHeadersHasBeenSet;
+    bool m_allowedHeadersHasBeenSet = false;
 
     Aws::Vector<Aws::String> m_allowedMethods;
-    bool m_allowedMethodsHasBeenSet;
+    bool m_allowedMethodsHasBeenSet = false;
 
     Aws::Vector<Aws::String> m_allowedOrigins;
-    bool m_allowedOriginsHasBeenSet;
+    bool m_allowedOriginsHasBeenSet = false;
 
     Aws::Vector<Aws::String> m_exposeHeaders;
-    bool m_exposeHeadersHasBeenSet;
+    bool m_exposeHeadersHasBeenSet = false;
 
     int m_maxAgeSeconds;
-    bool m_maxAgeSecondsHasBeenSet;
+    bool m_maxAgeSecondsHasBeenSet = false;
   };
 
 } // namespace Model

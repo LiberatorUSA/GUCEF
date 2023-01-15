@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-mqtt" Type="StaticLibrary" Platform="All">
+        <Preprocessor>		
+		<Define String="AWS_MQTT_WITH_WEBSOCKETS" />
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-c-io" />
+            <Dependency Name="aws-c-io-headers" />
+            <Dependency Name="aws-c-http" />
+            <Dependency Name="aws-c-http-headers" />
+			<Dependency Name="aws-c-mqtt-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-http" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

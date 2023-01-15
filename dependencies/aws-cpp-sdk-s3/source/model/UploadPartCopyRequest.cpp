@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/s3/model/UploadPartCopyRequest.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -46,8 +36,32 @@ UploadPartCopyRequest::UploadPartCopyRequest() :
     m_copySourceSSECustomerKeyMD5HasBeenSet(false),
     m_requestPayer(RequestPayer::NOT_SET),
     m_requestPayerHasBeenSet(false),
+    m_expectedBucketOwnerHasBeenSet(false),
+    m_expectedSourceBucketOwnerHasBeenSet(false),
     m_customizedAccessLogTagHasBeenSet(false)
 {
+}
+
+bool UploadPartCopyRequest::HasEmbeddedError(Aws::IOStream &body,
+  const Aws::Http::HeaderValueCollection &header) const
+{
+  // Header is unused
+  (void) header;
+
+  auto readPointer = body.tellg();
+  XmlDocument doc = XmlDocument::CreateFromXmlStream(body);
+
+  if (!doc.WasParseSuccessful()) {
+    body.seekg(readPointer);
+    return false;
+  }
+
+  if (doc.GetRootElement().GetName() == "Error") {
+    body.seekg(readPointer);
+    return true;
+  }
+  body.seekg(readPointer);
+  return false;
 }
 
 Aws::String UploadPartCopyRequest::SerializePayload() const
@@ -111,7 +125,7 @@ Aws::Http::HeaderValueCollection UploadPartCopyRequest::GetRequestSpecificHeader
 
   if(m_copySourceIfModifiedSinceHasBeenSet)
   {
-    headers.emplace("x-amz-copy-source-if-modified-since", m_copySourceIfModifiedSince.ToGmtString(DateFormat::RFC822));
+    headers.emplace("x-amz-copy-source-if-modified-since", m_copySourceIfModifiedSince.ToGmtString(Aws::Utils::DateFormat::RFC822));
   }
 
   if(m_copySourceIfNoneMatchHasBeenSet)
@@ -123,7 +137,7 @@ Aws::Http::HeaderValueCollection UploadPartCopyRequest::GetRequestSpecificHeader
 
   if(m_copySourceIfUnmodifiedSinceHasBeenSet)
   {
-    headers.emplace("x-amz-copy-source-if-unmodified-since", m_copySourceIfUnmodifiedSince.ToGmtString(DateFormat::RFC822));
+    headers.emplace("x-amz-copy-source-if-unmodified-since", m_copySourceIfUnmodifiedSince.ToGmtString(Aws::Utils::DateFormat::RFC822));
   }
 
   if(m_copySourceRangeHasBeenSet)
@@ -180,5 +194,29 @@ Aws::Http::HeaderValueCollection UploadPartCopyRequest::GetRequestSpecificHeader
     headers.emplace("x-amz-request-payer", RequestPayerMapper::GetNameForRequestPayer(m_requestPayer));
   }
 
+  if(m_expectedBucketOwnerHasBeenSet)
+  {
+    ss << m_expectedBucketOwner;
+    headers.emplace("x-amz-expected-bucket-owner",  ss.str());
+    ss.str("");
+  }
+
+  if(m_expectedSourceBucketOwnerHasBeenSet)
+  {
+    ss << m_expectedSourceBucketOwner;
+    headers.emplace("x-amz-source-expected-bucket-owner",  ss.str());
+    ss.str("");
+  }
+
   return headers;
+}
+
+UploadPartCopyRequest::EndpointParameters UploadPartCopyRequest::GetEndpointContextParams() const
+{
+    EndpointParameters parameters;
+    // Operation context parameters
+    if (BucketHasBeenSet()) {
+        parameters.emplace_back(Aws::String("Bucket"), this->GetBucket(), Aws::Endpoint::EndpointParameter::ParameterOrigin::OPERATION_CONTEXT);
+    }
+    return parameters;
 }

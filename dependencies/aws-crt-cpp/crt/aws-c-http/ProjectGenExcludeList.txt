@@ -1,0 +1,8 @@
+.builder
+.github
+.travis
+bin
+cmake
+codebuild
+integration-testing
+tests

@@ -1,0 +1,4 @@
+.github
+bin
+cmake
+tests

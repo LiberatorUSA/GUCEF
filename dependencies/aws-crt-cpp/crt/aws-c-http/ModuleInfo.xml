@@ -1,0 +1,20 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-http" Type="StaticLibrary" Platform="All">
+        <Preprocessor>		
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-c-io" />
+            <Dependency Name="aws-c-io-headers" />
+            <Dependency Name="aws-c-compression" />
+            <Dependency Name="aws-c-compression-headers" />			
+			<Dependency Name="aws-c-http-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-compression" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

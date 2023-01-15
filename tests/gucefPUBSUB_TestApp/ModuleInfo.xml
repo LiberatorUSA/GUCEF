@@ -18,7 +18,8 @@
 			<Dependency Name="gucefMT" />
 		</Linker>
             <Define String="GUCEF_PUBSUB_TESTAPP_BUILD_MODULE" />
-        </Preprocessor>
+        <Preprocessor>
+		</Preprocessor>
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />

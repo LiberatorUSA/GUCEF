@@ -1,0 +1,6 @@
+.builder
+.github
+cmake
+codebuild
+docs
+tests

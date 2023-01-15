@@ -1,0 +1,8 @@
+.builder
+.github
+AWSCRTAndroidTestRunner
+cmake
+docker-images
+scripts
+tests
+verification

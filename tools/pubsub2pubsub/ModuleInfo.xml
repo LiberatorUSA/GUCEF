@@ -30,13 +30,13 @@
 			<RuntimeDependency Name="pubsubpluginSTORAGE" />
 			<RuntimeDependency Name="pubsubpluginWEB" />
 			<RuntimeDependency Name="pubsubpluginTEST" />
+			<RuntimeDependency Name="pubsubpluginAWSSQS" />
+			<RuntimeDependency Name="vfspluginAWSS3" />			
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >
 		<RuntimeDependencies>
 			<RuntimeDependency Name="pubsubpluginMSMQ" />
-			<RuntimeDependency Name="pubsubpluginAWSSQS" />
-			<RuntimeDependency Name="vfspluginAWSS3" />
 			<RuntimeDependency Name="MemoryLeakFinder" />
 		</RuntimeDependencies>
 	</Module>	

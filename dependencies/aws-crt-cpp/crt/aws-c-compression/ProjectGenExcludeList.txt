@@ -1,0 +1,4 @@
+.github
+cmake
+codebuild
+tests

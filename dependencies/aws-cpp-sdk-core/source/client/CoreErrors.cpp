@@ -1,17 +1,7 @@
-/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/core/client/AWSError.h>
 #include <aws/core/client/CoreErrors.h>
@@ -28,7 +18,8 @@ using namespace Aws::Http;
 #pragma warning(disable : 4592)
 #endif
 
-static Aws::UniquePtr<Aws::Map<Aws::String, AWSError<CoreErrors> > > s_CoreErrorsMapper(nullptr);
+using ErrorsMapperContainer = Aws::Map<Aws::String, AWSError<CoreErrors> >;
+static ErrorsMapperContainer* s_CoreErrorsMapper(nullptr);
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -40,7 +31,7 @@ void CoreErrorsMapper::InitCoreErrorsMapper()
     {
       return;
     }
-    s_CoreErrorsMapper = Aws::MakeUnique<Aws::Map<Aws::String, AWSError<CoreErrors> > >("InitCoreErrorsMapper");
+    s_CoreErrorsMapper = Aws::New<ErrorsMapperContainer>("InitCoreErrorsMapper");
 
     s_CoreErrorsMapper->emplace("IncompleteSignature", AWSError<CoreErrors>(CoreErrors::INCOMPLETE_SIGNATURE, false));
     s_CoreErrorsMapper->emplace("IncompleteSignatureException", AWSError<CoreErrors>(CoreErrors::INCOMPLETE_SIGNATURE, false));
@@ -102,10 +93,8 @@ void CoreErrorsMapper::InitCoreErrorsMapper()
 
 void CoreErrorsMapper::CleanupCoreErrorsMapper()
 {
-    if (s_CoreErrorsMapper)
-    {
-      s_CoreErrorsMapper = nullptr;
-    }
+    Aws::Delete(s_CoreErrorsMapper);
+    s_CoreErrorsMapper = nullptr;
 }
 
 AWSError<CoreErrors> CoreErrorsMapper::GetErrorForName(const char* errorName)
@@ -158,4 +147,13 @@ AWS_CORE_API AWSError<CoreErrors> CoreErrorsMapper::GetErrorForHttpResponseCode(
     }
     error.SetResponseCode(code);
     return error;
+}
+
+/**
+ * Overload ostream operator<< for CoreErrors enum class for a prettier output such as "103" and not "<67-00 00-00>"
+ */
+Aws::OStream& Aws::Client::operator<< (Aws::OStream& oStream, CoreErrors code)
+{
+    oStream << Aws::Utils::StringUtils::to_string(static_cast<typename std::underlying_type<HttpResponseCode>::type>(code));
+    return oStream;
 }

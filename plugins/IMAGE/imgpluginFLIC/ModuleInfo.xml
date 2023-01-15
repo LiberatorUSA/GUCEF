@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="imgpluginFLIC" Type="SharedLibrary" Tags="plugin">
+    <Module Name="imgpluginFLIC" Type="SharedLibrary" Tags="plugin" Platform="All">
         <Dependencies>
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />

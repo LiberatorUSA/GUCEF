@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="aws-crt-cpp-headers" Type="HeaderIncludeLocation" Platform="All" ConsiderSubDirs="False" >	
+    </Module>
+</ModuleInfoEntry>

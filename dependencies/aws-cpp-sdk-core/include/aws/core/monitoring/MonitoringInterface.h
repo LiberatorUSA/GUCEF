@@ -1,16 +1,6 @@
-/*
- * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
  */
 
 #pragma once
@@ -36,7 +26,7 @@ namespace Aws
             /**
              * @brief This function lets you do preparation work when a http attempt(request) starts. It returns a pointer to an implementation defined context which will be
              * passed down with the other facilities that completes the request's lifetime. This context can be used to track the lifetime of the request and record metrics
-             * specific to this particular request. You are responsible for deleteing the context during your OnFinish call.
+             * specific to this particular request. You are responsible for deleting the context during your OnFinish call.
              * @param serviceName, the service client who initiates this http attempt. like "s3", "ec2", etc.
              * @param requestName, the operation or API name of this http attempt, like "GetObject" in s3.
              * @param request, the actual Http Request.

@@ -5,17 +5,12 @@
             <Define String="AWS_S3_EXPORTS" />
         </Preprocessor>
         <Dependencies>
-            <Dependency Name="aws-checksums" />
-			<Dependency Name="aws-c-common" />
-			<Dependency Name="aws-c-common-headers" />
-            <Dependency Name="aws-c-event-stream" />
-			<Dependency Name="aws-c-event-stream-headers" />
+            <Dependency Name="aws-crt-cpp" />
+			<Dependency Name="aws-crt-cpp-headers" />
 			<Dependency Name="aws-cpp-sdk-core" />
         </Dependencies>
         <Linker>
-            <Dependency Name="aws-checksums" />
-			<Dependency Name="aws-c-common" />
-            <Dependency Name="aws-c-event-stream" />
+            <Dependency Name="aws-crt-cpp" />
 			<Dependency Name="aws-cpp-sdk-core" />		
         </Linker>		
     </Module>

@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/sqs/SQS_EXPORTS.h>
@@ -39,15 +29,15 @@ namespace Model
    * href="http://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05/SendMessageBatchResultEntry">AWS
    * API Reference</a></p>
    */
-  class AWS_SQS_API SendMessageBatchResultEntry
+  class SendMessageBatchResultEntry
   {
   public:
-    SendMessageBatchResultEntry();
-    SendMessageBatchResultEntry(const Aws::Utils::Xml::XmlNode& xmlNode);
-    SendMessageBatchResultEntry& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_SQS_API SendMessageBatchResultEntry();
+    AWS_SQS_API SendMessageBatchResultEntry(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_SQS_API SendMessageBatchResultEntry& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
 
-    void OutputToStream(Aws::OStream& ostream, const char* location, unsigned index, const char* locationValue) const;
-    void OutputToStream(Aws::OStream& oStream, const char* location) const;
+    AWS_SQS_API void OutputToStream(Aws::OStream& ostream, const char* location, unsigned index, const char* locationValue) const;
+    AWS_SQS_API void OutputToStream(Aws::OStream& oStream, const char* location) const;
 
 
     /**
@@ -133,66 +123,66 @@ namespace Model
 
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline const Aws::String& GetMD5OfMessageBody() const{ return m_mD5OfMessageBody; }
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline bool MD5OfMessageBodyHasBeenSet() const { return m_mD5OfMessageBodyHasBeenSet; }
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline void SetMD5OfMessageBody(const Aws::String& value) { m_mD5OfMessageBodyHasBeenSet = true; m_mD5OfMessageBody = value; }
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline void SetMD5OfMessageBody(Aws::String&& value) { m_mD5OfMessageBodyHasBeenSet = true; m_mD5OfMessageBody = std::move(value); }
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline void SetMD5OfMessageBody(const char* value) { m_mD5OfMessageBodyHasBeenSet = true; m_mD5OfMessageBody.assign(value); }
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline SendMessageBatchResultEntry& WithMD5OfMessageBody(const Aws::String& value) { SetMD5OfMessageBody(value); return *this;}
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline SendMessageBatchResultEntry& WithMD5OfMessageBody(Aws::String&& value) { SetMD5OfMessageBody(std::move(value)); return *this;}
 
     /**
-     * <p>An MD5 digest of the non-URL-encoded message attribute string. You can use
-     * this attribute to verify that Amazon SQS received the message correctly. Amazon
-     * SQS URL-decodes the message before creating the MD5 digest. For information
-     * about MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
+     * <p>An MD5 digest of the non-URL-encoded message body string. You can use this
+     * attribute to verify that Amazon SQS received the message correctly. Amazon SQS
+     * URL-decodes the message before creating the MD5 digest. For information about
+     * MD5, see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.</p>
      */
     inline SendMessageBatchResultEntry& WithMD5OfMessageBody(const char* value) { SetMD5OfMessageBody(value); return *this;}
 
@@ -410,22 +400,22 @@ namespace Model
   private:
 
     Aws::String m_id;
-    bool m_idHasBeenSet;
+    bool m_idHasBeenSet = false;
 
     Aws::String m_messageId;
-    bool m_messageIdHasBeenSet;
+    bool m_messageIdHasBeenSet = false;
 
     Aws::String m_mD5OfMessageBody;
-    bool m_mD5OfMessageBodyHasBeenSet;
+    bool m_mD5OfMessageBodyHasBeenSet = false;
 
     Aws::String m_mD5OfMessageAttributes;
-    bool m_mD5OfMessageAttributesHasBeenSet;
+    bool m_mD5OfMessageAttributesHasBeenSet = false;
 
     Aws::String m_mD5OfMessageSystemAttributes;
-    bool m_mD5OfMessageSystemAttributesHasBeenSet;
+    bool m_mD5OfMessageSystemAttributesHasBeenSet = false;
 
     Aws::String m_sequenceNumber;
-    bool m_sequenceNumberHasBeenSet;
+    bool m_sequenceNumberHasBeenSet = false;
   };
 
 } // namespace Model

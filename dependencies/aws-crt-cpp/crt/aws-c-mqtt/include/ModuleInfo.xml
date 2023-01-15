@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-mqtt-headers" Type="HeaderIncludeLocation" Platform="All" ConsiderSubDirs="False" >	
+    </Module>
+</ModuleInfoEntry>

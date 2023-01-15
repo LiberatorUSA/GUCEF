@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-event-stream" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-checksums-headers" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-io-headers" />
+			<Dependency Name="aws-c-cal" />
+			<Dependency Name="aws-c-cal-headers" />
+			<Dependency Name="aws-c-event-stream-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-cal" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

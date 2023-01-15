@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/sqs/SQS_EXPORTS.h>
@@ -28,10 +18,10 @@ namespace Model
 
   /**
    */
-  class AWS_SQS_API ChangeMessageVisibilityRequest : public SQSRequest
+  class ChangeMessageVisibilityRequest : public SQSRequest
   {
   public:
-    ChangeMessageVisibilityRequest();
+    AWS_SQS_API ChangeMessageVisibilityRequest();
 
     // Service request name is the Operation name which will send this request out,
     // each operation should has unique request name, so that we can get operation's name from this request.
@@ -39,10 +29,10 @@ namespace Model
     // so we can not get operation's name from response.
     inline virtual const char* GetServiceRequestName() const override { return "ChangeMessageVisibility"; }
 
-    Aws::String SerializePayload() const override;
+    AWS_SQS_API Aws::String SerializePayload() const override;
 
   protected:
-    void DumpBodyToUrl(Aws::Http::URI& uri ) const override;
+    AWS_SQS_API void DumpBodyToUrl(Aws::Http::URI& uri ) const override;
 
   public:
 
@@ -154,38 +144,38 @@ namespace Model
 
     /**
      * <p>The new value for the message's visibility timeout (in seconds). Values
-     * values: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
+     * range: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
      */
     inline int GetVisibilityTimeout() const{ return m_visibilityTimeout; }
 
     /**
      * <p>The new value for the message's visibility timeout (in seconds). Values
-     * values: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
+     * range: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
      */
     inline bool VisibilityTimeoutHasBeenSet() const { return m_visibilityTimeoutHasBeenSet; }
 
     /**
      * <p>The new value for the message's visibility timeout (in seconds). Values
-     * values: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
+     * range: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
      */
     inline void SetVisibilityTimeout(int value) { m_visibilityTimeoutHasBeenSet = true; m_visibilityTimeout = value; }
 
     /**
      * <p>The new value for the message's visibility timeout (in seconds). Values
-     * values: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
+     * range: <code>0</code> to <code>43200</code>. Maximum: 12 hours.</p>
      */
     inline ChangeMessageVisibilityRequest& WithVisibilityTimeout(int value) { SetVisibilityTimeout(value); return *this;}
 
   private:
 
     Aws::String m_queueUrl;
-    bool m_queueUrlHasBeenSet;
+    bool m_queueUrlHasBeenSet = false;
 
     Aws::String m_receiptHandle;
-    bool m_receiptHandleHasBeenSet;
+    bool m_receiptHandleHasBeenSet = false;
 
     int m_visibilityTimeout;
-    bool m_visibilityTimeoutHasBeenSet;
+    bool m_visibilityTimeoutHasBeenSet = false;
   };
 
 } // namespace Model

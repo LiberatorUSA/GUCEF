@@ -1,0 +1,34 @@
+{
+    "name": "aws-crt-cpp",
+    "hosts": {
+        "manylinux": {
+            "architectures": {
+                "x86": {
+                    "!yum_compiler_packages": []
+                }
+            }
+        }
+    },
+    "build_steps": [
+        "build-crt"
+    ],
+    "variants": {
+        "openssl": {
+            "hosts": {
+                "ubuntu": {
+                    "packages": [
+                        "libssl-dev"
+                    ]
+                }
+            }
+        }
+    },
+    "+cmake_args": [
+        "-DAWS_HAS_CI_ENVIRONMENT=ON"
+    ],
+    "test_steps": [
+        "crt-ci-prep",
+        "test",
+        "elasticurl-tests"
+    ]
+}

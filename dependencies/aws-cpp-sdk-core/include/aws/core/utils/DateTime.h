@@ -1,17 +1,7 @@
-/*
-  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License").
-  * You may not use this file except in compliance with the License.
-  * A copy of the License is located at
-  *
-  *  http://aws.amazon.com/apache2.0
-  *
-  * or in the "license" file accompanying this file. This file is distributed
-  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-  * express or implied. See the License for the specific language governing
-  * permissions and limitations under the License.
-  */
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 
@@ -27,6 +17,7 @@ namespace Aws
         {
             RFC822, //for http headers
             ISO_8601, //for query and xml payloads
+            ISO_8601_BASIC, // for retry headers and signers
             AutoDetect
         };
 
@@ -58,7 +49,7 @@ namespace Aws
         };
 
         /**
-         * Wrapper for all the weird crap we need to do with timestamps. 
+         * Wrapper for all the weird crap we need to do with timestamps.
          */
         class AWS_CORE_API DateTime
         {
@@ -69,12 +60,12 @@ namespace Aws
             DateTime();
 
             /**
-            *  Initializes time point to any other arbirtrary timepoint
+            *  Initializes time point to any other arbitrary timepoint
             */
             DateTime(const std::chrono::system_clock::time_point& timepointToAssign);
 
             /**
-             * Initializes time point to millis Since epoch   
+             * Initializes time point to millis Since epoch
              */
             DateTime(int64_t millisSinceEpoch);
 
@@ -102,7 +93,7 @@ namespace Aws
 
             DateTime operator+(const std::chrono::milliseconds& a) const;
             DateTime operator-(const std::chrono::milliseconds& a) const;
-            
+
             /**
              * Assign from seconds.millis since epoch.
              */
@@ -152,6 +143,11 @@ namespace Aws
              * Get the representation of this datetime as seconds.milliseconds since epoch
              */
             double SecondsWithMSPrecision() const;
+
+            /**
+             * Get the seconds without millisecond precision.
+             */
+            int64_t Seconds() const;
 
             /**
              * Milliseconds since epoch of this datetime.
@@ -252,7 +248,7 @@ namespace Aws
             void ConvertTimestampStringToTimePoint(const char* timestamp, DateFormat format);
             tm GetTimeStruct(bool localTime) const;
             tm ConvertTimestampToLocalTimeStruct() const;
-            tm ConvertTimestampToGmtStruct() const;   
+            tm ConvertTimestampToGmtStruct() const;
         };
 
     } // namespace Utils

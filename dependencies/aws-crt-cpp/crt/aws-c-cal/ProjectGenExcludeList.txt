@@ -1,0 +1,5 @@
+.github
+bin
+cmake
+ecdsa-fuzz-corpus
+tests

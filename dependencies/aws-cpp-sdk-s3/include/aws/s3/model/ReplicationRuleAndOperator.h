@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -40,19 +30,19 @@ namespace Model
    * more than one filter. </p> <p>For example:</p> <ul> <li> <p>If you specify both
    * a <code>Prefix</code> and a <code>Tag</code> filter, wrap these filters in an
    * <code>And</code> tag. </p> </li> <li> <p>If you specify a filter based on
-   * multiple tags, wrap the <code>Tag</code> elements in an <code>And</code> tag</p>
-   * </li> </ul><p><h3>See Also:</h3>   <a
+   * multiple tags, wrap the <code>Tag</code> elements in an <code>And</code>
+   * tag.</p> </li> </ul><p><h3>See Also:</h3>   <a
    * href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/ReplicationRuleAndOperator">AWS
    * API Reference</a></p>
    */
-  class AWS_S3_API ReplicationRuleAndOperator
+  class ReplicationRuleAndOperator
   {
   public:
-    ReplicationRuleAndOperator();
-    ReplicationRuleAndOperator(const Aws::Utils::Xml::XmlNode& xmlNode);
-    ReplicationRuleAndOperator& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API ReplicationRuleAndOperator();
+    AWS_S3_API ReplicationRuleAndOperator(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API ReplicationRuleAndOperator& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
 
-    void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
+    AWS_S3_API void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
 
 
     /**
@@ -147,10 +137,10 @@ namespace Model
   private:
 
     Aws::String m_prefix;
-    bool m_prefixHasBeenSet;
+    bool m_prefixHasBeenSet = false;
 
     Aws::Vector<Tag> m_tags;
-    bool m_tagsHasBeenSet;
+    bool m_tagsHasBeenSet = false;
   };
 
 } // namespace Model

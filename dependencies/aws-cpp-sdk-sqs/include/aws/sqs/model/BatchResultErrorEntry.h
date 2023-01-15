@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/sqs/SQS_EXPORTS.h>
@@ -39,15 +29,15 @@ namespace Model
    * href="http://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05/BatchResultErrorEntry">AWS
    * API Reference</a></p>
    */
-  class AWS_SQS_API BatchResultErrorEntry
+  class BatchResultErrorEntry
   {
   public:
-    BatchResultErrorEntry();
-    BatchResultErrorEntry(const Aws::Utils::Xml::XmlNode& xmlNode);
-    BatchResultErrorEntry& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_SQS_API BatchResultErrorEntry();
+    AWS_SQS_API BatchResultErrorEntry(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_SQS_API BatchResultErrorEntry& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
 
-    void OutputToStream(Aws::OStream& ostream, const char* location, unsigned index, const char* locationValue) const;
-    void OutputToStream(Aws::OStream& oStream, const char* location) const;
+    AWS_SQS_API void OutputToStream(Aws::OStream& ostream, const char* location, unsigned index, const char* locationValue) const;
+    AWS_SQS_API void OutputToStream(Aws::OStream& oStream, const char* location) const;
 
 
     /**
@@ -92,22 +82,26 @@ namespace Model
 
 
     /**
-     * <p>Specifies whether the error happened due to the producer.</p>
+     * <p>Specifies whether the error happened due to the caller of the batch API
+     * action.</p>
      */
     inline bool GetSenderFault() const{ return m_senderFault; }
 
     /**
-     * <p>Specifies whether the error happened due to the producer.</p>
+     * <p>Specifies whether the error happened due to the caller of the batch API
+     * action.</p>
      */
     inline bool SenderFaultHasBeenSet() const { return m_senderFaultHasBeenSet; }
 
     /**
-     * <p>Specifies whether the error happened due to the producer.</p>
+     * <p>Specifies whether the error happened due to the caller of the batch API
+     * action.</p>
      */
     inline void SetSenderFault(bool value) { m_senderFaultHasBeenSet = true; m_senderFault = value; }
 
     /**
-     * <p>Specifies whether the error happened due to the producer.</p>
+     * <p>Specifies whether the error happened due to the caller of the batch API
+     * action.</p>
      */
     inline BatchResultErrorEntry& WithSenderFault(bool value) { SetSenderFault(value); return *this;}
 
@@ -196,16 +190,16 @@ namespace Model
   private:
 
     Aws::String m_id;
-    bool m_idHasBeenSet;
+    bool m_idHasBeenSet = false;
 
     bool m_senderFault;
-    bool m_senderFaultHasBeenSet;
+    bool m_senderFaultHasBeenSet = false;
 
     Aws::String m_code;
-    bool m_codeHasBeenSet;
+    bool m_codeHasBeenSet = false;
 
     Aws::String m_message;
-    bool m_messageHasBeenSet;
+    bool m_messageHasBeenSet = false;
   };
 
 } // namespace Model

@@ -1,0 +1,14 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-sdkutils" Type="StaticLibrary" Platform="All">
+        <Preprocessor>		
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-c-common-headers" />
+			<Dependency Name="aws-c-sdkutils-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

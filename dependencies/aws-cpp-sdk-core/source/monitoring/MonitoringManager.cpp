@@ -1,16 +1,6 @@
-/*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
  */
 
 #include <aws/core/utils/memory/AWSMemory.h>
@@ -33,18 +23,20 @@ namespace Aws
         const char MonitoringTag[] = "MonitoringAllocTag";
 
         /**
-         * Global factory to create global metrics instance. 
+         * Global factory to create global metrics instance.
          */
-        static Aws::UniquePtr<Monitors> s_monitors;
+        static Monitors* s_monitors(nullptr);
 
         Aws::Vector<void*> OnRequestStarted(const Aws::String& serviceName, const Aws::String& requestName, const std::shared_ptr<const Aws::Http::HttpRequest>& request)
         {
-            assert(s_monitors);
             Aws::Vector<void*> contexts;
-            contexts.reserve(s_monitors->size());
-            for (const auto& interface: *s_monitors) 
+            if (s_monitors)
             {
-                contexts.emplace_back(interface->OnRequestStarted(serviceName, requestName, request));
+                contexts.reserve(s_monitors->size());
+                for (const auto& interface: *s_monitors)
+                {
+                    contexts.emplace_back(interface->OnRequestStarted(serviceName, requestName, request));
+                }
             }
             return contexts;
         }
@@ -52,48 +44,56 @@ namespace Aws
         void OnRequestSucceeded(const Aws::String& serviceName, const Aws::String& requestName, const std::shared_ptr<const Aws::Http::HttpRequest>& request,
                 const Aws::Client::HttpResponseOutcome& outcome, const CoreMetricsCollection& metricsFromCore, const Aws::Vector<void*>& contexts)
         {
-            assert(s_monitors);
-            assert(contexts.size() == s_monitors->size());
-            size_t index = 0;
-            for (const auto& interface: *s_monitors)
+            if (s_monitors)
             {
-                interface->OnRequestSucceeded(serviceName, requestName, request, outcome, metricsFromCore, contexts[index++]);
+                assert(contexts.size() == s_monitors->size());
+                size_t index = 0;
+                for (const auto& interface: *s_monitors)
+                {
+                    interface->OnRequestSucceeded(serviceName, requestName, request, outcome, metricsFromCore, contexts[index++]);
+                }
             }
         }
 
         void OnRequestFailed(const Aws::String& serviceName, const Aws::String& requestName, const std::shared_ptr<const Aws::Http::HttpRequest>& request,
                 const Aws::Client::HttpResponseOutcome& outcome, const CoreMetricsCollection& metricsFromCore, const Aws::Vector<void*>& contexts)
         {
-            assert(s_monitors);
-            assert(contexts.size() == s_monitors->size());
-            size_t index = 0;
-            for (const auto& interface: *s_monitors)
+            if (s_monitors)
             {
-                interface->OnRequestFailed(serviceName, requestName, request, outcome, metricsFromCore, contexts[index++]);
+                assert(contexts.size() == s_monitors->size());
+                size_t index = 0;
+                for (const auto& interface: *s_monitors)
+                {
+                    interface->OnRequestFailed(serviceName, requestName, request, outcome, metricsFromCore, contexts[index++]);
+                }
             }
         }
 
-        void OnRequestRetry(const Aws::String& serviceName, const Aws::String& requestName, 
+        void OnRequestRetry(const Aws::String& serviceName, const Aws::String& requestName,
                 const std::shared_ptr<const Aws::Http::HttpRequest>& request, const Aws::Vector<void*>& contexts)
         {
-            assert(s_monitors);
-            assert(contexts.size() == s_monitors->size());
-            size_t index = 0;
-            for (const auto& interface: *s_monitors)
+            if (s_monitors)
             {
-                interface->OnRequestRetry(serviceName, requestName, request, contexts[index++]);
+                assert(contexts.size() == s_monitors->size());
+                size_t index = 0;
+                for (const auto& interface: *s_monitors)
+                {
+                    interface->OnRequestRetry(serviceName, requestName, request, contexts[index++]);
+                }
             }
         }
 
-        void OnFinish(const Aws::String& serviceName, const Aws::String& requestName, 
+        void OnFinish(const Aws::String& serviceName, const Aws::String& requestName,
                 const std::shared_ptr<const Aws::Http::HttpRequest>& request, const Aws::Vector<void*>& contexts)
         {
-            assert(s_monitors);
-            assert(contexts.size() == s_monitors->size());
-            size_t index = 0;
-            for (const auto& interface: *s_monitors)
+            if (s_monitors)
             {
-                interface->OnFinish(serviceName, requestName, request, contexts[index++]);
+                assert(contexts.size() == s_monitors->size());
+                size_t index = 0;
+                for (const auto& interface: *s_monitors)
+                {
+                    interface->OnFinish(serviceName, requestName, request, contexts[index++]);
+                }
             }
         }
 
@@ -103,7 +103,8 @@ namespace Aws
             {
                 return;
             }
-            s_monitors = Aws::MakeUnique<Monitors>(MonitoringTag);
+            assert(Aws::get_aws_allocator() != nullptr);
+            s_monitors = Aws::New<Monitors>(MonitoringTag);
             for (const auto& function: monitoringFactoryCreateFunctions)
             {
                 auto factory = function();
@@ -127,13 +128,9 @@ namespace Aws
 
         void CleanupMonitoring()
         {
-            if (!s_monitors)
-            {
-                return;
-            }
-
+            Aws::Delete(s_monitors);
             s_monitors = nullptr;
         }
-    } // namepsace Monitoring
+    } // namespace Monitoring
 
 } // namespace Aws

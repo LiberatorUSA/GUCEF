@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-io-headers" Type="HeaderIncludeLocation" Platform="All" ConsiderSubDirs="False" >	
+    </Module>
+</ModuleInfoEntry>

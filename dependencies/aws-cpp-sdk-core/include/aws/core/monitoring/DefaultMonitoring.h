@@ -1,17 +1,7 @@
-/*
-* Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/core/Core_EXPORTS.h>
@@ -56,18 +46,18 @@ namespace Aws
             void OnRequestFailed(const Aws::String& serviceName, const Aws::String& requestName, const std::shared_ptr<const Aws::Http::HttpRequest>& request,
                 const Aws::Client::HttpResponseOutcome& outcome, const CoreMetricsCollection& metricsFromCore, void* context) const override;
 
- 
-            void OnRequestRetry(const Aws::String& serviceName, const Aws::String& requestName, 
+
+            void OnRequestRetry(const Aws::String& serviceName, const Aws::String& requestName,
                 const std::shared_ptr<const Aws::Http::HttpRequest>& request, void* context) const override;
 
 
-            void OnFinish(const Aws::String& serviceName, const Aws::String& requestName, 
+            void OnFinish(const Aws::String& serviceName, const Aws::String& requestName,
                 const std::shared_ptr<const Aws::Http::HttpRequest>& request, void* context) const override;
 
             static inline int GetVersion() { return DEFAULT_MONITORING_VERSION; }
         private:
-            void CollectAndSendAttemptData(const Aws::String& serviceName, const Aws::String& requestName, 
-                const std::shared_ptr<const Aws::Http::HttpRequest>& request, const Aws::Client::HttpResponseOutcome& outcome, 
+            void CollectAndSendAttemptData(const Aws::String& serviceName, const Aws::String& requestName,
+                const std::shared_ptr<const Aws::Http::HttpRequest>& request, const Aws::Client::HttpResponseOutcome& outcome,
                 const CoreMetricsCollection& metricsFromCore, void* context) const;
 
             Aws::Net::SimpleUDP m_udp;
@@ -80,4 +70,4 @@ namespace Aws
             Aws::UniquePtr<MonitoringInterface> CreateMonitoringInstance() const override;
         };
     } // namespace Monitoring
-} // namepsace Aws
+} // namespace Aws

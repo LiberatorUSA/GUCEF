@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverOgre" Type="SharedLibrary" Tags="plugin">
+    <Module Name="guidriverOgre" Type="SharedLibrary" Tags="plugin" Platform="All">
         <Dependencies>
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />

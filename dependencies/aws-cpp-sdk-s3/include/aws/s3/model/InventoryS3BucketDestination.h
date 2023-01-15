@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -40,53 +30,77 @@ namespace Model
    * href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/InventoryS3BucketDestination">AWS
    * API Reference</a></p>
    */
-  class AWS_S3_API InventoryS3BucketDestination
+  class InventoryS3BucketDestination
   {
   public:
-    InventoryS3BucketDestination();
-    InventoryS3BucketDestination(const Aws::Utils::Xml::XmlNode& xmlNode);
-    InventoryS3BucketDestination& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API InventoryS3BucketDestination();
+    AWS_S3_API InventoryS3BucketDestination(const Aws::Utils::Xml::XmlNode& xmlNode);
+    AWS_S3_API InventoryS3BucketDestination& operator=(const Aws::Utils::Xml::XmlNode& xmlNode);
 
-    void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
+    AWS_S3_API void AddToNode(Aws::Utils::Xml::XmlNode& parentNode) const;
 
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline const Aws::String& GetAccountId() const{ return m_accountId; }
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline bool AccountIdHasBeenSet() const { return m_accountIdHasBeenSet; }
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline void SetAccountId(const Aws::String& value) { m_accountIdHasBeenSet = true; m_accountId = value; }
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline void SetAccountId(Aws::String&& value) { m_accountIdHasBeenSet = true; m_accountId = std::move(value); }
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline void SetAccountId(const char* value) { m_accountIdHasBeenSet = true; m_accountId.assign(value); }
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline InventoryS3BucketDestination& WithAccountId(const Aws::String& value) { SetAccountId(value); return *this;}
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline InventoryS3BucketDestination& WithAccountId(Aws::String&& value) { SetAccountId(std::move(value)); return *this;}
 
     /**
-     * <p>The ID of the account that owns the destination bucket.</p>
+     * <p>The account ID that owns the destination S3 bucket. If no account ID is
+     * provided, the owner is not validated before exporting data. </p>  <p>
+     * Although this value is optional, we strongly recommend that you set it to help
+     * prevent problems if the destination bucket ownership changes. </p> 
      */
     inline InventoryS3BucketDestination& WithAccountId(const char* value) { SetAccountId(value); return *this;}
 
@@ -251,19 +265,19 @@ namespace Model
   private:
 
     Aws::String m_accountId;
-    bool m_accountIdHasBeenSet;
+    bool m_accountIdHasBeenSet = false;
 
     Aws::String m_bucket;
-    bool m_bucketHasBeenSet;
+    bool m_bucketHasBeenSet = false;
 
     InventoryFormat m_format;
-    bool m_formatHasBeenSet;
+    bool m_formatHasBeenSet = false;
 
     Aws::String m_prefix;
-    bool m_prefixHasBeenSet;
+    bool m_prefixHasBeenSet = false;
 
     InventoryEncryption m_encryption;
-    bool m_encryptionHasBeenSet;
+    bool m_encryptionHasBeenSet = false;
   };
 
 } // namespace Model

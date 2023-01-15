@@ -26,20 +26,59 @@ set( HEADER_FILES
   include/aws/core/VersionConfig.h
   include/aws/core/auth/AWSAuthSigner.h
   include/aws/core/auth/AWSAuthSignerProvider.h
+  include/aws/core/auth/AWSBearerToken.h
   include/aws/core/auth/AWSCredentials.h
   include/aws/core/auth/AWSCredentialsProvider.h
   include/aws/core/auth/AWSCredentialsProviderChain.h
+  include/aws/core/auth/SSOCredentialsProvider.h
   include/aws/core/auth/STSCredentialsProvider.h
+  include/aws/core/auth/bearer-token-provider/AWSBearerTokenProviderBase.h
+  include/aws/core/auth/bearer-token-provider/AWSBearerTokenProviderChainBase.h
+  include/aws/core/auth/bearer-token-provider/DefaultBearerTokenProviderChain.h
+  include/aws/core/auth/bearer-token-provider/SSOBearerTokenProvider.h
+  include/aws/core/auth/bearer-token-provider/StaticBearerTokenProvider.h
+  include/aws/core/auth/signer/AWSAuthBearerSigner.h
+  include/aws/core/auth/signer/AWSAuthEventStreamV4Signer.h
+  include/aws/core/auth/signer/AWSAuthSignerBase.h
+  include/aws/core/auth/signer/AWSAuthSignerCommon.h
+  include/aws/core/auth/signer/AWSAuthSignerHelper.h
+  include/aws/core/auth/signer/AWSAuthV4Signer.h
+  include/aws/core/auth/signer/AWSNullSigner.h
+  include/aws/core/auth/signer-provider/AWSAuthSignerProviderBase.h
+  include/aws/core/auth/signer-provider/BearerTokenAuthSignerProvider.h
+  include/aws/core/auth/signer-provider/DefaultAuthSignerProvider.h
+  include/aws/core/client/AWSAsyncOperationTemplate.h
   include/aws/core/client/AWSClient.h
+  include/aws/core/client/AWSClientAsyncCRTP.h
   include/aws/core/client/AWSError.h
   include/aws/core/client/AWSErrorMarshaller.h
+  include/aws/core/client/AWSJsonClient.h
+  include/aws/core/client/AWSUrlPresigner.h
+  include/aws/core/client/AWSXmlClient.h
+  include/aws/core/client/AdaptiveRetryStrategy.h
   include/aws/core/client/AsyncCallerContext.h
   include/aws/core/client/ClientConfiguration.h
   include/aws/core/client/CoreErrors.h
   include/aws/core/client/DefaultRetryStrategy.h
+  include/aws/core/client/GenericClientConfiguration.h
   include/aws/core/client/RetryStrategy.h
   include/aws/core/client/SpecifiedRetryableErrorsRetryStrategy.h
+  include/aws/core/config/AWSConfigFileProfileConfigLoader.h
+  include/aws/core/config/AWSProfileConfig.h
   include/aws/core/config/AWSProfileConfigLoader.h
+  include/aws/core/config/AWSProfileConfigLoaderBase.h
+  include/aws/core/config/ConfigAndCredentialsCacheManager.h
+  include/aws/core/config/EC2InstanceProfileConfigLoader.h
+  include/aws/core/config/defaults/ClientConfigurationDefaults.h
+  include/aws/core/endpoint/AWSEndpoint.h
+  include/aws/core/endpoint/AWSPartitions.h
+  include/aws/core/endpoint/BuiltInParameters.h
+  include/aws/core/endpoint/ClientContextParameters.h
+  include/aws/core/endpoint/DefaultEndpointProvider.h
+  include/aws/core/endpoint/EndpointParameter.h
+  include/aws/core/endpoint/EndpointProviderBase.h
+  include/aws/core/endpoint/internal/AWSEndpointAttribute.h
+  include/aws/core/external/CommonCryptorSPI.h
   include/aws/core/external/cjson/cJSON.h
   include/aws/core/external/tinyxml2/tinyxml2.h
   include/aws/core/http/HttpClient.h
@@ -62,13 +101,13 @@ set( HEADER_FILES
   include/aws/core/monitoring/MonitoringManager.h
   include/aws/core/net/Net.h
   include/aws/core/net/SimpleUDP.h
-  include/aws/core/platform/AWSTime.h
   include/aws/core/platform/Android.h
   include/aws/core/platform/Environment.h
   include/aws/core/platform/FileSystem.h
   include/aws/core/platform/OSVersionInfo.h
   include/aws/core/platform/Platform.h
   include/aws/core/platform/Security.h
+  include/aws/core/platform/Time.h
   include/aws/core/platform/refs/IXmlHttpRequest2Ref.h
   include/aws/core/utils/ARN.h
   include/aws/core/utils/Array.h
@@ -76,6 +115,7 @@ set( HEADER_FILES
   include/aws/core/utils/ConcurrentCache.h
   include/aws/core/utils/DNS.h
   include/aws/core/utils/DateTime.h
+  include/aws/core/utils/Document.h
   include/aws/core/utils/EnumParseOverflowContainer.h
   include/aws/core/utils/FileSystemUtils.h
   include/aws/core/utils/GetTheLights.h
@@ -86,6 +126,7 @@ set( HEADER_FILES
   include/aws/core/utils/UUID.h
   include/aws/core/utils/UnreferencedParam.h
   include/aws/core/utils/base64/Base64.h
+  include/aws/core/utils/crypto/CRC32.h
   include/aws/core/utils/crypto/Cipher.h
   include/aws/core/utils/crypto/ContentCryptoMaterial.h
   include/aws/core/utils/crypto/ContentCryptoScheme.h
@@ -99,6 +140,7 @@ set( HEADER_FILES
   include/aws/core/utils/crypto/KeyWrapAlgorithm.h
   include/aws/core/utils/crypto/MD5.h
   include/aws/core/utils/crypto/SecureRandom.h
+  include/aws/core/utils/crypto/Sha1.h
   include/aws/core/utils/crypto/Sha256.h
   include/aws/core/utils/crypto/Sha256HMAC.h
   include/aws/core/utils/crypto/bcrypt/CryptoImpl.h
@@ -116,8 +158,11 @@ set( HEADER_FILES
   include/aws/core/utils/event/EventStreamHandler.h
   include/aws/core/utils/json/JsonSerializer.h
   include/aws/core/utils/logging/AWSLogging.h
+  include/aws/core/utils/logging/CRTLogSystem.h
+  include/aws/core/utils/logging/CRTLogging.h
   include/aws/core/utils/logging/ConsoleLogSystem.h
   include/aws/core/utils/logging/DefaultLogSystem.h
+  include/aws/core/utils/logging/ErrorMacros.h
   include/aws/core/utils/logging/FormattedLogSystem.h
   include/aws/core/utils/logging/LogLevel.h
   include/aws/core/utils/logging/LogMacros.h
@@ -126,6 +171,7 @@ set( HEADER_FILES
   include/aws/core/utils/memory/AWSMemory.h
   include/aws/core/utils/memory/MemorySystemInterface.h
   include/aws/core/utils/memory/stl/AWSAllocator.h
+  include/aws/core/utils/memory/stl/AWSArray.h
   include/aws/core/utils/memory/stl/AWSDeque.h
   include/aws/core/utils/memory/stl/AWSList.h
   include/aws/core/utils/memory/stl/AWSMap.h
@@ -157,25 +203,53 @@ set( SOURCE_FILES
   source/AmazonWebServiceRequest.cpp
   source/Aws.cpp
   source/Globals.cpp
+  source/Region.cpp
   source/Version.cpp
-  source/auth/AWSAuthSigner.cpp
-  source/auth/AWSAuthSignerProvider.cpp
   source/auth/AWSCredentialsProvider.cpp
   source/auth/AWSCredentialsProviderChain.cpp
+  source/auth/SSOCredentialsProvider.cpp
   source/auth/STSCredentialsProvider.cpp
+  source/auth/bearer-token-provider/DefaultBearerTokenProviderChain.cpp
+  source/auth/bearer-token-provider/SSOBearerTokenProvider.cpp
+  source/auth/signer/AWSAuthBearerSigner.cpp
+  source/auth/signer/AWSAuthEventStreamV4Signer.cpp
+  source/auth/signer/AWSAuthSignerCommon.cpp
+  source/auth/signer/AWSAuthSignerHelper.cpp
+  source/auth/signer/AWSAuthV4Signer.cpp
+  source/auth/signer/AWSNullSigner.cpp
+  source/auth/signer-provider/BearerTokenAuthSignerProvider.cpp
+  source/auth/signer-provider/DefaultAuthSignerProvider.cpp
   source/client/AWSClient.cpp
   source/client/AWSErrorMarshaller.cpp
+  source/client/AWSJsonClient.cpp
+  source/client/AWSUrlPresigner.cpp
+  source/client/AWSXmlClient.cpp
+  source/client/AdaptiveRetryStrategy.cpp
   source/client/AsyncCallerContext.cpp
   source/client/ClientConfiguration.cpp
   source/client/CoreErrors.cpp
   source/client/DefaultRetryStrategy.cpp
+  source/client/GenericClientConfiguration.cpp
+  source/client/RetryStrategy.cpp
   source/client/SpecifiedRetryableErrorsRetryStrategy.cpp
-  source/config/AWSProfileConfigLoader.cpp
+  source/config/AWSConfigFileProfileConfigLoader.cpp
+  source/config/AWSProfileConfigLoaderBase.cpp
+  source/config/ConfigAndCredentialsCacheManager.cpp
+  source/config/EC2InstanceProfileConfigLoader.cpp
+  source/config/defaults/ClientConfigurationDefaults.cpp
+  source/endpoint/AWSEndpoint.cpp
+  source/endpoint/AWSPartitions.cpp
+  source/endpoint/BuiltInParameters.cpp
+  source/endpoint/ClientContextParameters.cpp
+  source/endpoint/DefaultEndpointProvider.cpp
+  source/endpoint/EndpointProviderBase.cpp
+  source/endpoint/internal/AWSEndpointAttribute.cpp
   source/external/cjson/cJSON.cpp
   source/external/tinyxml2/tinyxml2.cpp
   source/http/HttpClient.cpp
   source/http/HttpClientFactory.cpp
   source/http/HttpRequest.cpp
+  source/http/HttpResponse.cpp
   source/http/HttpTypes.cpp
   source/http/Scheme.cpp
   source/http/URI.cpp
@@ -192,6 +266,7 @@ set( SOURCE_FILES
   source/utils/DNS.cpp
   source/utils/DateTimeCommon.cpp
   source/utils/Directory.cpp
+  source/utils/Document.cpp
   source/utils/EnumParseOverflowContainer.cpp
   source/utils/FileSystemUtils.cpp
   source/utils/GetTheLights.cpp
@@ -200,6 +275,7 @@ set( SOURCE_FILES
   source/utils/TempFile.cpp
   source/utils/UUID.cpp
   source/utils/base64/Base64.cpp
+  source/utils/crypto/CRC32.cpp
   source/utils/crypto/Cipher.cpp
   source/utils/crypto/ContentCryptoMaterial.cpp
   source/utils/crypto/ContentCryptoScheme.cpp
@@ -208,6 +284,7 @@ set( SOURCE_FILES
   source/utils/crypto/EncryptionMaterials.cpp
   source/utils/crypto/KeyWrapAlgorithm.cpp
   source/utils/crypto/MD5.cpp
+  source/utils/crypto/Sha1.cpp
   source/utils/crypto/Sha256.cpp
   source/utils/crypto/Sha256HMAC.cpp
   source/utils/crypto/factory/Factories.cpp
@@ -221,6 +298,8 @@ set( SOURCE_FILES
   source/utils/event/EventStreamErrors.cpp
   source/utils/json/JsonSerializer.cpp
   source/utils/logging/AWSLogging.cpp
+  source/utils/logging/CRTLogSystem.cpp
+  source/utils/logging/CRTLogging.cpp
   source/utils/logging/ConsoleLogSystem.cpp
   source/utils/logging/DefaultLogSystem.cpp
   source/utils/logging/FormattedLogSystem.cpp
@@ -376,8 +455,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "aws-cpp-sdk-core" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums curl )
-target_link_libraries( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums curl )
+add_dependencies( ${MODULE_NAME} aws-c-auth aws-c-cal aws-c-common aws-c-compression aws-c-event-stream aws-c-http aws-c-io aws-c-mqtt aws-c-s3 aws-c-sdkutils aws-checksums curl )
+target_link_libraries( ${MODULE_NAME} aws-c-auth aws-c-cal aws-c-common aws-c-compression aws-c-event-stream aws-c-http aws-c-io aws-c-mqtt aws-c-s3 aws-c-sdkutils aws-checksums aws-crt-cpp curl )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_CORE_EXPORTS=1;USE_IMPORT_EXPORT=1" )
 
 if ( ANDROID )
@@ -406,7 +485,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BYPASS_DEFAULT_PROXY;ENABLE_BCRYPT_ENCRYPTION;ENABLE_WINDOWS_CLIENT;ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT;PLATFORM_WINDOWS" )
 endif( WIN64 )
 
-include_directories( ../aws-c-common/include ../aws-c-event-stream/include ../aws-checksums/include ../aws-checksums/include/aws ../aws-checksums/include/aws/checksums ../aws-checksums/include/aws/checksums/private ../curl/include ../curl/include/curl ../curl/lib ../curl/lib/vauth ../curl/lib/vquic ../curl/lib/vssh ../curl/lib/vtls include include/aws include/aws/core/external include/aws/core include/aws/core/auth include/aws/core/client include/aws/core/config include/aws/core/external/cjson include/aws/core/external/tinyxml2 include/aws/core/http include/aws/core/http/curl include/aws/core/http/standard include/aws/core/internal include/aws/core/monitoring include/aws/core/net include/aws/core/platform include/aws/core/platform/refs include/aws/core/utils include/aws/core/utils/base64 include/aws/core/utils/crypto include/aws/core/utils/crypto/bcrypt include/aws/core/utils/crypto/commoncrypto include/aws/core/utils/crypto/openssl include/aws/core/utils/event include/aws/core/utils/json include/aws/core/utils/logging include/aws/core/utils/memory include/aws/core/utils/memory/stl include/aws/core/utils/ratelimiter include/aws/core/utils/stream include/aws/core/utils/threading include/aws/core/utils/xml )
+include_directories( ../aws-crt-cpp/crt/aws-c-auth/include ../aws-crt-cpp/crt/aws-c-cal/include ../aws-crt-cpp/crt/aws-c-common/include ../aws-crt-cpp/crt/aws-c-compression/include ../aws-crt-cpp/crt/aws-c-event-stream/include ../aws-crt-cpp/crt/aws-c-http/include ../aws-crt-cpp/crt/aws-c-io/include ../aws-crt-cpp/crt/aws-c-io/source ../aws-crt-cpp/crt/aws-c-mqtt/include ../aws-crt-cpp/crt/aws-c-s3/include ../aws-crt-cpp/crt/aws-c-sdkutils/include ../aws-crt-cpp/crt/aws-checksums/include ../aws-crt-cpp/include ../curl/include ../curl/include/curl ../curl/lib ../curl/lib/vauth ../curl/lib/vquic ../curl/lib/vssh ../curl/lib/vtls include include/aws include/aws/core include/aws/core/auth include/aws/core/auth/bearer-token-provider include/aws/core/auth/signer include/aws/core/auth/signer-provider include/aws/core/client include/aws/core/config include/aws/core/config/defaults include/aws/core/endpoint include/aws/core/endpoint/internal include/aws/core/external include/aws/core/external/cjson include/aws/core/external/tinyxml2 include/aws/core/http include/aws/core/http/curl include/aws/core/http/standard include/aws/core/internal include/aws/core/monitoring include/aws/core/net include/aws/core/platform include/aws/core/platform/refs include/aws/core/utils include/aws/core/utils/base64 include/aws/core/utils/crypto include/aws/core/utils/crypto/bcrypt include/aws/core/utils/crypto/commoncrypto include/aws/core/utils/crypto/openssl include/aws/core/utils/event include/aws/core/utils/json include/aws/core/utils/logging include/aws/core/utils/memory include/aws/core/utils/memory/stl include/aws/core/utils/ratelimiter include/aws/core/utils/stream include/aws/core/utils/threading include/aws/core/utils/xml )
 
 if ( ANDROID )
   include_directories( include/aws/core/utils/logging/android )

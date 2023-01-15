@@ -1,17 +1,7 @@
-/*
-  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License").
-  * You may not use this file except in compliance with the License.
-  * A copy of the License is located at
-  *
-  *  http://aws.amazon.com/apache2.0
-  *
-  * or in the "license" file accompanying this file. This file is distributed
-  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-  * express or implied. See the License for the specific language governing
-  * permissions and limitations under the License.
-  */
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #pragma once
 
@@ -31,8 +21,14 @@
     #else // USE_IMPORT_EXPORT
         #define AWS_CORE_API
     #endif // USE_IMPORT_EXPORT
+    #define AWS_CORE_LOCAL
 #else // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32)
     #define AWS_CORE_API
+    #if __GNUC__ >= 4
+        #define AWS_CORE_LOCAL __attribute__((visibility("hidden")))
+    #else
+        #define AWS_CORE_LOCAL
+  #endif
 #endif // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (_WIN32)
 
 #ifdef _MSC_VER
@@ -96,7 +92,9 @@
 
 // Due to MSVC can't recognize base class deprecated function in derived class.
 // We need AWS_DISABLE_DEPRECATION to make AWS_DEPRECATED useless only on MSVC
-#if defined(AWS_DISABLE_DEPRECATION) && defined(_MSC_VER)
+// Update: When deprecating a function/components, we won't remove the existing tests
+// immediately, so we need AWS_DISABLE_DEPRECATION as well.
+#if defined(AWS_DISABLE_DEPRECATION)
     #define AWS_DEPRECATED(msg)
 #elif defined (__cplusplus) && __cplusplus > 201103L // standard attributes are available since C++14
     #define AWS_DEPRECATED(msg) [[deprecated(msg)]]
@@ -109,4 +107,3 @@
         #define AWS_DEPRECATED(msg)
     #endif
 #endif
-

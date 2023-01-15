@@ -1,17 +1,7 @@
-/*
-  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License").
-  * You may not use this file except in compliance with the License.
-  * A copy of the License is located at
-  *
-  *  http://aws.amazon.com/apache2.0
-  *
-  * or in the "license" file accompanying this file. This file is distributed
-  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-  * express or implied. See the License for the specific language governing
-  * permissions and limitations under the License.
-  */
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/core/platform/OSVersionInfo.h>
 #include <aws/core/utils/StringUtils.h>
@@ -54,7 +44,7 @@ Aws::String GetSysCommandOutput(const char* command)
     return {};
 }
 
-Aws::String ComputeOSVersionString() 
+Aws::String ComputeOSVersionString()
 {
     // With the release of Windows 8.1, the behavior of the GetVersionEx API has changed in the value it will return for the operating system version.
     // The value returned by the GetVersionEx function now depends on how the application is manifested.
@@ -67,9 +57,9 @@ Aws::String ComputeOSVersionString()
     // From this article: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724429.aspx
     // we will do the following:
     //
-    // To obtain the full version number for the operating system, call the GetFileVersionInfo function on one of the system DLLs, such as Kernel32.dll, 
+    // To obtain the full version number for the operating system, call the GetFileVersionInfo function on one of the system DLLs, such as Kernel32.dll,
     // then call VerQueryValue to obtain the \\StringFileInfo\\<lang><codepage>\\ProductVersion subblock of the file version information.
-    // 
+    //
     Aws::StringStream ss;
     ss << "Windows/";
 
@@ -123,7 +113,7 @@ Aws::String ComputeOSVersionString()
 
     switch (sysInfo.wProcessorArchitecture)
     {
-        //PROCESSOR_ARCHIECTURE_AMD64
+        //PROCESSOR_ARCHITECTURE_AMD64
         case 0x09:
             ss << " AMD64";
             break;

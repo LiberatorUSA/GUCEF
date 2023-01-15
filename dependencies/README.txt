@@ -29,9 +29,9 @@ json-parser is at version 1.1.0 and can be obtained from https://github.com/udp/
 zookeeper-client-c is from Zookeeper version 3.5.6 source tar dated 2019-10-16 00:35
 curl is release version 7.69.1 from GitHub
 stbrumme-hash-library is version 8 from https://github.com/stbrumme/hash-library obtained source dated 2022-01-22
-aws-cpp-sdk-core is version 1.7.284 from GitHub (Feb 27th 2020) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.7.284
-aws-cpp-sdk-s3 is version 1.7.284 from GitHub (Feb 27th 2020) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.7.284
-aws-cpp-sdk-sqs is version 1.7.284 from GitHub (Feb 27th 2020) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.7.284
+aws-cpp-sdk-core is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
+aws-cpp-sdk-s3 is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
+aws-cpp-sdk-sqs is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
 aws-lambda-runtime is version 0.2.7 from GitHub @ https://github.com/awslabs/aws-lambda-cpp/releases/tag/v0.2.7
 
 

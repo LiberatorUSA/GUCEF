@@ -1,17 +1,7 @@
-/*
-* Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/core/utils/memory/AWSMemory.h>
 #include <aws/core/monitoring/DefaultMonitoring.h>
@@ -56,7 +46,7 @@ namespace Aws
             Aws::Utils::DateTime attemptStartTime;
             int retryCount = 0;
             bool lastAttemptSucceeded = false;
-            bool lastErrorRetriable = false; //doesn't apply if last attempt succeeded.
+            bool lastErrorRetryable = false; //doesn't apply if last attempt succeeded.
             const Aws::Client::HttpResponseOutcome* outcome = nullptr;
         };
 
@@ -251,7 +241,7 @@ namespace Aws
             DefaultContext* defaultContext = static_cast<DefaultContext*>(context);
             Aws::Utils::Json::JsonValue json;
             FillRequiredFieldsToJson(json, "ApiCall", serviceName, requestName, m_clientId, defaultContext->apiCallStartTime, DEFAULT_MONITORING_VERSION, request->GetUserAgent());
-            FillRequiredApiCallFieldsToJson(json, defaultContext->retryCount + 1, (DateTime::Now() - defaultContext->apiCallStartTime).count(), (!defaultContext->lastAttemptSucceeded && defaultContext->lastErrorRetriable));
+            FillRequiredApiCallFieldsToJson(json, defaultContext->retryCount + 1, (DateTime::Now() - defaultContext->apiCallStartTime).count(), (!defaultContext->lastAttemptSucceeded && defaultContext->lastErrorRetryable));
             FillOptionalApiCallFieldsToJson(json, request.get(), *(defaultContext->outcome));
             Aws::String compactData = json.View().WriteCompact();
             m_udp.SendData(reinterpret_cast<const uint8_t*>(compactData.c_str()), static_cast<int>(compactData.size()));
@@ -266,7 +256,7 @@ namespace Aws
             DefaultContext* defaultContext = static_cast<DefaultContext*>(context);
             defaultContext->outcome = &outcome;
             defaultContext->lastAttemptSucceeded = outcome.IsSuccess() ? true : false;
-            defaultContext->lastErrorRetriable = (!outcome.IsSuccess() && outcome.GetError().ShouldRetry()) ? true : false;
+            defaultContext->lastErrorRetryable = (!outcome.IsSuccess() && outcome.GetError().ShouldRetry()) ? true : false;
             Aws::Utils::Json::JsonValue json;
             FillRequiredFieldsToJson(json, "ApiCallAttempt", serviceName, requestName, m_clientId, defaultContext->attemptStartTime, DEFAULT_MONITORING_VERSION, request->GetUserAgent());
             FillRequiredApiAttemptFieldsToJson(json, request->GetUri().GetAuthority(), (DateTime::Now() - defaultContext->attemptStartTime).count());

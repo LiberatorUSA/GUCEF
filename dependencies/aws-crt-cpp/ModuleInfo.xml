@@ -1,0 +1,82 @@
+<ModuleInfoEntry>
+    <Module Name="aws-crt-cpp" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="USE_IMPORT_EXPORT=1" />
+            <Define String="AWS_CRT_CPP_EXPORTS" />
+			<Define String="CJSON_HIDE_SYMBOLS" />
+			<Define String="CJSON_AS4CPP_HIDE_SYMBOLS" />
+        </Preprocessor>
+        <Dependencies>
+			<Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-checksums-headers" />
+			<Dependency Name="aws-c-event-stream" />
+			<Dependency Name="aws-c-event-stream-headers" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-io-headers" />
+			<Dependency Name="aws-c-cal" />
+			<Dependency Name="aws-c-cal-headers" />
+			<Dependency Name="aws-c-mqtt" />
+			<Dependency Name="aws-c-mqtt-headers" />
+			<Dependency Name="aws-c-http" />
+			<Dependency Name="aws-c-http-headers" />
+			<Dependency Name="aws-c-auth" />
+			<Dependency Name="aws-c-auth-headers" />
+			<Dependency Name="aws-c-compression" />
+			<Dependency Name="aws-c-compression-headers" />
+			<Dependency Name="aws-c-sdkutils" />
+			<Dependency Name="aws-c-sdkutils-headers" />
+			<Dependency Name="aws-c-s3" />
+			<Dependency Name="aws-c-s3-headers" />			
+			<Dependency Name="aws-crt-cpp-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-c-cal" />
+			<Dependency Name="aws-c-event-stream" />
+			<Dependency Name="aws-c-mqtt" />
+			<Dependency Name="aws-c-http" />
+			<Dependency Name="aws-c-auth" />
+			<Dependency Name="aws-c-compression" />
+			<Dependency Name="aws-c-sdkutils" />
+			<Dependency Name="aws-c-s3" />
+        </Linker>		
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="PLATFORM_WINDOWS" />
+			<Define String="ENABLE_BCRYPT_ENCRYPTION" />
+		    <Define String="ENABLE_WINDOWS_CLIENT" />
+			<Define String="ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT" />
+			<Define String="BYPASS_DEFAULT_PROXY" />
+        </Preprocessor>	
+        <Linker>
+            <Dependency Name="Winhttp.lib" />
+			<Dependency Name="Wininet.lib" />
+			<Dependency Name="Userenv.lib" />
+			<Dependency Name="Version.lib" />
+			<Dependency Name="Secur32.lib" />
+			<Dependency Name="Shlwapi.lib" />
+			<Dependency Name="msxml6.lib" />
+			<Dependency Name="WindowsApp.lib" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="android">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="osx">
+        <Preprocessor>
+			<Define String="ENABLE_COMMONCRYPTO_ENCRYPTION" />
+        </Preprocessor>
+    </Module>	
+</ModuleInfoEntry>

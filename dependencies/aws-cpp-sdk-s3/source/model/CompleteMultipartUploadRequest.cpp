@@ -1,17 +1,7 @@
-﻿/*
-* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License").
-* You may not use this file except in compliance with the License.
-* A copy of the License is located at
-*
-*  http://aws.amazon.com/apache2.0
-*
-* or in the "license" file accompanying this file. This file is distributed
-* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-* express or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*/
+﻿/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 
 #include <aws/s3/model/CompleteMultipartUploadRequest.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -31,10 +21,40 @@ CompleteMultipartUploadRequest::CompleteMultipartUploadRequest() :
     m_keyHasBeenSet(false),
     m_multipartUploadHasBeenSet(false),
     m_uploadIdHasBeenSet(false),
+    m_checksumCRC32HasBeenSet(false),
+    m_checksumCRC32CHasBeenSet(false),
+    m_checksumSHA1HasBeenSet(false),
+    m_checksumSHA256HasBeenSet(false),
     m_requestPayer(RequestPayer::NOT_SET),
     m_requestPayerHasBeenSet(false),
+    m_expectedBucketOwnerHasBeenSet(false),
+    m_sSECustomerAlgorithmHasBeenSet(false),
+    m_sSECustomerKeyHasBeenSet(false),
+    m_sSECustomerKeyMD5HasBeenSet(false),
     m_customizedAccessLogTagHasBeenSet(false)
 {
+}
+
+bool CompleteMultipartUploadRequest::HasEmbeddedError(Aws::IOStream &body,
+  const Aws::Http::HeaderValueCollection &header) const
+{
+  // Header is unused
+  (void) header;
+
+  auto readPointer = body.tellg();
+  XmlDocument doc = XmlDocument::CreateFromXmlStream(body);
+
+  if (!doc.WasParseSuccessful()) {
+    body.seekg(readPointer);
+    return false;
+  }
+
+  if (doc.GetRootElement().GetName() == "Error") {
+    body.seekg(readPointer);
+    return true;
+  }
+  body.seekg(readPointer);
+  return false;
 }
 
 Aws::String CompleteMultipartUploadRequest::SerializePayload() const
@@ -86,10 +106,76 @@ Aws::Http::HeaderValueCollection CompleteMultipartUploadRequest::GetRequestSpeci
 {
   Aws::Http::HeaderValueCollection headers;
   Aws::StringStream ss;
+  if(m_checksumCRC32HasBeenSet)
+  {
+    ss << m_checksumCRC32;
+    headers.emplace("x-amz-checksum-crc32",  ss.str());
+    ss.str("");
+  }
+
+  if(m_checksumCRC32CHasBeenSet)
+  {
+    ss << m_checksumCRC32C;
+    headers.emplace("x-amz-checksum-crc32c",  ss.str());
+    ss.str("");
+  }
+
+  if(m_checksumSHA1HasBeenSet)
+  {
+    ss << m_checksumSHA1;
+    headers.emplace("x-amz-checksum-sha1",  ss.str());
+    ss.str("");
+  }
+
+  if(m_checksumSHA256HasBeenSet)
+  {
+    ss << m_checksumSHA256;
+    headers.emplace("x-amz-checksum-sha256",  ss.str());
+    ss.str("");
+  }
+
   if(m_requestPayerHasBeenSet)
   {
     headers.emplace("x-amz-request-payer", RequestPayerMapper::GetNameForRequestPayer(m_requestPayer));
   }
 
+  if(m_expectedBucketOwnerHasBeenSet)
+  {
+    ss << m_expectedBucketOwner;
+    headers.emplace("x-amz-expected-bucket-owner",  ss.str());
+    ss.str("");
+  }
+
+  if(m_sSECustomerAlgorithmHasBeenSet)
+  {
+    ss << m_sSECustomerAlgorithm;
+    headers.emplace("x-amz-server-side-encryption-customer-algorithm",  ss.str());
+    ss.str("");
+  }
+
+  if(m_sSECustomerKeyHasBeenSet)
+  {
+    ss << m_sSECustomerKey;
+    headers.emplace("x-amz-server-side-encryption-customer-key",  ss.str());
+    ss.str("");
+  }
+
+  if(m_sSECustomerKeyMD5HasBeenSet)
+  {
+    ss << m_sSECustomerKeyMD5;
+    headers.emplace("x-amz-server-side-encryption-customer-key-md5",  ss.str());
+    ss.str("");
+  }
+
   return headers;
+}
+
+CompleteMultipartUploadRequest::EndpointParameters CompleteMultipartUploadRequest::GetEndpointContextParams() const
+{
+    EndpointParameters parameters;
+    // Operation context parameters
+    if (BucketHasBeenSet()) {
+        parameters.emplace_back(Aws::String("Bucket"), this->GetBucket(), Aws::Endpoint::EndpointParameter::ParameterOrigin::OPERATION_CONTEXT);
+    }
+    return parameters;
 }

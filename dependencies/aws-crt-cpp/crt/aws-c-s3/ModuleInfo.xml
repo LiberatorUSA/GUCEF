@@ -1,0 +1,29 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-s3" Type="StaticLibrary" Platform="All">
+        <Preprocessor>		
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-c-common" />
+            <Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-c-io" />
+            <Dependency Name="aws-c-io-headers" />			
+            <Dependency Name="aws-checksums" />
+            <Dependency Name="aws-checksums-headers" />		
+            <Dependency Name="aws-c-auth" />
+            <Dependency Name="aws-c-auth-headers" />
+            <Dependency Name="aws-c-http" />
+            <Dependency Name="aws-c-http-headers" />			
+            <Dependency Name="aws-c-sdkutils" />
+            <Dependency Name="aws-c-sdkutils-headers" />
+			<Dependency Name="aws-c-s3-headers" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-io" />
+			<Dependency Name="aws-checksums" />
+			<Dependency Name="aws-c-auth" />
+			<Dependency Name="aws-c-http" />
+			<Dependency Name="aws-c-sdkutils" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

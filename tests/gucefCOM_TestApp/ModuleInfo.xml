@@ -14,7 +14,8 @@
 			<Dependency Name="gucefMT" />
 		</Linker>
             <Define String="GUCEF_COM_TESTAPP_BUILD_MODULE" />
-        </Preprocessor>
+        <Preprocessor>
+		</Preprocessor>
 		<RuntimeDependencies>
 		</RuntimeDependencies>
     </Module>

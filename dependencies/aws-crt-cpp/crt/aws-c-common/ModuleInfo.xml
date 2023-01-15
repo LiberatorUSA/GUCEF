@@ -1,0 +1,15 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-common" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+			<Define String="HAVE_BUILTIN_CPU_SUPPORTS" />
+			<Define String="USE_IMPORT_EXPORT" />
+			<Define String="AWS_CORE_EXPORTS" />
+			<Define String="CJSON_AS4CPP_EXPORT_SYMBOLS" />
+        </Preprocessor>
+        <Dependencies>
+			<Dependency Name="aws-c-common-headers" />
+        </Dependencies>
+        <Linker>
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

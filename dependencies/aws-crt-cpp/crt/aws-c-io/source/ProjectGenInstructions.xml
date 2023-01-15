@@ -1,0 +1,14 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+		<ITEM NAME="*" TYPE="DIR" />
+	</EXCLUDES>
+	<INCLUDES PLATFORM="mswin">
+        <ITEM NAME="windows" TYPE="DIR" />
+    </INCLUDES>	
+	<INCLUDES PLATFORM="linux">
+        <ITEM NAME="linux" TYPE="DIR" />
+    </INCLUDES>	
+	<INCLUDES PLATFORM="osx">
+        <ITEM NAME="darwin" TYPE="DIR" />
+    </INCLUDES>	
+</PROJECTGENERATOR>
