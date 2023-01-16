@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/core/platform/Time.h>
+#include <aws/core/platform/AwsTime.h>
 
 #include <time.h>
 

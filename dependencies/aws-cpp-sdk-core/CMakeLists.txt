@@ -102,12 +102,12 @@ set( HEADER_FILES
   include/aws/core/net/Net.h
   include/aws/core/net/SimpleUDP.h
   include/aws/core/platform/Android.h
+  include/aws/core/platform/AwsTime.h
   include/aws/core/platform/Environment.h
   include/aws/core/platform/FileSystem.h
   include/aws/core/platform/OSVersionInfo.h
   include/aws/core/platform/Platform.h
   include/aws/core/platform/Security.h
-  include/aws/core/platform/Time.h
   include/aws/core/platform/refs/IXmlHttpRequest2Ref.h
   include/aws/core/utils/ARN.h
   include/aws/core/utils/Array.h

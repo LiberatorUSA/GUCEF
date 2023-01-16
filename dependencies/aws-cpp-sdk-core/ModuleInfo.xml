@@ -43,7 +43,7 @@
 			<Dependency Name="aws-c-sdkutils" />
 			<Dependency Name="aws-c-s3" />
 			<Dependency Name="aws-crt-cpp" />
-			<Dependency Name="curl" />			
+			<Dependency Name="curl" />
         </Linker>		
     </Module>
     <Module Platform="mswin">
