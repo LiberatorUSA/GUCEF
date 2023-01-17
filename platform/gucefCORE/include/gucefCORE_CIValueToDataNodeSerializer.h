@@ -88,7 +88,7 @@ namespace CORE {
 
 /**
  *  Abstract base class for adding a serialization API to decending classes.
- *  Serialize/Deserialze via the DataNode class as a DOM 
+ *  Serialize/Deserialze via the DataNode class as a DOM
  */
 class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
 {
@@ -124,7 +124,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     virtual bool Serialize( const CIDataNodeSerializable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Serialize( const CIConfigurable& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Serialize( const CDataNode& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
-    
+
     virtual bool Deserialize( bool& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( Int8& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
     virtual bool Deserialize( UInt8& value, const CDataNode& domNode, const CDataNodeSerializableSettings& settings ) = 0;
