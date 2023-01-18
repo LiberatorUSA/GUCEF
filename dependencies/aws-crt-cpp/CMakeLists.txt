@@ -76,12 +76,12 @@ endif( OSX )
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} Secur32.lib Shlwapi.lib Userenv.lib Version.lib WindowsApp.lib Winhttp.lib Wininet.lib msxml6.lib )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BYPASS_DEFAULT_PROXY;ENABLE_BCRYPT_ENCRYPTION;ENABLE_WINDOWS_CLIENT;ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT;PLATFORM_WINDOWS" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_CRT_CPP_EXPORTS;AWS_CRT_CPP_USE_IMPORT_EXPORT;BYPASS_DEFAULT_PROXY;ENABLE_BCRYPT_ENCRYPTION;ENABLE_WINDOWS_CLIENT;ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT;PLATFORM_WINDOWS;USE_WINDOWS_DLL_SEMANTICS" )
 endif( WIN32 )
 
 if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Secur32.lib Shlwapi.lib Userenv.lib Version.lib WindowsApp.lib Winhttp.lib Wininet.lib msxml6.lib )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BYPASS_DEFAULT_PROXY;ENABLE_BCRYPT_ENCRYPTION;ENABLE_WINDOWS_CLIENT;ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT;PLATFORM_WINDOWS" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_CRT_CPP_EXPORTS;AWS_CRT_CPP_USE_IMPORT_EXPORT;BYPASS_DEFAULT_PROXY;ENABLE_BCRYPT_ENCRYPTION;ENABLE_WINDOWS_CLIENT;ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT;PLATFORM_WINDOWS;USE_WINDOWS_DLL_SEMANTICS" )
 endif( WIN64 )
 
 include_directories( crt/aws-c-auth/include crt/aws-c-cal/include crt/aws-c-common/include crt/aws-c-compression/include crt/aws-c-event-stream/include crt/aws-c-http/include crt/aws-c-io/include crt/aws-c-io/source crt/aws-c-mqtt/include crt/aws-c-s3/include crt/aws-c-sdkutils/include crt/aws-checksums/include include )

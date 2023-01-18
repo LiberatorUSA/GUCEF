@@ -48,10 +48,13 @@
     <Module Platform="mswin">
         <Preprocessor>
             <Define String="PLATFORM_WINDOWS" />
+			<Define String="USE_WINDOWS_DLL_SEMANTICS" />
+			<Define String="AWS_CRT_CPP_USE_IMPORT_EXPORT" />
+			<Define String="AWS_CRT_CPP_EXPORTS" />
 			<Define String="ENABLE_BCRYPT_ENCRYPTION" />
 		    <Define String="ENABLE_WINDOWS_CLIENT" />
 			<Define String="ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT" />
-			<Define String="BYPASS_DEFAULT_PROXY" />
+			<Define String="BYPASS_DEFAULT_PROXY" />			
         </Preprocessor>	
         <Linker>
             <Dependency Name="Winhttp.lib" />

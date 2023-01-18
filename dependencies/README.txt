@@ -37,3 +37,6 @@ aws-lambda-runtime is version 0.2.7 from GitHub @ https://github.com/awslabs/aws
 
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
 Such external binary dependencies are managed via the ModuleInfo.xml under /dependencies/external
+
+Note that for some of the dependencies you need to Windows SDK installed. Said SDK needs to be of the correct recent version to avoid build issues.
+Incorrect older SDKs on Windows can cause build issues due to certain APIs not being available because of NTDDI_VERSION based exclusions.

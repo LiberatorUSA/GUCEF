@@ -50,6 +50,7 @@
         <Preprocessor>
             <Define String="PLATFORM_WINDOWS" />
 			<Define String="ENABLE_BCRYPT_ENCRYPTION" />
+			<Define String="NTDDI_VERSION=NTDDI_WIN7" />
 		    <Define String="ENABLE_WINDOWS_CLIENT" />
 			<Define String="ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT" />
 			<Define String="BYPASS_DEFAULT_PROXY" />
