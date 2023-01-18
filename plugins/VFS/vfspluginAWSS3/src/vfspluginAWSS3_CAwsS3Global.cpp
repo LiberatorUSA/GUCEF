@@ -224,7 +224,9 @@ CAwsS3Global::OnAwsSdkInitialized( CORE::CNotifier* notifier    ,
     {
         // Now that the SDK is initialized properly we can init the S3 client which depends on it
         PLUGINGLUE::AWSSDK::CAwsSdkGlobal* sdk = PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
-        m_s3Client = GUCEF_NEW Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetDefaultAwsClientConfig() );
+        m_s3Client = GUCEF_NEW Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetDefaultAwsClientConfig(), Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy::RequestDependent, true );
+
+        
 
         // Trigger auto discovery and auto mounting of S3 buckets
         //m_bucketInventoryRefreshTimer.SetInterval( 600000 );
