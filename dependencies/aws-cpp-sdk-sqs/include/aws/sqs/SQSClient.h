@@ -12,6 +12,9 @@
 #include <aws/core/utils/xml/XmlSerializer.h>
 #include <aws/sqs/SQSServiceClientModel.h>
 
+// Windoze has a macro for SendMessage which messes up our API calls
+#undef SendMessage
+
 namespace Aws
 {
 namespace SQS

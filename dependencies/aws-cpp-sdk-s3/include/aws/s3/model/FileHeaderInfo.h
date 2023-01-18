@@ -7,6 +7,8 @@
 #include <aws/s3/S3_EXPORTS.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 
+#undef IGNORE
+
 namespace Aws
 {
 namespace S3

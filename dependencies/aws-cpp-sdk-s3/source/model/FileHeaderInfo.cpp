@@ -8,6 +8,9 @@
 #include <aws/core/Globals.h>
 #include <aws/core/utils/EnumParseOverflowContainer.h>
 
+
+#undef IGNORE
+
 using namespace Aws::Utils;
 
 
