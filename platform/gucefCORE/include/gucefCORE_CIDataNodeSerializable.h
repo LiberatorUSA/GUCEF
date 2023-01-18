@@ -67,7 +67,7 @@ class CDataNode;
 
 /**
  *  Abstract base class for adding a serialization API to decending classes.
- *  Serialize/Deserialze via the DataNode class as a DOM 
+ *  Serialize/Deserialze via the DataNode class as a DOM
  */
 class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializable
 {
@@ -102,8 +102,8 @@ class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializable
 
 /**
  *  C++98 compatible SFINAE template helper
- *  Allows for checking for the existance of the CIDataNodeSerializable or compatible 
- *  member function 
+ *  Allows for checking for the existance of the CIDataNodeSerializable or compatible
+ *  member function
  *           bool T::Serialize( CDataNode& domRootNode                        ,
  *                              const CDataNodeSerializableSettings& settings ) const
  */
@@ -116,7 +116,7 @@ struct TypeHasMemberFunctionForDataNodeSerialization
 
     template <typename U, U u> struct reallyHas;
 
-    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)( CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ) const, &TestClass::Serialize >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( reallyHas< bool (TestClass::*)( CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ) const, &TestClass::Serialize >* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
@@ -127,10 +127,10 @@ struct TypeHasMemberFunctionForDataNodeSerialization
 
 /**
  *  C++98 compatible SFINAE template helper
- *  Allows for checking for the existance of the CIDataNodeSerializable or compatible 
- *  member function 
+ *  Allows for checking for the existance of the CIDataNodeSerializable or compatible
+ *  member function
  *           bool T::Deserialize( const CDataNode& domRootNode                  ,
- *                                const CDataNodeSerializableSettings& settings ) 
+ *                                const CDataNodeSerializableSettings& settings )
  */
 template < class T >
 struct TypeHasMemberFunctionForDataNodeDeserialization
@@ -141,7 +141,7 @@ struct TypeHasMemberFunctionForDataNodeDeserialization
 
     template <typename U, U u> struct reallyHas;
 
-    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)( const CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ), &TestClass::Deserialize >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( reallyHas< bool (TestClass::*)( const CDataNode& domRootNode, const CDataNodeSerializableSettings& settings ), &TestClass::Deserialize >* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.

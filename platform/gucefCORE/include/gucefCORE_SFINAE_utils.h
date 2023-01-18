@@ -183,7 +183,7 @@ struct TypeHasMemberFunctionLoadConfig
 
     template <typename U, U u> struct reallyHas;
 
-    template < typename TestClass > static yes& test( reallyHas< typename bool (TestClass::*)(), &TestClass::LoadConfig >* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( reallyHas< bool (TestClass::*)(), &TestClass::LoadConfig >* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
