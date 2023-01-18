@@ -70,11 +70,13 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
     if ( dns.IsNULLOrEmpty() ) 
         return false;
     
-    if ( CORE::Check_If_IPv4( dns.C_String() ) )
+    CORE::CString dnsToResolve = CORE::ResolveVars( dns );
+
+    if ( CORE::Check_If_IPv4( dnsToResolve.C_String() ) )
     {
         // No DNS resolution is needed
         
-        CIPv4Address ipv4Entry( dns, portInHostByteOrder );
+        CIPv4Address ipv4Entry( dnsToResolve, portInHostByteOrder );
         if ( ipv4Entry.GetAddress() != INADDR_NONE )    
         {
             ipv4.push_back( ipv4Entry );
@@ -83,7 +85,7 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
         return false;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CDnsResolver: Resolving DNS name: " + dns );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CDnsResolver: Resolving DNS name: " + dnsToResolve );
 
     /*
         @TODO:
@@ -93,7 +95,7 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
     */
     
     int errorCode = 0;
-    struct hostent* retval = dvsocket_gethostbyname( dns.C_String(), &errorCode );
+    struct hostent* retval = dvsocket_gethostbyname( dnsToResolve.C_String(), &errorCode );
     if ( retval != GUCEF_NULL )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "CDnsResolver: DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
@@ -130,7 +132,7 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
     }
     else
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDnsResolver: Failed to resolve DNS name: " + dns + " - ErrorCode: " + CORE::Int32ToString( errorCode ) );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDnsResolver: Failed to resolve DNS name: " + dns + " ( " + dnsToResolve + " )- ErrorCode: " + CORE::Int32ToString( errorCode ) );
         return false;
     }
 }
