@@ -144,7 +144,7 @@ CClientConfiguration::LoadConfig( const CORE::CDataNode& treeroot )
     verifySSL = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "verifySSL", CORE::BoolToString( verifySSL ) ) );
     caPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caPath", caPath ).AsUtf8String();
     caFile = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caFile", caFile ).AsUtf8String();
-    followRedirects = (Aws::Client::FollowRedirectsPolicy) CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "followRedirects", CORE::Int32ToString( (CORE::Int32) followRedirects ) ) );
+    followRedirects = (Aws::Client::FollowRedirectsPolicy) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "followRedirects", CORE::Int32ToString( (CORE::Int32) followRedirects ) ) );
     disableExpectHeader = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "disableExpectHeader", CORE::BoolToString( disableExpectHeader ) ) );
     enableClockSkewAdjustment = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableClockSkewAdjustment", CORE::BoolToString( enableClockSkewAdjustment ) ) );
     enableHostPrefixInjection = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableHostPrefixInjection", CORE::BoolToString( enableHostPrefixInjection ) ) );
