@@ -21,6 +21,7 @@ set( HEADER_FILES
   include/TestString.h
   include/TestVariant.h
   include/TestVariantBinarySerializer.h
+  include/TestVars.h
 )
 
 set( SOURCE_FILES 
@@ -33,6 +34,7 @@ set( SOURCE_FILES
   src/TestString.cpp
   src/TestVariant.cpp
   src/TestVariantBinarySerializer.cpp
+  src/TestVars.cpp
   src/gucefCORE_TestApp_main.cpp
 )
 
