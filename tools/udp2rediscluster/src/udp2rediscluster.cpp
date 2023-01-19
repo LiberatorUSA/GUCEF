@@ -1842,7 +1842,14 @@ Udp2RedisCluster::Start( void )
     if ( !errorOccured )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: Opening REST API" );
-        return m_httpServer.Listen();
+        if ( m_httpServer.Listen() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: REST API now available on port " + CORE::ToString( m_httpServer.GetPort() ) );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: Failed to listen on port " + CORE::ToString( m_httpServer.GetPort() ) + " for REST API" );
+        }
     }
     return errorOccured;
 }
@@ -2220,7 +2227,14 @@ Udp2RedisCluster::LoadConfig( const CORE::CDataNode& globalConfig )
 
     m_globalConfig.Copy( globalConfig );
 
-    m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) );
+    if ( m_httpServer.SetPort( appConfig->GetAttributeValueOrChildValueByName( "restApiPort" ).AsUInt16( 10000, true ) ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: http server port has been set to " + CORE::ToString( m_httpServer.GetPort() ) );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Failed to set http server port. Current value: " + CORE::ToString( m_httpServer.GetPort() ) );
+    }
 
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) ) );
