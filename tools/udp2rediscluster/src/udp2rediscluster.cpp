@@ -2196,7 +2196,8 @@ Udp2RedisCluster::LoadConfig( const CORE::CDataNode& globalConfig )
         {
             // Use the auto numbering scheme instead
             // This is either a offset of the channel ID or its an auto-incremented nr from a base port nr
-            channelSettings.udpInterface.SetPortInHostByteOrder( udpPort );
+            // take care to use the ANY interface since we dont have an explicit NIC interface specified
+            channelSettings.udpInterface.SetHostnameAndPort( CORE::CString::Empty, udpPort );
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".wantsTestPackage";
