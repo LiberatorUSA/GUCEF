@@ -135,18 +135,19 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
 
     UInt16 newPort = 0;
     UInt16 currentPort = GetPortInHostByteOrder();
+    CORE::CString varResolvedHostAndPort = CORE::ResolveVars( hostAndPort );
 
     Clear();
     
-    Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
+    Int32 sepCharIndex = varResolvedHostAndPort.HasChar( ':', false );
     if ( sepCharIndex >= 0 )
     {
-        m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
-        newPort = CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex+1, false ), currentPort );
+        m_hostname = varResolvedHostAndPort.SubstrToIndex( sepCharIndex, true );
+        newPort = CORE::StringToUInt16( varResolvedHostAndPort.SubstrToIndex( sepCharIndex+1, false ), currentPort );
     }
     else
     {
-        m_hostname = hostAndPort;
+        m_hostname = varResolvedHostAndPort;
         newPort = currentPort;
     }
 

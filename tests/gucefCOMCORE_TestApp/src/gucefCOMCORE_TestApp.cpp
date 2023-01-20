@@ -36,6 +36,7 @@
 #include "TestCode_PingTest.h"
 #include "TestCode_ClientServer.h"
 #include "TestCode_SimpleTCPClient.h"
+#include "TestCode_DNS.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,17 +52,11 @@ GUCEF_OSMAIN_BEGIN
 
     using namespace GUCEF::CORE;
     using namespace GUCEF::COMCORE;
-
-
-    CHostAddress testDns;
-    
-    testDns.SetHostnameAndPort( "google.com", 80 );
-    CIPv4Address testIPv4 = testDns.GetFirstIPv4Address();
-    CString str = testIPv4.AddressAndPortAsString();
-
             
     try 
     {                               
+        PerformDNSTests();
+        
         GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         GUCEF::CORE::AppendToPath( logFilename, "gucefCOMCORE_TestApp_Log.txt" );
         GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
@@ -74,6 +69,7 @@ GUCEF_OSMAIN_BEGIN
         
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
+        
         PerformPingTest();
         SetupClientServerTest();
         SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
