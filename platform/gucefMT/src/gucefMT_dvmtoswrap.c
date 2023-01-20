@@ -373,10 +373,17 @@ ThreadWait( struct SThreadData* td ,
 
     if ( GUCEF_NULL != td && 0 != td->thread )
     {
-        struct timespec timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_nsec = 1000000 * timeoutInMs;
-        int errorCode = pthread_timedjoin_np( td->thread, GUCEF_NULL, &timeout );
+        static const long max_nsec = 1000000 * 1000;
+        struct timespec ts;
+        clock_gettime( CLOCK_REALTIME, &ts );
+        ts.tv_sec += timeoutInMs / 1000;
+        ts.tv_nsec += 1000000 * (timeoutInMs%1000);
+        if ( ts.tv_nsec >= max_nsec )
+        {
+            ts.tv_sec += 1;
+            ts.tv_nsec = ts.tv_nsec%max_nsec;
+        }
+        int errorCode = pthread_timedjoin_np( td->thread, GUCEF_NULL, &ts );
         if ( 0 == errorCode )
             return GUCEF_THREAD_WAIT_OK;
     }
@@ -386,10 +393,17 @@ ThreadWait( struct SThreadData* td ,
 
     if ( GUCEF_NULL != td && 0 != td->thread )
     {
-        struct timespec timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_nsec = 1000000 * timeoutInMs;        
-        int errorCode = pthread_cond_timedwait( &td->exitSignal, GUCEF_NULL, &timeout );
+        static const long max_nsec = 1000000 * 1000;
+        struct timespec ts;
+        clock_gettime( CLOCK_REALTIME, &ts );
+        ts.tv_sec += timeoutInMs / 1000;
+        ts.tv_nsec += 1000000 * (timeoutInMs%1000);
+        if ( ts.tv_nsec >= max_nsec )
+        {
+            ts.tv_sec += 1;
+            ts.tv_nsec = ts.tv_nsec%max_nsec;
+        }
+        int errorCode = pthread_cond_timedwait( &td->exitSignal, GUCEF_NULL, &ts );
         if ( 0 == errorCode )
             return GUCEF_THREAD_WAIT_OK;
     }
