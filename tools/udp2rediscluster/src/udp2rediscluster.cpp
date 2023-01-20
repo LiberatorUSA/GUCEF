@@ -1837,21 +1837,22 @@ Udp2RedisCluster::Start( void )
 {GUCEF_TRACE;
 
     m_isInStandby = true;
-    bool errorOccured = !SetStandbyMode( m_globalStandbyEnabled );
+    bool success = SetStandbyMode( m_globalStandbyEnabled );
 
-    if ( !errorOccured )
+    if ( success )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: Opening REST API" );
-        if ( m_httpServer.Listen() )
+        success =  m_httpServer.Listen();
+
+        if ( success )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: REST API now available on port " + CORE::ToString( m_httpServer.GetPort() ) );
+            return true;
         }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: Failed to listen on port " + CORE::ToString( m_httpServer.GetPort() ) + " for REST API" );
-        }
+
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster: Failed to listen on port " + CORE::ToString( m_httpServer.GetPort() ) + " for REST API" );
     }
-    return errorOccured;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
