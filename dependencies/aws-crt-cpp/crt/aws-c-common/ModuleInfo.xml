@@ -12,4 +12,12 @@
         <Linker>
         </Linker>		
     </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+			<Define String="AWS_AFFINITY_METHOD=AWS_AFFINITY_METHOD_PTHREAD_ATTR" /> 			
+			<Define String="_POSIX_C_SOURCE=200809L" /> 
+			<Define String="_XOPEN_SOURCE=500" /> 
+			<Define String="PLATFORM_LINUX" /> 			
+        </Preprocessor>
+    </Module>	
 </ModuleInfoEntry>
