@@ -9,7 +9,7 @@
         <Linker>
         </Linker>		
     </Module>
-    <Module Name="curl" Platform="mswin">
+    <Module Platform="mswin">
         <Preprocessor>
 			<Define String="_CRT_SECURE_NO_DEPRECATE" />
 			<Define String="_CRT_NONSTDC_NO_DEPRECATE" />
@@ -23,4 +23,14 @@
 			<Dependency Name="Wldap32.lib" />
         </Linker>
     </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+			<Define String="HAVE_STRUCT_TIMEVAL" />
+			<Define String="CURL_DISABLE_LDAP" />
+        </Preprocessor>
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+    </Module>		
 </ModuleInfoEntry>
