@@ -32,7 +32,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefPUBSUB_CPubSubClient.h"    
+#include "gucefPUBSUB_CPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,7 +68,7 @@ CPubSubClient::CPubSubClient( const CORE::PulseGeneratorPtr& pulseGenerator )
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    RegisterEvents();    
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ CPubSubClient::CPubSubClient( void )
     , m_opaqueUserData( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    RegisterEvents();    
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,10 +102,10 @@ CPubSubClient::~CPubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClient::RegisterEvents( void )
 {GUCEF_TRACE;
-    
+
     TopicAccessCreatedEvent.Initialize();
     TopicAccessDestroyedEvent.Initialize();
     TopicsAccessAutoCreatedEvent.Initialize();
@@ -116,7 +116,7 @@ CPubSubClient::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClient& 
+CPubSubClient&
 CPubSubClient::operator=( const CPubSubClient& src )
 {GUCEF_TRACE;
 
@@ -130,7 +130,7 @@ CPubSubClient::operator=( const CPubSubClient& src )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CPubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -140,12 +140,12 @@ CPubSubClient::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
 
     CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
-    
+
     PubSubClientTopicSet allTopicAccess;
     GetAllCreatedTopicAccess( allTopicAccess );
 
@@ -161,7 +161,7 @@ CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicPtr 
+CPubSubClientTopicPtr
 CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
 {GUCEF_TRACE;
 
@@ -177,12 +177,12 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicPtr 
+CPubSubClientTopicPtr
 CPubSubClient::CreateTopicAccess( const CString& topicName )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     const CPubSubClientTopicConfig* topicConfig = GetOrCreateTopicConfig( topicName );
     if ( GUCEF_NULL != topicConfig )
     {
@@ -194,7 +194,7 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
                                     PubSubClientTopicSet& topicAccess           )
 {GUCEF_TRACE;
@@ -214,7 +214,7 @@ CPubSubClient::GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig 
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
                                     PubSubClientTopicSet& topicAccess )
 {GUCEF_TRACE;
@@ -234,7 +234,7 @@ CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::GetMultiTopicAccess( const CString::StringSet& topicNames ,
                                     PubSubClientTopicSet& topicAccess    )
 {GUCEF_TRACE;
@@ -289,7 +289,7 @@ CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName          ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
                                        PubSubClientTopicSet& topicAccess           )
 {GUCEF_TRACE;
@@ -299,7 +299,7 @@ CPubSubClient::CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConf
     // Backends should override this if they support pattern matching access
 
     CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig );
-    if ( GUCEF_NULL != tAccess )
+    if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
         return true;
@@ -315,7 +315,7 @@ CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     // In the multi-topic scenario we'd expect the topic name to be a pattern to match
     // As such the config applies to everything matching the pattern
     const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
@@ -338,7 +338,7 @@ CPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternF
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClient::SetOpaqueUserData( void* opaqueUserData )
 {GUCEF_TRACE;
 
@@ -347,7 +347,7 @@ CPubSubClient::SetOpaqueUserData( void* opaqueUserData )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void*
 CPubSubClient::GetOpaqueUserData( void ) const
 {GUCEF_TRACE;
@@ -357,14 +357,14 @@ CPubSubClient::GetOpaqueUserData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) const
 {GUCEF_TRACE;
 
     // Since this is just a const correctness helper function we can abuse the non-const version
     // for efficiency the backend should really implement its own version if supported.
     CPubSubClient* thisObj = const_cast< CPubSubClient* >( this );
-    
+
     PubSubClientTopicSet topics;
     thisObj->GetAllCreatedTopicAccess( topics );
 
@@ -378,7 +378,7 @@ CPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) con
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
 {GUCEF_TRACE;
 
@@ -412,13 +412,13 @@ CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClient::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
     CPubSubClientConfig parsedGenericCfg;
     if ( parsedGenericCfg.SaveConfig( cfg ) )
-    {       
+    {
         return SaveConfig( parsedGenericCfg );
     }
     return false;
@@ -432,9 +432,9 @@ CPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
 
     CPubSubClientConfig parsedGenericCfg;
     if ( parsedGenericCfg.LoadConfig( cfg ) )
-    {       
+    {
         return LoadConfig( parsedGenericCfg );
-    }    
+    }
     return false;
 }
 

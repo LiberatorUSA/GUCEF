@@ -56,7 +56,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     : CORE::CIConfigurable()
     , pubsubClientType()
     , desiredFeatures()
-    , customConfig()    
+    , customConfig()
     , reconnectDelayInMs( 0 )
     , maxTotalMsgsInFlight( GUCEF_DEFAULT_PUBSUB_CLIENT_MAX_IN_FLIGHT )
     , remoteAddresses()
@@ -64,7 +64,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , defaultTopicConfig()
     , metricsPrefix()
     , pubsubIdPrefix()
-    , pulseGenerator( GUCEF_NULL )
+    , pulseGenerator()
 {GUCEF_TRACE;
 
 }
@@ -75,7 +75,7 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     : CORE::CIConfigurable()
     , pubsubClientType( src.pubsubClientType )
     , desiredFeatures( src.desiredFeatures )
-    , customConfig( src.customConfig )    
+    , customConfig( src.customConfig )
     , reconnectDelayInMs( src.reconnectDelayInMs )
     , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
     , remoteAddresses( src.remoteAddresses )
@@ -97,7 +97,7 @@ CPubSubClientConfig::~CPubSubClientConfig()
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientConfig& 
+CPubSubClientConfig&
 CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
 {GUCEF_TRACE;
 
@@ -124,17 +124,17 @@ CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
-    
+
     bool totalSuccess = true;
     totalSuccess = cfg.SetAttribute( "pubsubClientType", pubsubClientType ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;    
+    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "metricsPrefix", metricsPrefix ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "pubsubIdPrefix", pubsubIdPrefix ) && totalSuccess;    
-    
+    totalSuccess = cfg.SetAttribute( "pubsubIdPrefix", pubsubIdPrefix ) && totalSuccess;
+
     CORE::CDataNode* addressList = cfg.AddChild( "RemoteAddresses", GUCEF_DATATYPE_ARRAY );
     if ( GUCEF_NULL != addressList )
     {
@@ -147,8 +147,8 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
     }
     else
         return false;
-       
-    cfg.CopySubTree( customConfig );    
+
+    cfg.CopySubTree( customConfig );
 
     CORE::CDataNode* desiredFeaturesCfg = cfg.FindOrAddChild( "DesiredFeatures" );
     if ( GUCEF_NULL == desiredFeaturesCfg )
@@ -169,7 +169,7 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
                     totalSuccess = (*i).SaveConfig( *topicCfgObj ) && totalSuccess;
                 }
                 ++i;
-            }            
+            }
         }
     }
 
@@ -183,15 +183,15 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     pubsubClientType = cfg.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ).AsString( pubsubClientType, true );
     reconnectDelayInMs = cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ).AsUInt32( reconnectDelayInMs, true );
     maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
-    metricsPrefix = cfg.GetAttributeValueOrChildValueByName( "metricsPrefix" ).AsString( metricsPrefix, true ); 
-    pubsubIdPrefix = cfg.GetAttributeValueOrChildValueByName( "pubsubIdPrefix" ).AsString( pubsubIdPrefix, true ); 
+    metricsPrefix = cfg.GetAttributeValueOrChildValueByName( "metricsPrefix" ).AsString( metricsPrefix, true );
+    pubsubIdPrefix = cfg.GetAttributeValueOrChildValueByName( "pubsubIdPrefix" ).AsString( pubsubIdPrefix, true );
 
     CORE::CDataNode* remoteAddressessCfg = cfg.FindChild( "RemoteAddresses" );
     if ( GUCEF_NULL != remoteAddressessCfg )
@@ -203,7 +203,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
             ++i;
         }
     }
-    
+
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )
     {
@@ -231,17 +231,17 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
         {
             CORE::UInt32 n=0;
             topics.resize( psClientTopicConfigs.size() );
-        
+
             CORE::CDataNode::TConstDataNodeSet::iterator i = psClientTopicConfigs.begin();
             while ( i != psClientTopicConfigs.end() )
             {
-                CPubSubClientTopicConfig& topicConfig = topics[ n ];            
+                CPubSubClientTopicConfig& topicConfig = topics[ n ];
                 if ( !topicConfig.LoadConfig( *(*i) ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load PubSubClientTopicConfig section" );
                     return false;
                 }
-                ++i; ++n;            
+                ++i; ++n;
             }
         }
     }
@@ -261,7 +261,7 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CPubSubClientConfig::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
