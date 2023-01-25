@@ -27,6 +27,7 @@
 			<Dependency Name="aws-c-sdkutils-headers" />
 			<Dependency Name="aws-c-s3" />
 			<Dependency Name="aws-c-s3-headers" />			
+			<Dependency Name="aws-crt-cpp" />
 			<Dependency Name="aws-crt-cpp-headers" />
 			<Dependency Name="curl" />
         </Dependencies>

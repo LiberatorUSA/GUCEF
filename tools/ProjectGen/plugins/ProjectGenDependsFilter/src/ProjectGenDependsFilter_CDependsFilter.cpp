@@ -107,9 +107,9 @@ CDependsFilter::operator=( const CDependsFilter& src )
 
 /*--------------------------------------------------------------------------*/
 
-CDependsFilter::TStringSet
-CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles ,
-                                  const TStringVector& binarySrcDirs   )
+CORE::CString::StringSet
+CDependsFilter::GetListOfModules( const CORE::CString::StringVector& dependsCsvFiles ,
+                                  const CORE::CString::StringVector& binarySrcDirs   )
 {GUCEF_TRACE;
 
     TStringSet modules;

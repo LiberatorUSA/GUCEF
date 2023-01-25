@@ -70,11 +70,11 @@ namespace PROJECTGEN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef std::set< CORE::CString > TStringSet;
+typedef CORE::CString::StringSet TStringSet;
 typedef std::set< CORE::Int32 > TInt32Set;
 typedef std::map< CORE::CString, CORE::CString > TStringMap;
 typedef std::map< CORE::CString, TStringSet > TStringSetMap;
-typedef std::vector< CORE::CString > TStringVector;
+typedef CORE::CString::StringVector TStringVector;
 typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
 typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 

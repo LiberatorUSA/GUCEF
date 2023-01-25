@@ -74,7 +74,10 @@ RunHTTPServerTest( int argc    ,
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleLogger );
     #endif
 
-    WEB::CHTTPServer httpServer;
+    WEB::CHttpServerSettings httpServerSettings;
+    httpServerSettings.allowWebSocketUpgrades = true;
+
+    WEB::CHTTPServer httpServer( GUCEF_NULL, &httpServerSettings );    
     if ( httpServer.ListenOnPort( 45678 ) )
     {
         CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );

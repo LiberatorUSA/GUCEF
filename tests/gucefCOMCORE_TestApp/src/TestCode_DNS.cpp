@@ -90,8 +90,18 @@ PerformDNSTests( void )
     ASSERT_TRUE( testDns.SetHostnameAndPort( "$ENVVAR:test_hostname$:$ENVVAR:test_port$" ) );
     ASSERT_TRUE( testDns.GetHostname() == "google.com" );
     ASSERT_TRUE( testDns.GetPortInHostByteOrder() == 80 );
-    ASSERT_TRUE( testDns.HasDnsBasedHostname() );
-    ASSERT_TRUE( !testDns.IsIPv4Only() );
+    ASSERT_TRUE( testDns.HasDnsBasedHostname() );  // we know we have a DNS not just an IPv4 in string form
+    ASSERT_TRUE( !testDns.IsIPv4Only() );          // we know we have a DNS not just an IPv4 in string form
+
+    CDnsCache& dnsCache = CComCoreGlobal::Instance()->GetDnsCache();
+    ASSERT_TRUE( GUCEF_NULL != &dnsCache );
+    CDnsCacheEntryPtr dnsCacheEntry = dnsCache.GetOrAddCacheEntryForDns( "google.com" );
+    ASSERT_TRUE( !dnsCacheEntry.IsNULL() );
+    ASSERT_TRUE( "google.com" == dnsCacheEntry->GetDnsName() );
+    
+    COMCORE::CIPv4Address::TIPv4AddressVector ipv4s;
+    ASSERT_TRUE( dnsCacheEntry->GetIPv4Addresses( ipv4s ) );
+    ASSERT_TRUE( !ipv4s.empty() );
 
 }
 
