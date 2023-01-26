@@ -1397,6 +1397,9 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
         return true;
     }
 
+    // Before we do anything drastic make sure our logs are flushed to a known point to help diagnostics
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
+    
     if ( putInStandbyMode )
     {
         bool totalSuccess = true;
@@ -1508,6 +1511,9 @@ PubSub2PubSub::SetStandbyMode( bool putInStandbyMode )
         m_isInStandby = !totalSuccess;
         return totalSuccess;
     }
+
+    // After anything drastic make sure our logs are flushed to a known point to help diagnostics        
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 }
 
 /*-------------------------------------------------------------------------*/

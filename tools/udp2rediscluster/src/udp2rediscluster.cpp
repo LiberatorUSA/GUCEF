@@ -1867,6 +1867,9 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster:SetStandbyMode( " + CORE::BoolToString( putInStandbyMode ) + " ): Already in the desired mode (" + CORE::BoolToString( m_isInStandby ) + "), nothing to do" );
         return true;
     }
+    
+    // Before we do anything drastic make sure our logs are flushed to a known point to help diagnostics
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 
     if ( putInStandbyMode )
     {
@@ -1914,6 +1917,10 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         m_metricsTimer.SetEnabled( false );
 
         m_isInStandby = totalSuccess;
+
+        // After anything drastic make sure our logs are flushed to a known point to help diagnostics
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
+
         return totalSuccess;
     }
     else
@@ -1988,6 +1995,10 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         m_testPacketTransmitTimer.SetEnabled( m_transmitTestPackets );
 
         m_isInStandby = !totalSuccess;
+
+        // After anything drastic make sure our logs are flushed to a known point to help diagnostics
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
+
         return totalSuccess;
     }
 }

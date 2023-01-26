@@ -381,7 +381,13 @@ CConfigStore::SaveConsolidatedConfig( const CDataNode& newCfg )
 bool
 CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
 {GUCEF_TRACE;
+    
+    // Before we do anything drastic make sure our logs are flushed to a known point to help diagnostics
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
 
+    MT::CObjectScopeLock lock( this );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore:ApplyConsolidatedConfig: commencing" );
+    
     bool success = true;
     try
     {
@@ -391,7 +397,6 @@ CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
             return false;
         
         {
-            MT::CObjectScopeLock lock( this );        
             success = ApplyConfigData( newCfg, false, !m_bootstrapConfigFile.IsNULLOrEmpty() );
         }
 
@@ -403,6 +408,13 @@ CConfigStore::ApplyConsolidatedConfig( const CDataNode& newCfg )
         }
         else
             NotifyObservers( GlobalConfigLoadFailedEvent );
+    
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore:ApplyConsolidatedConfig: completed" );
+
+        lock.EarlyUnlock();
+
+        // After anything drastic make sure our logs are flushed to a known point to help diagnostics        
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushLogs();
     }
     catch ( std::exception& e )
     {
