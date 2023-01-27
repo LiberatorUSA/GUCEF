@@ -53,6 +53,11 @@
 #define GUCEF_CORE_TESTAPP_TESTVARIANT_H
 #endif /* GUCEF_CORE_TESTAPP_TESTVARIANT_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTURI_H
+#include "TestUri.h"
+#define GUCEF_CORE_TESTAPP_TESTURI_H
+#endif /* GUCEF_CORE_TESTAPP_TESTURI_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTVARIANTBINARYSERIALIZER_H
 #include "TestVariantBinarySerializer.h"
 #define GUCEF_CORE_TESTAPP_TESTVARIANTBINARYSERIALIZER_H
@@ -112,6 +117,7 @@ GUCEF_OSMAIN_BEGIN
         
         PerformStringTests();
         PerformVarsTests();
+        PerformUriTests();
         PerformVariantTests();
         PerformVariantBinarySerializerTests();
         PerformDataNodeBinarySerializerTests();

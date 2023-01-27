@@ -19,6 +19,7 @@ set( HEADER_FILES
   include/TestNotifierObserver.h
   include/TestSharedPtr.h
   include/TestString.h
+  include/TestUri.h
   include/TestVariant.h
   include/TestVariantBinarySerializer.h
   include/TestVars.h
@@ -32,6 +33,7 @@ set( SOURCE_FILES
   src/TestNotifierObserver.cpp
   src/TestSharedPtr.cpp
   src/TestString.cpp
+  src/TestUri.cpp
   src/TestVariant.cpp
   src/TestVariantBinarySerializer.cpp
   src/TestVars.cpp

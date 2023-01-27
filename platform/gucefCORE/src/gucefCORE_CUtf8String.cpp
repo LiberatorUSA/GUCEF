@@ -1162,7 +1162,10 @@ CUtf8String::SubstrToIndex( UInt32 index     ,
     if ( !frontToBack )
     {
          if ( index >= m_length )
-            return CUtf8String();
+            return CUtf8String();       
+
+            // @TODO: this is inconsistent !!!
+            //   frontToBack is exclusive of index while the reverse is not
          return SubstrFromRange( index, m_length );
     }
 

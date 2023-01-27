@@ -251,6 +251,11 @@
 #define GUCEF_CORE_CTREGISTRY_H
 #endif /* GUCEF_CORE_CTREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CURI_H
+#include "gucefCORE_CUri.h"
+#define GUCEF_CORE_CURI_H
+#endif /* GUCEF_CORE_CURI_H ? */
+
 #ifndef GUCEF_CORE_CURL_H
 #include "CURL.h"
 #define GUCEF_CORE_CURL_H
