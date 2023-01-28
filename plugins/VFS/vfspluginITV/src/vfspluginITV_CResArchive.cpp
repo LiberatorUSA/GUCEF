@@ -204,6 +204,40 @@ CResArchive::GetDirList( TStringVector& outputList           ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CResArchive::GetFileMetaData( const VFS::CString& filePath      ,
+                              CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ResArchive: request for file size for file: " +  filePath );
+    
+    // First perform a sanity check on the resource type
+    VFS::CString typeIdStr = filePath.SubstrToChar( '.', false );
+    typeIdStr = typeIdStr.CutChars( 3, true, 0 );
+    CORE::UInt32 typeId = CORE::StringToUInt32( typeIdStr );
+    if ( typeId != m_index.recordType )
+        return false;
+
+    CORE::Int32 offset = 0;
+    CORE::Int32 size = 0;
+    CORE::Int32 resourceId = CORE::StringToInt32( filePath.SubstrToChar( '.', true ) );
+    if ( GetResourceInfo( resourceId ,
+                          offset     ,
+                          size       ) )
+    {
+        metaData.resourceExists = true;
+        metaData.resourceSizeInBytes = size;
+        metaData.hasResourceSizeInBytes = true;
+        metaData.name = CORE::ToString( resourceId );
+        metaData.hasName = true;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CResArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
@@ -309,7 +343,7 @@ CResArchive::GetResourceInfo( CORE::Int32 resourceId ,
             }
             else
             {
-                size = CORE::FileSize( m_resPath ) - 2 - offset;
+                size = (CORE::Int32) ( CORE::FileSize( m_resPath ) - 2 - offset );
             }
             return true;
         }
@@ -418,18 +452,18 @@ CResArchive::LoadIndex( void )
     CORE::CFileAccess file;
     if ( file.Open( m_idxPath, "rb" ) )
     {
-        CORE::UInt32 fileSize = file.GetSize();        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully opened index file of " + CORE::UInt32ToString( fileSize ) + " bytes"  );
+        CORE::UInt64 fileSize = file.GetSize();        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully opened index file of " + CORE::ToString( fileSize ) + " bytes"  );
         
         if ( 1 != file.Read( &m_index.recordType, 2, 1 ) ) 
         { 
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index header at position " + CORE::UInt32ToString( file.Tell() ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index header at position " + CORE::ToString( file.Tell() ) );
             file.Close(); 
             return false; 
         }
 
         // Get the nr of index entries plus do a sanity check
-        CORE::UInt32 nrOfEntries = fileSize - 2;
+        CORE::UInt32 nrOfEntries = (CORE::UInt32) fileSize - 2;
         if ( 0 != nrOfEntries % 8 )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CResArchive:LoadIndex: The number of bytes in the index is not what we expected, the data will probably be corrupt" );
@@ -442,7 +476,7 @@ CResArchive::LoadIndex( void )
             IdxRecord idxRecord;
             if ( 1 != file.Read( &idxRecord.resourceNr, 4, 1 ) ) 
             { 
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::ToString( file.Tell() ) + 
                     " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
 
                 file.Close(); 
@@ -450,7 +484,7 @@ CResArchive::LoadIndex( void )
             }
             if ( 1 != file.Read( &idxRecord.offset, 4, 1 ) ) 
             { 
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::ToString( file.Tell() ) + 
                     " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
 
                 file.Close(); 
@@ -458,7 +492,7 @@ CResArchive::LoadIndex( void )
             }
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Read index entry: id " + CORE::Int32ToString( idxRecord.resourceNr ) + 
-                ", offset " + CORE::Int32ToString( idxRecord.offset ) + ". Pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                ", offset " + CORE::Int32ToString( idxRecord.offset ) + ". Pos in index " + CORE::ToString( file.Tell() ) + 
                 " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
             
             m_index.index.push_back( idxRecord );

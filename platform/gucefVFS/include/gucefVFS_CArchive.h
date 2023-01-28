@@ -54,6 +54,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CRESOURCEMETADATA_H
+#include "gucefCORE_CResourceMetaData.h"
+#define GUCEF_CORE_CRESOURCEMETADATA_H
+#endif /* GUCEF_CORE_CRESOURCEMETADATA_H ? */
+
 #ifndef GUCEF_VFS_CVFSHANDLE_H
 #include "gucefVFS_CVFSHandle.h"     /* handle for VFS ref counted recources */
 #define GUCEF_VFS_CVFSHANDLE_H
@@ -146,6 +151,9 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool DirExists( const CString& dirPath ) const = 0;
     
     virtual UInt32 GetFileSize( const CString& filePath ) const = 0;
+
+    virtual bool GetFileMetaData( const CString& filePath           ,
+                                  CORE::CResourceMetaData& metaData ) const = 0;
     
     virtual CString GetFileHash( const CString& file ) const = 0;
     

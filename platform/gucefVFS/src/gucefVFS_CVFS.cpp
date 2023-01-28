@@ -2007,6 +2007,37 @@ CVFS::GetFileList( CORE::CDataNode& outputDataTree        ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CVFS::GetFileMetaData( const CString& filename           ,
+                       CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    CString path = ConformVfsFilePath( filename );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Search for a file and then get the meta data
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->GetFileMetaData( mountLink.remainder, metaData ) )
+        {
+            if ( metaData.resourceExists )
+                return true;
+        }
+        ++i;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CDateTime
 CVFS::GetFileModificationTime( const CString& filename ) const
 {GUCEF_TRACE;

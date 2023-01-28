@@ -110,7 +110,7 @@ pfca_read( struct SIOAccess* access ,
 
 /*-------------------------------------------------------------------------*/
           
-UInt32 GUCEF_CALLSPEC_PREFIX
+UInt64 GUCEF_CALLSPEC_PREFIX
 pfca_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CPFileChunkAccess*) access->privdata )->Tell();
@@ -120,7 +120,7 @@ pfca_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 pfca_seek( struct SIOAccess* access , 
-           Int32 offset             , 
+           Int64 offset             , 
            Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CPFileChunkAccess*) access->privdata )->Seek( offset ,
@@ -131,7 +131,7 @@ pfca_seek( struct SIOAccess* access ,
           
 UInt32 GUCEF_CALLSPEC_PREFIX 
 pfca_setpos( struct SIOAccess* access , 
-            UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
+             UInt64 pos               ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CPFileChunkAccess*) access->privdata )->Setpos( pos );
 }
@@ -289,38 +289,42 @@ CPFileChunkAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CPFileChunkAccess::Tell( void ) const
-{
-        return paftell( _pafile );
+{GUCEF_TRACE;
+
+    return paftell( _pafile );
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CPFileChunkAccess::Seek( Int32 offset ,
+CPFileChunkAccess::Seek( Int64 offset ,
                          Int32 origin )
-{
-        return pafseek( _pafile ,
-                        offset  ,
-                        origin  );
+{GUCEF_TRACE;
+
+    return pafseek( _pafile ,
+                    offset  ,
+                    origin  );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CPFileChunkAccess::Setpos( UInt32 position )
-{
-        return pafsetpos( _pafile  , 
-                          position ); 
+CPFileChunkAccess::Setpos( UInt64 position )
+{GUCEF_TRACE;
+
+    return pafsetpos( _pafile  , 
+                      position ); 
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CPFileChunkAccess::GetSize( void ) const
-{
-        return pafsize( _pafile );
+{GUCEF_TRACE;
+
+    return pafsize( _pafile );
 }
 
 /*-------------------------------------------------------------------------*/

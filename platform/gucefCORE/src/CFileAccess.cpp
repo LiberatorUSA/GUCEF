@@ -302,11 +302,11 @@ CFileAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CFileAccess::Tell( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         return ftell( m_file );
     }
@@ -316,14 +316,14 @@ CFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CFileAccess::Seek( Int32 offset ,
+CFileAccess::Seek( Int64 offset ,
                    Int32 origin )
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         return fseek( m_file ,
-                      offset ,
+                      (long)offset ,
                       origin );
     }
     return 0;
@@ -332,13 +332,13 @@ CFileAccess::Seek( Int32 offset ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CFileAccess::Setpos( UInt32 position )
+CFileAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         return fseek( m_file    ,
-                      position  ,
+                      (long)position  ,
                       SEEK_SET  );
     }
     return 0;
@@ -396,7 +396,7 @@ CFileAccess::Write( const void* srcdata ,
                     UInt32 elements     )
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         return (UInt32) fwrite( srcdata  , 
                                 esize    , 
@@ -408,11 +408,12 @@ CFileAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CFileAccess::Write( CIOAccess& sourceData )
+UInt64
+CFileAccess::Write( CIOAccess& sourceData ,
+                    Int64 bytesToWrite    )
 {GUCEF_TRACE;
     
-    return CIOAccess::Write( sourceData );
+    return CIOAccess::Write( sourceData, bytesToWrite );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -435,15 +436,15 @@ CFileAccess::IsValid( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64
 CFileAccess::GetSize( void ) const
 {GUCEF_TRACE;
         
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {        
         if ( m_file && _writeable )
         {
-                fflush( m_file );       
+            fflush( m_file );       
         }
         return Filesize( m_filename.C_String() );           
     }
@@ -456,7 +457,7 @@ void
 CFileAccess::Flush( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         fflush( m_file );
     }

@@ -789,7 +789,7 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
         TSrcFileData* sd = (TSrcFileData*) *filedata;
         if ( GUCEF_NULL != sd )
         {
-            UInt32 fileSize = 0, bytesRead = 0;
+            UInt64 fileSize = 0, bytesRead = 0;
             json_char* fileBuffer = GUCEF_NULL;
             json_value* jsonDoc = GUCEF_NULL;
 

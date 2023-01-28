@@ -89,6 +89,16 @@ class GUCEF_CORE_PUBLIC_CPP CUri
 
     bool HasAuthority( void ) const;
 
+    /**
+     *  The authority and path segments are distinct sections in a URI with different meaning
+     *  However due to the widespread usage or URLs most folks are used to something starting with ://
+     *  Technically you should have <scheme>:<path> if you dont have an applicable authority segment
+     *  However since most folks would not practically make that distinction and would typically type <scheme>://<path>
+     *  that would cause the first path segment up to '/' to be interpreted as an 'authority'
+     *  Based on the usecase, knowing your scheme, you can cover for this common mistake by using this member function
+     */
+    CString GetAuthorityAndPath( void ) const;
+
     void SetAuthorityUsername( const CString& username );
 
     const CString& GetAuthorityUsername( void ) const;

@@ -146,8 +146,8 @@ palinktocontrol( TPAFILEControl *control );
  */
 GUCEF_CORE_PUBLIC_C PAFILE*
 palinkchunktocontrol( TPAFILEControl *control ,
-                      UInt32 start_offset     ,
-                      UInt32 chunk_size       );
+                      UInt64 start_offset     ,
+                      UInt64 chunk_size       );
 
 /*-------------------------------------------------------------------------*/
 
@@ -173,7 +173,7 @@ palinked( PAFILE *pafile );
 /**
  *      Returns the current file pointer, which is a void*
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 paftell( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ paftell( PAFILE *pafile );
 /**
  *      Returns the size of the file
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 pafsize( PAFILE *pafile );
 
 /*-------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ pafsize( PAFILE *pafile );
  */
 GUCEF_CORE_PUBLIC_C Int32
 pafseek( PAFILE *pafile ,
-         Int32 offset   ,
+         Int64 offset   ,
          Int32 origin   );
 
 /*-------------------------------------------------------------------------*/
@@ -203,7 +203,7 @@ pafseek( PAFILE *pafile ,
  */
 GUCEF_CORE_PUBLIC_C Int32
 pafsetpos( PAFILE *pafile ,
-           UInt32 offset  );
+           UInt64 offset  );
 
 /*-------------------------------------------------------------------------*/
 

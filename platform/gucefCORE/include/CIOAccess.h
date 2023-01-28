@@ -184,7 +184,8 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
      */
     virtual UInt32 Write( CDynamicBuffer& sourceData );
 
-    virtual UInt32 Write( CIOAccess& sourceData );
+    virtual UInt64 Write( CIOAccess& sourceData   ,
+                          Int64 bytesToWrite = -1 );
 
     virtual UInt32 Write( const CString& string );
 
@@ -194,18 +195,18 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
     /**
      *      Get the current offset in bytes
      */
-    virtual UInt32 Tell( void ) const = 0;
+    virtual UInt64 Tell( void ) const = 0;
 
     /**
      *      jump to a different part of the resource
      */
-    virtual Int32 Seek( Int32 offset ,
+    virtual Int32 Seek( Int64 offset ,
                         Int32 origin ) = 0;
 
     /**
      *      jump to the given offset in the resource
      */
-    virtual UInt32 Setpos( UInt32 position );
+    virtual UInt32 Setpos( UInt64 position );
 
     /**
      *      Read a single character
@@ -236,7 +237,7 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
     /**
      *  @return returns the size of the resource if possible.
      */
-    virtual UInt32 GetSize( void ) const;
+    virtual UInt64 GetSize( void ) const;
 
     /**
      *  Flushes all outstanding mutations on the I/O device

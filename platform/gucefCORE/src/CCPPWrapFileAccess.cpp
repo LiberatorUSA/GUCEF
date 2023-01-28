@@ -91,12 +91,11 @@ CCPPWrapFileAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CCPPWrapFileAccess::GetSize( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return 0;
+{GUCEF_TRACE;
+
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,33 +158,33 @@ CCPPWrapFileAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CCPPWrapFileAccess::Tell( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->tell( _access ) );
+{GUCEF_TRACE;
+
+    return _access->tell( _access );
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32
-CCPPWrapFileAccess::Seek( Int32 offset ,
+CCPPWrapFileAccess::Seek( Int64 offset ,
                           Int32 origin )
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->seek( _access ,
-                                      offset  ,
-                                      origin  ) );
+{GUCEF_TRACE;
+
+    return _access->seek( _access ,
+                          offset  ,
+                          origin  );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CCPPWrapFileAccess::Setpos( UInt32 position )
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->setpos( _access  ,
-                                        position ) );
+CCPPWrapFileAccess::Setpos( UInt64 position )
+{GUCEF_TRACE;
+
+    return _access->setpos( _access  ,
+                            position );
 }
 
 /*-------------------------------------------------------------------------*/

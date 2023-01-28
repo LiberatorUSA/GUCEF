@@ -290,6 +290,22 @@ CUri::GetAuthority( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CString 
+CUri::GetAuthorityAndPath( void ) const
+{GUCEF_TRACE;
+
+    if ( HasAuthority() )
+    {
+        return GetAuthority() + '/' + m_path;
+    }
+    else
+    {
+        return m_path;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CUri::SetAuthorityUsername( const CString& username )
 {GUCEF_TRACE;

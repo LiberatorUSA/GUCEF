@@ -236,6 +236,35 @@ CZIPArchive::GetDirList( TStringVector& outputList           ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CZIPArchive::GetFileMetaData( const VFS::CString& filePath      ,
+                              CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CZIPArchive: request for file size for file: " +  filePath );
+    
+    if ( NULL != m_zipRoot )
+    {
+        // Get uncompressed size too
+        ZZIP_STAT zstat;
+        zzip_dir_stat( m_zipRoot, filePath.C_String(), &zstat, ZZIP_CASEINSENSITIVE );
+
+        metaData.resourceExists = true;
+        metaData.resourceSizeInBytes = zstat.st_size;
+        metaData.hasResourceSizeInBytes = true;
+        metaData.name = zstat.d_name;
+        metaData.hasName = true;
+
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CZIPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

@@ -110,7 +110,7 @@ mfa_read( struct SIOAccess* access ,
 
 /*-------------------------------------------------------------------------*/
           
-UInt32 GUCEF_CALLSPEC_PREFIX
+UInt64 GUCEF_CALLSPEC_PREFIX
 mfa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CMFileAccess*) access->privdata )->Tell();
@@ -120,7 +120,7 @@ mfa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 mfa_seek( struct SIOAccess* access , 
-          Int32 offset             ,
+          Int64 offset             ,
           Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CMFileAccess*) access->privdata )->Seek( offset ,
@@ -131,7 +131,7 @@ mfa_seek( struct SIOAccess* access ,
           
 UInt32 GUCEF_CALLSPEC_PREFIX 
 mfa_setpos( struct SIOAccess* access , 
-            UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
+            UInt64 pos               ) GUCEF_CALLSPEC_SUFFIX
 {
         return ( (CMFileAccess*) access->privdata )->Setpos( pos );
 }
@@ -281,38 +281,42 @@ CMFileAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CMFileAccess::Tell( void ) const
-{
-        return mftell( &_mfile );
+{GUCEF_TRACE;
+
+    return mftell( &_mfile );
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CMFileAccess::Seek( Int32 offset ,
+CMFileAccess::Seek( Int64 offset ,
                     Int32 origin )
-{
-        return mfseek( &_mfile ,
-                       offset  ,
-                       origin  );
+{GUCEF_TRACE;
+
+    return mfseek( &_mfile ,
+                   offset  ,
+                   origin  );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CMFileAccess::Setpos( UInt32 position )
-{
-        return mfsetpos( &_mfile  , 
-                         position ); 
+CMFileAccess::Setpos( UInt64 position )
+{GUCEF_TRACE;
+
+    return mfsetpos( &_mfile  , 
+                     position ); 
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CMFileAccess::GetSize( void ) const
-{
-        return _mfile.size;
+{GUCEF_TRACE;
+
+    return _mfile.size;
 }
 
 /*-------------------------------------------------------------------------*/

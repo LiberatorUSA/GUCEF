@@ -316,7 +316,7 @@ Module_Path( char *dest, UInt32 dest_size );
  *      Function for getting the size of a file using the fastest method
  *      possible for the target O/S.
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 Filesize( const char *filename );
 
 /*-------------------------------------------------------------------------*/

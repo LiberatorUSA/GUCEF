@@ -110,6 +110,9 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     virtual bool DirExists( const CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual UInt32 GetFileSize( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetFileMetaData( const CString& filePath           ,
+                                  CORE::CResourceMetaData& metaData ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual CString GetFileHash( const CString& file ) const GUCEF_VIRTUAL_OVERRIDE;
     

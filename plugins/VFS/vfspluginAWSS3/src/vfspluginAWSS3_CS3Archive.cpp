@@ -246,6 +246,16 @@ CS3Archive::MoveFile( const VFS::CString& oldFilePath ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3Archive::GetFileMetaData( const VFS::CString& filePath      ,
+                             CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CS3Archive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

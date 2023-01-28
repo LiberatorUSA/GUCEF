@@ -164,7 +164,7 @@ CSubFileAccess::Read( void *dest      ,
                       UInt32 elements )
 {GUCEF_TRACE;
 
-    Int32 pos = ftell( m_file );
+    Int64 pos = ftell( m_file );
     UInt32 readBytes = esize * elements;
     
     if ( pos + readBytes > m_offset + m_size )
@@ -183,7 +183,7 @@ CSubFileAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CSubFileAccess::Tell( void ) const
 {GUCEF_TRACE;
 
@@ -193,7 +193,7 @@ CSubFileAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CSubFileAccess::Seek( Int32 offset ,
+CSubFileAccess::Seek( Int64 offset ,
                       Int32 origin )
 {GUCEF_TRACE;
     
@@ -232,7 +232,7 @@ CSubFileAccess::Seek( Int32 offset ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CSubFileAccess::Setpos( UInt32 position )
+CSubFileAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
     return Seek( position, SEEK_SET );
@@ -305,7 +305,7 @@ CSubFileAccess::IsValid( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CSubFileAccess::GetSize( void ) const
 {GUCEF_TRACE;
 

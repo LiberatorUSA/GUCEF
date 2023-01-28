@@ -156,6 +156,7 @@ set( HEADER_FILES
   include/gucefCORE_CEnumerator.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
+  include/gucefCORE_CFileSystemUriResourceAccessor.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CFunctionRegistry.h
   include/gucefCORE_CGenericValueToDataNodeSerializer.h
@@ -201,6 +202,7 @@ set( HEADER_FILES
   include/gucefCORE_CPropertyList.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
+  include/gucefCORE_CResourceMetaData.h
   include/gucefCORE_CRollingFileAccess.h
   include/gucefCORE_CSimplisticPluginLoadLogic.h
   include/gucefCORE_CSingleTaskDelegator.h
@@ -218,6 +220,7 @@ set( HEADER_FILES
   include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
   include/gucefCORE_CUri.h
+  include/gucefCORE_CUriResourceAccessor.h
   include/gucefCORE_CUrlEncoder.h
   include/gucefCORE_CUtf8String.h
   include/gucefCORE_CValueConstraint.h
@@ -379,6 +382,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CEnumerator.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
+  src/gucefCORE_CFileSystemUriResourceAccessor.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CFunctionRegistry.cpp
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
@@ -424,6 +428,7 @@ set( SOURCE_FILES
   src/gucefCORE_CPropertyList.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
+  src/gucefCORE_CResourceMetaData.cpp
   src/gucefCORE_CRollingFileAccess.cpp
   src/gucefCORE_CSimplisticPluginLoadLogic.cpp
   src/gucefCORE_CSingleTaskDelegator.cpp
@@ -436,6 +441,7 @@ set( SOURCE_FILES
   src/gucefCORE_CThreadPool.cpp
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CUri.cpp
+  src/gucefCORE_CUriResourceAccessor.cpp
   src/gucefCORE_CUrlEncoder.cpp
   src/gucefCORE_CUtf8String.cpp
   src/gucefCORE_CValueConstraint.cpp

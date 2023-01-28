@@ -321,6 +321,37 @@ CVPArchive::GetDirList( TStringVector& outputList           ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVPArchive::GetFileMetaData( const VFS::CString& filePath      ,
+                             CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: request for file size for file: " +  filePath );
+    
+    TFileIndexMap::const_iterator i = m_index.find( filePath.Lowercase().ReplaceChar( '/', '\\' ) );
+    if ( i != m_index.end() )
+    {
+        const TVPIndexEntry& entry = (*i).second;
+        metaData.resourceExists = true;
+        metaData.resourceSizeInBytes = entry.size;
+        metaData.hasResourceSizeInBytes = true;
+        metaData.creationDateTime.FromUnixEpochBasedTicksInMillisecs( entry.timestamp );
+        metaData.hasCreationDateTime = true;
+        metaData.modifiedDateTime = metaData.creationDateTime;
+        metaData.hasModifiedDateTime = true;
+        metaData.name = (*i).first;
+        metaData.hasName = true;
+
+        return true;
+    }
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

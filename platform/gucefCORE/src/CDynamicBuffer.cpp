@@ -459,10 +459,10 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     // Set the buffer to be the same size as the file
     Clear( true );    
     
-    UInt32 readBlockSize = 0;
+    UInt64 readBlockSize = 0;
     if ( bytesToRead < 0 )
     {
-        UInt32 fileSize = CORE::FileSize( filePath );
+        UInt64 fileSize = CORE::FileSize( filePath );
         readBlockSize = fileSize - offsetInFile;
     }
     else
@@ -474,7 +474,7 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     if ( 0 == readBlockSize )
         return true;
     
-    SetBufferSize( readBlockSize, true );
+    SetBufferSize( (UInt32)readBlockSize, true );
     
     // Load the entire file into memory
     size_t actuallyRead = 0;
@@ -495,7 +495,7 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     // Sanity check to make sure we loaded the whole block
     if ( actuallyRead == 1 )
     {
-        m_dataSize = readBlockSize;
+        m_dataSize = (UInt32) readBlockSize;
         return true;
     }
     
@@ -795,22 +795,22 @@ CDynamicBuffer::Append( CIOAccess& data                ,
 
     // Try to use seeking to learn remainder bytes available
     // This is an optimimization, if seeking is not supported we just read in blocks
-    Int32 inputSize = -1;    
-    UInt32 currentPosition = data.Tell();
+    Int64 inputSize = -1;    
+    UInt64 currentPosition = data.Tell();
     if ( 0 == data.Seek( 0, SEEK_END ) )
     {
-        inputSize = (Int32) ( data.Tell() - currentPosition );
+        inputSize = (Int64) ( data.Tell() - currentPosition );
         data.Setpos( currentPosition );
     }
 
     if ( inputSize > -1 )
     {
         // Copy the recource data all at once
-        if ( SetBufferSize( inputSize, false, true ) )
+        if ( SetBufferSize( (UInt32) inputSize, false, true ) )
         {
             UInt32 bytesAppended = data.Read( *this     ,
                                               1         ,
-                                              inputSize );
+                                              (UInt32)inputSize );
             return bytesAppended;
         }
         return 0;

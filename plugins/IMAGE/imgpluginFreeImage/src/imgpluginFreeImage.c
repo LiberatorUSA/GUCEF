@@ -159,7 +159,7 @@ long DLL_CALLCONV
 myTellProc( fi_handle handle )
 {
     TIOAccess* input = (TIOAccess*) handle;
-    return input->tell( input );
+    return (long) input->tell( input );
 }
 
 /*---------------------------------------------------------------------------*/

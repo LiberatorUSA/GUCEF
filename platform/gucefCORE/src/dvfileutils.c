@@ -1163,14 +1163,14 @@ Execute_Program( const char *filename ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 Filesize( const char *filename )
 {
     if ( NULL != filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-        UInt32 lfilesize;
+        UInt64 lfilesize = 0;
         WIN32_FIND_DATA FileInfo;
         HANDLE hFind;
         hFind = FindFirstFile( filename, &FileInfo );
@@ -1187,16 +1187,16 @@ Filesize( const char *filename )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        struct stat buf;
-        UInt32 filesize;
+        struct stat buf;        
         int result;
         result = stat( filename, &buf );
-        if ( result == 0 ) return buf.st_size;
+        if ( result == 0 ) 
+            return buf.st_size;
         return 0;
 
         #else
 
-        UInt32 filesize = 0;
+        UInt64 filesize = 0;
         FILE *fptr = fopen( filename, "rb" );
         fseek( fptr, 0, SEEK_END );
         filesize = ftell( fptr );

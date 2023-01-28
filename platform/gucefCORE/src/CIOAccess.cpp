@@ -128,7 +128,7 @@ fa_read( struct SIOAccess* access ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 GUCEF_CALLSPEC_PREFIX
+UInt64 GUCEF_CALLSPEC_PREFIX
 fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -139,7 +139,7 @@ fa_tell( struct SIOAccess* access ) GUCEF_CALLSPEC_SUFFIX
 
 Int32 GUCEF_CALLSPEC_PREFIX
 fa_seek( struct SIOAccess* access ,
-         Int32 offset             ,
+         Int64 offset             ,
          Int32 origin             ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Seek( offset ,
@@ -150,7 +150,7 @@ fa_seek( struct SIOAccess* access ,
 
 UInt32 GUCEF_CALLSPEC_PREFIX
 fa_setpos( struct SIOAccess* access ,
-           UInt32 pos               ) GUCEF_CALLSPEC_SUFFIX
+           UInt64 pos               ) GUCEF_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         return ( (CIOAccess*) access->privdata )->Setpos( pos );
 }
@@ -329,48 +329,48 @@ CIOAccess::ReadUntill( void *dest            ,
 UInt32
 CIOAccess::SkipUntill( const void* delimiter ,
                        UInt32 delimsize      )
-{
-        //DEBUGOUTPUT( "CIOAccess::SkipUntill()" );
+{GUCEF_TRACE;
 
-        GUCEF_BEGIN;
-        if ( !delimsize )
+    //DEBUGOUTPUT( "CIOAccess::SkipUntill()" );
+
+    if ( !delimsize )
+    {
+        Seek( 0, SEEK_END );
+    }
+
+    char* buffer = GUCEF_NEW char[ delimsize ];
+    char* bufwritepos = buffer;
+    UInt64 pos = Tell();
+    while( !Eof() )
+    {
+        /*
+            *      Add a byte to our read buffer
+            */
+        if ( bufwritepos - buffer < (Int32)delimsize-1 )
         {
-                Seek( 0, SEEK_END );
+            *bufwritepos = GetChar();
+            ++bufwritepos;
+        }
+        else
+        {
+            for ( UInt32 n=0; n<delimsize-1; ++n )
+            {
+                buffer[ n ] = buffer[ n+1 ];
+            }
+            *bufwritepos = GetChar();
         }
 
-        char* buffer = GUCEF_NEW char[ delimsize ];
-        char* bufwritepos = buffer;
-        UInt32 pos = Tell();
-        while( !Eof() )
+        /*
+            *      Have we reached the delimiter ?
+            */
+        if ( memcmp( buffer, delimiter, delimsize ) == 0 )
         {
-                /*
-                 *      Add a byte to our read buffer
-                 */
-                if ( bufwritepos - buffer < (Int32)delimsize-1 )
-                {
-                        *bufwritepos = GetChar();
-                        ++bufwritepos;
-                }
-                else
-                {
-                        for ( UInt32 n=0; n<delimsize-1; ++n )
-                        {
-                                buffer[ n ] = buffer[ n+1 ];
-                        }
-                        *bufwritepos = GetChar();
-                }
-
-                /*
-                 *      Have we reached the delimiter ?
-                 */
-                if ( memcmp( buffer, delimiter, delimsize ) == 0 )
-                {
-                        GUCEF_DELETE []buffer;
-                        GUCEF_END_RET( Tell() - pos );
-                }
+            GUCEF_DELETE []buffer;
+            return (UInt32) ( Tell() - pos );
         }
-        GUCEF_DELETE []buffer;
-        GUCEF_END_RET( Tell() - pos );
+    }
+    GUCEF_DELETE []buffer;
+    return (UInt32) ( Tell() - pos );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -404,13 +404,13 @@ CIOAccess::Read( CDynamicBuffer& dest ,
                  UInt32 esize         )
 {GUCEF_TRACE;
 
-    UInt32 currentOffset = Tell();
+    UInt64 currentOffset = Tell();
     Seek( 0, SEEK_END );
-    UInt32 endOffset = Tell();
+    UInt64 endOffset = Tell();
     Setpos( currentOffset );
 
-    UInt32 bytesToRead = endOffset - currentOffset;
-    UInt32 elementsToRead = bytesToRead / esize;
+    UInt64 bytesToRead = endOffset - currentOffset;
+    UInt32 elementsToRead = (UInt32) ( bytesToRead / esize );
 
     return Read( dest, esize, elementsToRead );
 }
@@ -499,21 +499,28 @@ CIOAccess::Write( CDynamicBuffer& sourceData )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CIOAccess::Write( CIOAccess& sourceData )
+UInt64
+CIOAccess::Write( CIOAccess& sourceData ,
+                  Int64 bytesToWrite    )
 {GUCEF_TRACE;
 
-    UInt32 byteCount=0, totalByteCount=0;
+    UInt64 byteCount=0, totalByteCount=0;
     CDynamicBuffer readBuffer( 1024, true );
     readBuffer.SetDataSize( 1024 );
+    Int64 bytesLeftToWrite = bytesToWrite;
 
     while ( !sourceData.Eof() )
     {
-        byteCount = sourceData.Read( readBuffer.GetBufferPtr(), 1, 1024 );
+        UInt32 bytesToRead = 1024;
+        if ( bytesLeftToWrite > 0 && bytesLeftToWrite < 1024 )
+            bytesToRead = (UInt32) bytesLeftToWrite;
+
+        byteCount = sourceData.Read( readBuffer.GetBufferPtr(), 1, bytesToRead );
         if ( byteCount > 0 )
         {
-            Write( readBuffer.GetBufferPtr(), 1, byteCount );
+            Write( readBuffer.GetBufferPtr(), 1, (UInt32) byteCount );
             totalByteCount += byteCount;
+            bytesLeftToWrite -= byteCount;
         }
         else
         {
@@ -540,13 +547,13 @@ CIOAccess::Write( const CString& string )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CIOAccess::GetSize( void ) const
 {GUCEF_TRACE;
 
-    UInt32 pos = Tell();
+    UInt64 pos = Tell();
     const_cast< CIOAccess* >( this )->Seek( 0, SEEK_END );
-    UInt32 size = Tell();
+    UInt64 size = Tell();
     const_cast< CIOAccess* >( this )->Seek( pos, SEEK_SET );
     return size;
 }
@@ -554,7 +561,7 @@ CIOAccess::GetSize( void ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CIOAccess::Setpos( UInt32 position )
+CIOAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
     return Seek( position, SEEK_SET );

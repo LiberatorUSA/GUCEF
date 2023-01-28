@@ -129,17 +129,17 @@ CZipIOAccess::Read( void *dest            ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::UInt32
+CORE::UInt64
 CZipIOAccess::Tell( void ) const
 {GUCEF_TRACE;
 
-    return (CORE::UInt32) zzip_tell( m_zzipFile );
+    return (CORE::UInt64) zzip_tell( m_zzipFile );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::Int32
-CZipIOAccess::Seek( CORE::Int32 offset ,
+CZipIOAccess::Seek( CORE::Int64 offset ,
                     CORE::Int32 origin )
 {GUCEF_TRACE;
 
@@ -195,11 +195,11 @@ CZipIOAccess::IsValid( void )
 
 /*-------------------------------------------------------------------------*/
     
-CORE::UInt32
+CORE::UInt64
 CZipIOAccess::GetSize( void ) const
 {GUCEF_TRACE;
 
-    return (CORE::UInt32) m_size;
+    return (CORE::UInt64) m_size;
 }
 
 /*-------------------------------------------------------------------------*/

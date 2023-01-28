@@ -287,7 +287,7 @@ CDynamicBufferAccess::Read( void *dest      ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CDynamicBufferAccess::Tell( void ) const
 {GUCEF_TRACE;
 
@@ -297,7 +297,7 @@ CDynamicBufferAccess::Tell( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CDynamicBufferAccess::Seek( Int32 offset ,
+CDynamicBufferAccess::Seek( Int64 offset ,
                             Int32 origin )
 {GUCEF_TRACE;
 
@@ -305,11 +305,11 @@ CDynamicBufferAccess::Seek( Int32 offset ,
     {
         case SEEK_CUR :
         {
-            Int32 carat = m_carat + offset;
+            Int64 carat = m_carat + offset;
             if ( ( carat <= (Int32)m_buffer->GetDataSize() ) &&
                  ( carat >= 0                              )  )
             {
-                m_carat = carat;
+                m_carat = (UInt32) carat;
                 return 0;
             }
             return -1;
@@ -318,7 +318,7 @@ CDynamicBufferAccess::Seek( Int32 offset ,
         {
             if ( offset <= (Int32)m_buffer->GetDataSize() )
             {
-                m_carat = offset;
+                m_carat = (UInt32) offset;
                 return 0;
             }
             return -1;
@@ -338,12 +338,12 @@ CDynamicBufferAccess::Seek( Int32 offset ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CDynamicBufferAccess::Setpos( UInt32 position )
+CDynamicBufferAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
     if ( position < m_buffer->GetDataSize() )
     {
-        m_carat = position;
+        m_carat = (UInt32) position;
     }
     else
     {
@@ -433,7 +433,7 @@ CDynamicBufferAccess::Flush( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CDynamicBufferAccess::GetSize( void ) const
 {GUCEF_TRACE;
 

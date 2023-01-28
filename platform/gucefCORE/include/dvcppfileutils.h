@@ -51,6 +51,11 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
+#ifndef GUCEF_CORE_CRESOURCEMETADATA_H
+#include "gucefCORE_CResourceMetaData.h"
+#define GUCEF_CORE_CRESOURCEMETADATA_H
+#endif /* GUCEF_CORE_CRESOURCEMETADATA_H ? */
+
 #undef MoveFile
 #undef CopyFile
 #undef DeleteFile
@@ -73,7 +78,7 @@ namespace CORE {
 /**
  *  Returns the modification time of the indicated resource
  */
-GUCEF_CORE_PUBLIC_C CDateTime
+GUCEF_CORE_PUBLIC_CPP CDateTime
 GetFileModificationTime( const CString& path );
 
 /*-------------------------------------------------------------------------*/
@@ -83,6 +88,15 @@ GetFileModificationTime( const CString& path );
  */
 GUCEF_CORE_PUBLIC_CPP CDateTime
 GetFileCreationTime( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to obtain various file meta-data from the file system
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+GetFileMetaData( const CString& filePath     ,
+                 CResourceMetaData& metaData );
 
 /*-------------------------------------------------------------------------*/
 
@@ -108,7 +122,7 @@ DirExists( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP UInt32
+GUCEF_CORE_PUBLIC_CPP UInt64
 FileSize( const CString& filename );
 
 /*-------------------------------------------------------------------------//

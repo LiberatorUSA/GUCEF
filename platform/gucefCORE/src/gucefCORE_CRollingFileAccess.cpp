@@ -123,7 +123,7 @@ CRollingFileAccess::~CRollingFileAccess()
 /*-------------------------------------------------------------------------*/
 
 void 
-CRollingFileAccess::SetRolloverSizeThreshold( UInt32 sizeThreshold )
+CRollingFileAccess::SetRolloverSizeThreshold( UInt64 sizeThreshold )
 {GUCEF_TRACE;
 
     m_maxFileSize = sizeThreshold;
@@ -131,7 +131,7 @@ CRollingFileAccess::SetRolloverSizeThreshold( UInt32 sizeThreshold )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt64 
 CRollingFileAccess::GetRolloverSizeThreshold( void ) const
 {GUCEF_TRACE;
 
@@ -362,11 +362,11 @@ CRollingFileAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CRollingFileAccess::Write( CIOAccess& sourceData )
+UInt64
+CRollingFileAccess::Write( CIOAccess& sourceData, Int64 bytesToWrite )
 {GUCEF_TRACE;
 
-    UInt32 bytesWritten = m_currentFile.Write( sourceData );
+    UInt32 bytesWritten = m_currentFile.Write( sourceData, bytesToWrite );
     m_offset += bytesWritten;
     EnforceFileSizeThreshold();
     return bytesWritten;
@@ -386,7 +386,7 @@ CRollingFileAccess::Write( const CString& string )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CRollingFileAccess::Tell( void ) const
 {GUCEF_TRACE;
 
@@ -395,7 +395,7 @@ CRollingFileAccess::Tell( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CRollingFileAccess::GetSize( void ) const
 {GUCEF_TRACE;
 
@@ -405,7 +405,7 @@ CRollingFileAccess::GetSize( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32
-CRollingFileAccess::Seek( Int32 offset ,
+CRollingFileAccess::Seek( Int64 offset ,
                           Int32 origin )
 {GUCEF_TRACE;
 
@@ -420,7 +420,7 @@ CRollingFileAccess::Seek( Int32 offset ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CRollingFileAccess::Setpos( UInt32 position )
+CRollingFileAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
     UInt32 retVal = m_currentFile.Setpos( position );

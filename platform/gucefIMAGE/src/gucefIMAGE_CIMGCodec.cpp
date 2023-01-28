@@ -273,7 +273,7 @@ CIMGCodec::Decode( CORE::CIOAccess& encodedInput ,
         // Now we can read all the pixel data
         CImage::TFrameList frameList;
         CImage::TMipMapList mipMapList;
-        UInt32 bufferOffset = bufferAccess.Tell();        
+        UInt64 bufferOffset = bufferAccess.Tell();        
         char* pixelBuffer = static_cast< char* >( outputBuffer.GetBufferPtr() ) + bufferOffset;
         for ( UInt32 i=0; i<imageInfo.nrOfFramesInImage; ++i )
         {

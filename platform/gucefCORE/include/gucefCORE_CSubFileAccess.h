@@ -54,7 +54,7 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
 
     CSubFileAccess( void );
 
-    virtual ~CSubFileAccess();
+    virtual ~CSubFileAccess() GUCEF_VIRTUAL_OVERRIDE;
 
     bool Load( const CString& file ,
                const UInt32 offset ,
@@ -63,34 +63,34 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
     /**
      *      open the resource for I/O
      */
-    virtual void Open( void );
+    virtual void Open( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      close the recource
      */
-    virtual void Close( void );
+    virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      is the recource opened for reading ?
      */
-    virtual bool Opened( void ) const;
+    virtual bool Opened( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      read a line of text
      */
-    virtual CString ReadLine( void );
+    virtual CString ReadLine( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Reads a string from the recource
      */
-    virtual CString ReadString( void );
+    virtual CString ReadString( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to read the specified number of bytes from the recourse
      */
     virtual UInt32 Read( void *dest      ,
                          UInt32 esize    ,
-                         UInt32 elements );
+                         UInt32 elements ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to write the specified number of bytes to the recourse
@@ -98,54 +98,54 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
      */
     virtual UInt32 Write( const void* srcdata ,
                           UInt32 esize        ,
-                          UInt32 elements     );
+                          UInt32 elements     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual UInt32 Write( CIOAccess& sourceData );
 
     /**
      *      Get the current offset in bytes
      */
-    virtual UInt32 Tell( void ) const;
+    virtual UInt64 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Get the size of the resource in bytes
      */
-    virtual UInt32 GetSize( void ) const;
+    virtual UInt64 GetSize( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      jump to a different part of the recource
      */
-    virtual Int32 Seek( Int32 offset ,
-                        Int32 origin );
+    virtual Int32 Seek( Int64 offset ,
+                        Int32 origin ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      jump to the given offset in the recource
      */
-    virtual UInt32 Setpos( UInt32 position );
+    virtual UInt32 Setpos( UInt64 position ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Read a single character
      */
-    virtual char GetChar( void );
+    virtual char GetChar( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      are we at the end of the recource ?
      */
-    virtual bool Eof( void ) const;
+    virtual bool Eof( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsReadable( void ) const;
+    virtual bool IsReadable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsWriteable( void ) const;
+    virtual bool IsWriteable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Is the access to the resource a valid one or
      *      has something gone wrong ?
      */
-    virtual bool IsValid( void );
+    virtual bool IsValid( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void Flush( void );
+    virtual void Flush( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     const CString& GetFilename( void ) const;
 
@@ -153,9 +153,9 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
 
     FILE* m_file;
     CString m_filename;
-    UInt32 m_size;
-    UInt32 m_totalSize;
-    UInt32 m_offset;
+    UInt64 m_size;
+    UInt64 m_totalSize;
+    UInt64 m_offset;
 };
 
 /*-------------------------------------------------------------------------//

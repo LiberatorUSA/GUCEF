@@ -73,8 +73,8 @@ struct SPAFILEControl
         FILE *fptr;                  /* the real file pointer */
         struct SPAFILE *refs;        /* pointer to our new file pointers */
         UInt32 refcount;             /* number of times that this file is refrenced */
-        UInt32 offset;               /* current offset in file of file pointer */
-        UInt32 fsize;                /* size of the physical file */
+        UInt64 offset;               /* current offset in file of file pointer */
+        UInt64 fsize;                /* size of the physical file */
 };
 
 /*-------------------------------------------------------------------------*/
@@ -88,9 +88,9 @@ struct SPAFILE
         TPAFILEControl *control; /* access to the control mechanism */
         PAFILE *next;            /* next PAFILE* */
         PAFILE *prev;            /* previous PAFILE* */
-        UInt32 offset;           /* current offset in our chunk */
-        UInt32 csize;            /* size of the chunk */
-        UInt32 coffset;          /* starting offset in the physical file */        
+        UInt64 offset;           /* current offset in our chunk */
+        UInt64 csize;            /* size of the chunk */
+        UInt64 coffset;          /* starting offset in the physical file */        
 };
 
 /*-------------------------------------------------------------------------//
@@ -237,8 +237,8 @@ palinked( PAFILE *pafile )
  */
 PAFILE*
 palinkchunktocontrol( TPAFILEControl *control ,
-                      UInt32 start_offset     ,
-                      UInt32 chunk_size       )
+                      UInt64 start_offset     ,
+                      UInt64 chunk_size       )
 {
         /*
          *      Get exclusive control access
@@ -344,15 +344,15 @@ paunlink( PAFILE *pafile )
 /**
  *      Returns the current file pointer, which is a void*
  */
-UInt32
+UInt64
 paftell( PAFILE *pafile )
 {
-        return pafile->offset;
+    return pafile->offset;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 pafsize( PAFILE *pafile )
 {
         return pafile->csize;
@@ -366,7 +366,7 @@ pafsize( PAFILE *pafile )
  */
 Int32
 pafseek( PAFILE *pafile ,
-         Int32 offset   ,
+         Int64 offset   ,
          Int32 origin   )
 {
         Int32 retval;
@@ -384,7 +384,7 @@ pafseek( PAFILE *pafile ,
                                  */
                                 offset = pafile->csize;
                         }
-                        retval = fseek( pafile->control->fptr, pafile->coffset+offset, SEEK_SET );
+                        retval = fseek( pafile->control->fptr, (long)( pafile->coffset+offset ), SEEK_SET );
                         pafile->offset = ftell( pafile->control->fptr ) - pafile->coffset;
                         break;
                 }
@@ -410,7 +410,7 @@ pafseek( PAFILE *pafile ,
                                  */
                                 offset = pafile->csize;
                         }
-                        retval = fseek( pafile->control->fptr, pafile->coffset+offset, SEEK_SET );
+                        retval = fseek( pafile->control->fptr, (long)( pafile->coffset+offset ), SEEK_SET );
                         pafile->offset = ftell( pafile->control->fptr ) - pafile->coffset;
                         break;
                 }
@@ -433,7 +433,7 @@ pafseek( PAFILE *pafile ,
  */
 Int32
 pafsetpos( PAFILE *pafile ,
-           UInt32 offset  )
+           UInt64 offset  )
 {
         Int32 retval;
         if ( !pafile->control ) return 0;
@@ -446,7 +446,7 @@ pafsetpos( PAFILE *pafile ,
                  */
                 offset = pafile->csize;
         }
-        retval = fseek( pafile->control->fptr, pafile->coffset + offset, SEEK_SET );
+        retval = fseek( pafile->control->fptr, (long)( pafile->coffset + offset ), SEEK_SET );
         pafile->offset = ftell( pafile->control->fptr ) - pafile->coffset;
         MutexUnlock( pafile->control->controllock );
 
@@ -496,7 +496,7 @@ pafeof( PAFILE *pafile )
         if ( !pafile->control ) return 0;
 
         MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
-        if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
+        if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, (long)( pafile->coffset + pafile->offset ), SEEK_SET ); }
         retval = feof( pafile->control->fptr );
         MutexUnlock( pafile->control->controllock );
 
@@ -521,7 +521,7 @@ pafread( void *dest      ,
         MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
         if ( ( pafile->coffset + pafile->offset != pafile->control->offset ) )
         {
-                 fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET );
+                 fseek( pafile->control->fptr, (long)( pafile->coffset + pafile->offset ), SEEK_SET );
         }
     //    tsprintf( "pafile->coffset=%d  pafile->offset=%d  pafile->control->offset=%d\n", pafile->coffset, pafile->offset, pafile->control->offset );
 //        if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
@@ -542,12 +542,13 @@ UInt32
 pafreadl( char **dest    ,
           PAFILE *pafile )
 {
-        UInt32 retval, len, pos;
+        UInt32 retval;
+        UInt64 len, pos;
         char c;
         if ( !pafile->control ) return 0;
 
         MutexLock( pafile->control->controllock, GUCEF_MUTEX_INFINITE_TIMEOUT );
-        if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, pafile->coffset + pafile->offset, SEEK_SET ); }
+        if ( OFFSETCHANGED( pafile ) ) { fseek( pafile->control->fptr, (long)( pafile->coffset + pafile->offset ), SEEK_SET ); }
 
         c = 1;
         pos = pafile->offset;

@@ -106,6 +106,9 @@ class CZIPArchive : public VFS::CArchive
                            const VFS::CString& newFilePath ,
                            const bool overwrite            ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetFileMetaData( const VFS::CString& filePath      ,
+                                  CORE::CResourceMetaData& metaData ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool FileExists( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool DirExists( const VFS::CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;

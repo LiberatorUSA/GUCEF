@@ -88,7 +88,8 @@ namespace CORE {
 
 CDateTime
 GetFileModificationTime( const CString& path )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     ::WIN32_FILE_ATTRIBUTE_DATA data;
@@ -125,7 +126,8 @@ GetFileModificationTime( const CString& path )
 
 CDateTime
 GetFileCreationTime( const CString& path )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     WIN32_FILE_ATTRIBUTE_DATA data;
@@ -155,6 +157,79 @@ GetFileCreationTime( const CString& path )
     return CDateTime();
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetFileMetaData( const CString& filePath     ,
+                 CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    if ( FileExists( filePath ) )
+    {    
+        metaData.resourceExists = true;    
+            
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        WIN32_FILE_ATTRIBUTE_DATA data;
+        if ( 0 != GetFileAttributesEx( filePath.C_String(), GetFileExInfoStandard, &data ) )
+        {
+            metaData.creationDateTime = CDateTime( data.ftCreationTime );
+            metaData.hasCreationDateTime = true;
+            metaData.modifiedDateTime = CDateTime( data.ftLastWriteTime );
+            metaData.hasModifiedDateTime = true;
+            metaData.lastAccessedDateTime = CDateTime( data.ftLastAccessTime );
+            metaData.hasLastAccessedDateTime = true;
+
+            ULARGE_INTEGER ul; // <- we use this struct for byte allignment
+            ul.HighPart = data.nFileSizeHigh;
+            ul.LowPart = data.nFileSizeLow;
+            metaData.resourceSizeInBytes = (UInt64) ul.QuadPart;
+            metaData.hasResourceSizeInBytes = true;
+        }
+        
+        // true no matter what since access rights also factor into it
+        // the meta data class has its own flags
+        return true;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+
+        // Get File Statistics for stat.c.
+        if( stat( path.C_String(), &buf ) == 0 )
+        {            
+            metaData.creationDateTime = CDateTime( buf.st_ctime, true );
+            metaData.hasCreationDateTime = true;
+            metaData.modifiedDateTime = CDateTime( buf.st_mtim, true );
+            metaData.hasModifiedDateTime = true;
+            metaData.lastAccessedDateTime = CDateTime( buf.st_atim, true );
+            metaData.hasLastAccessedDateTime = true;
+            metaData.resourceSizeInBytes = (UInt64) buf.st_size;
+            metaData.hasResourceSizeInBytes = true;
+        }
+        
+        // true no matter what since access rights also factor into it
+        // the meta data class has its own flags
+        return true;
+
+        #else
+
+        /*
+         *  Unsupported platform
+         */
+        return false;
+
+        #endif
+    }
+    else
+    {
+        metaData.resourceExists = false;
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,7 +285,7 @@ DirExists( const CString& path )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 FileSize( const CString& filename )
 {GUCEF_TRACE;
 

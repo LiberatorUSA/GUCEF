@@ -61,80 +61,80 @@ class GUCEF_CORE_PUBLIC_CPP CPFileAccess : public CROIOAccess
 
         CPFileAccess( const CString& file );
 
-        virtual ~CPFileAccess();
+        virtual ~CPFileAccess() GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      open the resource for I/O
          */
-        virtual void Open( void );
+        virtual void Open( void ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      close the resource
          */
-        virtual void Close( void );
+        virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      is the resource opened for reading ?
          */
-        virtual bool Opened( void ) const;
+        virtual bool Opened( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      read a line of text
          */
-        virtual CString ReadLine( void );
+        virtual CString ReadLine( void ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      Reads a string from the resource
          */
-        virtual CString ReadString( void );
+        virtual CString ReadString( void ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      Attempts to read the specified number of bytes from the recourse
          */
         virtual UInt32 Read( void *dest      ,
                              UInt32 esize    ,
-                             UInt32 elements );
+                             UInt32 elements ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      Get the current offset in bytes
          */
-        virtual UInt32 Tell( void ) const;
+        virtual UInt64 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      jump to a different part of the resource
          */
-        virtual Int32 Seek( Int32 offset ,
-                            Int32 origin );
+        virtual Int32 Seek( Int64 offset ,
+                            Int32 origin ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      jump to the given offset in the resource
          */
-        virtual UInt32 Setpos( UInt32 position );
+        virtual UInt32 Setpos( UInt64 position ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      returns the size of the resource in bytes
          */
-        virtual UInt32 GetSize( void ) const;
+        virtual UInt64 GetSize( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      Read a single character
          */
-        virtual char GetChar( void );
+        virtual char GetChar( void ) GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      are we at the end of the resource ?
          */
-        virtual bool Eof( void ) const;
+        virtual bool Eof( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         /**
          *      Is the access to the resource a valid one or
          *      has something gone wrong ?
          */
-        virtual bool IsValid( void );
+        virtual bool IsValid( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-        virtual TIOAccess* CStyleAccess( void );
+        virtual TIOAccess* CStyleAccess( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-        virtual CORE::CICloneable* Clone( void ) const;
+        virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         private:
         friend class CPFileChunkAccess;

@@ -298,6 +298,45 @@ CS3BucketArchive::GetDirList( TStringVector& outputList           ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3BucketArchive::GetFileMetaData( const VFS::CString& filePath      ,
+                                   CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    auto i = m_objects.find( filePath );
+    if ( i != m_objects.end() )
+    {
+        metaData.resourceExists = true;
+        
+        const auto& objectRef = (*i).second;
+        if ( objectRef.LastModifiedHasBeenSet() )
+        {
+            // In S3 objects are immutable and as such create time and modified time is the same thing
+            metaData.modifiedDateTime = CORE::CDateTime( std::chrono::system_clock::to_time_t( objectRef.GetLastModified().UnderlyingTimestamp() ), true );
+            metaData.hasModifiedDateTime = true;
+            metaData.creationDateTime = metaData.modifiedDateTime;
+            metaData.hasCreationDateTime = true;
+        }
+        if ( objectRef.ETagHasBeenSet() )
+        {
+            metaData.version = objectRef.GetETag(); 
+            metaData.hasVersion = true;
+        }
+        if ( objectRef.SizeHasBeenSet() )
+        {
+            metaData.resourceSizeInBytes = (VFS::UInt64) objectRef.GetSize();
+            metaData.hasResourceSizeInBytes = true;
+        }
+
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

@@ -469,6 +469,17 @@ CFileSystemArchive::GetFileHash( const CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CFileSystemArchive::GetFileMetaData( const CString& filePath           ,
+                                     CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return CORE::GetFileMetaData( path, metaData );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CDateTime
 CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
 {GUCEF_TRACE;
@@ -773,7 +784,7 @@ CFileSystemArchive::OnNotify( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     // For anything from the file system directory watcher we are merely
-    // activing as a proxy to hide we are just reusing it
+    // acting as a proxy to abstracting its reuse
     if ( notifier == &m_fsWatcher )
     {
         // Archives are also DirectoryWatcher's so we pretend the event msg came from us

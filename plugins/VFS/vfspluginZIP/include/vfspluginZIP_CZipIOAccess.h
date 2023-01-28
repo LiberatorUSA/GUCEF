@@ -108,12 +108,12 @@ class CZipIOAccess : public CORE::CIOAccess
     /**
      *      Get the current offset in bytes
      */
-    virtual CORE::UInt32 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::UInt64 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      jump to a different part of the resource
      */
-    virtual CORE::Int32 Seek( CORE::Int32 offset ,
+    virtual CORE::Int32 Seek( CORE::Int64 offset ,
                               CORE::Int32 origin ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
@@ -145,7 +145,7 @@ class CZipIOAccess : public CORE::CIOAccess
     /**
      *  @return returns the size of the resource if possible.
      */
-    virtual CORE::UInt32 GetSize( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::UInt64 GetSize( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /** 
      *  Flushes all outstanding mutations on the I/O device

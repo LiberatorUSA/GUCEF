@@ -231,6 +231,31 @@ CDVPArchive::FileExists( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDVPArchive::GetFileMetaData( const VFS::CString& filePath      ,
+                              CORE::CResourceMetaData& metaData ) const
+{GUCEF_TRACE;
+
+    metaData.Clear();
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: request for file size for file: " +  filePath );
+    
+    VFS::Int32 fileEntryIndex = FindFileEntry( filePath );
+    if ( -1 < fileEntryIndex )
+    {
+        metaData.resourceExists = true;
+        metaData.resourceSizeInBytes = m_entries[ fileEntryIndex ].size;
+        metaData.hasResourceSizeInBytes = true;
+        metaData.creationDateTime.FromUnixEpochBasedTicksInMillisecs( m_entries[ fileEntryIndex ].timestamp );
+        metaData.hasCreationDateTime = true;
+        metaData.modifiedDateTime = metaData.creationDateTime;
+        metaData.hasModifiedDateTime = true;
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 VFS::UInt32
 CDVPArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
