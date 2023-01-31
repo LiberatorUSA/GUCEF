@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <time.h>
+
 #ifndef GUCEF_CORE_CDATE_H
 #include "gucefCORE_CDate.h"
 #define GUCEF_CORE_CDATE_H
@@ -97,7 +99,7 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     const CDate& GetDate( void ) const;
 
     CTime& GetTime( void );
-    
+
     const CTime& GetTime( void ) const;
 
     Int64 GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) const;
@@ -143,12 +145,14 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
               UInt8 seconds              = 0 ,
               UInt16 milliseconds        = 0 ,
               Int16 timezoneOffsetInMins = 0 );
-    
+
     void Clear( void );
-    
+
     explicit CDateTime( const struct tm* src, bool isUtc );
-    
+
     explicit CDateTime( const time_t src, bool isUtc );
+
+    explicit CDateTime( const timespec& src, bool isUtc );
 
     explicit CDateTime( const CDate& src, bool isUtc );
 

@@ -167,11 +167,11 @@ GetFileMetaData( const CString& filePath     ,
 {GUCEF_TRACE;
 
     metaData.Clear();
-    
+
     if ( FileExists( filePath ) )
-    {    
-        metaData.resourceExists = true;    
-            
+    {
+        metaData.resourceExists = true;
+
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         WIN32_FILE_ATTRIBUTE_DATA data;
@@ -190,7 +190,7 @@ GetFileMetaData( const CString& filePath     ,
             metaData.resourceSizeInBytes = (UInt64) ul.QuadPart;
             metaData.hasResourceSizeInBytes = true;
         }
-        
+
         // true no matter what since access rights also factor into it
         // the meta data class has its own flags
         return true;
@@ -200,8 +200,8 @@ GetFileMetaData( const CString& filePath     ,
         struct stat buf;
 
         // Get File Statistics for stat.c.
-        if( stat( path.C_String(), &buf ) == 0 )
-        {            
+        if( stat( filePath.C_String(), &buf ) == 0 )
+        {
             metaData.creationDateTime = CDateTime( buf.st_ctime, true );
             metaData.hasCreationDateTime = true;
             metaData.modifiedDateTime = CDateTime( buf.st_mtim, true );
@@ -211,7 +211,7 @@ GetFileMetaData( const CString& filePath     ,
             metaData.resourceSizeInBytes = (UInt64) buf.st_size;
             metaData.hasResourceSizeInBytes = true;
         }
-        
+
         // true no matter what since access rights also factor into it
         // the meta data class has its own flags
         return true;

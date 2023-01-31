@@ -563,6 +563,21 @@ CDateTime::CDateTime( const struct tm* tmStruct, bool isUtc )
 
 /*-------------------------------------------------------------------------*/
 
+CDateTime::CDateTime( const timespec& timespecStruct, bool isUtc )
+    : CDate( timespecStruct.tv_sec, isUtc )
+    , CTime( timespecStruct.tv_sec, isUtc )
+    , m_timezoneOffsetInMins( 0 )
+{GUCEF_TRACE;
+
+    // Convert nano seconds to milliseconds which is the max resolution we can store
+    SetMilliseconds( (UInt16) ( timespecStruct.tv_nsec / 1000000 ) );
+
+    if ( !isUtc )
+        m_timezoneOffsetInMins = COSDateTimeUtils::GetTimezoneOffsetInMins();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDateTime::CDateTime( const CTime& src, bool isUtc )
     : CDate()
     , CTime( src )
@@ -823,7 +838,7 @@ CDateTime::operator<=( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
+Int32
 CDateTime::Compare( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -1076,12 +1091,12 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     else
     if ( isoClampedYear < 0000 )
         isoClampedYear = 0000;
-    
+
     if ( includeMilliseconds )
     {
         // ISO 8601 requires the miliseconds to be expressed as a fraction of a second
         // a second has 1000 milliseconds thus we use 3 digits to denote the fraction at which point it directly translates as said fraction
-        // Note that ISO8601:2004 allows: "as many digits as necessary following the decimal sign. A decimal fraction shall have at least one digit" 
+        // Note that ISO8601:2004 allows: "as many digits as necessary following the decimal sign. A decimal fraction shall have at least one digit"
         UInt16 milliSecs = m_milliseconds;
         if ( milliSecs > 999 )
             milliSecs = 0;
