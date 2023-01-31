@@ -28,6 +28,11 @@
 
 #include <stdio.h>
 
+#ifndef GUCEF_MT_CNOLOCK_H
+#include "gucefMT_CNoLock.h"
+#define GUCEF_MT_CNOLOCK_H
+#endif /* GUCEF_MT_CNOLOCK_H ? */
+
 #ifndef GUCEF_CORE_CSTRING_H
 #include "gucefCORE_CString.h"          /* GUCEF string implementation */
 #define GUCEF_CORE_CSTRING_H
@@ -42,6 +47,11 @@
 #include "CICloneable.h"
 #define GUCEF_CORE_CICLONEABLE_H
 #endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,6 +78,9 @@ class CDynamicBuffer;
 class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
 {
     public:
+
+    typedef CTSharedPtr< CIOAccess, MT::CNoLock >                                   IOAccessNoLockPtr;     /**< there is not much use in having a threadsafe pointer to something that cannot be shared across threads */ 
+    typedef std::set< IOAccessNoLockPtr, basic_allocator< IOAccessNoLockPtr > >     IOAccessNoLockPtrSet;
 
     CIOAccess( void );
 
@@ -267,18 +280,3 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 01-05-2005 :
-        - Added ReadUntill()
-          This member function will read data untill the given delimiter is
-          reached or the end of the file is reached.
-- 25-11-2004 :
-        - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

@@ -23,12 +23,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "dvcppfileutils.h"
-
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
 #include "gucefCORE_CFileSystemUriResourceAccessor.h"
 
@@ -104,6 +112,11 @@ CFileSystemUriResourceAccessor::CreateResource( const CUri& uri ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     bool fileExists = FileExists( fsPath );
 
     if ( !fileExists )
@@ -143,6 +156,11 @@ CFileSystemUriResourceAccessor::GetResource( const CUri& uri        ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     bool fileExists = FileExists( fsPath );
 
     if ( fileExists )
@@ -184,6 +202,11 @@ CFileSystemUriResourceAccessor::GetPartialResource( const CUri& uri        ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     bool fileExists = FileExists( fsPath );
 
     if ( fileExists )
@@ -231,6 +254,11 @@ CFileSystemUriResourceAccessor::GetResourceMetaData( const CUri& uri            
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     metaData.resourceExists = FileExists( fsPath );
 
     if ( metaData.resourceExists )
@@ -257,6 +285,10 @@ CFileSystemUriResourceAccessor::UpdateResource( const CUri& uri ,
 {GUCEF_TRACE;
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
 
     CFileAccess fsFile;
     if ( fsFile.Open( fsPath, "wb" ) )  // simply overwrite the file if it exists
@@ -289,6 +321,11 @@ CFileSystemUriResourceAccessor::UpdatePartialResource( const CUri& uri    ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     bool fileExists = FileExists( fsPath );
 
     if ( fileExists )
@@ -336,6 +373,11 @@ CFileSystemUriResourceAccessor::UpdatePartialResource( const CUri& uri    ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
     bool fileExists = FileExists( fsPath );
 
     if ( fileExists )
@@ -375,15 +417,23 @@ CFileSystemUriResourceAccessor::GetSupportedOperations( const CUri& uri         
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+    
     bool fileExists = FileExists( fsPath );
+    bool dirExists = DirExists( fsPath );
 
     ops.createResource = !fileExists;
-    ops.deleteResource = fileExists;
+    ops.deleteResource = fileExists || dirExists;
     ops.getPartialResource = fileExists;
     ops.getResource = fileExists;
     ops.getResourceMetaData = fileExists;
     ops.updatePartialResource = fileExists;
     ops.updateResource = fileExists;
+    ops.collectionDetermnination = fileExists || dirExists;
+    ops.collectionResolution = dirExists;
 
     return true;
 }
@@ -400,7 +450,127 @@ CFileSystemUriResourceAccessor::DeleteResource( const CUri& uri )
         return false;
     }
 
-    return DeleteFile( uri.GetAuthorityAndPath() );
+    CString fsPath = uri.GetAuthorityAndPath();
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
+    return DeleteFile( fsPath );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemUriResourceAccessor::IsACollectionResource( const CUri& uri ) const
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:IsACollectionResource: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+    
+    // Within this context a directory is a collection
+    // The directory needs to already exist for us to know if the URI is pointing at a directory
+    return DirExists( fsPath );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemUriResourceAccessor::ResolveResourcesInCollection( const CUri& uri        ,
+                                                              UriVector& resources   ,
+                                                              bool recursive         ,
+                                                              bool addCollectionUris )
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:ResolveResourcesInCollection: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+    bool totalSuccess = true;
+
+    if ( DirExists( fsPath ) )
+    {
+        CORE::CString filename;
+        struct CORE::SDI_Data* did = DI_First_Dir_Entry( fsPath.C_String() );
+        if ( did != GUCEF_NULL )
+        {
+            /*
+             *      Iterate the dir content adding the file entries from
+             *      the dir to the list
+             */
+            do
+            {
+                if ( DI_Is_It_A_File( did ) != 0 )
+                {
+                    filename = DI_Name( did );
+                    if ( filename != '.' && filename != ".." )
+                    {
+                        CORE::CString filePath = CORE::CombinePath( fsPath, filename );
+                        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+                        filePath = filePath.ReplaceChar( '\\', '/' );
+                        #endif
+
+                        CUri fileUri;
+                        fileUri.SetScheme( SchemeName );
+                        fileUri.SetPath( filePath );
+
+                        resources.push_back( fileUri );
+                    }
+                }
+                else
+                {
+                    CORE::CString dirName = DI_Name( did );
+                    if ( dirName != '.' && dirName != ".." )
+                    {
+                        CORE::CString fsSubdir = CORE::CombinePath( fsPath, dirName );
+
+                        CORE::CString dirPath = fsSubdir;
+                        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+                        dirPath = dirPath.ReplaceChar( '\\', '/' );
+                        #endif
+                        dirPath += '/';
+
+                        CUri subDirUri;
+                        subDirUri.SetScheme( SchemeName );
+                        subDirUri.SetPath( dirPath );
+
+                        if ( recursive )
+                        {
+                            // Recursively process the sub-dir
+                            totalSuccess = ResolveResourcesInCollection( subDirUri         ,
+                                                                         resources         ,
+                                                                         recursive         ,
+                                                                         addCollectionUris ) && totalSuccess;
+                        }
+
+                        if ( addCollectionUris )
+                            resources.push_back( subDirUri );
+                    }
+                }
+            }
+            while ( DI_Next_Dir_Entry( did ) );
+
+            DI_Cleanup( did );
+        }
+        return totalSuccess;
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:ResolveResourcesInCollection: Cannot get resources in dir because the dir does not exist: " + fsPath );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------//

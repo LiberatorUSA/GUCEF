@@ -74,6 +74,9 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
 {
     public:
 
+    typedef CUri::UriVector     UriVector;
+    typedef CUri::UriSet        UriSet;
+
     class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessorOperations
     {
         public:
@@ -84,6 +87,8 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
         bool updateResource;
         bool updatePartialResource;
         bool deleteResource;
+        bool collectionDetermnination;
+        bool collectionResolution;
 
         CUriResourceAccessorOperations( void );
         CUriResourceAccessorOperations( const CUriResourceAccessorOperations& src );
@@ -140,6 +145,13 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
                                          CUriResourceAccessorOperations& ops ) = 0;
 
     virtual bool DeleteResource( const CUri& uri ) = 0;
+
+    virtual bool IsACollectionResource( const CUri& uri ) const = 0;
+
+    virtual bool ResolveResourcesInCollection( const CUri& uri        ,
+                                               UriVector& resources   ,
+                                               bool recursive         ,
+                                               bool addCollectionUris ) = 0;
 
     CUriResourceAccessor( void ); /**< Doesn't do anything special atm. */
     CUriResourceAccessor( const CUriResourceAccessor& src ); /**< Doesn't do anything special atm. */

@@ -418,6 +418,81 @@ CVfsUriResourceAccessor::DeleteResource( const CORE::CUri& uri )
     return CVfsGlobal::Instance()->GetVfs().DeleteFile( uri.GetAuthorityAndPath(), false );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CVfsUriResourceAccessor::IsACollectionResource( const CORE::CUri& uri ) const
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsUriResourceAccessor:IsACollectionResource: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+    
+    // Within this context a VFS directory is a collection
+    // The directory needs to already exist for us to know if the URI is pointing at a directory
+    return CVfsGlobal::Instance()->GetVfs().DirExists( fsPath );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVfsUriResourceAccessor::ResolveResourcesInCollection( const CORE::CUri& uri  ,
+                                                       UriVector& resources   ,
+                                                       bool recursive         ,
+                                                       bool addCollectionUris )
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsUriResourceAccessor:ResolveResourcesInCollection: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+    bool totalSuccess = true;
+
+    if ( recursive && addCollectionUris )
+    {
+        CVFS::TStringVector dirList;    
+        totalSuccess = CVfsGlobal::Instance()->GetVfs().GetDirList( dirList, fsPath, recursive, true ) && totalSuccess;
+        resources.reserve( dirList.size() );
+
+        CVFS::TStringVector::iterator i = dirList.begin();
+        while ( i != dirList.end() )
+        {
+            CORE::CUri subDirUri;
+            subDirUri.SetScheme( SchemeName );
+            subDirUri.SetPath( (*i) );
+
+            resources.push_back( subDirUri );
+        
+            ++i;
+        }
+    }
+
+    CVFS::TStringVector fileList;    
+    totalSuccess = CVfsGlobal::Instance()->GetVfs().GetFileList( fileList, fsPath, recursive, true ) && totalSuccess;
+    resources.reserve( resources.capacity() + fileList.size() );
+
+    CVFS::TStringVector::iterator n = fileList.begin();
+    while ( n != fileList.end() )
+    {
+        CORE::CUri fileUri;
+        fileUri.SetScheme( SchemeName );
+        fileUri.SetPath( (*n) );
+
+        resources.push_back( fileUri );
+        
+        ++n;
+    }
+
+    return totalSuccess;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

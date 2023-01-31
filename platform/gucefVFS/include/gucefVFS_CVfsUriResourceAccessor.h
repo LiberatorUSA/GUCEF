@@ -95,6 +95,13 @@ class GUCEF_VFS_PUBLIC_CPP CVfsUriResourceAccessor : public CORE::CUriResourceAc
 
     virtual bool DeleteResource( const CORE::CUri& uri ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsACollectionResource( const CORE::CUri& uri ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ResolveResourcesInCollection( const CORE::CUri& uri  ,
+                                               UriVector& resources   ,
+                                               bool recursive         ,
+                                               bool addCollectionUris ) GUCEF_VIRTUAL_OVERRIDE;
+
     CVfsUriResourceAccessor( void ); 
     CVfsUriResourceAccessor( const CVfsUriResourceAccessor& src );
     virtual ~CVfsUriResourceAccessor() GUCEF_VIRTUAL_OVERRIDE; 

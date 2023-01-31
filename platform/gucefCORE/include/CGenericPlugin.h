@@ -95,9 +95,9 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
 
     CGenericPlugin( void );
 
-    virtual ~CGenericPlugin();
+    virtual ~CGenericPlugin() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual TPluginMetaDataPtr GetMetaData( void ) const;
+    virtual TPluginMetaDataPtr GetMetaData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void* GetModulePointer( void );
     

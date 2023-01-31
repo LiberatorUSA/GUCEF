@@ -53,6 +53,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/* 
+ *  Mandatory generic plugin API functions
+ */
 typedef Int32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_Load ) ( UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_Unload ) ( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TGUCEFGENERICPLUGFPTR_GetVersion ) ( TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;

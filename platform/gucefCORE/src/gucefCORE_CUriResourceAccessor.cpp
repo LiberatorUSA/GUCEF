@@ -83,6 +83,8 @@ CUriResourceAccessor::CUriResourceAccessorOperations::CUriResourceAccessorOperat
     , updateResource( false )
     , updatePartialResource( false )
     , deleteResource( false )
+    , collectionDetermnination( false )
+    , collectionResolution( false )
 {GUCEF_TRACE;
 
 }
@@ -97,6 +99,8 @@ CUriResourceAccessor::CUriResourceAccessorOperations::CUriResourceAccessorOperat
     , updateResource( src.updateResource )
     , updatePartialResource( src.updatePartialResource )
     , deleteResource( src.deleteResource )
+    , collectionDetermnination( src.collectionDetermnination )
+    , collectionResolution( src.collectionResolution )
 {GUCEF_TRACE;
 
 }

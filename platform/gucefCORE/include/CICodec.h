@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -57,10 +62,6 @@ namespace CORE {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
 
 class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
                                       public CITypeNamed

@@ -54,38 +54,45 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemUriResourceAccessor : public CUriResource
     static const CString SchemeName;
 
     virtual bool CreateResource( const CUri& uri ,
-                                 CIOAccess& src  );
+                                 CIOAccess& src  ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetResource( const CUri& uri        ,
-                              CIOAccess& destination );
+                              CIOAccess& destination ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetPartialResource( const CUri& uri        ,
                                      UInt64 byteOffset      ,
                                      Int64 bytesToGet       ,
-                                     CIOAccess& destination );
+                                     CIOAccess& destination ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetResourceMetaData( const CUri& uri             ,
-                                      CResourceMetaData& metaData );
+                                      CResourceMetaData& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool UpdateResource( const CUri& uri ,
-                                 CIOAccess& src  );
+                                 CIOAccess& src  ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool UpdatePartialResource( const CUri& uri    ,
                                         UInt64 byteOffset  ,
                                         Int64 bytesToWrite ,
-                                        CIOAccess& src     );
+                                        CIOAccess& src     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool UpdatePartialResource( const CUri& uri    ,
-                                        CIOAccess& src     );
+                                        CIOAccess& src     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetSupportedOperations( const CUri& uri                     ,
-                                         CUriResourceAccessorOperations& ops );
+                                         CUriResourceAccessorOperations& ops ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool DeleteResource( const CUri& uri );
+    virtual bool DeleteResource( const CUri& uri ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsACollectionResource( const CUri& uri ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ResolveResourcesInCollection( const CUri& uri        ,
+                                               UriVector& resources   ,
+                                               bool recursive         ,
+                                               bool addCollectionUris ) GUCEF_VIRTUAL_OVERRIDE;
 
     CFileSystemUriResourceAccessor( void ); 
     CFileSystemUriResourceAccessor( const CFileSystemUriResourceAccessor& src );
-    virtual ~CFileSystemUriResourceAccessor(); 
+    virtual ~CFileSystemUriResourceAccessor() GUCEF_VIRTUAL_OVERRIDE; 
     CFileSystemUriResourceAccessor& operator=( const CFileSystemUriResourceAccessor& src );
 };
 
