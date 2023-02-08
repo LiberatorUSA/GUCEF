@@ -237,8 +237,15 @@ bool
 CGenericValueToDataNodeSerializer::Serialize( const CAsciiString::StringSet& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
-   // domNode.SetValue( value );
-    return true;
+    bool totalSuccess = true;
+    domNode.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    CAsciiString::StringSet::const_iterator i = value.begin();
+    while ( i != value.end() )
+    {
+        totalSuccess = GUCEF_NULL != domNode.AddValueAsChild( ToString( (*i) ) ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,8 +254,15 @@ bool
 CGenericValueToDataNodeSerializer::Serialize( const CAsciiString::StringVector& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
-    //domNode.SetValue( value );
-    return true;
+    bool totalSuccess = true;
+    domNode.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    CAsciiString::StringVector::const_iterator i = value.begin();
+    while ( i != value.end() )
+    {
+        totalSuccess = GUCEF_NULL != domNode.AddValueAsChild( ToString( (*i) ) ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -267,8 +281,15 @@ bool
 CGenericValueToDataNodeSerializer::Serialize( const CUtf8String::StringSet& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
-   // domNode.SetValue( value );
-    return true;
+    bool totalSuccess = true;
+    domNode.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    CUtf8String::StringSet::const_iterator i = value.begin();
+    while ( i != value.end() )
+    {
+        totalSuccess = GUCEF_NULL != domNode.AddValueAsChild( ToString( (*i) ) ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -277,8 +298,15 @@ bool
 CGenericValueToDataNodeSerializer::Serialize( const CUtf8String::StringVector& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
-    //domNode.SetValue( value );
-    return true;
+    bool totalSuccess = true;
+    domNode.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    CUtf8String::StringVector::const_iterator i = value.begin();
+    while ( i != value.end() )
+    {
+        totalSuccess = GUCEF_NULL != domNode.AddValueAsChild( ToString( (*i) ) ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

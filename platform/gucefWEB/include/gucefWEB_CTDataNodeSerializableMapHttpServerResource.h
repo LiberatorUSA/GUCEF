@@ -294,6 +294,9 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     }
     else
     {
+        // When serializing details we need the name of each child and as such the parent cannot be an array
+        output.SetNodeType( GUCEF_DATATYPE_OBJECT );
+
         typename TSerializableCollectionMap::iterator i = m_collection->begin();
         while ( i != m_collection->end() )
         {
