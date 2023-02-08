@@ -154,8 +154,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    const CVariant& GetValueAlways( const CString& key       ,
-                                    const char* defaultValue ) const;
+    CVariant GetValueAlways( const CString& key       ,
+                             const char* defaultValue ) const;
 
     /**
      *  Returns the first value associated with the
@@ -163,8 +163,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    const CVariant& GetValueAlways( const CString& key          ,
-                                    const CString& defaultValue ) const;
+    CVariant GetValueAlways( const CString& key          ,
+                             const CString& defaultValue ) const;
 
     /**
      *  Returns the first value associated with the

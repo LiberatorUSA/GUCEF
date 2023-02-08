@@ -433,7 +433,7 @@ CFileSystemArchive::DirExists( const CString& dirPath ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CFileSystemArchive::GetFileSize( const CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -580,7 +580,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
              ( strcmp( mode, "r" ) == 0 )   )
         {
             // check if we can load the file into memory
-            UInt32 fsize = CORE::Filesize( path.C_String() );
+            UInt64 fsize = CORE::Filesize( path.C_String() );
             if ( fsize <= memLoadSize )
             {
                 // Create the memory buffer

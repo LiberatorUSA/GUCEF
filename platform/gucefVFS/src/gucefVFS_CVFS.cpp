@@ -626,7 +626,7 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
         return false;
     }
 
-    UInt32 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
+    UInt64 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath +
             "\" to \"" + copyFilepath + "\"" );
@@ -1990,7 +1990,7 @@ CVFS::GetFileList( CORE::CDataNode& outputDataTree        ,
         // Create the file node and set all the attributes
         CORE::CDataNode fileNode( "FILE" );
         fileNode.SetAttribute( "Name", filename );
-        fileNode.SetAttribute( "Size", CORE::UInt32ToString( GetFileSize( (*i) ) ) );
+        fileNode.SetAttribute( "Size", CORE::ToString( GetFileSize( (*i) ) ) );
 
         if ( addHash )
         {
@@ -2099,7 +2099,7 @@ CVFS::GetFileHash( const CORE::CString& file ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 CVFS::GetFileSize( const CORE::CString& file ) const
 {GUCEF_TRACE;
 
@@ -2119,7 +2119,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
         TConstMountLink& mountLink = (*i);
         if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
         {
-            UInt32 fileSize = mountLink.mountEntry->archive->GetFileSize( mountLink.remainder );
+            UInt64 fileSize = mountLink.mountEntry->archive->GetFileSize( mountLink.remainder );
             return fileSize;
         }
         ++i;

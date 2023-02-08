@@ -519,7 +519,7 @@ CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CVariant&
+CVariant
 CValueList::GetValueAlways( const CString& key       ,
                             const char* defaultValue ) const
 {GUCEF_TRACE;
@@ -531,7 +531,7 @@ CValueList::GetValueAlways( const CString& key       ,
 
 /*-------------------------------------------------------------------------*/
 
-const CVariant&
+CVariant
 CValueList::GetValueAlways( const CString& key          ,
                             const CString& defaultValue ) const
 {GUCEF_TRACE;

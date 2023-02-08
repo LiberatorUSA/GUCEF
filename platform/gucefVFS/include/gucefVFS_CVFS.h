@@ -515,7 +515,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     
     bool FileExists( const CString& filePath ) const;
         
-    UInt32 GetFileSize( const CString& filePath ) const;
+    // @deprecated: use GetFileMetaData()
+    UInt64 GetFileSize( const CString& filePath ) const;
     
     CORE::CString GetFileHash( const CString& filename ) const;
     

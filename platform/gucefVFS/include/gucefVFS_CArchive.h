@@ -150,7 +150,7 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
 
     virtual bool DirExists( const CString& dirPath ) const = 0;
     
-    virtual UInt32 GetFileSize( const CString& filePath ) const = 0;
+    virtual UInt64 GetFileSize( const CString& filePath ) const = 0;
 
     virtual bool GetFileMetaData( const CString& filePath           ,
                                   CORE::CResourceMetaData& metaData ) const = 0;
