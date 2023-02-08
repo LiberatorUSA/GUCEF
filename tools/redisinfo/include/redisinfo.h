@@ -209,6 +209,7 @@ class RedisNodeWithPipe : public RedisNode
 
     sw::redis::Pipeline* redisPipe;
     CORE::UInt32 redisErrorReplies;
+    CORE::UInt32 redisTimeoutReplies;
 
     virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
                             const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -218,6 +219,8 @@ class RedisNodeWithPipe : public RedisNode
     RedisNodeWithPipe( void );
 
     CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
+
+    CORE::UInt32 GetRedisTimeoutRepliesCounter( bool resetCounter );
 };
 
 typedef std::map< CORE::UInt32, RedisNodeWithPipe > RedisNodeWithPipeMap;
@@ -258,7 +261,7 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     private:
 
-    bool RedisConnect( void );
+    bool RedisConnect( bool reset );
 
     bool RedisDisconnect( void );
 
@@ -365,6 +368,8 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
 
+    CORE::UInt32 GetRedisClusterTimeoutRepliesCounter( bool resetCounter );
+
     CORE::UInt8 GetTypeOfRedisInfoValue( const CORE::CString& valueName ) const;
 
     void PopulateDefaultRedisInfoValueTypes( void );
@@ -384,6 +389,11 @@ class RedisInfoService : public CORE::CTaskConsumer
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
 
+    void
+    OnVfsInitCompleted( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventId  ,
+                        CORE::CICloneable* eventData );
+    
     private:
 
     RedisInfoService( const RedisInfoService& src ); // not implemented
@@ -406,6 +416,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;
     CORE::UInt32 m_redisClusterErrorReplies;
+    CORE::UInt32 m_redisClusterTimeoutReplies;
     THttpResourceVector m_httpResources;
     
     CORE::CValueList m_cmdClusterInfo;
@@ -421,6 +432,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     CORE::CValueList m_status;
     TStringToUInt8Map m_redisInfoValueTypes;
 
+    bool m_vfsIsInitialized;
     MT::CReadWriteLock m_lock;
 };
 

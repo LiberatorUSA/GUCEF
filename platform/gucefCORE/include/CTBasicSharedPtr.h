@@ -465,14 +465,17 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const CTBasicSharedPtr< T, Lo
     , m_objectDestructor( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( &src );
-    if ( GUCEF_NULL != src.m_shared )
+    if ( GUCEF_NULL != &src && GUCEF_NULL != src.m_shared )
     {
-        m_shared = src.m_shared;
-        ++(m_shared->m_refCounter);
+        MT::CObjectScopeLock lock( &src );
+        if ( GUCEF_NULL != src.m_shared )
+        {
+            m_shared = src.m_shared;
+            ++(m_shared->m_refCounter);
+        }
+        m_objectDestructor = src.m_objectDestructor;
+        m_ptr = src.m_ptr;    
     }
-    m_objectDestructor = src.m_objectDestructor;
-    m_ptr = src.m_ptr;    
 }
 
 /*-------------------------------------------------------------------------*/

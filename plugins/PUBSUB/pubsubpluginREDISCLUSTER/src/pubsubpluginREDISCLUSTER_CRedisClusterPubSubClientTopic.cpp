@@ -1053,10 +1053,11 @@ CRedisClusterPubSubClientTopic::CleanupRedisReaderThread( void )
 
         if ( !m_readerThread.IsNULL() )
         {
-            if ( !m_client->GetThreadPool()->RequestTaskToStop( m_readerThread.StaticCast< CORE::CTaskConsumer >(), true ) )
+            if ( !m_readerThread->RequestTaskToStop( true ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):CleanupRedisReaderThread: Failed to stop dedicated redis reader thread" );
             }
+            m_readerThread.Unlink();
         }
     }
     catch ( const std::exception& e )

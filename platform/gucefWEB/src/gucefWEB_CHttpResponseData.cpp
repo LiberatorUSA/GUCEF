@@ -130,9 +130,9 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
     {
         if ( !contentEncoding.IsNULLOrEmpty() )
             response += "Content-Encoding: " + contentEncoding + "\r\n";
-        response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
         response += "Content-Type: " + contentType + "\r\n";
     }
+    response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
 
     // You cannot send back accept types to the client using a standard HTTP header since
     // it is a HTTP request only header. We don't want the client to aimlessly retry different

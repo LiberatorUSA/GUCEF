@@ -76,6 +76,7 @@
 //-------------------------------------------------------------------------*/
 
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
+#define GUCEF_DEFAULT_REDIS_STREAM_INDEXING_INTERVAL                (1000 * 60 * 10) // 10 mins
 
 const CORE::CString RedisInfoService::HashSlotFileCodec = "json"; 
 
@@ -97,7 +98,7 @@ Settings::Settings( void )
     , gatherInfoMemory( true )
     , gatherStreamInfo( true )
     , streamsToGatherInfoFrom()
-    , streamIndexingInterval( 1000 * 60 )
+    , streamIndexingInterval( GUCEF_DEFAULT_REDIS_STREAM_INDEXING_INTERVAL )
     , redisScanCountSize( 1000 )
     , gatherInfoClients( true )
     , gatherInfoCpu( true )
@@ -260,6 +261,7 @@ RedisInfoService::RedisInfoService()
     , m_redisNodesMap()
     , m_hashSlotOriginStrMap()
     , m_redisClusterErrorReplies( 0 )
+    , m_redisClusterTimeoutReplies( 0 )
     , m_cmdClusterInfo()
     , m_cmdInfoCommandstats()
     , m_cmdInfoMemory()
@@ -272,12 +274,14 @@ RedisInfoService::RedisInfoService()
     , m_cmdXinfoStreamMap()
     , m_status()
     , m_redisInfoValueTypes()
+    , m_vfsIsInitialized( false )
     , m_lock( true )
 {GUCEF_TRACE;
 
     m_status[ "connected" ] = false;
     m_status[ "reconnecting" ] = false;
     m_status[ "redisClusterErrorReplies" ] = 0;
+    m_status[ "redisClusterTimeoutReplies" ] = 0;
 
     PopulateDefaultRedisInfoValueTypes();
 }
@@ -294,6 +298,8 @@ RedisInfoService::~RedisInfoService()
 
     delete m_streamIndexingTimer;
     m_streamIndexingTimer = GUCEF_NULL;
+
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -316,6 +322,12 @@ RedisInfoService::RegisterEventHandlers( void )
     SubscribeTo( m_streamIndexingTimer          ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback3                      );
+
+    TEventCallback callback4( this, &RedisInfoService::OnVfsInitCompleted );
+    SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
+                 VFS::CVFS::VfsInitializationCompletedEvent ,
+                 callback4                                  );
+    m_vfsIsInitialized = VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -571,15 +583,27 @@ RedisInfoService::SaveDocTo( const CORE::CDataNode& doc     ,
                              const CORE::CString& vfsPath   ) const
 {GUCEF_TRACE;
     
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    if ( !vfs.IsInitialized() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):SaveDocTo: Deferring until the VFS is initialized" );
+        return false;
+    }
+
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
     CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecName, codec, false );
     if ( !codec )
-        return false;
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):SaveDocTo: Could not obtain codec for codecName : " + codecName );
+        return false;    
+    }
 
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "wb", true );
-    if ( !file )
+    if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):SaveDocTo: VFS could not provide access to file at path: " + vfsPath );
         return false;
+    }
 
     return codec->StoreDataTree( &doc, file->GetAccess() );
 }
@@ -592,15 +616,27 @@ RedisInfoService::LoadDocFrom( CORE::CDataNode& doc           ,
                                const CORE::CString& vfsPath   ) const
 {GUCEF_TRACE;
     
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    if ( !vfs.IsInitialized() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):LoadDocFrom: Deferring until the VFS is initialized" );
+        return false;
+    }
+    
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
     CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecName, codec, false );
     if ( !codec )
-        return false;
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):LoadDocFrom: Could not obtain codec for codecName : " + codecName );
+        return false;    
+    }
+    
     VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "rb", false );
-    if ( !file )
+    if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):LoadDocFrom: VFS could not provide access to file at path: " + vfsPath );
         return false;
+    }
 
     return codec->BuildDataTree( &doc, file->GetAccess() );
 }
@@ -804,7 +840,9 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 
     // Setup connection to Redis
     // Note that if there is an error here we will just keep on trying automatically
-    RedisConnect();
+    // same thing for VFS init which will defer the connection attempt
+    if ( m_vfsIsInitialized )
+        RedisConnect( true );
     return true;
 }
 
@@ -982,6 +1020,7 @@ RedisNodeWithPipe::RedisNodeWithPipe( void )
     : RedisNode()
     , redisPipe( GUCEF_NULL ) 
     , redisErrorReplies( 0 )
+    , redisTimeoutReplies( 0 )
 {GUCEF_TRACE;
 
 }
@@ -1022,6 +1061,22 @@ RedisNodeWithPipe::Serialize( CORE::CDataNode& domRootNode                      
 /*-------------------------------------------------------------------------*/
 
 CORE::UInt32
+RedisNodeWithPipe::GetRedisTimeoutRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 nodeRedisTimeoutReplies = redisTimeoutReplies;
+        redisTimeoutReplies = 0;
+        return nodeRedisTimeoutReplies;
+    }
+    else
+        return redisTimeoutReplies;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
 RedisNodeWithPipe::GetRedisErrorRepliesCounter( bool resetCounter )
 {GUCEF_TRACE;
 
@@ -1049,6 +1104,22 @@ RedisInfoService::GetRedisClusterErrorRepliesCounter( bool resetCounter )
     }
     else
         return m_redisClusterErrorReplies;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+RedisInfoService::GetRedisClusterTimeoutRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisClusterTimeoutReplies = m_redisClusterTimeoutReplies;
+        m_redisClusterTimeoutReplies = 0;
+        return redisClusterTimeoutReplies;
+    }
+    else
+        return m_redisClusterTimeoutReplies;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1337,6 +1408,8 @@ RedisInfoService::PopulateDefaultRedisInfoValueTypes( void )
     m_redisInfoValueTypes[ "avg_ttl" ] = GUCEF_DATATYPE_UINT64;
     m_redisInfoValueTypes[ "keys" ] = GUCEF_DATATYPE_UINT64;
     m_redisInfoValueTypes[ "expires" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "usec" ] = GUCEF_DATATYPE_UINT64;
+    m_redisInfoValueTypes[ "usec_per_call" ] = GUCEF_DATATYPE_UINT64;
     
     // # Server
     m_redisInfoValueTypes[ "redis_version" ] = GUCEF_DATATYPE_UTF8_STRING;
@@ -1543,7 +1616,42 @@ RedisInfoService::PopulateDefaultRedisInfoValueTypes( void )
     m_redisInfoValueTypes[ "used_cpu_user_main_thread" ] = GUCEF_DATATYPE_FLOAT32;
 
     // # Cluster
-    m_redisInfoValueTypes[ "cluster_enabled" ] = GUCEF_DATATYPE_BOOLEAN_INT32;    
+    m_redisInfoValueTypes[ "cluster_enabled" ] = GUCEF_DATATYPE_BOOLEAN_INT32;        
+    m_redisInfoValueTypes[ "cluster_slots_assigned" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_slots_ok" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_slots_pfail" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_slots_fail" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_known_nodes" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_size" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_current_epoch" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_my_epoch" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "total_cluster_links_buffer_limit_exceeded" ] = GUCEF_DATATYPE_UINT64;    
+    // the following are only sent by Redis is the value is non-zero per the docs:
+    m_redisInfoValueTypes[ "cluster_stats_messages_ping_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_ping_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_pong_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_pong_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_meet_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_meet_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_fail_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_fail_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_publish_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_publish_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_auth-req_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_auth-req_received" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_auth-ack_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_auth-ack_received" ] = GUCEF_DATATYPE_UINT64; 
+    m_redisInfoValueTypes[ "cluster_stats_messages_update_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_update_received" ] = GUCEF_DATATYPE_UINT64; 
+    m_redisInfoValueTypes[ "cluster_stats_messages_mfstart_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_mfstart_received" ] = GUCEF_DATATYPE_UINT64; 
+    m_redisInfoValueTypes[ "cluster_stats_messages_module_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_module_received" ] = GUCEF_DATATYPE_UINT64; 
+    m_redisInfoValueTypes[ "cluster_stats_messages_publishshard_sent" ] = GUCEF_DATATYPE_UINT64;    
+    m_redisInfoValueTypes[ "cluster_stats_messages_publishshard_received" ] = GUCEF_DATATYPE_UINT64; 
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1601,11 +1709,17 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
         }
     }
     catch ( const sw::redis::TimeoutError& e )
-    {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis++ TimeoutError exception: " + e.what() );
+    {        
         if ( GUCEF_NULL != node )
-            ++node->redisErrorReplies;
-        ++m_redisClusterErrorReplies;
+        {
+            ++node->redisTimeoutReplies;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis Node " + node->nodeId + " : Redis++ timeout exception: " + e.what() );
+        }
+        else
+        {
+            ++m_redisClusterTimeoutReplies;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis++ TimeoutError exception: " + e.what() );
+        }
         return false;
     }
     catch ( const sw::redis::Error& e )
@@ -1783,10 +1897,31 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
     }    
     catch ( const sw::redis::MovedError& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ Moved exception: " + e.what() );
         if ( GUCEF_NULL != node )
+        {
             ++node->redisErrorReplies;
+            GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis Node " + node->nodeId + " : Redis++ Moved exception: " + e.what() );            
+        }
+        else
+        {
+            ++m_redisClusterErrorReplies;
+            GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ Moved exception: " + e.what() );            
+        }
         RedisReconnect();
+        return false;
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {        
+        if ( GUCEF_NULL != node )
+        {
+            ++node->redisTimeoutReplies;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis Node " + node->nodeId + " : Redis++ timeout exception: " + e.what() );
+        }
+        else
+        {
+            ++m_redisClusterTimeoutReplies;
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ timeout exception: " + e.what() );
+        }
         return false;
     }
     catch ( const sw::redis::Error& e )
@@ -1910,6 +2045,12 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
         while ( itteratorParam != "0" );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Found " + CORE::ToString( keysFound ) + " keys for Redis node " + node.nodeId );
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Redis Node " + node.nodeId + " : Redis++ timeout exception: " + e.what() );
+        ++node.redisTimeoutReplies;
+        return false;
     }
     catch ( const sw::redis::Error& e )
     {
@@ -2040,6 +2181,12 @@ RedisInfoService::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
         }
         return true;
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ TimeoutError exception: " + e.what() );
+        ++m_redisClusterTimeoutReplies;
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
@@ -2143,6 +2290,12 @@ RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
         }
 
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterSlots: Redis++ TimeoutError exception: " + e.what() );
+        ++m_redisClusterTimeoutReplies;
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterSlots: Redis++ exception: " + e.what() );
@@ -2221,6 +2374,12 @@ RedisInfoService::RedisDisconnect( void )
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
         return false;
     }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ TimeoutError exception: " + e.what() );
+        ++m_redisClusterTimeoutReplies;
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisClusterErrorReplies;
@@ -2241,34 +2400,39 @@ RedisInfoService::RedisDisconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisInfoService::RedisConnect( void )
+RedisInfoService::RedisConnect( bool reset )
 {GUCEF_TRACE;
 
-    RedisDisconnect();
+    if ( reset )
+        RedisDisconnect();
     
     try
     {
-        m_settings.redisAddress.Refresh();
+        if ( reset || GUCEF_NULL == m_redisContext )
+        {
+            m_settings.redisAddress.Refresh();
         
-        sw::redis::ConnectionOptions rppConnectionOptions;
-        rppConnectionOptions.host = m_settings.redisAddress.GetHostname();  // Required.
-        rppConnectionOptions.port = m_settings.redisAddress.GetPortInHostByteOrder(); // Optional. The default port is 6379.
-        //rppConnectionOptions.password = "auth";   // Optional. No password by default.
-        //rppConnectionOptions.db = 1;  // Optional. Use the 0th database by default.
+            sw::redis::ConnectionOptions rppConnectionOptions;
+            rppConnectionOptions.host = m_settings.redisAddress.GetHostname();  // Required.
+            rppConnectionOptions.port = m_settings.redisAddress.GetPortInHostByteOrder(); // Optional. The default port is 6379.
+            //rppConnectionOptions.password = "auth";   // Optional. No password by default.
+            //rppConnectionOptions.db = 1;  // Optional. Use the 0th database by default.
 
-        // Optional. Timeout before we successfully send request to or receive response from redis.
-        // By default, the timeout is 0ms, i.e. never timeout and block until we send or receive successfuly.
-        // NOTE: if any command is timed out, we throw a TimeoutError exception.
-        rppConnectionOptions.socket_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionSocketTimeoutInMs );
-        rppConnectionOptions.connect_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionConnectTimeoutInMs );
+            // Optional. Timeout before we successfully send request to or receive response from redis.
+            // By default, the timeout is 0ms, i.e. never timeout and block until we send or receive successfuly.
+            // NOTE: if any command is timed out, we throw a TimeoutError exception.
+            rppConnectionOptions.socket_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionSocketTimeoutInMs );
+            rppConnectionOptions.connect_timeout = std::chrono::milliseconds( m_settings.redisConnectionOptionConnectTimeoutInMs );
 
-        rppConnectionOptions.keep_alive = m_settings.redisConnectionOptionKeepAlive;
+            rppConnectionOptions.keep_alive = m_settings.redisConnectionOptionKeepAlive;
 
-        // Connect to the Redis cluster
-        delete m_redisContext;
-        m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
+            // Connect to the Redis cluster
+            delete m_redisContext;
+            m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
+
+        }
 
         ProvideRedisNodesDoc();
 
@@ -2302,6 +2466,13 @@ RedisInfoService::RedisConnect( void )
         }
         
         return true;
+    }
+    catch ( const sw::redis::TimeoutError& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ TimeoutError exception: " + e.what() );
+        ++m_redisClusterTimeoutReplies;
+        RedisReconnect();
+        return false;
     }
     catch ( const sw::redis::Error& e )
     {
@@ -2371,6 +2542,7 @@ RedisInfoService::IsStreamIndexingNeeded( void ) const
     {
         if ( (*i).HasChar( '*' ) > -1 )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):IsStreamIndexingNeeded: Determined that stream has wildcards and thus indexing is needed: " + (*i) );
             return true;
         }
         ++i;
@@ -2420,7 +2592,7 @@ RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
             CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
-            " streams which we will collect metric for"  );
+            " streams which we will collect metrics for"  );
     }
 
     m_streamIndexingTimer->SetEnabled( IsStreamIndexingNeeded() );
@@ -2436,7 +2608,7 @@ RedisInfoService::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
 
     m_redisReconnectTimer->SetEnabled( false );
 
-    if ( !RedisConnect() )
+    if ( !RedisConnect( true ) )
     {
         {
             MT::CScopeWriterLock lock( m_lock );
@@ -2450,28 +2622,54 @@ RedisInfoService::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
     }
 }
 
+
+
+/*-------------------------------------------------------------------------*/
+
+void
+RedisInfoService::OnVfsInitCompleted( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnVfsInitCompleted" );
+    m_vfsIsInitialized = true;
+    RedisConnect( false );
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
 RedisInfoService::SendErrorReplyStats( const CORE::CString& metricPrefix )
 {GUCEF_TRACE;
+    
+    CORE::UInt32 clusterErrorReplyCount = GetRedisClusterErrorRepliesCounter( true );
+    CORE::UInt32 clusterTimeoutReplyCount = GetRedisClusterTimeoutRepliesCounter( true );
 
     CORE::CString clusterMetricPrefix = metricPrefix + "ClusterErrorReplies";
-    CORE::UInt32 clusterErrorReplyCount = GetRedisClusterErrorRepliesCounter( true );
     GUCEF_METRIC_COUNT( clusterMetricPrefix, clusterErrorReplyCount, 1.0f );
+    clusterMetricPrefix = metricPrefix + "ClusterTimeoutReplies";
+    GUCEF_METRIC_COUNT( clusterMetricPrefix, clusterTimeoutReplyCount, 1.0f );
     
     CORE::CValueList localErrorStats;
-    localErrorStats[ "redisClusterErrorReplies" ] = CORE::ToString( clusterErrorReplyCount );
+    localErrorStats[ "redisClusterErrorReplies" ] = clusterErrorReplyCount;
+    localErrorStats[ "redisClusterTimeoutReplies" ] = clusterTimeoutReplyCount;
 
     RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
     while ( i != m_redisNodesMap.end() )
     {
         RedisNodeWithPipe& node = (*i).second;
-        CORE::CString nodeMetricPrefix = metricPrefix + node.nodeId + ".ErrorReplies";
+        
         CORE::UInt32 nodeErrorReplyCount = node.GetRedisErrorRepliesCounter( true );
+        CORE::UInt32 nodeTimeoutReplyCount = node.GetRedisTimeoutRepliesCounter( true );
+        
+        CORE::CString nodeMetricPrefix = metricPrefix + node.nodeId + ".ErrorReplies";        
         GUCEF_METRIC_COUNT( nodeMetricPrefix, nodeErrorReplyCount, 1.0f );
+        nodeMetricPrefix = metricPrefix + node.nodeId + ".TimeoutReplies";
+        GUCEF_METRIC_COUNT( nodeMetricPrefix, nodeTimeoutReplyCount, 1.0f );
 
-        localErrorStats[ "redisNodeErrorReplies." + node.nodeId ] = CORE::ToString( nodeErrorReplyCount );
+        localErrorStats[ "redisNodeErrorReplies." + node.nodeId ] = nodeErrorReplyCount;
+        localErrorStats[ "redisNodeTimeoutReplies." + node.nodeId ] = nodeTimeoutReplyCount;
 
         ++i;
     }
@@ -2495,6 +2693,8 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisClusterInfo( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained cluster-info" );
+
             // Cluster info is all numeric except for the cluster state
             // We turn the state into a number here so we can sent it as a stat
             static const CORE::CString clusterStateStatName = "cluster_state";
@@ -2518,17 +2718,27 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             if ( m_settings.retainRedisInfo )
                 m_cmdClusterInfo = kv;
         }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain cluster-info" );
+        }
     }
     if ( m_settings.gatherInfoCommandStats )
     {
         CORE::CValueList kv;
         if ( GetRedisInfoCommandStats( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-command-stats" );
+            
             CORE::CString metricPrefix = m_settings.metricPrefix + "CommandStats.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoCommandstats = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-command-stats" );
         }
     }
     if ( m_settings.gatherInfoMemory )
@@ -2536,11 +2746,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoMemory( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-memory" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Memory.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoMemory = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-memory" );
         }
     }
     if ( m_settings.gatherInfoReplication )
@@ -2548,11 +2764,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoReplication( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-replication" );
+            
             CORE::CString metricPrefix = m_settings.metricPrefix + "Replication.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoReplication = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-replication" );
         }
     }
     if ( m_settings.gatherInfoPersistence )
@@ -2560,11 +2782,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoPersistence( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-persistance" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Persistence.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoPersistence = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-persistance" );
         }
     }
     if ( m_settings.gatherInfoStats )
@@ -2572,11 +2800,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoStats( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-stats" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Stats.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoStats = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-stats" );
         }
     }
     if ( m_settings.gatherInfoClients )
@@ -2584,11 +2818,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoClients( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-clients" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Clients.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoClients = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-clients" );
         }
     }
     if ( m_settings.gatherInfoCpu )
@@ -2596,11 +2836,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoCpu( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-cpu" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Cpu.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoCpu = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-cpu" );
         }
     }
     if ( m_settings.gatherInfoKeyspace )
@@ -2608,11 +2854,17 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoKeyspace( kv ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained info-keyspace" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "Keyspace.";
             SendKeyValueStats( kv, metricPrefix );
 
             if ( m_settings.retainRedisInfo )
                 m_cmdInfoKeyspace = kv;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain info-keyspace" );
         }
     }
     if ( m_settings.gatherStreamInfo )
@@ -2620,8 +2872,14 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisStreamInfoForAllStreams( kv, true, true ) )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Obtained stream info" );
+
             CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnMetricsTimerCycle: Failed to obtain stream info" );
         }
     }
     if ( m_settings.gatherErrorReplyCount )

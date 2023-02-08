@@ -275,9 +275,12 @@ GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "redisinfo_log.txt" );
-
-    keyValueList.Set( "logfile", logFilename );
+    CORE::CString logFilename = CORE::RelativePath( keyValueList.GetValueAlways( "logfile" ) );
+    if ( logFilename.IsNULLOrEmpty() )
+    {    
+        logFilename = CORE::CombinePath( outputDir, "redisinfo_log.txt" );
+        keyValueList.Set( "logfile", logFilename );
+    }
 
     CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
     logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
