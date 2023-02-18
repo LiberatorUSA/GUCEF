@@ -14,12 +14,16 @@
 set( HEADER_FILES 
   include/crc16.h
   include/redisinfo.h
+  include/redisinfo_CRedisClusterKeyCache.h
+  include/redisinfo_CRedisClusterKeyCacheUpdateTask.h
 )
 
 set( SOURCE_FILES 
   src/crc16.cpp
   src/main.cpp
   src/redisinfo.cpp
+  src/redisinfo_CRedisClusterKeyCache.cpp
+  src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

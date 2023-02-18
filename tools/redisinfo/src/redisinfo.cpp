@@ -71,6 +71,15 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace REDISINFO {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -99,7 +108,7 @@ Settings::Settings( void )
     , gatherStreamInfo( true )
     , streamsToGatherInfoFrom()
     , streamIndexingInterval( GUCEF_DEFAULT_REDIS_STREAM_INDEXING_INTERVAL )
-    , redisScanCountSize( 1000 )
+    , redisScanCountSize( 5000 )
     , gatherInfoClients( true )
     , gatherInfoCpu( true )
     , gatherInfoKeyspace( true )
@@ -223,7 +232,7 @@ Settings::LoadConfig( const CORE::CDataNode& cfg )
     gatherInfoCommandStats = cfg.GetAttributeValueOrChildValueByName( "gatherInfoCommandStats" ).AsBool( gatherInfoCommandStats, true );
     gatherInfoMemory = cfg.GetAttributeValueOrChildValueByName( "gatherInfoMemory" ).AsBool( gatherInfoMemory, true );
     gatherStreamInfo = cfg.GetAttributeValueOrChildValueByName( "gatherStreamInfo" ).AsBool( gatherStreamInfo, true );
-    streamsToGatherInfoFrom = CORE::StringToStringVector( cfg.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ).AsString( CORE::StringVectorToString( streamsToGatherInfoFrom ), true ) );
+    streamsToGatherInfoFrom = CORE::StringToStringSet( cfg.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ).AsString( CORE::StringSetToString( streamsToGatherInfoFrom ), true ) );
     streamIndexingInterval = cfg.GetAttributeValueOrChildValueByName( "streamIndexingInterval" ).AsInt32( streamIndexingInterval, true );
     redisScanCountSize = cfg.GetAttributeValueOrChildValueByName( "redisScanCountSize" ).AsUInt32( redisScanCountSize, true );
     gatherInfoClients = cfg.GetAttributeValueOrChildValueByName( "gatherInfoClients" ).AsBool( gatherInfoClients, true );
@@ -252,7 +261,7 @@ Settings::GetClassTypeName( void ) const
 
 RedisInfoService::RedisInfoService()
     : CORE::CTaskConsumer()
-    , m_redisContext( GUCEF_NULL )
+    , m_redisContext()
     , m_redisPacketArgs()
     , m_metricsTimer( GUCEF_NULL )
     , m_redisReconnectTimer( GUCEF_NULL )
@@ -328,6 +337,11 @@ RedisInfoService::RegisterEventHandlers( void )
                  VFS::CVFS::VfsInitializationCompletedEvent ,
                  callback4                                  );
     m_vfsIsInitialized = VFS::CVfsGlobal::Instance()->GetVfs().IsInitialized();
+
+    TEventCallback callback5( this, &RedisInfoService::OnRedisKeyCacheUpdate );
+    SubscribeTo( CRedisClusterKeyCache::Instance()       ,
+                 CRedisClusterKeyCache::CacheUpdateEvent ,
+                 callback5                               );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -833,6 +847,8 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
     delete m_metricsTimer;
     m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_settings.collectMetrics );
+
+    CRedisClusterKeyCache::Instance()->SetRedisScanInterationCountSize( m_settings.redisScanCountSize );
     
     RegisterEventHandlers();
 
@@ -852,7 +868,7 @@ bool
 RedisInfoService::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
     {
         m_redisReconnectTimer->SetEnabled( true );
     }
@@ -1138,7 +1154,7 @@ RedisInfoService::GetRedisInfoKeyspace( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1162,7 +1178,7 @@ RedisInfoService::GetRedisInfoPersistence( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1186,7 +1202,7 @@ RedisInfoService::GetRedisInfoReplication( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1210,7 +1226,7 @@ RedisInfoService::GetRedisInfoStats( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1234,7 +1250,7 @@ RedisInfoService::GetRedisInfoCommandStats( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1258,7 +1274,7 @@ RedisInfoService::GetRedisInfoClients( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1282,7 +1298,7 @@ RedisInfoService::GetRedisInfoMemory( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1306,7 +1322,7 @@ RedisInfoService::GetRedisInfoCpu( CORE::CValueList& kv )
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
 
         // Abort additional info retrievals if we lose the context
-        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+        if ( m_redisContext.IsNULL() || m_redisNodesMap.empty() )
             return totalSuccess;
 
         ++i;
@@ -1683,7 +1699,7 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
                                 RedisNodeWithPipe* node   ) 
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
         return false;
     
     try
@@ -1865,7 +1881,7 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
                                       bool redisIdsAsFloat                   )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
         return false;
     
     RedisNodeWithPipe* node = FindNodeInfo( streamName );
@@ -1950,7 +1966,7 @@ RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
-    CORE::CString::StringVector::iterator i = m_filteredStreamNames.begin();
+    CORE::CString::StringSet::iterator i = m_filteredStreamNames.begin();
     while ( i != m_filteredStreamNames.end() )
     {
         CORE::CString keyPrefix = (*i).ReplaceChar( '.', '_' ).ReplaceChar( '{', '_' ).ReplaceChar( '}', '_' ) + '.';
@@ -1984,7 +2000,7 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
                                        const CORE::CString& keyType      )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == node.redisPipe )
+    if ( m_redisContext.IsNULL() || GUCEF_NULL == node.redisPipe )
         return false;
     
     CORE::UInt32 keysFound = 0;
@@ -2072,30 +2088,10 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisInfoService::GetRedisKeys( CORE::CString::StringVector& keys ,
-                                const CORE::CString& keyType      )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL == m_redisContext )
-        return false;
-
-    bool totalSuccess = true;
-    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
-    while ( i != m_redisNodesMap.end() )
-    {
-        totalSuccess = GetRedisKeysForNode( (*i).second, keys, keyType ) && totalSuccess;        
-        ++i;
-    }
-    return totalSuccess;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
 RedisInfoService::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
         return false;
     
     try
@@ -2206,7 +2202,7 @@ bool
 RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext )
+    if ( m_redisContext.IsNULL() )
         return false;
     
     try
@@ -2343,7 +2339,7 @@ RedisInfoService::RedisDisconnect( void )
 
     try
     {
-        if ( GUCEF_NULL != m_redisContext )
+        if ( !m_redisContext.IsNULL() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
@@ -2357,8 +2353,8 @@ RedisInfoService::RedisDisconnect( void )
             }
             m_redisNodesMap.clear();
         
-            delete m_redisContext;
-            m_redisContext = GUCEF_NULL;
+            CRedisClusterKeyCache::Instance()->StopUpdatesForCluster( m_redisContext );
+            m_redisContext.Unlink();
 
             {
                 MT::CScopeWriterLock lock( m_lock );
@@ -2408,7 +2404,7 @@ RedisInfoService::RedisConnect( bool reset )
     
     try
     {
-        if ( reset || GUCEF_NULL == m_redisContext )
+        if ( reset || m_redisContext.IsNULL() )
         {
             m_settings.redisAddress.Refresh();
         
@@ -2427,8 +2423,8 @@ RedisInfoService::RedisConnect( bool reset )
             rppConnectionOptions.keep_alive = m_settings.redisConnectionOptionKeepAlive;
 
             // Connect to the Redis cluster
-            delete m_redisContext;
-            m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
+            m_redisContext.Unlink();
+            m_redisContext = RedisClusterPtr( new sw::redis::RedisCluster( rppConnectionOptions ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
 
@@ -2446,17 +2442,15 @@ RedisInfoService::RedisConnect( bool reset )
         {
             if ( IsStreamIndexingNeeded() )
             {
+                // kick off the key scans and delta updates
+                CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, m_filteredStreamNames, "stream", m_settings.streamsToGatherInfoFrom );
+                
                 m_streamIndexingTimer->TriggerNow();
                 m_streamIndexingTimer->SetEnabled( true );
             }
             else
             {
                 m_filteredStreamNames = m_settings.streamsToGatherInfoFrom;
-                if ( m_filteredStreamNames.empty() )
-                {
-                    // One-time fetch of all stream names as a fallback for no stream name or patterns having been specified
-                    GetRedisKeys( m_filteredStreamNames, "stream" );
-                }
             }
         }
         
@@ -2537,12 +2531,12 @@ bool
 RedisInfoService::IsStreamIndexingNeeded( void ) const
 {GUCEF_TRACE;
 
-    CORE::CString::StringVector::const_iterator i = m_settings.streamsToGatherInfoFrom.begin();
+    CORE::CString::StringSet::const_iterator i = m_settings.streamsToGatherInfoFrom.begin();
     while ( i != m_settings.streamsToGatherInfoFrom.end() )
     {
         if ( (*i).HasChar( '*' ) > -1 )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):IsStreamIndexingNeeded: Determined that stream has wildcards and thus indexing is needed: " + (*i) );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):IsStreamIndexingNeeded: Determined that at least one stream has wildcards and thus indexing is needed: " + (*i) );
             return true;
         }
         ++i;
@@ -2553,49 +2547,97 @@ RedisInfoService::IsStreamIndexingNeeded( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+RedisInfoService::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CRedisClusterKeyCache::CacheUpdateEventData* cacheUpdate = static_cast< CRedisClusterKeyCache::CacheUpdateEventData* >( eventData );
+    if ( GUCEF_NULL != cacheUpdate )
+    {
+        if ( cacheUpdate->redisCluster == m_redisContext )
+        {        
+            CORE::CString::StringSet::iterator i = m_settings.streamsToGatherInfoFrom.begin();
+            while ( i != m_settings.streamsToGatherInfoFrom.end() )
+            {
+                if ( (*i).HasChar( '*' ) > -1 )
+                {
+                    CORE::CString::StringSet::iterator n = cacheUpdate->newKeys.begin();
+                    while ( n != cacheUpdate->newKeys.end() )
+                    {
+                        if ( (*n).WildcardEquals( (*i), '*', true ) )
+                        {                        
+                            m_filteredStreamNames.insert( (*n) );
+                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnRedisKeyCacheUpdate: Discovered new key matching our search pattern: " + (*n) );
+                        }
+                        ++n;
+                    }
+
+                    n = cacheUpdate->deletedKeys.begin();
+                    while ( n != cacheUpdate->deletedKeys.end() )
+                    {
+                        if ( (*n).WildcardEquals( (*i), '*', true ) )
+                        {                        
+                            m_filteredStreamNames.erase( (*n) );
+                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):OnRedisKeyCacheUpdate: Discovered that key matching our search pattern has been deleted: " + (*n) );
+                        }
+                        ++n;
+                    }
+                }
+                ++i;
+            }
+        }
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( m_settings.streamIndexingInterval <= 0 )
+    if ( m_settings.streamIndexingInterval <= 0 ||  m_redisContext.IsNULL() )
         return;
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Attempting to scan all keys in the target node for matches to the configured streams names with wildcards" );
-    
-    m_streamIndexingTimer->SetEnabled( false );
+    //
+    //GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Attempting to scan all keys in the target node for matches to the configured streams names with wildcards" );
+    //
+    //m_streamIndexingTimer->SetEnabled( false );
 
-    // First we will need to fetch all stream names in the cluster
-    // Redis does not support a wildcard filter for this so we have to fetch everything
-    CORE::CString::StringVector allStreamNames;
-    if ( GetRedisKeys( allStreamNames, "stream" ) )
-    {
-        CORE::CString::StringVector filteredStreamNames;
-        CORE::CString::StringVector::iterator i = m_settings.streamsToGatherInfoFrom.begin();
-        while ( i != m_settings.streamsToGatherInfoFrom.end() )
-        {
-            if ( (*i).HasChar( '*' ) > -1 )
-            {
-                CORE::CString::StringVector::iterator n = allStreamNames.begin();
-                while ( n != allStreamNames.end() )
-                {
-                    if ( (*n).WildcardEquals( (*i), '*', true ) )
-                    {
-                        filteredStreamNames.push_back( (*n) );
-                    }
-                    ++n;
-                }
-            }
-            ++i;
-        }
-        m_filteredStreamNames = filteredStreamNames;
+    //bool totalSuccess = true;
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
-            CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
-            " streams which we will collect metrics for"  );
-    }
+    //// First we will need to fetch all stream names in the cluster
+    //// Redis does not support a wildcard filter for this so we have to fetch everything
+    //CORE::CString::StringSet allStreamNames;
+    //if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, allStreamNames, "stream", m_settings.streamsToGatherInfoFrom ) )
+    //{
+    //    CORE::CString::StringVector filteredStreamNames;
+    //    CORE::CString::StringVector::iterator i = m_settings.streamsToGatherInfoFrom.begin();
+    //    while ( i != m_settings.streamsToGatherInfoFrom.end() )
+    //    {
+    //        if ( (*i).HasChar( '*' ) > -1 )
+    //        {
+    //            CORE::CString::StringVector::iterator n = allStreamNames.begin();
+    //            while ( n != allStreamNames.end() )
+    //            {
+    //                if ( (*n).WildcardEquals( (*i), '*', true ) )
+    //                {
+    //                    filteredStreamNames.push_back( (*n) );
+    //                }
+    //                ++n;
+    //            }
+    //        }
+    //        ++i;
+    //    }
+    //    m_filteredStreamNames = filteredStreamNames;
 
-    m_streamIndexingTimer->SetEnabled( IsStreamIndexingNeeded() );
+    //    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
+    //        CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
+    //        " streams which we will collect metrics for"  );
+    //}
+
+    //m_streamIndexingTimer->SetEnabled( IsStreamIndexingNeeded() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3287,5 +3329,13 @@ RedisInfo::GetGlobalConfig( void ) const
     return m_globalConfig;
 }
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
+}; /* namespace REDISINFO */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/

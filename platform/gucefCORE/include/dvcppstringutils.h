@@ -247,6 +247,20 @@ StringVectorToString( const CString::StringVector& strVector          ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP CString::StringSet
+StringToStringSet( const CString& str                                                  , 
+                   const CString::StringSet& defaultIfNeeded = CString::EmptyStringSet ,
+                   char seperator = ','                                                );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+StringSetToString( const CString::StringSet& strSet                , 
+                   const CString& defaultIfNeeded = CString::Empty ,
+                   char seperator = ','                            );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP CString
 PointerToString( const void* value );
 

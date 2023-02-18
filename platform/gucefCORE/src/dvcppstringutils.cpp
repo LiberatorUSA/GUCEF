@@ -1103,6 +1103,46 @@ StringVectorToString( const CString::StringVector& strVector ,
 
 /*-------------------------------------------------------------------------*/
 
+CString::StringSet
+StringToStringSet( const CString& str                        ,
+                   const CString::StringSet& defaultIfNeeded ,
+                   char seperator                            )
+{GUCEF_TRACE;
+
+    if ( !str.IsNULLOrEmpty() )
+    {
+        return str.ParseUniqueElements( seperator, true );
+    }
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+StringSetToString( const CString::StringSet& strSet , 
+                   const CString& defaultIfNeeded   ,
+                   char seperator                   )
+{GUCEF_TRACE;
+
+    if ( !strSet.empty() )
+    {
+        CString result;
+        CString::StringSet::const_iterator i = strSet.begin();
+        while ( i != strSet.end() )
+        {
+            if ( result.IsNULLOrEmpty() )
+                result = (*i);
+            else
+                result += seperator + (*i);
+            ++i;
+        }
+        return result;
+    }
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 LastSubDir( const CString& path )
 {GUCEF_TRACE;

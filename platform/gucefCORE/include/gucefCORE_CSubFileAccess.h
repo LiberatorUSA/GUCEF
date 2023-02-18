@@ -57,8 +57,8 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
     virtual ~CSubFileAccess() GUCEF_VIRTUAL_OVERRIDE;
 
     bool Load( const CString& file ,
-               const UInt32 offset ,
-               const UInt32 size   );
+               const UInt64 offset ,
+               const UInt64 size   );
 
     /**
      *      open the resource for I/O

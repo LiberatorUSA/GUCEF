@@ -117,7 +117,7 @@ ioa_pafclose( TIOAccess *access )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 ioa_paftell( TIOAccess *access )
 {
         return paftell( (PAFILE*)((TIOAccessPrivateData*)access->privdata)->source );
@@ -126,7 +126,7 @@ ioa_paftell( TIOAccess *access )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-ioa_pafseek( TIOAccess *access, Int32 offset, Int32 origin )
+ioa_pafseek( TIOAccess *access, Int64 offset, Int32 origin )
 {
         return pafseek( (PAFILE*)((TIOAccessPrivateData*)access->privdata)->source, offset, origin );
 }
@@ -134,7 +134,7 @@ ioa_pafseek( TIOAccess *access, Int32 offset, Int32 origin )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-ioa_pafsetpos( TIOAccess *access, UInt32 offset )
+ioa_pafsetpos( TIOAccess *access, UInt64 offset )
 {
         return pafseek( (PAFILE*)((TIOAccessPrivateData*)access->privdata)->source, offset, SEEK_SET );
 }
@@ -218,7 +218,7 @@ ioa_mfread( TIOAccess *access, void *dest, UInt32 esize, UInt32 elements )
 }
 
 /*-------------------------------------------------------------------------*/
-UInt32
+UInt64
 ioa_mftell( TIOAccess *access )
 {
         return mftell( (MFILE*)((TIOAccessPrivateData*)access->privdata)->source );

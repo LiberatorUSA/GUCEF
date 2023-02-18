@@ -99,6 +99,11 @@
 #define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef REDISINFO_CREDISCLUSTERKEYCACHE_H
+#include "redisinfo_CRedisClusterKeyCache.h"
+#define REDISINFO_CREDISCLUSTERKEYCACHE_H
+#endif /* REDISINFO_CREDISCLUSTERKEYCACHE_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -110,7 +115,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-using namespace GUCEF;
+namespace GUCEF {
+namespace REDISINFO {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -136,7 +142,7 @@ class Settings : public CORE::CIConfigurable
     bool gatherInfoCommandStats;
     bool gatherInfoMemory;
     bool gatherStreamInfo;
-    CORE::CString::StringVector streamsToGatherInfoFrom;
+    CORE::CString::StringSet streamsToGatherInfoFrom;
     CORE::Int32 streamIndexingInterval;
     CORE::UInt32 redisScanCountSize;
     bool gatherInfoClients;
@@ -231,9 +237,9 @@ class RedisInfoService : public CORE::CTaskConsumer
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< RedisInfoService > TEventCallback;
-    typedef CORE::CString::StringSet             TStringSet;
-    typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
+    typedef CORE::CTEventHandlerFunctor< RedisInfoService >     TEventCallback;
+    typedef CORE::CString::StringSet                            TStringSet;
+    typedef std::map< CORE::UInt32, TStringSet >                TUInt32ToStringSetMap;
 
     static const CORE::CString HashSlotFileCodec;
 
@@ -309,9 +315,6 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool ProvideHashSlotMapDoc( void );
 
     bool ProvideRedisNodesDoc( void );
-
-    bool GetRedisKeys( CORE::CString::StringVector& keys ,
-                       const CORE::CString& keyType      );
 
     bool GetRedisKeysForNode( RedisNodeWithPipe& node           ,
                               CORE::CString::StringVector& keys ,
@@ -393,7 +396,12 @@ class RedisInfoService : public CORE::CTaskConsumer
     OnVfsInitCompleted( CORE::CNotifier* notifier    ,
                         const CORE::CEvent& eventId  ,
                         CORE::CICloneable* eventData );
-    
+
+    void
+    OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+        
     private:
 
     RedisInfoService( const RedisInfoService& src ); // not implemented
@@ -406,13 +414,13 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, RedisNodeWithPipe >  TUInt32ToRedisNodeMapHttpResource;    
     typedef GUCEF::WEB::CTDataNodeSerializableMapHttpServerResource< CORE::UInt32, TStringSet >         TUInt32ToStringSetMapHttpResource;    
 
-    sw::redis::RedisCluster* m_redisContext;
+    RedisClusterPtr m_redisContext;
     Settings m_settings;
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_redisReconnectTimer;
     CORE::CTimer* m_streamIndexingTimer;
-    CORE::CString::StringVector m_filteredStreamNames;
+    CORE::CString::StringSet m_filteredStreamNames;
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;
     CORE::UInt32 m_redisClusterErrorReplies;
@@ -450,7 +458,7 @@ class RestApiRedisInfoInfoResource : public WEB::CCodecBasedHTTPServerResource
 
     RestApiRedisInfoInfoResource( RedisInfo* app );
 
-    virtual ~RestApiRedisInfoInfoResource();
+    virtual ~RestApiRedisInfoInfoResource() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -470,7 +478,7 @@ class RestApiRedisInfoConfigResource : public WEB::CCodecBasedHTTPServerResource
 
     RestApiRedisInfoConfigResource( RedisInfo* app, bool appConfig );
 
-    virtual ~RestApiRedisInfoConfigResource();
+    virtual ~RestApiRedisInfoConfigResource() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -531,4 +539,14 @@ class RedisInfo : public CORE::CObserver
     MT::CReadWriteLock m_appLock;
 };
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace REDISINFO */
+}; /* namespace GUCEF */
+
 /*-------------------------------------------------------------------------*/
+

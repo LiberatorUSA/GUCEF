@@ -66,8 +66,8 @@ namespace CORE {
 struct MFILE
 {
         const char* mchunk; /* pointer to mem chunk with data */
-        UInt32 size;        /* size of mem chunck */
-        UInt32 offset;      /* current 'file pointer' position */
+        UInt64 size;        /* size of mem chunck */
+        UInt64 offset;      /* current 'file pointer' position */
         const char* curpos; /* current mem address of file pointer */
 };
 
@@ -95,7 +95,7 @@ extern "C" {
  */
 GUCEF_CORE_PUBLIC_C MFILE*
 mfcreate( const void *mchunk  ,
-          UInt32 size         );
+          UInt64 size         );
 
 /*-------------------------------------------------------------------------*/
 
@@ -116,7 +116,7 @@ mfdestroy( MFILE *mfile );
 GUCEF_CORE_PUBLIC_C void
 mfinit( MFILE* file        ,
         const void *mchunk ,
-        const UInt32 size  );
+        const UInt64 size  );
 
 /*-------------------------------------------------------------------------*/
 
@@ -167,7 +167,7 @@ mfread( void *dest      ,
 /**
  *      Returns the current file pointer, which is a void*
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 mftell( const MFILE *mfile );
 
 /*-------------------------------------------------------------------------*/
@@ -178,7 +178,7 @@ mftell( const MFILE *mfile );
  */
 GUCEF_CORE_PUBLIC_C Int32
 mfseek( MFILE *mfile ,
-        Int32 offset ,
+        Int64 offset ,
         Int32 origin );
 
 /*-------------------------------------------------------------------------*/
@@ -189,7 +189,7 @@ mfseek( MFILE *mfile ,
  */
 GUCEF_CORE_PUBLIC_C Int32
 mfsetpos( MFILE *mfile   ,
-          UInt32 offset  );
+          UInt64 offset  );
 
 /*-------------------------------------------------------------------------*/
 

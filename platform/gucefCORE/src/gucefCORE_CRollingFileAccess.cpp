@@ -366,7 +366,7 @@ UInt64
 CRollingFileAccess::Write( CIOAccess& sourceData, Int64 bytesToWrite )
 {GUCEF_TRACE;
 
-    UInt32 bytesWritten = m_currentFile.Write( sourceData, bytesToWrite );
+    UInt64 bytesWritten = m_currentFile.Write( sourceData, bytesToWrite );
     m_offset += bytesWritten;
     EnforceFileSizeThreshold();
     return bytesWritten;

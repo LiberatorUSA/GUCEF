@@ -67,8 +67,8 @@ CSubFileAccess::CSubFileAccess( void )
 
 bool
 CSubFileAccess::Load( const CString& file ,
-                      const UInt32 offset ,
-                      const UInt32 size   )
+                      const UInt64 offset ,
+                      const UInt64 size   )
 {GUCEF_TRACE;
     
     Close();
@@ -81,7 +81,7 @@ CSubFileAccess::Load( const CString& file ,
 
     if ( NULL != m_file )
     {
-        fseek( m_file, m_offset, SEEK_SET );
+        fseek( m_file, (long) m_offset, SEEK_SET );
         m_totalSize = Filesize( m_filename.C_String() );
         return true;
     }                
@@ -106,7 +106,7 @@ CSubFileAccess::Open( void )
     
     m_file = fopen( m_filename.C_String() ,
                     "rb"                  );
-    fseek( m_file, m_offset, SEEK_SET );
+    fseek( m_file, (long) m_offset, SEEK_SET );
     m_totalSize = Filesize( m_filename.C_String() );
 }
 
@@ -165,11 +165,11 @@ CSubFileAccess::Read( void *dest      ,
 {GUCEF_TRACE;
 
     Int64 pos = ftell( m_file );
-    UInt32 readBytes = esize * elements;
+    UInt64 readBytes = esize * elements;
     
     if ( pos + readBytes > m_offset + m_size )
     {        
-        UInt32 remainder = m_size - ( pos - m_offset );
+        UInt64 remainder = m_size - ( pos - m_offset );
         elements = remainder / esize; // intentional cutoff using int division
         if ( 0 == elements ) 
             return 0;
@@ -200,7 +200,7 @@ CSubFileAccess::Seek( Int64 offset ,
     if ( origin == SEEK_END )
     {
         return fseek( m_file            , 
-                      m_offset + m_size , 
+                      (long) ( m_offset + m_size ), 
                       SEEK_SET          );
     }
     if ( origin == SEEK_CUR )
@@ -210,7 +210,7 @@ CSubFileAccess::Seek( Int64 offset ,
              ( pos + offset > (Int32) m_offset )  )
         {    
             return fseek( m_file       ,
-                          pos + offset ,
+                          (long) ( pos + offset ) ,
                           SEEK_SET     );
         }
         return 1;
@@ -221,7 +221,7 @@ CSubFileAccess::Seek( Int64 offset ,
              ( offset < (Int32) m_size )          )
         {
             return fseek( m_file            ,
-                          m_offset + offset ,
+                          (long) ( m_offset + offset ),
                           SEEK_SET          );
         }
         return 1;

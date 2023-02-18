@@ -296,7 +296,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
-    RedisInfo redisInfo;
+    REDISINFO::RedisInfo redisInfo;
     if ( !redisInfo.LoadConfig( keyValueList, *globalConfig ) )
     {
         delete globalConfig;

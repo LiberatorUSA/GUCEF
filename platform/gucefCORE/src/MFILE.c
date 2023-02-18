@@ -54,7 +54,7 @@ namespace CORE {
 void
 mfinit( MFILE* file        , 
         const void *mchunk , 
-        const UInt32 size  )
+        const UInt64 size  )
 {
         /*
          *      Initialize values of existing MFILE struct
@@ -69,7 +69,7 @@ mfinit( MFILE* file        ,
 
 MFILE*
 mfcreate( const void *mchunk , 
-          UInt32 size        )
+          UInt64 size        )
 {
         /*
          *      Create the struct for the memfile
@@ -97,7 +97,7 @@ mfdumptofile( MFILE *mfile         ,
          */
         FILE *fptr = fopen( filename, mode );
         if( !fptr ) return 0;
-        fwrite( mfile->mchunk, mfile->size, 1, fptr );
+        fwrite( mfile->mchunk, (size_t) mfile->size, 1, fptr );
         fclose( fptr );
         return 1;
 }
@@ -333,7 +333,7 @@ mfwrite( void *source    ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-mfsetpos( MFILE *mfile, UInt32 offset )
+mfsetpos( MFILE *mfile, UInt64 offset )
 {
         /*
          *      The mfsetpos() function repositions a file position indicator
@@ -360,7 +360,7 @@ mfsetpos( MFILE *mfile, UInt32 offset )
 /*-------------------------------------------------------------------------*/
 
 Int32
-mfseek( MFILE *mfile, Int32 offset, Int32 origin )
+mfseek( MFILE *mfile, Int64 offset, Int32 origin )
 {
         /*
          *      Set the file pointer to the given offset from the origin
@@ -370,7 +370,7 @@ mfseek( MFILE *mfile, Int32 offset, Int32 origin )
         {
                 case SEEK_CUR :
                 {
-                        mfsetpos( mfile, mfile->offset+offset );                      
+                        mfsetpos( mfile, (UInt64) mfile->offset+offset );                      
                         return 1;
                 }
                 case SEEK_END :
@@ -399,7 +399,7 @@ mfseek( MFILE *mfile, Int32 offset, Int32 origin )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 mftell( const MFILE *mfile )
 {
         /*

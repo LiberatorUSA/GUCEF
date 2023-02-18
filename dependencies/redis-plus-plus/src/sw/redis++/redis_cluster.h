@@ -1398,8 +1398,13 @@ private:
         -> typename std::enable_if<std::is_arithmetic<typename std::decay<Key>::type>::value,
                                     ReplyUPtr>::type;
 
+    public:
+    // DV Edit: making this version public
+    
     template <typename Cmd, typename ...Args>
     ReplyUPtr _command(Cmd cmd, Connection &connection, Args &&...args);
+
+    private:
 
     template <typename Cmd, typename ...Args>
     ReplyUPtr _command(Cmd cmd, const StringView &key, Args &&...args);
@@ -1432,6 +1437,7 @@ private:
     template <typename Output, typename Cmd, typename ...Args>
     ReplyUPtr _score_command(Cmd cmd, Args &&... args);
 
+    public: // DV EDIT: Need access to the pool
     ShardsPool _pool;
 };
 
