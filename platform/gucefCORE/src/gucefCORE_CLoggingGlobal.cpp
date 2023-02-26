@@ -118,9 +118,14 @@ CLoggingGlobal::~CLoggingGlobal()
 
     MT::CScopeMutex lock( g_dataLock );
 
+    // make a copy so that we disable logging loop back during destruction of the log manager
+    CLogManager* logManager = m_logManager;
+
     m_logManager->FlushLogs();
-    GUCEF_DELETE m_logManager;
+    
+    // wipe out log manager access first to disable a logging loop back during destruction of the log manager
     m_logManager = GUCEF_NULL;
+    GUCEF_DELETE logManager;
 }
 
 /*-------------------------------------------------------------------------*/

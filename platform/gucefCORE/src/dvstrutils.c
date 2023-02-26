@@ -23,6 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#define __STDC_WANT_LIB_EXT1__ 
 #include <string.h>      /* string handling */
 #include <malloc.h>      /* memory allocation */
 #include "gucefCORE_ETypes.h"      /* simple types used */
@@ -496,20 +497,22 @@ Replace_Char( char oldc, char newc, char *buffer )
 char*
 _Replace_Char( char oldc, char newc, const char *buffer )
 {
-        /*
-         *      First we allocate a new buffer
-         *      and copy string into it
-         */
-        UInt32 len = (UInt32)strlen( buffer )+1;
-        char *newbuf = ( char* ) malloc( len );
+    /*
+     *      First we allocate a new buffer
+     *      and copy string into it
+     */
+    size_t len = strlen( buffer )+1;
+    char* newbuf = ( char* ) malloc( len );
+    if ( GUCEF_NULL != newbuf )
+    {
         strcpy( newbuf, buffer );
 
         /*
          *      Now we do the replace
          */
         Replace_Char( oldc, newc, newbuf );
-
-        return newbuf;
+    }
+    return newbuf;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -941,54 +944,66 @@ Convert_Dir_Seperators( char *path )
 /*--------------------------------------------------------------------------*/
 
 void
-Append_To_Path( char *path           ,
-                const char *addition )
+Append_To_Path( char* path            ,
+                size_t pathBufferSize ,
+                const char* addition  )
 {
-        UInt32 offset = 0, len = 0;
+    UInt32 offset = 0;
+    size_t len = 0;
 
-        /*
-         *  Sanity checks
-         */
-        if ( ( addition == NULL ) || ( path == NULL ) ) return;
-        if ( *addition == '\0' ) return;
+    /*
+     *  Sanity checks
+     */
+    if ( ( GUCEF_NULL == addition ) || ( GUCEF_NULL == path ) ) 
+        return;
+    if ( *addition == '\0' ) 
+        return;
 
-        /*
-         *      Take care of any seperator that may be prefixed to
-         *      the addition string.
-         */
-        len = (UInt32)strlen( path );
-        if ( ( *addition == '/' ) || ( *addition == '\\' ) )
-        {
-                offset = 1;
-        }
+    /*
+     *      Take care of any seperator that may be prefixed to
+     *      the addition string.
+     */
+    len = strlen( path );
+    if ( ( *addition == '/' ) || ( *addition == '\\' ) )
+    {
+        offset = 1;
+    }
 
-        /*
-         *      Now we make sure we have a dir seperator between the
-         *      path and the addition strings.
-         */
-        #ifdef GUCEF_MSWIN_BUILD
+    /*
+     *      Now we make sure we have a dir seperator between the
+     *      path and the addition strings.
+     */
+    #ifdef GUCEF_MSWIN_BUILD
+
         Convert_Dir_Seperators( path );
-        if ( path[ len-1 ] == '\\' )
+    
+        if ( pathBufferSize > len-1 && path[ len-1 ] == '\\' )
         {
-                strcat( path, addition+offset );
-                Convert_Dir_Seperators( path );
-                return;
+            strcat( path, addition+offset );
+            Convert_Dir_Seperators( path );
+            return;
         }
+        #if defined( __STDC_LIB_EXT1__ ) || defined( __STDC_WANT_SECURE_LIB__ )
+        strcat_s( path, pathBufferSize, "\\" );
+        strcat_s( path, pathBufferSize, addition+offset );
+        #else 
         strcat( path, "\\" );
         strcat( path, addition+offset );
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        if ( path[ len-1 ] == '/' )
+        #endif
+
+    #elif GUCEF_LINUX_BUILD
+
+        if ( pathBufferSize > len-1 && path[ len-1 ] == '/' )
         {
-                strcat( path, addition+offset );
-                Convert_Dir_Seperators( path );
-                return;
+            strcat( path, addition+offset );
+            Convert_Dir_Seperators( path );
+            return;
         }
         strcat( path, "/" );
         strcat( path, addition+offset );
         Convert_Dir_Seperators( path );
-        #endif /* GUCEF_LINUX_BUILD */
-        #endif /* WIN32_BUILD */
+
+    #endif 
 }
 
 /*--------------------------------------------------------------------------*/

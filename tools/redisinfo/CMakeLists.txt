@@ -16,6 +16,8 @@ set( HEADER_FILES
   include/redisinfo.h
   include/redisinfo_CRedisClusterKeyCache.h
   include/redisinfo_CRedisClusterKeyCacheUpdateTask.h
+  include/redisinfo_CRedisClusterKeyPrunerTask.h
+  include/redisinfo_RedisClusterNodeCmds.h
 )
 
 set( SOURCE_FILES 
@@ -24,6 +26,7 @@ set( SOURCE_FILES
   src/redisinfo.cpp
   src/redisinfo_CRedisClusterKeyCache.cpp
   src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp
+  src/redisinfo_CRedisClusterKeyPrunerTask.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

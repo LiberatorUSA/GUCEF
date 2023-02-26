@@ -268,6 +268,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::DestroyObje
         if ( n != m_concreteFactoryList.end() )
         {
             (*n).second->Destroy( factoryProduct );
+            return;
         }
     }
     throw CMsgException( __FILE__, __LINE__, "TAbstractFactory<>: Cannot find concrete factory capable of destroying the given product" );

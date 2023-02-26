@@ -25,6 +25,7 @@
 
 #include <malloc.h>             /* memory management */
 #include <stdio.h>              /* standard I/O utils */
+#define __STDC_WANT_LIB_EXT1__ 
 #include <string.h>             /* standard string utils */
 #include <assert.h>
 #include <limits.h>
@@ -116,7 +117,7 @@ struct SDI_Data
 //-------------------------------------------------------------------------*/
 
 struct SDI_Data*
-DI_First_Dir_Entry( const char *path )
+DI_First_Dir_Entry( const char* path )
 {
     /*
      *	Function that should be used for directory entry itteration.
@@ -128,19 +129,24 @@ DI_First_Dir_Entry( const char *path )
      *	In case of error NULL is returned.
      */
     struct SDI_Data *data;
+    size_t pathStrLen = 0;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    char *tmp_path;
+    char* tmp_path = GUCEF_NULL;
 
     #endif /* GUCEF_PLATFORM_MSWIN ? */
 
-    if ( NULL == path ) return NULL;
+    if ( GUCEF_NULL == path ) 
+        return GUCEF_NULL;
+    pathStrLen = strlen( path );
 
     /*
      *	Allocate data storage.
      */
     data = ( struct SDI_Data* ) malloc( sizeof( struct SDI_Data ) );
+    if ( GUCEF_NULL == data )
+        return GUCEF_NULL;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -150,13 +156,16 @@ DI_First_Dir_Entry( const char *path )
      *	Win98 and WinME and these functions are. No support for Win95 or
      *	older though.
      */
-    if ( -1 == Find_Char( '*', path, (UInt32) strlen( path ) ) )
+    if ( -1 == Find_Char( '*', path, (UInt32) pathStrLen ) )
     {
-        tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
-        strcpy( tmp_path, path );
-        Append_To_Path( tmp_path, "*.*\0" );
-        data->find_handle = _findfirst( tmp_path, &data->find );
-        free( tmp_path );
+        tmp_path = (char*)calloc( pathStrLen+5, sizeof( char ) );
+        if ( GUCEF_NULL != tmp_path )
+        {
+            strcpy( tmp_path, path );
+            Append_To_Path( tmp_path, pathStrLen+5, "*.*\0" );
+            data->find_handle = _findfirst( tmp_path, &data->find );
+            free( tmp_path );
+        }
     }
     else
     {
@@ -173,7 +182,7 @@ DI_First_Dir_Entry( const char *path )
          */
         _findclose( data->find_handle );
         free( data );
-        return NULL;
+        return GUCEF_NULL;
     }
 
     /*
@@ -759,9 +768,10 @@ Remove_Directory( const char *dir  ,
          *      directory is not empty. We will proceed to delete all
          *      files in the directory first.
          */
-        struct SDI_Data *ddata = DI_First_Dir_Entry( dir );
+        struct SDI_Data* ddata = DI_First_Dir_Entry( dir );
         UInt32 more = 1;
-        if ( !ddata ) return 0;
+        if ( GUCEF_NULL == ddata ) 
+            return 0;
 
         while ( more )
         {
@@ -771,7 +781,8 @@ Remove_Directory( const char *dir  ,
                  *      Attempt to delete the file we found in
                  *      the directory.
                  */
-                if ( !Delete_File( DI_Name( ddata ) ) ) return 0;
+                if ( !Delete_File( DI_Name( ddata ) ) ) 
+                    return 0;
             }
             else
             {
@@ -779,15 +790,26 @@ Remove_Directory( const char *dir  ,
                  *      Attempt to delete the directory we found
                  *      and all files inside it.
                  */
-                char *subdir = calloc( strlen( dir ) + strlen( DI_Name( ddata ) )+1, 1 );
-                strcpy( subdir, dir );
-                Append_To_Path( subdir, DI_Name( ddata ) );
-                if ( !Remove_Directory( subdir, del_files ) )
+                size_t nameLength = strlen( DI_Name( ddata ) );
+                size_t dirLength = strlen( dir );
+                size_t subDirBufferLength = dirLength + nameLength + 1;
+
+                char* subdir = calloc( subDirBufferLength, 1 );
+                if ( GUCEF_NULL != subdir )
                 {
+                    #if defined( __STDC_LIB_EXT1__ ) || defined( __STDC_WANT_SECURE_LIB__ )
+                    strcpy_s( subdir, subDirBufferLength, dir );
+                    #else
+                    strcpy( subdir, dir );
+                    #endif
+                    Append_To_Path( subdir, subDirBufferLength, DI_Name( ddata ) );
+                    if ( !Remove_Directory( subdir, del_files ) )
+                    {
+                        free( subdir );
+                        return 0;
+                    }
                     free( subdir );
-                    return 0;
                 }
-                free( subdir );
             }
 
             /*
@@ -1390,8 +1412,9 @@ Relative_Path( const char *pathstr ,
         /*
          *      Combine the parsed tag section with the rest of the path
          */
-        Append_To_Path( tmpbuffer ,
-                        addition  );
+        Append_To_Path( tmpbuffer      ,
+                        MAX_DIR_LENGTH ,
+                        addition       );
 
         /*
          *      Copy into the buffer provided by the user

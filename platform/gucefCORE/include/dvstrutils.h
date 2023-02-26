@@ -167,8 +167,9 @@ Convert_Dir_Seperators( char *path );
  *      the correct char for the current O/S.
  */
 GUCEF_CORE_PUBLIC_C void
-Append_To_Path( char *path           ,
-                const char *addition );
+Append_To_Path( char* path            ,
+                size_t pathBufferSize ,
+                const char* addition  );
 
 /*--------------------------------------------------------------------------*/
 
