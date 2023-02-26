@@ -934,6 +934,15 @@ CValueList::CopySettingsFrom( const CValueList& other )
     m_configKeyNamespace = other.m_configKeyNamespace;    
 }
 
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CValueList::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CValueList( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

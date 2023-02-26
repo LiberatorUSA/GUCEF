@@ -62,19 +62,25 @@ class GUCEF_CORE_PUBLIC_CPP CGlobalConfigValueList : public CValueList          
 {
     public:
 
+    static const CString ClassTypeName;
+    
     CGlobalConfigValueList( void );
+
+    CGlobalConfigValueList( const CGlobalConfigValueList& src );
 
     CGlobalConfigValueList( const CValueList& src );
 
     CGlobalConfigValueList& operator=( const CValueList& src );
 
-    virtual ~CGlobalConfigValueList();
-
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual ~CGlobalConfigValueList() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
                                              
     virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
 };
 

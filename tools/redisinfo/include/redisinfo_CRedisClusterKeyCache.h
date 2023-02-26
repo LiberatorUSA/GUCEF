@@ -104,7 +104,9 @@ class CRedisClusterKeyCache : public CORE::CObservingNotifier
     bool GetRedisKeys( RedisClusterPtr redisCluster                                                        ,
                        CORE::CString::StringSet& keys                                                      ,
                        const CORE::CString& keyType                                                        ,
-                       const CORE::CString::StringSet& globPatternsToMatch = CORE::CString::EmptyStringSet );
+                       const CORE::CString::StringSet& globPatternsToMatch = CORE::CString::EmptyStringSet ,
+                       CORE::UInt32 maxResults = GUCEF_UINT32MAX                                           ,
+                       CORE::UInt32 page = 0                                                               );
 
     bool GetRedisKeys( RedisClusterPtr redisCluster            ,
                        CORE::CString::StringSet& keys          ,

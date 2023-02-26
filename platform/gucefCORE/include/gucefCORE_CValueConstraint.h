@@ -69,6 +69,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraint : public CIDataNodeSerializable
 {
     public:
 
+    static const CString ClassTypeName;
+
     typedef std::vector< CValueConstraint >            ValueConstraintVector;
 
     /**
@@ -128,6 +130,10 @@ class GUCEF_CORE_PUBLIC_CPP CValueConstraint : public CIDataNodeSerializable
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
     
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     CString m_functionName;

@@ -904,6 +904,10 @@ RedisInfoService::OnTaskEnded( CORE::CICloneable* taskData ,
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString RedisNode::ClassTypeName = "GUCEF::REDISINFO::RedisNode";
+
+/*-------------------------------------------------------------------------*/
+
 RedisNode::RedisNode( void )
     : CORE::CIDataNodeSerializable()
     , host()
@@ -911,6 +915,19 @@ RedisNode::RedisNode( void )
     , startSlot( 0 )
     , endSlot( 0 )
     , replicas()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+RedisNode::RedisNode( const RedisNode& src )
+    : CORE::CIDataNodeSerializable( src )
+    , host( src.host )
+    , nodeId( src.nodeId )
+    , startSlot( src.startSlot )
+    , endSlot( src.endSlot )
+    , replicas( src.replicas )
 {GUCEF_TRACE;
 
 }
@@ -930,6 +947,24 @@ RedisNode::operator=( const RedisNode& other )
         replicas = other.replicas;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+RedisNode::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new RedisNode( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+RedisNode::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -100,9 +100,7 @@ namespace COMCORE {
  *  Based on the client used different capabilities will be available and 
  *  client will use beft effort to simulate others
  */
-class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CICloneable             ,
-                                           public CORE::CIDataNodeSerializable  ,
-                                           public CORE::CITypeNamed
+class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CIDataNodeSerializable
 {
     public:
 

@@ -36,6 +36,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CGlobalConfigValueList::ClassTypeName = "GUCEF::CORE::CGlobalConfigValueList";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -43,6 +51,15 @@ namespace CORE {
 CGlobalConfigValueList::CGlobalConfigValueList( void )
     : CValueList()
     , CGloballyConfigurable( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGlobalConfigValueList::CGlobalConfigValueList( const CGlobalConfigValueList& src )
+    : CValueList( src )
+    , CGloballyConfigurable( src )
 {GUCEF_TRACE;
 
 }
@@ -75,16 +92,6 @@ CGlobalConfigValueList::operator=( const CValueList& src )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
-CGlobalConfigValueList::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static const CString classTypeName = "GUCEF::CORE::CGlobalConfigValueList";
-    return classTypeName;
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 CGlobalConfigValueList::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
@@ -99,6 +106,24 @@ CGlobalConfigValueList::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
     return CValueList::LoadConfig( cfg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CGlobalConfigValueList::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CGlobalConfigValueList( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CGlobalConfigValueList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

@@ -41,6 +41,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CPropertyDefinitionList::ClassTypeName = "GUCEF::CORE::CPropertyDefinitionList";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -180,6 +188,25 @@ CPropertyDefinitionList::Deserialize( const CDataNode& domRootNode              
     }
 
     return totalSuccess;
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CPropertyDefinitionList::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CPropertyDefinitionList( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPropertyDefinitionList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

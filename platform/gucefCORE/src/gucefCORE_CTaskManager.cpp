@@ -102,7 +102,9 @@ CTaskManager::CTaskManager( void )
     : CTSGNotifier() 
     , m_taskIdGenerator()
     , m_consumerFactory()     
-    , m_threadPools()       
+    , m_threadPools() 
+    , m_desiredGlobalNrOfThreads( 0 )
+    , m_activeGlobalNrOfThreads( 0 )
 {GUCEF_TRACE;
 
     m_threadPools[ DefaultThreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
@@ -296,6 +298,38 @@ CTaskManager::CreateTaskConsumer( const CString& taskType )
     MT::CObjectScopeLock lock( this );
     CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
     return taskConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        (*i).second->GetAllRegisteredTaskConsumerFactoryTypes( taskTypes );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolName       ,
+                                                     CORE::CString::StringSet& taskTypes )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
+    if ( i != m_threadPools.end() )
+    {
+        (*i).second->GetAllRegisteredTaskConsumerFactoryTypes( taskTypes );
+    }
 }
 
 /*-------------------------------------------------------------------------//

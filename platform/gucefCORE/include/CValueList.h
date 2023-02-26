@@ -313,7 +313,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      */
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
-
+    
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     /**
      *  When loading from config data this will limit the scope
      *  of the information loaded to just the namespace given

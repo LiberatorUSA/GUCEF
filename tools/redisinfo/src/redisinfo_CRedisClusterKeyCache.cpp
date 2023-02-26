@@ -224,12 +224,16 @@ bool
 CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster                        ,
                                      CORE::CString::StringSet& keys                      ,
                                      const CORE::CString& keyType                        ,
-                                     const CORE::CString::StringSet& globPatternsToMatch )
+                                     const CORE::CString::StringSet& globPatternsToMatch ,
+                                     CORE::UInt32 maxResults                             ,
+                                     CORE::UInt32 page                                   )
 {GUCEF_TRACE;
 
     if ( redisCluster.IsNULL() || !LazyStartCacheUpdateTask() )
         return false;
 
+    CORE::UInt64 resultOffset = page * (CORE::UInt64) maxResults;
+    
     MT::CScopeReaderLock lock( g_dataLock );
     
     TStringToStringSetMap& keyMap = m_cache[ redisCluster ];
@@ -238,11 +242,42 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
     if ( globPatternsToMatch.empty() )
     {
         // No pattern matching, return everything
-        keys = cachedKeys;
+        
+        // first sanity check
+        if ( resultOffset + maxResults > cachedKeys.size() )
+        {
+            if ( resultOffset > cachedKeys.size() )
+                return true; // empty result set since we are past the max
+            
+            // cap the values
+            CORE::UInt64 remnant = cachedKeys.size() - resultOffset;
+            if ( remnant < maxResults )
+                maxResults = (CORE::UInt32) remnant;
+        }
+
+        // move iterator to the desired offset
+        CORE::CString::StringSet::iterator i = cachedKeys.begin();
+        for ( CORE::UInt32 n=0; n<resultOffset; ++n )
+        {
+            if ( i != cachedKeys.end() )
+                ++i;
+            else
+                break;
+        }
+        
+        // copy the specified subset
+        CORE::UInt32 resultEntries = 0;
+        while ( i != cachedKeys.end() && resultEntries < maxResults )
+        {
+            keys.insert( (*i) );            
+            ++i; ++resultEntries;
+        }
+
         return true;
     }
 
     // Match the glob patterns given for all cached keys
+    CORE::UInt64 currentOffset = 0;
     CORE::CString::StringSet::iterator i = cachedKeys.begin();
     while ( i != cachedKeys.end() )
     {
@@ -253,7 +288,18 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
             const CORE::CString& globPattern = (*g);
             if ( key.WildcardEquals( globPattern, '*', true ) )
             {
-                keys.insert( key );
+                if ( currentOffset < resultOffset )
+                {
+                    if ( maxResults > keys.size() )
+                    {
+                        keys.insert( key );
+                    }
+                    else
+                    {
+                        // result set max reached
+                        return true;
+                    }
+                }
                 break;
             }
             ++g;

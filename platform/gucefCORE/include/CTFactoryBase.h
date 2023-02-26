@@ -26,8 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_ETypes.h"
+#ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -102,6 +109,11 @@ class CTFactoryBase : public CICloneable
      */
     virtual void Destroy( BaseClassType* factoryProduct ) = 0;
 
+    /**
+     *  Returns a string representing the name of concrete class that can be created
+     */
+    virtual CString GetConcreteClassTypeName( void ) const = 0;
+
 };
 
 /*-------------------------------------------------------------------------//
@@ -113,7 +125,7 @@ class CTFactoryBase : public CICloneable
 template< class BaseClassType >
 CTFactoryBase< BaseClassType >::CTFactoryBase( void )
     : CICloneable()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -122,7 +134,7 @@ CTFactoryBase< BaseClassType >::CTFactoryBase( void )
 template< class BaseClassType >
 CTFactoryBase< BaseClassType >::CTFactoryBase( const CTFactoryBase& src )
     : CICloneable( src )
-{
+{GUCEF_TRACE;
 
 }
 
@@ -130,7 +142,7 @@ CTFactoryBase< BaseClassType >::CTFactoryBase( const CTFactoryBase& src )
 
 template< class BaseClassType >
 CTFactoryBase< BaseClassType >::~CTFactoryBase()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -139,7 +151,8 @@ CTFactoryBase< BaseClassType >::~CTFactoryBase()
 template< class BaseClassType >
 CTFactoryBase< BaseClassType >&
 CTFactoryBase< BaseClassType >::operator=( const CTFactoryBase& src )
-{
+{GUCEF_TRACE;
+
     if ( &src != this )
     {
         // nothing to do,.. meta-data class

@@ -26,7 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTFACTORYBASE_H
 #include "CTFactoryBase.h"
+#define GUCEF_CORE_CTFACTORYBASE_H
+#endif /* GUCEF_CORE_CTFACTORYBASE_H ? */
+
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,6 +87,11 @@ class CTFactory : public CTFactoryBase< BaseClassType >
      *  classes.
      */
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Returns a string representing the name of concrete class that can be created
+     */
+    virtual CString GetConcreteClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -89,7 +102,7 @@ class CTFactory : public CTFactoryBase< BaseClassType >
 
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >::CTFactory( void )
-{
+{GUCEF_TRACE;
     
 }
 
@@ -97,7 +110,7 @@ CTFactory< BaseClassType, ConcreteClassType >::CTFactory( void )
 
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >::CTFactory( const CTFactory< BaseClassType, ConcreteClassType >& src )
-{
+{GUCEF_TRACE;
 
 }
 
@@ -105,7 +118,7 @@ CTFactory< BaseClassType, ConcreteClassType >::CTFactory( const CTFactory< BaseC
    
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >::~CTFactory()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -114,7 +127,8 @@ CTFactory< BaseClassType, ConcreteClassType >::~CTFactory()
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >& 
 CTFactory< BaseClassType, ConcreteClassType >::operator=( const CTFactory< BaseClassType, ConcreteClassType >& src )
-{
+{GUCEF_TRACE;
+
     if ( &src != this )
     {
     }
@@ -126,7 +140,8 @@ CTFactory< BaseClassType, ConcreteClassType >::operator=( const CTFactory< BaseC
 template< class BaseClassType, class ConcreteClassType >
 BaseClassType* 
 CTFactory< BaseClassType, ConcreteClassType >::Create( void )
-{
+{GUCEF_TRACE;
+
     return GUCEF_NEW ConcreteClassType();
 }
 
@@ -135,7 +150,8 @@ CTFactory< BaseClassType, ConcreteClassType >::Create( void )
 template< class BaseClassType, class ConcreteClassType >
 void 
 CTFactory< BaseClassType, ConcreteClassType >::Destroy( BaseClassType* factoryProduct )
-{
+{GUCEF_TRACE;
+
     /*
      *  We cast to the decendant class or concrete factory product if you will, 
      *  to ensure it's destructor is called even if the base class does not have a
@@ -149,7 +165,8 @@ CTFactory< BaseClassType, ConcreteClassType >::Destroy( BaseClassType* factoryPr
 template< class BaseClassType, class ConcreteClassType >
 CICloneable* 
 CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
-{
+{GUCEF_TRACE;
+
     /*
      *  In contrast to normal cloning we do not need to use the copy constructor
      *  here because a factory is meta data and has no attributes.
@@ -158,6 +175,16 @@ CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
      *  to be considdered.
      */
     return GUCEF_NEW CTFactory< BaseClassType, ConcreteClassType >;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClassType, class ConcreteClassType >
+CString 
+CTFactory< BaseClassType, ConcreteClassType >::GetConcreteClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ToString< ConcreteClassType >();
 }
 
 /*-------------------------------------------------------------------------//

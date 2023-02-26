@@ -61,9 +61,9 @@ class CTDynamicDestructor : public CTDynamicDestructorBase< T >
      */
     CTDynamicDestructor( const bool destroySelfOnDestroyObject = false );
   
-    virtual void DestroyObject( T* objectToBeDestroyed );
+    virtual void DestroyObject( T* objectToBeDestroyed ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual ~CTDynamicDestructor();    
+    virtual ~CTDynamicDestructor() GUCEF_VIRTUAL_OVERRIDE;    
 
     private:
 
@@ -75,17 +75,56 @@ class CTDynamicDestructor : public CTDynamicDestructorBase< T >
     bool m_destroySelfOnDestroyObject;
 };
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Class meant for delegation of destruction duties while leveraging string form type information
+ */
+template< typename T >
+class CTTypeNamedDynamicDestructor : public CTTypeNamedDynamicDestructorBase< T >
+                                   , public CTDynamicDestructorBase< T >
+{
+    public:
+
+    typedef T TDestructorType;
+        
+    /**
+     *  Constructs the dynamic destructor with string form class type information to be retained and 
+     *  utilized at the time DestroyObject 
+     */
+    CTTypeNamedDynamicDestructor( const CString& classTypeName                              , 
+                                  CTTypeNamedDynamicDestructorBase< T >* externalDestructor ,
+                                  const bool destroySelfOnDestroyObject = false             );
+  
+    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void DestroyObject( T* objectToBeDestroyed ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual ~CTTypeNamedDynamicDestructor() GUCEF_VIRTUAL_OVERRIDE;    
+
+    private:
+
+    CTTypeNamedDynamicDestructor( const CTTypeNamedDynamicDestructor& src );            /**< not implemented */
+    CTTypeNamedDynamicDestructor& operator=( const CTTypeNamedDynamicDestructor& src ); /**< not implemented */
+
+    private:
+
+    bool m_destroySelfOnDestroyObject;
+    CString m_classTypeName;
+    CTTypeNamedDynamicDestructorBase< T >* m_externalDestructor;
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 template< typename T >
 CTDynamicDestructor< T >::CTDynamicDestructor( const bool destroySelfOnDestroyObject /* = false */ )
-    : CTDynamicDestructorBase< T >()                             ,
-      m_destroySelfOnDestroyObject( destroySelfOnDestroyObject ) 
-{
+    : CTDynamicDestructorBase< T >()                             
+    , m_destroySelfOnDestroyObject( destroySelfOnDestroyObject ) 
+{GUCEF_TRACE;
 
 }
 
@@ -93,7 +132,7 @@ CTDynamicDestructor< T >::CTDynamicDestructor( const bool destroySelfOnDestroyOb
    
 template< typename T >
 CTDynamicDestructor< T >::~CTDynamicDestructor()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -102,8 +141,59 @@ CTDynamicDestructor< T >::~CTDynamicDestructor()
 template< typename T > 
 void
 CTDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed )
-{
+{GUCEF_TRACE;
+
     GUCEF_DELETE objectToBeDestroyed;
+
+    if ( m_destroySelfOnDestroyObject )
+    {
+        GUCEF_DELETE this;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTTypeNamedDynamicDestructor< T >::CTTypeNamedDynamicDestructor( const CString& classTypeName                              , 
+                                                                 CTTypeNamedDynamicDestructorBase< T >* externalDestructor ,
+                                                                 const bool destroySelfOnDestroyObject /* = false */       )
+    : CTDynamicDestructorBase< T >()                             
+    , m_destroySelfOnDestroyObject( destroySelfOnDestroyObject )
+    , m_classTypeName( classTypeName )  
+    , m_externalDestructor( externalDestructor )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+   
+template< typename T >
+CTTypeNamedDynamicDestructor< T >::~CTTypeNamedDynamicDestructor()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T > 
+void
+CTTypeNamedDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed )
+{GUCEF_TRACE;
+
+    DestroyObject( objectToBeDestroyed, m_classTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T > 
+void
+CTTypeNamedDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed, const CString& classTypeName )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_externalDestructor )
+        m_externalDestructor->DestroyObject( objectToBeDestroyed, classTypeName );
+    else
+        GUCEF_DELETE objectToBeDestroyed;
 
     if ( m_destroySelfOnDestroyObject )
     {

@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <typeinfo> 
+
 #ifndef GUCEF_CORE_ESTRUCTS_H
 #include "EStructs.h"           /* generic structs */
 #define GUCEF_CORE_ESTRUCTS_H
@@ -501,6 +503,11 @@ inline CString ToString( size_t value ) { return UInt32ToString( (UInt32) value 
 inline CString ToString( size_t value ) { return UInt64ToString( (UInt64) value ); }
 #endif
 #endif
+
+/*-------------------------------------------------------------------------*/
+
+template < typename typeNameParam >
+inline CString ToString( void ) { return typeid( typeNameParam ).name(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

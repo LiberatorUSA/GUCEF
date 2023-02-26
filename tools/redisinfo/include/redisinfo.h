@@ -172,6 +172,8 @@ class RedisNode : public CORE::CIDataNodeSerializable
 {
     public:
 
+    static const CORE::CString ClassTypeName;
+
     typedef std::vector< RedisNode > RedisNodeVector;
 
     COMCORE::CHostAddress host;
@@ -203,6 +205,12 @@ class RedisNode : public CORE::CIDataNodeSerializable
     RedisNode& operator=( const RedisNode& other );
 
     RedisNode( void );
+
+    RedisNode( const RedisNode& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;

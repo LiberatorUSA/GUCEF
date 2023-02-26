@@ -82,6 +82,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
+    void GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes );
+
+    void GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolName       ,
+                                                CORE::CString::StringSet& taskTypes );
+
     UInt32 GetGlobalNrOfThreads( void ) const;
 
     void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
@@ -142,14 +147,3 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-02-2005 :
-        - Dinand: Added this class
-
-----------------------------------------------------------------------------*/

@@ -41,6 +41,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CDataNodeDefinition::ClassTypeName = "GUCEF::CORE::CDataNodeDefinition";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -152,6 +160,24 @@ CDataNodeDefinition::Deserialize( const CDataNode& domRootNode                  
     }
 
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CDataNodeDefinition::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CDataNodeDefinition( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CDataNodeDefinition::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

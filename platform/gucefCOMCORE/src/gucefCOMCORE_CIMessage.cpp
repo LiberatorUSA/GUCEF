@@ -45,8 +45,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 CIMessage::CIMessage( void )
-    : CORE::CICloneable()
-    , CORE::CIDataNodeSerializable()
+    : CORE::CIDataNodeSerializable()
 {GUCEF_TRACE;
 
 }
@@ -54,8 +53,7 @@ CIMessage::CIMessage( void )
 /*-------------------------------------------------------------------------*/
 
 CIMessage::CIMessage( const CIMessage& src )
-    : CORE::CICloneable( src )
-    , CIDataNodeSerializable( src )
+    : CIDataNodeSerializable( src )
 {GUCEF_TRACE;
 
 }

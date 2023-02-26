@@ -565,8 +565,8 @@ CThreadPool::QueueTask( const CString& taskType           ,
             SubscribeToTaskConsumerEvents( taskConsumer );
 
             CTaskQueueItem* queueItem = GUCEF_NEW CTaskQueueItem( taskConsumer              ,
-                                                            taskData                  ,
-                                                            assumeOwnershipOfTaskData );
+                                                                  taskData                  ,
+                                                                  assumeOwnershipOfTaskData );
 
             m_taskQueue.AddMail( taskType, queueItem );
 
@@ -706,7 +706,7 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
     taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
 
     // IMPORTANT: We set the flag to signal to the thread on startup that we wish to perform a phased setup
-    //            This causes the consumer to be linked but no OnTaskStart or the like will yet be invoked on the consumer 
+    //            This causes the consumer to be linked but no OnTaskStart or the like will not yet be invoked on the consumer 
     taskConsumer->SetIsInPhasedSetup( true );
 
     // We listen for task consumer generic events
@@ -716,7 +716,7 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
     // make sure the task consumer is registered as a known consumer for this thread pool
     m_taskConsumerMap[ taskConsumer->m_taskId ] = taskConsumer;
 
-    // Just spawn a task delegator, it will auto register as an active task
+    // Now spawn a task delegator
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
     CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
@@ -823,31 +823,127 @@ CThreadPool::StartTask( const CString& taskType ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::StartTaskIfNoneExists( const CString& taskType ,
-                                    CICloneable* taskData   ,
-                                    CTaskConsumerPtr* task  )
+CThreadPool::StartTask( const CString& taskType           ,
+                        const CDataNode& taskData         ,
+                        CTaskConsumerPtr* outTaskConsumer )
+{GUCEF_TRACE;
+
+    TAbstractTaskDataFactory::TProductPtr taskDataPtr = m_taskDataFactory.Create( taskType );
+    if ( taskDataPtr.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTask: Task of type \"" + taskType + "\" cannot be created because no task data factory exists for the given type" );
+        return false;
+    }
+
+    CDataNodeSerializableSettings defaultSerializerSettings;
+    if ( !taskDataPtr->Deserialize( taskData, defaultSerializerSettings ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTask: Task of type \"" + taskType + "\" cannot be created because deserialization of the task data failed" );
+        return false;
+    }
+
+    // Now start the task with the data we constructed    
+    return StartTask( taskType, taskDataPtr.GetPointerAlways(), outTaskConsumer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::TaskOfTypeExists( const CString& taskType  , 
+                               UInt32* taskIdIfExists   , 
+                               UInt32* threadIdIfExists ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-
-    // Check if a task of the type given already exists while we have the lock
     
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
+    TTaskConsumerMap::const_iterator i = m_taskConsumerMap.begin();
     while ( i != m_taskConsumerMap.end() )
     {
-        CTaskConsumerPtr& taskConsumer = (*i).second;
+        const CTaskConsumerPtr& taskConsumer = (*i).second;
         if ( !taskConsumer.IsNULL() && taskType == taskConsumer->GetType() )
         {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" with ID " +
-                                                UInt32ToString( taskConsumer->GetTaskId() ) + " already exists and its using thread with ID " + UInt32ToString( taskConsumer->GetDelegatorThreadId() ) );
+            if ( GUCEF_NULL != taskIdIfExists )
+                *taskIdIfExists = taskConsumer->GetTaskId();    
+            if ( GUCEF_NULL != threadIdIfExists )
+                *threadIdIfExists = taskConsumer->GetDelegatorThreadId(); 
+
             return true;
         }
         ++i;
     }
 
+    if ( GUCEF_NULL != taskIdIfExists )
+        *taskIdIfExists = 0;    
+    if ( GUCEF_NULL != threadIdIfExists )
+        *threadIdIfExists = 0; 
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::StartTaskIfNoneExists( const CString& taskType            ,
+                                    CICloneable* taskData              ,
+                                    CTaskConsumerPtr* outTaskConsumer  )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    // Check if a task of the type given already exists while we have the lock
+    UInt32 taskIdIfExists = 0;   
+    UInt32 threadIdIfExists = 0;
+    if ( TaskOfTypeExists( taskType, &taskIdIfExists, &threadIdIfExists ) )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" with ID " +
+                                            UInt32ToString( taskIdIfExists ) + " already exists and its using thread with ID " + UInt32ToString( threadIdIfExists ) );
+        return true;
+    }
+
+
+    // No such task exists, just create a new one    
+    return StartTask( taskType, taskData, outTaskConsumer );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::StartTaskIfNoneExists( const CString& taskType           ,
+                                    const CDataNode& taskData         ,
+                                    CTaskConsumerPtr* outTaskConsumer )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    // Check if a task of the type given already exists while we have the lock
+    UInt32 taskIdIfExists = 0;   
+    UInt32 threadIdIfExists = 0;
+    if ( TaskOfTypeExists( taskType, &taskIdIfExists, &threadIdIfExists ) )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" with ID " +
+                                            UInt32ToString( taskIdIfExists ) + " already exists and its using thread with ID " + UInt32ToString( threadIdIfExists ) );
+        return true;
+    }
+
     // No such task exists, just create a new one
+    // First we must construct the task data
     
-    return StartTask( taskType, taskData, task );
+    TAbstractTaskDataFactory::TProductPtr taskDataPtr = m_taskDataFactory.Create( taskType );
+    if ( taskDataPtr.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" cannot be created because no task data factory exists for the given type" );
+        return false;
+    }
+
+    CDataNodeSerializableSettings defaultSerializerSettings;
+    if ( !taskDataPtr->Deserialize( taskData, defaultSerializerSettings ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool:StartTaskIfNoneExists: Task of type \"" + taskType + "\" cannot be created because deserialization of the task data failed" );
+        return false;
+    }
+
+    // Now start the task with the data we constructed    
+    return StartTask( taskType, taskDataPtr.GetPointerAlways(), outTaskConsumer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1130,6 +1226,43 @@ CThreadPool::KillTask( const UInt32 taskID )
         }
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes ) const
+{GUCEF_TRACE;
+
+    m_consumerFactory.ObtainKeySet( taskTypes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::GetAllRegisteredTaskDataFactoryTypes( CORE::CString::StringSet& taskTypes ) const
+{GUCEF_TRACE;
+
+    m_taskDataFactory.ObtainKeySet( taskTypes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::RegisterTaskDataFactory( const CString& taskType   ,
+                                      TTaskDataFactory* factory )
+{GUCEF_TRACE;
+
+    m_taskDataFactory.RegisterConcreteFactory( taskType, factory );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::UnregisterTaskDataFactory( const CString& taskType )
+{GUCEF_TRACE;
+
+    m_taskDataFactory.UnregisterConcreteFactory( taskType );
 }
 
 /*-------------------------------------------------------------------------//

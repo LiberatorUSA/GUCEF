@@ -69,7 +69,8 @@ class CDataNode;
  *  Abstract base class for adding a serialization API to decending classes.
  *  Serialize/Deserialze via the DataNode class as a DOM
  */
-class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializable
+class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializable : public CICloneable ,
+                                                     public CITypeNamed
 {
     public:
 

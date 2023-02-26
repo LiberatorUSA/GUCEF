@@ -31,6 +31,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -69,6 +74,32 @@ class CTDynamicDestructorBase
 
 };
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Base class for destructor delegator specializations that take a string form hint for the 
+ *  derived concrete instantiation's type
+ */
+template< typename T >
+class CTTypeNamedDynamicDestructorBase
+{
+    public:
+
+    typedef T TDestructorType;
+        
+    CTTypeNamedDynamicDestructorBase( void );
+  
+    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) = 0;
+
+    virtual ~CTTypeNamedDynamicDestructorBase();    
+
+    private:
+
+    CTTypeNamedDynamicDestructorBase( const CTTypeNamedDynamicDestructorBase& src );            /**< not implemented */
+    CTTypeNamedDynamicDestructorBase& operator=( const CTTypeNamedDynamicDestructorBase& src ); /**< not implemented */
+
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -85,6 +116,22 @@ CTDynamicDestructorBase< T >::CTDynamicDestructorBase( void )
    
 template< typename T >
 CTDynamicDestructorBase< T >::~CTDynamicDestructorBase()
+{
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTTypeNamedDynamicDestructorBase< T >::CTTypeNamedDynamicDestructorBase( void )
+{
+
+}
+
+/*-------------------------------------------------------------------------*/
+   
+template< typename T >
+CTTypeNamedDynamicDestructorBase< T >::~CTTypeNamedDynamicDestructorBase()
 {
 
 }

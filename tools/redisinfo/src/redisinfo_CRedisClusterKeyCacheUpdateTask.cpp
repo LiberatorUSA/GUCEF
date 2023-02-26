@@ -32,6 +32,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef REDISINFO_REDISCLUSTERNODECMDS_H
+#include "redisinfo_RedisClusterNodeCmds.h"
+#define REDISINFO_REDISCLUSTERNODECMDS_H
+#endif /* REDISINFO_REDISCLUSTERNODECMDS_H ? */
+
 #include "redisinfo_CRedisClusterKeyCacheUpdateTask.h"
 
 /*-------------------------------------------------------------------------//
@@ -73,6 +78,7 @@ CRedisClusterKeyCacheUpdateTask::CRedisClusterKeyCacheUpdateTask( void )
 CRedisClusterKeyCacheUpdateTask::~CRedisClusterKeyCacheUpdateTask()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -241,55 +247,6 @@ CRedisClusterKeyCacheUpdateTask::GetType( void ) const
     static const CORE::CString taskTypeName = "RedisClusterKeyCacheUpdateTask";
     return taskTypeName;
 }
-
-/*-------------------------------------------------------------------------*/
-
-class RedisClusterNodeCmds
-{
-    private:
-
-    RedisClusterPtr m_clusterAccess;
-    
-    public:
-
-    RedisClusterNodeCmds( RedisClusterPtr clusterAccess )
-        : m_clusterAccess( clusterAccess )
-    {
-    }
-
-    template <typename ...Args>
-    sw::redis::ReplyUPtr command( sw::redis::Connection& connection, const sw::redis::StringView &cmd_name, Args &&...args ) 
-    {
-        auto cmd = []( sw::redis::Connection& connection, const sw::redis::StringView &name, Args &&...params ) 
-        {
-            sw::redis::CmdArgs cmd_args;
-            cmd_args.append( name, std::forward<Args>(params)... );
-            connection.send( cmd_args );
-        };
-
-        return m_clusterAccess->_command( cmd, connection, cmd_name, std::forward<Args>(args)... );
-    }
-
-    sw::redis::ReplyUPtr scan( sw::redis::Connection& connection, const CORE::CString& keyType, CORE::UInt32 iterationCounter, CORE::UInt32 maxResults )
-    {
-        static const CORE::CString scanCmd( "SCAN" );
-        CORE::CString itteratorParam( CORE::ToString( iterationCounter ) );
-        static const CORE::CString typeParam( "TYPE" );
-        static const CORE::CString countParam( "COUNT" );         
-        CORE::CString countValueParam( CORE::ToString( maxResults ) );        
-
-        sw::redis::StringView scanCmdSV( scanCmd.C_String(), scanCmd.Length() );
-        sw::redis::StringView itteratorParamSV( itteratorParam.C_String(), itteratorParam.Length() );
-        sw::redis::StringView typeParamSV( typeParam.C_String(), typeParam.Length() );
-        sw::redis::StringView typeValueParamSV( keyType.C_String(), keyType.Length() );
-        sw::redis::StringView countParamSV( countParam.C_String(), countParam.Length() );
-        sw::redis::StringView countValueParamSV( countValueParam.C_String(), countValueParam.Length() );
-
-        return command( connection, scanCmdSV, itteratorParamSV, typeParamSV, typeValueParamSV, countParamSV, countValueParamSV );
-    }
-
-};
-
 
 /*-------------------------------------------------------------------------*/
 

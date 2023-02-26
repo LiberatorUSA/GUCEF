@@ -48,6 +48,11 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#include "gucefCORE_CIDataNodeSerializable.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -103,7 +108,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     public:
 
-    typedef CTFactoryBase< CTaskConsumer > TTaskConsumerFactory;
+    typedef CTFactoryBase< CTaskConsumer >              TTaskConsumerFactory;
+    typedef CTFactoryBase< CIDataNodeSerializable >     TTaskDataFactory;
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -136,6 +142,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
                                 CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
+     *  Checks if a task of the given type already exists, if yes nothing new happens
+     *  If no a new task one would be started right away
+     */
+    bool StartTaskIfNoneExists( const CString& taskType                        ,
+                                const CDataNode& taskData                      ,
+                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+
+    /**
      *  Immediatly starts executing a task using the task consumer provided.
      *
      *  Note that any task that was setup using SetupTask() still requires to be started via a call to
@@ -143,6 +157,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      */
     bool StartTask( CTaskConsumerPtr task              ,
                     CICloneable* taskData = GUCEF_NULL );
+    
+    /**
+     *  Same as other StartTask() variant except it will construct task data from the given DOM
+     *  This requires a task data factory to be registered to construct a relevant data object
+     */
+    bool StartTask( const CString& taskType                        ,
+                    const CDataNode& taskData                      ,
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Performs setup for a task (thread association) but does not start the task yet
@@ -208,15 +230,28 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
+    void GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes ) const;
+
+    void RegisterTaskDataFactory( const CString& taskType   ,
+                                  TTaskDataFactory* factory );
+
+    void UnregisterTaskDataFactory( const CString& taskType );
+    
+    void GetAllRegisteredTaskDataFactoryTypes( CORE::CString::StringSet& taskTypes ) const;
+
+    bool TaskOfTypeExists( const CString& taskType               ,
+                           UInt32* taskIdIfExists = GUCEF_NULL   , 
+                           UInt32* threadIdIfExists = GUCEF_NULL ) const;
+    
     virtual const CString& GetClassTypeName( void ) const  GUCEF_VIRTUAL_OVERRIDE;
 
     bool GetTaskIdForThreadId( const UInt32 threadId ,
                                UInt32& taskId        ) const;
 
     bool GetThreadIdForTaskId( const UInt32 taskId ,
-                               UInt32& threadId    ) const;
-
-    virtual ~CThreadPool();
+                               UInt32& threadId    ) const;    
+    
+    virtual ~CThreadPool() GUCEF_VIRTUAL_OVERRIDE;
     
     protected:
 
@@ -281,12 +316,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     private:
 
     typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
+    typedef CTAbstractFactory< CString, CIDataNodeSerializable, MT::CMutex > TAbstractTaskDataFactory;
     typedef MT::CTMailBox< CString > TTaskMailbox;
     typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
     typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
     typedef std::set< TTaskDelegatorBasicPtr > TTaskDelegatorSet;
 
     TAbstractTaskConsumerFactory m_consumerFactory;
+    TAbstractTaskDataFactory m_taskDataFactory;
     UInt32 m_desiredNrOfThreads;
     Int32 m_activeNrOfThreads;
     TTaskMailbox m_taskQueue;

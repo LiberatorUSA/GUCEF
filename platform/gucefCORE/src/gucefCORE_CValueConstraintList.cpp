@@ -41,6 +41,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CValueConstraintList::ClassTypeName = "GUCEF::CORE::CValueConstraintList";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -178,6 +186,24 @@ CValueConstraintList::Deserialize( const CDataNode& domRootNode                 
     }
 
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CValueConstraintList::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CValueConstraintList( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CValueConstraintList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

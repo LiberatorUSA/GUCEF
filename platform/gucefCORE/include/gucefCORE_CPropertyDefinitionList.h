@@ -53,6 +53,8 @@ class GUCEF_CORE_PUBLIC_CPP CPropertyDefinitionList : public CIDataNodeSerializa
 {
     public:
 
+    static const CString ClassTypeName;
+
     typedef CPropertyDefinition::PropertyDefinitionVector   PropertyDefinitionVector;
 
     bool propertyNamesAreUnique;
@@ -91,6 +93,10 @@ class GUCEF_CORE_PUBLIC_CPP CPropertyDefinitionList : public CIDataNodeSerializa
      */
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
