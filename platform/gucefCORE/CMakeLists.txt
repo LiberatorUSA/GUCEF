@@ -216,8 +216,12 @@ set( HEADER_FILES
   include/gucefCORE_CTMailboxForSharedCloneables.h
   include/gucefCORE_CTMultiRegistry.h
   include/gucefCORE_CTaskDelegator.h
+  include/gucefCORE_CTaskInfo.h
   include/gucefCORE_CTaskManager.h
+  include/gucefCORE_CTaskManagerInfo.h
   include/gucefCORE_CThreadPool.h
+  include/gucefCORE_CThreadPoollnfo.h
+  include/gucefCORE_CThreadlnfo.h
   include/gucefCORE_CTime.h
   include/gucefCORE_CUri.h
   include/gucefCORE_CUriResourceAccessor.h
@@ -437,8 +441,12 @@ set( SOURCE_FILES
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp
   src/gucefCORE_CTMultiRegistry.cpp
   src/gucefCORE_CTaskDelegator.cpp
+  src/gucefCORE_CTaskInfo.cpp
   src/gucefCORE_CTaskManager.cpp
+  src/gucefCORE_CTaskManagerInfo.cpp
   src/gucefCORE_CThreadPool.cpp
+  src/gucefCORE_CThreadPoollnfo.cpp
+  src/gucefCORE_CThreadlnfo.cpp
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CUri.cpp
   src/gucefCORE_CUriResourceAccessor.cpp

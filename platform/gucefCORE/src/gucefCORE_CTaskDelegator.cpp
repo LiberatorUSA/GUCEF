@@ -28,6 +28,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -506,10 +511,64 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
 /*-------------------------------------------------------------------------*/
 
 CTaskConsumerPtr
-CTaskDelegator::GetTaskConsumer( void )
+CTaskDelegator::GetTaskConsumer( void ) const
 {GUCEF_TRACE;
 
     return m_taskConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskDelegator::HasTaskData( UInt32 taskId ) const
+{GUCEF_TRACE;
+
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( !taskConsumer.IsNULL() )
+    {    
+        if ( taskId == taskConsumer->GetTaskId() )
+            return GUCEF_NULL != m_taskData;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskDelegator::GetSerializedTaskDataCopy( UInt32 taskId                                     , 
+                                           CDataNode& domNode                                , 
+                                           CDataNodeSerializableSettings& serializerSettings ) const
+{GUCEF_TRACE;
+
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( !taskConsumer.IsNULL() )
+    {    
+        if ( taskId == taskConsumer->GetTaskId() )
+        {
+            if ( GUCEF_NULL != m_taskData )
+            {
+                if ( CCoreGlobal::Instance()->GetTaskManager().IsTaskDataForTaskTypeSerializable( taskConsumer->GetType() ) )
+                {
+                    const CIDataNodeSerializable* serializableTaskData = static_cast< const CIDataNodeSerializable* >( m_taskData );
+                    if ( serializableTaskData->Serialize( domNode, serializerSettings ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::GetThreadInfo( CThreadInfo& info ) const
+{GUCEF_TRACE;
+
+    info.SetThreadId( GetThreadID() );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

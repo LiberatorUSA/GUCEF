@@ -90,6 +90,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CEvent CTaskManager::ThreadPoolCreatedEvent = "GUCEF::CORE::CTaskManager::ThreadPoolCreatedEvent";
+const CEvent CTaskManager::ThreadPoolDestructionEvent = "GUCEF::CORE::CTaskManager::ThreadPoolCreatedEvent";
+
+const CString CTaskManager::ClassTypeName = "GUCEF::CORE::CTaskManager";
 const CString CTaskManager::DefaultThreadPoolName = "default";
 
 /*-------------------------------------------------------------------------//
@@ -98,16 +102,30 @@ const CString CTaskManager::DefaultThreadPoolName = "default";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void 
+CTaskManager::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    ThreadPoolCreatedEvent.Initialize();
+    ThreadPoolDestructionEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CTaskManager::CTaskManager( void )
     : CTSGNotifier() 
     , m_taskIdGenerator()
     , m_consumerFactory()     
+    , m_taskDataFactory()
     , m_threadPools() 
     , m_desiredGlobalNrOfThreads( 0 )
     , m_activeGlobalNrOfThreads( 0 )
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultThreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) )->CreateSharedPtr();
+    m_threadPools[ DefaultThreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator(), DefaultThreadPoolName ) )->CreateSharedPtr();
+    
+    ThreadPoolCreatedEventData eData( DefaultThreadPoolName );
+    NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -127,8 +145,7 @@ const CString&
 CTaskManager::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString typeName = "GUCEF::CORE::CTaskManager";
-    return typeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,8 +192,11 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
     
     if ( createIfNotExists )
     {
-        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext ) )->CreateSharedPtr();
+        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();
         m_threadPools[ threadPoolName ] = newPool;
+
+        ThreadPoolCreatedEventData eData( threadPoolName );
+        NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData ); 
         return newPool; 
     }
 
@@ -196,7 +216,7 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CTaskManager::GetGlobalNrOfThreads( void ) const
+CTaskManager::GetGlobalNrOfActiveThreads( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeReadOnlyLock lock( this );
@@ -205,10 +225,46 @@ CTaskManager::GetGlobalNrOfThreads( void ) const
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
-        threadCount += (*i).second->GetNrOfThreads();
+        threadCount += (*i).second->GetActiveNrOfThreads();
         ++i;
     }
     return threadCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CTaskManager::GetGlobalNrOfDesiredThreads( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    UInt32 threadCount = 0;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        threadCount += (*i).second->GetDesiredNrOfThreads();
+        ++i;
+    }
+    return threadCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTaskManager::GetGlobalNrOfQueuedTasks( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    UInt32 taskCount = 0;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        taskCount += (*i).second->GetNrOfQueuedTasks();
+        ++i;
+    }
+    return taskCount;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -330,6 +386,219 @@ CTaskManager::GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolNa
     {
         (*i).second->GetAllRegisteredTaskConsumerFactoryTypes( taskTypes );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskManager::GetAllThreadPoolNames( CORE::CString::StringSet& poolNames ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        poolNames.insert( (*i).first );
+        ++i;
+    }
+}
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::GetInfo( CTaskManagerInfo& info ) const
+{GUCEF_TRACE;
+
+    // Obtain an overall lock to get a coherent snapshot of threadpool info
+    MT::CObjectScopeLock lock( this );
+
+    info.SetActiveGlobalNrOfThreads( m_activeGlobalNrOfThreads );
+    info.SetDesiredGlobalNrOfThreads( m_desiredGlobalNrOfThreads );
+    m_consumerFactory.ObtainKeySet( info.GetTaskConsumerFactoryTypes() );
+    m_taskDataFactory.ObtainKeySet( info.GetTaskDataFactoryTypes() );
+    GetAllThreadPoolNames( info.GetThreadPoolNames() );
+    info.SetGlobalNrOfQueuedTasks( GetGlobalNrOfQueuedTasks() );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetTaskIdForThreadId( const UInt32 threadId ,
+                                    UInt32& taskId        ) const
+{GUCEF_TRACE;
+
+    taskId = 0;
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetTaskIdForThreadId( threadId, taskId ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetThreadIdForTaskId( const UInt32 taskId ,
+                                    UInt32& threadId    ) const
+{GUCEF_TRACE;
+
+    threadId = 0;
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetThreadIdForTaskId( taskId, threadId ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetTaskInfo( UInt32 taskId                                             , 
+                           CTaskInfo& info                                           ,
+                           bool obtainTaskDataCopyIfPossible                         ,
+                           CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetTaskInfo( taskId, info, obtainTaskDataCopyIfPossible, taskDataSerializerSettings ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetAllTaskInfo( TTaskInfoMap& info                                        ,
+                              bool obtainTaskDataCopyIfPossible                         ,
+                              CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+{GUCEF_TRACE;
+
+    info.clear();
+    MT::CObjectScopeLock lock( this );
+
+    bool totalSuccess = true;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        totalSuccess = (*i).second->GetAllTaskInfo( info                         , 
+                                                    obtainTaskDataCopyIfPossible , 
+                                                    taskDataSerializerSettings   ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.find( poolName );
+    if ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetInfo( info ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetThreadInfo( threadId, info ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
+{GUCEF_TRACE;
+
+    info.clear();
+    MT::CObjectScopeLock lock( this );
+
+    bool totalSuccess = true;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        totalSuccess = (*i).second->GetAllThreadInfo( info ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::IsTaskDataForTaskTypeSerializable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->IsTaskDataForTaskTypeSerializable( taskType ) )
+            return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::GetSerializedTaskDataCopy( const UInt32 taskId                               ,
+                                         CDataNode& domNode                                ,
+                                         CDataNodeSerializableSettings& serializerSettings ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->GetSerializedTaskDataCopy( taskId, domNode, serializerSettings ) )
+            return true;
+        ++i;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

@@ -2299,6 +2299,7 @@ ToStringVector( const CVariant::VariantVector& var )
 {GUCEF_TRACE;
 
     CString::StringVector result;
+    result.reserve( var.size() );
     CVariant::VariantVector::const_iterator i = var.begin();
     while ( i != var.end() )
     {
@@ -2315,10 +2316,43 @@ ToStringVector( const CVariant::VariantSet& var )
 {GUCEF_TRACE;
 
     CString::StringVector result;
+    result.reserve( var.size() );
     CVariant::VariantSet::const_iterator i = var.begin();
     while ( i != var.end() )
     {
         result.push_back( (*i).AsString() );
+        ++i;
+    }
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString::StringSet 
+ToStringSet( const CVariant::VariantVector& var )
+{GUCEF_TRACE;
+
+    CString::StringSet result;
+    CVariant::VariantVector::const_iterator i = var.begin();
+    while ( i != var.end() )
+    {
+        result.insert( (*i).AsString() );
+        ++i;
+    }
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString::StringSet 
+ToStringSet( const CVariant::VariantSet& var )
+{GUCEF_TRACE;
+
+    CString::StringSet result;
+    CVariant::VariantSet::const_iterator i = var.begin();
+    while ( i != var.end() )
+    {
+        result.insert( (*i).AsString() );
         ++i;
     }
     return result;

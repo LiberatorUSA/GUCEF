@@ -197,9 +197,11 @@ CThreadPool::CTaskQueueItem::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CThreadPool::CThreadPool( PulseGeneratorPtr threadPoolPulseContext )
+CThreadPool::CThreadPool( PulseGeneratorPtr threadPoolPulseContext ,
+                          const CString& poolName                  )
     : CTSGNotifier( threadPoolPulseContext, true, false )
     , CTSharedPtrCreator< CThreadPool, MT::CMutex >( this )
+    , m_poolName( poolName )
     , m_consumerFactory()
     , m_desiredNrOfThreads( 0 )
     , m_activeNrOfThreads( 0 )
@@ -571,7 +573,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
             m_taskQueue.AddMail( taskType, queueItem );
 
             // We dont want to queue a task that will never be picked up by anyone
-            if ( 0 == GetNrOfThreads() && !m_allowAppThreadToWork )
+            if ( 0 == GetActiveNrOfThreads() && !m_allowAppThreadToWork )
             {
                 EnforceDesiredNrOfThreads( 1, true );
             }
@@ -602,26 +604,45 @@ void
 CThreadPool::SetNrOfThreadsToLogicalCPUs( const UInt32 factor )
 {GUCEF_TRACE;
 
-    SetNrOfThreads( GetLogicalCPUCount() * factor );
+    SetDesiredNrOfThreads( GetLogicalCPUCount() * factor );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadPool::SetNrOfThreads( const UInt32 nrOfThreads )
+CThreadPool::SetDesiredNrOfThreads( const UInt32 nrOfThreads )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
+    m_desiredNrOfThreads = nrOfThreads;
     EnforceDesiredNrOfThreads( nrOfThreads, true );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CThreadPool::GetNrOfThreads( void ) const
+CThreadPool::GetDesiredNrOfThreads( void ) const
+{GUCEF_TRACE;
+
+    return m_desiredNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CThreadPool::GetActiveNrOfThreads( void ) const
 {GUCEF_TRACE;
 
     return m_activeNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CThreadPool::GetNrOfQueuedTasks( void ) const
+{GUCEF_TRACE;
+
+    return m_taskQueue.AmountOfMail();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1263,6 +1284,236 @@ CThreadPool::UnregisterTaskDataFactory( const CString& taskType )
 {GUCEF_TRACE;
 
     m_taskDataFactory.UnregisterConcreteFactory( taskType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::IsTaskDataForTaskTypeSerializable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    return m_taskDataFactory.IsConstructible( taskType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetTaskIdForThreadId( const UInt32 threadId ,
+                                   UInt32& taskId        ) const
+{GUCEF_TRACE;
+
+    taskId = 0;
+    MT::CObjectScopeLock lock( this );
+
+    TTaskDelegatorSet::const_iterator i = m_taskDelegators.begin();
+    while ( i != m_taskDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() )
+        {
+            CTaskConsumerPtr taskConsumer = delegator->GetTaskConsumer();
+            if ( !taskConsumer.IsNULL() )
+            {
+                taskId = taskConsumer->GetTaskId();
+                return true;
+            }
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetThreadIdForTaskId( const UInt32 taskId ,
+                                   UInt32& threadId    ) const
+{GUCEF_TRACE;
+
+    threadId = 0;
+    MT::CObjectScopeLock lock( this );
+
+    TTaskConsumerMap::const_iterator i = m_taskConsumerMap.find( taskId );
+    if ( i != m_taskConsumerMap.end() )
+    {
+        CTaskConsumerPtr taskConsumer = (*i).second;
+        if ( !taskConsumer.IsNULL() )
+        {
+            threadId = taskConsumer->GetDelegatorThreadId();
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::GetInfo( CThreadPoolInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    
+    // Obtain an overall lock to get a coherent snapshot of threadpool info
+    MT::CObjectScopeLock lock( this );
+
+    info.SetActiveNrOfThreads( m_activeNrOfThreads );
+    info.SetDesiredNrOfThreads( m_desiredNrOfThreads );
+    info.SetAllowMainApplicationThreadToPickUpQueuedTasks( m_allowAppThreadToWork );
+    m_consumerFactory.ObtainKeySet( info.GetTaskConsumerFactoryTypes() );
+    m_taskDataFactory.ObtainKeySet( info.GetTaskDataFactoryTypes() );
+    info.SetQueuedTaskCount( m_taskQueue.AmountOfMail() );
+    info.SetThreadPoolName( m_poolName );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetTaskInfo( UInt32 taskId                                             , 
+                          CTaskInfo& info                                           , 
+                          bool obtainTaskDataCopyIfPossible                         ,
+                          CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    MT::CObjectScopeLock lock( this );
+
+    TTaskConsumerMap::const_iterator i = m_taskConsumerMap.find( taskId );
+    if ( i != m_taskConsumerMap.end() )
+    {
+        CTaskConsumerPtr taskConsumer = (*i).second;
+        if ( !taskConsumer.IsNULL() )
+        {
+            lock.EarlyUnlock();
+            
+            info.SetTaskId( taskId );
+            info.SetThreadId( taskConsumer->GetDelegatorThreadId() );
+            info.SetTaskTypeName( taskConsumer->GetType() );
+            info.SetTaskDataIsSerializable( IsTaskDataForTaskTypeSerializable( info.GetTaskTypeName() ) );
+            info.SetHasTaskData( taskConsumer->HasTaskData() );
+            if ( obtainTaskDataCopyIfPossible && info.GetHasTaskData() && info.GetTaskDataIsSerializable() )
+            {
+                if ( GUCEF_NULL != taskDataSerializerSettings )
+                {
+                    taskConsumer->GetSerializedTaskDataCopy( info.GetTaskData(), *taskDataSerializerSettings );
+                }
+                else
+                {
+                    CDataNodeSerializableSettings defaultSerializableSettings;
+                    taskConsumer->GetSerializedTaskDataCopy( info.GetTaskData(), defaultSerializableSettings );
+                }
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetAllTaskInfo( TTaskInfoMap& info                                        ,
+                             bool obtainTaskDataCopyIfPossible                         ,
+                             CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+{GUCEF_TRACE;
+
+    info.clear();
+    MT::CObjectScopeLock lock( this );
+
+    bool totalSuccess = true;
+    TTaskConsumerMap::const_iterator i = m_taskConsumerMap.begin();
+    while ( i != m_taskConsumerMap.end() )
+    {
+        UInt32 taskId = (*i).first;
+        CTaskInfo& taskInfo = info[ taskId ];
+
+        totalSuccess = GetTaskInfo( taskId                       , 
+                                    taskInfo                     , 
+                                    obtainTaskDataCopyIfPossible , 
+                                    taskDataSerializerSettings   ) && totalSuccess;
+        ++i;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    MT::CObjectScopeLock lock( this );
+
+    TTaskDelegatorSet::const_iterator i = m_taskDelegators.begin();
+    while ( i != m_taskDelegators.end() )
+    {
+        if ( threadId == (*i)->GetThreadID() )
+            return (*i)->GetThreadInfo( info );
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetAllThreadInfo( TThreadInfoMap& info ) const
+{GUCEF_TRACE;
+
+    info.clear();
+    MT::CObjectScopeLock lock( this );
+
+    bool totalSuccess = true;
+    TTaskDelegatorSet::const_iterator i = m_taskDelegators.begin();
+    while ( i != m_taskDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() )
+        {
+            UInt32 threadId = (*i)->GetThreadID();
+            CThreadInfo& threadInfo = info[ threadId ];
+            totalSuccess = delegator->GetThreadInfo( threadInfo ) && totalSuccess;
+        }        
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::GetSerializedTaskDataCopy( UInt32 taskId                                     ,
+                                        CDataNode& domNode                                ,
+                                        CDataNodeSerializableSettings& serializerSettings ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    TTaskConsumerMap::const_iterator i = m_taskConsumerMap.find( taskId );
+    if ( i != m_taskConsumerMap.end() )
+    {
+        CTaskConsumerPtr taskConsumer = (*i).second;
+        if ( !taskConsumer.IsNULL() )
+        {
+            return taskConsumer->GetSerializedTaskDataCopy( domNode, serializerSettings );
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CThreadPool::GetThreadPoolName( void ) const
+{GUCEF_TRACE;
+    
+    // no lock since this is only ever set in the constructor with no way to change it after the fact
+    return m_poolName;  
 }
 
 /*-------------------------------------------------------------------------//

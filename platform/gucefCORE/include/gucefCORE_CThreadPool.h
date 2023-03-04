@@ -53,6 +53,21 @@
 #define GUCEF_CORE_CIDATANODESERIALIZABLE_H
 #endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
 
+#ifndef GUCEF_CORE_CTHREADPOOLINFO_H
+#include "gucefCORE_CThreadPoollnfo.h"
+#define GUCEF_CORE_CTHREADPOOLINFO_H
+#endif /* GUCEF_CORE_CTHREADPOOLINFO_H ? */
+
+#ifndef GUCEF_CORE_CTHREADINFO_H
+#include "gucefCORE_CThreadlnfo.h"
+#define GUCEF_CORE_CTHREADINFO_H
+#endif /* GUCEF_CORE_CTHREADINFO_H ? */
+
+#ifndef GUCEF_CORE_CTASKINFO_H
+#include "gucefCORE_CTaskInfo.h"
+#define GUCEF_CORE_CTASKINFO_H
+#endif /* GUCEF_CORE_CTASKINFO_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -110,6 +125,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     typedef CTFactoryBase< CTaskConsumer >              TTaskConsumerFactory;
     typedef CTFactoryBase< CIDataNodeSerializable >     TTaskDataFactory;
+    typedef std::map< UInt32, CTaskInfo >               TTaskInfoMap;
+    typedef std::map< UInt32, CThreadInfo >             TThreadInfoMap;
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -203,9 +220,13 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void SetNrOfThreadsToLogicalCPUs( const UInt32 coreFactor );
 
-    void SetNrOfThreads( const UInt32 nrOfThreads );
+    void SetDesiredNrOfThreads( const UInt32 nrOfThreads );
 
-    UInt32 GetNrOfThreads( void ) const;
+    UInt32 GetDesiredNrOfThreads( void ) const;
+
+    UInt32 GetActiveNrOfThreads( void ) const;
+
+    UInt32 GetNrOfQueuedTasks( void ) const;
 
     void RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork );
 
@@ -236,6 +257,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
                                   TTaskDataFactory* factory );
 
     void UnregisterTaskDataFactory( const CString& taskType );
+
+    bool IsTaskDataForTaskTypeSerializable( const CString& taskType ) const;
     
     void GetAllRegisteredTaskDataFactoryTypes( CORE::CString::StringSet& taskTypes ) const;
 
@@ -245,11 +268,63 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     
     virtual const CString& GetClassTypeName( void ) const  GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  Obtains a snapshot in time of which task which what id is being processed by a thread with the given thread id
+     *  Note that since this is information that can change at any time this is for informational/debugging (display?) purposes only
+     *
+     *  @param taskId set to 0 by default/failure and set to the relevant task id on success
+     */
     bool GetTaskIdForThreadId( const UInt32 threadId ,
                                UInt32& taskId        ) const;
 
+    /**
+     *  Obtains a snapshot in time of which thread with a given thread id is processing a task with the given task id, if any
+     *  Note that since this is information that can change at any time this is for informational/debugging (display?) purposes only
+     *
+     *  @param threadId set to 0 by default/failure and set to the relevant thread id on success 
+     */
     bool GetThreadIdForTaskId( const UInt32 taskId ,
                                UInt32& threadId    ) const;    
+    
+    /**
+     *  Obtains a coherent snapshot of threadpool information in a single lock protected call
+     */
+    bool GetInfo( CThreadPoolInfo& info ) const;
+
+    /**
+     *  Obtains a coherent snapshot of task information in a single lock protected call
+     */
+    bool GetTaskInfo( UInt32 taskId                                                          , 
+                      CTaskInfo& info                                                        , 
+                      bool obtainTaskDataCopyIfPossible                                      ,
+                      CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
+
+    /**
+     *  Obtains a coherent snapshot of all task information in a single lock protected call
+     */
+    bool GetAllTaskInfo( TTaskInfoMap& info                                                     ,
+                         bool obtainTaskDataCopyIfPossible                                      ,
+                         CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
+
+    /**
+     *  Obtains a coherent snapshot of thread information in a single lock protected call
+     */
+    bool GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const;
+
+    /**
+     *  Obtains a coherent snapshot of all thread information in a single lock protected call
+     */
+    bool GetAllThreadInfo( TThreadInfoMap& info ) const;
+
+    /**
+     *  If the task with the given id was provided with any 'work' data and said data is serializable this can be used to 
+     *  obtain a copy of said data
+     */
+    bool GetSerializedTaskDataCopy( UInt32 taskId                                     ,
+                                    CDataNode& domNode                                ,
+                                    CDataNodeSerializableSettings& serializerSettings ) const;
+
+    const CString& GetThreadPoolName( void ) const;
     
     virtual ~CThreadPool() GUCEF_VIRTUAL_OVERRIDE;
     
@@ -271,7 +346,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     private:
     friend class CTaskManager;
 
-    CThreadPool( PulseGeneratorPtr threadPoolPulseContext );
+    CThreadPool( PulseGeneratorPtr threadPoolPulseContext , 
+                 const CString& poolName                  );
 
     private:
 
@@ -322,6 +398,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
     typedef std::set< TTaskDelegatorBasicPtr > TTaskDelegatorSet;
 
+    CString m_poolName;
     TAbstractTaskConsumerFactory m_consumerFactory;
     TAbstractTaskDataFactory m_taskDataFactory;
     UInt32 m_desiredNrOfThreads;

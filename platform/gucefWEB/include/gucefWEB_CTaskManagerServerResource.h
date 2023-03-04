@@ -1,0 +1,171 @@
+/*
+ *  gucefWEB: GUCEF module providing Web application functionality 
+ *  for standardized protocols
+ *
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+#ifndef GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#define GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_MT_CREADWRITELOCK_H
+#include "gucefMT_CReadWriteLock.h"
+#define GUCEF_MT_CREADWRITELOCK_H
+#endif /* GUCEF_MT_CREADWRITELOCK_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGERINFO_H
+#include "gucefCORE_CTaskManagerInfo.h"
+#define GUCEF_CORE_CTASKMANAGERINFO_H
+#endif /* GUCEF_CORE_CTASKMANAGERINFO_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CTHREADPOOLINFO_H
+#include "gucefCORE_CThreadPoolInfo.h"
+#define GUCEF_CORE_CTHREADPOOLINFO_H
+#endif /* GUCEF_CORE_CTHREADPOOLINFO_H ? */
+
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
+#ifndef GUCEF_WEB_CIHTTPSERVERROUTER_H
+#include "gucefWEB_CIHTTPServerRouter.h"
+#define GUCEF_WEB_CIHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CIHTTPSERVERROUTER_H ? */
+
+#ifndef GUCEF_WEB_MACROS_H
+#include "gucefWEB_macros.h"
+#define GUCEF_WEB_MACROS_H
+#endif /* GUCEF_WEB_MACROS_H ? */
+
+#ifndef GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTDataNodeSerializableMapHttpServerResource.h"
+#define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
+
+#ifndef GUCEF_WEB_CDATANODESERIALIZABLEHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDataNodeSerializableHttpServerResource.h"
+#define GUCEF_WEB_CDATANODESERIALIZABLEHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDATANODESERIALIZABLEHTTPSERVERRESOURCE_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace WEB {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/**
+ *  Convenient utility class for hooking up a web interface for accessing the GU Platform task manager
+ */
+class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifier 
+{
+    public:
+
+    bool ConnectHttpRouting( CIHTTPServerRouter& webRouter );
+
+    bool DisconnectHttpRouting( CIHTTPServerRouter& webRouter );
+
+    CTaskManagerServerResource( void );
+    CTaskManagerServerResource( const CTaskManagerServerResource& src );
+    virtual ~CTaskManagerServerResource();
+
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< CTaskManagerServerResource > TEventCallback;
+
+    void RegisterEventHandlers( void );
+
+    virtual void OnThreadPoolCreation( CORE::CNotifier* notifier                 ,
+                                       const CORE::CEvent& eventId               ,
+                                       CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnThreadPoolDestruction( CORE::CNotifier* notifier                 ,
+                                          const CORE::CEvent& eventId               ,
+                                          CORE::CICloneable* eventData = GUCEF_NULL );
+
+    private:
+    
+    typedef CORE::CTaskManager::TTaskInfoMap        TTaskInfoMap;    
+    typedef CORE::CTaskManager::TThreadInfoMap      TThreadInfoMap;
+    typedef CORE::CTaskManager::TThreadPoolInfoMap  TThreadPoolInfoMap;
+
+    class CThreadPoolMetaData
+    {
+        public:
+
+        CORE::CThreadPoolInfo threadPoolInfo;
+        CDataNodeSerializableHttpServerResourcePtr threadPoolInfoRsc;
+        CORE::CDateTime threadPoolInfoLastUpdate;
+        TTaskInfoMap allTaskInfo;
+
+        CThreadPoolMetaData( void );
+    };
+
+    typedef std::map< CORE::CString, CThreadPoolMetaData > TThreadPoolMetaDataMap; 
+
+    CORE::CTaskManagerInfo m_taskManagerInfo;
+    CDataNodeSerializableHttpServerResource m_taskManagerInfoRsc;
+    TThreadPoolMetaDataMap m_threadPoolMetaDataMap;
+    CIHTTPServerRouter* m_router;
+    MT::CReadWriteLock m_rwLock;
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+} /* namespace COM */
+} /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H ? */

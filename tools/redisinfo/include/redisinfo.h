@@ -270,8 +270,8 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     const Settings& GetSettings( void ) const;
 
-    bool ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& webRouter );
-    bool DisconnectHttpRouting( WEB::CDefaultHTTPServerRouter& webRouter );
+    bool ConnectHttpRouting( WEB::CIHTTPServerRouter& webRouter );
+    bool DisconnectHttpRouting( WEB::CIHTTPServerRouter& webRouter );
 
     private:
 

@@ -17,6 +17,7 @@ set( HEADER_FILES
   include/gucefWEB_CAsyncHttpServerResponseHandler.h
   include/gucefWEB_CCodecBasedHTTPServerResource.h
   include/gucefWEB_CConfigurableHttpServerResource.h
+  include/gucefWEB_CDataNodeSerializableHttpServerResource.h
   include/gucefWEB_CDefaultHTTPServerResource.h
   include/gucefWEB_CDefaultHTTPServerRouter.h
   include/gucefWEB_CDefaultHTTPServerRouterController.h
@@ -40,6 +41,7 @@ set( HEADER_FILES
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
   include/gucefWEB_CTDataNodeSerializableMapHttpServerResource.h
   include/gucefWEB_CTReadableMapIndexHttpServerResource.h
+  include/gucefWEB_CTaskManagerServerResource.h
   include/gucefWEB_CVfsHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
   include/gucefWEB_ETypes.h
@@ -55,6 +57,7 @@ set( SOURCE_FILES
   src/gucefWEB_CAsyncHttpServerResponseHandler.cpp
   src/gucefWEB_CCodecBasedHTTPServerResource.cpp
   src/gucefWEB_CConfigurableHttpServerResource.cpp
+  src/gucefWEB_CDataNodeSerializableHttpServerResource.cpp
   src/gucefWEB_CDefaultHTTPServerResource.cpp
   src/gucefWEB_CDefaultHTTPServerRouter.cpp
   src/gucefWEB_CDefaultHTTPServerRouterController.cpp
@@ -77,6 +80,7 @@ set( SOURCE_FILES
   src/gucefWEB_CStdParamParser.cpp
   src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp
   src/gucefWEB_CTReadableMapIndexHttpServerResource.cpp
+  src/gucefWEB_CTaskManagerServerResource.cpp
   src/gucefWEB_CVfsHttpServerResource.cpp
   src/gucefWEB_CWebGlobal.cpp
 )

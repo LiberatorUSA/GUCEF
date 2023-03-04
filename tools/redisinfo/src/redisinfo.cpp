@@ -366,7 +366,7 @@ RedisInfoService::GetSettings( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
+RedisInfoService::ConnectHttpRouting( WEB::CIHTTPServerRouter& router )
 {GUCEF_TRACE;
 
     if ( !m_settings.retainRedisInfo )
@@ -430,7 +430,7 @@ RedisInfoService::ConnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
 /*-------------------------------------------------------------------------*/
 
 bool 
-RedisInfoService::DisconnectHttpRouting( WEB::CDefaultHTTPServerRouter& router )
+RedisInfoService::DisconnectHttpRouting( WEB::CIHTTPServerRouter& router )
 {GUCEF_TRACE;
     
     bool totalSuccess = true;

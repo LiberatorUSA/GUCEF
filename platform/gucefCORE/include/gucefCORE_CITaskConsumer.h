@@ -61,6 +61,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CDataNode;
+class CDataNodeSerializableSettings;
 class CThreadPool;
 class CTaskDelegator;
 class CPulseGenerator;
@@ -202,6 +204,18 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
      *  This functionality can be used to implement throttling a task and thus the owning thread
      */
     void RequestTaskCycleDelayInMs( UInt32 requestedDelayInMs );
+
+    /**
+     *  Whether this consumer was provided with any data or was expected to run without a specific handoff of 
+     *  'work' data to the consumer.
+     */
+    bool HasTaskData( void ) const;
+
+    /**
+     *  If this consumer was provided with any 'work' data and said data is serializable this can be used to obtain a copy of said data
+     */
+    bool GetSerializedTaskDataCopy( CDataNode& domNode                                ,
+                                    CDataNodeSerializableSettings& serializerSettings ) const;
 
     private:
     friend class CThreadPool;

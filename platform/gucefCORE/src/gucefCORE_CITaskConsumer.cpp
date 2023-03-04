@@ -356,6 +356,35 @@ CTaskConsumer::RequestTaskToStop( bool waitOnStop )
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::HasTaskData( void ) const
+{GUCEF_TRACE;
+
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
+    {
+        return delegator->HasTaskData( m_taskId );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::GetSerializedTaskDataCopy( CDataNode& domNode                                ,
+                                          CDataNodeSerializableSettings& serializerSettings ) const
+{GUCEF_TRACE;
+
+    TTaskDelegatorBasicPtr delegator = m_delegator;
+    if ( !delegator.IsNULL() )
+    {
+        return delegator->GetSerializedTaskDataCopy( m_taskId, domNode, serializerSettings );
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

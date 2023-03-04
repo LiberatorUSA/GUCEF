@@ -66,6 +66,11 @@
 #define GUCEF_CORE_CTASKCONSUMER_H
 #endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
+#ifndef GUCEF_CORE_CTHREADINFO_H
+#include "gucefCORE_CThreadlnfo.h"
+#define GUCEF_CORE_CTHREADINFO_H
+#endif /* GUCEF_CORE_CTHREADINFO_H ? */
+
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
 #define GUCEF_CORE_CLONEABLES_H
@@ -130,12 +135,27 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >     TBasicThreadPoolPtr;
     
-    CTaskConsumerPtr GetTaskConsumer( void );
+    CTaskConsumerPtr GetTaskConsumer( void ) const;
 
     PulseGeneratorPtr GetPulseGenerator( void );
 
     TBasicThreadPoolPtr GetThreadPool( void );
 
+    /**
+     *  Whether the consumer was provided with any data or was expected to run without a specific handoff of 
+     *  'work' data to the consumer.
+     */
+    bool HasTaskData( UInt32 taskId ) const;
+
+    /**
+     *  If the consumer was provided with any 'work' data and said data is serializable this can be used to obtain a copy of said data
+     */
+    bool GetSerializedTaskDataCopy( UInt32 taskId                                     , 
+                                    CDataNode& domNode                                ,
+                                    CDataNodeSerializableSettings& serializerSettings ) const;
+
+    bool GetThreadInfo( CThreadInfo& info ) const;
+    
     protected:
     friend class CThreadPool;
     friend class CTaskConsumer;

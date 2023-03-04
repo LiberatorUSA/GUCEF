@@ -66,34 +66,34 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
     
     CDefaultHTTPServerRouter( const CDefaultHTTPServerRouter& src );
     
-    virtual ~CDefaultHTTPServerRouter();
+    virtual ~CDefaultHTTPServerRouter() GUCEF_VIRTUAL_OVERRIDE;
     
     CDefaultHTTPServerRouter& operator=( const CDefaultHTTPServerRouter& src );
     
-    virtual THTTPServerResourcePtr ResolveUriToResource( const CString& uri );
+    virtual THTTPServerResourcePtr ResolveUriToResource( const CString& uri ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void SetServiceRoot( const CString& serviceRoot );
+    virtual void SetServiceRoot( const CString& serviceRoot ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual const CString& GetServiceRoot( void ) const;
+    virtual const CString& GetServiceRoot( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void SetMountPath( const CString& mountPath );
+    virtual void SetMountPath( const CString& mountPath ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual const CString& GetMountPath( void ) const;
+    virtual const CString& GetMountPath( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void SetRouterController( CIHTTPServerRouterController& controller );
+    virtual void SetRouterController( CIHTTPServerRouterController& controller ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool SetResourceMapping( const CString& uriSegment       ,
-                             THTTPServerResourcePtr resource );
+    virtual bool SetResourceMapping( const CString& uriSegment       ,
+                                     THTTPServerResourcePtr resource ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool RemoveResourceMapping( const CString& uriSegment );
+    virtual bool RemoveResourceMapping( const CString& uriSegment ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool RemoveResourceMapping( THTTPServerResourcePtr resource );
+    virtual bool RemoveResourceMapping( THTTPServerResourcePtr resource ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool RemoveAllResourceMappings( void );
+    virtual bool RemoveAllResourceMappings( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    void SetWildcardMatchUris( bool useWildcards );
+    virtual void SetWildcardMatchUris( bool useWildcards ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool GetWildcardMatchUris( void ) const;
+    virtual bool GetWildcardMatchUris( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

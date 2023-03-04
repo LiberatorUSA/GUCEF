@@ -1714,6 +1714,70 @@ CDataNode::GetChildrenValues( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CDataNode::GetValuesOfChildByName( const CString& name                  , 
+                                   CDataNode::TVariantVector& outValues ,
+                                   bool linkIfPossible                  ) const
+{GUCEF_TRACE;
+
+    CDataNode* collectionNode = FindChild( name );
+    if ( GUCEF_NULL != collectionNode )
+    {
+        TDataNodeList::const_iterator i = collectionNode->m_children.begin();
+        while ( i != collectionNode->m_children.end() )
+        {
+            switch ( (*i)->GetNodeType() )
+            {
+                case GUCEF_DATATYPE_OBJECT:
+                case GUCEF_DATATYPE_ARRAY:
+                {
+                    // Complex types cannot be obtained this way, skip
+                    break;
+                }
+                default:
+                {
+                    const CVariant& childValue = (*i)->GetValue();
+                    if ( childValue.IsInitialized() )
+                    {
+                        if ( linkIfPossible )
+                        {
+                            outValues.push_back( CVariant() );
+                            outValues.back().LinkTo( childValue );
+                        }
+                        else
+                        {
+                            outValues.push_back( childValue );
+                        }
+                    }
+                    break;
+                }
+            }
+            ++i;
+        }
+
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::GetValuesOfChildByName( const CString& name           , 
+                                   CString::StringSet& outValues ) const
+{GUCEF_TRACE;
+
+    TVariantVector varValues;
+    if ( GetValuesOfChildByName( name, varValues, true ) )
+    {
+        outValues = ToStringSet( varValues );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDataNode::Delete( void )
 {GUCEF_TRACE;

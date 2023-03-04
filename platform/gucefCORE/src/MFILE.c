@@ -144,7 +144,7 @@ mfread( void *dest      ,
          *      It is assumed the dest buffer already has the needed space
          *      allocated.
          */
-        unsigned maxel;
+        size_t maxel;
         if ( mfile->offset + esize <= mfile->size )
         {
                 /*
@@ -181,8 +181,8 @@ mfreads( char **dest  ,
         /*
          *      Read untill a whitespace and alloc and fill dest char buffer
          */
-        int i;
-        UInt32 rbytes, offset;
+        int i = 0;
+        UInt32 rbytes = 0, offset = 0;
         UInt32 stop[ 4 ];
         stop[ 0 ] = Find_Char( ' ', ( char* ) mfile->curpos, mfile->size-mfile->offset );
         stop[ 1 ] = Find_Char( '\n', ( char* ) mfile->curpos, mfile->size-mfile->offset );

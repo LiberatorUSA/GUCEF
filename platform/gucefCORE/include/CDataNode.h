@@ -277,6 +277,13 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      */
     TVariantVector GetChildrenValues( void ) const;
 
+    bool GetValuesOfChildByName( const CString& name                  , 
+                                 CDataNode::TVariantVector& outValues ,
+                                 bool linkIfPossible = false          ) const;
+
+    bool GetValuesOfChildByName( const CString& name           , 
+                                 CString::StringSet& outValues ) const;
+
     CDataNode* FindRoot( void ) const;
 
     CDataNode* FindChild( const CString& name ) const;
@@ -454,6 +461,12 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     
     CDataNode* AddValueAsChild( const CVariant& nodeValue );
     CDataNode* AddValueAsChild( const CString& nodeValue );
+
+    template < class ChildValueTypeCollection >
+    bool AddAllValuesAsChildren( const ChildValueTypeCollection& collection );
+
+    template < class ChildValueTypeCollection >
+    bool AddAllValuesAsChildrenOfChild( const CString& nodeName, const ChildValueTypeCollection& collection, int nodeType = GUCEF_DATATYPE_ARRAY );
     
     bool DelChild( const CString& name );
 
@@ -679,6 +692,42 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     CDataNode* _pprev;    /**< previous sibling node */
     CICloneable* m_associatedData; /**< externally managed data */
 };
+
+/*-------------------------------------------------------------------------*/
+
+template < class ChildValueTypeCollection >
+bool 
+CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection )
+{GUCEF_TRACE;
+    
+    bool totalSuccess = true;
+    ChildValueTypeCollection::const_iterator i = collection.begin();
+    while ( i != collection.end() )
+    {
+        CDataNode* newValueChild = AddValueAsChild( (*i) );
+        if ( GUCEF_NULL == newValueChild )
+            totalSuccess = false;    
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < class ChildValueTypeCollection >
+bool 
+CDataNode::AddAllValuesAsChildrenOfChild( const CString& nodeName                    , 
+                                          const ChildValueTypeCollection& collection , 
+                                          int nodeType                               )
+{GUCEF_TRACE;
+    
+    CDataNode* collectionNode = AddChild( nodeName, nodeType );
+    if ( GUCEF_NULL != collectionNode )
+    {
+        return collectionNode->AddAllValuesAsChildren< ChildValueTypeCollection >( collection );
+    }
+    return false;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

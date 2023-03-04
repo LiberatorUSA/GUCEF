@@ -65,6 +65,9 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerRouter
     CIHTTPServerRouter& operator=( const CIHTTPServerRouter& src );
     
     virtual THTTPServerResourcePtr ResolveUriToResource( const CString& uri ) = 0;
+
+    virtual bool SetResourceMapping( const CString& uriSegment       ,
+                                     THTTPServerResourcePtr resource ) = 0;
     
     virtual void SetServiceRoot( const CString& serviceRoot ) = 0;
     
@@ -75,6 +78,16 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerRouter
     virtual const CString& GetMountPath( void ) const = 0;
     
     virtual void SetRouterController( CIHTTPServerRouterController& controller ) = 0;
+
+    virtual bool RemoveResourceMapping( const CString& uriSegment ) = 0;
+
+    virtual bool RemoveResourceMapping( THTTPServerResourcePtr resource ) = 0;
+
+    virtual bool RemoveAllResourceMappings( void ) = 0;
+
+    virtual void SetWildcardMatchUris( bool useWildcards ) = 0;
+
+    virtual bool GetWildcardMatchUris( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//
