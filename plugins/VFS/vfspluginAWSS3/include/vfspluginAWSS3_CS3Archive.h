@@ -118,7 +118,7 @@ class GUCEF_HIDDEN CS3Archive : public VFS::CArchive
     virtual bool GetFileMetaData( const VFS::CString& filePath      ,
                                   CORE::CResourceMetaData& metaData ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual VFS::UInt32 GetFileSize( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual VFS::UInt64 GetFileSize( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual VFS::CString GetFileHash( const VFS::CString& file ) const GUCEF_VIRTUAL_OVERRIDE;
 

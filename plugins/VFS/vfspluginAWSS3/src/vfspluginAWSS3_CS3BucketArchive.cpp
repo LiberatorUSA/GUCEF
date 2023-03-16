@@ -419,7 +419,7 @@ CS3BucketArchive::MoveFile( const VFS::CString& oldFilePath ,
  
 /*-------------------------------------------------------------------------*/
 
-VFS::UInt32
+VFS::UInt64
 CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -427,7 +427,7 @@ CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
     if ( i != m_objects.end() )
     {
         const auto& objectRef = (*i).second;
-        return (VFS::UInt32) objectRef.GetSize();
+        return (VFS::UInt64) objectRef.GetSize();
     }
     return 0;
 }

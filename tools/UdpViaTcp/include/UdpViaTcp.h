@@ -79,6 +79,11 @@
 #define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#include "gucefWEB_CTaskManagerServerResource.h"
+#define GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -89,7 +94,7 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -299,6 +304,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
 
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CTaskManagerServerResource m_taskManagementRsc;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
 

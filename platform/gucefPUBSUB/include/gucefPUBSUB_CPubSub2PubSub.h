@@ -107,6 +107,11 @@
 #define GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTDATANODESERIALIZABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#include "gucefWEB_CTaskManagerServerResource.h"
+#define GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H ? */
+
 #ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
 #include "gucefPUBSUB_CPubSubClient.h"
 #define GUCEF_PUBSUB_CPUBSUBCLIENT_H
@@ -443,6 +448,7 @@ class GUCEF_PUBSUB_EXPORT_CPP PubSub2PubSub : public CORE::CObserver            
     PubSubClientChannelMap m_channels;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CTaskManagerServerResource m_taskManagementRsc;
     mutable bool m_isHealthy;
     mutable CORE::CDateTime m_lastIsHealthyChange;
     PubSub2PubSubConfig m_config;

@@ -134,6 +134,9 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
     virtual bool IsSerializeSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual bool IsDeserializeSupported( bool deltaOnly ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void SetIsCreateSupported( bool isSupported );
+    virtual void SetIsDeserializeSupported( bool isSupported, bool deltaOnly );
+
     protected:
 
     typedef std::map< CORE::CString, CORE::CDStoreCodecRegistry::TDStoreCodecPtr > TStringToCodecMap;
@@ -157,15 +160,3 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added this section
-
----------------------------------------------------------------------------*/
-    

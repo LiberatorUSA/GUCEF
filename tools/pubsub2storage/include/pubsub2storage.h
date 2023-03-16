@@ -213,7 +213,7 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     const ChannelSettings& GetChannelSettings( void ) const;
 
-    bool ConnectPubSubClient( void );
+    bool ConnectPubSubClient( bool reset );
 
     bool DisconnectPubSubClient( bool destroyClient = false );
 

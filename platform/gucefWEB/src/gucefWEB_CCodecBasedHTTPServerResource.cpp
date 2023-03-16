@@ -271,6 +271,25 @@ CCodecBasedHTTPServerResource::IsDeserializeSupported( bool deltaOnly ) const
     return m_allowDeserialize;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CCodecBasedHTTPServerResource::SetIsCreateSupported( bool isSupported )
+{GUCEF_TRACE;
+
+    m_allowCreate = isSupported;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CCodecBasedHTTPServerResource::SetIsDeserializeSupported( bool isSupported, bool deltaOnly )
+{GUCEF_TRACE;
+
+    // we do not differentiate delta Deserialize by default
+    m_allowDeserialize = isSupported;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

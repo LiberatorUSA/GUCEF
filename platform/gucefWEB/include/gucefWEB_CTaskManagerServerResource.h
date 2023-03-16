@@ -106,6 +106,14 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     CTaskManagerServerResource( const CTaskManagerServerResource& src );
     virtual ~CTaskManagerServerResource();
 
+    void SetTaskManagerRootPath( const CString& rootPath );
+
+    CString GetTaskManagerRootPath( void ) const;
+
+    bool UpdateAllInfo( void );
+
+    bool UpdateThreadPoolInfo( const CString& poolName );
+
     protected:
 
     virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -132,28 +140,44 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
 
     private:
     
-    typedef CORE::CTaskManager::TTaskInfoMap        TTaskInfoMap;    
-    typedef CORE::CTaskManager::TThreadInfoMap      TThreadInfoMap;
-    typedef CORE::CTaskManager::TThreadPoolInfoMap  TThreadPoolInfoMap;
+    typedef CORE::CTaskManager::TTaskInfoMap                                            TTaskInfoMap;    
+    typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CTaskInfo >      TTaskInfoMapRsc;
+    typedef CORE::CTSharedPtr< TTaskInfoMapRsc, MT::CMutex >                            TTaskInfoMapRscPtr;
+    typedef CORE::CTaskManager::TThreadInfoMap                                          TThreadInfoMap;
+    typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CThreadInfo >    TThreadInfoMapRsc;
+    typedef CORE::CTSharedPtr< TThreadInfoMapRsc, MT::CMutex >                          TThreadInfoMapRscPtr;
+    typedef CORE::CTaskManager::TThreadPoolInfoMap                                      TThreadPoolInfoMap;
 
     class CThreadPoolMetaData
     {
         public:
 
-        CORE::CThreadPoolInfo threadPoolInfo;
+        CORE::CThreadPoolInfo* threadPoolInfo;
         CDataNodeSerializableHttpServerResourcePtr threadPoolInfoRsc;
         CORE::CDateTime threadPoolInfoLastUpdate;
         TTaskInfoMap allTaskInfo;
+        TTaskInfoMapRscPtr allTaskInfoRsc;
+        TThreadInfoMap allThreadInfo;
+        TThreadInfoMapRscPtr allThreadInfoRsc; 
+        MT::CILockable* lock;
 
         CThreadPoolMetaData( void );
+
+        void LinkTo( MT::CILockable* lock, CORE::CThreadPoolInfo* threadPoolInfo );
     };
 
-    typedef std::map< CORE::CString, CThreadPoolMetaData > TThreadPoolMetaDataMap; 
+    typedef std::map< CORE::CString, CORE::CThreadPoolInfo >                                        TThreadPoolInfoMap; 
+    typedef CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CThreadPoolInfo >     TThreadPoolInfoMapRsc;
+    typedef CORE::CTSharedPtr< TThreadPoolInfoMapRsc, MT::CMutex >                                  TThreadPoolInfoMapRscPtr;
+    typedef std::map< CORE::CString, CThreadPoolMetaData >                                          TThreadPoolMetaDataMap; 
 
     CORE::CTaskManagerInfo m_taskManagerInfo;
-    CDataNodeSerializableHttpServerResource m_taskManagerInfoRsc;
+    CDataNodeSerializableHttpServerResourcePtr m_taskManagerInfoRsc;
+    TThreadPoolInfoMap m_threadPoolInfoMap;
+    TThreadPoolInfoMapRscPtr m_threadPoolInfoMapRsc;
     TThreadPoolMetaDataMap m_threadPoolMetaDataMap;
     CIHTTPServerRouter* m_router;
+    CString m_rootPath;
     MT::CReadWriteLock m_rwLock;
 };
 

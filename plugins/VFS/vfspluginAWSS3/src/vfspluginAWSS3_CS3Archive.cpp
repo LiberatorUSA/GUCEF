@@ -274,7 +274,7 @@ CS3Archive::DirExists( const VFS::CString& dirPath ) const
 
 /*-------------------------------------------------------------------------*/
 
-VFS::UInt32
+VFS::UInt64
 CS3Archive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 

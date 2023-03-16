@@ -155,6 +155,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     bool GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info ) const;
 
     /**
+     *  Obtains a coherent snapshot of all threadpool information in a single lock protected call
+     */
+    bool GetAllThreadPoolInfo( TThreadPoolInfoMap& info ) const;
+
+    /**
      *  Obtains a coherent snapshot of thread information in a single lock protected call
      */
     bool GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const;

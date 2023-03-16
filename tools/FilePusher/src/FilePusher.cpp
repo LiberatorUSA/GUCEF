@@ -1625,6 +1625,7 @@ FilePusher::FilePusher( void )
     : CORE::CObservingNotifier()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_appConfig()
     , m_globalConfig()
     , m_filePushDestinations()
@@ -1707,6 +1708,11 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiFilePusherInfoResource::THTTPServerResourcePtr( new RestApiFilePusherConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiFilePusherInfoResource::THTTPServerResourcePtr( new RestApiFilePusherConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiFilePusherInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+
+    if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to set up task management API" );
+    }
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

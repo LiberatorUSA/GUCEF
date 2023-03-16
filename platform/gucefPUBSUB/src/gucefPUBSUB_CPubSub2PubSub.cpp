@@ -1208,6 +1208,7 @@ PubSub2PubSub::PubSub2PubSub( void )
     , m_channels()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_isHealthy( true )
     , m_lastIsHealthyChange( CORE::CDateTime::NowUTCDateTime() )
     , m_config()
@@ -1577,6 +1578,11 @@ PubSub2PubSub::LoadConfigAfterVfsInit( const CORE::CDataNode& globalConfig )
     //m_httpRouter.SetResourceMapping( "/config/channels/*", ( GUCEF_NEW RestApiPubSubClientChannelConfigResource( this ) )->CreateSharedPtr() );
     m_httpRouter.SetResourceMapping( "/health", ( GUCEF_NEW RestApiPubSub2PubSubHealthResource( this ) )->CreateSharedPtr() );    
     m_httpRouter.SetResourceMapping( m_config.restBasicHealthUri, ( GUCEF_NEW WEB::CDummyHTTPServerResource() )->CreateSharedPtr() );
+
+    if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub:LoadConfig: Failed to set up task management API" );
+    }
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

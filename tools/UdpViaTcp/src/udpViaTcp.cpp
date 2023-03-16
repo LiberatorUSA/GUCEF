@@ -143,6 +143,7 @@ UdpViaTcp::UdpViaTcp( void )
     , m_udpReceiverMulticastSources()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
@@ -912,6 +913,11 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+
+    if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Failed to set up task management API" );
+    }
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

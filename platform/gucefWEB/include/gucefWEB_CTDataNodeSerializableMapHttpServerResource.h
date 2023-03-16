@@ -108,6 +108,9 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Template for easily mapping a logical server resource to an STL map (or similar) container
+ */
 template< typename CollectionKeyType, typename SerializableObj >
 class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServerResource
 {
@@ -115,6 +118,12 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 
     typedef std::map< CollectionKeyType, SerializableObj > TSerializableCollectionMap;
 
+    /**
+     *  Default constructor generates a placeholder resource which is not yet usable.
+     *  You must use LinkTo() in order to map the logical resource to your actual data
+     */
+    CTDataNodeSerializableMapHttpServerResource( void );
+    
     CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                                                                      ,
                                                  const CORE::CString& keyPropertyName                                                                     ,
                                                  const CORE::CDataNodeSerializableSettings* serializerOptions = GUCEF_NULL                                ,
@@ -125,9 +134,13 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 
     virtual ~CTDataNodeSerializableMapHttpServerResource();
 
-    void LinkTo( const CORE::CDataNodeSerializableSettings* serializerOptions ,
-                 TSerializableCollectionMap* collection                       ,
-                 MT::CILockable* collectionLock                               );
+    void LinkTo( const CORE::CString& collectionName                                                                      ,
+                 const CORE::CString& keyPropertyName                                                                     ,
+                 const CORE::CDataNodeSerializableSettings* serializerOptions                                             ,
+                 TSerializableCollectionMap* collection                                                                   ,
+                 MT::CILockable* collectionLock                                                                           ,
+                 bool sourceObjKeyFromObj = false                                                                         ,
+                 CORE::CIValueToDataNodeSerializer* valueSerializer = CORE::CGenericValueToDataNodeSerializer::Instance() );
 
     virtual bool Serialize( const CString& resourcePath         ,
                             CORE::CDataNode& output             ,
@@ -168,7 +181,6 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 
     private:
 
-    CTDataNodeSerializableMapHttpServerResource( void );
     CTDataNodeSerializableMapHttpServerResource( const CTDataNodeSerializableMapHttpServerResource& src );
     CTDataNodeSerializableMapHttpServerResource& operator=( const CTDataNodeSerializableMapHttpServerResource& src );
 };
@@ -178,6 +190,25 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+template< typename CollectionKeyType, typename SerializableObj >
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::CTDataNodeSerializableMapHttpServerResource( void )
+    : CCodecBasedHTTPServerResource()
+    , m_serializerOptions( GUCEF_NULL )
+    , m_collection( GUCEF_NULL )
+    , m_collectionLock( GUCEF_NULL )
+    , m_collectionName()
+    , m_keyPropertyName()
+    , m_sourceObjKeyFromObj( false )
+    , m_valueSerializer( CORE::CGenericValueToDataNodeSerializer::Instance() )
+{GUCEF_TRACE;
+
+    m_allowSerialize = false;
+    m_allowDeserialize = false;
+    m_allowCreate = false;
+}
+
+/*-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, typename SerializableObj >
 CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::CTDataNodeSerializableMapHttpServerResource( const CORE::CString& collectionName                          ,
@@ -214,14 +245,29 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
 
 template< typename CollectionKeyType, typename SerializableObj >
 void
-CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::LinkTo( const CORE::CDataNodeSerializableSettings* serializerOptions ,
+CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj >::LinkTo( const CORE::CString& collectionName                          ,
+                                                                                           const CORE::CString& keyPropertyName                         ,
+                                                                                           const CORE::CDataNodeSerializableSettings* serializerOptions ,
                                                                                            TSerializableCollectionMap* collection                       ,
-                                                                                           MT::CILockable* collectionLock                               )
+                                                                                           MT::CILockable* collectionLock                               ,
+                                                                                           bool sourceObjKeyFromObj                                     ,
+                                                                                           CORE::CIValueToDataNodeSerializer* valueSerializer           )
 {GUCEF_TRACE;
 
+    m_collectionName = collectionName;
+    m_keyPropertyName = keyPropertyName;
     m_serializerOptions = serializerOptions;
     m_collection = collection;
     m_collectionLock = collectionLock;
+    m_sourceObjKeyFromObj = sourceObjKeyFromObj;
+    m_valueSerializer = valueSerializer;
+
+    m_allowSerialize = true;
+    m_allowDeserialize = false;
+    m_allowCreate = true;
+
+    if ( GUCEF_NULL == valueSerializer )
+        m_valueSerializer = CORE::CGenericValueToDataNodeSerializer::Instance();
 }
 
 /*-------------------------------------------------------------------------*/

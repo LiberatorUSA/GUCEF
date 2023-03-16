@@ -84,6 +84,11 @@
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#include "gucefWEB_CTaskManagerServerResource.h"
+#define GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H ? */
+
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
 #define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
@@ -540,6 +545,7 @@ class RedisInfo : public CORE::CObserver
     CORE::UInt16 m_redisPort;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CTaskManagerServerResource m_taskManagementRsc;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     TStringToInfoServiceMap m_infoServices;

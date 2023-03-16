@@ -50,6 +50,7 @@ CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( void )
     , m_mountPath()
     , m_serviceRoot()
     , m_controller( GUCEF_NULL )
+    , m_resourceTree()
     , m_resourceMap()
     , m_uriIsCaseSensitive( true ) // Default because RFC 3986 defines URIs as case-sensitive except for the scheme and host components
     , m_wildcardMatchUris( true )
@@ -65,6 +66,7 @@ CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( const CDefaultHTTPServerRout
     , m_mountPath( src.m_mountPath )
     , m_serviceRoot( src.m_serviceRoot )
     , m_controller( src.m_controller )
+    , m_resourceTree()
     , m_resourceMap( src.m_resourceMap )
     , m_uriIsCaseSensitive( src.m_uriIsCaseSensitive )
     , m_wildcardMatchUris( src.m_wildcardMatchUris )
@@ -80,7 +82,8 @@ CDefaultHTTPServerRouter::~CDefaultHTTPServerRouter()
 
     MT::CScopeWriterLock writeLock( m_rwLock );
 
-    m_resourceMap.Clear();
+    m_resourceTree.Clear();
+    m_resourceMap.clear();
     m_controller = GUCEF_NULL;
 }
 
@@ -97,6 +100,7 @@ CDefaultHTTPServerRouter::operator=( const CDefaultHTTPServerRouter& src )
         m_mountPath = src.m_mountPath;
         m_serviceRoot = src.m_serviceRoot;
         m_controller = src.m_controller;
+        m_resourceTree = src.m_resourceTree;
         m_resourceMap = src.m_resourceMap;
         m_uriIsCaseSensitive = src.m_uriIsCaseSensitive;
         m_wildcardMatchUris = src.m_wildcardMatchUris;
@@ -133,12 +137,12 @@ CDefaultHTTPServerRouter::ResolveUriToResource( const CString& uri )
     CORE::CDataNode* resourceNode = GUCEF_NULL;
     if ( m_uriIsCaseSensitive )
     {
-        resourceNode = m_resourceMap.Search( uri, '/', true, true, m_wildcardMatchUris, '*' );
+        resourceNode = m_resourceTree.Search( uri, '/', true, true, m_wildcardMatchUris, '*' );
     }
     else
     {
         CString lcUri = uri.Lowercase();
-        resourceNode = m_resourceMap.Search( lcUri, '/', true, true, m_wildcardMatchUris, '*' );
+        resourceNode = m_resourceTree.Search( lcUri, '/', true, true, m_wildcardMatchUris, '*' );
     }
 
     if ( GUCEF_NULL != resourceNode )
@@ -164,17 +168,19 @@ CDefaultHTTPServerRouter::SetResourceMapping( const CString& uriSegment       ,
     CORE::CDataNode* resourceNode = GUCEF_NULL;
     if ( m_uriIsCaseSensitive )
     {
-        resourceNode = m_resourceMap.Structure( uriSegment, '/' );
+        resourceNode = m_resourceTree.Structure( uriSegment, '/' );
     }
     else
     {
         CString lcuriSegment = uriSegment.Lowercase();
-        resourceNode = m_resourceMap.Structure( lcuriSegment, '/' );
+        resourceNode = m_resourceTree.Structure( lcuriSegment, '/' );
     }
 
     if ( GUCEF_NULL != resourceNode )
     {
-        resourceNode->SetAssociatedData( &resource );    
+        THTTPServerResourcePtr& rscPtr = m_resourceMap[ uriSegment ];
+        rscPtr = resource;
+        resourceNode->SetAssociatedData( &rscPtr );    
         resource->SetURL( uriSegment );
         return true; 
     }
@@ -192,17 +198,18 @@ CDefaultHTTPServerRouter::RemoveResourceMapping( const CString& uriSegment )
     CORE::CDataNode* resourceNode = GUCEF_NULL;
     if ( m_uriIsCaseSensitive )
     {
-        resourceNode = m_resourceMap.Search( uriSegment, '/', true, false );
+        resourceNode = m_resourceTree.Search( uriSegment, '/', true, false );
     }
     else
     {
         CString lcUriSegment = uriSegment.Lowercase();
-        resourceNode = m_resourceMap.Search( lcUriSegment, '/', true, false );
+        resourceNode = m_resourceTree.Search( lcUriSegment, '/', true, false );
     }
 
     if ( GUCEF_NULL != resourceNode )
     {
         resourceNode->SetAssociatedData( GUCEF_NULL );
+        m_resourceMap.erase( uriSegment );
         return true;
     }
     return false;
@@ -218,9 +225,6 @@ CDefaultHTTPServerRouter::RemoveResourceMapping( THTTPServerResourcePtr resource
         return false;
     
     CString uriSegment = resource->GetURL();
-    if ( !m_uriIsCaseSensitive )
-        uriSegment = uriSegment.Lowercase();
-
     return RemoveResourceMapping( uriSegment );
 }
 
@@ -231,7 +235,8 @@ CDefaultHTTPServerRouter::RemoveAllResourceMappings( void )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock writeLock( m_rwLock );
-    m_resourceMap.Clear();
+    m_resourceTree.Clear();
+    m_resourceMap.clear();
     return true;
 }
 
@@ -291,7 +296,7 @@ CDefaultHTTPServerRouter::SetRouterController( CIHTTPServerRouterController& con
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

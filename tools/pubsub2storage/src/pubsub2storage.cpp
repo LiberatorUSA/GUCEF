@@ -452,7 +452,7 @@ CPubSubClientChannel::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifi
     // properly handling the state transition
     if ( DisconnectPubSubClient( true ) )
     {
-        if ( ConnectPubSubClient() )
+        if ( ConnectPubSubClient( true ) )
             return; // no need to resume the timer
     }
 
@@ -589,10 +589,10 @@ CPubSubClientChannel::DisconnectPubSubClient( bool destroyClient )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientChannel::ConnectPubSubClient( void )
+CPubSubClientChannel::ConnectPubSubClient( bool reset )
 {GUCEF_TRACE;
 
-    if ( !DisconnectPubSubClient() )
+    if ( !DisconnectPubSubClient( reset ) )
         return false;
 
     if ( m_pubsubClient.IsNULL() )
@@ -659,7 +659,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
         TopicLink& topicLink = (*t);
         PUBSUB::CPubSubClientTopicPtr topic = topicLink.topic;
 
-        if ( topic->InitializeConnectivity() )
+        if ( topic->InitializeConnectivity( reset ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
                 "):ConnectPubSubClient: Successfully requested connectivity initialization for topic \"" + topic->GetTopicName() + "\". Proceeding" );
@@ -772,7 +772,7 @@ CPubSubClientChannel::OnTaskStart( CORE::CICloneable* taskData )
         }
     }
 
-    if ( !ConnectPubSubClient() )
+    if ( !ConnectPubSubClient( false ) )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );

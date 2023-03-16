@@ -209,6 +209,7 @@ MsmqMetrics::MsmqMetrics( void )
     : CORE::CObservingNotifier()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
@@ -2615,6 +2616,11 @@ MsmqMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
         m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
         m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "restBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
+
+        if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "MsmqMetrics: Failed to set up task management API" );
+        }
 
         m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     }

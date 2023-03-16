@@ -510,6 +510,26 @@ CTaskManager::GetAllTaskInfo( TTaskInfoMap& info                                
 /*-------------------------------------------------------------------------*/
 
 bool 
+CTaskManager::GetAllThreadPoolInfo( TThreadPoolInfoMap& info ) const
+{GUCEF_TRACE;
+
+    info.clear();
+    MT::CObjectScopeLock lock( this );
+
+    bool totalSuccess = true; 
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        CThreadPoolInfo& poolInfo = info[ (*i).first ];
+        totalSuccess = (*i).second->GetInfo( poolInfo ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info ) const
 {GUCEF_TRACE;
 
@@ -521,7 +541,6 @@ CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info 
     {
         if ( (*i).second->GetInfo( info ) )
             return true;
-        ++i;
     }
     return false;
 }

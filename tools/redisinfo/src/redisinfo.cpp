@@ -3153,6 +3153,7 @@ RedisInfo::RedisInfo( void )
     , m_redisPort()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_appConfig()
     , m_globalConfig()
     , m_infoServices()
@@ -3344,6 +3345,11 @@ RedisInfo::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/v1/clusters", ( new TStringToInfoServiceMapWebResource( "RedisClusters", "RedisCluster", "clusterName", &m_infoServices, &m_appLock ) )->CreateSharedPtr() ); 
     m_httpRouter.SetResourceMapping( CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ).AsString() ), RestApiRedisInfoInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
+    if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::LoadConfig: Failed to set up task management API" );
+    }
+    
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     return true;
 }

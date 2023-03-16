@@ -1794,6 +1794,7 @@ Udp2RedisCluster::Udp2RedisCluster( void )
     , m_channelSettings()
     , m_httpServer()
     , m_httpRouter()
+    , m_taskManagementRsc()
     , m_globalConfig()
     , m_metricsTimer()
     , m_transmitMetrics( true )
@@ -2252,6 +2253,11 @@ Udp2RedisCluster::LoadConfig( const CORE::CDataNode& globalConfig )
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) ) );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping( appConfig->GetAttributeValueOrChildValueByName( "RestBasicHealthUri" ).AsString( "/health/basic", true ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() ) );
+
+    if ( !m_taskManagementRsc.ConnectHttpRouting( m_httpRouter ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::LoadConfig: Failed to set up task management API" );
+    }
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

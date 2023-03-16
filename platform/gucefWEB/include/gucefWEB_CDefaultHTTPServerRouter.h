@@ -97,10 +97,13 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 
     protected:
 
+    typedef std::map< CString, THTTPServerResourcePtr > TStringToResourcePtrMap;
+    
     CString m_mountPath;
     CString m_serviceRoot;
     CIHTTPServerRouterController* m_controller;
-    CORE::CDataNode m_resourceMap;
+    CORE::CDataNode m_resourceTree;
+    TStringToResourcePtrMap m_resourceMap;    
     bool m_uriIsCaseSensitive;
     bool m_wildcardMatchUris;
     MT::CReadWriteLock m_rwLock;
@@ -118,14 +121,3 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added this section
-
----------------------------------------------------------------------------*/

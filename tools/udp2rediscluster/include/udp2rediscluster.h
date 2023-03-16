@@ -84,6 +84,11 @@
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#include "gucefWEB_CTaskManagerServerResource.h"
+#define GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTASKMANAGERSERVERRESOURCE_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -482,6 +487,7 @@ class Udp2RedisCluster : public CORE::CObserver             ,
     ChannelSettingsMap m_channelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CTaskManagerServerResource m_taskManagementRsc;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
