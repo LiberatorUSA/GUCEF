@@ -43,6 +43,11 @@ namespace WEB {
 const CORE::CString CHttpMimeTypes::MimeTypeAny = "*/*";
 const CORE::CString CHttpMimeTypes::MimeTypeJson = "application/json";
 const CORE::CString CHttpMimeTypes::MimeTypeJsonOld = "text/x-json";
+const CORE::CString CHttpMimeTypes::MimeTypeYamlProposed = "text/vnd.yaml";
+const CORE::CString CHttpMimeTypes::MimeTypeYamlText = "text/yaml";
+const CORE::CString CHttpMimeTypes::MimeTypeYamlTextExt = "text/x-yaml";
+const CORE::CString CHttpMimeTypes::MimeTypeYamlApp = "application/yaml";
+const CORE::CString CHttpMimeTypes::MimeTypeYamlAppExt = "application/x-yaml";
 const CORE::CString CHttpMimeTypes::MimeTypeXml = "application/xml";
 const CORE::CString CHttpMimeTypes::MimeTypeXmlAlt = "text/xml";
 const CORE::CString CHttpMimeTypes::MimeTypeIni = "application/ini";

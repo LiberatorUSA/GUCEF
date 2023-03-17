@@ -41,11 +41,6 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
-
 #ifndef GUCEF_WEB_CHTTPMIMETYPES_H
 #include "gucefWEB_CHttpMimeTypes.h"
 #define GUCEF_WEB_CHTTPMIMETYPES_H
@@ -66,10 +61,14 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
+/**
+ *  Class for linking common MIME types and encoding types to codecs
+ *  This class can be made threadsafe by providing a lock
+ */
+class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public MT::CILockable
 {    
     public:
-
+    
     typedef CORE::CDStoreCodecRegistry::TDStoreCodecPtr  TMimeTypeCodecPtr;
     typedef CORE::CCodecRegistry::TICodecPtr             TEncodingCodecPtr;
     
@@ -99,7 +98,9 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
     virtual TEncodingCodecPtr GetEncodingCodec( const CORE::CString& encodingType ) const;
 
-    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual const CString& GetClassTypeName( void ) const;
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
@@ -117,7 +118,6 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
     TStringToEncodingCodecMap m_encodingRepToCodecMap;
     CORE::CString::StringVector m_deserializationReps;
     CORE::CString::StringVector m_serializationReps;
-    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

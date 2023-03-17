@@ -1362,19 +1362,6 @@ PubSub2PubSub::Start( void )
 
     m_isInStandby = true;
     bool errorOccured = !SetStandbyMode( m_config.globalStandbyEnabled );
-
-    if ( !errorOccured )
-    {
-        if ( m_config.enableRestApi )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
-            if ( !m_httpServer.Listen() )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Failed to open REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
-                return false;
-            }
-        }
-    }
     return !errorOccured;
 }
 
@@ -1586,7 +1573,19 @@ PubSub2PubSub::LoadConfigAfterVfsInit( const CORE::CDataNode& globalConfig )
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
-    return SetStandbyMode( m_desiredInStandby );
+    bool success = SetStandbyMode( m_desiredInStandby );
+
+    if ( m_config.enableRestApi )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Opening REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
+        if ( !m_httpServer.Listen() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2PubSub: Failed to open REST API on port " + CORE::ToString( m_httpServer.GetPort() ) );
+            return false;
+        }
+    }
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/

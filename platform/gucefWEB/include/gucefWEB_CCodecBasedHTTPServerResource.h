@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
 #include "CDStoreCodecRegistry.h"
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
@@ -51,7 +56,8 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource ,
+                                                           public CORE::CTSGNotifier
 {    
     public:
     
@@ -137,9 +143,17 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
     virtual void SetIsCreateSupported( bool isSupported );
     virtual void SetIsDeserializeSupported( bool isSupported, bool deltaOnly );
 
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< CCodecBasedHTTPServerResource >            TEventCallback;
+
     protected:
 
-    typedef std::map< CORE::CString, CORE::CDStoreCodecRegistry::TDStoreCodecPtr > TStringToCodecMap;
+    typedef std::map< CORE::CString, CORE::CDStoreCodecRegistry::TDStoreCodecPtr >  TStringToCodecMap;    
+
+    virtual void OnGlobalMimeCodecsChanged( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData );
 
     bool InitCodecLinks( void );
 

@@ -177,7 +177,7 @@ CWebGlobal::Deinstance( void )
 
     MT::CScopeMutex scopeLock( g_dataLock );
     GUCEF_DELETE g_instance;
-    g_instance = NULL;
+    g_instance = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

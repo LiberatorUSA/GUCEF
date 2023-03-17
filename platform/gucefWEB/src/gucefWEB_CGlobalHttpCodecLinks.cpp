@@ -61,14 +61,26 @@ namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CGlobalHttpCodecLinks::MimeCodecsChangedEvent = "GUCEF::WEB::CGlobalHttpCodecLinks::MimeCodecsChangedEvent";
+const CORE::CEvent CGlobalHttpCodecLinks::EncodingCodecsChangedEvent = "GUCEF::WEB::CGlobalHttpCodecLinks::EncodingCodecsChangedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
     : CHttpCodecLinks()
+    , CORE::CTSGNotifier()
 {GUCEF_TRACE;
 
+    RegisterEvents();
+    
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     CORE::CStdCodecPluginManager& codecPluginMngr = CORE::CCoreGlobal::Instance()->GetStdCodecPluginManager();
@@ -97,6 +109,17 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
 CGlobalHttpCodecLinks::~CGlobalHttpCodecLinks()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGlobalHttpCodecLinks::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    MimeCodecsChangedEvent.Initialize();
+    EncodingCodecsChangedEvent.Initialize();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -149,9 +172,65 @@ CGlobalHttpCodecLinks::OnAppShutdown( CORE::CNotifier* notifier    ,
 
 const CString& 
 CGlobalHttpCodecLinks::GetClassTypeName( void ) const
-{
+{GUCEF_TRACE;
+
     static const CORE::CString classTypeName = "GUCEF::COM::CGlobalHttpCodecLinks";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGlobalHttpCodecLinks::InitMimeCodecLinks( void ) 
+{GUCEF_TRACE;
+
+    if ( CHttpCodecLinks::InitMimeCodecLinks() )
+    {
+        NotifyObserversFromThread( MimeCodecsChangedEvent );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGlobalHttpCodecLinks::InitEncodingCodecLinks( void ) 
+{GUCEF_TRACE;
+
+    if ( CHttpCodecLinks::InitEncodingCodecLinks() )
+    {
+        NotifyObserversFromThread( EncodingCodecsChangedEvent );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGlobalHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return CTSGNotifier::Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CGlobalHttpCodecLinks::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return CTSGNotifier::Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CGlobalHttpCodecLinks::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return CTSGNotifier::AsLockable();
 }
 
 /*-------------------------------------------------------------------------//

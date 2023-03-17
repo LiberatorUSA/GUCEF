@@ -58,6 +58,11 @@ class GUCEF_WEB_PUBLIC_CPP CHttpMimeTypes
     static const CORE::CString MimeTypeAny;
     static const CORE::CString MimeTypeJson;
     static const CORE::CString MimeTypeJsonOld;
+    static const CORE::CString MimeTypeYamlProposed;
+    static const CORE::CString MimeTypeYamlText;
+    static const CORE::CString MimeTypeYamlTextExt;
+    static const CORE::CString MimeTypeYamlApp;
+    static const CORE::CString MimeTypeYamlAppExt;
     static const CORE::CString MimeTypeXml;
     static const CORE::CString MimeTypeXmlAlt;
     static const CORE::CString MimeTypeIni;

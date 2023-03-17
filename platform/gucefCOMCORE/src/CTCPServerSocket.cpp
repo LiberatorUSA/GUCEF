@@ -801,12 +801,20 @@ bool
 CTCPServerSocket::SetPort( UInt16 port )
 {GUCEF_TRACE;
 
-    if ( !IsActive() )
+    bool wasActive = false;
+    if ( IsActive() )
     {
-        m_port = port;
-        return true;
+        wasActive = true;
+        Close();
     }
-    return false;
+
+    m_port = port;
+
+    if ( wasActive )
+    {
+        return Listen();
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

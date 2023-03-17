@@ -62,10 +62,16 @@ namespace WEB {
 
 CCodecBasedHTTPServerResource::CCodecBasedHTTPServerResource( void )
     : CDefaultHTTPServerResource()
+    , CORE::CTSGNotifier()
     , m_allowCreate( false )
     , m_allowDeserialize( false )
     , m_allowSerialize( false )
 {GUCEF_TRACE;
+
+    TEventCallback callback( this, &CCodecBasedHTTPServerResource::OnGlobalMimeCodecsChanged );
+    SubscribeTo( &CWebGlobal::Instance()->GetGlobalHttpCodecLinks() ,
+                 CGlobalHttpCodecLinks::MimeCodecsChangedEvent      ,
+                 callback                                           );
 
     InitCodecLinks();
 }
@@ -74,11 +80,18 @@ CCodecBasedHTTPServerResource::CCodecBasedHTTPServerResource( void )
     
 CCodecBasedHTTPServerResource::CCodecBasedHTTPServerResource( const CCodecBasedHTTPServerResource& src )
     : CDefaultHTTPServerResource( src )
+    , CORE::CTSGNotifier( src )
     , m_allowCreate( src.m_allowCreate )
     , m_allowDeserialize( src.m_allowDeserialize )
     , m_allowSerialize( src.m_allowSerialize )
 {GUCEF_TRACE;
 
+    TEventCallback callback( this, &CCodecBasedHTTPServerResource::OnGlobalMimeCodecsChanged );
+    SubscribeTo( &CWebGlobal::Instance()->GetGlobalHttpCodecLinks() ,
+                 CGlobalHttpCodecLinks::MimeCodecsChangedEvent      ,
+                 callback                                           );
+
+    InitCodecLinks();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -86,6 +99,7 @@ CCodecBasedHTTPServerResource::CCodecBasedHTTPServerResource( const CCodecBasedH
 CCodecBasedHTTPServerResource::~CCodecBasedHTTPServerResource()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -113,6 +127,17 @@ CCodecBasedHTTPServerResource::InitCodecLinks( void )
     codecLinks.GetSupportedDeserializationMimeTypes( m_deserializationReps );
     codecLinks.GetSupportedSerializationMimeTypes( m_serializationReps );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCodecBasedHTTPServerResource::OnGlobalMimeCodecsChanged( CORE::CNotifier* notifier    ,
+                                                          const CORE::CEvent& eventId  ,
+                                                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    InitCodecLinks();
 }
 
 /*-------------------------------------------------------------------------*/

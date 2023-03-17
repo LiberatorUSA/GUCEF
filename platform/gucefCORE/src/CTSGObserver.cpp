@@ -109,10 +109,20 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
     // Make sure we still have a parent
     if ( GUCEF_NULL != m_parentNotifier )
     {
-        // Pass on the message
-        m_parentNotifier->OnPumpedNotify( notifier  ,
-                                          eventid   ,
-                                          eventdata );
+        if ( notifier != m_parentNotifier )
+        {
+            // Pass on the message as coming from an observed entity
+            m_parentNotifier->OnPumpedNotify( notifier  ,
+                                              eventid   ,
+                                              eventdata );
+        }
+        else
+        {
+            // This is a pumped event message originating from ourselves
+            // this is used by the NotifyObserversFromThread() functionality to 
+            // ensure notifications go out from the pulse generator's associated thread
+            m_parentNotifier->NotifyObservers( eventid, eventdata ); 
+        }
     }
 }
 

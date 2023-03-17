@@ -26,16 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_WEB_CHTTPCODECLINKS_H
-#include "gucefWEB_CHttpCodecLinks.h"
-#define GUCEF_WEB_CHTTPCODECLINKS_H
-#endif /* GUCEF_WEB_CHTTPCODECLINKS_H ? */
-
 #ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #include "gucefCORE_CTEventHandlerFunctor.h"
 #define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
+#ifndef GUCEF_WEB_CHTTPCODECLINKS_H
+#include "gucefWEB_CHttpCodecLinks.h"
+#define GUCEF_WEB_CHTTPCODECLINKS_H
+#endif /* GUCEF_WEB_CHTTPCODECLINKS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,15 +59,33 @@ namespace WEB {
 /**
  *  Adds auto updating of HTTP codec MIME type links based on global events
  */
-class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks
+class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks ,
+                                                   public CORE::CTSGNotifier
 {    
     public:
+
+    static const CORE::CEvent MimeCodecsChangedEvent;
+    static const CORE::CEvent EncodingCodecsChangedEvent;
 
     CGlobalHttpCodecLinks( void );
 
     virtual ~CGlobalHttpCodecLinks();
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static void RegisterEvents( void );
+
+    virtual bool InitMimeCodecLinks( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool InitEncodingCodecLinks( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+
+    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
@@ -84,6 +106,10 @@ class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks
     virtual void OnAppShutdown( CORE::CNotifier* notifier                 ,
                                 const CORE::CEvent& eventid               ,
                                 CORE::CICloneable* eventdata = GUCEF_NULL );
+
+    private:
+
+    CGlobalHttpCodecLinks( const CGlobalHttpCodecLinks& src ); /**< not implemented */
 };
 
 /*-------------------------------------------------------------------------//

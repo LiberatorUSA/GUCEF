@@ -23,10 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CSCOPEMUTEX_H
-#include "gucefMT_CScopeMutex.h"
-#define GUCEF_MT_CSCOPEMUTEX_H
-#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -70,7 +70,6 @@ CHttpCodecLinks::CHttpCodecLinks( void )
     , m_deserializeRepToCodecMap()
     , m_deserializationReps()
     , m_serializationReps()
-    , m_dataLock()
 {GUCEF_TRACE;
 
 }
@@ -82,7 +81,6 @@ CHttpCodecLinks::CHttpCodecLinks( const CHttpCodecLinks& src )
     , m_deserializeRepToCodecMap( src.m_deserializeRepToCodecMap )
     , m_deserializationReps( src.m_deserializationReps )
     , m_serializationReps( src.m_serializationReps )
-    , m_dataLock()
 {GUCEF_TRACE;
 
 }
@@ -104,8 +102,8 @@ CHttpCodecLinks::operator=( const CHttpCodecLinks& src )
 
     if ( this != &src )
     {
-        MT::CScopeMutex srcLock( src.m_dataLock );
-        MT::CScopeMutex lock( m_dataLock );
+        MT::CObjectScopeLock srcLock( src );
+        MT::CObjectScopeLock lock( this );
 
         m_serializeRepToCodecMap = src.m_serializeRepToCodecMap;
         m_deserializeRepToCodecMap = src.m_deserializeRepToCodecMap;
@@ -121,7 +119,7 @@ CHttpCodecLinks::TMimeTypeCodecPtr
 CHttpCodecLinks::GetSerializationCodec( const CString& mimeType ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     TStringToMimeTypeCodecMap::const_iterator i = m_serializeRepToCodecMap.find( mimeType  );
     if ( i != m_serializeRepToCodecMap.end() )
     {
@@ -136,7 +134,7 @@ CHttpCodecLinks::TMimeTypeCodecPtr
 CHttpCodecLinks::GetDeserializationCodec( const CString& mimeType ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     TStringToMimeTypeCodecMap::const_iterator i = m_deserializeRepToCodecMap.find( mimeType  );
     if ( i != m_deserializeRepToCodecMap.end() )
     {
@@ -151,7 +149,7 @@ void
 CHttpCodecLinks::GetSupportedSerializationMimeTypes( CORE::CString::StringVector& reps ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     reps = m_serializationReps;
 }
 
@@ -161,7 +159,7 @@ void
 CHttpCodecLinks::GetSupportedDeserializationMimeTypes( CORE::CString::StringVector& reps ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     reps = m_deserializationReps;
 }
 
@@ -171,7 +169,7 @@ bool
 CHttpCodecLinks::InitMimeCodecLinks( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
 
     CORE::CDStoreCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
 
@@ -207,6 +205,26 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up XML codec to MIME types" );
     }
+    if ( codecRegistry.TryLookup( "YAML", codec, false ) || codecRegistry.TryLookup( "YML", codec, false ) )
+    {
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlProposed ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlProposed ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlApp ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlApp ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlAppExt ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlAppExt ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlText ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlText ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlTextExt ] = codec;
+        m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeYamlTextExt ] = codec;
+        
+        // As the newer more capable Web standard format, overrule XML with YAML if available
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeAny ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeText ] = codec;
+        m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeOctet ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):InitMimeCodecLinks: Hooked up YAML codec to MIME types" );
+    }
     if ( codecRegistry.TryLookup( "JSON", codec, false ) )
     {
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeJson ] = codec;
@@ -232,6 +250,14 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializationReps.push_back( CHttpMimeTypes::MimeTypeJson );
         m_serializationReps.push_back( CHttpMimeTypes::MimeTypeJsonOld );
     }
+    if ( m_serializeRepToCodecMap.find( CHttpMimeTypes::MimeTypeYamlProposed ) != m_serializeRepToCodecMap.end() )
+    {
+        m_serializationReps.push_back( CHttpMimeTypes::MimeTypeYamlProposed );
+        m_serializationReps.push_back( CHttpMimeTypes::MimeTypeYamlText );
+        m_serializationReps.push_back( CHttpMimeTypes::MimeTypeYamlTextExt );
+        m_serializationReps.push_back( CHttpMimeTypes::MimeTypeYamlApp );
+        m_serializationReps.push_back( CHttpMimeTypes::MimeTypeYamlAppExt );
+    }
     if ( m_serializeRepToCodecMap.find( CHttpMimeTypes::MimeTypeXml ) != m_serializeRepToCodecMap.end() )
     {
         m_serializationReps.push_back( CHttpMimeTypes::MimeTypeXml );
@@ -256,6 +282,14 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeJson );
         m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeJsonOld );
     }
+    if ( m_deserializeRepToCodecMap.find( CHttpMimeTypes::MimeTypeYamlProposed ) != m_deserializeRepToCodecMap.end() )
+    {
+        m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeYamlProposed );
+        m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeYamlText );
+        m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeYamlTextExt );
+        m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeYamlApp );
+        m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeYamlAppExt );
+    }
     if ( m_deserializeRepToCodecMap.find( CHttpMimeTypes::MimeTypeXml ) != m_deserializeRepToCodecMap.end() )
     {
         m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeXml );
@@ -267,7 +301,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_deserializationReps.push_back( CHttpMimeTypes::MimeTypeIni );
     }
 
-    return !m_serializeRepToCodecMap.empty() || !m_deserializeRepToCodecMap.empty();
+    return ( !m_serializeRepToCodecMap.empty() || !m_deserializeRepToCodecMap.empty() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -276,7 +310,7 @@ CHttpCodecLinks::TEncodingCodecPtr
 CHttpCodecLinks::GetEncodingCodec( const CORE::CString& encodingType ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     
     TStringToEncodingCodecMap::const_iterator i = m_encodingRepToCodecMap.find( encodingType );
     if ( i != m_encodingRepToCodecMap.end() )
@@ -292,7 +326,7 @@ bool
 CHttpCodecLinks::InitEncodingCodecLinks( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
 
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
 
@@ -339,7 +373,7 @@ bool
 CHttpCodecLinks::RemoveMimeCodecLinks( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     m_serializeRepToCodecMap.clear();
     m_deserializeRepToCodecMap.clear();
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):RemoveMimeCodecLinks: Cleared all codec references" );
@@ -352,10 +386,20 @@ bool
 CHttpCodecLinks::RemoveEncodingCodecLinks( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );
+    MT::CObjectScopeLock lock( this );
     m_encodingRepToCodecMap.clear();
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks(" + CORE::ToString( this ) + "):RemoveEncodingCodecLinks: Cleared all codec references" );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CHttpCodecLinks::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::WEB::CHttpCodecLinks";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -364,7 +408,8 @@ bool
 CHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_dataLock.Lock( lockWaitTimeoutInMs );
+    // no-op: override to implement
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -373,16 +418,17 @@ bool
 CHttpCodecLinks::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return m_dataLock.Unlock();
+    // no-op: override to implement
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
-CHttpCodecLinks::GetClassTypeName( void ) const
-{
-    static const CORE::CString classTypeName = "GUCEF::COM::CHttpCodecLinks";
-    return classTypeName;
+const MT::CILockable* 
+CHttpCodecLinks::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------//
