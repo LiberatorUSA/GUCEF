@@ -130,6 +130,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
                                                  TSerializableCollectionMap* collection = GUCEF_NULL                                                      ,
                                                  MT::CILockable* collectionLock = GUCEF_NULL                                                              ,
                                                  bool sourceObjKeyFromObj = false                                                                         ,
+                                                 bool treatCollectionAsArray = false                                                                      ,
                                                  CORE::CIValueToDataNodeSerializer* valueSerializer = CORE::CGenericValueToDataNodeSerializer::Instance() );
 
     virtual ~CTDataNodeSerializableMapHttpServerResource();
@@ -140,6 +141,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
                  TSerializableCollectionMap* collection                                                                   ,
                  MT::CILockable* collectionLock                                                                           ,
                  bool sourceObjKeyFromObj = false                                                                         ,
+                 bool treatCollectionAsArray = false                                                                      ,
                  CORE::CIValueToDataNodeSerializer* valueSerializer = CORE::CGenericValueToDataNodeSerializer::Instance() );
 
     virtual bool Serialize( const CString& resourcePath         ,
@@ -177,6 +179,7 @@ class CTDataNodeSerializableMapHttpServerResource : public CCodecBasedHTTPServer
     CORE::CString m_collectionName;
     CORE::CString m_keyPropertyName;
     bool m_sourceObjKeyFromObj;
+    bool m_treatCollectionAsArray;
     CORE::CIValueToDataNodeSerializer* m_valueSerializer;
 
     private:
@@ -200,6 +203,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     , m_collectionName()
     , m_keyPropertyName()
     , m_sourceObjKeyFromObj( false )
+    , m_treatCollectionAsArray( false )
     , m_valueSerializer( CORE::CGenericValueToDataNodeSerializer::Instance() )
 {GUCEF_TRACE;
 
@@ -217,6 +221,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
                                                                                                                                 TSerializableCollectionMap* collection                       ,
                                                                                                                                 MT::CILockable* collectionLock                               ,
                                                                                                                                 bool sourceObjKeyFromObj                                     ,
+                                                                                                                                bool treatCollectionAsArray                                  ,
                                                                                                                                 CORE::CIValueToDataNodeSerializer* valueSerializer           )
     : CCodecBasedHTTPServerResource()
     , m_serializerOptions( serializerOptions )
@@ -225,6 +230,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     , m_collectionName( collectionName )
     , m_keyPropertyName( keyPropertyName )
     , m_sourceObjKeyFromObj( sourceObjKeyFromObj )
+    , m_treatCollectionAsArray( treatCollectionAsArray )
     , m_valueSerializer( valueSerializer )
 {GUCEF_TRACE;
 
@@ -251,6 +257,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
                                                                                            TSerializableCollectionMap* collection                       ,
                                                                                            MT::CILockable* collectionLock                               ,
                                                                                            bool sourceObjKeyFromObj                                     ,
+                                                                                           bool treatCollectionAsArray                                  ,
                                                                                            CORE::CIValueToDataNodeSerializer* valueSerializer           )
 {GUCEF_TRACE;
 
@@ -260,6 +267,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     m_collection = collection;
     m_collectionLock = collectionLock;
     m_sourceObjKeyFromObj = sourceObjKeyFromObj;
+    m_treatCollectionAsArray = treatCollectionAsArray;
     m_valueSerializer = valueSerializer;
 
     m_allowSerialize = true;
@@ -340,8 +348,11 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
     }
     else
     {
-        // When serializing details we need the name of each child and as such the parent cannot be an array
-        output.SetNodeType( GUCEF_DATATYPE_OBJECT );
+        // When serializing details we need the name of each child and as such the parent cannot be an array by default 
+        // which is the default value of m_treatCollectionAsArray
+        // However depending on context of what the data is this can be overriden since the object itself may hold a usable id/key
+        if ( !m_treatCollectionAsArray )
+            output.SetNodeType( GUCEF_DATATYPE_OBJECT );
 
         typename TSerializableCollectionMap::iterator i = m_collection->begin();
         while ( i != m_collection->end() )

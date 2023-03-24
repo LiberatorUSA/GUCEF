@@ -124,7 +124,7 @@ CHttpRequestData::ConstructUriWithAuthority( void ) const
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

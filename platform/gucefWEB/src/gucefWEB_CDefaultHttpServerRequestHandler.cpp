@@ -772,7 +772,7 @@ CDefaultHttpServerRequestHandler::PolulateAllowedMethodsUsingResource( CIHTTPSer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

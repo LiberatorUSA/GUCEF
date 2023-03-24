@@ -126,7 +126,7 @@ class CTAbstractFactoryWithParam : public CAbstractFactoryBase ,
      *
      *  @param factoryProduct pointer to the base class of the constructed factory product
      */
-    virtual void DestroyObject( BaseClassType* factoryProduct ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void DestroyObject( BaseClassType* factoryProduct ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
@@ -218,11 +218,11 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
 void
-CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::DestroyObject( BaseClassType* factoryProduct )
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::DestroyObject( BaseClassType* factoryProduct ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    typename TFactoryList::iterator i( m_concreteFactoryList.find( factoryProduct->GetType() ) );
+    typename TFactoryList::const_iterator i( m_concreteFactoryList.find( factoryProduct->GetType() ) );
     if ( i != m_concreteFactoryList.end() )
     {
         (*i).second->Destroy( factoryProduct );

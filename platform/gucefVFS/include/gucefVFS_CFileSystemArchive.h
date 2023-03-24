@@ -130,7 +130,7 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     
     virtual bool UnloadArchive( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void DestroyObject( CVFSHandle* sharedPointer ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void DestroyObject( CVFSHandle* sharedPointer ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

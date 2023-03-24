@@ -165,6 +165,7 @@ set( HEADER_FILES
   include/gucefCORE_CIConfigurable.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIDataNodeSerializable.h
+  include/gucefCORE_CIDataNodeSerializableTaskData.h
   include/gucefCORE_CIDate.h
   include/gucefCORE_CIDirectoryWatcher.h
   include/gucefCORE_CIEnumerable.h
@@ -206,6 +207,7 @@ set( HEADER_FILES
   include/gucefCORE_CRollingFileAccess.h
   include/gucefCORE_CSimplisticPluginLoadLogic.h
   include/gucefCORE_CSingleTaskDelegator.h
+  include/gucefCORE_CStdDataNodeSerializableTaskData.h
   include/gucefCORE_CString.h
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTBasicSharedPtrObjOperators.h
@@ -395,6 +397,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIConfigurable.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIDataNodeSerializable.cpp
+  src/gucefCORE_CIDataNodeSerializableTaskData.cpp
   src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIDirectoryWatcher.cpp
   src/gucefCORE_CIEnumerable.cpp
@@ -436,6 +439,7 @@ set( SOURCE_FILES
   src/gucefCORE_CRollingFileAccess.cpp
   src/gucefCORE_CSimplisticPluginLoadLogic.cpp
   src/gucefCORE_CSingleTaskDelegator.cpp
+  src/gucefCORE_CStdDataNodeSerializableTaskData.cpp
   src/gucefCORE_CSubFileAccess.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp

@@ -17,24 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
-#define GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#include "gucefCORE_CIDataNodeSerializableTaskData.h"   
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,52 +36,39 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDataNode;
+CIDataNodeSerializableTaskData::CIDataNodeSerializableTaskData( void )
+    : CIDataNodeSerializable()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Class to generically convey settings to a data node based serializer
- */
-class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurable ,
-                                                            public CICloneable
-{
-    public:
+CIDataNodeSerializableTaskData::CIDataNodeSerializableTaskData( const CIDataNodeSerializableTaskData& src )
+    : CIDataNodeSerializable( src ) 
+{GUCEF_TRACE;
 
-    static const CString ClassTypeName;
+}
 
-    enum EDataNodeSerializableLod : UInt32
-    {
-        DataNodeSerializableLod_Undefined = 0,
-        
-        DataNodeSerializableLod_KeyOnly = 1,
-        DataNodeSerializableLod_MinimumDetails = 2,
-        DataNodeSerializableLod_AverageDetails = GUCEF_INT32MAX,
-        DataNodeSerializableLod_MaximumDetails = GUCEF_UINT32MAX,
-    };
+/*-------------------------------------------------------------------------*/
 
-    CDataNodeSerializableSettings( void );
+CIDataNodeSerializableTaskData::~CIDataNodeSerializableTaskData()
+{GUCEF_TRACE;
 
-    CDataNodeSerializableSettings( const CDataNodeSerializableSettings& src );
+}
 
-    virtual ~CDataNodeSerializableSettings();
+/*-------------------------------------------------------------------------*/
 
-    CDataNodeSerializableSettings& operator=( const CDataNodeSerializableSettings& src );
+CIDataNodeSerializableTaskData&
+CIDataNodeSerializableTaskData::operator=( const CIDataNodeSerializableTaskData& src )
+{GUCEF_TRACE;
 
-    virtual bool SaveConfig( CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool LoadConfig( const CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    UInt32 levelOfDetail;
-};
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,5 +80,3 @@ class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurabl
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CDATANODESERIALIZABLESETTINGS_H ? */

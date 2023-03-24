@@ -45,10 +45,10 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
-#include "gucefCORE_CIDataNodeSerializable.h"
-#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
-#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+#ifndef GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H
+#include "gucefCORE_CStdDataNodeSerializableTaskData.h"
+#define GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H
+#endif /* GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H ? */
 
 #ifndef REDISINFO_CREDISCLUSTERKEYCACHE_H
 #include "redisinfo_CRedisClusterKeyCache.h"
@@ -114,7 +114,7 @@ class CRedisClusterKeyPrunerTask : public CORE::CTaskConsumer ,
 
 /*-------------------------------------------------------------------------*/
 
-class CRedisClusterKeyPrunerTaskData : public CORE::CIDataNodeSerializable
+class CRedisClusterKeyPrunerTaskData : public CORE::CStdDataNodeSerializableTaskData
 {
     public:
 
@@ -128,14 +128,14 @@ class CRedisClusterKeyPrunerTaskData : public CORE::CIDataNodeSerializable
 
     CRedisClusterKeyPrunerTaskData( void );
     CRedisClusterKeyPrunerTaskData( const CRedisClusterKeyPrunerTaskData& src );
-    ~CRedisClusterKeyPrunerTaskData() GUCEF_VIRTUAL_OVERRIDE;
+    virtual ~CRedisClusterKeyPrunerTaskData() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Serialize( CORE::CDataNode& domRootNode                        ,
-                            const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool SerializeTaskData( CORE::CDataNode& domRootNode                        ,
+                                    const CORE::CDataNodeSerializableSettings& settings ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Deserialize( const CORE::CDataNode& domRootNode                  ,
-                              const CORE::CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
-
+    virtual bool DeserializeTaskData( const CORE::CDataNode& domRootNode                  ,
+                                      const CORE::CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
+    
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -143,7 +143,9 @@ class CRedisClusterKeyPrunerTaskData : public CORE::CIDataNodeSerializable
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CRedisClusterKeyPrunerTask, MT::CMutex >   CRedisClusterKeyPrunerTaskPtr;
+typedef CORE::CTFactory< CORE::CIDataNodeSerializableTaskData, CRedisClusterKeyPrunerTaskData > TRedisClusterKeyPrunerTaskDataFactory;     
+typedef CORE::CTFactory< CORE::CTaskConsumer, CRedisClusterKeyPrunerTask >                      TRedisClusterKeyPrunerTaskConsumerFactory;     
+typedef CORE::CTSharedPtr< CRedisClusterKeyPrunerTask, MT::CMutex >                             CRedisClusterKeyPrunerTaskPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

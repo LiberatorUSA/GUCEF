@@ -76,7 +76,7 @@ CIHTTPServerResource::operator=( const CIHTTPServerResource& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

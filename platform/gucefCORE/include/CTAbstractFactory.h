@@ -111,14 +111,14 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    TProductPtr Create( const SelectionCriteriaType& selectedType );
+    TProductPtr Create( const SelectionCriteriaType& selectedType ) const;
 
     /**
      *  Constructs the concrete factory product using a class type name
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    TProductPtr CreateUsingClassTypeName( const CString& classTypeName );
+    TProductPtr CreateUsingClassTypeName( const CString& classTypeName ) const;
 
     void RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
                                   TConcreteFactory* concreteFactory         );
@@ -149,7 +149,7 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
      *
      *  @param factoryProduct pointer to the base class of the constructed factory product
      */
-    virtual void DestroyObject( BaseClassType* factoryProduct, const CString& classTypeName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void DestroyObject( BaseClassType* factoryProduct, const CString& classTypeName ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
@@ -223,11 +223,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::operator=( 
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 CTBasicSharedPtr< BaseClassType, LockType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Create( const SelectionCriteriaType& selectedType )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Create( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    typename TFactoryList::iterator i( m_concreteFactoryList.find( selectedType ) );
+    typename TFactoryList::const_iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
         CTTypeNamedDynamicDestructor< BaseClassType >* destructor = new CTTypeNamedDynamicDestructor< BaseClassType >( (*i).second->GetConcreteClassTypeName(), this, true );
@@ -241,11 +241,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Create( con
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 CTBasicSharedPtr< BaseClassType, LockType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CreateUsingClassTypeName( const CString& classTypeName )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CreateUsingClassTypeName( const CString& classTypeName ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    typename TClassTypeNameMap::iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
+    typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
         return Create( (*i).second );
@@ -257,14 +257,14 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CreateUsing
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::DestroyObject( BaseClassType* factoryProduct, const CString& classTypeName )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::DestroyObject( BaseClassType* factoryProduct, const CString& classTypeName ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    typename TClassTypeNameMap::iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
+    typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
-        typename TFactoryList::iterator n( m_concreteFactoryList.find( (*i).second ) );
+        typename TFactoryList::const_iterator n( m_concreteFactoryList.find( (*i).second ) );
         if ( n != m_concreteFactoryList.end() )
         {
             (*n).second->Destroy( factoryProduct );

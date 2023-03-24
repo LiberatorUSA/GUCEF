@@ -204,7 +204,6 @@ CThreadPool::CThreadPool( PulseGeneratorPtr threadPoolPulseContext ,
     , m_poolName( poolName )
     , m_consumerFactory()
     , m_desiredNrOfThreads( 0 )
-    , m_activeNrOfThreads( 0 )
     , m_taskQueue()
     , m_taskConsumerMap()
     , m_taskDelegators()
@@ -453,12 +452,13 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
     m_desiredNrOfThreads = desiredNrOfThreads;
 
     // Check if we need to do anything
-    if ( (Int32)desiredNrOfThreads > m_activeNrOfThreads )
+    UInt32 activeNrOfThreads = (UInt32) m_taskDelegators.size();
+    if ( (Int32)desiredNrOfThreads > activeNrOfThreads )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Increasing the number of threads used for processing tasks to " +
-            UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( m_activeNrOfThreads ) );
+            UInt32ToString( m_desiredNrOfThreads ) + " from " + ToString( activeNrOfThreads ) );
 
-        UInt32 addCount = desiredNrOfThreads - m_activeNrOfThreads;
+        size_t addCount = desiredNrOfThreads - activeNrOfThreads;
         for ( UInt32 i=0; i<addCount; ++i )
         {
             // Just spawn a task delegator
@@ -469,7 +469,7 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
 
             if ( delegator->Activate() )
             {
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Created thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Created thread with ID " + ToString( delegator->GetThreadID() ) );
             }
             else
             {
@@ -479,9 +479,9 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         }
     }
     else
-    if ( (Int32)desiredNrOfThreads < m_activeNrOfThreads )
+    if ( (Int32)desiredNrOfThreads < activeNrOfThreads )
     {
-        UInt32 deactivateCount = m_activeNrOfThreads - desiredNrOfThreads;
+        UInt32 deactivateCount = activeNrOfThreads - desiredNrOfThreads;
 
         // Check the number of threads that are already asked to deactivate
         UInt32 deactivatingCount = 0;
@@ -503,8 +503,8 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         if ( leftToBeDeactivated > 0 )
         {
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Decreasing the number of threads used for processing tasks to " +
-                                                UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( m_activeNrOfThreads ) +
-                                                " by asking " + Int32ToString( leftToBeDeactivated ) + " additional threads to deactivate" );
+                                                ToString( m_desiredNrOfThreads ) + " from " + ToString( activeNrOfThreads ) +
+                                                " by asking " + ToString( leftToBeDeactivated ) + " additional threads to deactivate" );
 
             TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
             while ( i != m_taskDelegators.end() )
@@ -633,7 +633,7 @@ UInt32
 CThreadPool::GetActiveNrOfThreads( void ) const
 {GUCEF_TRACE;
 
-    return m_activeNrOfThreads;
+    return (UInt32) m_taskDelegators.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -694,8 +694,9 @@ CThreadPool::GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
-                        CICloneable* taskData         )
+CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer  ,
+                        CICloneable* taskData          ,
+                        bool assumeOwnershipOfTaskData )
 {GUCEF_TRACE;
 
     if ( taskConsumer.IsNULL() )
@@ -737,9 +738,17 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
     // make sure the task consumer is registered as a known consumer for this thread pool
     m_taskConsumerMap[ taskConsumer->m_taskId ] = taskConsumer;
 
+    // Check to see if ownership of the task data (if any) is being transfered to us or
+    // do we need a private copy
+    CICloneable* taskDataToUse = taskData;
+    if ( !assumeOwnershipOfTaskData && GUCEF_NULL != taskData )
+    {
+        taskDataToUse = taskData->Clone();
+    }
+    
     // Now spawn a task delegator
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-    CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
+    CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, taskDataToUse ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
     m_taskDelegators.insert( delegator );
 
@@ -762,8 +771,9 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
-                        CICloneable* taskData         )
+CThreadPool::StartTask( CTaskConsumerPtr taskConsumer  ,
+                        CICloneable* taskData          ,
+                        bool assumeOwnershipOfTaskData )
 {GUCEF_TRACE;
 
     if ( taskConsumer.IsNULL() )
@@ -776,7 +786,7 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
     // If it was not explictly invoked yet we will just incorporate the setup step here
     if ( !taskConsumer->GetIsInPhasedSetup() )
     {
-        if ( !SetupTask( taskConsumer, taskData ) )
+        if ( !SetupTask( taskConsumer, taskData, assumeOwnershipOfTaskData ) )
         {
             return false;            
         }
@@ -784,15 +794,18 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer ,
 
     // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
     taskConsumer->SetIsInPhasedSetup( false );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Task of task type \"" + taskConsumer->GetType() +
+            "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + " instructed to commence work" );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::StartTask( const CString& taskType ,
-                        CICloneable* taskData   ,
-                        CTaskConsumerPtr* task  )
+CThreadPool::StartTask( const CString& taskType            ,
+                        CICloneable* taskData              ,
+                        CTaskConsumerPtr* outTaskConsumer  ,
+                        bool assumeOwnershipOfTaskData     )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -810,34 +823,32 @@ CThreadPool::StartTask( const CString& taskType ,
     }
     if ( !taskConsumer.IsNULL() )
     {
-        // Just spawn a task delegator, it will auto register as an active task
-        taskConsumer->SetIsOwnedByThreadPool( true );
-        taskConsumer->SetThreadPool( CreateBasicSharedPtr() );
-        if ( GUCEF_NULL != task )
+        if ( SetupTask( taskConsumer, taskData, assumeOwnershipOfTaskData ) )
         {
-            *task = taskConsumer;
-        }
-        SubscribeToTaskConsumerEvents( taskConsumer );
+            // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
+            taskConsumer->SetIsInPhasedSetup( false );            
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Task of task type \"" + taskType +
+                    "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + " instructed to commence work" );
 
-        CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), taskConsumer, 0 != taskData ? taskData->Clone() : 0 ) )->CreateSharedPtr() );
-        SubscribeTo( delegator.GetPointerAlways() );
-        m_taskDelegators.insert( delegator );
-
-        if ( delegator->Activate() )
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Started task immediatly of type \"" + taskType + "\" with ID " +
-                                                UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+            if ( GUCEF_NULL != outTaskConsumer )
+            {
+                *outTaskConsumer = taskConsumer;
+            }
             return true;
         }
         else
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool: Failed to active task immediatly of type \"" + taskType + "\" with ID " +
-                                                UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
-
-            m_taskDelegators.erase( delegator );
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ThreadPool: Failed to start task of type \"" + taskType +
+                "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() )  + " because task setup failed" );
+            return false;
         }
     }
-
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ThreadPool: Failed to start task of type \"" + taskType +
+            " because no such task type is known" );
+        return false;
+    }
     return false;
 }
 
@@ -846,7 +857,8 @@ CThreadPool::StartTask( const CString& taskType ,
 bool
 CThreadPool::StartTask( const CString& taskType           ,
                         const CDataNode& taskData         ,
-                        CTaskConsumerPtr* outTaskConsumer )
+                        CTaskConsumerPtr* outTaskConsumer ,
+                        bool assumeOwnershipOfTaskData    )
 {GUCEF_TRACE;
 
     TAbstractTaskDataFactory::TProductPtr taskDataPtr = m_taskDataFactory.Create( taskType );
@@ -864,7 +876,7 @@ CThreadPool::StartTask( const CString& taskType           ,
     }
 
     // Now start the task with the data we constructed    
-    return StartTask( taskType, taskDataPtr.GetPointerAlways(), outTaskConsumer );
+    return StartTask( taskType, taskDataPtr.GetPointerAlways(), outTaskConsumer, assumeOwnershipOfTaskData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -906,7 +918,8 @@ CThreadPool::TaskOfTypeExists( const CString& taskType  ,
 bool
 CThreadPool::StartTaskIfNoneExists( const CString& taskType            ,
                                     CICloneable* taskData              ,
-                                    CTaskConsumerPtr* outTaskConsumer  )
+                                    CTaskConsumerPtr* outTaskConsumer  ,
+                                    bool assumeOwnershipOfTaskData     )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -923,7 +936,7 @@ CThreadPool::StartTaskIfNoneExists( const CString& taskType            ,
 
 
     // No such task exists, just create a new one    
-    return StartTask( taskType, taskData, outTaskConsumer );
+    return StartTask( taskType, taskData, outTaskConsumer, assumeOwnershipOfTaskData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1289,10 +1302,19 @@ CThreadPool::UnregisterTaskDataFactory( const CString& taskType )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CThreadPool::IsTaskDataForTaskTypeSerializable( const CString& taskType ) const
+CThreadPool::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const
 {GUCEF_TRACE;
 
     return m_taskDataFactory.IsConstructible( taskType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIDataNodeSerializableTaskDataBasicPtr
+CThreadPool::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    return m_taskDataFactory.Create( taskType );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1357,7 +1379,7 @@ CThreadPool::GetInfo( CThreadPoolInfo& info ) const
     // Obtain an overall lock to get a coherent snapshot of threadpool info
     MT::CObjectScopeLock lock( this );
 
-    info.SetActiveNrOfThreads( m_activeNrOfThreads );
+    info.SetActiveNrOfThreads( (UInt32) m_taskDelegators.size() );
     info.SetDesiredNrOfThreads( m_desiredNrOfThreads );
     info.SetAllowMainApplicationThreadToPickUpQueuedTasks( m_allowAppThreadToWork );
     m_consumerFactory.ObtainKeySet( info.GetTaskConsumerFactoryTypes() );
@@ -1391,18 +1413,18 @@ CThreadPool::GetTaskInfo( UInt32 taskId                                         
             info.SetTaskId( taskId );
             info.SetThreadId( taskConsumer->GetDelegatorThreadId() );
             info.SetTaskTypeName( taskConsumer->GetType() );
-            info.SetTaskDataIsSerializable( IsTaskDataForTaskTypeSerializable( info.GetTaskTypeName() ) );
+            info.SetCustomTaskDataIsSerializable( IsCustomTaskDataForTaskTypeSerializable( info.GetTaskTypeName() ) );
             info.SetHasTaskData( taskConsumer->HasTaskData() );
-            if ( obtainTaskDataCopyIfPossible && info.GetHasTaskData() && info.GetTaskDataIsSerializable() )
+            if ( obtainTaskDataCopyIfPossible && info.GetHasTaskData() && info.GetCustomTaskDataIsSerializable() )
             {
                 if ( GUCEF_NULL != taskDataSerializerSettings )
                 {
-                    taskConsumer->GetSerializedTaskDataCopy( info.GetTaskData(), *taskDataSerializerSettings );
+                    taskConsumer->GetSerializedTaskDataCopy( info.GetCustomTaskData(), *taskDataSerializerSettings );
                 }
                 else
                 {
                     CDataNodeSerializableSettings defaultSerializableSettings;
-                    taskConsumer->GetSerializedTaskDataCopy( info.GetTaskData(), defaultSerializableSettings );
+                    taskConsumer->GetSerializedTaskDataCopy( info.GetCustomTaskData(), defaultSerializableSettings );
                 }
             }
             return true;

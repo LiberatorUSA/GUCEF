@@ -67,9 +67,9 @@ CTaskManagerServerResource::CThreadPoolMetaData::CThreadPoolMetaData( void )
     threadPoolInfoRsc->SetIsDeserializeSupported( false, false );
     threadPoolInfoRsc->SetIsDeserializeSupported( false, true );
     allTaskInfoRsc = TTaskInfoMapRscPtr( new TTaskInfoMapRsc() );
-    allTaskInfoRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &allTaskInfo, lock, false );   
+    allTaskInfoRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &allTaskInfo, lock, false, true );   
     allThreadInfoRsc = TThreadInfoMapRscPtr( new TThreadInfoMapRsc() );
-    allThreadInfoRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &allThreadInfo, lock, false );   
+    allThreadInfoRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &allThreadInfo, lock, false, true );   
     allThreadInfoRsc->SetIsCreateSupported( false );
     allThreadInfoRsc->SetIsDeserializeSupported( false, false );
     allThreadInfoRsc->SetIsDeserializeSupported( false, true );
@@ -84,6 +84,8 @@ CTaskManagerServerResource::CThreadPoolMetaData::LinkTo( MT::CILockable* newLock
     lock = newLock;
     threadPoolInfo = poolInfo;
     threadPoolInfoRsc->LinkTo( GUCEF_NULL, threadPoolInfo, lock );   
+    allThreadInfoRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &allThreadInfo, lock, false, true );
+    allTaskInfoRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &allTaskInfo, lock, false, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -106,7 +108,7 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     m_taskManagerInfoRsc->SetIsDeserializeSupported( false, false );
     m_taskManagerInfoRsc->SetIsDeserializeSupported( false, true );
     m_threadPoolInfoMapRsc = TThreadPoolInfoMapRscPtr( new TThreadPoolInfoMapRsc() );
-    m_threadPoolInfoMapRsc->LinkTo( "threadpools", "threadPoolName", GUCEF_NULL, &m_threadPoolInfoMap, &m_rwLock );
+    m_threadPoolInfoMapRsc->LinkTo( "threadpools", "threadPoolName", GUCEF_NULL, &m_threadPoolInfoMap, &m_rwLock, false, true );
     m_threadPoolInfoMapRsc->SetIsCreateSupported( false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, true );
@@ -134,7 +136,7 @@ CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServer
     m_taskManagerInfoRsc->SetIsDeserializeSupported( false, false );
     m_taskManagerInfoRsc->SetIsDeserializeSupported( false, true );
     m_threadPoolInfoMapRsc = TThreadPoolInfoMapRscPtr( new TThreadPoolInfoMapRsc() );
-    m_threadPoolInfoMapRsc->LinkTo( "threadpools", "threadPoolName", GUCEF_NULL, &m_threadPoolInfoMap, &m_rwLock );
+    m_threadPoolInfoMapRsc->LinkTo( "threadpools", "threadPoolName", GUCEF_NULL, &m_threadPoolInfoMap, &m_rwLock, false, true );
     m_threadPoolInfoMapRsc->SetIsCreateSupported( false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, true );
@@ -162,7 +164,19 @@ CTaskManagerServerResource::RegisterEventHandlers( void )
     SubscribeTo( &taskManager, CORE::CTaskManager::ThreadPoolCreatedEvent, callback );
 
     TEventCallback callback2( this, &CTaskManagerServerResource::OnThreadPoolDestruction );
-    SubscribeTo( &taskManager, CORE::CTaskManager::ThreadPoolDestructionEvent, callback2 );    
+    SubscribeTo( &taskManager, CORE::CTaskManager::ThreadPoolDestructionEvent, callback2 ); 
+    
+    TEventCallback callback3( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryRegistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent, callback3 );
+
+    TEventCallback callback4( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent, callback4 );
+
+    TEventCallback callback5( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEvent, callback5 );
+
+    TEventCallback callback6( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryUnregistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryUnregisteredEvent, callback6 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,6 +233,78 @@ CTaskManagerServerResource::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
     return MT::CReadWriteLock::RwLockStateToLockOpBool( m_rwLock.ReaderStop() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnGlobalTaskConsumerFactoryRegistered( CORE::CNotifier* notifier    ,
+                                                                   const CORE::CEvent& eventId  ,
+                                                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEventData* eData = static_cast< CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEventData* >( eventData );
+    if ( GUCEF_NULL != eData )
+    {
+        const CORE::CString& factoryType = eData->GetData();        
+        
+        MT::CScopeWriterLock writeLock( m_rwLock );
+        m_taskManagerInfo.GetTaskConsumerFactoryTypes().insert( factoryType );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered( CORE::CNotifier* notifier    ,
+                                                                     const CORE::CEvent& eventId  ,
+                                                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEventData* eData = static_cast< CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEventData* >( eventData );
+    if ( GUCEF_NULL != eData )
+    {
+        const CORE::CString& factoryType = eData->GetData();        
+        
+        MT::CScopeWriterLock writeLock( m_rwLock );
+        m_taskManagerInfo.GetTaskConsumerFactoryTypes().erase( factoryType );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered( CORE::CNotifier* notifier    ,
+                                                               const CORE::CEvent& eventId  ,
+                                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* eData = static_cast< CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* >( eventData );
+    if ( GUCEF_NULL != eData )
+    {
+        const CORE::CString& factoryType = eData->GetData();        
+
+        MT::CScopeWriterLock writeLock( m_rwLock );
+        m_taskManagerInfo.GetTaskDataFactoryTypes().insert( factoryType );        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnGlobalTaskDataFactoryUnregistered( CORE::CNotifier* notifier    ,
+                                                                 const CORE::CEvent& eventId  ,
+                                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* eData = static_cast< CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* >( eventData );
+    if ( GUCEF_NULL != eData )
+    {
+        const CORE::CString& factoryType = eData->GetData();        
+        
+        MT::CScopeWriterLock writeLock( m_rwLock );
+        m_taskManagerInfo.GetTaskDataFactoryTypes().erase( factoryType );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,6 +408,8 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     // we pass the same rw lock to protect the overall DOM structure flow
     threadPoolMetaData.LinkTo( &m_rwLock, &threadPoolInfo ); 
     m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName, threadPoolMetaData.threadPoolInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks", threadPoolMetaData.allTaskInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads", threadPoolMetaData.allThreadInfoRsc ); 
     
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );

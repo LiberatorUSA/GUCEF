@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H
+#include "gucefCORE_CIDataNodeSerializableTaskData.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -78,15 +83,24 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     static const CEvent ThreadPoolCreatedEvent;
     static const CEvent ThreadPoolDestructionEvent;
+    static const CEvent GlobalTaskConsumerFactoryRegisteredEvent;
+    static const CEvent GlobalTaskConsumerFactoryUnregisteredEvent;
+    static const CEvent GlobalTaskDataFactoryRegisteredEvent;
+    static const CEvent GlobalTaskDataFactoryUnregisteredEvent;
 
-    typedef TCloneableString    ThreadPoolCreatedEventData;         /**< name of the thread pool that is created */
-    typedef TCloneableString    ThreadPoolDestructionEventData;     /**< name of the thread pool that is being destroyed */
+    typedef TCloneableString    ThreadPoolCreatedEventData;                           /**< name of the thread pool that is created */
+    typedef TCloneableString    ThreadPoolDestructionEventData;                       /**< name of the thread pool that is being destroyed */
+    typedef TCloneableString    GlobalTaskConsumerFactoryRegisteredEventData;         /**< name of the task consumer factory which is newly registered */
+    typedef TCloneableString    GlobalTaskConsumerFactoryUnregisteredEventData;       /**< name of the task consumer factory which is no longer registered */
+    typedef TCloneableString    GlobalTaskDataFactoryRegisteredEventData;             /**< name of the task data factory which is newly registered */
+    typedef TCloneableString    GlobalTaskDataFactoryUnregisteredEventData;           /**< name of the task data factory which is no longer registered */
 
     static void RegisterEvents( void );
 
     public:
 
-    typedef CThreadPool::TTaskConsumerFactory TTaskConsumerFactory;
+    typedef CThreadPool::TTaskConsumerFactory    TTaskConsumerFactory;
+    typedef CThreadPool::TTaskDataFactory        TTaskDataFactory;
     typedef CThreadPool::TTaskInfoMap            TTaskInfoMap;
     typedef CThreadPool::TThreadInfoMap          TThreadInfoMap;
     typedef std::map< CString, CThreadPoolInfo > TThreadPoolInfoMap;
@@ -103,6 +117,68 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName , 
                                          bool createIfNotExists = true );
 
+    /**
+     *  Queues a task for execution as soon as a thread is available
+     *  to execute it.
+     *
+     *  @param assumeOwnershipOfTaskData    Whether the taskData given (if any) needs a private copy 
+     *                                      or whether the task manager can assume ownership
+     */
+    bool QueueTask( const CString& threadPoolName                  ,
+                    const CString& taskType                        ,
+                    CICloneable* taskData = GUCEF_NULL             ,
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                    CObserver* taskObserver = GUCEF_NULL           ,
+                    bool assumeOwnershipOfTaskData = false         );
+
+    /**
+     *  Queues a task for execution as soon as a thread is available
+     *  to execute it.
+     *
+     *  @param assumeOwnershipOfTaskData    Whether the taskData given (if any) needs a private copy 
+     *                                      or whether the task manager can assume ownership
+     */
+    bool StartOrQueueTask( CIDataNodeSerializableTaskData* taskData       ,
+                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                           CObserver* taskObserver = GUCEF_NULL           ,
+                           bool assumeOwnershipOfTaskData = false         );
+
+    /**
+     *  Attempts to distill a task description from the given data node based representation
+     *  
+     */
+    bool StartOrQueueTask( const CDataNode& taskData                      ,
+                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                           CObserver* taskObserver = GUCEF_NULL           );
+
+    /**
+     *  Immediatly starts executing a task using the task
+     *  information provided. Based on the provided information
+     *  a task consumer will be constructed to actually carry out the task
+     */
+    bool StartTask( const CString& threadPoolName                  ,
+                    const CString& taskType                        ,
+                    CICloneable* taskData = GUCEF_NULL             ,
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+
+    /**
+     *  Checks if a task of the given type already exists, if yes nothing new happens
+     *  If no a new task one would be started right away
+     */
+    bool StartTaskIfNoneExists( const CString& threadPoolName                  ,
+                                const CString& taskType                        ,
+                                CICloneable* taskData = GUCEF_NULL             ,
+                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+
+    /**
+     *  Checks if a task of the given type already exists, if yes nothing new happens
+     *  If no a new task one would be started right away
+     */
+    bool StartTaskIfNoneExists( const CString& threadPoolName                  ,
+                                const CString& taskType                        ,
+                                const CDataNode& taskData                      ,
+                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
 
@@ -113,7 +189,14 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     void GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolName       ,
                                                 CORE::CString::StringSet& taskTypes );
 
-    bool IsTaskDataForTaskTypeSerializable( const CString& taskType ) const;
+    void RegisterTaskDataFactory( const CString& taskType   ,
+                                  TTaskDataFactory* factory );
+
+    void UnregisterTaskDataFactory( const CString& taskType );
+
+    bool IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const;
+
+    CIDataNodeSerializableTaskDataBasicPtr CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const;
     
     UInt32 GetGlobalNrOfActiveThreads( void ) const;
 
@@ -226,7 +309,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     typedef std::map< CString, ThreadPoolPtr > ThreadPoolMap;
     typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
-    typedef CTAbstractFactory< CString, CIDataNodeSerializable, MT::CMutex > TAbstractTaskDataFactory;
+    typedef CTAbstractFactory< CString, CIDataNodeSerializableTaskData, MT::CMutex > TAbstractTaskDataFactory;
     typedef CTaskConsumer::TTaskIdGenerator TTaskIdGenerator;
 
     TTaskIdGenerator m_taskIdGenerator;

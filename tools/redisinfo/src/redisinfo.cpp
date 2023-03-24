@@ -69,6 +69,8 @@
 
 #include "crc16.h"
 
+#include "redisinfo_CRedisClusterKeyPrunerTask.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -88,6 +90,8 @@ namespace REDISINFO {
 #define GUCEF_DEFAULT_REDIS_STREAM_INDEXING_INTERVAL                (1000 * 60 * 10) // 10 mins
 
 const CORE::CString RedisInfoService::HashSlotFileCodec = "json"; 
+static TRedisClusterKeyPrunerTaskDataFactory g_redisClusterKeyPrunerTaskDataFactory;
+static TRedisClusterKeyPrunerTaskConsumerFactory g_redisClusterKeyPrunerTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -3161,6 +3165,9 @@ RedisInfo::RedisInfo( void )
     , m_appLock( true )
 {GUCEF_TRACE;
 
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager(); 
+    taskManager.RegisterTaskDataFactory( CRedisClusterKeyPrunerTask::TaskType, &g_redisClusterKeyPrunerTaskDataFactory );
+    taskManager.RegisterTaskConsumerFactory( CRedisClusterKeyPrunerTask::TaskType, &g_redisClusterKeyPrunerTaskConsumerFactory );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3169,6 +3176,10 @@ RedisInfo::~RedisInfo()
 {GUCEF_TRACE;
 
     m_httpServer.Close();
+    
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager(); 
+    taskManager.UnregisterTaskDataFactory( CRedisClusterKeyPrunerTask::TaskType );
+    taskManager.UnregisterTaskConsumerFactory( CRedisClusterKeyPrunerTask::TaskType );
 }
 
 /*-------------------------------------------------------------------------*/

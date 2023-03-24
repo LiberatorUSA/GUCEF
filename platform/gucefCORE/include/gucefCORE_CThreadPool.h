@@ -48,10 +48,10 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
-#ifndef GUCEF_CORE_CIDATANODESERIALIZABLE_H
-#include "gucefCORE_CIDataNodeSerializable.h"
-#define GUCEF_CORE_CIDATANODESERIALIZABLE_H
-#endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
+#ifndef GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H
+#include "gucefCORE_CIDataNodeSerializableTaskData.h"
+#define GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H
+#endif /* GUCEF_CORE_CIDATANODESERIALIZABLETASKDATA_H ? */
 
 #ifndef GUCEF_CORE_CTHREADPOOLINFO_H
 #include "gucefCORE_CThreadPoollnfo.h"
@@ -123,10 +123,10 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     public:
 
-    typedef CTFactoryBase< CTaskConsumer >              TTaskConsumerFactory;
-    typedef CTFactoryBase< CIDataNodeSerializable >     TTaskDataFactory;
-    typedef std::map< UInt32, CTaskInfo >               TTaskInfoMap;
-    typedef std::map< UInt32, CThreadInfo >             TThreadInfoMap;
+    typedef CTFactoryBase< CTaskConsumer >                      TTaskConsumerFactory;
+    typedef CTFactoryBase< CIDataNodeSerializableTaskData >     TTaskDataFactory;
+    typedef std::map< UInt32, CTaskInfo >                       TTaskInfoMap;
+    typedef std::map< UInt32, CThreadInfo >                     TThreadInfoMap;
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -148,7 +148,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      */
     bool StartTask( const CString& taskType                        ,
                     CICloneable* taskData = GUCEF_NULL             ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                    bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Checks if a task of the given type already exists, if yes nothing new happens
@@ -156,7 +157,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      */
     bool StartTaskIfNoneExists( const CString& taskType                        ,
                                 CICloneable* taskData = GUCEF_NULL             ,
-                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                                bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Checks if a task of the given type already exists, if yes nothing new happens
@@ -172,8 +174,9 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      *  Note that any task that was setup using SetupTask() still requires to be started via a call to
      *  StartTask()
      */
-    bool StartTask( CTaskConsumerPtr task              ,
-                    CICloneable* taskData = GUCEF_NULL );
+    bool StartTask( CTaskConsumerPtr task                  ,
+                    CICloneable* taskData = GUCEF_NULL     ,
+                    bool assumeOwnershipOfTaskData = false );
     
     /**
      *  Same as other StartTask() variant except it will construct task data from the given DOM
@@ -181,7 +184,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      */
     bool StartTask( const CString& taskType                        ,
                     const CDataNode& taskData                      ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                    bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Performs setup for a task (thread association) but does not start the task yet
@@ -195,8 +199,9 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      *
      *  This functionality allows you to break out thread association into an independent step
      */
-    bool SetupTask( CTaskConsumerPtr task              ,
-                    CICloneable* taskData = GUCEF_NULL );
+    bool SetupTask( CTaskConsumerPtr task                  ,
+                    CICloneable* taskData = GUCEF_NULL     ,
+                    bool assumeOwnershipOfTaskData = false );
 
     bool PauseTask( const UInt32 taskID                 ,
                     const bool force                    ,
@@ -258,7 +263,9 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void UnregisterTaskDataFactory( const CString& taskType );
 
-    bool IsTaskDataForTaskTypeSerializable( const CString& taskType ) const;
+    bool IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const;
+
+    CIDataNodeSerializableTaskDataBasicPtr CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const;
     
     void GetAllRegisteredTaskDataFactoryTypes( CORE::CString::StringSet& taskTypes ) const;
 
@@ -392,7 +399,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     private:
 
     typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
-    typedef CTAbstractFactory< CString, CIDataNodeSerializable, MT::CMutex > TAbstractTaskDataFactory;
+    typedef CTAbstractFactory< CString, CIDataNodeSerializableTaskData, MT::CMutex > TAbstractTaskDataFactory;
     typedef MT::CTMailBox< CString > TTaskMailbox;
     typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
     typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
@@ -402,7 +409,6 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     TAbstractTaskConsumerFactory m_consumerFactory;
     TAbstractTaskDataFactory m_taskDataFactory;
     UInt32 m_desiredNrOfThreads;
-    Int32 m_activeNrOfThreads;
     TTaskMailbox m_taskQueue;
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;

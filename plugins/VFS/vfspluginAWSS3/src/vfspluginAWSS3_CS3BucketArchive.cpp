@@ -596,7 +596,7 @@ CS3BucketArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CS3BucketArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+CS3BucketArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const
 {GUCEF_TRACE;
 
     GUCEF_DELETE objectToBeDestroyed;

@@ -73,6 +73,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H
+#include "gucefCORE_CStdDataNodeSerializableTaskData.h"
+#define GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H
+#endif /* GUCEF_CORE_CSTDDATANODESERIALIZABLETASKDATA_H ? */
+
 #include "gucefCORE_CTaskManager.h"
 
 /*-------------------------------------------------------------------------//
@@ -91,7 +96,11 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 const CEvent CTaskManager::ThreadPoolCreatedEvent = "GUCEF::CORE::CTaskManager::ThreadPoolCreatedEvent";
-const CEvent CTaskManager::ThreadPoolDestructionEvent = "GUCEF::CORE::CTaskManager::ThreadPoolCreatedEvent";
+const CEvent CTaskManager::ThreadPoolDestructionEvent = "GUCEF::CORE::CTaskManager::ThreadPoolDestructionEvent";
+const CEvent CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent";
+const CEvent CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent";
+const CEvent CTaskManager::GlobalTaskDataFactoryRegisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEvent";
+const CEvent CTaskManager::GlobalTaskDataFactoryUnregisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskDataFactoryUnregisteredEvent";
 
 const CString CTaskManager::ClassTypeName = "GUCEF::CORE::CTaskManager";
 const CString CTaskManager::DefaultThreadPoolName = "default";
@@ -108,6 +117,10 @@ CTaskManager::RegisterEvents( void )
 
     ThreadPoolCreatedEvent.Initialize();
     ThreadPoolDestructionEvent.Initialize();
+    GlobalTaskConsumerFactoryRegisteredEvent.Initialize();
+    GlobalTaskConsumerFactoryUnregisteredEvent.Initialize();
+    GlobalTaskDataFactoryRegisteredEvent.Initialize();
+    GlobalTaskDataFactoryUnregisteredEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -122,8 +135,10 @@ CTaskManager::CTaskManager( void )
     , m_activeGlobalNrOfThreads( 0 )
 {GUCEF_TRACE;
 
-    m_threadPools[ DefaultThreadPoolName ] = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator(), DefaultThreadPoolName ) )->CreateSharedPtr();
-    
+    ThreadPoolPtr defaultPool = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator(), DefaultThreadPoolName ) )->CreateSharedPtr();
+    m_threadPools[ DefaultThreadPoolName ] = defaultPool;
+
+    SubscribeTo( defaultPool.GetPointerAlways() );    
     ThreadPoolCreatedEventData eData( DefaultThreadPoolName );
     NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData );
 }
@@ -152,10 +167,20 @@ CTaskManager::GetClassTypeName( void ) const
 
 void
 CTaskManager::OnPumpedNotify( CNotifier* notifier    ,
-                              const CEvent& eventid  ,
-                              CICloneable* eventdata )
+                              const CEvent& eventId  ,
+                              CICloneable* eventData )
 {GUCEF_TRACE;
 
+    if ( CThreadPool::ThreadStartedEvent == eventId )
+    {
+        ++m_activeGlobalNrOfThreads;
+    }
+    else
+    if ( CThreadPool::ThreadKilledEvent == eventId   ||
+         CThreadPool::ThreadFinishedEvent == eventId  )
+    {
+        --m_activeGlobalNrOfThreads;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,9 +217,12 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
     
     if ( createIfNotExists )
     {
-        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();
+        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();        
         m_threadPools[ threadPoolName ] = newPool;
 
+        lock.EarlyUnlock();
+
+        SubscribeTo( newPool.GetPointerAlways() );
         ThreadPoolCreatedEventData eData( threadPoolName );
         NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData ); 
         return newPool; 
@@ -211,6 +239,170 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName ,
 {GUCEF_TRACE;
 
     return GetOrCreateThreadPool( threadPoolName, CORE::CCoreGlobal::Instance()->GetPulseGenerator(), createIfNotExists );        
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::QueueTask( const CString& threadPoolName     ,
+                         const CString& taskType           ,
+                         CICloneable* taskData             ,
+                         CTaskConsumerPtr* outTaskConsumer ,
+                         CObserver* taskObserver           ,
+                         bool assumeOwnershipOfTaskData    )
+{GUCEF_TRACE;
+
+    ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
+    if ( threadPool.IsNULL() )
+    {
+        return threadPool->QueueTask( taskType                  ,
+                                      taskData                  ,
+                                      outTaskConsumer           ,
+                                      taskObserver              ,
+                                      assumeOwnershipOfTaskData );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
+                                CTaskConsumerPtr* outTaskConsumer        ,
+                                CObserver* taskObserver                  ,
+                                bool assumeOwnershipOfTaskData           )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == taskData )
+        return false;
+    
+    const CString& threadPoolName = taskData->GetThreadPoolName();
+    const CString& taskType = taskData->GetTaskTypeName();
+
+    ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, !taskData->GetOnlyUseExistingThreadPool() );        
+    if ( threadPool.IsNULL() )
+    {
+        // If we can queue we should always queue
+        // worker threads will just pick up the work as capacity becomes available
+        if ( taskData->GetTaskCanBeQueued() )
+        {
+            return threadPool->QueueTask( taskType                  ,
+                                          taskData                  ,
+                                          outTaskConsumer           ,
+                                          taskObserver              ,
+                                          assumeOwnershipOfTaskData );
+        }
+        else
+        {
+            return threadPool->StartTask( taskType                  ,
+                                          taskData                  ,
+                                          outTaskConsumer           ,
+                                          assumeOwnershipOfTaskData );
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::StartOrQueueTask( const CDataNode& taskData         ,
+                                CTaskConsumerPtr* outTaskConsumer ,
+                                CObserver* taskObserver           )
+{GUCEF_TRACE;
+
+    CDataNodeSerializableSettings defaultSerializationSettings;
+    CStdDataNodeSerializableTaskData* genericTaskData = GUCEF_NEW CStdDataNodeSerializableTaskData();
+    if ( genericTaskData->Deserialize( taskData, defaultSerializationSettings ) )
+    {
+        CIDataNodeSerializableTaskDataBasicPtr taskDataObj = CreateCustomTaskDataForTaskTypeIfAvailable( genericTaskData->GetTaskTypeName() );
+        if ( !taskDataObj.IsNULL() )
+        {
+            // Place the task data in the dedicated task data object instead of a generic one
+            if ( taskDataObj->Deserialize( taskData, defaultSerializationSettings ) )
+            {
+                GUCEF_DELETE genericTaskData;                
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Successfully deserialized custom task properties from provide DOM for task with type " + genericTaskData->GetTaskTypeName() );
+                return StartOrQueueTask( taskDataObj.GetPointerAlways(), outTaskConsumer, taskObserver, false );
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Unable to deserialize custom task properties from provide DOM for task with type " + genericTaskData->GetTaskTypeName() );
+                GUCEF_DELETE genericTaskData;
+                return false;
+            }
+        }
+        else
+        {
+            // No custom task data object is available, lets stick with the generic one
+            // Since we allocated the generic one and its in-scope, let the task assume ownsership of the object we created
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Successfully deserialized generic task properties from provide DOM for task with type " + genericTaskData->GetTaskTypeName() );
+            return StartOrQueueTask( genericTaskData, outTaskConsumer, taskObserver, true ); 
+        }
+    }
+    else
+    {
+        GUCEF_DELETE genericTaskData;
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Unable to derive standard task properties from provide DOM" ); 
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::StartTask( const CString& threadPoolName     ,
+                         const CString& taskType           ,
+                         CICloneable* taskData             ,
+                         CTaskConsumerPtr* outTaskConsumer )
+{GUCEF_TRACE;
+
+    ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
+    if ( threadPool.IsNULL() )
+    {
+        return threadPool->StartTask( taskType        ,
+                                      taskData        ,
+                                      outTaskConsumer );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
+                                     const CString& taskType           ,
+                                     CICloneable* taskData             ,
+                                     CTaskConsumerPtr* outTaskConsumer )
+{GUCEF_TRACE;
+
+    ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
+    if ( threadPool.IsNULL() )
+    {
+        return threadPool->StartTaskIfNoneExists( taskType        ,
+                                                  taskData        ,
+                                                  outTaskConsumer );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
+                                     const CString& taskType           ,
+                                     const CDataNode& taskData         ,
+                                     CTaskConsumerPtr* outTaskConsumer )
+{GUCEF_TRACE;
+
+    ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
+    if ( threadPool.IsNULL() )
+    {
+        return threadPool->StartTaskIfNoneExists( taskType        ,
+                                                  taskData        ,
+                                                  outTaskConsumer );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -308,7 +500,10 @@ CTaskManager::RegisterTaskConsumerFactory( const CString& taskType       ,
 
     MT::CObjectScopeLock lock( this );
     m_consumerFactory.RegisterConcreteFactory( taskType, factory );
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new consumer factory registerd of type " + taskType );
+    lock.EarlyUnlock();
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new global consumer factory registered of type " + taskType );    
+    GlobalTaskConsumerFactoryRegisteredEventData eData( taskType );
+    NotifyObserversFromThread( GlobalTaskConsumerFactoryRegisteredEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -319,7 +514,39 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 
     MT::CObjectScopeLock lock( this );
     m_consumerFactory.UnregisterConcreteFactory( taskType );
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: consumer factory unregisterd of type " + taskType );
+    lock.EarlyUnlock();
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: global consumer factory unregistered of type " + taskType );
+    GlobalTaskConsumerFactoryUnregisteredEventData eData( taskType );
+    NotifyObserversFromThread( GlobalTaskConsumerFactoryUnregisteredEvent, &eData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::RegisterTaskDataFactory( const CString& taskType   ,
+                                       TTaskDataFactory* factory )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_taskDataFactory.RegisterConcreteFactory( taskType, factory );
+    lock.EarlyUnlock();
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new global task data factory registered of type " + taskType );
+    GlobalTaskDataFactoryRegisteredEventData eData( taskType );
+    NotifyObserversFromThread( GlobalTaskDataFactoryRegisteredEvent, &eData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::UnregisterTaskDataFactory( const CString& taskType )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_taskDataFactory.UnregisterConcreteFactory( taskType );
+    lock.EarlyUnlock();
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: global task data factory unregistered of type " + taskType );
+    GlobalTaskDataFactoryUnregisteredEventData eData( taskType );
+    NotifyObserversFromThread( GlobalTaskDataFactoryUnregisteredEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -362,7 +589,7 @@ void
 CTaskManager::GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -379,7 +606,7 @@ CTaskManager::GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolNa
                                                      CORE::CString::StringSet& taskTypes )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
     if ( i != m_threadPools.end() )
@@ -394,7 +621,7 @@ void
 CTaskManager::GetAllThreadPoolNames( CORE::CString::StringSet& poolNames ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -410,7 +637,7 @@ CTaskManager::GetInfo( CTaskManagerInfo& info ) const
 {GUCEF_TRACE;
 
     // Obtain an overall lock to get a coherent snapshot of threadpool info
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     info.SetActiveGlobalNrOfThreads( m_activeGlobalNrOfThreads );
     info.SetDesiredGlobalNrOfThreads( m_desiredGlobalNrOfThreads );
@@ -430,7 +657,7 @@ CTaskManager::GetTaskIdForThreadId( const UInt32 threadId ,
 {GUCEF_TRACE;
 
     taskId = 0;
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -450,7 +677,7 @@ CTaskManager::GetThreadIdForTaskId( const UInt32 taskId ,
 {GUCEF_TRACE;
 
     threadId = 0;
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -472,7 +699,7 @@ CTaskManager::GetTaskInfo( UInt32 taskId                                        
 {GUCEF_TRACE;
 
     info.Clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -493,7 +720,7 @@ CTaskManager::GetAllTaskInfo( TTaskInfoMap& info                                
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     bool totalSuccess = true;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -514,7 +741,7 @@ CTaskManager::GetAllThreadPoolInfo( TThreadPoolInfoMap& info ) const
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     bool totalSuccess = true; 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -534,7 +761,7 @@ CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info 
 {GUCEF_TRACE;
 
     info.Clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.find( poolName );
     if ( i != m_threadPools.end() )
@@ -552,7 +779,7 @@ CTaskManager::GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const
 {GUCEF_TRACE;
 
     info.Clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -571,7 +798,7 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     bool totalSuccess = true;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -586,18 +813,43 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTaskManager::IsTaskDataForTaskTypeSerializable( const CString& taskType ) const
+CTaskManager::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
+    // First check for per pool task data factories
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
-        if ( (*i).second->IsTaskDataForTaskTypeSerializable( taskType ) )
+        if ( (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType ) )
             return true;
     }
-    return false;
+    
+    // If no pool level task data factory is defined, lets see if we have a global one
+    return m_taskDataFactory.IsConstructible( taskType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIDataNodeSerializableTaskDataBasicPtr 
+CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    // First check for per pool task data factories
+    CIDataNodeSerializableTaskDataBasicPtr taskData;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
+        if ( !taskData.IsNULL() )
+            return taskData;
+    }
+    
+    // If no pool level task data factory is defined, lets see if we have a global one
+    return m_taskDataFactory.Create( taskType );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -608,7 +860,7 @@ CTaskManager::GetSerializedTaskDataCopy( const UInt32 taskId                    
                                          CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )

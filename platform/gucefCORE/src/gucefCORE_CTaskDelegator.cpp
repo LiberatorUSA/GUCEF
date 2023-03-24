@@ -547,7 +547,7 @@ CTaskDelegator::GetSerializedTaskDataCopy( UInt32 taskId                        
         {
             if ( GUCEF_NULL != m_taskData )
             {
-                if ( CCoreGlobal::Instance()->GetTaskManager().IsTaskDataForTaskTypeSerializable( taskConsumer->GetType() ) )
+                if ( CCoreGlobal::Instance()->GetTaskManager().IsCustomTaskDataForTaskTypeSerializable( taskConsumer->GetType() ) )
                 {
                     const CIDataNodeSerializable* serializableTaskData = static_cast< const CIDataNodeSerializable* >( m_taskData );
                     if ( serializableTaskData->Serialize( domNode, serializerSettings ) )

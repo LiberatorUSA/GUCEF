@@ -32,6 +32,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef REDISINFO_REDISCLUSTERNODECMDS_H
 #include "redisinfo_RedisClusterNodeCmds.h"
 #define REDISINFO_REDISCLUSTERNODECMDS_H
@@ -243,7 +248,7 @@ CRedisClusterKeyPrunerTask::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 CRedisClusterKeyPrunerTaskData::CRedisClusterKeyPrunerTaskData( void )
-    : CORE::CIDataNodeSerializable()
+    : CORE::CStdDataNodeSerializableTaskData()
     , redisCluster()
     , maxIdleTimeForPruningInSecs( 604800 ) // 1 week
     , keyType( "stream" )
@@ -251,12 +256,13 @@ CRedisClusterKeyPrunerTaskData::CRedisClusterKeyPrunerTaskData( void )
     , pruneBatchSize( 5000 )
 {GUCEF_TRACE;
 
+    m_taskTypeName = CRedisClusterKeyPrunerTask::TaskType;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CRedisClusterKeyPrunerTaskData::CRedisClusterKeyPrunerTaskData( const CRedisClusterKeyPrunerTaskData& src )
-    : CORE::CIDataNodeSerializable( src )
+    : CORE::CStdDataNodeSerializableTaskData( src )
     , redisCluster( src.redisCluster )
     , maxIdleTimeForPruningInSecs( src.maxIdleTimeForPruningInSecs )
     , keyType( src.keyType )
@@ -285,8 +291,8 @@ CRedisClusterKeyPrunerTaskData::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterKeyPrunerTaskData::Serialize( CORE::CDataNode& domRootNode                        ,
-                                           const CORE::CDataNodeSerializableSettings& settings ) const
+CRedisClusterKeyPrunerTaskData::SerializeTaskData( CORE::CDataNode& domRootNode                        ,
+                                                   const CORE::CDataNodeSerializableSettings& settings ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -300,16 +306,19 @@ CRedisClusterKeyPrunerTaskData::Serialize( CORE::CDataNode& domRootNode         
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterKeyPrunerTaskData::Deserialize( const CORE::CDataNode& domRootNode                  ,
-                                             const CORE::CDataNodeSerializableSettings& settings ) 
+CRedisClusterKeyPrunerTaskData::DeserializeTaskData( const CORE::CDataNode& domRootNode                  ,
+                                                     const CORE::CDataNodeSerializableSettings& settings ) 
 {GUCEF_TRACE;
 
-    maxIdleTimeForPruningInSecs = domRootNode.GetAttributeValueOrChildValueByName( "maxIdleTimeForPruningInSecs" ).AsUInt32( maxIdleTimeForPruningInSecs, true );
-    keyType = domRootNode.GetAttributeValueOrChildValueByName( "keyType" ).AsString( keyType, true );
-    keyFilterPatterns = CORE::StringToStringSet( domRootNode.GetAttributeValueOrChildValueByName( "keyFilterPatterns" ).AsString( CORE::StringSetToString( keyFilterPatterns ), true ) );
-    pruneBatchSize = domRootNode.GetAttributeValueOrChildValueByName( "pruneBatchSize" ).AsUInt32( pruneBatchSize, true );
-    
-    return true;
+    if ( CRedisClusterKeyPrunerTask::TaskType == m_taskTypeName )
+    {
+        maxIdleTimeForPruningInSecs = domRootNode.GetAttributeValueOrChildValueByName( "maxIdleTimeForPruningInSecs" ).AsUInt32( maxIdleTimeForPruningInSecs, true );
+        keyType = domRootNode.GetAttributeValueOrChildValueByName( "keyType" ).AsString( keyType, true );
+        keyFilterPatterns = CORE::StringToStringSet( domRootNode.GetAttributeValueOrChildValueByName( "keyFilterPatterns" ).AsString( CORE::StringSetToString( keyFilterPatterns ), true ) );
+        pruneBatchSize = domRootNode.GetAttributeValueOrChildValueByName( "pruneBatchSize" ).AsUInt32( pruneBatchSize, true );
+        return true;
+    }    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

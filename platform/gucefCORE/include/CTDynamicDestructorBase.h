@@ -63,7 +63,7 @@ class CTDynamicDestructorBase
         
     CTDynamicDestructorBase( void );
   
-    virtual void DestroyObject( T* objectToBeDestroyed ) = 0;
+    virtual void DestroyObject( T* objectToBeDestroyed ) const = 0;
 
     virtual ~CTDynamicDestructorBase();    
 
@@ -89,7 +89,7 @@ class CTTypeNamedDynamicDestructorBase
         
     CTTypeNamedDynamicDestructorBase( void );
   
-    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) = 0;
+    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const = 0;
 
     virtual ~CTTypeNamedDynamicDestructorBase();    
 

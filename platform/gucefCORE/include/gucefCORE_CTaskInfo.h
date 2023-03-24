@@ -105,17 +105,17 @@ class GUCEF_CORE_PUBLIC_CPP CTaskInfo : public CIDataNodeSerializable
     
     bool GetHasTaskData( void ) const;
 
-    void SetTaskDataIsSerializable( bool isSerializable );
+    void SetCustomTaskDataIsSerializable( bool isSerializable );
     
-    bool GetTaskDataIsSerializable( void ) const;
+    bool GetCustomTaskDataIsSerializable( void ) const;
 
     void SetTaskTypeName( const CString& taskTypeName );
 
     const CString& GetTaskTypeName( void ) const;
 
-    const CDataNode& GetTaskData( void ) const;
+    const CDataNode& GetCustomTaskData( void ) const;
 
-    CDataNode& GetTaskData( void );
+    CDataNode& GetCustomTaskData( void );
 
     void Clear( void );
 
@@ -128,7 +128,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskInfo : public CIDataNodeSerializable
     UInt32 m_taskId;
     UInt32 m_threadId;
     bool m_hasTaskData;
-    bool m_taskDataIsSerializable;
+    bool m_customTaskDataIsSerializable;
     CDataNode m_taskData;
     CString m_taskTypeName;
 };

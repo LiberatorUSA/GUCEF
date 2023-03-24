@@ -53,7 +53,7 @@ CTaskInfo::CTaskInfo( void )
     , m_taskId( 0 )
     , m_threadId( 0 )
     , m_hasTaskData( false )
-    , m_taskDataIsSerializable( false )
+    , m_customTaskDataIsSerializable( false )
     , m_taskData()
     , m_taskTypeName()
 {GUCEF_TRACE;
@@ -67,7 +67,7 @@ CTaskInfo::CTaskInfo( const CTaskInfo& src )
     , m_taskId( src.m_taskId )
     , m_threadId( src.m_threadId )
     , m_hasTaskData( src.m_hasTaskData )
-    , m_taskDataIsSerializable( src.m_taskDataIsSerializable )
+    , m_customTaskDataIsSerializable( src.m_customTaskDataIsSerializable )
     , m_taskData( src.m_taskData )
     , m_taskTypeName( src.m_taskTypeName )
 {GUCEF_TRACE;
@@ -91,7 +91,7 @@ CTaskInfo::Clear( void )
     m_taskId = 0;
     m_threadId = 0;
     m_hasTaskData = false;
-    m_taskDataIsSerializable = false;
+    m_customTaskDataIsSerializable = false;
     m_taskData.Clear();
     m_taskTypeName.Clear();
 }
@@ -108,20 +108,23 @@ CTaskInfo::Serialize( CDataNode& domRootNode                        ,
     totalSuccess = domRootNode.SetAttribute( "taskId", m_taskId ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "threadId", m_threadId ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "hasTaskData", m_hasTaskData ) && totalSuccess;
-    totalSuccess = domRootNode.SetAttribute( "taskDataIsSerializable", m_taskDataIsSerializable ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "customTaskDataIsSerializable", m_customTaskDataIsSerializable ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "taskTypeName", m_taskTypeName ) && totalSuccess;
     
-    if ( CDataNodeSerializableSettings::DataNodeSerializableLod_MinimumDetails < settings.levelOfDetail )
+    if ( m_hasTaskData && m_customTaskDataIsSerializable )
     {
-        // task data could potentially be substantial while important, only add at LOD above minimum
-        CDataNode* taskDataNode = domRootNode.AddChild( "taskData", GUCEF_DATATYPE_OBJECT );
-        if ( GUCEF_NULL != taskDataNode )
+        if ( CDataNodeSerializableSettings::DataNodeSerializableLod_MinimumDetails < settings.levelOfDetail )
         {
-            totalSuccess = GUCEF_NULL != taskDataNode->AddChild( m_taskData ) && totalSuccess;            
-        }
-        else
-            totalSuccess = false;
-    }    
+            // task data could potentially be substantial while important, only add at LOD above minimum
+            CDataNode* taskDataNode = domRootNode.AddChild( "customTaskData", GUCEF_DATATYPE_OBJECT );
+            if ( GUCEF_NULL != taskDataNode )
+            {
+                totalSuccess = GUCEF_NULL != taskDataNode->AddChild( m_taskData ) && totalSuccess;            
+            }
+            else
+                totalSuccess = false;
+        }    
+    }
 
     return totalSuccess;
 }
@@ -136,10 +139,10 @@ CTaskInfo::Deserialize( const CDataNode& domRootNode                  ,
     m_taskId = domRootNode.GetAttributeValueOrChildValueByName( "taskId" ).AsUInt32( m_taskId, true );
     m_threadId = domRootNode.GetAttributeValueOrChildValueByName( "threadId" ).AsInt32( m_threadId, true );
     m_hasTaskData = domRootNode.GetAttributeValueOrChildValueByName( "hasTaskData" ).AsBool( m_hasTaskData, true );
-    m_taskDataIsSerializable = domRootNode.GetAttributeValueOrChildValueByName( "taskDataIsSerializable" ).AsBool( m_taskDataIsSerializable, true );
+    m_customTaskDataIsSerializable = domRootNode.GetAttributeValueOrChildValueByName( "customTaskDataIsSerializable" ).AsBool( m_customTaskDataIsSerializable, true );
     m_taskTypeName = domRootNode.GetAttributeValueOrChildValueByName( "taskTypeName" ).AsString( m_taskTypeName, true );
 
-    CDataNode* taskDataNode = domRootNode.FindChild( "taskData" );
+    CDataNode* taskDataNode = domRootNode.FindChild( "customTaskData" );
     if ( GUCEF_NULL != taskDataNode )
     {
         CDataNode* actualDataNode = taskDataNode->GetFirstChild();
@@ -207,19 +210,19 @@ CTaskInfo::GetHasTaskData( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskInfo::SetTaskDataIsSerializable( bool isSerializable )
+CTaskInfo::SetCustomTaskDataIsSerializable( bool isSerializable )
 {GUCEF_TRACE;
 
-    m_taskDataIsSerializable = isSerializable;
+    m_customTaskDataIsSerializable = isSerializable;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskInfo::GetTaskDataIsSerializable( void ) const
+CTaskInfo::GetCustomTaskDataIsSerializable( void ) const
 {GUCEF_TRACE;
 
-    return m_taskDataIsSerializable;
+    return m_customTaskDataIsSerializable;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -262,7 +265,7 @@ CTaskInfo::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 const CDataNode&
-CTaskInfo::GetTaskData( void ) const
+CTaskInfo::GetCustomTaskData( void ) const
 {GUCEF_TRACE;
 
     return m_taskData;
@@ -271,7 +274,7 @@ CTaskInfo::GetTaskData( void ) const
 /*-------------------------------------------------------------------------*/
 
 CDataNode& 
-CTaskInfo::GetTaskData( void )
+CTaskInfo::GetCustomTaskData( void )
 {GUCEF_TRACE;
 
     return m_taskData;

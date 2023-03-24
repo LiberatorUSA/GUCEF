@@ -628,7 +628,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
+CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle ) const
 {GUCEF_TRACE;
 
     if ( vfshandle != NULL )
@@ -637,14 +637,18 @@ CFileSystemArchive::DestroyObject( CVFSHandle* vfshandle )
 
         if ( vfshandle->IsLoadedInMemory() )
         {
-            TFileMemCache::iterator n = m_diskCacheList.find( vfshandle->GetFilePath() );
-            if ( n != m_diskCacheList.end() )
+            // This operation is logically const as not altering the archive
+            // the cache is a transparent bolt-on
+            CFileSystemArchive* mutableThis = const_cast< CFileSystemArchive* >( this );
+            
+            TFileMemCache::iterator n = mutableThis->m_diskCacheList.find( vfshandle->GetFilePath() );
+            if ( n != mutableThis->m_diskCacheList.end() )
             {
                 // We found the file in our cache, we will link to the existing buffer.
                 if ( (*n).second.GetReferenceCount() == 1 )
                 {
                     // nobody else is using the memory buffer anymore
-                    m_diskCacheList.erase( n );
+                    mutableThis->m_diskCacheList.erase( n );
                 }
             }
         }

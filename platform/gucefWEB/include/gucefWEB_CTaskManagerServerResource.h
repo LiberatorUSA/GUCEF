@@ -138,6 +138,22 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
                                           const CORE::CEvent& eventId               ,
                                           CORE::CICloneable* eventData = GUCEF_NULL );
 
+    virtual void OnGlobalTaskConsumerFactoryRegistered( CORE::CNotifier* notifier                 ,
+                                                        const CORE::CEvent& eventId               ,
+                                                        CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnGlobalTaskConsumerFactoryUnregistered( CORE::CNotifier* notifier                 ,
+                                                          const CORE::CEvent& eventId               ,
+                                                          CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnGlobalTaskDataFactoryRegistered( CORE::CNotifier* notifier                 ,
+                                                    const CORE::CEvent& eventId               ,
+                                                    CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnGlobalTaskDataFactoryUnregistered( CORE::CNotifier* notifier                 ,
+                                                      const CORE::CEvent& eventId               ,
+                                                      CORE::CICloneable* eventData = GUCEF_NULL );
+
     private:
     
     typedef CORE::CTaskManager::TTaskInfoMap                                            TTaskInfoMap;    

@@ -139,7 +139,7 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CArchive
 
     virtual const VFS::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
