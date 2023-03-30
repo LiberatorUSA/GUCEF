@@ -51,6 +51,84 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+template <typename T>
+struct true_or_false_type
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+};
+
+template <typename T>
+struct true_type : true_or_false_type< T >
+{
+    enum { value = true };
+};
+
+template <typename T>
+struct false_type : true_or_false_type< T >
+{
+    enum { value = false };
+};
+
+template <typename T>
+struct remove_const
+{
+    typedef T type;
+};
+
+template <typename T>
+struct remove_const<const T>
+{
+    typedef T type;
+};
+
+template <typename T>
+struct remove_volatile
+{
+    typedef T type;
+};
+
+template <typename T>
+struct remove_volatile< volatile T >
+{
+    typedef T type;
+};
+
+template <typename T>
+struct remove_cv : remove_const< typename remove_volatile< T >::type > {};
+
+template <typename T>
+struct is_unqualified_pointer
+{
+    enum { value = false_type< T >::value };
+};
+
+template <typename T>
+struct is_unqualified_pointer<T*>
+{
+    enum { value = true_type< T >::value };
+};
+
+//template <typename T>
+//struct is_pointer_type : is_unqualified_pointer<typename remove_cv<T>::type> {};
+//
+//template <typename T>
+//bool is_pointer(const T&)
+//{
+//    return is_pointer_type<T>::value;
+//}
+
+
+template< class T > struct remove_pointer                    {typedef T type;};
+template< class T > struct remove_pointer<T*>                {typedef T type;};
+template< class T > struct remove_pointer<T* const>          {typedef T type;};
+template< class T > struct remove_pointer<T* volatile>       {typedef T type;};
+template< class T > struct remove_pointer<T* const volatile> {typedef T type;};
+
+/*-------------------------------------------------------------------------*/
+
+
 /**
  *  C++98 backfill for C++11's enable_if<>
  */
@@ -88,6 +166,28 @@ struct EnableIfNot2< false, false, T, T2 > { typedef T type; typedef T2 type2; }
 
 /**
  *  C++98 compatible SFINAE template helper
+ *  Allows checking if T is itself a pointer type
+ *  In >= C++11 the analog would be std::is_pointer_type< T >
+ */
+template < class T >
+struct TypeIsPointerType
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+
+    template < typename TestPtrType > static yes& test( typename remove_cv< TestPtrType >::type* /*unused*/ ) { static yes result; return result; }
+    template < typename TestPtrType > static yes& test( void* /*unused*/ ) { static yes result; return result; }
+    template < typename TestPtrType > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test< T >( T() ) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
  *  Allows for checking for the existance of the typedef TContainedType
  */
 template < class T >
@@ -97,7 +197,7 @@ struct TypeHasContainedType
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename TestClass::TContainedType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( typename const TestClass::TContainedType* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
@@ -117,7 +217,7 @@ struct TypeHasLockType
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename TestClass::TLockType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( typename const TestClass::TLockType* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.

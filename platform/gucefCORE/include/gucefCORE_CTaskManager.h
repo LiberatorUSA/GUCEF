@@ -222,6 +222,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
      */
     bool GetTaskInfo( UInt32 taskId                                                          , 
                       CTaskInfo& info                                                        , 
+                      CString& threadPoolName                                                ,
                       bool obtainTaskDataCopyIfPossible                                      ,
                       CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
 

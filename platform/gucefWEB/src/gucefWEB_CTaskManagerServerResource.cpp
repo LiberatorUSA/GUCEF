@@ -97,6 +97,8 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     , m_threadPoolInfoMap()
     , m_threadPoolInfoMapRsc()
     , m_threadPoolMetaDataMap()
+    , m_globalTaskIndex()
+    , m_globalTaskIndexRsc()
     , m_router( GUCEF_NULL )
     , m_rootPath( "/v1/taskmanager/" )
     , m_rwLock( true )
@@ -112,6 +114,11 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     m_threadPoolInfoMapRsc->SetIsCreateSupported( false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, true );
+    m_globalTaskIndexRsc = TTaskInfoRawPtrMapRscPtr( new TTaskInfoRawPtrMapRsc() );
+    m_globalTaskIndexRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &m_globalTaskIndex, &m_rwLock, false, true );
+    m_globalTaskIndexRsc->SetIsCreateSupported( false );
+    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, false );
+    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, true );
 
     RegisterEventHandlers();
 }
@@ -140,6 +147,11 @@ CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServer
     m_threadPoolInfoMapRsc->SetIsCreateSupported( false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, false );
     m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, true );
+    m_globalTaskIndexRsc = TTaskInfoRawPtrMapRscPtr( new TTaskInfoRawPtrMapRsc() );
+    m_globalTaskIndexRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &m_globalTaskIndex, &m_rwLock, false, true );
+    m_globalTaskIndexRsc->SetIsCreateSupported( false );
+    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, false );
+    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, true );
 
     RegisterEventHandlers();
 }
@@ -346,12 +358,157 @@ CTaskManagerServerResource::OnThreadPoolDestruction( CORE::CNotifier* notifier  
         if ( GUCEF_NULL != m_router )
         {
             const CORE::CString& poolName = static_cast< CORE::CTaskManager::ThreadPoolCreatedEventData* >( eventData )->GetData();
-        
+                    
             m_router->RemoveResourceMapping( m_rootPath + "threadpools/" + poolName );
             m_threadPoolMetaDataMap.erase( poolName );
             m_threadPoolInfoMap.erase( poolName );
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskQueuedEvent( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != eventData )
+    {        
+        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        UInt32 taskId = static_cast< CORE::CThreadPool::TTaskQueuedEventData* >( eventData )->GetData();    
+        
+        CORE::CTaskInfo taskInfo;
+        CORE::CString threadPoolName;
+        if ( taskManager.GetTaskInfo( taskId, taskInfo, threadPoolName, false, GUCEF_NULL ) )
+        {
+            MT::CScopeWriterLock writeLock( m_rwLock );
+
+            TThreadPoolMetaDataMap::iterator i = m_threadPoolMetaDataMap.find( threadPoolName );
+            if ( i == m_threadPoolMetaDataMap.end() )
+            {
+                UpdateThreadPoolInfo( threadPoolName );
+                i = m_threadPoolMetaDataMap.find( threadPoolName );
+            }
+            if ( i != m_threadPoolMetaDataMap.end() )
+            {
+                CThreadPoolMetaData& threadPoolMetaData = (*i).second;
+                
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskStartedEvent( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != eventData )
+    {        
+        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        UInt32 taskId = static_cast< CORE::CThreadPool::TTaskQueuedEventData* >( eventData )->GetData();    
+        
+        CORE::CTaskInfo taskInfo;
+        CORE::CString threadPoolName;
+        if ( taskManager.GetTaskInfo( taskId, taskInfo, threadPoolName, false, GUCEF_NULL ) )
+        {
+            MT::CScopeWriterLock writeLock( m_rwLock );
+
+            TThreadPoolMetaDataMap::iterator i = m_threadPoolMetaDataMap.find( threadPoolName );
+            if ( i == m_threadPoolMetaDataMap.end() )
+            {
+                UpdateThreadPoolInfo( threadPoolName );
+                i = m_threadPoolMetaDataMap.find( threadPoolName );
+            }
+            if ( i != m_threadPoolMetaDataMap.end() )
+            {
+                CThreadPoolMetaData& threadPoolMetaData = (*i).second;
+                threadPoolMetaData.allTaskInfo[ taskId ] = taskInfo;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskStartupFailedEvent( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskStartupFailedEvent( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskKilledEvent( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskStoppedEvent( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskPausedEvent( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskResumedEvent( CORE::CNotifier* notifier    ,
+                                                const CORE::CEvent& eventId  ,
+                                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnTaskFinishedEvent( CORE::CNotifier* notifier    ,
+                                                 const CORE::CEvent& eventId  ,
+                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -374,7 +531,8 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
     {
         bool totalSuccess = true;
         totalSuccess = m_router->SetResourceMapping( m_rootPath, m_taskManagerInfoRsc ) && totalSuccess; 
-        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools/", m_threadPoolInfoMapRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "tasks/*", m_globalTaskIndexRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools/*", m_threadPoolInfoMapRsc ) && totalSuccess;
         return totalSuccess && UpdateAllInfo();
     }
     
@@ -389,6 +547,7 @@ CTaskManagerServerResource::DisconnectHttpRouting( CIHTTPServerRouter& webRouter
 
     bool totalSuccess = true;
     totalSuccess = m_router->RemoveResourceMapping( m_taskManagerInfoRsc ) && totalSuccess; 
+    totalSuccess = m_router->RemoveResourceMapping( m_globalTaskIndexRsc ) && totalSuccess; 
     totalSuccess = m_router->RemoveResourceMapping( m_threadPoolInfoMapRsc ) && totalSuccess;     
     return totalSuccess;
 }
@@ -408,8 +567,8 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     // we pass the same rw lock to protect the overall DOM structure flow
     threadPoolMetaData.LinkTo( &m_rwLock, &threadPoolInfo ); 
     m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName, threadPoolMetaData.threadPoolInfoRsc ); 
-    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks", threadPoolMetaData.allTaskInfoRsc ); 
-    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads", threadPoolMetaData.allThreadInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks/*", threadPoolMetaData.allTaskInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads/*", threadPoolMetaData.allThreadInfoRsc ); 
     
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );

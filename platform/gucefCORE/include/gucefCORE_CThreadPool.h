@@ -110,7 +110,6 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     static const CEvent ThreadFinishedEvent;
 
     static const CEvent TaskQueuedEvent;
-    static const CEvent QueuedTaskStartedEvent;
     static const CEvent TaskStartedEvent;
     static const CEvent TaskStartupFailedEvent;
     static const CEvent TaskKilledEvent;
@@ -127,6 +126,21 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef CTFactoryBase< CIDataNodeSerializableTaskData >     TTaskDataFactory;
     typedef std::map< UInt32, CTaskInfo >                       TTaskInfoMap;
     typedef std::map< UInt32, CThreadInfo >                     TThreadInfoMap;
+
+    typedef TCloneableUInt32                                    TThreadKilledEventData;
+    typedef TCloneableUInt32                                    TThreadStartedEventData;
+    typedef TCloneableUInt32                                    TThreadPausedEventData;
+    typedef TCloneableUInt32                                    TThreadResumedEventData;
+    typedef TCloneableUInt32                                    TThreadFinishedEventData;
+
+    typedef TCloneableUInt32                                    TTaskQueuedEventData;
+    typedef TCloneableUInt32                                    TTaskStartedEventData;
+    typedef TCloneableUInt32                                    TTaskStartupFailedEventData;
+    typedef TCloneableUInt32                                    TTaskKilledEventData;
+    typedef TCloneableUInt32                                    TTaskStoppedEventData;
+    typedef TCloneableUInt32                                    TTaskPausedEventData;
+    typedef TCloneableUInt32                                    TTaskResumedEventData;
+    typedef TCloneableUInt32                                    TTaskFinishedEventData;
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -349,6 +363,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void TaskCleanup( CTaskConsumerPtr taskConsumer ,
                       CICloneable* taskData         );
+
+    void OnTaskStarted( CTaskConsumerPtr taskConsumer );
+    void OnTaskStartupFailed( CTaskConsumerPtr taskConsumer );
+    void OnTaskKilled( CTaskConsumerPtr taskConsumer );
+    void OnTaskStopped( CTaskConsumerPtr taskConsumer );
+    void OnTaskPaused( CTaskConsumerPtr taskConsumer );
+    void OnTaskResumed( CTaskConsumerPtr taskConsumer );
+    void OnTaskFinished( CTaskConsumerPtr taskConsumer );
 
     private:
     friend class CTaskManager;

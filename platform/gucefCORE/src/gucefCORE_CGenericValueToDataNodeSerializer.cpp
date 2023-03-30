@@ -104,7 +104,7 @@ CGenericValueToDataNodeSerializer::Serialize( const CVariant& value, CDataNode& 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const bool& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )
+CGenericValueToDataNodeSerializer::Serialize( const bool value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -114,7 +114,7 @@ CGenericValueToDataNodeSerializer::Serialize( const bool& value, CDataNode& domN
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Int8& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Int8 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -124,7 +124,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Int8& value, CDataNode& domN
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const UInt8& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const UInt8 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -134,7 +134,7 @@ CGenericValueToDataNodeSerializer::Serialize( const UInt8& value, CDataNode& dom
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Int16& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Int16 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -144,7 +144,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Int16& value, CDataNode& dom
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const UInt16& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const UInt16 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -154,7 +154,7 @@ CGenericValueToDataNodeSerializer::Serialize( const UInt16& value, CDataNode& do
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Int32& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Int32 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;  
 
     domNode.SetValue( value );
@@ -164,7 +164,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Int32& value, CDataNode& dom
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const UInt32& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const UInt32 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );
@@ -174,7 +174,7 @@ CGenericValueToDataNodeSerializer::Serialize( const UInt32& value, CDataNode& do
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Int64& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Int64 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );
@@ -184,7 +184,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Int64& value, CDataNode& dom
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const UInt64& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const UInt64 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );
@@ -194,7 +194,7 @@ CGenericValueToDataNodeSerializer::Serialize( const UInt64& value, CDataNode& do
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Float32& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Float32 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );
@@ -204,7 +204,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Float32& value, CDataNode& d
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const Float64& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const Float64 value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );
@@ -214,7 +214,7 @@ CGenericValueToDataNodeSerializer::Serialize( const Float64& value, CDataNode& d
 /*-------------------------------------------------------------------------*/
 
 bool 
-CGenericValueToDataNodeSerializer::Serialize( const void*& value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
+CGenericValueToDataNodeSerializer::Serialize( const void* value, CDataNode& domNode, const CDataNodeSerializableSettings& settings )  
 {GUCEF_TRACE;
 
     domNode.SetValue( value );

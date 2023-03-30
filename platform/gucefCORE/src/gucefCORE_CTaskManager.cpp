@@ -694,6 +694,7 @@ CTaskManager::GetThreadIdForTaskId( const UInt32 taskId ,
 bool
 CTaskManager::GetTaskInfo( UInt32 taskId                                             , 
                            CTaskInfo& info                                           ,
+                           CString& threadPoolName                                   ,
                            bool obtainTaskDataCopyIfPossible                         ,
                            CDataNodeSerializableSettings* taskDataSerializerSettings ) const
 {GUCEF_TRACE;
@@ -705,7 +706,10 @@ CTaskManager::GetTaskInfo( UInt32 taskId                                        
     while ( i != m_threadPools.end() )
     {
         if ( (*i).second->GetTaskInfo( taskId, info, obtainTaskDataCopyIfPossible, taskDataSerializerSettings ) )
+        {
+            threadPoolName = (*i).first;
             return true;
+        }
         ++i;
     }
     return false;

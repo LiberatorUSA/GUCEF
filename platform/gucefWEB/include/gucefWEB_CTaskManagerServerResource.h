@@ -154,6 +154,38 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
                                                       const CORE::CEvent& eventId               ,
                                                       CORE::CICloneable* eventData = GUCEF_NULL );
 
+    virtual void OnTaskQueuedEvent( CORE::CNotifier* notifier                 ,
+                                    const CORE::CEvent& eventId               ,
+                                    CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskStartedEvent( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventId               ,
+                                     CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskStartupFailedEvent( CORE::CNotifier* notifier                 ,
+                                           const CORE::CEvent& eventId               ,
+                                           CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskKilledEvent( CORE::CNotifier* notifier                 ,
+                                    const CORE::CEvent& eventId               ,
+                                    CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskStoppedEvent( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventId               ,
+                                     CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskPausedEvent( CORE::CNotifier* notifier                 ,
+                                    const CORE::CEvent& eventId               ,
+                                    CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskResumedEvent( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventId               ,
+                                     CORE::CICloneable* eventData = GUCEF_NULL );
+
+    virtual void OnTaskFinishedEvent( CORE::CNotifier* notifier                 ,
+                                      const CORE::CEvent& eventId               ,
+                                      CORE::CICloneable* eventData = GUCEF_NULL );
+
     private:
     
     typedef CORE::CTaskManager::TTaskInfoMap                                            TTaskInfoMap;    
@@ -182,16 +214,20 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
         void LinkTo( MT::CILockable* lock, CORE::CThreadPoolInfo* threadPoolInfo );
     };
 
-    typedef std::map< CORE::CString, CORE::CThreadPoolInfo >                                        TThreadPoolInfoMap; 
     typedef CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CThreadPoolInfo >     TThreadPoolInfoMapRsc;
     typedef CORE::CTSharedPtr< TThreadPoolInfoMapRsc, MT::CMutex >                                  TThreadPoolInfoMapRscPtr;
     typedef std::map< CORE::CString, CThreadPoolMetaData >                                          TThreadPoolMetaDataMap; 
+    typedef std::map< UInt32, CORE::CTaskInfo* >                                                    TTaskInfoRawPtrMap;    
+    typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CTaskInfo* >                 TTaskInfoRawPtrMapRsc;
+    typedef CORE::CTSharedPtr< TTaskInfoRawPtrMapRsc, MT::CMutex >                                  TTaskInfoRawPtrMapRscPtr;
 
     CORE::CTaskManagerInfo m_taskManagerInfo;
     CDataNodeSerializableHttpServerResourcePtr m_taskManagerInfoRsc;
     TThreadPoolInfoMap m_threadPoolInfoMap;
     TThreadPoolInfoMapRscPtr m_threadPoolInfoMapRsc;
     TThreadPoolMetaDataMap m_threadPoolMetaDataMap;
+    TTaskInfoRawPtrMap m_globalTaskIndex;
+    TTaskInfoRawPtrMapRscPtr m_globalTaskIndexRsc;
     CIHTTPServerRouter* m_router;
     CString m_rootPath;
     MT::CReadWriteLock m_rwLock;

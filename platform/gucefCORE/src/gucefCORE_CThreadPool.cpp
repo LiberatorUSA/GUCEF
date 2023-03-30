@@ -97,7 +97,6 @@ const CEvent CThreadPool::ThreadResumedEvent = "GUCEF::CORE::CThreadPool::Thread
 const CEvent CThreadPool::ThreadFinishedEvent = "GUCEF::CORE::CThreadPool::ThreadFinishedEvent";
 
 const CEvent CThreadPool::TaskQueuedEvent = "GUCEF::CORE::CThreadPool::TaskQueuedEvent";
-const CEvent CThreadPool::QueuedTaskStartedEvent = "GUCEF::CORE::CThreadPool::QueuedTaskStartedEvent";
 const CEvent CThreadPool::TaskStartedEvent = "GUCEF::CORE::CThreadPool::TaskStartedEvent";
 const CEvent CThreadPool::TaskStartupFailedEvent = "GUCEF::CORE::CThreadPool::TaskStartupFailedEvent";
 const CEvent CThreadPool::TaskKilledEvent = "GUCEF::CORE::CThreadPool::TaskKilledEvent";
@@ -756,6 +755,13 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer  ,
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Successfully activated delegator for task type \"" + taskConsumer->GetType() +
             "\" with task ID " + UInt32ToString( taskConsumer->GetTaskId() ) + " and thread ID " + ToString( delegator->GetThreadID() )  );
+        
+        TThreadStartedEventData threadIdData( delegator->GetThreadID() );
+        NotifyObserversFromThread( ThreadStartedEvent, &threadIdData );
+
+        TTaskStartedEventData taskIdData( taskConsumer->GetTaskId() );
+        NotifyObserversFromThread( TaskStartedEvent, &taskIdData );
+
         return true;
     }
     else
@@ -989,6 +995,97 @@ CThreadPool::TaskCleanup( CTaskConsumerPtr taskConsumer ,
 
     //MT::CObjectScopeLock lock( this );
     GUCEF_DELETE taskData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskStarted( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskStartedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskStartedEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskStartupFailed( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskStartupFailedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskStartupFailedEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskKilled( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskKilledEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskKilledEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskStopped( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskStoppedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskStoppedEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskPaused( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskPausedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskPausedEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskResumed( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskResumedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskResumedEvent, eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::OnTaskFinished( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskFinishedEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskFinishedEvent, eData ); 
+    }
 }
 
 /*-------------------------------------------------------------------------*/

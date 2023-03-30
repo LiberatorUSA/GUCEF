@@ -316,7 +316,9 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     // Create local refs for the invocation duration to avoid external interference
     PulseGeneratorPtr pulseGenerator = m_pulseGenerator;
     TBasicThreadPoolPtr threadPool = m_threadPool;
-
+    if ( pulseGenerator.IsNULL() || threadPool.IsNULL() )
+        return false;
+    
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
     // This means the task is now assigned to the thread which is represented by this delegator
@@ -341,6 +343,10 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
         // Now we go through the execution sequence within a cycle as if this
         // where a thread sequence
         m_consumerBusy = true;
+
+        // Notify the threadpool directy
+        m_threadPool->OnTaskStarted( taskConsumer );
+
         if ( taskConsumer->OnTaskStart( taskData ) )
         {
             taskConsumer->OnTaskStarted( taskData );
@@ -398,14 +404,22 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
             taskConsumer->OnTaskEnding( taskData, false );
             taskConsumer->OnTaskEnded( taskData, false );
             if ( !threadPool.IsNULL() )
+            {
+                // Notify the threadpool directy
+                threadPool->OnTaskFinished( taskConsumer );
                 threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+            }
             returnStatus = true;
         }
         else
         {
             taskConsumer->OnTaskStartupFailed( taskData );
             if ( !threadPool.IsNULL() )
+            {
+                // Notify the threadpool directy
+                threadPool->OnTaskStartupFailed( taskConsumer );
                 threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+            }
         }
         m_consumerBusy = false;    
     }
@@ -414,7 +428,11 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
         // We never even got to start the consumer's work
         // not an error, just an efficiency thing so we still return success
         if ( !threadPool.IsNULL() )
+        {
+            // Notify the threadpool directy
+            threadPool->OnTaskStopped( taskConsumer );
             threadPool->RemoveConsumer( taskConsumer->GetTaskId() );
+        }
         returnStatus = true;
     }
     return returnStatus;
@@ -442,6 +460,13 @@ CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
     if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskPaused( static_cast< CICloneable* >( taskdata ), true );
+
+        TBasicThreadPoolPtr threadPool = m_threadPool;
+        if ( !threadPool.IsNULL() )
+        {
+            // Notify the threadpool directy
+            threadPool->OnTaskPaused( taskConsumer );
+        }
     }
 }
 
@@ -456,7 +481,14 @@ CTaskDelegator::OnThreadResumed( void* taskdata )
 
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
-    {
+    {        
+        TBasicThreadPoolPtr threadPool = m_threadPool;
+        if ( !threadPool.IsNULL() )
+        {
+            // Notify the threadpool directy
+            threadPool->OnTaskResumed( taskConsumer );
+        }
+
         taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
     }
 }
