@@ -154,37 +154,9 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
                                                       const CORE::CEvent& eventId               ,
                                                       CORE::CICloneable* eventData = GUCEF_NULL );
 
-    virtual void OnTaskQueuedEvent( CORE::CNotifier* notifier                 ,
+    virtual void OnTaskUpdateEvent( CORE::CNotifier* notifier                 ,
                                     const CORE::CEvent& eventId               ,
                                     CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskStartedEvent( CORE::CNotifier* notifier                 ,
-                                     const CORE::CEvent& eventId               ,
-                                     CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskStartupFailedEvent( CORE::CNotifier* notifier                 ,
-                                           const CORE::CEvent& eventId               ,
-                                           CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskKilledEvent( CORE::CNotifier* notifier                 ,
-                                    const CORE::CEvent& eventId               ,
-                                    CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskStoppedEvent( CORE::CNotifier* notifier                 ,
-                                     const CORE::CEvent& eventId               ,
-                                     CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskPausedEvent( CORE::CNotifier* notifier                 ,
-                                    const CORE::CEvent& eventId               ,
-                                    CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskResumedEvent( CORE::CNotifier* notifier                 ,
-                                     const CORE::CEvent& eventId               ,
-                                     CORE::CICloneable* eventData = GUCEF_NULL );
-
-    virtual void OnTaskFinishedEvent( CORE::CNotifier* notifier                 ,
-                                      const CORE::CEvent& eventId               ,
-                                      CORE::CICloneable* eventData = GUCEF_NULL );
 
     private:
     

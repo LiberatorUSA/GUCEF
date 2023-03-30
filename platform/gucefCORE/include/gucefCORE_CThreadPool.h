@@ -68,6 +68,11 @@
 #define GUCEF_CORE_CTASKINFO_H
 #endif /* GUCEF_CORE_CTASKINFO_H ? */
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

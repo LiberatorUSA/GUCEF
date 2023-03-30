@@ -369,43 +369,9 @@ CTaskManagerServerResource::OnThreadPoolDestruction( CORE::CNotifier* notifier  
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManagerServerResource::OnTaskQueuedEvent( CORE::CNotifier* notifier    ,
+CTaskManagerServerResource::OnTaskUpdateEvent( CORE::CNotifier* notifier    ,
                                                const CORE::CEvent& eventId  ,
                                                CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL != eventData )
-    {        
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
-        UInt32 taskId = static_cast< CORE::CThreadPool::TTaskQueuedEventData* >( eventData )->GetData();    
-        
-        CORE::CTaskInfo taskInfo;
-        CORE::CString threadPoolName;
-        if ( taskManager.GetTaskInfo( taskId, taskInfo, threadPoolName, false, GUCEF_NULL ) )
-        {
-            MT::CScopeWriterLock writeLock( m_rwLock );
-
-            TThreadPoolMetaDataMap::iterator i = m_threadPoolMetaDataMap.find( threadPoolName );
-            if ( i == m_threadPoolMetaDataMap.end() )
-            {
-                UpdateThreadPoolInfo( threadPoolName );
-                i = m_threadPoolMetaDataMap.find( threadPoolName );
-            }
-            if ( i != m_threadPoolMetaDataMap.end() )
-            {
-                CThreadPoolMetaData& threadPoolMetaData = (*i).second;
-                
-            }
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskStartedEvent( CORE::CNotifier* notifier    ,
-                                                const CORE::CEvent& eventId  ,
-                                                CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != eventData )
@@ -432,83 +398,6 @@ CTaskManagerServerResource::OnTaskStartedEvent( CORE::CNotifier* notifier    ,
             }
         }
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskStartupFailedEvent( CORE::CNotifier* notifier    ,
-                                                      const CORE::CEvent& eventId  ,
-                                                      CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskStartupFailedEvent( CORE::CNotifier* notifier    ,
-                                                      const CORE::CEvent& eventId  ,
-                                                      CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskKilledEvent( CORE::CNotifier* notifier    ,
-                                               const CORE::CEvent& eventId  ,
-                                               CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskStoppedEvent( CORE::CNotifier* notifier    ,
-                                                const CORE::CEvent& eventId  ,
-                                                CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskPausedEvent( CORE::CNotifier* notifier    ,
-                                               const CORE::CEvent& eventId  ,
-                                               CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskResumedEvent( CORE::CNotifier* notifier    ,
-                                                const CORE::CEvent& eventId  ,
-                                                CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManagerServerResource::OnTaskFinishedEvent( CORE::CNotifier* notifier    ,
-                                                 const CORE::CEvent& eventId  ,
-                                                 CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-
 }
 
 /*-------------------------------------------------------------------------*/
@@ -572,16 +461,29 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );
+    if ( !threadPool.IsNULL() )
+    {
+        TEventCallback taskUpdateCallback( this, &CTaskManagerServerResource::OnTaskUpdateEvent );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskQueuedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStartupFailedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStartedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskPausedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskResumedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskKilledEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStoppedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskFinishedEvent, taskUpdateCallback );
 
-    bool totalSuccess = true;
-    totalSuccess = threadPool->GetInfo( threadPoolInfo ) && totalSuccess; 
-    totalSuccess = threadPool->GetAllTaskInfo( threadPoolMetaData.allTaskInfo, false, GUCEF_NULL ) && totalSuccess; 
-    totalSuccess = threadPool->GetAllThreadInfo( threadPoolMetaData.allThreadInfo ) && totalSuccess; 
+        bool totalSuccess = true;
+        totalSuccess = threadPool->GetInfo( threadPoolInfo ) && totalSuccess; 
+        totalSuccess = threadPool->GetAllTaskInfo( threadPoolMetaData.allTaskInfo, false, GUCEF_NULL ) && totalSuccess; 
+        totalSuccess = threadPool->GetAllThreadInfo( threadPoolMetaData.allThreadInfo ) && totalSuccess; 
 
-    if ( totalSuccess )
-        threadPoolMetaData.threadPoolInfoLastUpdate = CORE::CDateTime::NowUTCDateTime();     
+        if ( totalSuccess )
+            threadPoolMetaData.threadPoolInfoLastUpdate = CORE::CDateTime::NowUTCDateTime();     
 
-    return true;
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

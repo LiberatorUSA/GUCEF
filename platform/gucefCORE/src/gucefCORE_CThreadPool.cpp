@@ -122,7 +122,6 @@ CThreadPool::RegisterEvents( void )
     ThreadFinishedEvent.Initialize();
 
     TaskQueuedEvent.Initialize();
-    QueuedTaskStartedEvent.Initialize();
     TaskStartedEvent.Initialize();
     TaskStartupFailedEvent.Initialize();
     TaskKilledEvent.Initialize();
@@ -759,9 +758,6 @@ CThreadPool::SetupTask( CTaskConsumerPtr taskConsumer  ,
         TThreadStartedEventData threadIdData( delegator->GetThreadID() );
         NotifyObserversFromThread( ThreadStartedEvent, &threadIdData );
 
-        TTaskStartedEventData taskIdData( taskConsumer->GetTaskId() );
-        NotifyObserversFromThread( TaskStartedEvent, &taskIdData );
-
         return true;
     }
     else
@@ -1006,7 +1002,7 @@ CThreadPool::OnTaskStarted( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskStartedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskStartedEvent, eData ); 
+        NotifyObserversFromThread( TaskStartedEvent, &eData ); 
     }
 }
 
@@ -1019,7 +1015,7 @@ CThreadPool::OnTaskStartupFailed( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskStartupFailedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskStartupFailedEvent, eData ); 
+        NotifyObserversFromThread( TaskStartupFailedEvent, &eData ); 
     }
 }
 
@@ -1032,7 +1028,7 @@ CThreadPool::OnTaskKilled( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskKilledEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskKilledEvent, eData ); 
+        NotifyObserversFromThread( TaskKilledEvent, &eData ); 
     }
 }
 
@@ -1045,7 +1041,7 @@ CThreadPool::OnTaskStopped( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskStoppedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskStoppedEvent, eData ); 
+        NotifyObserversFromThread( TaskStoppedEvent, &eData ); 
     }
 }
 
@@ -1058,7 +1054,7 @@ CThreadPool::OnTaskPaused( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskPausedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskPausedEvent, eData ); 
+        NotifyObserversFromThread( TaskPausedEvent, &eData ); 
     }
 }
 
@@ -1071,7 +1067,7 @@ CThreadPool::OnTaskResumed( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskResumedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskResumedEvent, eData ); 
+        NotifyObserversFromThread( TaskResumedEvent, &eData ); 
     }
 }
 
@@ -1084,7 +1080,7 @@ CThreadPool::OnTaskFinished( CTaskConsumerPtr taskConsumer )
     if ( !taskConsumer.IsNULL() )
     {
         TTaskFinishedEventData eData( taskConsumer->GetTaskId() ); 
-        NotifyObserversFromThread( TaskFinishedEvent, eData ); 
+        NotifyObserversFromThread( TaskFinishedEvent, &eData ); 
     }
 }
 
