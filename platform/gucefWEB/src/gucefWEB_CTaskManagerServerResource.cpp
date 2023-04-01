@@ -99,6 +99,8 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     , m_threadPoolMetaDataMap()
     , m_globalTaskIndex()
     , m_globalTaskIndexRsc()
+    , m_globalThreadIndex()
+    , m_globalThreadIndexRsc()
     , m_router( GUCEF_NULL )
     , m_rootPath( "/v1/taskmanager/" )
     , m_rwLock( true )
@@ -119,6 +121,11 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     m_globalTaskIndexRsc->SetIsCreateSupported( false );
     m_globalTaskIndexRsc->SetIsDeserializeSupported( false, false );
     m_globalTaskIndexRsc->SetIsDeserializeSupported( false, true );
+    m_globalThreadIndexRsc = TThreadInfoRawPtrMapRscPtr( new TThreadInfoRawPtrMapRsc() );
+    m_globalThreadIndexRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &m_globalThreadIndex, &m_rwLock, false, true );
+    m_globalThreadIndexRsc->SetIsCreateSupported( false );
+    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, false );
+    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true );  
 
     RegisterEventHandlers();
 }
@@ -132,6 +139,10 @@ CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServer
     , m_threadPoolInfoMap( src.m_threadPoolInfoMap )
     , m_threadPoolInfoMapRsc()
     , m_threadPoolMetaDataMap( src.m_threadPoolMetaDataMap )
+    , m_globalTaskIndex()
+    , m_globalTaskIndexRsc()
+    , m_globalThreadIndex()
+    , m_globalThreadIndexRsc()
     , m_router( src.m_router )
     , m_rootPath( src.m_rootPath )
     , m_rwLock( src.m_rwLock )
@@ -152,6 +163,11 @@ CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServer
     m_globalTaskIndexRsc->SetIsCreateSupported( false );
     m_globalTaskIndexRsc->SetIsDeserializeSupported( false, false );
     m_globalTaskIndexRsc->SetIsDeserializeSupported( false, true );
+    m_globalThreadIndexRsc = TThreadInfoRawPtrMapRscPtr( new TThreadInfoRawPtrMapRsc() );
+    m_globalThreadIndexRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &m_globalThreadIndex, &m_rwLock, false, true );
+    m_globalThreadIndexRsc->SetIsCreateSupported( false );
+    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, false );
+    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true );    
 
     RegisterEventHandlers();
 }
@@ -393,8 +409,9 @@ CTaskManagerServerResource::OnTaskUpdateEvent( CORE::CNotifier* notifier    ,
             }
             if ( i != m_threadPoolMetaDataMap.end() )
             {
-                CThreadPoolMetaData& threadPoolMetaData = (*i).second;
-                threadPoolMetaData.allTaskInfo[ taskId ] = taskInfo;
+                CThreadPoolMetaData& threadPoolMetaData = (*i).second;                          
+                CORE::CTaskInfo* retainedTaskInfo = &( threadPoolMetaData.allTaskInfo[ taskId ] = taskInfo );
+                m_globalTaskIndex[ taskId ] = retainedTaskInfo;
             }
         }
     }
@@ -420,8 +437,9 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
     {
         bool totalSuccess = true;
         totalSuccess = m_router->SetResourceMapping( m_rootPath, m_taskManagerInfoRsc ) && totalSuccess; 
-        totalSuccess = m_router->SetResourceMapping( m_rootPath + "tasks/*", m_globalTaskIndexRsc ) && totalSuccess;
-        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools/*", m_threadPoolInfoMapRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "tasks", m_globalTaskIndexRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threads", m_globalThreadIndexRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools", m_threadPoolInfoMapRsc ) && totalSuccess;
         return totalSuccess && UpdateAllInfo();
     }
     
@@ -456,8 +474,8 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     // we pass the same rw lock to protect the overall DOM structure flow
     threadPoolMetaData.LinkTo( &m_rwLock, &threadPoolInfo ); 
     m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName, threadPoolMetaData.threadPoolInfoRsc ); 
-    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks/*", threadPoolMetaData.allTaskInfoRsc ); 
-    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads/*", threadPoolMetaData.allThreadInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks", threadPoolMetaData.allTaskInfoRsc ); 
+    m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads", threadPoolMetaData.allThreadInfoRsc ); 
     
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );
@@ -465,6 +483,7 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     {
         TEventCallback taskUpdateCallback( this, &CTaskManagerServerResource::OnTaskUpdateEvent );
         SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskQueuedEvent, taskUpdateCallback );
+        SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStartupEvent, taskUpdateCallback );
         SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStartupFailedEvent, taskUpdateCallback );
         SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskStartedEvent, taskUpdateCallback );
         SubscribeTo( threadPool.GetPointerAlways(), CORE::CThreadPool::TaskPausedEvent, taskUpdateCallback );

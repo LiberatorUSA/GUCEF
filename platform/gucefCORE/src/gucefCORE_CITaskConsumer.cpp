@@ -56,6 +56,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 const CEvent CTaskConsumer::TaskKilledEvent = "GUCEF::CORE::CTaskConsumer::TaskKilledEvent";
+const CEvent CTaskConsumer::TaskStartupEvent = "GUCEF::CORE::CTaskConsumer::TaskStartupEvent";
 const CEvent CTaskConsumer::TaskStartedEvent = "GUCEF::CORE::CTaskConsumer::TaskStartedEvent";
 const CEvent CTaskConsumer::TaskStartupFailedEvent = "GUCEF::CORE::CTaskConsumer::TaskStartupFailedEvent";
 const CEvent CTaskConsumer::TaskPausedEvent = "GUCEF::CORE::CTaskConsumer::TaskPausedEvent";
@@ -73,6 +74,7 @@ CTaskConsumer::RegisterEvents( void )
 {GUCEF_TRACE;
 
     TaskKilledEvent.Initialize();
+    TaskStartupEvent.Initialize();
     TaskStartedEvent.Initialize();
     TaskStartupFailedEvent.Initialize();
     TaskPausedEvent.Initialize();
@@ -86,6 +88,7 @@ CTaskConsumer::CTaskConsumer( void )
     : CTSGNotifier( PulseGeneratorPtr(), true, false )
     , m_taskId()
     , m_threadPool()
+    , m_taskStatus( TTaskStatus::TASKSTATUS_UNDEFINED )
     , m_delegator()
     , m_ownedByThreadPool( false )
     , m_inPhasedSetup( false )
@@ -232,6 +235,15 @@ CTaskConsumer::OnTaskStarted( CICloneable* taskdata )
 {GUCEF_TRACE;
 
     NotifyObservers( TaskStartedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskConsumer::OnTaskStart( CICloneable* taskdata )
+{GUCEF_TRACE;
+
+    return NotifyObservers( TaskStartupEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -383,6 +395,24 @@ CTaskConsumer::GetSerializedTaskDataCopy( CDataNode& domNode                    
         return delegator->GetSerializedTaskDataCopy( m_taskId, domNode, serializerSettings );
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskConsumer::SetTaskStatus( TTaskStatus newStatus )
+{GUCEF_TRACE;
+
+    m_taskStatus = newStatus;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TTaskStatus 
+CTaskConsumer::GetTaskStatus( void ) const
+{GUCEF_TRACE;
+
+    return m_taskStatus;
 }
 
 /*-------------------------------------------------------------------------//

@@ -155,20 +155,20 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
 
     // redirect types that are themselves pointers to reference param versions
     template < typename S >
-    bool SerializeType( typename CORE::EnableIf< CORE::TypeIsPointerType< S >::value, S >::type mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+    bool SerializeType( typename CORE::EnableIf< CORE::TypeIsPointerType< S >::value, S >::type mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
        {    typedef typename remove_pointer< S >::type T;
             return SerializeReferenceType< T >( static_cast< T >( *mappedType ), domRootNode, serializerOptions ); }
 
     // SFINAE variant for shared pointers where the caller intent is to utilize the referenced object via the pointer to said object
     template < typename S >
-    bool SerializeType( const typename CORE::EnableIf< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+    bool SerializeType( const typename CORE::EnableIfFirstOf2< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, CORE::TypeIsPointerType< S >::value, S, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != &mappedType ? 
                                              ( GUCEF_NULL != mappedType.GetPointerAlways() ? SerializeReferenceType< typename S::TContainedType >( *mappedType.GetPointerAlways(), domRootNode, serializerOptions ) : false ) :
                                              false; }
 
     // SFINAE variant in case the variant for shared pointers does not apply. This variant is for remaining reference types
     template < typename S >
-    bool SerializeType( const typename CORE::EnableIfNot< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
+    bool SerializeType( const typename CORE::EnableIfNot2< CORE::TypeHasMemberFunctionGetPointerAlways< S >::value, CORE::TypeIsPointerType< S >::value, S, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return SerializeReferenceType< S >( mappedType, domRootNode, serializerOptions ); }
 
     // We provide a specialization for CIDataNodeSerializable since that type should take priority

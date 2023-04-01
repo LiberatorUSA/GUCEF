@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_TASKSTATUS_H
+#include "gucefCORE_TaskStatus.h"
+#define GUCEF_CORE_TASKSTATUS_H
+#endif /* GUCEF_CORE_TASKSTATUS_H ? */
+
 #include "gucefCORE_CTaskInfo.h"
 
 /*-------------------------------------------------------------------------//
@@ -52,6 +57,7 @@ CTaskInfo::CTaskInfo( void )
     : CIDataNodeSerializable()
     , m_taskId( 0 )
     , m_threadId( 0 )
+    , m_taskStatus( TTaskStatus::TASKSTATUS_UNDEFINED )
     , m_hasTaskData( false )
     , m_customTaskDataIsSerializable( false )
     , m_taskData()
@@ -66,6 +72,7 @@ CTaskInfo::CTaskInfo( const CTaskInfo& src )
     : CIDataNodeSerializable( src )
     , m_taskId( src.m_taskId )
     , m_threadId( src.m_threadId )
+    , m_taskStatus( src.m_taskStatus )
     , m_hasTaskData( src.m_hasTaskData )
     , m_customTaskDataIsSerializable( src.m_customTaskDataIsSerializable )
     , m_taskData( src.m_taskData )
@@ -90,6 +97,7 @@ CTaskInfo::Clear( void )
 
     m_taskId = 0;
     m_threadId = 0;
+    m_taskStatus = ETaskStatus::TASKSTATUS_UNDEFINED;
     m_hasTaskData = false;
     m_customTaskDataIsSerializable = false;
     m_taskData.Clear();
@@ -107,9 +115,15 @@ CTaskInfo::Serialize( CDataNode& domRootNode                        ,
     
     totalSuccess = domRootNode.SetAttribute( "taskId", m_taskId ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "threadId", m_threadId ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "taskStatusId", (UInt8) m_taskStatus ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "hasTaskData", m_hasTaskData ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "customTaskDataIsSerializable", m_customTaskDataIsSerializable ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "taskTypeName", m_taskTypeName ) && totalSuccess;
+
+    if ( CDataNodeSerializableSettings::DataNodeSerializableLod_MinimumDetails < settings.levelOfDetail )
+    {
+        totalSuccess = domRootNode.SetAttribute( "taskStatus", TaskStatusToTaskStatusString( m_taskStatus ) ) && totalSuccess;
+    }
     
     if ( m_hasTaskData && m_customTaskDataIsSerializable )
     {
@@ -138,6 +152,7 @@ CTaskInfo::Deserialize( const CDataNode& domRootNode                  ,
 
     m_taskId = domRootNode.GetAttributeValueOrChildValueByName( "taskId" ).AsUInt32( m_taskId, true );
     m_threadId = domRootNode.GetAttributeValueOrChildValueByName( "threadId" ).AsInt32( m_threadId, true );
+    m_taskStatus = (TTaskStatus) domRootNode.GetAttributeValueOrChildValueByName( "taskStatusId", m_taskStatus ).AsUInt8( m_taskStatus, true );
     m_hasTaskData = domRootNode.GetAttributeValueOrChildValueByName( "hasTaskData" ).AsBool( m_hasTaskData, true );
     m_customTaskDataIsSerializable = domRootNode.GetAttributeValueOrChildValueByName( "customTaskDataIsSerializable" ).AsBool( m_customTaskDataIsSerializable, true );
     m_taskTypeName = domRootNode.GetAttributeValueOrChildValueByName( "taskTypeName" ).AsString( m_taskTypeName, true );
@@ -187,6 +202,24 @@ CTaskInfo::GetThreadId( void ) const
 {GUCEF_TRACE;
 
     return m_threadId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskInfo::SetTaskStatus( TTaskStatus taskStatus )
+{GUCEF_TRACE;
+
+    m_taskStatus = taskStatus;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TTaskStatus
+CTaskInfo::GetTaskStatus( void ) const
+{GUCEF_TRACE;
+
+    return m_taskStatus;
 }
 
 /*-------------------------------------------------------------------------*/

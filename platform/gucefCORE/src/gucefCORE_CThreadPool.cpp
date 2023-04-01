@@ -97,6 +97,7 @@ const CEvent CThreadPool::ThreadResumedEvent = "GUCEF::CORE::CThreadPool::Thread
 const CEvent CThreadPool::ThreadFinishedEvent = "GUCEF::CORE::CThreadPool::ThreadFinishedEvent";
 
 const CEvent CThreadPool::TaskQueuedEvent = "GUCEF::CORE::CThreadPool::TaskQueuedEvent";
+const CEvent CThreadPool::TaskStartupEvent = "GUCEF::CORE::CThreadPool::TaskStartupEvent";
 const CEvent CThreadPool::TaskStartedEvent = "GUCEF::CORE::CThreadPool::TaskStartedEvent";
 const CEvent CThreadPool::TaskStartupFailedEvent = "GUCEF::CORE::CThreadPool::TaskStartupFailedEvent";
 const CEvent CThreadPool::TaskKilledEvent = "GUCEF::CORE::CThreadPool::TaskKilledEvent";
@@ -122,6 +123,7 @@ CThreadPool::RegisterEvents( void )
     ThreadFinishedEvent.Initialize();
 
     TaskQueuedEvent.Initialize();
+    TaskStartupEvent.Initialize();
     TaskStartedEvent.Initialize();
     TaskStartupFailedEvent.Initialize();
     TaskKilledEvent.Initialize();
@@ -134,8 +136,8 @@ CThreadPool::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CThreadPool::CTaskQueueItem::CTaskQueueItem( CTaskConsumerPtr consumer      ,
-                                              CICloneable* taskData          ,
-                                              bool assumeOwnershipOfTaskData )
+                                             CICloneable* taskData          ,
+                                             bool assumeOwnershipOfTaskData )
     : CICloneable()
     , m_taskData( taskData )
     , m_taskConsumer( consumer )
@@ -996,6 +998,19 @@ CThreadPool::TaskCleanup( CTaskConsumerPtr taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 void
+CThreadPool::OnTaskStartup( CTaskConsumerPtr taskConsumer )
+{GUCEF_TRACE;
+
+    if ( !taskConsumer.IsNULL() )
+    {
+        TTaskStartupEventData eData( taskConsumer->GetTaskId() ); 
+        NotifyObserversFromThread( TaskStartupEvent, &eData ); 
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CThreadPool::OnTaskStarted( CTaskConsumerPtr taskConsumer )
 {GUCEF_TRACE;
 
@@ -1505,6 +1520,7 @@ CThreadPool::GetTaskInfo( UInt32 taskId                                         
             
             info.SetTaskId( taskId );
             info.SetThreadId( taskConsumer->GetDelegatorThreadId() );
+            info.SetTaskStatus( taskConsumer->GetTaskStatus() );
             info.SetTaskTypeName( taskConsumer->GetType() );
             info.SetCustomTaskDataIsSerializable( IsCustomTaskDataForTaskTypeSerializable( info.GetTaskTypeName() ) );
             info.SetHasTaskData( taskConsumer->HasTaskData() );

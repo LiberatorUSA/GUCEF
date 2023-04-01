@@ -46,6 +46,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_TASKSTATUS_H
+#include "gucefCORE_TaskStatus.h"
+#define GUCEF_CORE_TASKSTATUS_H
+#endif /* GUCEF_CORE_TASKSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -82,6 +87,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     public:
 
     static const CEvent TaskKilledEvent;
+    static const CEvent TaskStartupEvent;
     static const CEvent TaskStartedEvent;
     static const CEvent TaskStartupFailedEvent;
     static const CEvent TaskPausedEvent;
@@ -140,7 +146,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */
-    virtual bool OnTaskStart( CICloneable* taskdata ) = 0;
+    virtual bool OnTaskStart( CICloneable* taskdata );
 
     /**
      *  Called after a successfull call to OnTaskStart
@@ -217,6 +223,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     bool GetSerializedTaskDataCopy( CDataNode& domNode                                ,
                                     CDataNodeSerializableSettings& serializerSettings ) const;
 
+    TTaskStatus GetTaskStatus( void ) const;
+    
     private:
     friend class CThreadPool;
     friend class CTaskDelegator;
@@ -230,6 +238,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     bool GetIsInPhasedSetup( void ) const;
 
     void SetThreadPool( const TThreadPoolBasicPtr& threadPool );
+
+    void SetTaskStatus( TTaskStatus newStatus );
         
     private:
 
@@ -239,6 +249,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     private:
 
     TTaskId m_taskId;
+    TTaskStatus m_taskStatus;
     TThreadPoolBasicPtr m_threadPool;
     TTaskDelegatorBasicPtr m_delegator;
     bool m_ownedByThreadPool;

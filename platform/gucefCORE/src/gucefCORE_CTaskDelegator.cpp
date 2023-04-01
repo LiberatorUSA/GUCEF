@@ -312,6 +312,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
 {GUCEF_TRACE;
 
     bool returnStatus = false;
+    bool taskWasFinished = false;
 
     // Create local refs for the invocation duration to avoid external interference
     PulseGeneratorPtr pulseGenerator = m_pulseGenerator;
@@ -345,10 +346,11 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
         m_consumerBusy = true;
 
         // Notify the threadpool directy
-        m_threadPool->OnTaskStarted( taskConsumer );
-
+        taskConsumer->SetTaskStatus( TASKSTATUS_STARTUP );
+        m_threadPool->OnTaskStartup( taskConsumer );
         if ( taskConsumer->OnTaskStart( taskData ) )
         {
+            taskConsumer->SetTaskStatus( TASKSTATUS_RUNNING );
             taskConsumer->OnTaskStarted( taskData );
 
             // cycle the task as long as it is not "done"
@@ -358,6 +360,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 if ( taskConsumer->OnTaskCycle( taskData ) )
                 {
                     // Task says we are done
+                    taskWasFinished = true;
                     break;
                 }
 
@@ -402,7 +405,9 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
             }
 
             taskConsumer->OnTaskEnding( taskData, false );
-            taskConsumer->OnTaskEnded( taskData, false );
+            taskConsumer->SetTaskStatus( taskWasFinished ? TASKSTATUS_FINISHED : TASKSTATUS_STOPPED );
+            taskConsumer->OnTaskEnded( taskData, false );            
+
             if ( !threadPool.IsNULL() )
             {
                 // Notify the threadpool directy
@@ -413,7 +418,9 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
         }
         else
         {
+            taskConsumer->SetTaskStatus( TASKSTATUS_STARTUP_FAILED );
             taskConsumer->OnTaskStartupFailed( taskData );
+
             if ( !threadPool.IsNULL() )
             {
                 // Notify the threadpool directy
@@ -425,6 +432,8 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     }
     else
     {
+        taskConsumer->SetTaskStatus( TASKSTATUS_STOPPED );
+        
         // We never even got to start the consumer's work
         // not an error, just an efficiency thing so we still return success
         if ( !threadPool.IsNULL() )
@@ -459,6 +468,7 @@ CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
+        taskConsumer->SetTaskStatus( TASKSTATUS_PAUSED );
         taskConsumer->OnTaskPaused( static_cast< CICloneable* >( taskdata ), true );
 
         TBasicThreadPoolPtr threadPool = m_threadPool;
@@ -489,6 +499,7 @@ CTaskDelegator::OnThreadResumed( void* taskdata )
             threadPool->OnTaskResumed( taskConsumer );
         }
 
+        taskConsumer->SetTaskStatus( TASKSTATUS_RESUMED );
         taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
     }
 }
@@ -521,6 +532,13 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
     if ( !taskConsumer.IsNULL() )
     {
+        TTaskStatus taskStatusBeforeEnd = taskConsumer->GetTaskStatus();
+        if ( !( TASKSTATUS_STOPPED == taskStatusBeforeEnd || 
+                TASKSTATUS_FINISHED == taskStatusBeforeEnd ) )
+        {
+            taskConsumer->SetTaskStatus( TASKSTATUS_STOPPED );
+        }
+        
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
 
         if ( !m_threadPool.IsNULL() )

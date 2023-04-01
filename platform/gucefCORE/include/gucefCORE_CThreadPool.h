@@ -63,6 +63,11 @@
 #define GUCEF_CORE_CTHREADINFO_H
 #endif /* GUCEF_CORE_CTHREADINFO_H ? */
 
+#ifndef GUCEF_CORE_TASKSTATUS_H
+#include "gucefCORE_TaskStatus.h"
+#define GUCEF_CORE_TASKSTATUS_H
+#endif /* GUCEF_CORE_TASKSTATUS_H ? */
+
 #ifndef GUCEF_CORE_CTASKINFO_H
 #include "gucefCORE_CTaskInfo.h"
 #define GUCEF_CORE_CTASKINFO_H
@@ -115,6 +120,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     static const CEvent ThreadFinishedEvent;
 
     static const CEvent TaskQueuedEvent;
+    static const CEvent TaskStartupEvent;
     static const CEvent TaskStartedEvent;
     static const CEvent TaskStartupFailedEvent;
     static const CEvent TaskKilledEvent;
@@ -139,6 +145,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef TCloneableUInt32                                    TThreadFinishedEventData;
 
     typedef TCloneableUInt32                                    TTaskQueuedEventData;
+    typedef TCloneableUInt32                                    TTaskStartupEventData;
     typedef TCloneableUInt32                                    TTaskStartedEventData;
     typedef TCloneableUInt32                                    TTaskStartupFailedEventData;
     typedef TCloneableUInt32                                    TTaskKilledEventData;
@@ -146,6 +153,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef TCloneableUInt32                                    TTaskPausedEventData;
     typedef TCloneableUInt32                                    TTaskResumedEventData;
     typedef TCloneableUInt32                                    TTaskFinishedEventData;
+
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -369,6 +377,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     void TaskCleanup( CTaskConsumerPtr taskConsumer ,
                       CICloneable* taskData         );
 
+    void OnTaskStartup( CTaskConsumerPtr taskConsumer );
     void OnTaskStarted( CTaskConsumerPtr taskConsumer );
     void OnTaskStartupFailed( CTaskConsumerPtr taskConsumer );
     void OnTaskKilled( CTaskConsumerPtr taskConsumer );

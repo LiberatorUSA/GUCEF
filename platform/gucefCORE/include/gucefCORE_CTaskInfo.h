@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CTHREADPOOLINFO_H
 #endif /* GUCEF_CORE_CTHREADPOOLINFO_H ? */
 
+#ifndef GUCEF_CORE_TASKSTATUS_H
+#include "gucefCORE_TaskStatus.h"
+#define GUCEF_CORE_TASKSTATUS_H
+#endif /* GUCEF_CORE_TASKSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -101,6 +106,10 @@ class GUCEF_CORE_PUBLIC_CPP CTaskInfo : public CIDataNodeSerializable
     
     UInt32 GetThreadId( void ) const;
 
+    void SetTaskStatus( TTaskStatus taskStatus );
+
+    TTaskStatus GetTaskStatus( void ) const;
+
     void SetHasTaskData( bool hasTaskData );
     
     bool GetHasTaskData( void ) const;
@@ -127,6 +136,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskInfo : public CIDataNodeSerializable
 
     UInt32 m_taskId;
     UInt32 m_threadId;
+    TTaskStatus m_taskStatus;
     bool m_hasTaskData;
     bool m_customTaskDataIsSerializable;
     CDataNode m_taskData;

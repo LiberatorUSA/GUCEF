@@ -189,6 +189,9 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     typedef CTDataNodeSerializableMapHttpServerResource< CORE::CString, CORE::CThreadPoolInfo >     TThreadPoolInfoMapRsc;
     typedef CORE::CTSharedPtr< TThreadPoolInfoMapRsc, MT::CMutex >                                  TThreadPoolInfoMapRscPtr;
     typedef std::map< CORE::CString, CThreadPoolMetaData >                                          TThreadPoolMetaDataMap; 
+    typedef std::map< UInt32, CORE::CThreadInfo* >                                                  TThreadInfoRawPtrMap;    
+    typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CThreadInfo* >               TThreadInfoRawPtrMapRsc;
+    typedef CORE::CTSharedPtr< TThreadInfoRawPtrMapRsc, MT::CMutex >                                TThreadInfoRawPtrMapRscPtr;
     typedef std::map< UInt32, CORE::CTaskInfo* >                                                    TTaskInfoRawPtrMap;    
     typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CTaskInfo* >                 TTaskInfoRawPtrMapRsc;
     typedef CORE::CTSharedPtr< TTaskInfoRawPtrMapRsc, MT::CMutex >                                  TTaskInfoRawPtrMapRscPtr;
@@ -200,6 +203,8 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     TThreadPoolMetaDataMap m_threadPoolMetaDataMap;
     TTaskInfoRawPtrMap m_globalTaskIndex;
     TTaskInfoRawPtrMapRscPtr m_globalTaskIndexRsc;
+    TThreadInfoRawPtrMap m_globalThreadIndex;
+    TThreadInfoRawPtrMapRscPtr m_globalThreadIndexRsc;
     CIHTTPServerRouter* m_router;
     CString m_rootPath;
     MT::CReadWriteLock m_rwLock;
