@@ -461,6 +461,15 @@ CActiveObject::WaitForThreadToFinish( Int32 timeoutInMs ) const
     return ThreadWait( _td, timeoutInMs );
 }
 
+/*-------------------------------------------------------------------------*/
+
+TThreadStatus 
+CActiveObject::GetThreadStatus( void ) const
+{GUCEF_TRACE;
+
+    return ThreadStatus( _td );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

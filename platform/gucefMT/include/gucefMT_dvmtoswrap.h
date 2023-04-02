@@ -35,6 +35,11 @@
 #define GUCEF_MT_MACROS_H
 #endif /* GUCEF_MT_MACROS_H ? */
 
+#ifndef GUCEF_MT_THREADSTATUS_H
+#include "gucefMT_ThreadStatus.h"
+#define GUCEF_MT_THREADSTATUS_H
+#endif /* GUCEF_MT_THREADSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -140,6 +145,11 @@ ThreadResume( struct SThreadData* td );
 
 GUCEF_MT_PUBLIC_C UInt32
 ThreadKill( struct SThreadData* td );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_MT_PUBLIC_C TThreadStatus
+ThreadStatus( struct SThreadData* td );
 
 /*--------------------------------------------------------------------------*/
 

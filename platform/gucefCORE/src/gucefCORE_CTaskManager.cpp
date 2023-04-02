@@ -700,6 +700,7 @@ CTaskManager::GetTaskInfo( UInt32 taskId                                        
 {GUCEF_TRACE;
 
     info.Clear();
+    threadPoolName.Clear();
     MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -779,19 +780,26 @@ CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskManager::GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const
+CTaskManager::GetThreadInfo( UInt32 threadId         ,   
+                             CThreadInfo& info       ,
+                             CString& threadPoolName ) const
 {GUCEF_TRACE;
 
     info.Clear();
+    threadPoolName.Clear();
     MT::CObjectScopeReadOnlyLock lock( this );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
         if ( (*i).second->GetThreadInfo( threadId, info ) )
+        {
+            threadPoolName = (*i).first;
             return true;
+        }
         ++i;
     }
+
     return false;
 }
 

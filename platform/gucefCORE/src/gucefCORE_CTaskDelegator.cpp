@@ -618,6 +618,7 @@ CTaskDelegator::GetThreadInfo( CThreadInfo& info ) const
 {GUCEF_TRACE;
 
     info.SetThreadId( GetThreadID() );
+    info.SetThreadStatus( GetThreadStatus() );
     return true;
 }
 

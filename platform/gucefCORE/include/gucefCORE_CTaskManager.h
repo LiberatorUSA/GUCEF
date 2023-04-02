@@ -246,7 +246,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     /**
      *  Obtains a coherent snapshot of thread information in a single lock protected call
      */
-    bool GetThreadInfo( UInt32 threadId, CThreadInfo& info ) const;
+    bool GetThreadInfo( UInt32 threadId         , 
+                        CThreadInfo& info       ,
+                        CString& threadPoolName ) const;
 
     /**
      *  Obtains a coherent snapshot of all thread information in a single lock protected call

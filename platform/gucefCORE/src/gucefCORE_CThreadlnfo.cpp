@@ -50,6 +50,7 @@ const CString CThreadInfo::ClassTypeName = "GUCEF::CORE::CThreadInfo";
 CThreadInfo::CThreadInfo( void )
     : CIDataNodeSerializable()
     , m_threadId( 0 )
+    , m_threadStatus( MT::THREADSTATUS_UNDEFINED )
 {GUCEF_TRACE;
 
 }
@@ -59,6 +60,7 @@ CThreadInfo::CThreadInfo( void )
 CThreadInfo::CThreadInfo( const CThreadInfo& src )
     : CIDataNodeSerializable( src )
     , m_threadId( src.m_threadId )
+    , m_threadStatus( src.m_threadStatus )
 {GUCEF_TRACE;
 
 }
@@ -78,6 +80,7 @@ CThreadInfo::Clear( void )
 {GUCEF_TRACE;
 
     m_threadId = 0;
+    m_threadStatus = MT::THREADSTATUS_UNDEFINED;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -89,7 +92,13 @@ CThreadInfo::Serialize( CDataNode& domRootNode                        ,
 
     bool totalSuccess = true;
         
-    totalSuccess = domRootNode.SetAttribute( "threadId", m_threadId ) && totalSuccess;  
+    totalSuccess = domRootNode.SetAttribute( "threadId", m_threadId ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "threadStatusId", (UInt8) m_threadStatus ) && totalSuccess;
+
+    if ( CDataNodeSerializableSettings::DataNodeSerializableLod_MinimumDetails < settings.levelOfDetail )
+    {
+        totalSuccess = domRootNode.SetAttribute( "threadStatus", MT::ThreadStatusToThreadStatusString( m_threadStatus ) ) && totalSuccess;
+    }
 
     return totalSuccess;
 }
@@ -104,6 +113,7 @@ CThreadInfo::Deserialize( const CDataNode& domRootNode                  ,
     Clear();
     
     m_threadId = domRootNode.GetAttributeValueOrChildValueByName( "threadId" ).AsUInt32( m_threadId, true );
+    m_threadStatus = (TThreadStatus) domRootNode.GetAttributeValueOrChildValueByName( "threadStatusId" ).AsUInt8( (UInt8) m_threadStatus, true );
 
     return true;
 }
@@ -124,6 +134,24 @@ CThreadInfo::GetThreadId( void ) const
 {GUCEF_TRACE;
 
     return m_threadId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CThreadInfo::SetThreadStatus( TThreadStatus threadStatus )
+{GUCEF_TRACE;
+
+    m_threadStatus = threadStatus;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TThreadStatus
+CThreadInfo::GetThreadStatus( void ) const
+{GUCEF_TRACE;
+
+    return m_threadStatus;
 }
 
 /*-------------------------------------------------------------------------*/

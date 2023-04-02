@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CIDATANODESERIALIZABLE_H
 #endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
 
+#ifndef GUCEF_CORE_THREADSTATUS_H
+#include "gucefCORE_ThreadStatus.h"
+#define GUCEF_CORE_THREADSTATUS_H
+#endif /* GUCEF_CORE_THREADSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -91,6 +96,10 @@ class GUCEF_CORE_PUBLIC_CPP CThreadInfo : public CIDataNodeSerializable
     
     UInt32 GetThreadId( void ) const;
 
+    void SetThreadStatus( TThreadStatus threadStatus );
+
+    TThreadStatus GetThreadStatus( void ) const;
+    
     void Clear( void );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -100,6 +109,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadInfo : public CIDataNodeSerializable
     private:
 
     UInt32 m_threadId;
+    TThreadStatus m_threadStatus;
 };
 
 /*-------------------------------------------------------------------------//

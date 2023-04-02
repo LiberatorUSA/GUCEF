@@ -246,6 +246,7 @@ set( HEADER_FILES
   include/gucefCORE_MetricsMacros.h
   include/gucefCORE_SFINAE_utils.h
   include/gucefCORE_TaskStatus.h
+  include/gucefCORE_ThreadStatus.h
   include/gucefCORE_VariantData.h
   include/gucefCORE_cinterface.h
   include/gucefCORE_config.h
@@ -467,6 +468,7 @@ set( SOURCE_FILES
   src/gucefCORE_CoreCodecTypes.cpp
   src/gucefCORE_LogLevels.cpp
   src/gucefCORE_TaskStatus.cpp
+  src/gucefCORE_ThreadStatus.cpp
   src/gucefCORE_VariantData.c
   src/gucefCORE_cinterface.cpp
   src/md5.c

@@ -143,7 +143,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef TCloneableUInt32                                    TThreadPausedEventData;
     typedef TCloneableUInt32                                    TThreadResumedEventData;
     typedef TCloneableUInt32                                    TThreadFinishedEventData;
-
+    typedef TCloneableUInt32                                    TThreadUpdateEventData;
+    
     typedef TCloneableUInt32                                    TTaskQueuedEventData;
     typedef TCloneableUInt32                                    TTaskStartupEventData;
     typedef TCloneableUInt32                                    TTaskStartedEventData;
@@ -153,7 +154,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef TCloneableUInt32                                    TTaskPausedEventData;
     typedef TCloneableUInt32                                    TTaskResumedEventData;
     typedef TCloneableUInt32                                    TTaskFinishedEventData;
-
+    typedef TCloneableUInt32                                    TTaskUpdateEventData;
 
     /**
      *  Queues a task for execution as soon as a thread is available

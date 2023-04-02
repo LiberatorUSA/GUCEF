@@ -71,6 +71,7 @@ struct SThreadData
     #endif
 
     UInt32 returnValue;
+    TThreadStatus threadStatus;
 };
 typedef struct SThreadData TThreadData;
 
@@ -114,7 +115,11 @@ ThreadDelay( UInt32 delay )
 static UInt32 GUCEF_CALLSPEC_STD_PREFIX
 ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 {
+    if ( GUCEF_NULL == tdvptr )
+        return 0;
+
     GUCEF_BEGIN;
+    ((TThreadData*)tdvptr)->threadStatus = THREADSTATUS_RUNNING;
     ((TThreadData*)tdvptr)->returnValue = (UInt32) ( (TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
     GUCEF_END;
     return ((TThreadData*)tdvptr)->returnValue;
@@ -125,8 +130,12 @@ ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 void*
 ThreadMain( void* tdvptr )
 {
+    if ( GUCEF_NULL == tdvptr )
+        return GUCEF_NULL;
+    
     GUCEF_BEGIN;
     TThreadData* td = (TThreadData*) tdvptr;
+    td->threadStatus = THREADSTATUS_RUNNING;
     td->threadId = gettid();
     td->returnValue = td->func( td->data );
     pthread_cond_signal( &td->exitSignal );
@@ -145,7 +154,10 @@ ThreadDataReserve( void )
     
     TThreadData* td = malloc( sizeof( TThreadData ) );
     if ( GUCEF_NULL != td )
+    {
         memset( td, 0, sizeof(TThreadData) );
+        td->threadStatus = THREADSTATUS_UNDEFINED;
+    }
     return td;
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -155,6 +167,7 @@ ThreadDataReserve( void )
     {
         memset( td, 0, sizeof(TThreadData) );
         pthread_cond_init( &td->exitSignal, GUCEF_NULL );
+        td->threadStatus = THREADSTATUS_UNDEFINED;
     }
     return td;
     
@@ -205,6 +218,7 @@ ThreadCreate( struct SThreadData* td ,
                                      &td->threadid                       ); /* thread identifier */
     if ( td->threadhandle == NULL )
     {
+        td->threadStatus = THREADSTATUS_CREATION_FAILED;
         return 0;
     }
     return 1;
@@ -218,6 +232,7 @@ ThreadCreate( struct SThreadData* td ,
     if ( 0 != retVal )
     {
         /* failed to init thread attributes structure */
+        td->threadStatus = THREADSTATUS_CREATION_FAILED;
         return 0;
     }
 
@@ -230,6 +245,7 @@ ThreadCreate( struct SThreadData* td ,
                               (void*) td          ) )
     {
         pthread_cond_signal( &td->exitSignal );
+        td->threadStatus = THREADSTATUS_CREATION_FAILED;
         return 0;
     }
     return 1;
@@ -244,9 +260,12 @@ ThreadCreate( struct SThreadData* td ,
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_MT_PUBLIC_C UInt32
+UInt32
 ThreadID( struct SThreadData* td )
 {
+    if ( GUCEF_NULL == td )
+        return 0;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return (UInt32) td->threadid;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -258,9 +277,22 @@ ThreadID( struct SThreadData* td )
 
 /*--------------------------------------------------------------------------*/
 
+TThreadStatus
+ThreadStatus( struct SThreadData* td )
+{
+    if ( GUCEF_NULL == td )
+        return 0;
+    return td->threadStatus;    
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 ThreadSuspend( struct SThreadData* td )
 {
+    if ( GUCEF_NULL == td )
+        return 0;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
     return ( -1 != SuspendThread( td->threadhandle ) );

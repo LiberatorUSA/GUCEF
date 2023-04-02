@@ -45,6 +45,11 @@
 #define GUCEF_MT_CILOCKABLE_H
 #endif /* GUCEF_MT_CILOCKABLE_H ? */
 
+#ifndef GUCEF_MT_THREADSTATUS_H
+#include "gucefMT_ThreadStatus.h"
+#define GUCEF_MT_THREADSTATUS_H
+#endif /* GUCEF_MT_THREADSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -187,6 +192,8 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
                                 bool forced    );
 
     void* GetThreadData( void ) const;
+
+    TThreadStatus GetThreadStatus( void ) const;
 
     protected:
 
