@@ -101,9 +101,45 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     , m_globalTaskIndexRsc()
     , m_globalThreadIndex()
     , m_globalThreadIndexRsc()
+    , m_globalTaskDataTemplates()
+    , m_globalTaskDataTemplatesRsc()
     , m_router( GUCEF_NULL )
     , m_rootPath( "/v1/taskmanager/" )
     , m_rwLock( true )
+{GUCEF_TRACE;
+
+    LinkResources();
+    RegisterEventHandlers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServerResource& src )
+    : CORE::CTSGNotifier( src )
+    , m_taskManagerInfo( src.m_taskManagerInfo )
+    , m_taskManagerInfoRsc()
+    , m_threadPoolInfoMap( src.m_threadPoolInfoMap )
+    , m_threadPoolInfoMapRsc()
+    , m_threadPoolMetaDataMap( src.m_threadPoolMetaDataMap )
+    , m_globalTaskIndex()
+    , m_globalTaskIndexRsc()
+    , m_globalThreadIndex()
+    , m_globalThreadIndexRsc()
+    , m_globalTaskDataTemplates( src.m_globalTaskDataTemplates )
+    , m_globalTaskDataTemplatesRsc()
+    , m_router( src.m_router )
+    , m_rootPath( src.m_rootPath )
+    , m_rwLock( src.m_rwLock )
+{GUCEF_TRACE;
+
+    LinkResources();
+    RegisterEventHandlers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::LinkResources( void )
 {GUCEF_TRACE;
 
     m_taskManagerInfoRsc = CDataNodeSerializableHttpServerResourcePtr( GUCEF_NEW CDataNodeSerializableHttpServerResource() );
@@ -125,51 +161,12 @@ CTaskManagerServerResource::CTaskManagerServerResource( void )
     m_globalThreadIndexRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &m_globalThreadIndex, &m_rwLock, false, true );
     m_globalThreadIndexRsc->SetIsCreateSupported( false );
     m_globalThreadIndexRsc->SetIsDeserializeSupported( false, false );
-    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true );  
-
-    RegisterEventHandlers();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManagerServerResource::CTaskManagerServerResource( const CTaskManagerServerResource& src )
-    : CORE::CTSGNotifier( src )
-    , m_taskManagerInfo( src.m_taskManagerInfo )
-    , m_taskManagerInfoRsc()
-    , m_threadPoolInfoMap( src.m_threadPoolInfoMap )
-    , m_threadPoolInfoMapRsc()
-    , m_threadPoolMetaDataMap( src.m_threadPoolMetaDataMap )
-    , m_globalTaskIndex()
-    , m_globalTaskIndexRsc()
-    , m_globalThreadIndex()
-    , m_globalThreadIndexRsc()
-    , m_router( src.m_router )
-    , m_rootPath( src.m_rootPath )
-    , m_rwLock( src.m_rwLock )
-{GUCEF_TRACE;
-
-    m_taskManagerInfoRsc = CDataNodeSerializableHttpServerResourcePtr( GUCEF_NEW CDataNodeSerializableHttpServerResource() );
-    m_taskManagerInfoRsc->LinkTo( GUCEF_NULL, &m_taskManagerInfo, &m_rwLock );
-    m_taskManagerInfoRsc->SetIsCreateSupported( false );
-    m_taskManagerInfoRsc->SetIsDeserializeSupported( false, false );
-    m_taskManagerInfoRsc->SetIsDeserializeSupported( false, true );
-    m_threadPoolInfoMapRsc = TThreadPoolInfoMapRscPtr( GUCEF_NEW TThreadPoolInfoMapRsc() );
-    m_threadPoolInfoMapRsc->LinkTo( "threadpools", "threadPoolName", GUCEF_NULL, &m_threadPoolInfoMap, &m_rwLock, false, true );
-    m_threadPoolInfoMapRsc->SetIsCreateSupported( false );
-    m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, false );
-    m_threadPoolInfoMapRsc->SetIsDeserializeSupported( false, true );
-    m_globalTaskIndexRsc = TTaskInfoRawPtrMapRscPtr( GUCEF_NEW TTaskInfoRawPtrMapRsc() );
-    m_globalTaskIndexRsc->LinkTo( "tasks", "taskId", GUCEF_NULL, &m_globalTaskIndex, &m_rwLock, false, true );
-    m_globalTaskIndexRsc->SetIsCreateSupported( false );
-    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, false );
-    m_globalTaskIndexRsc->SetIsDeserializeSupported( false, true );
-    m_globalThreadIndexRsc = TThreadInfoRawPtrMapRscPtr( GUCEF_NEW TThreadInfoRawPtrMapRsc() );
-    m_globalThreadIndexRsc->LinkTo( "threads", "threadId", GUCEF_NULL, &m_globalThreadIndex, &m_rwLock, false, true );
-    m_globalThreadIndexRsc->SetIsCreateSupported( false );
-    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, false );
-    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true );    
-
-    RegisterEventHandlers();
+    m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true ); 
+    m_globalTaskDataTemplatesRsc = TStringToDataNodeSerializableTaskDataPtrMapRscPtr( GUCEF_NEW TStringToDataNodeSerializableTaskDataPtrMapRsc() );
+    m_globalTaskDataTemplatesRsc->LinkTo( "templates", "taskTypeName", GUCEF_NULL, &m_globalTaskDataTemplates, &m_rwLock, false, true );
+    m_globalTaskDataTemplatesRsc->SetIsCreateSupported( false );
+    m_globalTaskDataTemplatesRsc->SetIsDeserializeSupported( false, false );
+    m_globalTaskDataTemplatesRsc->SetIsDeserializeSupported( false, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -304,16 +301,18 @@ CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered( CORE::CNoti
 void
 CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered( CORE::CNotifier* notifier    ,
                                                                const CORE::CEvent& eventId  ,
-                                                                CORE::CICloneable* eventData )
+                                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* eData = static_cast< CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEventData* >( eventData );
     if ( GUCEF_NULL != eData )
     {
         const CORE::CString& factoryType = eData->GetData();        
+        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
         MT::CScopeWriterLock writeLock( m_rwLock );
-        m_taskManagerInfo.GetTaskDataFactoryTypes().insert( factoryType );        
+        m_taskManagerInfo.GetTaskDataFactoryTypes().insert( factoryType );                
+        m_globalTaskDataTemplates[ factoryType ] = taskManager.CreateCustomTaskDataForTaskTypeIfAvailable( factoryType );
     }
 }
 
@@ -460,12 +459,12 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
 
     // "/v1/taskmanager"                                            <- TaskManagerInfo obj
     // "/v1/taskmanager/tasks/"                                     <- task id index Or list of TaskInfo objects
-    //                                                                 this one supports submitting new tasks in a data driven manner
     // "/v1/taskmanager/threads/"                                   <- thread id index Or list of ThreadInfo objects 
     // "/v1/taskmanager/threadpools/"                               <- thread pool name index Or list of ThreadPoolInfo obj
     // "/v1/taskmanager/threadpools/default/"                       <- ThreadPoolInfo obj
     // "/v1/taskmanager/threadpools/default/threads/"               <- thread id index Or list of ThreadInfo objects specific to the given thread pool
     // "/v1/taskmanager/threadpools/default/tasks/"                 <- task id index Or list of TaskInfo objects specific to the given thread pool
+    // "/v1/taskmanager/taskdata/templates/"                        <- default objects of serializable task data
 
     m_router = &webRouter;
     if ( GUCEF_NULL != m_router )
@@ -475,6 +474,7 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "tasks", m_globalTaskIndexRsc ) && totalSuccess;
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "threads", m_globalThreadIndexRsc ) && totalSuccess;
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools", m_threadPoolInfoMapRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "taskdata/templates", m_globalTaskDataTemplatesRsc ) && totalSuccess;
         return totalSuccess && UpdateAllInfo();
     }
     
@@ -492,6 +492,7 @@ CTaskManagerServerResource::DisconnectHttpRouting( CIHTTPServerRouter& webRouter
     totalSuccess = m_router->RemoveResourceMapping( m_globalTaskIndexRsc ) && totalSuccess; 
     totalSuccess = m_router->RemoveResourceMapping( m_globalThreadIndexRsc ) && totalSuccess; 
     totalSuccess = m_router->RemoveResourceMapping( m_threadPoolInfoMapRsc ) && totalSuccess;     
+    totalSuccess = m_router->RemoveResourceMapping( m_globalTaskDataTemplatesRsc ) && totalSuccess;     
     return totalSuccess;
 }
 

@@ -858,6 +858,7 @@ CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskTyp
         taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
         if ( !taskData.IsNULL() )
             return taskData;
+        ++i;
     }
     
     // If no pool level task data factory is defined, lets see if we have a global one
@@ -867,9 +868,9 @@ CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskTyp
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskManager::GetSerializedTaskDataCopy( const UInt32 taskId                               ,
-                                         CDataNode& domNode                                ,
-                                         CDataNodeSerializableSettings& serializerSettings ) const
+CTaskManager::GetSerializedTaskDataCopy( const UInt32 taskId                                     ,
+                                         CDataNode& domNode                                      ,
+                                         const CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeReadOnlyLock lock( this );

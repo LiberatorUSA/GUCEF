@@ -150,9 +150,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     /**
      *  If the consumer was provided with any 'work' data and said data is serializable this can be used to obtain a copy of said data
      */
-    bool GetSerializedTaskDataCopy( UInt32 taskId                                     , 
-                                    CDataNode& domNode                                ,
-                                    CDataNodeSerializableSettings& serializerSettings ) const;
+    bool GetSerializedTaskDataCopy( UInt32 taskId                                           , 
+                                    CDataNode& domNode                                      ,
+                                    const CDataNodeSerializableSettings& serializerSettings ) const;
 
     bool GetThreadInfo( CThreadInfo& info ) const;
     

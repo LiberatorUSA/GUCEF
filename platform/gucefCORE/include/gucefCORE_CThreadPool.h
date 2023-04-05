@@ -329,17 +329,17 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     /**
      *  Obtains a coherent snapshot of task information in a single lock protected call
      */
-    bool GetTaskInfo( UInt32 taskId                                                          , 
-                      CTaskInfo& info                                                        , 
-                      bool obtainTaskDataCopyIfPossible                                      ,
-                      CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
+    bool GetTaskInfo( UInt32 taskId                                                                , 
+                      CTaskInfo& info                                                              ,  
+                      bool obtainTaskDataCopyIfPossible                                            ,
+                      const CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
 
     /**
      *  Obtains a coherent snapshot of all task information in a single lock protected call
      */
-    bool GetAllTaskInfo( TTaskInfoMap& info                                                     ,
-                         bool obtainTaskDataCopyIfPossible                                      ,
-                         CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
+    bool GetAllTaskInfo( TTaskInfoMap& info                                                           ,
+                         bool obtainTaskDataCopyIfPossible                                            ,
+                         const CDataNodeSerializableSettings* taskDataSerializerSettings = GUCEF_NULL ) const;
 
     /**
      *  Obtains a coherent snapshot of thread information in a single lock protected call
@@ -355,9 +355,9 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
      *  If the task with the given id was provided with any 'work' data and said data is serializable this can be used to 
      *  obtain a copy of said data
      */
-    bool GetSerializedTaskDataCopy( UInt32 taskId                                     ,
-                                    CDataNode& domNode                                ,
-                                    CDataNodeSerializableSettings& serializerSettings ) const;
+    bool GetSerializedTaskDataCopy( UInt32 taskId                                           ,
+                                    CDataNode& domNode                                      ,
+                                    const CDataNodeSerializableSettings& serializerSettings ) const;
 
     const CString& GetThreadPoolName( void ) const;
     

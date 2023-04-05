@@ -220,8 +220,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CTSGNotifier
     /**
      *  If this consumer was provided with any 'work' data and said data is serializable this can be used to obtain a copy of said data
      */
-    bool GetSerializedTaskDataCopy( CDataNode& domNode                                ,
-                                    CDataNodeSerializableSettings& serializerSettings ) const;
+    bool GetSerializedTaskDataCopy( CDataNode& domNode                                      ,
+                                    const CDataNodeSerializableSettings& serializerSettings ) const;
 
     TTaskStatus GetTaskStatus( void ) const;
     

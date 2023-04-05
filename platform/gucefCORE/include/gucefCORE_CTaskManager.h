@@ -277,9 +277,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
      *  If the task with the given id was provided with any 'work' data and said data is serializable this can be used to 
      *  obtain a copy of said data
      */
-    bool GetSerializedTaskDataCopy( const UInt32 taskId                               ,
-                                    CDataNode& domNode                                ,
-                                    CDataNodeSerializableSettings& serializerSettings ) const;
+    bool GetSerializedTaskDataCopy( const UInt32 taskId                                     ,
+                                    CDataNode& domNode                                      ,
+                                    const CDataNodeSerializableSettings& serializerSettings ) const;
 
     protected:
 

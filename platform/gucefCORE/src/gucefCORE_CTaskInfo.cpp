@@ -28,6 +28,16 @@
 #define GUCEF_CORE_TASKSTATUS_H
 #endif /* GUCEF_CORE_TASKSTATUS_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #include "gucefCORE_CTaskInfo.h"
 
 /*-------------------------------------------------------------------------//
@@ -60,7 +70,7 @@ CTaskInfo::CTaskInfo( void )
     , m_taskStatus( TTaskStatus::TASKSTATUS_UNDEFINED )
     , m_hasTaskData( false )
     , m_customTaskDataIsSerializable( false )
-    , m_taskData()
+    , m_taskData( GUCEF_DATATYPE_NIL )
     , m_taskTypeName()
 {GUCEF_TRACE;
 
@@ -132,8 +142,18 @@ CTaskInfo::Serialize( CDataNode& domRootNode                        ,
             // task data could potentially be substantial while important, only add at LOD above minimum
             CDataNode* taskDataNode = domRootNode.AddChild( "customTaskData", GUCEF_DATATYPE_OBJECT );
             if ( GUCEF_NULL != taskDataNode )
-            {
-                totalSuccess = GUCEF_NULL != taskDataNode->AddChild( m_taskData ) && totalSuccess;            
+            {                
+                // Check to see if task data was ever set on this info object.
+                // if not we just fetch it on-demand best-effort
+                if ( GUCEF_DATATYPE_NIL != m_taskData.GetNodeType() )
+                {
+                    totalSuccess = GUCEF_NULL != taskDataNode->AddChild( m_taskData ) && totalSuccess;            
+                }
+                else
+                {
+                    CTaskManager& taskManager = CCoreGlobal::Instance()->GetTaskManager();
+                    totalSuccess = taskManager.GetSerializedTaskDataCopy( m_taskId, *taskDataNode, settings ) && totalSuccess;                    
+                }
             }
             else
                 totalSuccess = false;

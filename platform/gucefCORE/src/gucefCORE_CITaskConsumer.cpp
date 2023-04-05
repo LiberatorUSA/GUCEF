@@ -385,8 +385,8 @@ CTaskConsumer::HasTaskData( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTaskConsumer::GetSerializedTaskDataCopy( CDataNode& domNode                                ,
-                                          CDataNodeSerializableSettings& serializerSettings ) const
+CTaskConsumer::GetSerializedTaskDataCopy( CDataNode& domNode                                      ,
+                                          const CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
     TTaskDelegatorBasicPtr delegator = m_delegator;

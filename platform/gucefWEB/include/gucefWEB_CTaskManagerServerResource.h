@@ -104,7 +104,7 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
 
     CTaskManagerServerResource( void );
     CTaskManagerServerResource( const CTaskManagerServerResource& src );
-    virtual ~CTaskManagerServerResource();
+    virtual ~CTaskManagerServerResource() GUCEF_VIRTUAL_OVERRIDE;
 
     void SetTaskManagerRootPath( const CString& rootPath );
 
@@ -128,6 +128,8 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
 
     typedef CORE::CTEventHandlerFunctor< CTaskManagerServerResource > TEventCallback;
 
+    void LinkResources( void );
+    
     void RegisterEventHandlers( void );
 
     virtual void OnThreadPoolCreation( CORE::CNotifier* notifier                 ,
@@ -171,6 +173,9 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     typedef CTDataNodeSerializableMapHttpServerResource< UInt32, CORE::CThreadInfo >    TThreadInfoMapRsc;
     typedef CORE::CTSharedPtr< TThreadInfoMapRsc, MT::CMutex >                          TThreadInfoMapRscPtr;
     typedef CORE::CTaskManager::TThreadPoolInfoMap                                      TThreadPoolInfoMap;
+    typedef std::map< CString, CORE::CIDataNodeSerializableTaskDataBasicPtr >           TStringToDataNodeSerializableTaskDataPtrMap;
+    typedef CTDataNodeSerializableMapHttpServerResource< CString, CORE::CIDataNodeSerializableTaskDataBasicPtr >    TStringToDataNodeSerializableTaskDataPtrMapRsc;
+    typedef CORE::CTSharedPtr< TStringToDataNodeSerializableTaskDataPtrMapRsc, MT::CMutex >                         TStringToDataNodeSerializableTaskDataPtrMapRscPtr;
 
     class CThreadPoolMetaData
     {
@@ -209,6 +214,8 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     TTaskInfoRawPtrMapRscPtr m_globalTaskIndexRsc;
     TThreadInfoRawPtrMap m_globalThreadIndex;
     TThreadInfoRawPtrMapRscPtr m_globalThreadIndexRsc;
+    TStringToDataNodeSerializableTaskDataPtrMap m_globalTaskDataTemplates;
+    TStringToDataNodeSerializableTaskDataPtrMapRscPtr m_globalTaskDataTemplatesRsc;
     CIHTTPServerRouter* m_router;
     CString m_rootPath;
     MT::CReadWriteLock m_rwLock;

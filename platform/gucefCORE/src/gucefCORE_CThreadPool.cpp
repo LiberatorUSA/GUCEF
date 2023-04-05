@@ -1501,10 +1501,10 @@ CThreadPool::GetInfo( CThreadPoolInfo& info ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::GetTaskInfo( UInt32 taskId                                             , 
-                          CTaskInfo& info                                           , 
-                          bool obtainTaskDataCopyIfPossible                         ,
-                          CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+CThreadPool::GetTaskInfo( UInt32 taskId                                                   , 
+                          CTaskInfo& info                                                 , 
+                          bool obtainTaskDataCopyIfPossible                               ,
+                          const CDataNodeSerializableSettings* taskDataSerializerSettings ) const
 {GUCEF_TRACE;
 
     info.Clear();
@@ -1546,9 +1546,9 @@ CThreadPool::GetTaskInfo( UInt32 taskId                                         
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::GetAllTaskInfo( TTaskInfoMap& info                                        ,
-                             bool obtainTaskDataCopyIfPossible                         ,
-                             CDataNodeSerializableSettings* taskDataSerializerSettings ) const
+CThreadPool::GetAllTaskInfo( TTaskInfoMap& info                                              ,
+                             bool obtainTaskDataCopyIfPossible                               ,
+                             const CDataNodeSerializableSettings* taskDataSerializerSettings ) const
 {GUCEF_TRACE;
 
     info.clear();
@@ -1618,9 +1618,9 @@ CThreadPool::GetAllThreadInfo( TThreadInfoMap& info ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::GetSerializedTaskDataCopy( UInt32 taskId                                     ,
-                                        CDataNode& domNode                                ,
-                                        CDataNodeSerializableSettings& serializerSettings ) const
+CThreadPool::GetSerializedTaskDataCopy( UInt32 taskId                                           ,
+                                        CDataNode& domNode                                      ,
+                                        const CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );

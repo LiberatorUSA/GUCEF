@@ -585,9 +585,9 @@ CTaskDelegator::HasTaskData( UInt32 taskId ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTaskDelegator::GetSerializedTaskDataCopy( UInt32 taskId                                     , 
-                                           CDataNode& domNode                                , 
-                                           CDataNodeSerializableSettings& serializerSettings ) const
+CTaskDelegator::GetSerializedTaskDataCopy( UInt32 taskId                                           , 
+                                           CDataNode& domNode                                      ,  
+                                           const CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
