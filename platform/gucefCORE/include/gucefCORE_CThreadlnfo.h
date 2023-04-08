@@ -99,7 +99,15 @@ class GUCEF_CORE_PUBLIC_CPP CThreadInfo : public CIDataNodeSerializable
     void SetThreadStatus( TThreadStatus threadStatus );
 
     TThreadStatus GetThreadStatus( void ) const;
+
+    void SetThreadAffinityMask( UInt64 affinityMask );
+
+    UInt64 GetThreadAffinityMask( void ) const;
     
+    void SetThreadAffinityByCpuId( UInt32 cpuId );
+
+    UInt32 GetThreadAffinityByCpuId( void ) const;
+
     void Clear( void );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -110,6 +118,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadInfo : public CIDataNodeSerializable
 
     UInt32 m_threadId;
     TThreadStatus m_threadStatus;
+    UInt64 m_affinityMask;
+    UInt32 m_threadCpuId;
 };
 
 /*-------------------------------------------------------------------------//

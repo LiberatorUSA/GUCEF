@@ -619,6 +619,28 @@ CTaskDelegator::GetThreadInfo( CThreadInfo& info ) const
 
     info.SetThreadId( GetThreadID() );
     info.SetThreadStatus( GetThreadStatus() );
+        
+    UInt64 affinityMask = 0;
+    UInt32 affinityMaskSize = sizeof(affinityMask);
+    if ( GetCpuAffinityMask( affinityMaskSize, &affinityMask, affinityMaskSize ) )
+    {
+        info.SetThreadAffinityMask( affinityMask );
+    }
+    else
+    {
+        info.SetThreadAffinityMask( 0 );
+    }
+
+    UInt32 threadCpuId = 0;
+    if ( GetCpuAffinityByCpuId( threadCpuId ) )
+    {
+        info.SetThreadAffinityByCpuId( threadCpuId );
+    }
+    else
+    {
+        info.SetThreadAffinityByCpuId( 0 );
+    }
+
     return true;
 }
 

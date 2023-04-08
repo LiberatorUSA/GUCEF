@@ -65,11 +65,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin )
 endif( WIN64 )
 
 

@@ -97,11 +97,11 @@ endif( WIN64 )
 include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include )
 
 if ( WIN32 )
-  include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../platform/gucefCORE/include/mswin include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../platform/gucefCORE/include/mswin include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN64 )
 
 

@@ -51,6 +51,8 @@ CThreadInfo::CThreadInfo( void )
     : CIDataNodeSerializable()
     , m_threadId( 0 )
     , m_threadStatus( MT::THREADSTATUS_UNDEFINED )
+    , m_affinityMask( 0 )
+    , m_threadCpuId( 0 )
 {GUCEF_TRACE;
 
 }
@@ -61,6 +63,8 @@ CThreadInfo::CThreadInfo( const CThreadInfo& src )
     : CIDataNodeSerializable( src )
     , m_threadId( src.m_threadId )
     , m_threadStatus( src.m_threadStatus )
+    , m_affinityMask( src.m_affinityMask )
+    , m_threadCpuId( src.m_threadCpuId )
 {GUCEF_TRACE;
 
 }
@@ -81,6 +85,8 @@ CThreadInfo::Clear( void )
 
     m_threadId = 0;
     m_threadStatus = MT::THREADSTATUS_UNDEFINED;
+    m_affinityMask = 0;
+    m_threadCpuId = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,6 +100,8 @@ CThreadInfo::Serialize( CDataNode& domRootNode                        ,
         
     totalSuccess = domRootNode.SetAttribute( "threadId", m_threadId ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "threadStatusId", (UInt8) m_threadStatus ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "affinityMask", m_affinityMask ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "threadCpuId", m_threadCpuId ) && totalSuccess;
 
     if ( CDataNodeSerializableSettings::DataNodeSerializableLod_MinimumDetails < settings.levelOfDetail )
     {
@@ -114,6 +122,8 @@ CThreadInfo::Deserialize( const CDataNode& domRootNode                  ,
     
     m_threadId = domRootNode.GetAttributeValueOrChildValueByName( "threadId" ).AsUInt32( m_threadId, true );
     m_threadStatus = (TThreadStatus) domRootNode.GetAttributeValueOrChildValueByName( "threadStatusId" ).AsUInt8( (UInt8) m_threadStatus, true );
+    m_affinityMask = domRootNode.GetAttributeValueOrChildValueByName( "affinityMask" ).AsUInt64( m_affinityMask, true );
+    m_threadCpuId = domRootNode.GetAttributeValueOrChildValueByName( "threadCpuId" ).AsUInt32( m_threadCpuId, true );
 
     return true;
 }
@@ -170,6 +180,42 @@ CThreadInfo::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CThreadInfo( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadInfo::SetThreadAffinityMask( UInt64 affinityMask )
+{GUCEF_TRACE;
+
+    m_affinityMask = affinityMask;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt64
+CThreadInfo::GetThreadAffinityMask( void ) const
+{GUCEF_TRACE;
+
+    return m_affinityMask;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadInfo::SetThreadAffinityByCpuId( UInt32 cpuId )
+{GUCEF_TRACE;
+
+    m_threadCpuId = cpuId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CThreadInfo::GetThreadAffinityByCpuId( void ) const
+{GUCEF_TRACE;
+
+    return m_threadCpuId;
 }
 
 /*-------------------------------------------------------------------------//

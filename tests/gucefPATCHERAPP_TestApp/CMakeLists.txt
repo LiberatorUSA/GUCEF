@@ -88,11 +88,11 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/ )
+  include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/ ../../platform/gucefMT/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/ )
+  include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/ ../../platform/gucefMT/include/mswin )
 endif( WIN64 )
 
 

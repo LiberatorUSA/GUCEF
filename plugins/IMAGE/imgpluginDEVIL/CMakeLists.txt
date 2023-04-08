@@ -133,11 +133,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN64 )
 
 

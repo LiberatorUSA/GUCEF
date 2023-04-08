@@ -439,6 +439,7 @@ elseif (WIN32)
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h
     include/gucefMLF_ETypes.h
     include/gucefMLF_MemoryManager.h
     include/gucefMLF_callstack.h
@@ -459,6 +460,7 @@ elseif (WIN32)
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
+    ../../platform/gucefMT/src/mswin/gucefMT_mswinutils.cpp
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
     src/gucefMLF_locktrace.cpp
@@ -477,6 +479,7 @@ elseif (WIN64)
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h
     include/gucefMLF_ETypes.h
     include/gucefMLF_MemoryManager.h
     include/gucefMLF_callstack.h
@@ -497,6 +500,7 @@ elseif (WIN64)
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
+    ../../platform/gucefMT/src/mswin/gucefMT_mswinutils.cpp
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
     src/gucefMLF_locktrace.cpp
@@ -587,11 +591,11 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../platform/gucefMT/include/ include )
+  include_directories( ../../platform/gucefMT/include/ ../../platform/gucefMT/include/mswin/ include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../platform/gucefMT/include/ include )
+  include_directories( ../../platform/gucefMT/include/ ../../platform/gucefMT/include/mswin/ include )
 endif( WIN64 )
 
 

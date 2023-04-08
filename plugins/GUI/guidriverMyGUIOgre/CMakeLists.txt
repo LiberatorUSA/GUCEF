@@ -79,11 +79,11 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../platform/gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../platform/gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
 endif( WIN64 )
 
 

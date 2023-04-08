@@ -157,11 +157,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/OIS/$ENV{DXSDK_DIR}/Include ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/win32 ../../../dependencies/OIS/src/extras/LIRC ../../../dependencies/OIS/src/win32/extras/WiiMote ../../../dependencies/external ../../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../../dependencies/OIS/$ENV{DXSDK_DIR}/Include ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/win32 ../../../dependencies/OIS/src/extras/LIRC ../../../dependencies/OIS/src/win32/extras/WiiMote ../../../dependencies/external ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/src/extras/LIRC ../../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/src/extras/LIRC ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )
 endif( WIN64 )
 
 

@@ -169,6 +169,40 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  Function to obtain a mask data structure for the relevant O/S specifying thread affinity if any
+ *  If affinityMask is GUCEF_NULL but affinityMaskSize is provided than affinityMaskSize will be set to the to-be-expected byte size of the mask
+ *  @return 0 on error, 1 on success
+ */ 
+GUCEF_MT_PUBLIC_C UInt32
+ThreadGetCpuAffinity( struct SThreadData* td        ,
+                      UInt32 affinityMaskBufferSize ,
+                      void* affinityMask            ,
+                      UInt32* affinityMaskSize      );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Function to set CPU affinity of the given thread using a CPU ID as a more convenient interface over ThreadSetCpuAffinity
+ *  @return 0 on error, 1 on success
+ */ 
+GUCEF_MT_PUBLIC_C UInt32
+ThreadSetCpuAffinityByCpuId( struct SThreadData* td ,
+                             UInt32 cpuId           );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Function to obtain the current CPU affinity of the given thread as a snapshot-in-time
+ *  Note that if no affinity is set the cpuId will represent the last CPU the thread was running on
+ *  @return 0 on error, 1 on success
+ */ 
+GUCEF_MT_PUBLIC_C UInt32
+ThreadGetCpuAffinityByCpuId( struct SThreadData* td ,
+                             UInt32* cpuId          );
+
+/*--------------------------------------------------------------------------*/
+
 GUCEF_MT_PUBLIC_C UInt32
 GetCurrentTaskID( void );
 

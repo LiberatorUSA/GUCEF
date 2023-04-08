@@ -33,15 +33,24 @@
 #include "gucefMT_dvmtoswrap.h"         /* the function prototypes */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
   #include <processthreadsapi.h>
+
+  #ifndef GUCEF_MT_MSWINUTILS_H
+  #include "gucefMT_mswinutils.h"
+  #define GUCEF_MT_MSWINUTILS_H
+  #endif /* GUCEF_MT_MSWINUTILS_H ? */
+
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
   #include <stdio.h>
   #include <stdlib.h>
   #include <unistd.h>
   #include <pthread.h>
   #include <signal.h>
   #include <sys/time.h>
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -509,6 +518,132 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
     #else
 
     #error unsupported target platform
+    return 0;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+ThreadGetCpuAffinity( struct SThreadData* td        ,
+                      UInt32 affinityMaskBufferSize ,                      
+                      void* affinityMask            ,
+                      UInt32* affinityMaskSize      )
+{
+    if ( GUCEF_NULL == td )
+        return 0;    
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    /* 
+     *  Windows has SetThreadAffinityMask but no official API function is provided for Getting said mask.
+     *  We use the 'undocumented' NtQueryInformationThread function if its available
+     */
+    struct WIN32_THREAD_BASIC_INFORMATION basicInfo;
+    if ( GUCEF_NULL != affinityMaskSize )
+    {
+        *affinityMaskSize = sizeof( basicInfo.AffinityMask );
+    }
+    memset( &basicInfo, 0, sizeof(basicInfo) );
+    if ( WIN32_NT_SUCCESS( TryNtQueryInformationThread( td->threadhandle, ThreadBasicInformation, &basicInfo, sizeof(basicInfo), NULL ) ) )
+    {    
+        if ( affinityMaskBufferSize >= sizeof( basicInfo.AffinityMask ) )
+        {
+            memcpy( affinityMask, &basicInfo.AffinityMask, sizeof( basicInfo.AffinityMask ) ); 
+            
+            return 1;
+        }
+    }
+    return 0;    
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    if ( GUCEF_NULL != affinityMaskSize )
+    {
+        *affinityMaskSize = sizeof(cpu_set_t);
+    }
+    if ( GUCEF_NULL != affinityMask )
+    {
+        int statusCode = pthread_getaffinity_np( td->thread, (size_t) affinityMaskBufferSize, (cpu_set_t*) affinityMask );
+        if ( 0 == statusCode )
+            return 1;        
+    }
+    return 0;
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    if ( GUCEF_NULL != affinityMaskSize )
+    {
+        *affinityMaskSize = sizeof(cpu_set_t);
+    }
+    if ( GUCEF_NULL != affinityMask )
+    {
+        int statusCode = sched_getaffinity( td->thread, (size_t) affinityMaskBufferSize, (cpu_set_t*) affinityMask );
+        if ( 0 == statusCode )
+            return 1;        
+    }
+    return 0;
+
+    #else
+
+    #error unsupported target platform
+    return 0;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+ThreadSetCpuAffinityByCpuId( struct SThreadData* td ,
+                             UInt32 cpuId           )
+{
+
+    if ( cpuId < 64 )
+    {
+        UInt64 cpuMask = 0;
+        cpuMask |= (UInt64)1 << cpuId;
+
+        return ThreadSetCpuAffinity( td, sizeof( cpuMask ), &cpuMask );
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+ThreadGetCpuAffinityByCpuId( struct SThreadData* td ,
+                             UInt32* cpuId          )
+{
+    if ( GUCEF_NULL == td || GUCEF_NULL == cpuId )
+        return 0;   
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    *cpuId = (UInt32) GetCurrentProcessorNumber();
+    return 1;
+
+    #else
+
+    UInt64 affinityMask = 0;
+    UInt32 affinityMaskSize = sizeof( affinityMask );
+    if ( 0 != ThreadGetCpuAffinity( &affinityMaskSize ,
+                                    &affinityMask     ) )
+    {
+        UInt32 i=0; 
+        for ( i=0; i<64; ++i )
+        {
+            if ( 0 != GUCEF_GETBITX( affinityMask, i ) )
+            {
+                *cpuId = i;
+                return 1;
+            }
+        }
+    }
     return 0;
 
     #endif

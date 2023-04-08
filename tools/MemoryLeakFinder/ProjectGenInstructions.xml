@@ -1,20 +1,24 @@
 <PROJECTGENERATOR>
-    <INCLUDES PLATFORM="ALL">
-        <ITEM NAME="../../platform/gucefMT/include/gucefMT_dvmtoswrap.h" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_dvmtoswrap.c" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
-        <ITEM NAME="../../platform/gucefMT/src/gucefMT_MUTEX.c" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_DVRWLOCK.h" TYPE="FILE" />
-        <ITEM NAME="../../platform/gucefMT/src/gucefMT_DVRWLOCK.c" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeMutex.h" TYPE="FILE" />		
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CILockable.h" TYPE="FILE" />		
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CILockable.cpp" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CReadWriteLock.h" TYPE="FILE" />		
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp" TYPE="FILE" />
-		<ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeRwLock.h" TYPE="FILE" />		
-		<ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp" TYPE="FILE" />
-    </INCLUDES>
+  <INCLUDES PLATFORM="ALL">
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_dvmtoswrap.h" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_dvmtoswrap.c" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_MUTEX.c" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_DVRWLOCK.h" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_DVRWLOCK.c" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeMutex.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_CILockable.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_CILockable.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_CReadWriteLock.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeRwLock.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp" TYPE="FILE" />
+  </INCLUDES>
+  <INCLUDES PLATFORM="mswin">
+    <ITEM NAME="../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/src/mswin/gucefMT_mswinutils.cpp" TYPE="FILE" />
+  </INCLUDES>
 </PROJECTGENERATOR>

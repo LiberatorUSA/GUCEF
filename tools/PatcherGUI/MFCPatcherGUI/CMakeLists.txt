@@ -99,11 +99,11 @@ endif( WIN64 )
 include_directories( ../../../common/include ../../../platform/gucefCOM/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefPATCHER/include ../../../platform/gucefVFS/include )
 
 if ( WIN32 )
-  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin include projects/MVC8/res projects/MVC9/res )
+  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include projects/MVC8/res projects/MVC9/res )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin include projects/MVC8/res projects/MVC9/res )
+  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include projects/MVC8/res projects/MVC9/res )
 endif( WIN64 )
 
 

@@ -1312,11 +1312,11 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
 endif( WIN64 )
 
 

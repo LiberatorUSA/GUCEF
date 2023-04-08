@@ -35,6 +35,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #include "gucefMT_CActiveObject.h"
 
 /*-------------------------------------------------------------------------//
@@ -394,7 +399,7 @@ UInt32
 CActiveObject::GetThreadID( void ) const
 {GUCEF_TRACE;
 
-    CObjectScopeLock lock( this );
+    CObjectScopeReadOnlyLock lock( this );
 
     if ( GUCEF_NULL != _td )
     {
@@ -422,16 +427,38 @@ CActiveObject::SetCpuAffinityMask( UInt32 affinityMaskSize ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CActiveObject::GetCpuAffinityMask( UInt32 affinityMaskBufferSize ,
+                                   void* affinityMask            ,
+                                   UInt32& affinityMaskSize      ) const
+{GUCEF_TRACE;
+
+    CObjectScopeReadOnlyLock lock( this );
+
+    if ( GUCEF_NULL != _td )
+    {
+        return ThreadGetCpuAffinity( _td, affinityMaskBufferSize, affinityMask, &affinityMaskSize ) != 0;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CActiveObject::SetCpuAffinityByCpuId( UInt32 cpuId )
 {GUCEF_TRACE;
 
-    if ( cpuId >= 64 )
-        return false;
+    CObjectScopeReadOnlyLock lock( this );
+    return 0 != ThreadSetCpuAffinityByCpuId( _td, cpuId );
+}
 
-    UInt64 cpuMask = 0;
-    cpuMask |= (UInt64)1 << cpuId;
+/*-------------------------------------------------------------------------*/
 
-    return SetCpuAffinityMask( sizeof( cpuMask ), &cpuMask );
+bool 
+CActiveObject::GetCpuAffinityByCpuId( UInt32& cpuId ) const
+{GUCEF_TRACE;
+
+    CObjectScopeReadOnlyLock lock( this );
+    return 0 != ThreadGetCpuAffinityByCpuId( _td, &cpuId );
 }
 
 /*-------------------------------------------------------------------------*/

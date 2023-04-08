@@ -89,11 +89,11 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
 endif( WIN64 )
 
 

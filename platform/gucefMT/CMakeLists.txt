@@ -63,11 +63,39 @@ set( SOURCE_FILES
   src/gucefMT_dvmtoswrap.c
 )
 
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
+
+if (WIN32)
+  set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefMT_mswinutils.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefMT_mswinutils.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefMT_mswinutils.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefMT_mswinutils.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -93,6 +121,14 @@ if ( WIN64 )
 endif( WIN64 )
 
 include_directories( ../../common/include include )
+
+if ( WIN32 )
+  include_directories( include/mswin )
+endif( WIN32 )
+
+if ( WIN64 )
+  include_directories( include/mswin )
+endif( WIN64 )
 
 
 

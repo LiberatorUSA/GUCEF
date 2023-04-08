@@ -64,11 +64,11 @@ endif( WIN64 )
 include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefPATCHER/include )
 
 if ( WIN32 )
-  include_directories( ../../platform/gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../platform/gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
 endif( WIN64 )
 
 

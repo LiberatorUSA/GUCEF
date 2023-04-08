@@ -75,11 +75,11 @@ endif( WIN64 )
 include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include )
 
 if ( WIN32 )
-  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin include )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin include )
 endif( WIN64 )
 
 

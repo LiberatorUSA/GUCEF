@@ -48,7 +48,8 @@
 
 HMODULE 
 GetCurrentModuleHandle( void )
-{
+{GUCEF_TRACE;
+
 #if _MSC_VER < 1300    // earlier than .NET compiler (VC 6.0)
 
   // Here's a trick that will get you the handle of the module
@@ -73,7 +74,8 @@ GetCurrentModuleHandle( void )
 
 void
 cls( void )
-{
+{GUCEF_TRACE;
+
     COORD coordScreen = { 0, 0 }; /* here's where we'll home the cursor */
     DWORD cCharsWritten;
     CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */

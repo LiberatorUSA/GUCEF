@@ -134,10 +134,25 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
                              void* affinityMask      );
 
     /**
+     *  Gets the CPU affinity mask for the thread
+     *  affinityMaskSize will contain the actual size of the mask in the given buffer
+     */
+    bool GetCpuAffinityMask( UInt32 affinityMaskBufferSize ,
+                             void* affinityMask            ,
+                             UInt32& affinityMaskSize      ) const;
+
+    /**
      *  Convenience member function for setting a single CPU affinity
      *  Uses SetCpuAffinityMask()
      */
     bool SetCpuAffinityByCpuId( UInt32 cpuId );
+
+    /**
+     *  Convenience member function for getting a single CPU affinity
+     *  Will return the last CPU the thread executed on. 
+     *  Whether the thread will stay on said CPU depends on the affinity mask at large
+     */
+    bool GetCpuAffinityByCpuId( UInt32& cpuId ) const;
 
     /**
      *  Blocks the calling thread until the thread has finished
