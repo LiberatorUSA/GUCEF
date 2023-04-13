@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_TASKSTATUS_H
-#define GUCEF_CORE_TASKSTATUS_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "gucefCORE_CString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
+#include "gucefCORE_CDataNodeSerializableDataNode.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,49 +36,93 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-enum ETaskStatus : UInt8
-{
-    TASKSTATUS_UNDEFINED        = 0,    /**< not a real task status but rather an initialization value */
+const CString CDataNodeSerializableDataNode::ClassTypeName = "GUCEF::CORE::CDataNodeSerializableDataNode";
 
-    TASKSTATUS_TASKTYPE_INVALID       ,    /**< the task has an invalid task type preventing its execution */
-    TASKSTATUS_TASKDATA_INVALID       ,    /**< the task has invalid task data for the task type thus preventing its execution */
-    TASKSTATUS_RESOURCE_NOT_AVAILABLE ,    /**< the task depends on a resource for the task type which is not available thus preventing its execution */
-    TASKSTATUS_RESOURCE_LIMIT_REACHED ,    /**< the task depends on a resource who's finite limit has been reached thus preventing its execution */
-    TASKSTATUS_SETUP_FAILED           ,    /**< the task setup phase failed */
-    TASKSTATUS_STARTUP_FAILED         ,    /**< the task was started by a thread but the startup handler for the task reported an error and no further processing occured */
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-    TASKSTATUS_SETUP            = 100 ,    /**< the task is in the setup phase and being defined */    
-    TASKSTATUS_QUEUED                 ,    /**< the task is sitting in a queue waiting for a worker thread to pick it up, currently no thread is assigned */
-    TASKSTATUS_STARTUP                ,    
-    TASKSTATUS_RUNNING                ,    /**< the task has been successfully started and a thread is currently working the task */
-    TASKSTATUS_PAUSED                 ,    /**< the task is currently paused, startup had completed and work had started but subsequently the work was put on hold */
-    TASKSTATUS_RESUMED                ,    /**< same as 'TASKSTATUS_RUNNING' except that the task had been paused during its run cycle */
-    TASKSTATUS_STOPPED                ,    /**< the task has been stopped on external request instead of finishing a finite length task */
-    TASKSTATUS_FINISHED                    /**< the task has stopped because it finished a finite length task */
-};
-typedef enum ETaskStatus TTaskStatus;
+CDataNodeSerializableDataNode::CDataNodeSerializableDataNode( void )
+    : CDataNode()
+    , CIDataNodeSerializable()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP const char* 
-TaskStatusToTaskStatusString( TTaskStatus taskStatus );
+CDataNodeSerializableDataNode::CDataNodeSerializableDataNode( const CDataNodeSerializableDataNode& src )
+    : CDataNode( src )
+    , CIDataNodeSerializable( src )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP TTaskStatus 
-TaskStatusStringToTaskStatus( const CString& taskStatusStr );
+CDataNodeSerializableDataNode::~CDataNodeSerializableDataNode()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP TTaskStatus 
-TaskStatusStringToTaskStatus( const char* taskStatusStr );
+CDataNodeSerializableDataNode& 
+CDataNodeSerializableDataNode::operator=( const CDataNodeSerializableDataNode& src )
+{GUCEF_TRACE;
 
-inline bool
-TaskStatusIsAnError( TTaskStatus taskStatus ) { return taskStatus < TTaskStatus::TASKSTATUS_SETUP; }
+    if ( &src != this )
+    {
+        CDataNode::operator=( src );
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNodeSerializableDataNode::Serialize( CDataNode& domRootNode                        ,
+                                          const CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    domRootNode = *this;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNodeSerializableDataNode::Deserialize( const CDataNode& domRootNode                  ,
+                                            const CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+
+    CDataNode::operator=( domRootNode );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CDataNodeSerializableDataNode::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CDataNodeSerializableDataNode( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CDataNodeSerializableDataNode::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    return ClassTypeName;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,5 +134,3 @@ TaskStatusIsAnError( TTaskStatus taskStatus ) { return taskStatus < TTaskStatus:
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_TASKSTATUS_H ? */

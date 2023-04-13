@@ -39,8 +39,10 @@ set( HEADER_FILES
   include/gucefWEB_CModule.h
   include/gucefWEB_CStdParamParser.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
+  include/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.h
   include/gucefWEB_CTDataNodeSerializableMapHttpServerResource.h
   include/gucefWEB_CTReadableMapIndexHttpServerResource.h
+  include/gucefWEB_CTaskDataCollectionServerResource.h
   include/gucefWEB_CTaskManagerServerResource.h
   include/gucefWEB_CVfsHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
@@ -78,8 +80,10 @@ set( SOURCE_FILES
   src/gucefWEB_CIHttpServerRequestHandler.cpp
   src/gucefWEB_CModule.cpp
   src/gucefWEB_CStdParamParser.cpp
+  src/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.cpp
   src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp
   src/gucefWEB_CTReadableMapIndexHttpServerResource.cpp
+  src/gucefWEB_CTaskDataCollectionServerResource.cpp
   src/gucefWEB_CTaskManagerServerResource.cpp
   src/gucefWEB_CVfsHttpServerResource.cpp
   src/gucefWEB_CWebGlobal.cpp

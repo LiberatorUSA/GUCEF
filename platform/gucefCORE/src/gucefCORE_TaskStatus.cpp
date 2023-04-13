@@ -47,6 +47,24 @@ namespace CORE {
     if ( GUCEF_NULL == taskStatusStr )
         return ETaskStatus::TASKSTATUS_UNDEFINED;
 
+    if ( 0 == strcmp( taskStatusStr, "TASKTYPE_INVALID" ) )
+        return ETaskStatus::TASKSTATUS_TASKTYPE_INVALID;
+
+    if ( 0 == strcmp( taskStatusStr, "TASKDATA_INVALID" ) )
+        return ETaskStatus::TASKSTATUS_TASKDATA_INVALID;
+
+    if ( 0 == strcmp( taskStatusStr, "RESOURCE_NOT_AVAILABLE" ) )
+        return ETaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
+
+    if ( 0 == strcmp( taskStatusStr, "RESOURCE_LIMIT_REACHED" ) )
+        return ETaskStatus::TASKSTATUS_RESOURCE_LIMIT_REACHED;       
+
+    if ( 0 == strcmp( taskStatusStr, "SETUP" ) )
+        return ETaskStatus::TASKSTATUS_SETUP;
+
+    if ( 0 == strcmp( taskStatusStr, "SETUP_FAILED" ) )
+        return ETaskStatus::TASKSTATUS_SETUP_FAILED;
+
     if ( 0 == strcmp( taskStatusStr, "QUEUED" ) )
         return ETaskStatus::TASKSTATUS_QUEUED;
 
@@ -91,6 +109,12 @@ TaskStatusToTaskStatusString( TTaskStatus taskStatus )
 
     switch ( taskStatus )
     {
+        case ETaskStatus::TASKSTATUS_TASKTYPE_INVALID: return "TASKTYPE_INVALID";
+        case ETaskStatus::TASKSTATUS_TASKDATA_INVALID: return "TASKDATA_INVALID";
+        case ETaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE: return "RESOURCE_NOT_AVAILABLE";
+        case ETaskStatus::TASKSTATUS_RESOURCE_LIMIT_REACHED: return "RESOURCE_LIMIT_REACHED";
+        case ETaskStatus::TASKSTATUS_SETUP_FAILED: return "SETUP_FAILED";
+        case ETaskStatus::TASKSTATUS_SETUP: return "SETUP";
         case ETaskStatus::TASKSTATUS_QUEUED: return "QUEUED";
         case ETaskStatus::TASKSTATUS_STARTUP: return "STARTUP";
         case ETaskStatus::TASKSTATUS_STARTUP_FAILED: return "STARTUP_FAILED";

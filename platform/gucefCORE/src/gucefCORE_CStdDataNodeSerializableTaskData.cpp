@@ -60,6 +60,7 @@ CStdDataNodeSerializableTaskData::CStdDataNodeSerializableTaskData( void )
     , m_onlyUseExistingThreadPool( true )
     , m_taskCanBeQueued( true )
     , m_rawTaskData( GUCEF_DATATYPE_UNKNOWN )
+    , m_taskId( 0 )
 {GUCEF_TRACE;
 
 }
@@ -73,6 +74,7 @@ CStdDataNodeSerializableTaskData::CStdDataNodeSerializableTaskData( const CStdDa
     , m_onlyUseExistingThreadPool( src.m_onlyUseExistingThreadPool )
     , m_taskCanBeQueued( src.m_taskCanBeQueued )
     , m_rawTaskData( src.m_rawTaskData )
+    , m_taskId( src.m_taskId )
 {GUCEF_TRACE;
 
 }
@@ -90,6 +92,16 @@ CStdDataNodeSerializableTaskData&
 CStdDataNodeSerializableTaskData::operator=( const CStdDataNodeSerializableTaskData& src )
 {GUCEF_TRACE;
 
+    if ( &src != this )
+    {
+        CIDataNodeSerializableTaskData::operator=( src );
+        m_threadPoolName = src.m_threadPoolName;
+        m_taskTypeName = src.m_taskTypeName;
+        m_onlyUseExistingThreadPool = src.m_onlyUseExistingThreadPool;
+        m_taskCanBeQueued = src.m_taskCanBeQueued;
+        m_rawTaskData = src.m_rawTaskData;
+        m_taskId = src.m_taskId;
+    }
     return *this;
 }
 
@@ -113,6 +125,8 @@ CStdDataNodeSerializableTaskData::Serialize( CDataNode& domRootNode             
     totalSuccess = domRootNode.SetAttribute( "taskTypeName", m_taskTypeName ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "threadPoolName", m_threadPoolName ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "onlyUseExistingThreadPool", m_onlyUseExistingThreadPool ) && totalSuccess;    
+    totalSuccess = domRootNode.SetAttribute( "taskCanBeQueued", m_taskCanBeQueued ) && totalSuccess;        
+    totalSuccess = domRootNode.SetAttribute( "taskId", m_taskId ) && totalSuccess;        
        
     CDataNode* taskDataNode = domRootNode.FindOrAddChild( "taskData", GUCEF_DATATYPE_OBJECT );
     if ( GUCEF_NULL != taskDataNode )
@@ -137,6 +151,8 @@ CStdDataNodeSerializableTaskData::Deserialize( const CDataNode& domRootNode     
     m_threadPoolName = domRootNode.GetAttributeValueOrChildValueByName( "threadPoolName" ).AsString( m_threadPoolName, true );        
     m_taskTypeName = domRootNode.GetAttributeValueOrChildValueByName( "taskTypeName" ).AsString( m_taskTypeName, true );
     m_onlyUseExistingThreadPool = domRootNode.GetAttributeValueOrChildValueByName( "onlyUseExistingThreadPool" ).AsBool( m_onlyUseExistingThreadPool, true ); 
+    m_taskCanBeQueued = domRootNode.GetAttributeValueOrChildValueByName( "taskCanBeQueued" ).AsBool( m_taskCanBeQueued, true ); 
+    m_taskId = domRootNode.GetAttributeValueOrChildValueByName( "taskId" ).AsUInt32( m_taskId, true ); 
 
     // Check to see if we have a task data child
     // A decending class might want to handle this differently, for example by directly parsing into discrete fields, so its optional
@@ -186,11 +202,29 @@ CStdDataNodeSerializableTaskData::DeserializeTaskData( const CDataNode& domRootN
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CStdDataNodeSerializableTaskData::SetTaskTypeName( const CString& typeName )
+{GUCEF_TRACE;
+
+    m_taskTypeName = typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CString& 
 CStdDataNodeSerializableTaskData::GetTaskTypeName( void ) const
 {GUCEF_TRACE;
 
     return m_taskTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CStdDataNodeSerializableTaskData::SetThreadPoolName( const CString& poolName )
+{GUCEF_TRACE;
+
+    m_threadPoolName = poolName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,6 +238,15 @@ CStdDataNodeSerializableTaskData::GetThreadPoolName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStdDataNodeSerializableTaskData::SetOnlyUseExistingThreadPool( bool useExistingPoolOnly )
+{GUCEF_TRACE;
+
+    m_onlyUseExistingThreadPool = useExistingPoolOnly;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStdDataNodeSerializableTaskData::GetOnlyUseExistingThreadPool( void ) const
 {GUCEF_TRACE;
@@ -213,11 +256,38 @@ CStdDataNodeSerializableTaskData::GetOnlyUseExistingThreadPool( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStdDataNodeSerializableTaskData::SetTaskCanBeQueued( bool canBeQueued )
+{GUCEF_TRACE;
+
+    m_taskCanBeQueued = canBeQueued;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStdDataNodeSerializableTaskData::GetTaskCanBeQueued( void ) const
 {GUCEF_TRACE;
 
     return m_onlyUseExistingThreadPool;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CStdDataNodeSerializableTaskData::SetTaskId( UInt32 taskId )
+{GUCEF_TRACE;
+
+    m_taskId = taskId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CStdDataNodeSerializableTaskData::GetTaskId( void ) const
+{GUCEF_TRACE;
+
+    return m_taskId;
 }
 
 /*-------------------------------------------------------------------------*/

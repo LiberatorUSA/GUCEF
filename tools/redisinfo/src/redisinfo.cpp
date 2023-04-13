@@ -376,55 +376,55 @@ RedisInfoService::ConnectHttpRouting( WEB::CIHTTPServerRouter& router )
     if ( !m_settings.retainRedisInfo )
         return true;
                                                                                      
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdClusterInfoRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdClusterInfo, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdClusterInfoRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdClusterInfo, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/cluster/info", cmdClusterInfoRsc );
     m_httpResources.push_back( cmdClusterInfoRsc );
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCommandStatsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCommandstats, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCommandStatsRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCommandstats, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/commandstats", cmdInfoCommandStatsRsc );
     m_httpResources.push_back( cmdInfoCommandStatsRsc );
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoMemoryRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoMemory, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoMemoryRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoMemory, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/memory", cmdInfoMemoryRsc );
     m_httpResources.push_back( cmdInfoMemoryRsc );
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoReplicationRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoReplication, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoReplicationRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoReplication, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/replication", cmdInfoReplicationRsc );
     m_httpResources.push_back( cmdInfoReplicationRsc );
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoPersistenceRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoPersistence, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoPersistenceRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoPersistence, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/persistence", cmdInfoPersistenceRsc );
     m_httpResources.push_back( cmdInfoPersistenceRsc );    
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoStatsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoStats, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoStatsRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoStats, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/stats", cmdInfoStatsRsc );
     m_httpResources.push_back( cmdInfoStatsRsc ); 
     
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoClientsRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoClients, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoClientsRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoClients, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/clients", cmdInfoClientsRsc );
     m_httpResources.push_back( cmdInfoClientsRsc ); 
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCpuRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCpu, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoCpuRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoCpu, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/cpu", cmdInfoCpuRsc );
     m_httpResources.push_back( cmdInfoCpuRsc ); 
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoKeyspaceRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoKeyspace, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdInfoKeyspaceRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_cmdInfoKeyspace, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/info/keyspace", cmdInfoKeyspaceRsc );
     m_httpResources.push_back( cmdInfoKeyspaceRsc ); 
     
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdXinfoStreamIndexRsc( ( new TStringToValueListMapHttpResource( "Streams", "streamName", GUCEF_NULL, &m_cmdXinfoStreamMap, &m_lock, false ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr cmdXinfoStreamIndexRsc( ( GUCEF_NEW TStringToValueListMapHttpResource( "Streams", "streamName", GUCEF_NULL, &m_cmdXinfoStreamMap, &m_lock, false ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/api/command/xinfo/stream", cmdXinfoStreamIndexRsc ); 
     m_httpResources.push_back( cmdXinfoStreamIndexRsc ); 
                                      
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr statusRsc( ( new GUCEF::WEB::CConfigurableHttpServerResource( &m_status, true, false, &m_lock ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr statusRsc( ( GUCEF_NEW GUCEF::WEB::CConfigurableHttpServerResource( &m_status, true, false, &m_lock ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/status", statusRsc );
     m_httpResources.push_back( statusRsc ); 
 
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr redisClusterNodesIndexRsc( ( new TUInt32ToRedisNodeMapHttpResource( "RedisClusterNodes", "startSlot", GUCEF_NULL, &m_redisNodesMap, &m_lock, false ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr redisClusterNodesIndexRsc( ( GUCEF_NEW TUInt32ToRedisNodeMapHttpResource( "RedisClusterNodes", "startSlot", GUCEF_NULL, &m_redisNodesMap, &m_lock, false ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/nodes", redisClusterNodesIndexRsc ); 
     m_httpResources.push_back( redisClusterNodesIndexRsc );
                                      
-    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr hashSlotHashStringIndexRsc( ( new TUInt32ToStringSetMapHttpResource( "HashSlotHashStrings", "hashSlot", GUCEF_NULL, &m_hashSlotOriginStrMap, &m_lock, false ) )->CreateSharedPtr() );
+    GUCEF::WEB::CIHTTPServerRouter::THTTPServerResourcePtr hashSlotHashStringIndexRsc( ( GUCEF_NEW TUInt32ToStringSetMapHttpResource( "HashSlotHashStrings", "hashSlot", GUCEF_NULL, &m_hashSlotOriginStrMap, &m_lock, false ) )->CreateSharedPtr() );
     router.SetResourceMapping( "/v1/clusters/" + m_settings.clusterName + "/redis/hashslothashstrings", hashSlotHashStringIndexRsc ); 
     m_httpResources.push_back( hashSlotHashStringIndexRsc );
 

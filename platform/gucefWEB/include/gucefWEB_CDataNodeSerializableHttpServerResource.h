@@ -109,6 +109,8 @@ class CDataNodeSerializableHttpServerResource : public CCodecBasedHTTPServerReso
                  CORE::CIDataNodeSerializable* serializable                   ,
                  MT::CILockable* serializableLock                             );
 
+    void Unlink( void );
+    
     virtual bool Serialize( const CString& resourcePath         ,
                             CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
@@ -119,6 +121,8 @@ class CDataNodeSerializableHttpServerResource : public CCodecBasedHTTPServerReso
                                            const CString& representation ,
                                            bool isDeltaUpdateOnly        ) GUCEF_VIRTUAL_OVERRIDE;
 
+    CORE::CIDataNodeSerializable* GetSerializable( void );
+    
     protected:
 
     const CORE::CDataNodeSerializableSettings* m_serializerOptions;

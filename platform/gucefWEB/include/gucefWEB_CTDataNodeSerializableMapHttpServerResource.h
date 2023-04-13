@@ -445,7 +445,7 @@ CTDataNodeSerializableMapHttpServerResource< CollectionKeyType, SerializableObj 
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

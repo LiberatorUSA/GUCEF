@@ -243,7 +243,7 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+TTaskStatus 
 CTaskManager::QueueTask( const CString& threadPoolName     ,
                          const CString& taskType           ,
                          CICloneable* taskData             ,
@@ -261,12 +261,12 @@ CTaskManager::QueueTask( const CString& threadPoolName     ,
                                       taskObserver              ,
                                       assumeOwnershipOfTaskData );
     }
-    return false;
+    return TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TTaskStatus
 CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
                                 CTaskConsumerPtr* outTaskConsumer        ,
                                 CObserver* taskObserver                  ,
@@ -274,13 +274,13 @@ CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == taskData )
-        return false;
+        return TTaskStatus::TASKSTATUS_TASKDATA_INVALID;
     
     const CString& threadPoolName = taskData->GetThreadPoolName();
     const CString& taskType = taskData->GetTaskTypeName();
 
     ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, !taskData->GetOnlyUseExistingThreadPool() );        
-    if ( threadPool.IsNULL() )
+    if ( !threadPool.IsNULL() )
     {
         // If we can queue we should always queue
         // worker threads will just pick up the work as capacity becomes available
@@ -300,12 +300,18 @@ CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
                                           assumeOwnershipOfTaskData );
         }
     }
-    return false;
+    else
+    {
+        if ( taskData->GetOnlyUseExistingThreadPool() )
+            return TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
+        else
+            return TTaskStatus::TASKSTATUS_RESOURCE_LIMIT_REACHED;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TTaskStatus
 CTaskManager::StartOrQueueTask( const CDataNode& taskData         ,
                                 CTaskConsumerPtr* outTaskConsumer ,
                                 CObserver* taskObserver           )
@@ -320,16 +326,16 @@ CTaskManager::StartOrQueueTask( const CDataNode& taskData         ,
         {
             // Place the task data in the dedicated task data object instead of a generic one
             if ( taskDataObj->Deserialize( taskData, defaultSerializationSettings ) )
-            {
-                GUCEF_DELETE genericTaskData;                
+            {                
                 GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Successfully deserialized custom task properties from provide DOM for task with type " + genericTaskData->GetTaskTypeName() );
+                GUCEF_DELETE genericTaskData;                
                 return StartOrQueueTask( taskDataObj.GetPointerAlways(), outTaskConsumer, taskObserver, false );
             }
             else
             {
                 GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Unable to deserialize custom task properties from provide DOM for task with type " + genericTaskData->GetTaskTypeName() );
                 GUCEF_DELETE genericTaskData;
-                return false;
+                return TTaskStatus::TASKSTATUS_TASKDATA_INVALID;
             }
         }
         else
@@ -344,13 +350,13 @@ CTaskManager::StartOrQueueTask( const CDataNode& taskData         ,
     {
         GUCEF_DELETE genericTaskData;
         GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Unable to derive standard task properties from provide DOM" ); 
-        return false;
+        return TTaskStatus::TASKSTATUS_TASKDATA_INVALID;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+TTaskStatus 
 CTaskManager::StartTask( const CString& threadPoolName     ,
                          const CString& taskType           ,
                          CICloneable* taskData             ,
@@ -358,18 +364,18 @@ CTaskManager::StartTask( const CString& threadPoolName     ,
 {GUCEF_TRACE;
 
     ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
-    if ( threadPool.IsNULL() )
+    if ( !threadPool.IsNULL() )
     {
         return threadPool->StartTask( taskType        ,
                                       taskData        ,
                                       outTaskConsumer );
     }
-    return false;
+    return TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TTaskStatus
 CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
                                      const CString& taskType           ,
                                      CICloneable* taskData             ,
@@ -377,18 +383,18 @@ CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
 {GUCEF_TRACE;
 
     ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
-    if ( threadPool.IsNULL() )
+    if ( !threadPool.IsNULL() )
     {
         return threadPool->StartTaskIfNoneExists( taskType        ,
                                                   taskData        ,
                                                   outTaskConsumer );
     }
-    return false;
+    return TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TTaskStatus
 CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
                                      const CString& taskType           ,
                                      const CDataNode& taskData         ,
@@ -396,13 +402,13 @@ CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName     ,
 {GUCEF_TRACE;
 
     ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, false );        
-    if ( threadPool.IsNULL() )
+    if ( !threadPool.IsNULL() )
     {
         return threadPool->StartTaskIfNoneExists( taskType        ,
                                                   taskData        ,
                                                   outTaskConsumer );
     }
-    return false;
+    return TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -148,6 +148,7 @@ set( HEADER_FILES
   include/gucefCORE_CDStoreBinaryCodec.h
   include/gucefCORE_CDataNodeBinarySerializer.h
   include/gucefCORE_CDataNodeDefinition.h
+  include/gucefCORE_CDataNodeSerializableDataNode.h
   include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
@@ -383,6 +384,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDStoreBinaryCodec.cpp
   src/gucefCORE_CDataNodeBinarySerializer.cpp
   src/gucefCORE_CDataNodeDefinition.cpp
+  src/gucefCORE_CDataNodeSerializableDataNode.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp

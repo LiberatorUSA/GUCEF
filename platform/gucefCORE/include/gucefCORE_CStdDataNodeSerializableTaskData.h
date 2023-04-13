@@ -83,6 +83,8 @@ class GUCEF_CORE_PUBLIC_CPP CStdDataNodeSerializableTaskData : public CIDataNode
     virtual bool DeserializeTaskData( const CDataNode& domRootNode                  ,
                                       const CDataNodeSerializableSettings& settings );
 
+    void SetTaskTypeName( const CString& typeName );
+
     /**
      *  Provides the name of the task type to which this data applies
      *  In order for a task to use data defined such as this it needs to be provided to a consumer of the correct type
@@ -90,11 +92,15 @@ class GUCEF_CORE_PUBLIC_CPP CStdDataNodeSerializableTaskData : public CIDataNode
      */
     virtual const CString& GetTaskTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SetThreadPoolName( const CString& poolName );
+
     /**
      *  Provides the name of the thread pool where this task is desired to be executed
      *  If no name is provided via an empty string the assumption will be made that the default thread pool is sufficient
      */
     virtual const CString& GetThreadPoolName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    void SetOnlyUseExistingThreadPool( bool useExistingPoolOnly );
 
     /**
      *  Provides a flag whether it is Ok from a requestor standpoint to dynamically create a new threadpool if the referenced pool does not yet exist
@@ -102,11 +108,21 @@ class GUCEF_CORE_PUBLIC_CPP CStdDataNodeSerializableTaskData : public CIDataNode
      */
     virtual bool GetOnlyUseExistingThreadPool( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SetTaskCanBeQueued( bool canBeQueued );
+
     /**
      *  Provides a flag whether it is Ok from a requestor standpoint to queue the work until a thread is available to perform the work.
      *  If this is not the case it will depend on threadpool / task manager settings whether an immediate execution of the work will be permitted
      */
     virtual bool GetTaskCanBeQueued( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    void SetTaskId( UInt32 taskId );
+
+    /**
+     *  Provides the ID of the task.
+     *  A value of 0 means uninitialized / not associated with a task (as of yet)
+     */
+    virtual UInt32 GetTaskId( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -119,6 +135,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdDataNodeSerializableTaskData : public CIDataNode
     bool m_onlyUseExistingThreadPool;
     bool m_taskCanBeQueued;
     CDataNode m_rawTaskData;
+    UInt32 m_taskId;
 };
 
 /*-------------------------------------------------------------------------//

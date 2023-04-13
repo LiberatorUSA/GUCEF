@@ -113,7 +113,11 @@ void
 CTaskConsumer::SetIsInPhasedSetup( bool inPhasedSetup )
 {GUCEF_TRACE;
 
-    m_inPhasedSetup = inPhasedSetup;
+    if ( inPhasedSetup )
+    {
+        m_taskStatus = TTaskStatus::TASKSTATUS_SETUP;
+    }
+    m_inPhasedSetup = inPhasedSetup;    
 }
 
 /*-------------------------------------------------------------------------*/

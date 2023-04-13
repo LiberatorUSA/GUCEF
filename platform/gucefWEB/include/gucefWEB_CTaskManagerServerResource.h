@@ -76,6 +76,11 @@
 #define GUCEF_WEB_CDATANODESERIALIZABLEHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CDATANODESERIALIZABLEHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_WEB_CTASKDATACOLLECTIONSERVERRESOURCE_H
+#include "gucefWEB_CTaskDataCollectionServerResource.h"
+#define GUCEF_WEB_CTASKDATACOLLECTIONSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTASKDATACOLLECTIONSERVERRESOURCE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -214,6 +219,7 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
     TTaskInfoRawPtrMapRscPtr m_globalTaskIndexRsc;
     TThreadInfoRawPtrMap m_globalThreadIndex;
     TThreadInfoRawPtrMapRscPtr m_globalThreadIndexRsc;
+    CTaskDataCollectionServerResourcePtr m_globalTaskData;
     TStringToDataNodeSerializableTaskDataPtrMap m_globalTaskDataTemplates;
     TStringToDataNodeSerializableTaskDataPtrMapRscPtr m_globalTaskDataTemplatesRsc;
     CIHTTPServerRouter* m_router;

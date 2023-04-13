@@ -136,6 +136,7 @@ CDataNodeSerializableHttpServerResource::CDataNodeSerializableHttpServerResource
 CDataNodeSerializableHttpServerResource::~CDataNodeSerializableHttpServerResource()
 {GUCEF_TRACE;
 
+    Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -149,6 +150,17 @@ CDataNodeSerializableHttpServerResource::LinkTo( const CORE::CDataNodeSerializab
     m_serializerOptions = serializerOptions;
     m_serializable = serializable;
     m_serializableLock = serializableLock;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDataNodeSerializableHttpServerResource::Unlink( void )
+{GUCEF_TRACE;
+
+    m_serializerOptions = GUCEF_NULL;
+    m_serializable = GUCEF_NULL;
+    m_serializableLock = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -225,6 +237,15 @@ CDataNodeSerializableHttpServerResource::Deserialize( const CString& resourcePat
     if ( GUCEF_NULL != m_serializable )
         return m_serializable->Deserialize( input, *serializerOptions ) ? TDeserializeState::DESERIALIZESTATE_SUCCEEDED : TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
     return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CIDataNodeSerializable* 
+CDataNodeSerializableHttpServerResource::GetSerializable( void )
+{GUCEF_TRACE;
+    
+    return m_serializable;
 }
 
 /*-------------------------------------------------------------------------//

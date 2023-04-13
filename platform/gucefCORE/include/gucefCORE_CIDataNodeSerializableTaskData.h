@@ -100,6 +100,12 @@ class GUCEF_CORE_PUBLIC_CPP CIDataNodeSerializableTaskData : public CIDataNodeSe
      *  If this is not the case it will depend on threadpool / task manager settings whether an immediate execution of the work will be permitted
      */
     virtual bool GetTaskCanBeQueued( void ) const = 0;
+
+    /**
+     *  Provides the ID of the task.
+     *  A value of 0 means uninitialized / not associated with a task (as of yet)
+     */
+    virtual UInt32 GetTaskId( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------*/

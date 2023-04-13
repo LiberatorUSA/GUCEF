@@ -162,6 +162,10 @@ CTaskManagerServerResource::LinkResources( void )
     m_globalThreadIndexRsc->SetIsCreateSupported( false );
     m_globalThreadIndexRsc->SetIsDeserializeSupported( false, false );
     m_globalThreadIndexRsc->SetIsDeserializeSupported( false, true ); 
+    m_globalTaskData = CTaskDataCollectionServerResourcePtr( GUCEF_NEW CTaskDataCollectionServerResource() );
+    m_globalTaskData->SetIsCreateSupported( true );
+    m_globalTaskData->SetIsDeserializeSupported( false, false );
+    m_globalTaskData->SetIsDeserializeSupported( false, true );
     m_globalTaskDataTemplatesRsc = TStringToDataNodeSerializableTaskDataPtrMapRscPtr( GUCEF_NEW TStringToDataNodeSerializableTaskDataPtrMapRsc() );
     m_globalTaskDataTemplatesRsc->LinkTo( "templates", "taskTypeName", GUCEF_NULL, &m_globalTaskDataTemplates, &m_rwLock, false, true );
     m_globalTaskDataTemplatesRsc->SetIsCreateSupported( false );
@@ -465,6 +469,7 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
     // "/v1/taskmanager/threadpools/default/threads/"               <- thread id index Or list of ThreadInfo objects specific to the given thread pool
     // "/v1/taskmanager/threadpools/default/tasks/"                 <- task id index Or list of TaskInfo objects specific to the given thread pool
     // "/v1/taskmanager/taskdata/templates/"                        <- default objects of serializable task data
+    // "/v1/taskmanager/taskdata/                                   <- endpoint for posting data of new tasks
 
     m_router = &webRouter;
     if ( GUCEF_NULL != m_router )
@@ -473,7 +478,8 @@ CTaskManagerServerResource::ConnectHttpRouting( CIHTTPServerRouter& webRouter )
         totalSuccess = m_router->SetResourceMapping( m_rootPath, m_taskManagerInfoRsc ) && totalSuccess; 
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "tasks", m_globalTaskIndexRsc ) && totalSuccess;
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "threads", m_globalThreadIndexRsc ) && totalSuccess;
-        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools", m_threadPoolInfoMapRsc ) && totalSuccess;
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "threadpools", m_threadPoolInfoMapRsc ) && totalSuccess;        
+        totalSuccess = m_router->SetResourceMapping( m_rootPath + "taskdata", m_globalTaskData ) && totalSuccess;
         totalSuccess = m_router->SetResourceMapping( m_rootPath + "taskdata/templates", m_globalTaskDataTemplatesRsc ) && totalSuccess;
         return totalSuccess && UpdateAllInfo();
     }
@@ -492,6 +498,7 @@ CTaskManagerServerResource::DisconnectHttpRouting( CIHTTPServerRouter& webRouter
     totalSuccess = m_router->RemoveResourceMapping( m_globalTaskIndexRsc ) && totalSuccess; 
     totalSuccess = m_router->RemoveResourceMapping( m_globalThreadIndexRsc ) && totalSuccess; 
     totalSuccess = m_router->RemoveResourceMapping( m_threadPoolInfoMapRsc ) && totalSuccess;     
+    totalSuccess = m_router->RemoveResourceMapping( m_globalTaskData ) && totalSuccess;     
     totalSuccess = m_router->RemoveResourceMapping( m_globalTaskDataTemplatesRsc ) && totalSuccess;     
     return totalSuccess;
 }

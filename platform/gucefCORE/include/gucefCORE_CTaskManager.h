@@ -124,12 +124,12 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
      *  @param assumeOwnershipOfTaskData    Whether the taskData given (if any) needs a private copy 
      *                                      or whether the task manager can assume ownership
      */
-    bool QueueTask( const CString& threadPoolName                  ,
-                    const CString& taskType                        ,
-                    CICloneable* taskData = GUCEF_NULL             ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
-                    CObserver* taskObserver = GUCEF_NULL           ,
-                    bool assumeOwnershipOfTaskData = false         );
+    TTaskStatus QueueTask( const CString& threadPoolName                  ,
+                           const CString& taskType                        ,
+                           CICloneable* taskData = GUCEF_NULL             ,
+                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                           CObserver* taskObserver = GUCEF_NULL           ,
+                           bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -138,46 +138,46 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
      *  @param assumeOwnershipOfTaskData    Whether the taskData given (if any) needs a private copy 
      *                                      or whether the task manager can assume ownership
      */
-    bool StartOrQueueTask( CIDataNodeSerializableTaskData* taskData       ,
-                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
-                           CObserver* taskObserver = GUCEF_NULL           ,
-                           bool assumeOwnershipOfTaskData = false         );
+    TTaskStatus StartOrQueueTask( CIDataNodeSerializableTaskData* taskData       ,
+                                  CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                                  CObserver* taskObserver = GUCEF_NULL           ,
+                                  bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Attempts to distill a task description from the given data node based representation
      *  
      */
-    bool StartOrQueueTask( const CDataNode& taskData                      ,
-                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
-                           CObserver* taskObserver = GUCEF_NULL           );
+    TTaskStatus StartOrQueueTask( const CDataNode& taskData                      ,
+                                  CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                                  CObserver* taskObserver = GUCEF_NULL           );
 
     /**
      *  Immediatly starts executing a task using the task
      *  information provided. Based on the provided information
      *  a task consumer will be constructed to actually carry out the task
      */
-    bool StartTask( const CString& threadPoolName                  ,
-                    const CString& taskType                        ,
-                    CICloneable* taskData = GUCEF_NULL             ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+    TTaskStatus StartTask( const CString& threadPoolName                  ,
+                           const CString& taskType                        ,
+                           CICloneable* taskData = GUCEF_NULL             ,
+                           CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Checks if a task of the given type already exists, if yes nothing new happens
      *  If no a new task one would be started right away
      */
-    bool StartTaskIfNoneExists( const CString& threadPoolName                  ,
-                                const CString& taskType                        ,
-                                CICloneable* taskData = GUCEF_NULL             ,
-                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+    TTaskStatus StartTaskIfNoneExists( const CString& threadPoolName                  ,
+                                       const CString& taskType                        ,
+                                       CICloneable* taskData = GUCEF_NULL             ,
+                                       CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Checks if a task of the given type already exists, if yes nothing new happens
      *  If no a new task one would be started right away
      */
-    bool StartTaskIfNoneExists( const CString& threadPoolName                  ,
-                                const CString& taskType                        ,
-                                const CDataNode& taskData                      ,
-                                CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
+    TTaskStatus StartTaskIfNoneExists( const CString& threadPoolName                  ,
+                                       const CString& taskType                        ,
+                                       const CDataNode& taskData                      ,
+                                       CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
