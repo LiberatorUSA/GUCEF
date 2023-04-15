@@ -231,7 +231,7 @@ CTBasicSharedPtr< BaseClassType, LockType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Create( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -249,7 +249,7 @@ CTBasicSharedPtr< BaseClassType, LockType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CreateUsingClassTypeName( const CString& classTypeName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
@@ -265,7 +265,7 @@ void
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::DestroyObject( BaseClassType* factoryProduct, const CString& classTypeName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
@@ -286,7 +286,7 @@ void
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::ObtainKeySet( TKeySet& keySet ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.begin() );
     while ( i != m_concreteFactoryList.end() )
     {
@@ -302,8 +302,9 @@ bool
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::IsConstructible( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
-    return m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
+    bool canBeConstructed = m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
+    return canBeConstructed;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -313,8 +314,9 @@ bool
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::IsClassConstructible( const CString& classTypeName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
-    return m_concreteFactoryTypeMap.find( classTypeName ) != m_concreteFactoryTypeMap.end();
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
+    bool canBeConstructed = m_concreteFactoryTypeMap.find( classTypeName ) != m_concreteFactoryTypeMap.end();
+    return canBeConstructed;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -324,7 +326,7 @@ CString
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::GetConcreteClassTypeNameForSelectionCriterea( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -341,7 +343,7 @@ SelectionCriteriaType
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::GetSelectionCritereaForConcreteClassTypeName( const CString& classTypeName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TFactoryList::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
@@ -359,7 +361,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::RegisterCon
                                                                                               TConcreteFactory* concreteFactory         )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     m_concreteFactoryList[ selectedType ] = concreteFactory;
     m_concreteFactoryTypeMap[ concreteFactory->GetConcreteClassTypeName() ] = selectedType;
 
@@ -368,6 +370,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::RegisterCon
     if ( m_useEventing )
     {
         TKeyContainer keyContainer( selectedType );
+        lock.EarlyUnlock();
         NotifyObservers( ConcreteFactoryRegisteredEvent, &keyContainer );
     }
 }
@@ -379,7 +382,7 @@ void
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterConcreteFactory( const SelectionCriteriaType& selectedType )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     typename TFactoryList::iterator i = m_concreteFactoryList.find( selectedType );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -397,6 +400,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterC
         if ( m_useEventing )
         {
             TKeyContainer keyContainer( selectedType );
+            lock.EarlyUnlock();
             NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
         }
     }
@@ -409,7 +413,7 @@ void
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterAllConcreteFactories( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
     while ( !m_concreteFactoryList.empty() )
     {
         typename TFactoryList::iterator i = m_concreteFactoryList.begin();

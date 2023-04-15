@@ -290,8 +290,22 @@ CTaskDelegator::OnThreadCycle( void* taskdata )
     {
         m_taskConsumer = taskConsumer;
 
-        ProcessTask( taskConsumer ,
-                     m_taskData   );
+        
+        bool attemptTimedOut = false;
+        do
+        {
+            attemptTimedOut = false;
+            try
+            {
+                ProcessTask( taskConsumer ,
+                             m_taskData   );
+            }
+            catch ( const timeout_exception& )
+            {
+                attemptTimedOut = true;
+            }
+        }
+        while ( attemptTimedOut );
 
         TaskCleanup( taskConsumer ,
                      m_taskData   );
@@ -356,51 +370,59 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
             // cycle the task as long as it is not "done"
             while ( !IsDeactivationRequested() )
             {
-                // Perform a cycle directly and ask the task if we are done
-                if ( taskConsumer->OnTaskCycle( taskData ) )
+                try
                 {
-                    // Task says we are done
-                    taskWasFinished = true;
-                    break;
-                }
-
-                if ( m_sendRegularPulses || m_immediatePulseTickets > 0 )
-                    SendDriverPulse( *pulseGenerator.GetPointerAlways() );
-
-                if ( m_immediatePulseTickets > 0 )
-                {
-                    --m_immediatePulseTickets;
-                }
-                else
-                {
-                    if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
+                    // Perform a cycle directly and ask the task if we are done
+                    if ( taskConsumer->OnTaskCycle( taskData ) )
                     {
-                        UInt32 timeLeftToWait = m_taskRequestedCycleDelayInMs; 
-                        while ( !IsDeactivationRequested() && timeLeftToWait >= m_minimalCycleDeltaInMilliSecs )
-                        {
-                            UInt32 elapsedWaitTimeInMilliSecs = 0;
-                            pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs, timeLeftToWait, &elapsedWaitTimeInMilliSecs  );
+                        // Task says we are done
+                        taskWasFinished = true;
+                        break;
+                    }
 
-                            Int64 timeLeftToWaitResult = ((Int64)timeLeftToWait) - elapsedWaitTimeInMilliSecs;
-                            if ( timeLeftToWaitResult < m_minimalCycleDeltaInMilliSecs )
-                                timeLeftToWait = 0;
-                            else
-                                timeLeftToWait = (UInt32) timeLeftToWaitResult;
+                    if ( m_sendRegularPulses || m_immediatePulseTickets > 0 )
+                        SendDriverPulse( *pulseGenerator.GetPointerAlways() );
 
-                            // While we dont trigger OnTaskCycle for an extended period, we do still send out out driver pulses
-                            if ( m_sendRegularPulses )
-                                SendDriverPulse( *pulseGenerator.GetPointerAlways() );
-
-                            // Any immediate pulse requests cause us to bust out of the extended cycle delay as it counts as an override
-                            if ( m_immediatePulseTickets > 0 )
-                                break;
-                        }
-                        m_taskRequestedCycleDelayInMs = 0;
+                    if ( m_immediatePulseTickets > 0 )
+                    {
+                        --m_immediatePulseTickets;
                     }
                     else
                     {
-                        pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                        if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
+                        {
+                            UInt32 timeLeftToWait = m_taskRequestedCycleDelayInMs; 
+                            while ( !IsDeactivationRequested() && timeLeftToWait >= m_minimalCycleDeltaInMilliSecs )
+                            {
+                                UInt32 elapsedWaitTimeInMilliSecs = 0;
+                                pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs, timeLeftToWait, &elapsedWaitTimeInMilliSecs  );
+
+                                Int64 timeLeftToWaitResult = ((Int64)timeLeftToWait) - elapsedWaitTimeInMilliSecs;
+                                if ( timeLeftToWaitResult < m_minimalCycleDeltaInMilliSecs )
+                                    timeLeftToWait = 0;
+                                else
+                                    timeLeftToWait = (UInt32) timeLeftToWaitResult;
+
+                                // While we dont trigger OnTaskCycle for an extended period, we do still send out out driver pulses
+                                if ( m_sendRegularPulses )
+                                    SendDriverPulse( *pulseGenerator.GetPointerAlways() );
+
+                                // Any immediate pulse requests cause us to bust out of the extended cycle delay as it counts as an override
+                                if ( m_immediatePulseTickets > 0 )
+                                    break;
+                            }
+                            m_taskRequestedCycleDelayInMs = 0;
+                        }
+                        else
+                        {
+                            pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                        }
                     }
+                }
+                catch ( const timeout_exception& )
+                {                
+                    // if we timed out whatever async thing we were trying to do, 
+                    // just try again next round
                 }
             }
 

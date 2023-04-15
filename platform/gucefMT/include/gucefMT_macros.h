@@ -102,20 +102,17 @@
 
 /*-------------------------------------------------------------------------*/
 
+
+#define GUCEF_MT_TINY_LOCK_TIMEOUT              1
+#define GUCEF_MT_SHORT_LOCK_TIMEOUT             5
+#define GUCEF_MT_MEDIUM_LOCK_TIMEOUT            25
+#define GUCEF_MT_LONG_LOCK_TIMEOUT              100
+#define GUCEF_MT_LONGER_LOCK_TIMEOUT            250
+#define GUCEF_MT_VERY_LONG_LOCK_TIMEOUT         1000
 #define GUCEF_MT_INFINITE_LOCK_TIMEOUT          GUCEF_MT_UINT32MAX
-#define GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS     GUCEF_MT_INFINITE_LOCK_TIMEOUT
+
+#define GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS     GUCEF_MT_VERY_LONG_LOCK_TIMEOUT
 
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_MACROS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 29-09-2006 :
-       - Dinand: reduced macros in this file.
-
------------------------------------------------------------------------------*/

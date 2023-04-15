@@ -277,7 +277,7 @@ CTaskManagerServerResource::OnGlobalTaskConsumerFactoryRegistered( CORE::CNotifi
     {
         const CORE::CString& factoryType = eData->GetData();        
         
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
         m_taskManagerInfo.GetTaskConsumerFactoryTypes().insert( factoryType );
     }
 }
@@ -295,7 +295,7 @@ CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered( CORE::CNoti
     {
         const CORE::CString& factoryType = eData->GetData();        
         
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
         m_taskManagerInfo.GetTaskConsumerFactoryTypes().erase( factoryType );
     }
 }
@@ -314,7 +314,7 @@ CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered( CORE::CNotifier* 
         const CORE::CString& factoryType = eData->GetData();        
         CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
         m_taskManagerInfo.GetTaskDataFactoryTypes().insert( factoryType );                
         m_globalTaskDataTemplates[ factoryType ] = taskManager.CreateCustomTaskDataForTaskTypeIfAvailable( factoryType );
     }
@@ -333,7 +333,7 @@ CTaskManagerServerResource::OnGlobalTaskDataFactoryUnregistered( CORE::CNotifier
     {
         const CORE::CString& factoryType = eData->GetData();        
         
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
         m_taskManagerInfo.GetTaskDataFactoryTypes().erase( factoryType );
     }
 }
@@ -348,7 +348,7 @@ CTaskManagerServerResource::OnThreadPoolCreation( CORE::CNotifier* notifier    ,
 
     if ( GUCEF_NULL != m_router )
     {
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
         if ( GUCEF_NULL != m_router )
         {        
@@ -372,7 +372,7 @@ CTaskManagerServerResource::OnThreadPoolDestruction( CORE::CNotifier* notifier  
 
     if ( GUCEF_NULL != m_router )
     {
-        MT::CScopeWriterLock writeLock( m_rwLock );
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
         if ( GUCEF_NULL != m_router )
         {
@@ -402,7 +402,7 @@ CTaskManagerServerResource::OnThreadUpdateEvent( CORE::CNotifier* notifier    ,
         CORE::CString threadPoolName;
         if ( taskManager.GetThreadInfo( threadId, threadInfo, threadPoolName ) )
         {
-            MT::CScopeWriterLock writeLock( m_rwLock );
+            MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
             TThreadPoolMetaDataMap::iterator i = m_threadPoolMetaDataMap.find( threadPoolName );
             if ( i == m_threadPoolMetaDataMap.end() )
@@ -437,7 +437,7 @@ CTaskManagerServerResource::OnTaskUpdateEvent( CORE::CNotifier* notifier    ,
         CORE::CString threadPoolName;
         if ( taskManager.GetTaskInfo( taskId, taskInfo, threadPoolName, false, GUCEF_NULL ) )
         {
-            MT::CScopeWriterLock writeLock( m_rwLock );
+            MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
             TThreadPoolMetaDataMap::iterator i = m_threadPoolMetaDataMap.find( threadPoolName );
             if ( i == m_threadPoolMetaDataMap.end() )
@@ -512,7 +512,7 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );
 
-    MT::CScopeWriterLock writeLock( m_rwLock );
+    MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     CORE::CThreadPoolInfo& threadPoolInfo = m_threadPoolInfoMap[ poolName ];
     CThreadPoolMetaData& threadPoolMetaData = m_threadPoolMetaDataMap[ poolName ];    
@@ -566,7 +566,7 @@ CTaskManagerServerResource::UpdateAllInfo( void )
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
     bool totalSuccess = true;
 
-    MT::CScopeWriterLock writeLock( m_rwLock );
+    MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     totalSuccess = taskManager.GetInfo( m_taskManagerInfo ) && totalSuccess;   
     totalSuccess = taskManager.GetAllThreadPoolInfo( m_threadPoolInfoMap ) && totalSuccess;  

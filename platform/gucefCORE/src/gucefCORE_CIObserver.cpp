@@ -72,7 +72,7 @@ CIObserver::operator=( const CIObserver& src )
 
 /*-------------------------------------------------------------------------*/
 
-CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver )
+CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver, UInt32 lockWaitTimeoutInMs )
     : m_lockableObserver( lockableObserver )
     , m_isLocked( false )
 {GUCEF_TRACE;
@@ -80,19 +80,25 @@ CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver )
     if ( GUCEF_NULL != lockableObserver )
     {
         GUCEF_CHECKACCESS( lockableObserver, sizeof( CIObserver ) );
-        m_isLocked = lockableObserver->NotificationLock();
+        MT::TLockStatus lockStatus = m_lockableObserver->NotificationLock( lockWaitTimeoutInMs );
+        m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+             throw timeout_exception();  
     }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CObserverScopeLock::CObserverScopeLock( const CIObserver& lockableObserver )
+CObserverScopeLock::CObserverScopeLock( const CIObserver& lockableObserver, UInt32 lockWaitTimeoutInMs )
     : m_lockableObserver( &lockableObserver )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableObserver );        
-    m_isLocked = m_lockableObserver->NotificationLock();
+    MT::TLockStatus lockStatus = m_lockableObserver->NotificationLock( lockWaitTimeoutInMs );
+    m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+        throw timeout_exception(); 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -102,7 +108,7 @@ CObserverScopeLock::~CObserverScopeLock()
 
     if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
     {
-        m_isLocked = !m_lockableObserver->NotificationUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableObserver->NotificationUnlock() );
     }
 }
 
@@ -123,7 +129,7 @@ CObserverScopeLock::EarlyUnlock( void )
 
     if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
     {
-        m_isLocked = !m_lockableObserver->NotificationUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableObserver->NotificationUnlock() );
         return !m_isLocked;
     }
     return false;
@@ -131,24 +137,32 @@ CObserverScopeLock::EarlyUnlock( void )
 
 /*-------------------------------------------------------------------------*/
 
-CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver* lockableObserver )
+CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver* lockableObserver, UInt32 lockWaitTimeoutInMs )
     : m_lockableObserver( lockableObserver )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != lockableObserver )    
-        m_isLocked = m_lockableObserver->NotificationReadOnlyLock();
+    {
+        MT::TLockStatus lockStatus = m_lockableObserver->NotificationReadOnlyLock( lockWaitTimeoutInMs );
+        m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+             throw timeout_exception();  
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver& lockableObserver )
+CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver& lockableObserver, UInt32 lockWaitTimeoutInMs )
     : m_lockableObserver( &lockableObserver )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableObserver );        
-    m_isLocked = m_lockableObserver->NotificationReadOnlyLock();
+    MT::TLockStatus lockStatus = m_lockableObserver->NotificationReadOnlyLock( lockWaitTimeoutInMs );
+    m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+            throw timeout_exception();  
 }
 
 /*--------------------------------------------------------------------------*/
@@ -158,7 +172,7 @@ CObserverScopeReadOnlyLock::~CObserverScopeReadOnlyLock()
 
     if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
     {
-        m_isLocked = !m_lockableObserver->NotificationReadOnlyUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableObserver->NotificationReadOnlyUnlock() );
     }
 }
 
@@ -179,7 +193,7 @@ CObserverScopeReadOnlyLock::EarlyReaderUnlock( void )
 
     if ( GUCEF_NULL != m_lockableObserver && m_isLocked )
     {
-        m_isLocked = !m_lockableObserver->NotificationReadOnlyUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableObserver->NotificationReadOnlyUnlock() );
         return !m_isLocked;
     }
     return false;

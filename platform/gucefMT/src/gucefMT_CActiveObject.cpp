@@ -150,7 +150,15 @@ CActiveObject::OnActivate( void* thisobject )
                 }
 
                 // We can do a cycle
-                taskfinished = tao->OnThreadCycle( taskdata );
+                try
+                {
+                    taskfinished = tao->OnThreadCycle( taskdata );
+                }
+                catch ( const timeout_exception& )
+                {
+                    // if we timed out whatever async thing we were trying to do, 
+                    // just try again next round
+                }
 
                 // check if we are finished
                 if ( !taskfinished )

@@ -148,7 +148,7 @@ CTaskManager::CTaskManager( void )
 CTaskManager::~CTaskManager( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
     SignalUpcomingDestruction();
     m_threadPools.clear();
     lock.EarlyUnlock();
@@ -189,7 +189,7 @@ ThreadPoolPtr
 CTaskManager::GetThreadPool( const CString& threadPoolName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
     if ( i != m_threadPools.end() )
@@ -207,7 +207,7 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
                                      bool createIfNotExists                   )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
     if ( i != m_threadPools.end() )
@@ -279,7 +279,7 @@ CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
     const CString& threadPoolName = taskData->GetThreadPoolName();
     const CString& taskType = taskData->GetTaskTypeName();
 
-    if ( !IsTaskOfTaskTypeExecutable( taskType ) )
+    if ( !IsTaskOfTaskTypeExecutable( taskType, threadPoolName ) )
     {
         GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Task type \"" + taskType + "\" is not an executable task type, aborting" );
         return TTaskStatus::TASKSTATUS_TASKTYPE_INVALID;
@@ -423,7 +423,7 @@ UInt32
 CTaskManager::GetGlobalNrOfActiveThreads( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     UInt32 threadCount = 0;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -441,7 +441,7 @@ UInt32
 CTaskManager::GetGlobalNrOfDesiredThreads( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     UInt32 threadCount = 0;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -459,7 +459,7 @@ UInt32
 CTaskManager::GetGlobalNrOfQueuedTasks( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     UInt32 taskCount = 0;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -477,7 +477,7 @@ void
 CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -493,7 +493,7 @@ void
 CTaskManager::RemoveConsumer( UInt32 taskID )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -510,9 +510,7 @@ CTaskManager::RegisterTaskConsumerFactory( const CString& taskType       ,
                                            TTaskConsumerFactory* factory )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
     m_consumerFactory.RegisterConcreteFactory( taskType, factory );
-    lock.EarlyUnlock();
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new global consumer factory registered of type " + taskType );    
     GlobalTaskConsumerFactoryRegisteredEventData eData( taskType );
     NotifyObserversFromThread( GlobalTaskConsumerFactoryRegisteredEvent, &eData );
@@ -524,9 +522,7 @@ void
 CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
     m_consumerFactory.UnregisterConcreteFactory( taskType );
-    lock.EarlyUnlock();
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: global consumer factory unregistered of type " + taskType );
     GlobalTaskConsumerFactoryUnregisteredEventData eData( taskType );
     NotifyObserversFromThread( GlobalTaskConsumerFactoryUnregisteredEvent, &eData );
@@ -539,9 +535,7 @@ CTaskManager::RegisterTaskDataFactory( const CString& taskType   ,
                                        TTaskDataFactory* factory )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
     m_taskDataFactory.RegisterConcreteFactory( taskType, factory );
-    lock.EarlyUnlock();
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new global task data factory registered of type " + taskType );
     GlobalTaskDataFactoryRegisteredEventData eData( taskType );
     NotifyObserversFromThread( GlobalTaskDataFactoryRegisteredEvent, &eData );
@@ -553,9 +547,7 @@ void
 CTaskManager::UnregisterTaskDataFactory( const CString& taskType )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
     m_taskDataFactory.UnregisterConcreteFactory( taskType );
-    lock.EarlyUnlock();
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: global task data factory unregistered of type " + taskType );
     GlobalTaskDataFactoryUnregisteredEventData eData( taskType );
     NotifyObserversFromThread( GlobalTaskDataFactoryUnregisteredEvent, &eData );
@@ -590,7 +582,6 @@ CTaskConsumerPtr
 CTaskManager::CreateTaskConsumer( const CString& taskType )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
     CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
     return taskConsumer;
 }
@@ -601,7 +592,7 @@ void
 CTaskManager::GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -618,7 +609,7 @@ CTaskManager::GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolNa
                                                      CORE::CString::StringSet& taskTypes )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
     if ( i != m_threadPools.end() )
@@ -633,7 +624,7 @@ void
 CTaskManager::GetAllThreadPoolNames( CORE::CString::StringSet& poolNames ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -649,7 +640,7 @@ CTaskManager::GetInfo( CTaskManagerInfo& info ) const
 {GUCEF_TRACE;
 
     // Obtain an overall lock to get a coherent snapshot of threadpool info
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     info.SetActiveGlobalNrOfThreads( m_activeGlobalNrOfThreads );
     info.SetDesiredGlobalNrOfThreads( m_desiredGlobalNrOfThreads );
@@ -669,7 +660,7 @@ CTaskManager::GetTaskIdForThreadId( const UInt32 threadId ,
 {GUCEF_TRACE;
 
     taskId = 0;
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -689,7 +680,7 @@ CTaskManager::GetThreadIdForTaskId( const UInt32 taskId ,
 {GUCEF_TRACE;
 
     threadId = 0;
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -713,7 +704,7 @@ CTaskManager::GetTaskInfo( UInt32 taskId                                        
 
     info.Clear();
     threadPoolName.Clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -737,7 +728,7 @@ CTaskManager::GetAllTaskInfo( TTaskInfoMap& info                                
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     bool totalSuccess = true;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -758,7 +749,7 @@ CTaskManager::GetAllThreadPoolInfo( TThreadPoolInfoMap& info ) const
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     bool totalSuccess = true; 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -778,7 +769,7 @@ CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info 
 {GUCEF_TRACE;
 
     info.Clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.find( poolName );
     if ( i != m_threadPools.end() )
@@ -799,7 +790,7 @@ CTaskManager::GetThreadInfo( UInt32 threadId         ,
 
     info.Clear();
     threadPoolName.Clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
@@ -822,7 +813,7 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
 {GUCEF_TRACE;
 
     info.clear();
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     bool totalSuccess = true;
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
@@ -837,64 +828,117 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTaskManager::IsTaskOfTaskTypeExecutable( const CString& taskType ) const
+CTaskManager::IsTaskOfTaskTypeExecutable( const CString& taskType, const CString& threadPoolName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
-
-    // First check for per pool task consumer factories
-    ThreadPoolMap::const_iterator i = m_threadPools.begin();
-    while ( i != m_threadPools.end() )
+    if ( threadPoolName.IsNULLOrEmpty() )
     {
-        if ( (*i).second->IsTaskOfTaskTypeExecutable( taskType ) )
-            return true;
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // First check for per pool task consumer factories
+        ThreadPoolMap::const_iterator i = m_threadPools.begin();
+        while ( i != m_threadPools.end() )
+        {
+            if ( (*i).second->IsTaskOfTaskTypeExecutable( taskType ) )
+                return true;
+            ++i;
+        }
+        
+        lock.EarlyReaderUnlock();
+
+        // If no pool level task data factory is defined, lets see if we have a global one
+        return m_consumerFactory.IsConstructible( taskType );
     }
-    
-    // If no pool level task data factory is defined, lets see if we have a global one
-    return m_consumerFactory.IsConstructible( taskType );
+    else
+    {
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // check for the explicit threadpool requested
+        ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
+        if ( i != m_threadPools.end() )
+        {
+            return (*i).second->IsTaskOfTaskTypeExecutable( taskType );
+        }
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CTaskManager::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const
+CTaskManager::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType, const CString& threadPoolName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
-
-    // First check for per pool task data factories
-    ThreadPoolMap::const_iterator i = m_threadPools.begin();
-    while ( i != m_threadPools.end() )
+    if ( threadPoolName.IsNULLOrEmpty() )
     {
-        if ( (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType ) )
-            return true;
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // First check for per pool task consumer factories
+        ThreadPoolMap::const_iterator i = m_threadPools.begin();
+        while ( i != m_threadPools.end() )
+        {
+            if ( (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType ) )
+                return true;
+            ++i;
+        }
+        
+        lock.EarlyReaderUnlock();
+
+        // If no pool level task data factory is defined, lets see if we have a global one
+        return m_taskDataFactory.IsConstructible( taskType );
     }
-    
-    // If no pool level task data factory is defined, lets see if we have a global one
-    return m_taskDataFactory.IsConstructible( taskType );
+    else
+    {
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // check for the explicit threadpool requested
+        ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
+        if ( i != m_threadPools.end() )
+        {
+            return (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType );
+        }
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CIDataNodeSerializableTaskDataBasicPtr 
-CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const
+CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType, const CString& threadPoolName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
-
-    // First check for per pool task data factories
     CIDataNodeSerializableTaskDataBasicPtr taskData;
-    ThreadPoolMap::const_iterator i = m_threadPools.begin();
-    while ( i != m_threadPools.end() )
+    if ( threadPoolName.IsNULLOrEmpty() )
     {
-        taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
-        if ( !taskData.IsNULL() )
-            return taskData;
-        ++i;
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // First check for per pool task consumer factories
+        ThreadPoolMap::const_iterator i = m_threadPools.begin();
+        while ( i != m_threadPools.end() )
+        {
+            taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
+            if ( !taskData.IsNULL() )
+                return taskData;
+            ++i;
+        }
+        
+        lock.EarlyReaderUnlock();
+
+        // If no pool level task data factory is defined, lets see if we have a global one
+        return m_taskDataFactory.Create( taskType );
     }
-    
-    // If no pool level task data factory is defined, lets see if we have a global one
-    return m_taskDataFactory.Create( taskType );
+    else
+    {
+        MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        // check for the explicit threadpool requested
+        ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
+        if ( i != m_threadPools.end() )
+        {
+            taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
+        }
+        return taskData;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -905,7 +949,7 @@ CTaskManager::GetSerializedTaskDataCopy( const UInt32 taskId                    
                                          const CDataNodeSerializableSettings& serializerSettings ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )

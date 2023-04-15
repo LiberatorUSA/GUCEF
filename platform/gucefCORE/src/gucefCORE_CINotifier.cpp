@@ -111,24 +111,32 @@ CINotifier::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CNotifierScopeLock::CNotifierScopeLock( const CINotifier* lockableNotifier )
+CNotifierScopeLock::CNotifierScopeLock( const CINotifier* lockableNotifier, UInt32 lockWaitTimeoutInMs )
     : m_lockableNotifier( lockableNotifier )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != lockableNotifier )    
-        m_isLocked = m_lockableNotifier->NotificationLock();
+    {
+        MT::TLockStatus lockStatus = m_lockableNotifier->NotificationLock( lockWaitTimeoutInMs );
+        m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+             throw timeout_exception();  
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CNotifierScopeLock::CNotifierScopeLock( const CINotifier& lockableNotifier )
+CNotifierScopeLock::CNotifierScopeLock( const CINotifier& lockableNotifier, UInt32 lockWaitTimeoutInMs )
     : m_lockableNotifier( &lockableNotifier )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableNotifier );        
-    m_isLocked = m_lockableNotifier->NotificationLock();
+    MT::TLockStatus lockStatus = m_lockableNotifier->NotificationLock( lockWaitTimeoutInMs );
+    m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+            throw timeout_exception();  
 }
 
 /*--------------------------------------------------------------------------*/
@@ -138,7 +146,7 @@ CNotifierScopeLock::~CNotifierScopeLock()
 
     if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
     {
-        m_isLocked = !m_lockableNotifier->NotificationUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableNotifier->NotificationUnlock() );
     }
 }
 
@@ -167,24 +175,32 @@ CNotifierScopeLock::EarlyUnlock( void )
 
 /*-------------------------------------------------------------------------*/
 
-CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier* lockableNotifier )
+CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier* lockableNotifier, UInt32 lockWaitTimeoutInMs )
     : m_lockableNotifier( lockableNotifier )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != lockableNotifier )    
-        m_isLocked = m_lockableNotifier->NotificationReadOnlyLock();
+    {
+        MT::TLockStatus lockStatus = m_lockableNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
+        m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+             throw timeout_exception();  
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier& lockableNotifier )
+CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier& lockableNotifier, UInt32 lockWaitTimeoutInMs )
     : m_lockableNotifier( &lockableNotifier )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableNotifier );        
-    m_isLocked = m_lockableNotifier->NotificationReadOnlyLock();
+    MT::TLockStatus lockStatus = m_lockableNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
+    m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+            throw timeout_exception(); 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -194,7 +210,7 @@ CNotifierScopeReadOnlyLock::~CNotifierScopeReadOnlyLock()
 
     if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
     {
-        m_isLocked = !m_lockableNotifier->NotificationReadOnlyUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableNotifier->NotificationReadOnlyUnlock() );
     }
 }
 
@@ -215,7 +231,7 @@ CNotifierScopeReadOnlyLock::EarlyReaderUnlock( void )
 
     if ( GUCEF_NULL != m_lockableNotifier && m_isLocked )
     {
-        m_isLocked = !m_lockableNotifier->NotificationReadOnlyUnlock();
+        m_isLocked = !MT::LockStatusToLockSuccessStatusBool( m_lockableNotifier->NotificationReadOnlyUnlock() );
         return !m_isLocked;
     }
     return false;

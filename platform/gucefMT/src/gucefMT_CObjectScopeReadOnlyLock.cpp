@@ -102,7 +102,7 @@ CObjectScopeReadOnlyLock::~CObjectScopeReadOnlyLock()
 
     if ( m_isLocked )
     {
-        m_isLocked = !m_lockableObject->ReadOnlyUnlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_lockableObject->ReadOnlyUnlock() );
     }
 }
 
@@ -123,7 +123,7 @@ CObjectScopeReadOnlyLock::EarlyReaderUnlock( void )
 
     if ( m_isLocked )
     {
-        m_isLocked = !m_lockableObject->ReadOnlyUnlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_lockableObject->ReadOnlyUnlock() );
         return !m_isLocked;
     }
     return false;

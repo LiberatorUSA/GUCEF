@@ -118,17 +118,24 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator            ,
     m_loop = true;
     while ( m_loop )
     {
-        // For immediate pulses we use a tight loop with no CPU yielding at all
-        // This is intended for when the application is stressed and CPU bottlenecking on its workload
-        if ( m_immediatePulseTickets > 0 )
+        try
         {
-            --m_immediatePulseTickets;
-            SendDriverPulse( pulseGenerator );
-            continue;
-        }
+            // For immediate pulses we use a tight loop with no CPU yielding at all
+            // This is intended for when the application is stressed and CPU bottlenecking on its workload
+            if ( m_immediatePulseTickets > 0 )
+            {
+                --m_immediatePulseTickets;
+                SendDriverPulse( pulseGenerator );
+                continue;
+            }
 
-        pulseGenerator.WaitTillNextPulseWindow( forcedMinimalCycleDeltaInMilliSecs, desiredMaximumCycleDeltaInMilliSecs );
-        SendDriverPulse( pulseGenerator );
+            pulseGenerator.WaitTillNextPulseWindow( forcedMinimalCycleDeltaInMilliSecs, desiredMaximumCycleDeltaInMilliSecs );
+            SendDriverPulse( pulseGenerator );
+        }
+        catch ( const timeout_exception& )
+        {
+            // just go for another round if we hit a timeout
+        }
     }
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "BusyWaitPulseGeneratorDriver: Exited run loop" );

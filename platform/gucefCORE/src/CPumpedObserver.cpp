@@ -336,29 +336,38 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
     CEvent mailEventID;
     CICloneable* dataptr( GUCEF_NULL );
     CMailElement* maildata( GUCEF_NULL );
-    while ( m_mailbox.GetMail( mailEventID ,
-                               &dataptr    ) )
+    while ( m_mailbox.PeekMail( mailEventID ,
+                                &dataptr    ) )
     {
-        maildata = static_cast< CMailElement* >( dataptr );
-        CIEventHandlerFunctorBase* callback = maildata->GetCallback();
-        if ( GUCEF_NULL == callback )
+        try
         {
-            OnPumpedNotify( maildata->GetNotifier() ,
-                            mailEventID             ,
-                            maildata->GetData()     );
+            maildata = static_cast< CMailElement* >( dataptr );
+            CIEventHandlerFunctorBase* callback = maildata->GetCallback();
+            if ( GUCEF_NULL == callback )
+            {
+                OnPumpedNotify( maildata->GetNotifier() ,
+                                mailEventID             ,
+                                maildata->GetData()     );
+            }
+            else
+            {
+                OnPumpedFunctorNotify( maildata->GetNotifier() ,
+                                       mailEventID             ,
+                                       maildata->GetData()     ,
+                                       callback                );
+
+                GUCEF_DELETE callback;
+            }
+
+            GUCEF_DELETE maildata->GetData();
         }
-        else
+        catch ( const timeout_exception& )
         {
-            OnPumpedFunctorNotify( maildata->GetNotifier() ,
-                                   mailEventID             ,
-                                   maildata->GetData()     ,
-                                   callback                );
-
-            GUCEF_DELETE callback;
+            // no luck, perhaps better luck next pulse
+            return;
         }
 
-        GUCEF_DELETE maildata->GetData();
-        GUCEF_DELETE maildata;
+        m_mailbox.PopMail();
     }
 
     if ( m_propagatePulseEvent )
@@ -396,15 +405,23 @@ CPumpedObserver::OnNotify( CNotifier* notifier                       ,
         ClearNotifierReferencesFromMailbox( notifier );
     }
 
-    if ( !m_pulseGenerator.IsNULL()                                               &&
-         m_allowSameThreadEventsToFlowThrough                                     &&
-         ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
+    try
     {
-        // We are already in the thread that will pump the events
-        OnPumpedNotify( notifier  ,
-                        eventId   ,
-                        eventData );
-        return;
+        if ( !m_pulseGenerator.IsNULL()                                               &&
+             m_allowSameThreadEventsToFlowThrough                                     &&
+             ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
+        {
+            // We are already in the thread that will pump the events
+            OnPumpedNotify( notifier  ,
+                            eventId   ,
+                            eventData );
+            return;
+        }
+    }
+    catch ( const timeout_exception& )
+    {
+        // no harm no foul, just put the notification in the mailbox instead
+        // less efficient, but we tried
     }
 
     AddEventToMailbox( notifier, eventId, eventData );
@@ -434,16 +451,24 @@ CPumpedObserver::OnFunctorNotify( CNotifier* notifier                 ,
                                   CIEventHandlerFunctorBase* callback )
 {GUCEF_TRACE;
 
-    if ( !m_pulseGenerator.IsNULL()                                               &&
-         m_allowSameThreadEventsToFlowThrough                                     &&
-         ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
+    try
     {
-        // We are already in the thread that will pump the events
-        OnPumpedFunctorNotify( notifier  ,
-                               eventid   ,
-                               eventdata ,
-                               callback  );
-        return;
+        if ( !m_pulseGenerator.IsNULL()                                               &&
+             m_allowSameThreadEventsToFlowThrough                                     &&
+             ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
+        {        
+            // We are already in the thread that will pump the events
+            OnPumpedFunctorNotify( notifier  ,
+                                   eventid   ,
+                                   eventdata ,
+                                   callback  );
+            return;
+        }
+    }
+    catch ( const timeout_exception& )
+    {
+        // no harm no foul, just put the notification in the mailbox instead
+        // less efficient, but we tried
     }
 
     if ( GUCEF_NULL != eventdata )
