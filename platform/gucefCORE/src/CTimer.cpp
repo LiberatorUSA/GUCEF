@@ -434,20 +434,20 @@ CTimer::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTimer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTimer::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/

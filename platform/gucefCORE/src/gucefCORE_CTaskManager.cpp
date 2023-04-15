@@ -279,6 +279,12 @@ CTaskManager::StartOrQueueTask( CIDataNodeSerializableTaskData* taskData ,
     const CString& threadPoolName = taskData->GetThreadPoolName();
     const CString& taskType = taskData->GetTaskTypeName();
 
+    if ( !IsTaskOfTaskTypeExecutable( taskType ) )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "TaskManager:StartOrQueueTask: Task type \"" + taskType + "\" is not an executable task type, aborting" );
+        return TTaskStatus::TASKSTATUS_TASKTYPE_INVALID;
+    }
+
     ThreadPoolPtr threadPool = GetOrCreateThreadPool( threadPoolName, !taskData->GetOnlyUseExistingThreadPool() );        
     if ( !threadPool.IsNULL() )
     {
@@ -826,6 +832,26 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
         ++i;
     }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::IsTaskOfTaskTypeExecutable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    // First check for per pool task consumer factories
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        if ( (*i).second->IsTaskOfTaskTypeExecutable( taskType ) )
+            return true;
+    }
+    
+    // If no pool level task data factory is defined, lets see if we have a global one
+    return m_consumerFactory.IsConstructible( taskType );
 }
 
 /*-------------------------------------------------------------------------*/

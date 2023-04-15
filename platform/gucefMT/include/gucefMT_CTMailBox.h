@@ -157,9 +157,9 @@ class CTMailBox : public virtual MT::CILockable
 
     void SetAcceptsNewMail( bool acceptNewMail );
 
-    bool DoLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+    TLockStatus DoLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
-    bool DoUnlock( void ) const;
+    TLockStatus DoUnlock( void ) const;
 
     typename TMailQueue::iterator begin( void );
 
@@ -175,9 +175,9 @@ class CTMailBox : public virtual MT::CILockable
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -489,7 +489,7 @@ CTMailBox< T >::AsLockable( void ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool
+TLockStatus
 CTMailBox< T >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -499,7 +499,7 @@ CTMailBox< T >::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool
+TLockStatus
 CTMailBox< T >::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -509,7 +509,7 @@ CTMailBox< T >::Unlock( void ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool
+TLockStatus
 CTMailBox< T >::DoLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -519,7 +519,7 @@ CTMailBox< T >::DoLock( UInt32 lockWaitTimeoutInMs ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-bool
+TLockStatus
 CTMailBox< T >::DoUnlock( void ) const
 {GUCEF_TRACE;
 

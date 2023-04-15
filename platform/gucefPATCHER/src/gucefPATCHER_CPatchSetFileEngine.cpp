@@ -213,7 +213,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): There is already a file with the same name as the new file in the destination folder" );
             
             // The file exists, let's see if it's up to date
-            UInt32 fileSize = CORE::Filesize( filePath.C_String() );
+            UInt64 fileSize = CORE::Filesize( filePath.C_String() );
             if ( fileSize == curFile->sizeInBytes )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): The old file is the same size as the new file so we will have to do a hash check" );

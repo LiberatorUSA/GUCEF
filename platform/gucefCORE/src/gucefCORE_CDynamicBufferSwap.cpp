@@ -624,7 +624,7 @@ CDynamicBufferSwap::AsLockable(void) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CDynamicBufferSwap::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -633,7 +633,7 @@ CDynamicBufferSwap::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CDynamicBufferSwap::Unlock( void ) const
 {GUCEF_TRACE;
 

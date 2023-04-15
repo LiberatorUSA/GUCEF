@@ -47,7 +47,9 @@ CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != lockableObject )    
-        m_isLocked = m_lockableObject->Lock();
+    {
+        m_isLocked = LockStatusToLockSuccessStatusBool( m_lockableObject->Lock() );
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -58,7 +60,7 @@ CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableObject );        
-    m_isLocked = m_lockableObject->Lock();
+    m_isLocked = LockStatusToLockSuccessStatusBool( m_lockableObject->Lock() );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -68,7 +70,7 @@ CObjectScopeLock::~CObjectScopeLock()
 
     if ( GUCEF_NULL != m_lockableObject && m_isLocked )
     {
-        m_isLocked = !m_lockableObject->Unlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_lockableObject->Unlock() );
     }
 }
 
@@ -89,7 +91,7 @@ CObjectScopeLock::EarlyUnlock( void )
 
     if ( GUCEF_NULL != m_lockableObject && m_isLocked )
     {
-        m_isLocked = !m_lockableObject->Unlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_lockableObject->Unlock() );
         return !m_isLocked;
     }
     return false;

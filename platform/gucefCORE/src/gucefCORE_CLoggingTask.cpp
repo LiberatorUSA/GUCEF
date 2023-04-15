@@ -315,7 +315,7 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CLoggingTask::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -324,7 +324,7 @@ CLoggingTask::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CLoggingTask::Unlock( void ) const
 {GUCEF_TRACE;
 

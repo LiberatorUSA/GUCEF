@@ -150,9 +150,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool DetermineIfTrackingAcksIsNeeded( void ) const;
     

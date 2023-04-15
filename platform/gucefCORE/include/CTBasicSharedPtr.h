@@ -110,7 +110,7 @@ class TBasicSharedPtrSharedData : public MT::CILockable
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
 
         return m_lock.Lock( lockWaitTimeoutInMs );
@@ -119,7 +119,7 @@ class TBasicSharedPtrSharedData : public MT::CILockable
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
      */
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
 
         return m_lock.Unlock();
@@ -353,12 +353,12 @@ class CTBasicSharedPtr : public MT::CILockable ,
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Actual locking behaviour depends on the LockType passed to the template
      */
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Creates a clone of the basic shared pointer
@@ -1038,7 +1038,7 @@ CTBasicSharedPtr< T, LockType >::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-bool
+MT::TLockStatus
 CTBasicSharedPtr< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
                                                  
@@ -1046,13 +1046,13 @@ CTBasicSharedPtr< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
     {
         return m_shared->m_lock.Lock( lockWaitTimeoutInMs );
     }
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-bool
+MT::TLockStatus
 CTBasicSharedPtr< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -1060,7 +1060,7 @@ CTBasicSharedPtr< T, LockType >::Unlock( void ) const
     {
         return m_shared->m_lock.Unlock();
     }
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/

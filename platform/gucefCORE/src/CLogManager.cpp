@@ -602,7 +602,7 @@ CLogManager::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CLogManager::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -611,7 +611,7 @@ CLogManager::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CLogManager::Unlock( void ) const
 {GUCEF_TRACE;
 

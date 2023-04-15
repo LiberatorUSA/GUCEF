@@ -182,9 +182,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      */
     virtual void Update( UInt32 maxUpdatesPerCycle );
     
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE; 
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE; 
                          
     private:
     

@@ -202,14 +202,15 @@ void
 CPumpedObserver::RegisterPulseGeneratorEventHandlers( void )
 {GUCEF_TRACE;
 
-    if ( !m_pulseGenerator.IsNULL() )
+    PulseGeneratorPtr pulseGenerator = m_pulseGenerator;
+    if ( !pulseGenerator.IsNULL() )
     {
         TEventCallback callback( this, &CPumpedObserver::OnPulse );
-        SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+        SubscribeTo( pulseGenerator.GetPointerAlways() ,
                      CPulseGenerator::PulseEvent         ,
                      callback                            );
 
-        m_pulseGenerator->RequestPeriodicPulses( this );
+        pulseGenerator->RequestPeriodicPulses( this );
     }
 }
 
@@ -523,20 +524,20 @@ CPumpedObserver::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPumpedObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/

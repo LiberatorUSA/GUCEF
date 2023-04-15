@@ -73,24 +73,24 @@ CNotifierObservingComponent::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CNotifierObservingComponent::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_owner )
         return m_owner->Lock( lockWaitTimeoutInMs );
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool 
+MT::TLockStatus 
 CNotifierObservingComponent::Unlock( void ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_owner )
         return m_owner->Unlock();
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/

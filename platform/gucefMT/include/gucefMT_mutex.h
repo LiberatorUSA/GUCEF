@@ -35,6 +35,11 @@
 #define GUCEFMT_MACROS_H
 #endif /* GUCEFMT_MACROS_H ? */
 
+#ifndef GUCEF_MT_LOCKSTATUS_H
+#include "gucefMT_LockStatus.h"
+#define GUCEF_MT_LOCKSTATUS_H
+#endif /* GUCEF_MT_LOCKSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -54,10 +59,10 @@ namespace MT {
 
 struct SMutex;
 
-#define GUCEF_MUTEX_OPERATION_FAILED        0
-#define GUCEF_MUTEX_OPERATION_SUCCESS       1
-#define GUCEF_MUTEX_WAIT_TIMEOUT            2
-#define GUCEF_MUTEX_ABANDONED               3
+#define GUCEF_MUTEX_OPERATION_FAILED        GUCEF_LOCKSTATUS_OPERATION_FAILED
+#define GUCEF_MUTEX_OPERATION_SUCCESS       GUCEF_LOCKSTATUS_OPERATION_SUCCESS
+#define GUCEF_MUTEX_WAIT_TIMEOUT            GUCEF_LOCKSTATUS_WAIT_TIMEOUT
+#define GUCEF_MUTEX_ABANDONED               GUCEF_LOCKSTATUS_ABANDONED
 
 #define GUCEF_MUTEX_INFINITE_TIMEOUT        GUCEF_MT_INFINITE_LOCK_TIMEOUT
 
@@ -145,15 +150,3 @@ MutexUnlock( struct SMutex* mutex );
 /*--------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_MUTEX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-       - Made this C implementation to replace the SDL C implementation of a
-         mutex wrapper.
-
------------------------------------------------------------------------------*/

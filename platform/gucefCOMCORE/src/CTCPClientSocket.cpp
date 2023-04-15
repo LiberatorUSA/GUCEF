@@ -994,7 +994,7 @@ CTCPClientSocket::Send( const void* data ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTCPClientSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1003,7 +1003,7 @@ CTCPClientSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTCPClientSocket::Unlock( void ) const
 {GUCEF_TRACE;
 

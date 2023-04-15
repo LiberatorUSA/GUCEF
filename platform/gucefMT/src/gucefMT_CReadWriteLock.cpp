@@ -54,6 +54,7 @@ CReadWriteLock::CReadWriteLock( bool writers_overrule )
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::CReadWriteLock( const CReadWriteLock& src )
+    : _rwlock( GUCEF_NULL )
 {GUCEF_TRACE;
 
     _rwlock = rwl_create( rwl_writer_overrules( src._rwlock ) );
@@ -104,6 +105,31 @@ CReadWriteLock::RwLockStateToLockOpBool( TRWLockStates state )
         }
     }
 }
+
+/*--------------------------------------------------------------------------*/
+
+TLockStatus 
+CReadWriteLock::RwLockStateToLockStatus( TRWLockStates state )
+{GUCEF_TRACE;
+
+    switch ( state )
+    {
+        case ERWLockStates::RWLOCK_OPERATION_SUCCESS: 
+            return TLockStatus::LOCKSTATUS_OPERATION_SUCCESS;
+        case ERWLockStates::RWLOCK_ABANDONED:
+            return TLockStatus::LOCKSTATUS_ABANDONED;
+        case ERWLockStates::RWLOCK_OPERATION_FAILED: 
+            return TLockStatus::LOCKSTATUS_OPERATION_FAILED;
+        case ERWLockStates::RWLOCK_WAIT_TIMEOUT: 
+            return TLockStatus::LOCKSTATUS_WAIT_TIMEOUT;
+            
+        default:
+        {
+            return TLockStatus::LOCKSTATUS_OPERATION_FAILED;
+        }
+    }
+}
+
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::TRWLockStates
@@ -223,38 +249,38 @@ CReadWriteLock::AsLockable( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool 
+TLockStatus 
 CReadWriteLock::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == WriterStart( lockWaitTimeoutInMs );
+    return RwLockStateToLockStatus( WriterStart( lockWaitTimeoutInMs ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CReadWriteLock::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == WriterStop();
+    return RwLockStateToLockStatus( WriterStop() );
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool 
+TLockStatus 
 CReadWriteLock::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == ReaderStart( lockWaitTimeoutInMs );
+    return RwLockStateToLockStatus( ReaderStart( lockWaitTimeoutInMs ) );
 }                                                                                  
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CReadWriteLock::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
-    return CReadWriteLock::ERWLockStates::RWLOCK_OPERATION_SUCCESS == ReaderStop();
+    return RwLockStateToLockStatus( ReaderStop() );
 }
 
 /*------------------------------------------------------------------------//

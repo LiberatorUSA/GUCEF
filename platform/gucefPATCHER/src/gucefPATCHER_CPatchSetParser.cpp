@@ -165,7 +165,7 @@ CPatchSetParser::ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileN
         {
             // We found our file's size
             const CORE::CString& fileSizeStr = attData->second;
-            UInt32 fileSize = CORE::StringToInt32( fileSizeStr );
+            UInt64 fileSize = CORE::StringToInt64( fileSizeStr );
 
             // Validate that the file has a hash property
             const CORE::CDataNode::TKeyValuePair* attData = patchSetFileNode.GetAttribute( "Hash" );
@@ -213,7 +213,7 @@ CPatchSetParser::ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNod
         {
             // We found our directory's total size
             const CORE::CString& dirTotalSizeStr = attData->second;
-            UInt32 totalDirSize = CORE::StringToInt32( dirTotalSizeStr );
+            UInt64 totalDirSize = CORE::StringToUInt64( dirTotalSizeStr );
 
             // Validate that the directory has a hash property
             const CORE::CDataNode::TKeyValuePair* attData = patchSetDirNode.GetAttribute( "Hash" );

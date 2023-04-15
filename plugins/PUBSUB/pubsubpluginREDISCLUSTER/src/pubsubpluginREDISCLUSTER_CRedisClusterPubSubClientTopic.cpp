@@ -1754,7 +1754,7 @@ CRedisClusterPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CRedisClusterPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1763,7 +1763,7 @@ CRedisClusterPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CRedisClusterPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

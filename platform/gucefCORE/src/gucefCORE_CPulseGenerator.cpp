@@ -510,7 +510,7 @@ CPulseGenerator::GetPulseDriverThreadId( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPulseGenerator::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -519,7 +519,7 @@ CPulseGenerator::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*--------------------------------------------------------------------------*/
     
-bool
+MT::TLockStatus
 CPulseGenerator::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -528,7 +528,7 @@ CPulseGenerator::Unlock( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPulseGenerator::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -537,7 +537,7 @@ CPulseGenerator::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPulseGenerator::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 

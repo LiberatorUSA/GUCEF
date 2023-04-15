@@ -3164,7 +3164,7 @@ CMsmqPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CMsmqPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -3173,7 +3173,7 @@ CMsmqPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CMsmqPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

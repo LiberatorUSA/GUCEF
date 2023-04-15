@@ -70,7 +70,7 @@ CURLHandlerRegistry::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CURLHandlerRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -79,7 +79,7 @@ CURLHandlerRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CURLHandlerRegistry::Unlock( void ) const
 {GUCEF_TRACE;
 

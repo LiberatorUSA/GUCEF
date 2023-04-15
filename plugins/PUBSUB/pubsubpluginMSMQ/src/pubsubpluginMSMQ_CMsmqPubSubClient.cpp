@@ -999,7 +999,7 @@ CMsmqPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CMsmqPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1008,7 +1008,7 @@ CMsmqPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CMsmqPubSubClient::Unlock( void ) const 
 {GUCEF_TRACE;
 

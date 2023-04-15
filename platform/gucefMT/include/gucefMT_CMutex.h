@@ -66,14 +66,14 @@ class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
      *      process will have to wait for the mutex to allow a lock.
      *      The return value indicates whether the lock failed or succeeded.
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Unlocks the mutex after a call to Lock(). Other processes
      *      will have the ability to get a mutex lock after this call.
      *      The return value indicates whether the unlock failed or succeeded.
      */
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -120,17 +120,3 @@ class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_CMUTEX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-       - Wrote a new implementation of the member functions to get rid of the
-         dependency on SDL.
-- 11-03-2004 :
-       - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

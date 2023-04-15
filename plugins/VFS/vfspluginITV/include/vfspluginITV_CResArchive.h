@@ -103,7 +103,7 @@ class CResArchive : public VFS::CArchive
 
     virtual bool DirExists( const VFS::CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual VFS::UInt32 GetFileSize( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual VFS::UInt64 GetFileSize( const VFS::CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual VFS::CString GetFileHash( const VFS::CString& file ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -123,7 +123,7 @@ class CResArchive : public VFS::CArchive
 
     virtual const VFS::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

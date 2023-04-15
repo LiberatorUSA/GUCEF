@@ -289,7 +289,7 @@ CZIPArchive::DirExists( const VFS::CString& dirPath ) const
 
 /*-------------------------------------------------------------------------*/
 
-VFS::UInt32
+VFS::UInt64
 CZIPArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -498,7 +498,7 @@ CZIPArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CZIPArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+CZIPArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const
 {GUCEF_TRACE;
 
     delete objectToBeDestroyed;

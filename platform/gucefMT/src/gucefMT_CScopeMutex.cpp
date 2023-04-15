@@ -53,7 +53,7 @@ CScopeMutex::CScopeMutex( const CMutex& mutex )
 
     assert( m_mutex );
         
-    m_isLocked = m_mutex->Lock();
+    m_isLocked = LockStatusToLockSuccessStatusBool( m_mutex->Lock() );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ CScopeMutex::~CScopeMutex()
 {GUCEF_TRACE;
 
     if ( m_isLocked )
-        m_isLocked = !m_mutex->Unlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_mutex->Unlock() );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -82,7 +82,7 @@ CScopeMutex::EarlyUnlock( void )
 
     if ( m_isLocked )
     {
-        m_isLocked = !m_mutex->Unlock();
+        m_isLocked = !LockStatusToLockSuccessStatusBool( m_mutex->Unlock() );
         return !m_isLocked;
     }
     return false;

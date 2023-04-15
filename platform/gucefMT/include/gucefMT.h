@@ -71,6 +71,11 @@
 #define GUCEF_MT_ETYPES_H
 #endif /* GUCEF_MT_ETYPES_H ? */
 
+#ifndef GUCEF_MT_LOCKSTATUS_H
+#include "gucefMT_LockStatus.h"
+#define GUCEF_MT_LOCKSTATUS_H
+#endif /* GUCEF_MT_LOCKSTATUS_H ? */
+
 /*
  *      C implementation of a readers writers lock.
  */

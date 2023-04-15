@@ -120,9 +120,9 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T, LockTyp
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -275,7 +275,7 @@ CTONRegistry< T, LockType >::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< class T, class LockType >
-bool
+MT::TLockStatus
 CTONRegistry< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -285,7 +285,7 @@ CTONRegistry< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 template< class T, class LockType >
-bool 
+MT::TLockStatus 
 CTONRegistry< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 

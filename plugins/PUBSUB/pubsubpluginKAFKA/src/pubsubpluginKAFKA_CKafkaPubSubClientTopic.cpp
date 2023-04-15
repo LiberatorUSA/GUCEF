@@ -1533,7 +1533,7 @@ CKafkaPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CKafkaPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1542,7 +1542,7 @@ CKafkaPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CKafkaPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

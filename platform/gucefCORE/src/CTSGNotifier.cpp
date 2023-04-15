@@ -242,7 +242,7 @@ CTSGNotifier::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE; 
 
@@ -251,7 +251,7 @@ CTSGNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGNotifier::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -260,7 +260,7 @@ CTSGNotifier::Unlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGNotifier::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE; 
 
@@ -269,7 +269,7 @@ CTSGNotifier::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGNotifier::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 
@@ -278,7 +278,7 @@ CTSGNotifier::NotificationUnlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTSGNotifier::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const 
 {GUCEF_TRACE; 
 
@@ -287,7 +287,7 @@ CTSGNotifier::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTSGNotifier::NotificationReadOnlyUnlock( void ) const 
 {GUCEF_TRACE;
 

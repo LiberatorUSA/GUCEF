@@ -193,7 +193,7 @@ CMailboxForCloneables::AsLockable( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CMailboxForCloneables::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -202,7 +202,7 @@ CMailboxForCloneables::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CMailboxForCloneables::Unlock( void ) const
 {GUCEF_TRACE;
 

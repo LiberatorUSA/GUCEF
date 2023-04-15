@@ -194,6 +194,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     void UnregisterTaskDataFactory( const CString& taskType );
 
+    bool IsTaskOfTaskTypeExecutable( const CString& taskType ) const;
+    
     bool IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const;
 
     CIDataNodeSerializableTaskDataBasicPtr CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskType ) const;

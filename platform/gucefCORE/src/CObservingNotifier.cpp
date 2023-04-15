@@ -260,22 +260,22 @@ CObservingNotifier::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CObservingNotifier::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
     // Dummy to avoid mandatory implementation by decending class
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
                          
-bool
+MT::TLockStatus
 CObservingNotifier::Unlock( void ) const
 {GUCEF_TRACE;
     
     // Dummy to avoid mandatory implementation by decending class
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------//

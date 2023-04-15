@@ -189,7 +189,7 @@ ImageCodecAdapter::load( const CEGUI::RawDataContainer& data ,
     }
 
     CORE::CDynamicBufferAccess bufferAccess;
-    bufferAccess.LinkTo( data.getDataPtr(), data.getSize() );
+    bufferAccess.LinkTo( data.getDataPtr(), (CORE::UInt32) data.getSize() );
 
     IMAGE::CImage image;
     if ( !codec->Decode( bufferAccess, image ) )

@@ -718,7 +718,7 @@ CAwsSqsPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CAwsSqsPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -727,7 +727,7 @@ CAwsSqsPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CAwsSqsPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

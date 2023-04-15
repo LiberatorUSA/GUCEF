@@ -44,10 +44,15 @@
 #define GUCEF_MT_ETYPES_H
 #endif /* GUCEF_MT_ETYPES_H ? */
 
-#ifndef GUCEF_MT_GUCEFMT_MACROS_H
+#ifndef GUCEF_MT_MACROS_H
 #include "gucefMT_macros.h"     /* often used gucef macros */
-#define GUCEF_MT_GUCEFMT_MACROS_H
-#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
+
+#ifndef GUCEF_MT_LOCKSTATUS_H
+#include "gucefMT_LockStatus.h"
+#define GUCEF_MT_LOCKSTATUS_H
+#endif /* GUCEF_MT_LOCKSTATUS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,10 +83,10 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_RWLOCK_OPERATION_FAILED       0
-#define GUCEF_RWLOCK_OPERATION_SUCCESS      1
-#define GUCEF_RWLOCK_WAIT_TIMEOUT           2
-#define GUCEF_RWLOCK_ABANDONED              3
+#define GUCEF_RWLOCK_OPERATION_FAILED       GUCEF_LOCKSTATUS_OPERATION_FAILED
+#define GUCEF_RWLOCK_OPERATION_SUCCESS      GUCEF_LOCKSTATUS_OPERATION_SUCCESS
+#define GUCEF_RWLOCK_WAIT_TIMEOUT           GUCEF_LOCKSTATUS_WAIT_TIMEOUT
+#define GUCEF_RWLOCK_ABANDONED              GUCEF_LOCKSTATUS_ABANDONED
 
 #define GUCEF_RWLOCK_INFINITE_TIMEOUT       GUCEF_MT_INFINITE_LOCK_TIMEOUT
 

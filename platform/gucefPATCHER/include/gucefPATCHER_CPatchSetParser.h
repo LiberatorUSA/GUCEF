@@ -68,7 +68,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
     struct SFileEntry
     {
         CORE::CString name;
-        UInt32 sizeInBytes;
+        UInt64 sizeInBytes;
         CORE::CString hash;
         TFileLocations fileLocations;
     };
@@ -78,7 +78,7 @@ class GUCEFPATCHER_EXPORT_CPP CPatchSetParser
     struct SDirEntry
     {
         CORE::CString name;
-        UInt32 sizeInBytes;
+        UInt64 sizeInBytes;
         CORE::CString hash;
         TFileEntryList files;
         std::vector< struct SDirEntry > subDirs;

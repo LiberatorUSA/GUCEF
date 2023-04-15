@@ -463,7 +463,7 @@ CActiveObject::GetCpuAffinityByCpuId( UInt32& cpuId ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CActiveObject::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -472,7 +472,7 @@ CActiveObject::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CActiveObject::Unlock( void ) const
 {GUCEF_TRACE;
 

@@ -34,6 +34,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #ifndef GUCEF_CORE_CTFACTORY_H
 #include "CTFactory.h"
 #define GUCEF_CORE_CTFACTORY_H
@@ -153,9 +158,9 @@ class CTAbstractFactory : public CAbstractFactoryBase ,
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef std::pair< SelectionCriteriaType, TConcreteFactory* >   TFactoryEntryPair;
@@ -281,7 +286,7 @@ void
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::ObtainKeySet( TKeySet& keySet ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.begin() );
     while ( i != m_concreteFactoryList.end() )
     {
@@ -297,7 +302,7 @@ bool
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::IsConstructible( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
     return m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
 }
 
@@ -308,7 +313,7 @@ bool
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::IsClassConstructible( const CString& classTypeName ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
     return m_concreteFactoryTypeMap.find( classTypeName ) != m_concreteFactoryTypeMap.end();
 }
 
@@ -319,7 +324,7 @@ CString
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::GetConcreteClassTypeNameForSelectionCriterea( const SelectionCriteriaType& selectedType ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CObjectScopeReadOnlyLock lock( this );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -432,7 +437,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterA
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
-bool
+MT::TLockStatus
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -442,7 +447,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Lock( UInt3
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
-bool
+MT::TLockStatus
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 

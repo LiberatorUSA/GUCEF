@@ -2420,7 +2420,7 @@ CStoragePubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CStoragePubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -2429,7 +2429,7 @@ CStoragePubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CStoragePubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

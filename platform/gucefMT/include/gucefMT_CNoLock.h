@@ -61,12 +61,12 @@ class GUCEF_MT_PUBLIC_CPP CNoLock : public CILockable
     /**
      *  Dummy, does nothing
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Dummy, does nothing
      */
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

@@ -152,12 +152,12 @@ CMutex::~CMutex()
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == _mutexdata )
-        return false;
+        return LOCKSTATUS_OPERATION_FAILED;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -170,27 +170,27 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
             ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
             ((TMutexData*)_mutexdata)->isLocked = true;
             GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
-            return true;
+            return LOCKSTATUS_OPERATION_SUCCESS;
         }
         case WAIT_TIMEOUT:
         {
-            return false;
+            return LOCKSTATUS_WAIT_TIMEOUT;
         }
         case WAIT_ABANDONED:
         {
             if ( GUCEF_NULL == _mutexdata )
-                return false;
+                return LOCKSTATUS_OPERATION_FAILED;
 
             ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
             ((TMutexData*)_mutexdata)->isLocked = true;
             GUCEF_TRACE_EXCLUSIVE_LOCK_ABANDONED( ((TMutexData*)_mutexdata)->id );
-            return false;
+            return LOCKSTATUS_ABANDONED;
         }
         default:
         {
             // we should never get here since we handled all the cases
             GUCEF_ASSERT_ALWAYS;
-            return false;
+            return LOCKSTATUS_OPERATION_FAILED;
         }
     }
 
@@ -198,25 +198,25 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 
     if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 )
     {
-        return false;
+        return LOCKSTATUS_OPERATION_FAILED;
     }
 
     ((TMutexData*)_mutexdata)->threadLastOwningLock = (UInt32) pthread_self();
     ((TMutexData*)_mutexdata)->isLocked = true;
     GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &((TMutexData*)_mutexdata)->id );
-    return true;
+    return LOCKSTATUS_OPERATION_SUCCESS;
 
     #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool
+TLockStatus
 CMutex::Unlock( void ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == _mutexdata )
-        return false;
+        return LOCKSTATUS_OPERATION_FAILED;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -227,9 +227,9 @@ CMutex::Unlock( void ) const
     {
         ((TMutexData*)_mutexdata)->isLocked = true;
         GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
-        return false;
+        return LOCKSTATUS_OPERATION_FAILED;
     }
-    return true;
+    return LOCKSTATUS_OPERATION_SUCCESS;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -240,9 +240,9 @@ CMutex::Unlock( void ) const
     {
         ((TMutexData*)_mutexdata)->isLocked = true;
         GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
-        return false;
+        return LOCKSTATUS_OPERATION_FAILED;
     }
-    return true;
+    return LOCKSTATUS_OPERATION_SUCCESS;
 
     #endif
 }

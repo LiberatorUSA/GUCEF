@@ -448,7 +448,7 @@ CWin32NetworkInterface::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CWin32NetworkInterface::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -457,7 +457,7 @@ CWin32NetworkInterface::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CWin32NetworkInterface::Unlock( void ) const
 {GUCEF_TRACE;
 

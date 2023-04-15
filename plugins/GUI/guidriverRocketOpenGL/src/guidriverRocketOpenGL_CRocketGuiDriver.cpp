@@ -167,7 +167,7 @@ GUI::UInt32
 CRocketGuiDriver::GetContextCount( void )
 {GUCEF_TRACE;
 
-    return m_contextSet.size();
+    return (GUI::UInt32) m_contextSet.size();
 }
 
 /*-------------------------------------------------------------------------*/

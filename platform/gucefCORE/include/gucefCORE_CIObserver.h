@@ -112,14 +112,14 @@ class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
      *  Default inline implementation simply calls the object global Lock() but you may wish to use a 
      *  distinct lock to guard the notification mechanism since it can operate independently
      */
-    virtual bool NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const 
+    virtual MT::TLockStatus NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const 
         { return Lock( lockWaitTimeoutInMs ); }
 
     /**
      *  Counterpart to the NotificationLock() member function. This releases the lock obtained using NotificationLock() 
      *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
      */
-    virtual bool NotificationUnlock( void ) const 
+    virtual MT::TLockStatus NotificationUnlock( void ) const 
         { return Unlock(); }
 
     /**
@@ -130,14 +130,14 @@ class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
      *  Default inline implementation simply calls the object global ReadOnlyLock() but you may wish to use a 
      *  distinct lock to guard the notification mechanism since it can operate independently
      */
-    virtual bool NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const 
+    virtual MT::TLockStatus NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const 
         { return ReadOnlyLock( lockWaitTimeoutInMs ); }
 
     /**
      *  Counterpart to the NotificationReadOnlyLock() member function. This releases the lock obtained using NotificationReadOnlyLock() 
      *  Typical implementation would be to have this call Unlock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool NotificationReadOnlyUnlock( void ) const 
+    virtual MT::TLockStatus NotificationReadOnlyUnlock( void ) const 
         { return ReadOnlyUnlock(); };
 
 };

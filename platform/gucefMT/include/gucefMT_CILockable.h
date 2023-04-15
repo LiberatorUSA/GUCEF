@@ -35,6 +35,11 @@
 #define GUCEF_MT_MACROS_H
 #endif /* GUCEF_MT_MACROS_H ? */
 
+#ifndef GUCEF_MT_LOCKSTATUS_H
+#include "gucefMT_LockStatus.h"
+#define GUCEF_MT_LOCKSTATUS_H
+#endif /* GUCEF_MT_LOCKSTATUS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -76,26 +81,26 @@ class GUCEF_MT_PUBLIC_CPP CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const = 0;
+    virtual TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const = 0;
 
     /**
      *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
      *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
      */
-    virtual bool Unlock( void ) const = 0;
+    virtual TLockStatus Unlock( void ) const = 0;
 
     /**
      *  Should be implemented by the derived classes such that all interactions with the class
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const { return Lock( lockWaitTimeoutInMs ); }
+    virtual TLockStatus ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const { return Lock( lockWaitTimeoutInMs ); }
 
     /**
      *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 
      *  Typical implementation would be to have this call Unlock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyUnlock( void ) const { return Unlock(); };
+    virtual TLockStatus ReadOnlyUnlock( void ) const { return Unlock(); };
 };
 
 /*-------------------------------------------------------------------------//

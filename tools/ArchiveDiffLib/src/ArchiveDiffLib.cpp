@@ -29,6 +29,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #include "ArchiveDiffLib.h"
 
 /*-------------------------------------------------------------------------*/

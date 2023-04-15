@@ -27,6 +27,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -125,7 +130,7 @@ class DCSBruteInstaller : public CORE::CObserver
     private:
 
     typedef CORE::CTEventHandlerFunctor< DCSBruteInstaller > TEventCallback;
-    typedef std::vector< CORE::CString > TStringVector;
+    typedef CORE::CString::StringVector                      TStringVector;
 
     enum EAttackType
     {

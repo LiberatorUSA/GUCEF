@@ -208,7 +208,7 @@ CGlobalHttpCodecLinks::InitEncodingCodecLinks( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CGlobalHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -217,7 +217,7 @@ CGlobalHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CGlobalHttpCodecLinks::Unlock( void ) const
 {GUCEF_TRACE;
 

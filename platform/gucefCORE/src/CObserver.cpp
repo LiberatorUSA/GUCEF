@@ -264,22 +264,22 @@ CObserver::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/

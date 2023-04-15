@@ -22,7 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefMT_CNoLock.h"
+#include "gucefMT_LockStatus.h"  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,44 +38,79 @@ namespace MT {
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CNoLock::CNoLock( void )
+ 
+bool
+LockStatusToLockSuccessStatusBool( TLockStatus threadStatus )
 {GUCEF_TRACE;
 
+    switch ( threadStatus )
+    {
+        case TLockStatus::LOCKSTATUS_OPERATION_SUCCESS:
+        case TLockStatus::LOCKSTATUS_ABANDONED:        
+        case TLockStatus::LOCKSTATUS_NOT_APPLICABLE:
+        {
+            return true;
+        }
+        default:
+        case TLockStatus::LOCKSTATUS_OPERATION_FAILED:
+        case TLockStatus::LOCKSTATUS_WAIT_TIMEOUT:
+        case TLockStatus::LOCKSTATUS_UNDEFINED:
+        {
+            return false;
+        }
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CNoLock::~CNoLock()
+const char* 
+LockStatusToLockStatusString( TLockStatus threadStatus )
 {GUCEF_TRACE;
 
+    switch ( threadStatus )
+    {
+        case TLockStatus::LOCKSTATUS_OPERATION_SUCCESS: return "OPERATION_SUCCESS";
+        case TLockStatus::LOCKSTATUS_ABANDONED: return "ABANDONED";       
+        case TLockStatus::LOCKSTATUS_NOT_APPLICABLE: return "NOT_APPLICABLE";         
+        case TLockStatus::LOCKSTATUS_OPERATION_FAILED: return "OPERATION_FAILED";
+        case TLockStatus::LOCKSTATUS_WAIT_TIMEOUT: return "WAIT_TIMEOUT";
+        
+        case TLockStatus::LOCKSTATUS_UNDEFINED:
+        default:
+        {
+            return "<UNDEFINED>";
+        }
+    }    
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-TLockStatus
-CNoLock::Lock( UInt32 lockWaitTimeoutInMs ) const
+TLockStatus 
+LockStatusStringToLockStatus( const char* threadStatusStr )
 {GUCEF_TRACE;
 
-    return LOCKSTATUS_NOT_APPLICABLE;
-}
+    if ( GUCEF_NULL == threadStatusStr )
+        return LOCKSTATUS_UNDEFINED;
 
-/*--------------------------------------------------------------------------*/
+    if ( 0 == strcmp( threadStatusStr, "OPERATION_SUCCESS" ) )
+        return LOCKSTATUS_OPERATION_SUCCESS;
 
-TLockStatus
-CNoLock::Unlock( void ) const
-{GUCEF_TRACE;
+    if ( 0 == strcmp( threadStatusStr, "WAIT_TIMEOUT" ) )
+        return LOCKSTATUS_WAIT_TIMEOUT;
 
-    return LOCKSTATUS_NOT_APPLICABLE;
-}
+    if ( 0 == strcmp( threadStatusStr, "ABANDONED" ) )
+        return LOCKSTATUS_ABANDONED;
 
-/*--------------------------------------------------------------------------*/
+    if ( 0 == strcmp( threadStatusStr, "OPERATION_FAILED" ) )
+        return LOCKSTATUS_OPERATION_FAILED;
 
-const CILockable* 
-CNoLock::AsLockable( void ) const
-{GUCEF_TRACE;
+    if ( 0 == strcmp( threadStatusStr, "NOT_APPLICABLE" ) )
+        return LOCKSTATUS_NOT_APPLICABLE;
 
-    return this;
+    if ( 0 == strcmp( threadStatusStr, "UNDEFINED" ) || 0 == strcmp( threadStatusStr, "<UNDEFINED>" ) )
+        return LOCKSTATUS_UNDEFINED;
+
+    return LOCKSTATUS_UNDEFINED;
 }
 
 /*-------------------------------------------------------------------------//

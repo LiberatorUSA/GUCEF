@@ -1438,6 +1438,15 @@ CThreadPool::UnregisterTaskDataFactory( const CString& taskType )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CThreadPool::IsTaskOfTaskTypeExecutable( const CString& taskType ) const
+{GUCEF_TRACE;
+
+    return m_taskDataFactory.IsConstructible( taskType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CThreadPool::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType ) const
 {GUCEF_TRACE;
 

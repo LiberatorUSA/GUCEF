@@ -824,22 +824,22 @@ CCyclicDynamicBuffer::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
     
-bool
+MT::TLockStatus
 CCyclicDynamicBuffer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
+MT::TLockStatus
 CCyclicDynamicBuffer::Unlock( void ) const
 {GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------//

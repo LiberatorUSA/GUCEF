@@ -127,9 +127,9 @@ class CTObservingNotifierComponent : public CObservingNotifier
     
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Event callback member function.
@@ -283,7 +283,7 @@ CTObservingNotifierComponent< BaseClass >::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-bool
+MT::TLockStatus
 CTObservingNotifierComponent< BaseClass >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -294,7 +294,7 @@ CTObservingNotifierComponent< BaseClass >::Lock( UInt32 lockWaitTimeoutInMs ) co
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-bool
+MT::TLockStatus
 CTObservingNotifierComponent< BaseClass >::Unlock( void ) const
 {GUCEF_TRACE;
 

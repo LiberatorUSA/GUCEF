@@ -135,20 +135,20 @@ CFileURLHandler::IsActive( const CURL& url ) const
 
 /*-------------------------------------------------------------------------*/
                          
-bool
+MT::TLockStatus
 CFileURLHandler::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
                          
-bool
+MT::TLockStatus
 CFileURLHandler::Unlock( void ) const
 {GUCEF_TRACE;
     
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------//

@@ -31,6 +31,7 @@ set( HEADER_FILES
   include/gucefMT_CTMailBox.h
   include/gucefMT_DVRWLOCK.h
   include/gucefMT_ETypes.h
+  include/gucefMT_LockStatus.h
   include/gucefMT_ThreadStatus.h
   include/gucefMT_basicMacros.h
   include/gucefMT_config.h
@@ -58,6 +59,7 @@ set( SOURCE_FILES
   src/gucefMT_CSemaphore.cpp
   src/gucefMT_CTMailBox.cpp
   src/gucefMT_DVRWLOCK.c
+  src/gucefMT_LockStatus.cpp
   src/gucefMT_MUTEX.c
   src/gucefMT_ThreadStatus.cpp
   src/gucefMT_dvmtoswrap.c

@@ -662,7 +662,7 @@ CUdpPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
- bool
+ MT::TLockStatus
  CUdpPubSubClientTopic::Lock( CORE::UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -671,7 +671,7 @@ CUdpPubSubClientTopic::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CUdpPubSubClientTopic::Unlock( void ) const
 {GUCEF_TRACE;
 

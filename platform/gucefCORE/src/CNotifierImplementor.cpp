@@ -1419,7 +1419,7 @@ CNotifierImplementor::ScheduleForDestruction( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CNotifierImplementor::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1427,12 +1427,12 @@ CNotifierImplementor::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
     {
         return m_ownerNotifier->NotificationLock( lockWaitTimeoutInMs );
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CNotifierImplementor::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 
@@ -1440,7 +1440,7 @@ CNotifierImplementor::NotificationUnlock( void ) const
     {
         return m_ownerNotifier->NotificationUnlock();
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/

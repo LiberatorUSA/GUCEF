@@ -94,15 +94,15 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
 {  
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const
         { return NotificationLock( lockWaitTimeoutInMs ); }
 
-    virtual bool Unlock( void ) const
+    virtual MT::TLockStatus Unlock( void ) const
         { return NotificationUnlock(); }
 
-    virtual bool NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+    virtual MT::TLockStatus NotificationLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
-    virtual bool NotificationUnlock( void ) const;
+    virtual MT::TLockStatus NotificationUnlock( void ) const;
 
     virtual const MT::CILockable* AsLockable( void ) const;
 

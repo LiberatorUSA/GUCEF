@@ -78,7 +78,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef std::vector< GUCEF::CORE::CString > TStringVector;
+typedef GUCEF::CORE::CString::StringVector      TStringVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

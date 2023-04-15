@@ -922,7 +922,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
 
 /*-------------------------------------------------------------------------*/
                          
-bool
+MT::TLockStatus
 CHTTPServer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
@@ -931,7 +931,7 @@ CHTTPServer::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
                          
-bool
+MT::TLockStatus
 CHTTPServer::Unlock( void ) const
 {GUCEF_TRACE;
     

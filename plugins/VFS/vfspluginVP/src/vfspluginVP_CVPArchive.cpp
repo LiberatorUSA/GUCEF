@@ -374,7 +374,7 @@ CVPArchive::DirExists( const VFS::CString& dirPath ) const
 
 /*-------------------------------------------------------------------------*/
 
-VFS::UInt32
+VFS::UInt64
 CVPArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -634,7 +634,7 @@ CVPArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CVPArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+CVPArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const
 {GUCEF_TRACE;
 
     delete objectToBeDestroyed;

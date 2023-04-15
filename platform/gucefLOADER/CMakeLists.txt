@@ -32,6 +32,7 @@ set( HEADER_FILES
   ../gucefCORE/include/gucefCORE_CDateTime.h
   ../gucefCORE/include/gucefCORE_CIDate.h
   ../gucefCORE/include/gucefCORE_CITime.h
+  ../gucefCORE/include/gucefCORE_CResourceMetaData.h
   ../gucefCORE/include/gucefCORE_CString.h
   ../gucefCORE/include/gucefCORE_CTime.h
   ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -42,6 +43,7 @@ set( HEADER_FILES
   ../gucefMT/include/gucefMT_CILockable.h
   ../gucefMT/include/gucefMT_CMutex.h
   ../gucefMT/include/gucefMT_CScopeMutex.h
+  ../gucefMT/include/gucefMT_ThreadStatus.h
   ../gucefMT/include/gucefMT_dvmtoswrap.h
   ../gucefMT/include/gucefMT_mutex.h
   include/gucefLOADER.h
@@ -71,6 +73,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/gucefCORE_CDateTime.cpp
   ../gucefCORE/src/gucefCORE_CIDate.cpp
   ../gucefCORE/src/gucefCORE_CITime.cpp
+  ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
   ../gucefCORE/src/gucefCORE_CTime.cpp
   ../gucefCORE/src/gucefCORE_CUtf8String.cpp
   ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -80,6 +83,7 @@ set( SOURCE_FILES
   ../gucefMT/src/gucefMT_CILockable.cpp
   ../gucefMT/src/gucefMT_CMutex.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
+  ../gucefMT/src/gucefMT_ThreadStatus.cpp
   ../gucefMT/src/gucefMT_dvmtoswrap.c
   ../gucefMT/src/gucefMT_mutex.c
   src/gucefLOADER.cpp
@@ -109,6 +113,7 @@ if (ANDROID)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -119,6 +124,7 @@ if (ANDROID)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -147,6 +153,7 @@ if (ANDROID)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -156,6 +163,7 @@ if (ANDROID)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -185,6 +193,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -195,6 +204,7 @@ elseif (EMSCRIPTEN)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -223,6 +233,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -232,6 +243,7 @@ elseif (EMSCRIPTEN)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -261,6 +273,7 @@ elseif (GLX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -271,6 +284,7 @@ elseif (GLX)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -299,6 +313,7 @@ elseif (GLX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -308,6 +323,7 @@ elseif (GLX)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -337,6 +353,7 @@ elseif (GTK)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -347,6 +364,7 @@ elseif (GTK)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -375,6 +393,7 @@ elseif (GTK)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -384,6 +403,7 @@ elseif (GTK)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -413,6 +433,7 @@ elseif (IOS)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -423,6 +444,7 @@ elseif (IOS)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -451,6 +473,7 @@ elseif (IOS)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -460,6 +483,7 @@ elseif (IOS)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -489,6 +513,7 @@ elseif (LINUX32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -499,6 +524,7 @@ elseif (LINUX32)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -527,6 +553,7 @@ elseif (LINUX32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -536,6 +563,7 @@ elseif (LINUX32)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -565,6 +593,7 @@ elseif (LINUX64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -575,6 +604,7 @@ elseif (LINUX64)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -603,6 +633,7 @@ elseif (LINUX64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -612,6 +643,7 @@ elseif (LINUX64)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -641,6 +673,7 @@ elseif (NACL)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -651,6 +684,7 @@ elseif (NACL)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -679,6 +713,7 @@ elseif (NACL)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -688,6 +723,7 @@ elseif (NACL)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -717,6 +753,7 @@ elseif (OSX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -727,6 +764,7 @@ elseif (OSX)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -755,6 +793,7 @@ elseif (OSX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -764,6 +803,7 @@ elseif (OSX)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -793,6 +833,7 @@ elseif (POSIX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -803,6 +844,7 @@ elseif (POSIX)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -831,6 +873,7 @@ elseif (POSIX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -840,6 +883,7 @@ elseif (POSIX)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -869,6 +913,7 @@ elseif (SDL)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -879,6 +924,7 @@ elseif (SDL)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -907,6 +953,7 @@ elseif (SDL)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -916,6 +963,7 @@ elseif (SDL)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -945,6 +993,7 @@ elseif (SYMBIAN)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -955,6 +1004,7 @@ elseif (SYMBIAN)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -983,6 +1033,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -992,6 +1043,7 @@ elseif (SYMBIAN)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -1021,6 +1073,7 @@ elseif (UNIX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
@@ -1031,6 +1084,7 @@ elseif (UNIX)
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
@@ -1059,6 +1113,7 @@ elseif (UNIX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
@@ -1068,6 +1123,7 @@ elseif (UNIX)
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
@@ -1097,17 +1153,21 @@ elseif (WIN32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
     ../gucefCORE/include/gucefCORE_VariantData.h
+    ../gucefCORE/include/gucefCORE_mswinutils.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mswinutils.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -1135,16 +1195,20 @@ elseif (WIN32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
     ../gucefCORE/src/gucefCORE_VariantData.c
+    ../gucefCORE/src/gucefCORE_mswinutils.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
+    ../gucefMT/src/gucefMT_mswinutils.cpp
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -1173,17 +1237,21 @@ elseif (WIN64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
     ../gucefCORE/include/gucefCORE_VariantData.h
+    ../gucefCORE/include/gucefCORE_mswinutils.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mswinutils.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -1211,16 +1279,20 @@ elseif (WIN64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
     ../gucefCORE/src/gucefCORE_VariantData.c
+    ../gucefCORE/src/gucefCORE_mswinutils.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
+    ../gucefMT/src/gucefMT_mswinutils.cpp
     ../gucefMT/src/gucefMT_mutex.c
   )
 

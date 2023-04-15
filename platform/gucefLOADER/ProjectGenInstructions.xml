@@ -12,6 +12,8 @@
         <ITEM NAME="../gucefMT/include/gucefMT_dvmtoswrap.h" TYPE="FILE" />
         <ITEM NAME="../gucefMT/src/gucefMT_CICloneable.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_CICloneable.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_ThreadStatus.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_ThreadStatus.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVOSWRAP.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVCPPOSWRAP.cpp" TYPE="FILE" />
@@ -33,6 +35,8 @@
         <ITEM NAME="../gucefCORE/include/gucefCORE_CTime.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CDateTime.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/gucefCORE_CDateTime.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/gucefCORE_CResourceMetaData.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/gucefCORE_CResourceMetaData.h" TYPE="FILE" />		
         <ITEM NAME="../gucefCORE/src/CICloneable.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/CICloneable.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/CException.cpp" TYPE="FILE" />
@@ -64,4 +68,10 @@
         <ITEM NAME="../gucefCORE/include/dvmd5utils.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/dvmd5utils.c" TYPE="FILE" />
     </INCLUDES>
+	<INCLUDES PLATFORM="MSWIN">
+        <ITEM NAME="../gucefMT/src/gucefMT_mswinutils.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_mswinutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/gucefCORE_mswinutils.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/gucefCORE_mswinutils.h" TYPE="FILE" />
+	</INCLUDES>
 </PROJECTGENERATOR>

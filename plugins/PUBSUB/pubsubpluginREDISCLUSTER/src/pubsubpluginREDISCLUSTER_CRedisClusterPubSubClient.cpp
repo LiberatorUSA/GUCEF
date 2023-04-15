@@ -1355,7 +1355,7 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CRedisClusterPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -1364,7 +1364,7 @@ CRedisClusterPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CRedisClusterPubSubClient::Unlock( void ) const 
 {GUCEF_TRACE;
 

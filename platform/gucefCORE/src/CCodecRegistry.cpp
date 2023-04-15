@@ -70,7 +70,7 @@ CCodecRegistry::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CCodecRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -79,7 +79,7 @@ CCodecRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CCodecRegistry::Unlock( void ) const
 {GUCEF_TRACE;
 

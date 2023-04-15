@@ -719,7 +719,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -728,7 +728,7 @@ CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CStoragePubSubClient::Unlock( void ) const 
 {GUCEF_TRACE;
 

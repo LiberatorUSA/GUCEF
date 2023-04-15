@@ -60,6 +60,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
@@ -94,11 +99,11 @@ using namespace GUCEF;
 
 /*---------------------------------------------------------------------------*/
 
-typedef std::set< CORE::CString > TStringSet;
-typedef std::map< CORE::CString, CORE::CString > TStringMap;
-typedef std::map< CORE::CString, TStringSet > TStringSetMap;
-typedef std::vector< CORE::CString > TStringVector;
-typedef std::map< CORE::CString, TStringVector > TStringVectorMap;
+typedef CORE::CString::StringSet                    TStringSet;
+typedef std::map< CORE::CString, CORE::CString >    TStringMap;
+typedef std::map< CORE::CString, TStringSet >       TStringSetMap;
+typedef CORE::CString::StringVector                 TStringVector;
+typedef std::map< CORE::CString, TStringVector >    TStringVectorMap;
 typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 
 /*---------------------------------------------------------------------------*/
@@ -209,8 +214,8 @@ GetHeaderFileExtensions( void )
 /*---------------------------------------------------------------------------*/
 
 bool
-RemoveString( std::vector< CORE::CString >& list ,
-              const CORE::CString& searchStr     )
+RemoveString( CORE::CString::StringVector& list ,
+              const CORE::CString& searchStr    )
 {GUCEF_TRACE;
 
     //@TODO: make wildcard processing more advanced then this :)
@@ -2619,7 +2624,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
     }
 
     // Get all subdir's
-    std::vector< CORE::CString > dirList;
+    CORE::CString::StringVector dirList;
     PopulateDirListFromDir( topLevelDir, dirList );
 
     // Add/subtract dirs from the list based on generator instructions

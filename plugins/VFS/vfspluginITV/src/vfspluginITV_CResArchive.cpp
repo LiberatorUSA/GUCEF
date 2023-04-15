@@ -267,7 +267,7 @@ CResArchive::FileExists( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-VFS::UInt32
+VFS::UInt64
 CResArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -578,7 +578,7 @@ CResArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CResArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+CResArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const
 {GUCEF_TRACE;
 
     CORE::CIOAccess* ioAccess = objectToBeDestroyed->GetAccess();

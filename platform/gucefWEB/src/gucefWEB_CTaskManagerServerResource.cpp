@@ -230,38 +230,38 @@ CTaskManagerServerResource::GetTaskManagerRootPath( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTaskManagerServerResource::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_rwLock.WriterStart( lockWaitTimeoutInMs ) );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwLock.WriterStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTaskManagerServerResource::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_rwLock.WriterStop() );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwLock.WriterStop() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTaskManagerServerResource::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_rwLock.ReaderStart( lockWaitTimeoutInMs ) );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwLock.ReaderStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTaskManagerServerResource::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_rwLock.ReaderStop() );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwLock.ReaderStop() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -509,6 +509,9 @@ bool
 CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
 {GUCEF_TRACE;
 
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+    CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );
+
     MT::CScopeWriterLock writeLock( m_rwLock );
 
     CORE::CThreadPoolInfo& threadPoolInfo = m_threadPoolInfoMap[ poolName ];
@@ -521,8 +524,6 @@ CTaskManagerServerResource::UpdateThreadPoolInfo( const CString& poolName )
     m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/tasks", threadPoolMetaData.allTaskInfoRsc ); 
     m_router->SetResourceMapping( m_rootPath + "threadpools/" + poolName + "/threads", threadPoolMetaData.allThreadInfoRsc ); 
     
-    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
-    CORE::ThreadPoolPtr threadPool = taskManager.GetThreadPool( poolName );
     if ( !threadPool.IsNULL() )
     {
         TEventCallback threadUpdateCallback( this, &CTaskManagerServerResource::OnThreadUpdateEvent );

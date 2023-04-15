@@ -404,22 +404,22 @@ CHttpCodecLinks::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CHttpCodecLinks::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
     // no-op: override to implement
-    return true;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CHttpCodecLinks::Unlock( void ) const
 {GUCEF_TRACE;
 
     // no-op: override to implement
-    return true;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/

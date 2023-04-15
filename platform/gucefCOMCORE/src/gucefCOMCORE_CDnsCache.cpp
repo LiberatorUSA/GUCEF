@@ -246,38 +246,38 @@ CDnsCache::StartRefreshingASync( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CDnsCache::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_lock.WriterStart( lockWaitTimeoutInMs ) );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.WriterStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CDnsCache::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_lock.WriterStop() );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.WriterStop() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CDnsCache::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_lock.ReaderStart( lockWaitTimeoutInMs ) );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.ReaderStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CDnsCache::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockOpBool( m_lock.ReaderStop() );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.ReaderStop() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -261,7 +261,7 @@ CNotificationIDRegistry::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CNotificationIDRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -270,7 +270,7 @@ CNotificationIDRegistry::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CNotificationIDRegistry::Unlock( void ) const
 {GUCEF_TRACE;
 

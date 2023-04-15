@@ -97,9 +97,9 @@ class CTEventHandlerFunctor : public virtual CIEventHandlerFunctorBase
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnNotify( CNotifier* notifier                ,
                            const CEvent& eventId              ,
@@ -260,21 +260,21 @@ CTEventHandlerFunctor< IObserverDerived >::AsLockable( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< class IObserverDerived >
-bool
+MT::TLockStatus
 CTEventHandlerFunctor< IObserverDerived >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class IObserverDerived >
-bool
+MT::TLockStatus
 CTEventHandlerFunctor< IObserverDerived >::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return MT::LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------//

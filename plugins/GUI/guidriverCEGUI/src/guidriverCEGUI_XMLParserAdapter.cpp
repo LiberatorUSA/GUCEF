@@ -129,7 +129,7 @@ XMLParserAdapter::parseXML( ::CEGUI::XMLHandler& handler            ,
 {GUCEF_TRACE;
 
     CORE::CDynamicBufferAccess bufferAccess;
-    bufferAccess.LinkTo( source.getDataPtr(), source.getSize() );
+    bufferAccess.LinkTo( source.getDataPtr(), (CORE::UInt32) source.getSize() );
     
     CORE::CDataNode dataNodes;
     if ( !m_codec->BuildDataTree( &dataNodes, &bufferAccess ) )

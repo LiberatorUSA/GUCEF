@@ -128,7 +128,7 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -136,12 +136,12 @@ CTSGObserver::Lock( UInt32 lockWaitTimeoutInMs ) const
     {
         return m_parentNotifier->Lock( lockWaitTimeoutInMs );
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
     
-bool
+MT::TLockStatus
 CTSGObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
@@ -149,12 +149,12 @@ CTSGObserver::Unlock( void ) const
     {
         return m_parentNotifier->Unlock();
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGObserver::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -162,12 +162,12 @@ CTSGObserver::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
     {
         return m_parentNotifier->NotificationLock( lockWaitTimeoutInMs );
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGObserver::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 
@@ -175,12 +175,12 @@ CTSGObserver::NotificationUnlock( void ) const
     {
         return m_parentNotifier->NotificationUnlock();
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTSGObserver::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const 
 {GUCEF_TRACE;
 
@@ -188,12 +188,12 @@ CTSGObserver::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
     {
         return m_parentNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CTSGObserver::NotificationReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
@@ -201,7 +201,7 @@ CTSGObserver::NotificationReadOnlyUnlock( void ) const
     {
         return m_parentNotifier->NotificationReadOnlyUnlock();
     }
-    return false;
+    return MT::LOCKSTATUS_OPERATION_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/

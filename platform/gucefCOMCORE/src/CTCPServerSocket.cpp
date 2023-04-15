@@ -919,7 +919,7 @@ CTCPServerSocket::SendToConnection( UInt32 connectionIndex                ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTCPServerSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -928,7 +928,7 @@ CTCPServerSocket::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CTCPServerSocket::Unlock( void ) const
 {GUCEF_TRACE;
 

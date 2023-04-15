@@ -438,38 +438,38 @@ CPubSubFlowRouter::CSpilloverInfo::IsInActiveUse( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPubSubFlowRouter::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
-    return m_lock.WriterStart( lockWaitTimeoutInMs );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.WriterStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CPubSubFlowRouter::Unlock( void ) const
 {GUCEF_TRACE;
     
-    return m_lock.WriterStop();
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.WriterStop() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CPubSubFlowRouter::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
     
-    return m_lock.ReaderStart( lockWaitTimeoutInMs );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.ReaderStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+MT::TLockStatus 
 CPubSubFlowRouter::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
     
-    return m_lock.ReaderStop();
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_lock.ReaderStop() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -76,10 +76,10 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 
     enum ERWLockStates
     {
-        RWLOCK_OPERATION_FAILED     = 0,
-        RWLOCK_OPERATION_SUCCESS    = 1,
-        RWLOCK_WAIT_TIMEOUT         = 2,
-        RWLOCK_ABANDONED            = 3
+        RWLOCK_OPERATION_FAILED     = GUCEF_LOCKSTATUS_OPERATION_FAILED,
+        RWLOCK_OPERATION_SUCCESS    = GUCEF_LOCKSTATUS_OPERATION_SUCCESS,
+        RWLOCK_WAIT_TIMEOUT         = GUCEF_LOCKSTATUS_WAIT_TIMEOUT,
+        RWLOCK_ABANDONED            = GUCEF_LOCKSTATUS_ABANDONED
     };
     typedef enum ERWLockStates TRWLockStates;
 
@@ -185,6 +185,8 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 
     static bool RwLockStateToLockOpBool( TRWLockStates state );
 
+    static TLockStatus RwLockStateToLockStatus( TRWLockStates state );
+
     protected:
 
     /**
@@ -192,26 +194,26 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
      */
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
      *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
      */
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Should be implemented by the derived classes such that all interactions with the class
      *  member functions and variables are protected against multiple threads accessing them
      *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 
      *  Typical implementation would be to have this call Unlock() as a reader on a reader-writer lock in a derived class
      */
-    virtual bool ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual TLockStatus ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     mutable struct SRWLock* _rwlock;          /* encapsulated rwlock struct */

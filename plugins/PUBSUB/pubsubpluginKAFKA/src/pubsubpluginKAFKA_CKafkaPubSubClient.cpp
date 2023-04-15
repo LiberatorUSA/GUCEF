@@ -645,7 +645,7 @@ CKafkaPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CKafkaPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -654,7 +654,7 @@ CKafkaPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
+MT::TLockStatus
 CKafkaPubSubClient::Unlock( void ) const 
 {GUCEF_TRACE;
 
