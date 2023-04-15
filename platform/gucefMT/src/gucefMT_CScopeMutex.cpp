@@ -46,14 +46,30 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CScopeMutex::CScopeMutex( const CMutex& mutex )
+CScopeMutex::CScopeMutex( const CMutex& mutex, UInt32 lockWaitTimeoutInMs )
     : m_mutex( &mutex )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    assert( m_mutex );
+    assert( GUCEF_NULL != m_mutex );
         
-    m_isLocked = LockStatusToLockSuccessStatusBool( m_mutex->Lock() );
+    TLockStatus lockStatus = m_mutex->Lock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+         throw timeout_exception();    
+}
+
+/*--------------------------------------------------------------------------*/
+
+CScopeMutex::CScopeMutex( const CMutex& mutex, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus ) 
+    : m_mutex( &mutex )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != m_mutex );
+        
+    lockStatus = m_mutex->Lock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -91,15 +107,33 @@ CScopeMutex::EarlyUnlock( void )
 /*--------------------------------------------------------------------------*/
 
 bool 
-CScopeMutex::ReLock( void )
+CScopeMutex::ReLock( UInt32 lockWaitTimeoutInMs )
 {GUCEF_TRACE;
 
     if ( !m_isLocked )
     {
-        m_isLocked = m_mutex->Lock();
+        TLockStatus lockStatus = m_mutex->Lock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+             throw timeout_exception();
         return m_isLocked;
     }
     return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+TLockStatus 
+CScopeMutex::TryReLock( UInt32 lockWaitTimeoutInMs )
+{GUCEF_TRACE;
+
+    if ( !m_isLocked )
+    {
+        TLockStatus lockStatus = m_mutex->Lock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+        return lockStatus;
+    }
+    return LOCKSTATUS_NOT_APPLICABLE;
 }
 
 /*-------------------------------------------------------------------------//

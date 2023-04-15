@@ -291,7 +291,7 @@ rwl_queued_readers( const TRWLock *rwlock )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-rwl_reader_start( TRWLock *rwlock )
+rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 {
 	if ( GUCEF_NULL != rwlock )
     {
@@ -546,7 +546,7 @@ rwl_reader_stop( TRWLock *rwlock )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-rwl_reader_transition_to_writer( TRWLock *rwlock )
+rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 {
 	GUCEF_BEGIN;
     if ( GUCEF_NULL != rwlock )
@@ -897,7 +897,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-rwl_writer_start( TRWLock *rwlock )
+rwl_writer_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 {
 	if ( GUCEF_NULL != rwlock )
     {
@@ -1305,7 +1305,7 @@ rwl_writer_stop( TRWLock *rwlock )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-rwl_writer_transition_to_reader( TRWLock *rwlock )
+rwl_writer_transition_to_reader( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 {
 	GUCEF_BEGIN;
 	if ( GUCEF_NULL != rwlock )

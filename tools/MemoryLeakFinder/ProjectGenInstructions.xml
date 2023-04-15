@@ -16,6 +16,10 @@
     <ITEM NAME="../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp" TYPE="FILE" />
     <ITEM NAME="../../platform/gucefMT/include/gucefMT_CScopeRwLock.h" TYPE="FILE" />		
     <ITEM NAME="../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_ThreadStatus.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp" TYPE="FILE" />
+    <ITEM NAME="../../platform/gucefMT/include/gucefMT_LockStatus.h" TYPE="FILE" />		
+    <ITEM NAME="../../platform/gucefMT/src/gucefMT_LockStatus.cpp" TYPE="FILE" />
   </INCLUDES>
   <INCLUDES PLATFORM="mswin">
     <ITEM NAME="../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h" TYPE="FILE" />

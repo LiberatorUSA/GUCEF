@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_TIMEOUT_EXCEPTION_H
+#include "gucef_timeout_exception.h"
+#define GUCEF_TIMEOUT_EXCEPTION_H
+#endif /* GUCEF_TIMEOUT_EXCEPTION_H ? */
+
 #ifndef GUCEF_MT_MACROS_H
 #include "gucefMT_macros.h"     /* often used gucef macros */
 #define GUCEF_MT_MACROS_H
@@ -62,13 +67,13 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
 
     typedef CReadWriteLock::TRWLockStates   TRWLockStates;
 
-    CScopeReaderLock( const CReadWriteLock& rwLock );
+    CScopeReaderLock( const CReadWriteLock& rwLock, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     /**
      *  Performs a secure handoff from a write lock into a read lock for the given scope
      *  If successfull the scoped write lock will no longer be considered locked similar to an EarlyUnlock()
      */
-    CScopeReaderLock( CScopeWriterLock& writerToTransition );
+    CScopeReaderLock( CScopeWriterLock& writerToTransition, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     ~CScopeReaderLock();
 
@@ -102,7 +107,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
      *  Using these types of transitions allows one to signal that threads are accessing protected data in a read or read-write
      *  fashion without having a potential time window where the accounting would suggest no threads are looking at protected data at all anymore
      */
-    bool TransitionToWriter( CScopeWriterLock& targetWriter );
+    bool TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     private:
     friend class CScopeWriterLock;
@@ -124,7 +129,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
 
     typedef CReadWriteLock::TRWLockStates   TRWLockStates;
     
-    CScopeWriterLock( const CReadWriteLock& rwLock );
+    CScopeWriterLock( const CReadWriteLock& rwLock, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     /**
      *  Performs a secure handoff from a read lock into a write lock for the given scope
@@ -134,7 +139,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
      *  that your data references in your scope have become invalid leading to access violations and the like
      *  since the code could be shutting down and be cleaning up if the lock is not kept or similar scenarios.
      */
-    CScopeWriterLock( CScopeReaderLock& readerToTransition );
+    CScopeWriterLock( CScopeReaderLock& readerToTransition, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     ~CScopeWriterLock();
 
@@ -170,7 +175,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
      *  Using these types of transitions allows one to signal that threads are accessing protected data in a read or read-write
      *  fashion without having a potential time window where the accounting would suggest no threads are looking at protected data at all anymore
      */
-    bool TransitionToReader( CScopeReaderLock& targetReader );
+    bool TransitionToReader( CScopeReaderLock& targetReader, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     private:
     friend class CScopeReaderLock;

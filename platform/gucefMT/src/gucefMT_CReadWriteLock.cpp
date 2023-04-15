@@ -136,7 +136,7 @@ CReadWriteLock::TRWLockStates
 CReadWriteLock::WriterStart( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return RwLockIntStateToEnum( rwl_writer_start( _rwlock ) );
+    return RwLockIntStateToEnum( rwl_writer_start( _rwlock, lockWaitTimeoutInMs ) );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ CReadWriteLock::TRWLockStates
 CReadWriteLock::ReaderStart( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return RwLockIntStateToEnum( rwl_reader_start( _rwlock ) );
+    return RwLockIntStateToEnum( rwl_reader_start( _rwlock, lockWaitTimeoutInMs ) );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -196,19 +196,19 @@ CReadWriteLock::ReaderStop( void ) const
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::TRWLockStates 
-CReadWriteLock::TransitionReaderToWriter( void ) const
+CReadWriteLock::TransitionReaderToWriter( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return RwLockIntStateToEnum( rwl_reader_transition_to_writer( _rwlock ) );
+    return RwLockIntStateToEnum( rwl_reader_transition_to_writer( _rwlock, lockWaitTimeoutInMs ) );
 }
 
 /*--------------------------------------------------------------------------*/
 
 CReadWriteLock::TRWLockStates
-CReadWriteLock::TransitionWriterToReader( void ) const
+CReadWriteLock::TransitionWriterToReader( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return RwLockIntStateToEnum( rwl_writer_transition_to_reader( _rwlock ) );
+    return RwLockIntStateToEnum( rwl_writer_transition_to_reader( _rwlock, lockWaitTimeoutInMs ) );
 }
 
 /*--------------------------------------------------------------------------*/

@@ -41,7 +41,7 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
+CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock, UInt32 lockWaitTimeoutInMs )
     : m_rwLock( &rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
     , m_isReadLocked( false )
@@ -54,7 +54,7 @@ CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock )
 
 /*--------------------------------------------------------------------------*/
 
-CScopeReaderLock::CScopeReaderLock( CScopeWriterLock& writerToTransition )
+CScopeReaderLock::CScopeReaderLock( CScopeWriterLock& writerToTransition, UInt32 lockWaitTimeoutInMs )
     : m_rwLock( writerToTransition.m_rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
     , m_isReadLocked( false )
@@ -119,7 +119,7 @@ CScopeReaderLock::EarlyUnlock( void )
 /*--------------------------------------------------------------------------*/
 
 bool 
-CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter )
+CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 lockWaitTimeoutInMs )
 {GUCEF_TRACE;
 
     assert( GUCEF_NULL != m_rwLock );
@@ -156,7 +156,7 @@ CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter )
 
 /*--------------------------------------------------------------------------*/
 
-CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
+CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock, UInt32 lockWaitTimeoutInMs )
     : m_rwLock( &rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
 {GUCEF_TRACE;
@@ -172,7 +172,7 @@ CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock )
 
 /*--------------------------------------------------------------------------*/
 
-CScopeWriterLock::CScopeWriterLock( CScopeReaderLock& readerToTransition )
+CScopeWriterLock::CScopeWriterLock( CScopeReaderLock& readerToTransition, UInt32 lockWaitTimeoutInMs )
     : m_rwLock( readerToTransition.m_rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
     , m_isWriteLocked( false )
@@ -251,7 +251,7 @@ CScopeWriterLock::EarlyUnlock( void )
 /*--------------------------------------------------------------------------*/
 
 bool
-CScopeWriterLock::TransitionToReader( CScopeReaderLock& targetReader )
+CScopeWriterLock::TransitionToReader( CScopeReaderLock& targetReader, UInt32 lockWaitTimeoutInMs )
 {GUCEF_TRACE;
     
     assert( GUCEF_NULL != m_rwLock );

@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_TIMEOUT_EXCEPTION_H
+#include "gucef_timeout_exception.h"
+#define GUCEF_TIMEOUT_EXCEPTION_H
+#endif /* GUCEF_TIMEOUT_EXCEPTION_H ? */
+
 #ifndef GUCEF_MT_GUCEFMT_MACROS_H
 #include "gucefMT_macros.h"     /* often used gucef macros */
 #define GUCEF_MT_GUCEFMT_MACROS_H
@@ -66,14 +71,38 @@ class GUCEF_MT_PUBLIC_CPP CObjectScopeLock
      *  Otherwise ( lockableObject == GUCEF_NULL ) this object will act as a no-op
      *  This allows you to use the same code in a thread-safe or non-threadsafe manner depending on context
      *  Only taking the locking penalty when needed based on said context
+     * 
+     *  throws timeout_exception if unable to attain the lock before the specified timeout 
      */
-    CObjectScopeLock( const CILockable* lockableObject );
+    CObjectScopeLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     /**
      *  Locks the lockable object and retaints the lock for the lifespan of this object by default
      *  You can unlock early via the EarlyUnlock() member function
+     * 
+     *  throws timeout_exception if unable to attain the lock before the specified timeout 
      */
-    CObjectScopeLock( const CILockable& lockableObject );
+    CObjectScopeLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+
+    /**
+     *  Locks if a lockable object is provided
+     *  Otherwise ( lockableObject == GUCEF_NULL ) this object will act as a no-op
+     *  This allows you to use the same code in a thread-safe or non-threadsafe manner depending on context
+     *  Only taking the locking penalty when needed based on said context
+     * 
+     *  If the lock operation fails for whatever reason it is the caller's responsibility to handle that scenario via
+     *  the lockStatus output parameter
+     */
+    CObjectScopeLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus );
+
+    /**
+     *  Locks the lockable object and retaints the lock for the lifespan of this object by default
+     *  You can unlock early via the EarlyUnlock() member function
+     * 
+     *  If the lock operation fails for whatever reason it is the caller's responsibility to handle that scenario via
+     *  the lockStatus output parameter
+     */
+    CObjectScopeLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus  );
 
     ~CObjectScopeLock();
 

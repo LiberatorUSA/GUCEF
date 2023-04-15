@@ -30,6 +30,11 @@
 #define GUCEF_MT_GUCEFMT_MACROS_H
 #endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
+#ifndef GUCEF_TIMEOUT_EXCEPTION_H
+#include "gucef_timeout_exception.h"
+#define GUCEF_TIMEOUT_EXCEPTION_H
+#endif /* GUCEF_TIMEOUT_EXCEPTION_H ? */
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -64,9 +69,17 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
     public:
 
     /**
-     *      locks the mutex
+     *  locks the mutex 
+     *  throws timeout_exception if unable to attain the lock before the specified timeout 
      */
-    CScopeMutex( const CMutex& mutex );
+    CScopeMutex( const CMutex& mutex, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+
+    /**
+     *  attempts to lock the mutex
+     *  If the lock operation fails for whatever reason it is the caller's responsibility to handle that scenario via
+     *  the lockStatus output parameter
+     */
+    CScopeMutex( const CMutex& mutex, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus );
 
     /**
      *  Unlocks the mutex.
@@ -88,8 +101,16 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
 
     /**
      *  Allows you to re lock the lock after an EarlyUnlock()
+     *  throws timeout_exception if unable to attain the lock before the specified timeout 
      */
-    bool ReLock( void );
+    bool ReLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+
+    /**
+     *  Allows you to re lock the lock after an EarlyUnlock()
+     *  If the lock operation fails for whatever reason it is the caller's responsibility to handle that scenario via
+     *  the TLockStatus return value
+     */
+    TLockStatus TryReLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
     private:
     const CMutex* m_mutex;
@@ -108,17 +129,6 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 21-08-2005 :
-       - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

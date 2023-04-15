@@ -154,9 +154,9 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      */
     TRWLockStates ReaderStop( void ) const;
 
-    TRWLockStates TransitionReaderToWriter( void ) const;
+    TRWLockStates TransitionReaderToWriter( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
-    TRWLockStates TransitionWriterToReader( void ) const;
+    TRWLockStates TransitionWriterToReader( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
     /**
      *      Returns the current number of active readers. Note that this function

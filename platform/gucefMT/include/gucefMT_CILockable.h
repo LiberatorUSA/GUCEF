@@ -25,6 +25,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_TIMEOUT_EXCEPTION_H
+#include "gucef_timeout_exception.h"
+#define GUCEF_TIMEOUT_EXCEPTION_H
+#endif /* GUCEF_TIMEOUT_EXCEPTION_H ? */
+
 #ifndef GUCEF_MT_ETYPES_H
 #include "gucefMT_ETypes.h"             /* simple types */
 #define GUCEF_MT_ETYPES_H

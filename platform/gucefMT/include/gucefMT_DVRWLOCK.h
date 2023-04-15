@@ -193,7 +193,7 @@ rwl_queued_readers( const TRWLock *rwlock );
  *      rwlock.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_reader_start( TRWLock *rwlock );
+rwl_reader_start( TRWLock *rwlock, UInt32 lockWaitTimeoutInMs );
 
 /*--------------------------------------------------------------------------*/
 
@@ -213,7 +213,7 @@ rwl_reader_stop( TRWLock *rwlock );
  *  using rwl_reader_start before using this.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_reader_transition_to_writer( TRWLock *rwlock );
+rwl_reader_transition_to_writer( TRWLock *rwlock, UInt32 lockWaitTimeoutInMs );
 
 /*--------------------------------------------------------------------------*/
 
@@ -223,7 +223,7 @@ rwl_reader_transition_to_writer( TRWLock *rwlock );
  *  You should have already aquired the write lock from the calling thread before using this.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_writer_transition_to_reader( TRWLock *rwlock );
+rwl_writer_transition_to_reader( TRWLock *rwlock, UInt32 lockWaitTimeoutInMs );
 
 /*--------------------------------------------------------------------------*/
 
@@ -234,7 +234,7 @@ rwl_writer_transition_to_reader( TRWLock *rwlock );
  *      rwlock. A return value of 1 indicates success and 0 failure.
  */
 GUCEF_MT_PUBLIC_C UInt32
-rwl_writer_start( TRWLock *rwlock );
+rwl_writer_start( TRWLock *rwlock, UInt32 lockWaitTimeoutInMs );
 
 /*--------------------------------------------------------------------------*/
 

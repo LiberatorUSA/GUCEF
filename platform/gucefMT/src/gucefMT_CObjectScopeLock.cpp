@@ -41,26 +41,58 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject )
+CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs )
     : m_lockableObject( lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != lockableObject )    
     {
-        m_isLocked = LockStatusToLockSuccessStatusBool( m_lockableObject->Lock() );
+        TLockStatus lockStatus = m_lockableObject->Lock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( lockStatus == LOCKSTATUS_WAIT_TIMEOUT )
+            throw timeout_exception();
     }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
+CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs )
     : m_lockableObject( &lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
     assert( 0 != m_lockableObject );        
-    m_isLocked = LockStatusToLockSuccessStatusBool( m_lockableObject->Lock() );
+    TLockStatus lockStatus = m_lockableObject->Lock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( lockStatus == LOCKSTATUS_WAIT_TIMEOUT )
+        throw timeout_exception();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObjectScopeLock::CObjectScopeLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus )
+    : m_lockableObject( lockableObject )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableObject )    
+    {
+        lockStatus = m_lockableObject->Lock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus )
+    : m_lockableObject( &lockableObject )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableObject );        
+    lockStatus = m_lockableObject->Lock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
 }
 
 /*--------------------------------------------------------------------------*/

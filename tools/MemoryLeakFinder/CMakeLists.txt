@@ -21,6 +21,8 @@ if (ANDROID)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -35,7 +37,9 @@ if (ANDROID)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -53,6 +57,8 @@ elseif (EMSCRIPTEN)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -67,7 +73,9 @@ elseif (EMSCRIPTEN)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -85,6 +93,8 @@ elseif (GLX)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -99,7 +109,9 @@ elseif (GLX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -117,6 +129,8 @@ elseif (GTK)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -131,7 +145,9 @@ elseif (GTK)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -149,6 +165,8 @@ elseif (IOS)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -163,7 +181,9 @@ elseif (IOS)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -181,6 +201,8 @@ elseif (LINUX32)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -195,7 +217,9 @@ elseif (LINUX32)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -213,6 +237,8 @@ elseif (LINUX64)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -227,7 +253,9 @@ elseif (LINUX64)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -245,6 +273,8 @@ elseif (NACL)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -259,7 +289,9 @@ elseif (NACL)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -277,6 +309,8 @@ elseif (OSX)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -291,7 +325,9 @@ elseif (OSX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -309,6 +345,8 @@ elseif (POSIX)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -323,7 +361,9 @@ elseif (POSIX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -341,6 +381,8 @@ elseif (SDL)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -355,7 +397,9 @@ elseif (SDL)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -373,6 +417,8 @@ elseif (SYMBIAN)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -387,7 +433,9 @@ elseif (SYMBIAN)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -405,6 +453,8 @@ elseif (UNIX)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
   )
@@ -419,7 +469,9 @@ elseif (UNIX)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     src/gucefMLF_MemoryManager.cpp
     src/gucefMLF_callstack.cpp
@@ -437,6 +489,8 @@ elseif (WIN32)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
     ../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h
@@ -458,7 +512,9 @@ elseif (WIN32)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     ../../platform/gucefMT/src/mswin/gucefMT_mswinutils.cpp
     src/gucefMLF_MemoryManager.cpp
@@ -477,6 +533,8 @@ elseif (WIN64)
     ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
     ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
     ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
     ../../platform/gucefMT/include/gucefMT_mutex.h
     ../../platform/gucefMT/include/mswin/gucefMT_mswinutils.h
@@ -498,7 +556,9 @@ elseif (WIN64)
     ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
     ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
     ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
     ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
     ../../platform/gucefMT/src/mswin/gucefMT_mswinutils.cpp
     src/gucefMLF_MemoryManager.cpp

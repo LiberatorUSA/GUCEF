@@ -41,26 +41,58 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable* lockableObject )
+CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs )
     : m_lockableObject( lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    assert( 0 != m_lockableObject );
-        
-    m_isLocked = m_lockableObject->ReadOnlyLock();
+    if ( GUCEF_NULL != lockableObject )
+    {
+        TLockStatus lockStatus = m_lockableObject->ReadOnlyLock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+        if ( lockStatus == LOCKSTATUS_WAIT_TIMEOUT )
+            throw timeout_exception();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
 
-CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable& lockableObject )
+CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs )
     : m_lockableObject( &lockableObject )
     , m_isLocked( false )
 {GUCEF_TRACE;
 
-    assert( 0 != m_lockableObject );
-        
-    m_isLocked = m_lockableObject->ReadOnlyLock();
+    assert( 0 != m_lockableObject );        
+    TLockStatus lockStatus = m_lockableObject->ReadOnlyLock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+    if ( lockStatus == LOCKSTATUS_WAIT_TIMEOUT )
+        throw timeout_exception();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable* lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus )
+    : m_lockableObject( lockableObject )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != lockableObject )
+    {
+        lockStatus = m_lockableObject->ReadOnlyLock( lockWaitTimeoutInMs );
+        m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObjectScopeReadOnlyLock::CObjectScopeReadOnlyLock( const CILockable& lockableObject, UInt32 lockWaitTimeoutInMs, TLockStatus& lockStatus )
+    : m_lockableObject( &lockableObject )
+    , m_isLocked( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_lockableObject );        
+    lockStatus = m_lockableObject->ReadOnlyLock( lockWaitTimeoutInMs );
+    m_isLocked = LockStatusToLockSuccessStatusBool( lockStatus );
 }
 
 /*--------------------------------------------------------------------------*/
