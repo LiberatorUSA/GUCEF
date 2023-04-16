@@ -1,0 +1,66 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__gucef_pubsub_msgcontainer {
+		label="GucefPubsubMsgcontainer";
+		graph[style=dotted];
+
+		gucef_pubsub_msgcontainer__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="header_pos">0</TD><TD PORT="header_size">15</TD><TD>GucefPubsubMsgcontainerHeader</TD><TD PORT="header_type">header</TD></TR>
+			<TR><TD PORT="pubsubmsg_pos">15</TD><TD PORT="pubsubmsg_size">...</TD><TD>GucefPubsubMsg</TD><TD PORT="pubsubmsg_type">pubsubmsg</TD></TR>
+			<TR><TD COLSPAN="4" PORT="pubsubmsg__repeat">repeat until _io.pos == (((_io.size - (msg_offset_idx_size * 4)) - 4) - 10)</TD></TR>
+			<TR><TD PORT="footer_pos">...</TD><TD PORT="footer_size">...</TD><TD>GucefPubsubMsgcontainerFooter</TD><TD PORT="footer_type">footer</TD></TR>
+		</TABLE>>];
+		gucef_pubsub_msgcontainer__inst__msg_offset_idx_size [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="msg_offset_idx_size_pos">(_io.size - 14)</TD><TD PORT="msg_offset_idx_size_size">4</TD><TD>u4le</TD><TD PORT="msg_offset_idx_size_type">msg_offset_idx_size</TD></TR>
+		</TABLE>>];
+		subgraph cluster__gucef_pubsub_msg {
+			label="GucefPubsubMsgcontainer::GucefPubsubMsg";
+			graph[style=dotted];
+
+			gucef_pubsub_msg__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="msg_date_time_pos">0</TD><TD PORT="msg_date_time_size">...</TD><TD>switch ((_root.header.options &amp; (1 &lt;&lt; 2)))</TD><TD PORT="msg_date_time_type">msg_date_time</TD></TR>
+				<TR><TD PORT="msgid_pos">...</TD><TD PORT="msgid_size">...</TD><TD>GucefCoreVariant</TD><TD PORT="msgid_type">msgid</TD></TR>
+				<TR><TD PORT="msg_index_pos">...</TD><TD PORT="msg_index_size">...</TD><TD>GucefCoreVariant</TD><TD PORT="msg_index_type">msg_index</TD></TR>
+				<TR><TD PORT="primary_payload_included_pos">...</TD><TD PORT="primary_payload_included_size">...</TD><TD>GucefCoreVariant</TD><TD PORT="primary_payload_included_type">primary_payload_included</TD></TR>
+				<TR><TD PORT="nr_of_kv_pairs_pos">...</TD><TD PORT="nr_of_kv_pairs_size">4</TD><TD>u4le</TD><TD PORT="nr_of_kv_pairs_type">nr_of_kv_pairs</TD></TR>
+				<TR><TD PORT="key_value_pairs_pos">...</TD><TD PORT="key_value_pairs_size">...</TD><TD>KvPair</TD><TD PORT="key_value_pairs_type">key_value_pairs</TD></TR>
+				<TR><TD COLSPAN="4" PORT="key_value_pairs__repeat">repeat nr_of_kv_pairs times</TD></TR>
+				<TR><TD PORT="nr_of_metadata_kv_pairs_pos">...</TD><TD PORT="nr_of_metadata_kv_pairs_size">4</TD><TD>u4le</TD><TD PORT="nr_of_metadata_kv_pairs_type">nr_of_metadata_kv_pairs</TD></TR>
+				<TR><TD PORT="metadata_key_value_pairs_pos">...</TD><TD PORT="metadata_key_value_pairs_size">...</TD><TD>KvPair</TD><TD PORT="metadata_key_value_pairs_type">metadata_key_value_pairs</TD></TR>
+				<TR><TD COLSPAN="4" PORT="metadata_key_value_pairs__repeat">repeat nr_of_metadata_kv_pairs times</TD></TR>
+			</TABLE>>];
+gucef_pubsub_msg__seq_msg_date_time_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+</TABLE>>];
+		}
+		subgraph cluster__kv_pair {
+			label="GucefPubsubMsgcontainer::KvPair";
+			graph[style=dotted];
+
+			kv_pair__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="key_pos">0</TD><TD PORT="key_size">...</TD><TD>GucefCoreVariant</TD><TD PORT="key_type">key</TD></TR>
+				<TR><TD PORT="value_pos">...</TD><TD PORT="value_size">...</TD><TD>GucefCoreVariant</TD><TD PORT="value_type">value</TD></TR>
+			</TABLE>>];
+		}
+	}
+	gucef_pubsub_msgcontainer__seq:header_type -> gucef_pubsub_msgcontainer_header__seq [style=bold];
+	gucef_pubsub_msgcontainer__seq:pubsubmsg_type -> gucef_pubsub_msg__seq [style=bold];
+	gucef_pubsub_msgcontainer__inst__msg_offset_idx_size:msg_offset_idx_size_type -> gucef_pubsub_msgcontainer__seq:pubsubmsg__repeat [color="#404040"];
+	gucef_pubsub_msgcontainer__seq:footer_type -> gucef_pubsub_msgcontainer_footer__seq [style=bold];
+	gucef_pubsub_msg__seq:msg_date_time_type -> gucef_pubsub_msg__seq_msg_date_time_switch [style=bold];
+	gucef_pubsub_msgcontainer_header__seq:options_type -> gucef_pubsub_msg__seq:msg_date_time_type [color="#404040"];
+	gucef_pubsub_msg__seq:msgid_type -> gucef_core_variant__seq [style=bold];
+	gucef_pubsub_msg__seq:msg_index_type -> gucef_core_variant__seq [style=bold];
+	gucef_pubsub_msg__seq:primary_payload_included_type -> gucef_core_variant__seq [style=bold];
+	gucef_pubsub_msg__seq:key_value_pairs_type -> kv_pair__seq [style=bold];
+	gucef_pubsub_msg__seq:nr_of_kv_pairs_type -> gucef_pubsub_msg__seq:key_value_pairs__repeat [color="#404040"];
+	gucef_pubsub_msg__seq:metadata_key_value_pairs_type -> kv_pair__seq [style=bold];
+	gucef_pubsub_msg__seq:nr_of_metadata_kv_pairs_type -> gucef_pubsub_msg__seq:metadata_key_value_pairs__repeat [color="#404040"];
+	kv_pair__seq:key_type -> gucef_core_variant__seq [style=bold];
+	kv_pair__seq:value_type -> gucef_core_variant__seq [style=bold];
+}

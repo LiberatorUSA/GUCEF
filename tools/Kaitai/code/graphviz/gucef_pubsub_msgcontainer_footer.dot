@@ -1,0 +1,21 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__gucef_pubsub_msgcontainer_footer {
+		label="GucefPubsubMsgcontainerFooter";
+		graph[style=dotted];
+
+		gucef_pubsub_msgcontainer_footer__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="msg_offset_idx_pos">0</TD><TD PORT="msg_offset_idx_size">4</TD><TD>u4le</TD><TD PORT="msg_offset_idx_type">msg_offset_idx</TD></TR>
+			<TR><TD COLSPAN="4" PORT="msg_offset_idx__repeat">repeat mois times</TD></TR>
+			<TR><TD PORT="msg_offset_idx_size_pos">...</TD><TD PORT="msg_offset_idx_size_size">4</TD><TD>u4le</TD><TD PORT="msg_offset_idx_size_type">msg_offset_idx_size</TD></TR>
+			<TR><TD PORT="magic_text_pos">...</TD><TD PORT="magic_text_size">10</TD><TD></TD><TD PORT="magic_text_type">magic_text</TD></TR>
+		</TABLE>>];
+		gucef_pubsub_msgcontainer_footer__inst__mois [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="mois_pos">(_io.size - 14)</TD><TD PORT="mois_size">4</TD><TD>u4le</TD><TD PORT="mois_type">mois</TD></TR>
+		</TABLE>>];
+	}
+	gucef_pubsub_msgcontainer_footer__inst__mois:mois_type -> gucef_pubsub_msgcontainer_footer__seq:msg_offset_idx__repeat [color="#404040"];
+}

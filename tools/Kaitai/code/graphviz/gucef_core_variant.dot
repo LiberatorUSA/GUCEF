@@ -1,0 +1,215 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__gucef_core_variant {
+		label="GucefCoreVariant";
+		graph[style=dotted];
+
+		gucef_core_variant__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="type_id_pos">0</TD><TD PORT="type_id_size">1</TD><TD>u1→GucefDatatypes</TD><TD PORT="type_id_type">type_id</TD></TR>
+			<TR><TD PORT="payload_pos">1</TD><TD PORT="payload_size">...</TD><TD>switch (type_id)</TD><TD PORT="payload_type">payload</TD></TR>
+		</TABLE>>];
+gucef_core_variant__seq_payload_switch [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+	<TR><TD BGCOLOR="#F0F2E4">case</TD><TD BGCOLOR="#F0F2E4">type</TD></TR>
+	<TR><TD>:gucef_datatypes_datetime_iso8601_ascii_string</TD><TD PORT="case0">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_utf16_le_string</TD><TD PORT="case1">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_int16</TD><TD PORT="case2">GucefInt16</TD></TR>
+	<TR><TD>:gucef_datatypes_float32</TD><TD PORT="case3">GucefFloat32</TD></TR>
+	<TR><TD>:gucef_datatypes_ascii_string</TD><TD PORT="case4">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_uint16</TD><TD PORT="case5">GucefUint16</TD></TR>
+	<TR><TD>:gucef_datatypes_uint64</TD><TD PORT="case6">GucefUint64</TD></TR>
+	<TR><TD>:gucef_datatypes_int32</TD><TD PORT="case7">GucefInt32</TD></TR>
+	<TR><TD>:gucef_datatypes_uint8</TD><TD PORT="case8">GucefUint8</TD></TR>
+	<TR><TD>:gucef_datatypes_uint32</TD><TD PORT="case9">GucefUint32</TD></TR>
+	<TR><TD>:gucef_datatypes_float64</TD><TD PORT="case10">GucefFloat64</TD></TR>
+	<TR><TD>:gucef_datatypes_be_timestamp_in_secs_since_unix_epoch</TD><TD PORT="case11">GucefBeTimestampInSecsSinceUnixEpoch</TD></TR>
+	<TR><TD>:gucef_datatypes_be_timestamp_in_ms_since_unix_epoch</TD><TD PORT="case12">GucefBeTimestampInMsSinceUnixEpoch</TD></TR>
+	<TR><TD>:gucef_datatypes_utf32_string</TD><TD PORT="case13">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_boolean_utf8_string</TD><TD PORT="case14">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_binary_blob</TD><TD PORT="case15">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_le_timestamp_in_ms_since_unix_epoch</TD><TD PORT="case16">GucefLeTimestampInMsSinceUnixEpoch</TD></TR>
+	<TR><TD>:gucef_datatypes_binary_bsob</TD><TD PORT="case17">GucefBsob</TD></TR>
+	<TR><TD>:gucef_datatypes_boolean_ascii_string</TD><TD PORT="case18">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_utf8_string</TD><TD PORT="case19">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_int8</TD><TD PORT="case20">GucefInt8</TD></TR>
+	<TR><TD>:gucef_datatypes_boolean_int32</TD><TD PORT="case21">GucefBooleanInt32</TD></TR>
+	<TR><TD>:gucef_datatypes_le_timestamp_in_secs_since_unix_epoch</TD><TD PORT="case22">GucefLeTimestampInSecsSinceUnixEpoch</TD></TR>
+	<TR><TD>:gucef_datatypes_datetime_iso8601_utf8_string</TD><TD PORT="case23">GucefCoreDynamic</TD></TR>
+	<TR><TD>:gucef_datatypes_int64</TD><TD PORT="case24">GucefInt64</TD></TR>
+	<TR><TD>:gucef_datatypes_utf16_be_string</TD><TD PORT="case25">GucefCoreDynamic</TD></TR>
+</TABLE>>];
+		subgraph cluster__gucef_int64 {
+			label="GucefCoreVariant::GucefInt64";
+			graph[style=dotted];
+
+			gucef_int64__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>s8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_bsob {
+			label="GucefCoreVariant::GucefBsob";
+			graph[style=dotted];
+
+			gucef_bsob__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">1</TD><TD>u1</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_be_timestamp_in_ms_since_unix_epoch {
+			label="GucefCoreVariant::GucefBeTimestampInMsSinceUnixEpoch";
+			graph[style=dotted];
+
+			gucef_be_timestamp_in_ms_since_unix_epoch__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>u8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_le_timestamp_in_secs_since_unix_epoch {
+			label="GucefCoreVariant::GucefLeTimestampInSecsSinceUnixEpoch";
+			graph[style=dotted];
+
+			gucef_le_timestamp_in_secs_since_unix_epoch__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>u8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_uint16 {
+			label="GucefCoreVariant::GucefUint16";
+			graph[style=dotted];
+
+			gucef_uint16__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">2</TD><TD>u2le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_uint64 {
+			label="GucefCoreVariant::GucefUint64";
+			graph[style=dotted];
+
+			gucef_uint64__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>u8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_uint8 {
+			label="GucefCoreVariant::GucefUint8";
+			graph[style=dotted];
+
+			gucef_uint8__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">1</TD><TD>u1</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_int8 {
+			label="GucefCoreVariant::GucefInt8";
+			graph[style=dotted];
+
+			gucef_int8__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">1</TD><TD>s1</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_int16 {
+			label="GucefCoreVariant::GucefInt16";
+			graph[style=dotted];
+
+			gucef_int16__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">2</TD><TD>s2le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_float64 {
+			label="GucefCoreVariant::GucefFloat64";
+			graph[style=dotted];
+
+			gucef_float64__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>f8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_le_timestamp_in_ms_since_unix_epoch {
+			label="GucefCoreVariant::GucefLeTimestampInMsSinceUnixEpoch";
+			graph[style=dotted];
+
+			gucef_le_timestamp_in_ms_since_unix_epoch__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>u8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_int32 {
+			label="GucefCoreVariant::GucefInt32";
+			graph[style=dotted];
+
+			gucef_int32__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">4</TD><TD>s4le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_be_timestamp_in_secs_since_unix_epoch {
+			label="GucefCoreVariant::GucefBeTimestampInSecsSinceUnixEpoch";
+			graph[style=dotted];
+
+			gucef_be_timestamp_in_secs_since_unix_epoch__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">8</TD><TD>u8le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_float32 {
+			label="GucefCoreVariant::GucefFloat32";
+			graph[style=dotted];
+
+			gucef_float32__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">4</TD><TD>f4le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_uint32 {
+			label="GucefCoreVariant::GucefUint32";
+			graph[style=dotted];
+
+			gucef_uint32__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">4</TD><TD>u4le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+		subgraph cluster__gucef_boolean_int32 {
+			label="GucefCoreVariant::GucefBooleanInt32";
+			graph[style=dotted];
+
+			gucef_boolean_int32__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+				<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+				<TR><TD PORT="data_pos">0</TD><TD PORT="data_size">4</TD><TD>s4le</TD><TD PORT="data_type">data</TD></TR>
+			</TABLE>>];
+		}
+	}
+	gucef_core_variant__seq:payload_type -> gucef_core_variant__seq_payload_switch [style=bold];
+	gucef_core_variant__seq_payload_switch:case0 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case1 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case2 -> gucef_int16__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case3 -> gucef_float32__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case4 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case5 -> gucef_uint16__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case6 -> gucef_uint64__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case7 -> gucef_int32__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case8 -> gucef_uint8__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case9 -> gucef_uint32__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case10 -> gucef_float64__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case11 -> gucef_be_timestamp_in_secs_since_unix_epoch__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case12 -> gucef_be_timestamp_in_ms_since_unix_epoch__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case13 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case14 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case15 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case16 -> gucef_le_timestamp_in_ms_since_unix_epoch__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case17 -> gucef_bsob__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case18 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case19 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case20 -> gucef_int8__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case21 -> gucef_boolean_int32__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case22 -> gucef_le_timestamp_in_secs_since_unix_epoch__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case23 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case24 -> gucef_int64__seq [style=bold];
+	gucef_core_variant__seq_payload_switch:case25 -> gucef_core_dynamic__seq [style=bold];
+	gucef_core_variant__seq:type_id_type -> gucef_core_variant__seq:payload_type [color="#404040"];
+}

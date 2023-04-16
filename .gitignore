@@ -18,3 +18,5 @@ projects/Android/obj/
 projects/Android/libs/
 projects/k3s/github/vanvelzen-github-runner-base-latest.tar
 .vs/slnx.sqlite
+
+tools/Kaitai/kaitai-struct-compiler_0.10_all.deb

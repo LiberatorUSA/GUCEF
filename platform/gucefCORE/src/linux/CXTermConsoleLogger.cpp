@@ -264,7 +264,7 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
                                                                         threadId   ,
                                                                         datetime   ) + "\n" );
 
-                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+                fprintf( m_slaveFptr, "%s", actualLogMsg.C_String() );
             }
         }
         else
@@ -272,7 +272,7 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
             if ( logMsgType == CORE::LOG_CONSOLE )
             {
                 CString actualLogMsg( logMessage + "\n" );
-                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+                fprintf( m_slaveFptr, "%s", actualLogMsg.C_String() );
             }
         }
     }
@@ -295,7 +295,7 @@ CXTermConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
             if ( logLevel >= m_minimalLogLevel )
             {
                 CString actualLogMsg( logMessage + "\n" );
-                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+                fprintf( m_slaveFptr, "%s", actualLogMsg.C_String() );
             }
         }
         else
@@ -303,7 +303,7 @@ CXTermConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
             if ( logMsgType == CORE::LOG_CONSOLE )
             {
                 CString actualLogMsg( logMessage + "\n" );
-                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+                fprintf( m_slaveFptr, "%s", actualLogMsg.C_String() );
             }
         }
     }

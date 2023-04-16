@@ -1,0 +1,147 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <title>GucefPubsubMsgcontainer format specification</title>
+  </head>
+  <body>
+           <div class="container">
+  <h1>GucefPubsubMsgcontainer format specification</h1>
+
+      
+<a name='type-gucef_pubsub_msgcontainer'></a>
+<h1>Type: GucefPubsubMsgcontainer</h1>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>header</td>
+<td><a href="#type-gucef_pubsub_msgcontainer_header">GucefPubsubMsgcontainerHeader</a></td>
+<td></td>
+</tr>
+<tr>
+<td>15</td>
+<td>...</td>
+<td>pubsubmsg</td>
+<td><a href="#type-gucef_pubsub_msgcontainer-gucef_pubsub_msg">GucefPubsubMsg</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>footer</td>
+<td><a href="#type-gucef_pubsub_msgcontainer_footer">GucefPubsubMsgcontainerFooter</a></td>
+<td></td>
+</tr>
+</table>
+<p><b>Parse instance</b>: msg_offset_idx_size</p>
+<table class="table">
+<tr>
+<td>(_io.size - 14)</td>
+<td>...</td>
+<td>msg_offset_idx_size</td>
+<td>u4le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_pubsub_msgcontainer-gucef_pubsub_msg'></a>
+<h2>Type: GucefPubsubMsg</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>msg_date_time</td>
+<td>SwitchType(BinOp(Attribute(Attribute(Name(identifier(_root)),identifier(header)),identifier(options)),BitAnd,BinOp(IntNum(1),LShift,IntNum(2))),Map(IntNum(0) -> IntMultiType(false,Width4,Some(LittleEndian)), Name(identifier(_)) -> IntMultiType(false,Width8,Some(LittleEndian))),true)</td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>msgid</td>
+<td><a href="#type-gucef_core_variant">GucefCoreVariant</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>msg_index</td>
+<td><a href="#type-gucef_core_variant">GucefCoreVariant</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>primary_payload_included</td>
+<td><a href="#type-gucef_core_variant">GucefCoreVariant</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>nr_of_kv_pairs</td>
+<td>u4le</td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>key_value_pairs</td>
+<td><a href="#type-gucef_pubsub_msgcontainer-kv_pair">KvPair</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>nr_of_metadata_kv_pairs</td>
+<td>u4le</td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>metadata_key_value_pairs</td>
+<td><a href="#type-gucef_pubsub_msgcontainer-kv_pair">KvPair</a></td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_pubsub_msgcontainer-kv_pair'></a>
+<h2>Type: KvPair</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>key</td>
+<td><a href="#type-gucef_core_variant">GucefCoreVariant</a></td>
+<td></td>
+</tr>
+<tr>
+<td>???</td>
+<td>...</td>
+<td>value</td>
+<td><a href="#type-gucef_core_variant">GucefCoreVariant</a></td>
+<td></td>
+</tr>
+</table>
+
+  </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  </body>
+</html>
+      

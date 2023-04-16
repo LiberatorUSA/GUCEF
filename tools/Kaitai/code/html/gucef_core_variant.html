@@ -1,0 +1,342 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <title>GucefCoreVariant format specification</title>
+  </head>
+  <body>
+           <div class="container">
+  <h1>GucefCoreVariant format specification</h1>
+
+      
+<a name='type-gucef_core_variant'></a>
+<h1>Type: GucefCoreVariant</h1>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>type_id</td>
+<td>u1→GucefDatatypes</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>...</td>
+<td>payload</td>
+<td>SwitchType(Name(identifier(type_id)),Map(EnumByLabel(identifier(gucef_datatypes),identifier(datetime_iso8601_ascii_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(utf16_le_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(int16),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_int16),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(float32),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_float32),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(ascii_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(uint16),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_uint16),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(uint64),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_uint64),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(int32),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_int32),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(uint8),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_uint8),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(uint32),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_uint32),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(float64),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_float64),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(be_timestamp_in_secs_since_unix_epoch),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_be_timestamp_in_secs_since_unix_epoch),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(be_timestamp_in_ms_since_unix_epoch),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_be_timestamp_in_ms_since_unix_epoch),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(utf32_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(boolean_utf8_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(binary_blob),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(le_timestamp_in_ms_since_unix_epoch),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_le_timestamp_in_ms_since_unix_epoch),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(binary_bsob),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_bsob),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(boolean_ascii_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(utf8_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(int8),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_int8),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(boolean_int32),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_boolean_int32),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(le_timestamp_in_secs_since_unix_epoch),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_le_timestamp_in_secs_since_unix_epoch),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(datetime_iso8601_utf8_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(int64),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_int64),None,List()), EnumByLabel(identifier(gucef_datatypes),identifier(utf16_be_string),typeId(false,List(),false)) -> UserTypeInstream(List(gucef_core_dynamic),None,List())),true)</td>
+<td></td>
+</tr>
+</table>
+<a name='enum-gucef_core_variant-gucef_datatypes'></a>
+<h2>Enum: gucef_datatypes</h2>
+
+<table class="table">
+<tr>
+<th>ID</th><th>Name</th><th>Note</th>
+</tr>
+<tr>
+<td>1</td><td>uint8</td><td></td></tr>
+</tr>
+<tr>
+<td>2</td><td>int8</td><td></td></tr>
+</tr>
+<tr>
+<td>3</td><td>uint16</td><td></td></tr>
+</tr>
+<tr>
+<td>5</td><td>int16</td><td></td></tr>
+</tr>
+<tr>
+<td>7</td><td>uint32</td><td></td></tr>
+</tr>
+<tr>
+<td>9</td><td>int32</td><td></td></tr>
+</tr>
+<tr>
+<td>11</td><td>uint64</td><td></td></tr>
+</tr>
+<tr>
+<td>13</td><td>int64</td><td></td></tr>
+</tr>
+<tr>
+<td>15</td><td>float32</td><td></td></tr>
+</tr>
+<tr>
+<td>17</td><td>float64</td><td></td></tr>
+</tr>
+<tr>
+<td>21</td><td>ascii_string</td><td></td></tr>
+</tr>
+<tr>
+<td>22</td><td>utf8_string</td><td></td></tr>
+</tr>
+<tr>
+<td>23</td><td>utf16_le_string</td><td></td></tr>
+</tr>
+<tr>
+<td>24</td><td>utf16_be_string</td><td></td></tr>
+</tr>
+<tr>
+<td>25</td><td>utf32_string</td><td></td></tr>
+</tr>
+<tr>
+<td>30</td><td>boolean_int32</td><td></td></tr>
+</tr>
+<tr>
+<td>31</td><td>boolean_ascii_string</td><td></td></tr>
+</tr>
+<tr>
+<td>32</td><td>boolean_utf8_string</td><td></td></tr>
+</tr>
+<tr>
+<td>40</td><td>binary_blob</td><td></td></tr>
+</tr>
+<tr>
+<td>41</td><td>binary_bsob</td><td></td></tr>
+</tr>
+<tr>
+<td>50</td><td>datetime_iso8601_ascii_string</td><td></td></tr>
+</tr>
+<tr>
+<td>51</td><td>datetime_iso8601_utf8_string</td><td></td></tr>
+</tr>
+<tr>
+<td>55</td><td>le_timestamp_in_secs_since_unix_epoch</td><td></td></tr>
+</tr>
+<tr>
+<td>56</td><td>be_timestamp_in_secs_since_unix_epoch</td><td></td></tr>
+</tr>
+<tr>
+<td>57</td><td>le_timestamp_in_ms_since_unix_epoch</td><td></td></tr>
+</tr>
+<tr>
+<td>58</td><td>be_timestamp_in_ms_since_unix_epoch</td><td></td></tr>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_int64'></a>
+<h2>Type: GucefInt64</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>s8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_bsob'></a>
+<h2>Type: GucefBsob</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u1</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_be_timestamp_in_ms_since_unix_epoch'></a>
+<h2>Type: GucefBeTimestampInMsSinceUnixEpoch</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_le_timestamp_in_secs_since_unix_epoch'></a>
+<h2>Type: GucefLeTimestampInSecsSinceUnixEpoch</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_uint16'></a>
+<h2>Type: GucefUint16</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u2le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_uint64'></a>
+<h2>Type: GucefUint64</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_uint8'></a>
+<h2>Type: GucefUint8</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u1</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_int8'></a>
+<h2>Type: GucefInt8</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>s1</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_int16'></a>
+<h2>Type: GucefInt16</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>s2le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_float64'></a>
+<h2>Type: GucefFloat64</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>f8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_le_timestamp_in_ms_since_unix_epoch'></a>
+<h2>Type: GucefLeTimestampInMsSinceUnixEpoch</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_int32'></a>
+<h2>Type: GucefInt32</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>s4le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_be_timestamp_in_secs_since_unix_epoch'></a>
+<h2>Type: GucefBeTimestampInSecsSinceUnixEpoch</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u8le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_float32'></a>
+<h2>Type: GucefFloat32</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>f4le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_uint32'></a>
+<h2>Type: GucefUint32</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>u4le</td>
+<td></td>
+</tr>
+</table>
+<a name='type-gucef_core_variant-gucef_boolean_int32'></a>
+<h2>Type: GucefBooleanInt32</h2>
+
+<table class="table">
+<tr><th>Offset</th><th>Size</th><th>ID</th><th>Type</th><th>Note</th></tr>
+<tr>
+<td>0</td>
+<td>...</td>
+<td>data</td>
+<td>s4le</td>
+<td></td>
+</tr>
+</table>
+
+  </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  </body>
+</html>
+      

@@ -40,20 +40,20 @@ seq:
         'gucef_datatypes::float64': gucef_float64
         'gucef_datatypes::boolean_int32': gucef_boolean_int32
         'gucef_datatypes::binary_bsob': gucef_bsob
-        'gucef_datatypes::binary_blob': gucef_dynamic
+        'gucef_datatypes::binary_blob': gucef_core_dynamic
         'gucef_datatypes::le_timestamp_in_secs_since_unix_epoch': gucef_le_timestamp_in_secs_since_unix_epoch
         'gucef_datatypes::be_timestamp_in_secs_since_unix_epoch': gucef_be_timestamp_in_secs_since_unix_epoch
         'gucef_datatypes::le_timestamp_in_ms_since_unix_epoch': gucef_le_timestamp_in_ms_since_unix_epoch
         'gucef_datatypes::be_timestamp_in_ms_since_unix_epoch': gucef_be_timestamp_in_ms_since_unix_epoch
-        'gucef_datatypes::boolean_ascii_string' : gucef_dynamic
-        'gucef_datatypes::boolean_utf8_string' : gucef_dynamic
-        'gucef_datatypes::ascii_string' : gucef_dynamic
-        'gucef_datatypes::utf8_string' : gucef_dynamic
-        'gucef_datatypes::utf16_le_string' : gucef_dynamic
-        'gucef_datatypes::utf16_be_string' : gucef_dynamic
-        'gucef_datatypes::utf32_string' : gucef_dynamic
-        'gucef_datatypes::datetime_iso8601_ascii_string' : gucef_dynamic
-        'gucef_datatypes::datetime_iso8601_utf8_string' : gucef_dynamic
+        'gucef_datatypes::boolean_ascii_string' : gucef_core_dynamic
+        'gucef_datatypes::boolean_utf8_string' : gucef_core_dynamic
+        'gucef_datatypes::ascii_string' : gucef_core_dynamic
+        'gucef_datatypes::utf8_string' : gucef_core_dynamic
+        'gucef_datatypes::utf16_le_string' : gucef_core_dynamic
+        'gucef_datatypes::utf16_be_string' : gucef_core_dynamic
+        'gucef_datatypes::utf32_string' : gucef_core_dynamic
+        'gucef_datatypes::datetime_iso8601_ascii_string' : gucef_core_dynamic
+        'gucef_datatypes::datetime_iso8601_utf8_string' : gucef_core_dynamic
 enums:
   gucef_datatypes:
     1: uint8

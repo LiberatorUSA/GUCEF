@@ -1,0 +1,15 @@
+digraph {
+	rankdir=LR;
+	node [shape=plaintext];
+	subgraph cluster__gucef_pubsub_msgcontainer_header {
+		label="GucefPubsubMsgcontainerHeader";
+		graph[style=dotted];
+
+		gucef_pubsub_msgcontainer_header__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
+			<TR><TD PORT="magic_text_pos">0</TD><TD PORT="magic_text_size">10</TD><TD></TD><TD PORT="magic_text_type">magic_text</TD></TR>
+			<TR><TD PORT="version_pos">10</TD><TD PORT="version_size">1</TD><TD>u1</TD><TD PORT="version_type">version</TD></TR>
+			<TR><TD PORT="options_pos">11</TD><TD PORT="options_size">4</TD><TD>u4le</TD><TD PORT="options_type">options</TD></TR>
+		</TABLE>>];
+	}
+}
