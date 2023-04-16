@@ -857,7 +857,12 @@ CTaskManager::IsTaskOfTaskTypeExecutable( const CString& taskType, const CString
         ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
         if ( i != m_threadPools.end() )
         {
-            return (*i).second->IsTaskOfTaskTypeExecutable( taskType );
+            if ( (*i).second->IsTaskOfTaskTypeExecutable( taskType ) )
+                return true;
+        }
+        if ( DefaultThreadPoolName == threadPoolName )
+        {
+            return m_consumerFactory.IsConstructible( taskType );
         }
         return false;
     }
@@ -895,7 +900,12 @@ CTaskManager::IsCustomTaskDataForTaskTypeSerializable( const CString& taskType, 
         ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
         if ( i != m_threadPools.end() )
         {
-            return (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType );
+            if ( (*i).second->IsCustomTaskDataForTaskTypeSerializable( taskType ) )
+                return true;
+        }
+        if ( DefaultThreadPoolName == threadPoolName )
+        {
+            return m_taskDataFactory.IsConstructible( taskType );
         }
         return false;
     }
@@ -936,6 +946,12 @@ CTaskManager::CreateCustomTaskDataForTaskTypeIfAvailable( const CString& taskTyp
         if ( i != m_threadPools.end() )
         {
             taskData = (*i).second->CreateCustomTaskDataForTaskTypeIfAvailable( taskType );
+            if ( !taskData.IsNULL() )
+                return taskData;
+        }
+        if ( DefaultThreadPoolName == threadPoolName )
+        {
+            return m_taskDataFactory.Create( taskType );
         }
         return taskData;
     }

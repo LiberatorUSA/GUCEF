@@ -269,7 +269,7 @@ bool
 CStdDataNodeSerializableTaskData::GetTaskCanBeQueued( void ) const
 {GUCEF_TRACE;
 
-    return m_onlyUseExistingThreadPool;
+    return m_taskCanBeQueued;
 }
 
 /*-------------------------------------------------------------------------*/
