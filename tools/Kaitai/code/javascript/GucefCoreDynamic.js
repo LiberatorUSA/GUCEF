@@ -18,8 +18,8 @@ var GucefCoreDynamic = (function() {
     this._read();
   }
   GucefCoreDynamic.prototype._read = function() {
-    this.payloadSize = this._io.readU4le();
-    this.data = this._io.readBytes(this.payloadSize);
+    this.lenData = this._io.readU4le();
+    this.data = this._io.readBytes(this.lenData);
   }
 
   return GucefCoreDynamic;

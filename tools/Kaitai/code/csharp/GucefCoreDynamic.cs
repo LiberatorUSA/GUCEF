@@ -19,14 +19,14 @@ namespace GUCEF
         }
         private void _read()
         {
-            _payloadSize = m_io.ReadU4le();
-            _data = m_io.ReadBytes(PayloadSize);
+            _lenData = m_io.ReadU4le();
+            _data = m_io.ReadBytes(LenData);
         }
-        private uint _payloadSize;
+        private uint _lenData;
         private byte[] _data;
         private GucefCoreDynamic m_root;
         private KaitaiStruct m_parent;
-        public uint PayloadSize { get { return _payloadSize; } }
+        public uint LenData { get { return _lenData; } }
         public byte[] Data { get { return _data; } }
         public GucefCoreDynamic M_Root { get { return m_root; } }
         public KaitaiStruct M_Parent { get { return m_parent; } }

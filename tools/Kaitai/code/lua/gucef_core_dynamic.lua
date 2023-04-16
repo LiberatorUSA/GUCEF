@@ -15,8 +15,8 @@ function GucefCoreDynamic:_init(io, parent, root)
 end
 
 function GucefCoreDynamic:_read()
-  self.payload_size = self._io:read_u4le()
-  self.data = self._io:read_bytes(self.payload_size)
+  self.len_data = self._io:read_u4le()
+  self.data = self._io:read_bytes(self.len_data)
 end
 
 

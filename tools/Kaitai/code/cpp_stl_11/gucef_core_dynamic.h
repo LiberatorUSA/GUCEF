@@ -24,13 +24,13 @@ public:
     ~gucef_core_dynamic_t();
 
 private:
-    uint32_t m_payload_size;
+    uint32_t m_len_data;
     std::string m_data;
     gucef_core_dynamic_t* m__root;
     kaitai::kstruct* m__parent;
 
 public:
-    uint32_t payload_size() const { return m_payload_size; }
+    uint32_t len_data() const { return m_len_data; }
     std::string data() const { return m_data; }
     gucef_core_dynamic_t* _root() const { return m__root; }
     kaitai::kstruct* _parent() const { return m__parent; }

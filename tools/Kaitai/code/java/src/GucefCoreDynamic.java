@@ -25,14 +25,14 @@ public class GucefCoreDynamic extends KaitaiStruct {
         _read();
     }
     private void _read() {
-        this.payloadSize = this._io.readU4le();
-        this.data = this._io.readBytes(payloadSize());
+        this.lenData = this._io.readU4le();
+        this.data = this._io.readBytes(lenData());
     }
-    private long payloadSize;
+    private long lenData;
     private byte[] data;
     private GucefCoreDynamic _root;
     private KaitaiStruct _parent;
-    public long payloadSize() { return payloadSize; }
+    public long lenData() { return lenData; }
     public byte[] data() { return data; }
     public GucefCoreDynamic _root() { return _root; }
     public KaitaiStruct _parent() { return _parent; }

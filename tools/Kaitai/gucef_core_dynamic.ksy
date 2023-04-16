@@ -19,7 +19,7 @@ meta:
   id: gucef_core_dynamic
   endian: le
 seq:
-  - id: payload_size
+  - id: len_data
     type: u4
   - id: data
-    size: payload_size
+    size: len_data

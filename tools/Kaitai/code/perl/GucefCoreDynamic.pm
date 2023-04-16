@@ -34,13 +34,13 @@ sub new {
 sub _read {
     my ($self) = @_;
 
-    $self->{payload_size} = $self->{_io}->read_u4le();
-    $self->{data} = $self->{_io}->read_bytes($self->payload_size());
+    $self->{len_data} = $self->{_io}->read_u4le();
+    $self->{data} = $self->{_io}->read_bytes($self->len_data());
 }
 
-sub payload_size {
+sub len_data {
     my ($self) = @_;
-    return $self->{payload_size};
+    return $self->{len_data};
 }
 
 sub data {

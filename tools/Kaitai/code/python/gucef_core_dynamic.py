@@ -15,7 +15,7 @@ class GucefCoreDynamic(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.payload_size = self._io.read_u4le()
-        self.data = self._io.read_bytes(self.payload_size)
+        self.len_data = self._io.read_u4le()
+        self.data = self._io.read_bytes(self.len_data)
 
 

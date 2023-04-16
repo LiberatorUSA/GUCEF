@@ -7,9 +7,9 @@ digraph {
 
 		gucef_core_dynamic__seq [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
 			<TR><TD BGCOLOR="#E0FFE0">pos</TD><TD BGCOLOR="#E0FFE0">size</TD><TD BGCOLOR="#E0FFE0">type</TD><TD BGCOLOR="#E0FFE0">id</TD></TR>
-			<TR><TD PORT="payload_size_pos">0</TD><TD PORT="payload_size_size">4</TD><TD>u4le</TD><TD PORT="payload_size_type">payload_size</TD></TR>
-			<TR><TD PORT="data_pos">4</TD><TD PORT="data_size">payload_size</TD><TD></TD><TD PORT="data_type">data</TD></TR>
+			<TR><TD PORT="len_data_pos">0</TD><TD PORT="len_data_size">4</TD><TD>u4le</TD><TD PORT="len_data_type">len_data</TD></TR>
+			<TR><TD PORT="data_pos">4</TD><TD PORT="data_size">len_data</TD><TD></TD><TD PORT="data_type">data</TD></TR>
 		</TABLE>>];
 	}
-	gucef_core_dynamic__seq:payload_size_type -> gucef_core_dynamic__seq:data_size [color="#404040"];
+	gucef_core_dynamic__seq:len_data_type -> gucef_core_dynamic__seq:data_size [color="#404040"];
 }

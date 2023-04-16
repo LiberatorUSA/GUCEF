@@ -3,7 +3,7 @@
 import "github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
 
 type GucefCoreDynamic struct {
-	PayloadSize uint32
+	LenData uint32
 	Data []byte
 	_io *kaitai.Stream
 	_root *GucefCoreDynamic
@@ -23,8 +23,8 @@ func (this *GucefCoreDynamic) Read(io *kaitai.Stream, parent interface{}, root *
 	if err != nil {
 		return err
 	}
-	this.PayloadSize = uint32(tmp1)
-	tmp2, err := this._io.ReadBytes(int(this.PayloadSize))
+	this.LenData = uint32(tmp1)
+	tmp2, err := this._io.ReadBytes(int(this.LenData))
 	if err != nil {
 		return err
 	}

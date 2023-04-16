@@ -13,10 +13,10 @@ class GucefCoreDynamic < Kaitai::Struct::Struct
   end
 
   def _read
-    @payload_size = @_io.read_u4le
-    @data = @_io.read_bytes(payload_size)
+    @len_data = @_io.read_u4le
+    @data = @_io.read_bytes(len_data)
     self
   end
-  attr_reader :payload_size
+  attr_reader :len_data
   attr_reader :data
 end

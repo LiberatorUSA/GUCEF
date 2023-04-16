@@ -3,7 +3,7 @@ import options
 
 type
   GucefCoreDynamic* = ref object of KaitaiStruct
-    `payloadSize`*: uint32
+    `lenData`*: uint32
     `data`*: seq[byte]
     `parent`*: KaitaiStruct
 
@@ -18,9 +18,9 @@ proc read*(_: typedesc[GucefCoreDynamic], io: KaitaiStream, root: KaitaiStruct, 
   this.root = root
   this.parent = parent
 
-  let payloadSizeExpr = this.io.readU4le()
-  this.payloadSize = payloadSizeExpr
-  let dataExpr = this.io.readBytes(int(this.payloadSize))
+  let lenDataExpr = this.io.readU4le()
+  this.lenData = lenDataExpr
+  let dataExpr = this.io.readBytes(int(this.lenData))
   this.data = dataExpr
 
 proc fromFile*(_: typedesc[GucefCoreDynamic], filename: string): GucefCoreDynamic =

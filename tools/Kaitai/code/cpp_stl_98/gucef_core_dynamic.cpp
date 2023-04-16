@@ -15,8 +15,8 @@ gucef_core_dynamic_t::gucef_core_dynamic_t(kaitai::kstream* p__io, kaitai::kstru
 }
 
 void gucef_core_dynamic_t::_read() {
-    m_payload_size = m__io->read_u4le();
-    m_data = m__io->read_bytes(payload_size());
+    m_len_data = m__io->read_u4le();
+    m_data = m__io->read_bytes(len_data());
 }
 
 gucef_core_dynamic_t::~gucef_core_dynamic_t() {

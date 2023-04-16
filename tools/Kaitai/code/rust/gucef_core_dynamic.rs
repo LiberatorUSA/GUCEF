@@ -11,7 +11,7 @@ use kaitai_struct::KaitaiStruct;
 
 #[derive(Default)]
 pub struct GucefCoreDynamic {
-    pub payloadSize: u32,
+    pub lenData: u32,
     pub data: Vec<u8>,
 }
 
@@ -36,8 +36,8 @@ impl KaitaiStruct for GucefCoreDynamic {
                              _root: &Option<Box<KaitaiStruct>>)
                              -> Result<()>
         where Self: Sized {
-        self.payloadSize = self.stream.read_u4le()?;
-        self.data = self.stream.read_bytes(self.payload_size)?;
+        self.lenData = self.stream.read_u4le()?;
+        self.data = self.stream.read_bytes(self.len_data)?;
     }
 }
 
