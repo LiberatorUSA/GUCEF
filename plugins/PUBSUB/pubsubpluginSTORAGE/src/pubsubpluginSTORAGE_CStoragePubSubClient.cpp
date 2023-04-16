@@ -1,5 +1,5 @@
 /*
- *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality 
+ *  pubsubpluginSTORAGE: Generic GUCEF plugin for PUBSUB module functionality
  *                       providing a storage interface
  *
  *  Copyright (C) 1998 - 2022.  Dinand Vanvelzen
@@ -124,7 +124,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
 
 CStoragePubSubClient::~CStoragePubSubClient()
 {GUCEF_TRACE;
-    
+
     Disconnect();
 
     MT::CScopeMutex lock( m_lock );
@@ -139,7 +139,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
     m_topicMap.clear();
 
     m_pubsubBookmarkPersistence.Unlink();
-    
+
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
@@ -148,7 +148,7 @@ CStoragePubSubClient::~CStoragePubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-CStoragePubSubClientConfig& 
+CStoragePubSubClientConfig&
 CStoragePubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
@@ -157,7 +157,7 @@ CStoragePubSubClient::GetConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-CORE::ThreadPoolPtr 
+CORE::ThreadPoolPtr
 CStoragePubSubClient::GetThreadPool( void )
 {GUCEF_TRACE;
 
@@ -185,26 +185,26 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
     features.supportsGlobPatternTopicNames = false;
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
-    features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill              
+    features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill
 
-    features.supportsBookmarkingConcept = true;         // We can create a reference to the storage location plus offset        
-    features.supportsAutoBookmarking = false;           // Currently we do 'forget' where we are if the app crashes    
-    features.supportsMsgIdBasedBookmark = false;        // In this context we have no idea what the message ID is, as such we cannot use it as a bookmark since we cannot garantee anything    
-    features.supportsMsgIndexBasedBookmark = false;     // In this context we have no idea what the message Index is, as such we cannot use it as a bookmark since we cannot garantee anything    
+    features.supportsBookmarkingConcept = true;         // We can create a reference to the storage location plus offset
+    features.supportsAutoBookmarking = false;           // Currently we do 'forget' where we are if the app crashes
+    features.supportsMsgIdBasedBookmark = false;        // In this context we have no idea what the message ID is, as such we cannot use it as a bookmark since we cannot garantee anything
+    features.supportsMsgIndexBasedBookmark = false;     // In this context we have no idea what the message Index is, as such we cannot use it as a bookmark since we cannot garantee anything
     features.supportsTopicIndexBasedBookmark = true;    // We can create a reference to the storage location plus offset
-    features.supportsMsgDateTimeBasedBookmark = false;      // In this context we have no idea what the message datetime is, as such we cannot use it as a bookmark since we cannot garantee anything    
-    features.supportsServerSideBookmarkPersistance = false; // Currently we do 'forget' where we are if the app crashes. @TODO? Maybe we can add storage backend opinionated bookmark storage    
+    features.supportsMsgDateTimeBasedBookmark = false;      // In this context we have no idea what the message datetime is, as such we cannot use it as a bookmark since we cannot garantee anything
+    features.supportsServerSideBookmarkPersistance = false; // Currently we do 'forget' where we are if the app crashes. @TODO? Maybe we can add storage backend opinionated bookmark storage
     features.supportsSubscribingUsingBookmark = true;       // We can create a reference to the storage location plus offset and then use that to resume the reading from that location
-    
-    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what. 
+
+    // since the storage backend is more of a transcribing passthrough it doesnt know what on the message means what.
     // As such it can only support this runtime via the receiveActionId
-    features.supportsDerivingBookmarkFromMsg = m_config.desiredFeatures.supportsSubscribing && m_config.desiredFeatures.supportsDerivingBookmarkFromMsg;       
-    
-    features.supportsAbsentMsgReceivedAck = m_config.desiredFeatures.supportsAbsentMsgReceivedAck;      
-    features.supportsAckUsingLastMsgInBatch = m_config.desiredFeatures.supportsAckUsingLastMsgInBatch;    
-    features.supportsAutoMsgReceivedAck = m_config.desiredFeatures.supportsAutoMsgReceivedAck;         
-    features.supportsSubscriberMsgReceivedAck = m_config.desiredFeatures.supportsSubscribing;     
-    features.supportsAckUsingBookmark = features.supportsDerivingBookmarkFromMsg;  
+    features.supportsDerivingBookmarkFromMsg = m_config.desiredFeatures.supportsSubscribing && m_config.desiredFeatures.supportsDerivingBookmarkFromMsg;
+
+    features.supportsAbsentMsgReceivedAck = m_config.desiredFeatures.supportsAbsentMsgReceivedAck;
+    features.supportsAckUsingLastMsgInBatch = m_config.desiredFeatures.supportsAckUsingLastMsgInBatch;
+    features.supportsAutoMsgReceivedAck = m_config.desiredFeatures.supportsAutoMsgReceivedAck;
+    features.supportsSubscriberMsgReceivedAck = m_config.desiredFeatures.supportsSubscribing;
+    features.supportsAckUsingBookmark = features.supportsDerivingBookmarkFromMsg;
 
     return true;
 }
@@ -217,11 +217,11 @@ CStoragePubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
 
     PUBSUB::CPubSubClientFeatures features;
     GetSupportedFeatures( features );
-    
+
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
     // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
-    
+
     bool doWeWantIt = ( m_config.desiredFeatures.supportsSubscribing &&                         // <- does it apply in this context ?
                         ( m_config.desiredFeatures.supportsSubscriberMsgReceivedAck ||          // <- do we want it?
                           m_config.desiredFeatures.supportsSubscribingUsingBookmark  )
@@ -233,8 +233,8 @@ CStoragePubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
     bool canWeNotWantIt = features.supportsAbsentMsgReceivedAck &&          // <- Is it even an option to not do it regardless of desired features
                           ( !features.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
                              features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark && features.supportsServerSideBookmarkPersistance );
-                              
-    bool acksNeeded =  ( doWeWantIt && isItSupported ) || 
+
+    bool acksNeeded =  ( doWeWantIt && isItSupported ) ||
                        ( !canWeNotWantIt && isItSupported );
 
     return acksNeeded;
@@ -242,7 +242,7 @@ CStoragePubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
 {GUCEF_TRACE;
 
@@ -283,7 +283,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr 
+PUBSUB::CPubSubClientTopicPtr
 CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -299,10 +299,10 @@ CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CStoragePubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
 {GUCEF_TRACE;
-        
+
     MT::CScopeMutex lock( m_lock );
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -320,7 +320,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -330,7 +330,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
         lock.EarlyUnlock();
         TopicAccessDestroyedEventData eData( topicName );
         NotifyObservers( TopicAccessDestroyedEvent, &eData );
-        
+
         topicAccess->Shutdown();
         topicAccess.Unlink();
     }
@@ -338,7 +338,7 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+const PUBSUB::CPubSubClientTopicConfig*
 CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -358,14 +358,14 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+const PUBSUB::CPubSubClientTopicConfig*
 CStoragePubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != preExistingConfig )
         return preExistingConfig;
-    
+
     m_config.topics.push_back( m_config.defaultTopicConfig );
     PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
     newTopicConfig->topicName = topicName;
@@ -374,7 +374,7 @@ CStoragePubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
@@ -388,7 +388,7 @@ CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topi
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
@@ -415,7 +415,7 @@ CStoragePubSubClient::GetCreatedTopicAccessNameList( CORE::CString::StringSet& t
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CStoragePubSubClient::GetType( void ) const
 {GUCEF_TRACE;
 
@@ -444,7 +444,7 @@ CStoragePubSubClient::SaveConfig( PUBSUB::CPubSubClientConfig& cfg ) const
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::TIPubSubBookmarkPersistenceBasicPtr 
+PUBSUB::TIPubSubBookmarkPersistenceBasicPtr
 CStoragePubSubClient::GetBookmarkPersistence( void ) const
 {GUCEF_TRACE;
 
@@ -457,7 +457,7 @@ bool
 CStoragePubSubClient::ConfigureBookmarkPersistance( void )
 {GUCEF_TRACE;
 
-    m_pubsubBookmarkPersistence.Unlink();    
+    m_pubsubBookmarkPersistence.Unlink();
 
     // Create and configure the pub-sub bookmark persistence
     m_pubsubBookmarkPersistence = PUBSUB::CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( m_config.pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, m_config.pubsubBookmarkPersistenceConfig );
@@ -484,7 +484,7 @@ CStoragePubSubClient::LoadConfig( const CORE::CDataNode& cfg )
     if ( parsedCfg.LoadConfig( cfg ) )
     {
         MT::CScopeMutex lock( m_lock );
-        
+
         m_config = parsedCfg;
         return ConfigureBookmarkPersistance();
     }
@@ -505,7 +505,7 @@ CStoragePubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
         MT::CScopeMutex lock( m_lock );
 
         m_config = parsedCfg;
-        m_needToTrackAcks = DetermineIfTrackingAcksIsNeeded(); 
+        m_needToTrackAcks = DetermineIfTrackingAcksIsNeeded();
         return ConfigureBookmarkPersistance();
     }
     return false;
@@ -580,7 +580,7 @@ CStoragePubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     if ( !m_topicMap.empty() )
     {
         // Aggregate the health status of all topics
@@ -595,7 +595,7 @@ CStoragePubSubClient::IsHealthy( void ) const
         // Notify if there was a change in status
         if ( allHealthy != m_isHealthy )
         {
-            m_isHealthy = allHealthy;        
+            m_isHealthy = allHealthy;
 
             if ( m_isHealthy )
             {
@@ -603,12 +603,12 @@ CStoragePubSubClient::IsHealthy( void ) const
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:IsHealthy: overall health status is now unhealthy" );         
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:IsHealthy: overall health status is now unhealthy" );
             }
 
             lock.EarlyUnlock();
-            THealthStatusChangeEventData eData( allHealthy ); 
-            NotifyObservers( HealthStatusChangeEvent, &eData );         
+            THealthStatusChangeEventData eData( allHealthy );
+            NotifyObservers( HealthStatusChangeEvent, &eData );
         }
 
         return allHealthy;
@@ -643,11 +643,11 @@ CStoragePubSubClient::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CStoragePubSubClient::RegisterTopicEventHandlers( CStoragePubSubClientTopicPtr& topic )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != topic )
+    if ( !topic.IsNULL() )
     {
         TEventCallback callback( this, &CStoragePubSubClient::OnTopicHealthStatusChange );
         SubscribeTo( topic.GetPointerAlways()                           ,
@@ -676,7 +676,7 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    // Quickly grab a snapshot of metric values for all topics 
+    // Quickly grab a snapshot of metric values for all topics
     // we don't combine this with metrics publishing as it adds to metrics timeframe drift across topics
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
@@ -696,23 +696,23 @@ CStoragePubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const CORE::CString& topicName = topic->GetMetricFriendlyTopicName();
         const CStoragePubSubClientTopicConfig& topicConfig = topic->GetTopicConfig();
         CORE::CString metricsPrefix = m_config.metricsPrefix + topicName;
-        
+
         GUCEF_METRIC_GAUGE( metricsPrefix + ".queuedReadyToReadBuffers", topicMetrics.queuedReadyToReadBuffers, 1.0f );
-        GUCEF_METRIC_GAUGE( metricsPrefix + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );        
+        GUCEF_METRIC_GAUGE( metricsPrefix + ".smallestBufferSizeInBytes", topicMetrics.smallestBufferSizeInBytes, 1.0f );
         GUCEF_METRIC_GAUGE( metricsPrefix + ".largestBufferSizeInBytes", topicMetrics.largestBufferSizeInBytes, 1.0f );
-        
+
         if ( topicConfig.needSubscribeSupport )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".storageCorruptionDetections", topicMetrics.storageCorruptionDetections, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsLoadedFromStorage", topicMetrics.msgsLoadedFromStorage, 1.0f );
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsNotifiedAsReceived", topicMetrics.msgsNotifiedAsReceived, 1.0f );
-            GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );        
+            GUCEF_METRIC_COUNT( metricsPrefix + ".storageDeserializationFailures", topicMetrics.storageDeserializationFailures, 1.0f );
         }
         else
         if ( topicConfig.needPublishSupport )
         {
             GUCEF_METRIC_COUNT( metricsPrefix + ".msgsWrittenToStorage", topicMetrics.msgsWrittenToStorage, 1.0f );
-        }        
+        }
         ++i;
     }
 }
@@ -729,7 +729,7 @@ CStoragePubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 MT::TLockStatus
-CStoragePubSubClient::Unlock( void ) const 
+CStoragePubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
@@ -737,7 +737,7 @@ CStoragePubSubClient::Unlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CStoragePubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 

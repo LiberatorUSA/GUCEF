@@ -93,7 +93,7 @@ CTestPubSubClient::~CTestPubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
-CTestPubSubClientConfig& 
+CTestPubSubClientConfig&
 CTestPubSubClient::GetConfig( void )
 {GUCEF_TRACE;
 
@@ -114,7 +114,8 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         if ( topicAccess->LoadConfig( topicConfig ) )
         {
             m_topicMap[ topicConfig.topicName ] = topicAccess;
-            RegisterTopicEventHandlers( topicAccess.StaticCast< STORAGE::CStoragePubSubClientTopic >() );
+            STORAGE::CStoragePubSubClientTopicPtr storageTopicAccess = topicAccess.StaticCast< STORAGE::CStoragePubSubClientTopic >();
+            RegisterTopicEventHandlers( storageTopicAccess );
         }
         else
         {
@@ -134,7 +135,7 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CTestPubSubClient::GetType( void ) const
 {GUCEF_TRACE;
 
@@ -199,7 +200,7 @@ CTestPubSubClient::LoadConfig( const PUBSUB::CPubSubClientConfig& cfg  )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CTestPubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 

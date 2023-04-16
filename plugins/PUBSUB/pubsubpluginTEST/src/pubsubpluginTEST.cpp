@@ -52,7 +52,7 @@
 
 using namespace GUCEF;
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTestPubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTestPubSubClient, PUBSUB::CPubSubClientConfig >    TTestPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +60,7 @@ typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTe
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-TStoragePubSubClientFactory g_storagePubSubClientFactory;
+TTestPubSubClientFactory g_testPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,7 +76,7 @@ pubsubpluginTEST_GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) PUBSUB
 
     pubsubpluginSTORAGE_GUCEFPlugin_Load( argc, argv );
 
-    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( PUBSUBPLUGIN::TEST::CTestPubSubClient::TypeName, &g_storagePubSubClientFactory );
+    PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( PUBSUBPLUGIN::TEST::CTestPubSubClient::TypeName, &g_testPubSubClientFactory );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin TEST" );
     return 1;

@@ -47,8 +47,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Helper template to allow one to use operators on shared pointers as if you  
- *  were dealing with the object itself. 
+ *  Helper template to allow one to use operators on shared pointers as if you
+ *  were dealing with the object itself.
  *  Mainly intended for sorting of objects in containers while using pointers to said objects
  */
 template< typename T, class LockType >
@@ -69,9 +69,9 @@ class CTBasicSharedPtrObjOperators : public CTBasicSharedPtr< T, LockType >
     CTBasicSharedPtrObjOperators& operator=( const CTBasicSharedPtr< T, LockType >& objPtr );
 
     CTBasicSharedPtrObjOperators& operator=( const T& other );
-    
+
     inline bool operator<( const CTBasicSharedPtrObjOperators& other ) const;
-    
+
     inline bool operator<( const CTBasicSharedPtr< T, LockType >& other ) const;
 
     inline bool operator<( const T& other ) const;
@@ -141,7 +141,7 @@ CTBasicSharedPtrObjOperators< T, LockType >&
 CTBasicSharedPtrObjOperators< T, LockType >::operator=( const CTBasicSharedPtr< T, LockType >& objPtr )
 {GUCEF_TRACE;
 
-    if ( this != &src )
+    if ( this != &objPtr )
     {
         CTBasicSharedPtr< T, LockType >::operator=( objPtr );
     }
@@ -155,7 +155,7 @@ CTBasicSharedPtrObjOperators< T, LockType >&
 CTBasicSharedPtrObjOperators< T, LockType >::operator=( const T& obj )
 {GUCEF_TRACE;
 
-    (*GetPointer()) = obj;
+    (*CTBasicSharedPtr< T, LockType >::GetPointer()) = obj;
     return *this;
 }
 
@@ -168,8 +168,8 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtrOb
 
     MT::CObjectScopeLock lock( this );
     MT::CObjectScopeLock lockOther( &other );
-    
-    if ( IsNULL() )
+
+    if ( CTBasicSharedPtr< T, LockType >::IsNULL() )
     {
         if ( other.IsNULL() )
             return false; // null is equal to null in this context, stop moving things
@@ -179,7 +179,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtrOb
     if ( other.IsNULL() )
     {
         // null is equal to null in this context, stop moving things
-        // Also if this obj is not null then we are > 
+        // Also if this obj is not null then we are >
         // so we are either == or >  Either case its false
         return false;
     }
@@ -187,7 +187,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtrOb
     {
         // This is what its all about
         // perform the operator on the actual referenced object instead
-        return (*GetPointerAlways()) < (*other.GetPointerAlways());
+        return (*CTBasicSharedPtr< T, LockType >::GetPointerAlways()) < (*other.GetPointerAlways());
     }
 }
 
@@ -200,8 +200,8 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtr< 
 
     MT::CObjectScopeLock lock( this );
     MT::CObjectScopeLock lockOther( &other );
-    
-    if ( IsNULL() )
+
+    if ( CTBasicSharedPtr< T, LockType >::IsNULL() )
     {
         if ( other.IsNULL() )
             return false; // null is equal to null in this context, stop moving things
@@ -211,7 +211,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtr< 
     if ( other.IsNULL() )
     {
         // null is equal to null in this context, stop moving things
-        // Also if this obj is not null then we are > 
+        // Also if this obj is not null then we are >
         // so we are either == or >  Either case its false
         return false;
     }
@@ -219,7 +219,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const CTBasicSharedPtr< 
     {
         // This is what its all about
         // perform the operator on the actual referenced object instead
-        return (*GetPointerAlways()) < (*other.GetPointerAlways());
+        return (*CTBasicSharedPtr< T, LockType >::GetPointerAlways()) < (*other.GetPointerAlways());
     }
 }
 
@@ -231,8 +231,8 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const T& other ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
-    if ( IsNULL() )
+
+    if ( CTBasicSharedPtr< T, LockType >::IsNULL() )
     {
         return true;
     }
@@ -240,7 +240,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator<( const T& other ) const
     {
         // This is what its all about
         // perform the operator on the actual referenced object instead
-        return (*GetPointerAlways()) < other;
+        return (*CTBasicSharedPtr< T, LockType >::GetPointerAlways()) < other;
     }
 }
 
@@ -253,8 +253,8 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator==( const CTBasicSharedPtrO
 
     MT::CObjectScopeLock lock( this );
     MT::CObjectScopeLock lockOther( &other );
-    
-    if ( IsNULL() )
+
+    if ( CTBasicSharedPtr< T, LockType >::IsNULL() )
     {
         if ( other.IsNULL() )
             return true;
@@ -263,7 +263,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator==( const CTBasicSharedPtrO
     else
     if ( other.IsNULL() )
     {
-        if ( IsNULL() )
+        if ( CTBasicSharedPtr< T, LockType >::IsNULL() )
             return true;
         return false;
     }
@@ -271,7 +271,7 @@ CTBasicSharedPtrObjOperators< T, LockType >::operator==( const CTBasicSharedPtrO
     {
         // This is what its all about
         // perform the operator on the actual referenced object instead
-        return (*GetPointerAlways()) == (*other.GetPointerAlways());
+        return (*CTBasicSharedPtr< T, LockType >::GetPointerAlways()) == (*other.GetPointerAlways());
     }
 }
 

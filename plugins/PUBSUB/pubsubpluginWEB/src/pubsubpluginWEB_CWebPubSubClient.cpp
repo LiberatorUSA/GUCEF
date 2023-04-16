@@ -86,8 +86,8 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WebPubSubClient: Failed to load config at construction" );
     }
-    
-    if ( GUCEF_NULL != config.pulseGenerator )
+
+    if ( !config.pulseGenerator.IsNULL() )
     {
         if ( config.desiredFeatures.supportsMetrics )
         {
@@ -219,7 +219,7 @@ CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     TTopicMap::iterator i = m_topicMap.find( topicName );
     if ( i != m_topicMap.end() )
     {
@@ -230,12 +230,12 @@ CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CWebPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
 {GUCEF_TRACE;
-        
+
     MT::CObjectScopeLock lock( this );
-    
+
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
@@ -286,14 +286,14 @@ CWebPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+const PUBSUB::CPubSubClientTopicConfig*
 CWebPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != preExistingConfig )
         return preExistingConfig;
-    
+
     m_config.topics.push_back( m_config.defaultTopicConfig );
     PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
     newTopicConfig->topicName = topicName;
@@ -533,7 +533,7 @@ CWebPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CWebPubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
