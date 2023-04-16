@@ -62,21 +62,21 @@
 struct SThreadData
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     DWORD threadid;
     HANDLE threadhandle;
     LPTHREAD_START_ROUTINE func;
     void* data;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     pthread_t thread;
     pthread_attr_t attr;
     TThreadFunc func;
     void* data;
     pid_t threadId;
     pthread_cond_t exitSignal;
-    
+
     #endif
 
     UInt32 returnValue;
@@ -141,7 +141,7 @@ ThreadMain( void* tdvptr )
 {
     if ( GUCEF_NULL == tdvptr )
         return GUCEF_NULL;
-    
+
     GUCEF_BEGIN;
     TThreadData* td = (TThreadData*) tdvptr;
     td->threadStatus = THREADSTATUS_RUNNING;
@@ -160,7 +160,7 @@ struct SThreadData*
 ThreadDataReserve( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     TThreadData* td = malloc( sizeof( TThreadData ) );
     if ( GUCEF_NULL != td )
     {
@@ -168,9 +168,9 @@ ThreadDataReserve( void )
         td->threadStatus = THREADSTATUS_UNDEFINED;
     }
     return td;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     TThreadData* td = malloc( sizeof( TThreadData ) );
     if ( GUCEF_NULL != td )
     {
@@ -179,12 +179,12 @@ ThreadDataReserve( void )
         td->threadStatus = THREADSTATUS_UNDEFINED;
     }
     return td;
-    
+
     #else
-    
+
     #error unsupported target platform
     return GUCEF_NULL;
-    
+
     #endif
 }
 
@@ -236,7 +236,7 @@ ThreadCreate( struct SThreadData* td ,
 
     int retVal = 0;
     memset( td, 0, sizeof( TThreadData ) );
-    
+
     retVal = pthread_attr_init( &td->attr );
     if ( 0 != retVal )
     {
@@ -260,10 +260,10 @@ ThreadCreate( struct SThreadData* td ,
     return 1;
 
     #else
-    
+
     #error unsupported target platform
     return 0;
-    
+
     #endif
 }
 
@@ -291,7 +291,7 @@ ThreadStatus( struct SThreadData* td )
 {
     if ( GUCEF_NULL == td )
         return 0;
-    return td->threadStatus;    
+    return td->threadStatus;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -303,18 +303,18 @@ ThreadSuspend( struct SThreadData* td )
         return 0;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return ( -1 != SuspendThread( td->threadhandle ) );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
-    /* TODO: Implement with signals 
+
+    /* TODO: Implement with signals
        #error unsupported target platform
     */
     return 0;
-    
+
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -327,18 +327,18 @@ UInt32
 ThreadResume( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return ( -1 != ResumeThread( td->threadhandle ) );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    /* TODO: Implement with signals 
+    /* TODO: Implement with signals
        #error unsupported target platform
     */
     return 0;
 
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -351,7 +351,7 @@ UInt32
 ThreadKill( struct SThreadData* td )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     if ( td != NULL )
     {
         UInt32 retval = TerminateThread( td->threadhandle ,
@@ -359,9 +359,9 @@ ThreadKill( struct SThreadData* td )
         return retval;
     }
     return 0;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     if ( NULL != td && 0 != td->thread )
     {
         Int32 retval = (Int32) pthread_kill( td->thread, 0 );
@@ -375,9 +375,9 @@ ThreadKill( struct SThreadData* td )
         return retval;
     }
     return 0;
-    
+
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -402,11 +402,11 @@ ThreadWait( struct SThreadData* td ,
                 return GUCEF_THREAD_WAIT_TIMEOUT;
             case WAIT_ABANDONED:
                 return GUCEF_THREAD_WAIT_ABANDONEND;
-                
-            case WAIT_FAILED: 
+
+            case WAIT_FAILED:
             default:
                 return GUCEF_THREAD_WAIT_FAILED;
-        }            
+        }
     }
     return 0;
 
@@ -451,10 +451,10 @@ ThreadWait( struct SThreadData* td ,
     return GUCEF_THREAD_WAIT_FAILED;
 
     #else
-    
+
     #error unsupported target platform
     return 0;
-    
+
     #endif
 }
 
@@ -527,16 +527,16 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
 
 UInt32
 ThreadGetCpuAffinity( struct SThreadData* td        ,
-                      UInt32 affinityMaskBufferSize ,                      
+                      UInt32 affinityMaskBufferSize ,
                       void* affinityMask            ,
                       UInt32* affinityMaskSize      )
 {
     if ( GUCEF_NULL == td )
-        return 0;    
+        return 0;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    /* 
+    /*
      *  Windows has SetThreadAffinityMask but no official API function is provided for Getting said mask.
      *  We use the 'undocumented' NtQueryInformationThread function if its available
      */
@@ -547,15 +547,15 @@ ThreadGetCpuAffinity( struct SThreadData* td        ,
     }
     memset( &basicInfo, 0, sizeof(basicInfo) );
     if ( WIN32_NT_SUCCESS( TryNtQueryInformationThread( td->threadhandle, ThreadBasicInformation, &basicInfo, sizeof(basicInfo), NULL ) ) )
-    {    
+    {
         if ( affinityMaskBufferSize >= sizeof( basicInfo.AffinityMask ) )
         {
-            memcpy( affinityMask, &basicInfo.AffinityMask, sizeof( basicInfo.AffinityMask ) ); 
-            
+            memcpy( affinityMask, &basicInfo.AffinityMask, sizeof( basicInfo.AffinityMask ) );
+
             return 1;
         }
     }
-    return 0;    
+    return 0;
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
@@ -567,7 +567,7 @@ ThreadGetCpuAffinity( struct SThreadData* td        ,
     {
         int statusCode = pthread_getaffinity_np( td->thread, (size_t) affinityMaskBufferSize, (cpu_set_t*) affinityMask );
         if ( 0 == statusCode )
-            return 1;        
+            return 1;
     }
     return 0;
 
@@ -581,7 +581,7 @@ ThreadGetCpuAffinity( struct SThreadData* td        ,
     {
         int statusCode = sched_getaffinity( td->thread, (size_t) affinityMaskBufferSize, (cpu_set_t*) affinityMask );
         if ( 0 == statusCode )
-            return 1;        
+            return 1;
     }
     return 0;
 
@@ -620,7 +620,7 @@ ThreadGetCpuAffinityByCpuId( struct SThreadData* td ,
                              UInt32* cpuId          )
 {
     if ( GUCEF_NULL == td || GUCEF_NULL == cpuId )
-        return 0;   
+        return 0;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -631,10 +631,12 @@ ThreadGetCpuAffinityByCpuId( struct SThreadData* td ,
 
     UInt64 affinityMask = 0;
     UInt32 affinityMaskSize = sizeof( affinityMask );
-    if ( 0 != ThreadGetCpuAffinity( &affinityMaskSize ,
-                                    &affinityMask     ) )
+    if ( 0 != ThreadGetCpuAffinity( td                ,
+                                    affinityMaskSize  ,
+                                    &affinityMask     ,
+                                    &affinityMaskSize ) )
     {
-        UInt32 i=0; 
+        UInt32 i=0;
         for ( i=0; i<64; ++i )
         {
             if ( 0 != GUCEF_GETBITX( affinityMask, i ) )
@@ -655,15 +657,15 @@ UInt32
 GetCurrentTaskID( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return GetCurrentThreadId();
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return (UInt32) pthread_self();
-    
+
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -697,7 +699,7 @@ PrecisionTickCount( void )
            time.tv_sec * 1000000; /* Seconds. */
 
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -710,7 +712,7 @@ UInt64
 PrecisionTimerResolution( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     ULARGE_INTEGER t;
     if ( QueryPerformanceFrequency( (LARGE_INTEGER*) &t ) == TRUE )
     {
@@ -720,13 +722,13 @@ PrecisionTimerResolution( void )
     {
         return 100; /* this is the WIN32 resolution of GetTickCount(); which has a time-slice size of about 10 ms */
     }
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     return 1000000;
 
     #else
-    
+
     #error unsupported target platform
     return 0;
 
@@ -870,18 +872,18 @@ UInt32
 GetProcessID( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return (UInt32) GetCurrentProcessId();
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return (UInt32) getpid();
-    
+
     #else
-    
+
     #error unsupported target platform
     return 0;
-    
+
     #endif
 }
 

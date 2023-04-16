@@ -197,7 +197,7 @@ struct TypeHasContainedType
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename const TestClass::TContainedType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( const typename TestClass::TContainedType* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
@@ -217,7 +217,7 @@ struct TypeHasLockType
     typedef char    yes[1];
     typedef yes     no[2];
 
-    template < typename TestClass > static yes& test( typename const TestClass::TLockType* /*unused*/ ) { static yes result; return result; }
+    template < typename TestClass > static yes& test( const typename TestClass::TLockType* /*unused*/ ) { static yes result; return result; }
     template < typename TestClass > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.

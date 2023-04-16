@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define __STDC_WANT_LIB_EXT1__ 
+#define __STDC_WANT_LIB_EXT1__
 #include <string.h>      /* string handling */
 #include <malloc.h>      /* memory allocation */
 #include "gucefCORE_ETypes.h"      /* simple types used */
@@ -954,9 +954,9 @@ Append_To_Path( char* path            ,
     /*
      *  Sanity checks
      */
-    if ( ( GUCEF_NULL == addition ) || ( GUCEF_NULL == path ) ) 
+    if ( ( GUCEF_NULL == addition ) || ( GUCEF_NULL == path ) )
         return;
-    if ( *addition == '\0' ) 
+    if ( *addition == '\0' )
         return;
 
     /*
@@ -973,10 +973,10 @@ Append_To_Path( char* path            ,
      *      Now we make sure we have a dir seperator between the
      *      path and the addition strings.
      */
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         Convert_Dir_Seperators( path );
-    
+
         if ( pathBufferSize > len-1 && path[ len-1 ] == '\\' )
         {
             strcat( path, addition+offset );
@@ -986,12 +986,12 @@ Append_To_Path( char* path            ,
         #if defined( __STDC_LIB_EXT1__ ) || defined( __STDC_WANT_SECURE_LIB__ )
         strcat_s( path, pathBufferSize, "\\" );
         strcat_s( path, pathBufferSize, addition+offset );
-        #else 
+        #else
         strcat( path, "\\" );
         strcat( path, addition+offset );
         #endif
 
-    #elif GUCEF_LINUX_BUILD
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         if ( pathBufferSize > len-1 && path[ len-1 ] == '/' )
         {
@@ -1003,7 +1003,7 @@ Append_To_Path( char* path            ,
         strcat( path, addition+offset );
         Convert_Dir_Seperators( path );
 
-    #endif 
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/

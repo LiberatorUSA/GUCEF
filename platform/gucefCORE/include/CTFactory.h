@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTFACTORY_H
 #define GUCEF_CORE_CTFACTORY_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -36,13 +36,18 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -56,16 +61,16 @@ namespace CORE {
  *  factory design pattern.
  */
 template< class BaseClassType, class ConcreteClassType >
-class CTFactory : public CTFactoryBase< BaseClassType >            
+class CTFactory : public CTFactoryBase< BaseClassType >
 {
     public:
-    
+
     CTFactory( void );
-    
+
     CTFactory( const CTFactory& src );
-    
+
     virtual ~CTFactory();
-    
+
     CTFactory& operator=( const CTFactory& src );
 
     /**
@@ -74,7 +79,7 @@ class CTFactory : public CTFactoryBase< BaseClassType >
      *  @return pointer to the base class of the constructed factory product
      */
     virtual BaseClassType* Create( void ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     /**
      *  Destroys the concrete factory product
      *
@@ -103,7 +108,7 @@ class CTFactory : public CTFactoryBase< BaseClassType >
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >::CTFactory( void )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -115,7 +120,7 @@ CTFactory< BaseClassType, ConcreteClassType >::CTFactory( const CTFactory< BaseC
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< class BaseClassType, class ConcreteClassType >
 CTFactory< BaseClassType, ConcreteClassType >::~CTFactory()
 {GUCEF_TRACE;
@@ -125,7 +130,7 @@ CTFactory< BaseClassType, ConcreteClassType >::~CTFactory()
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType >
-CTFactory< BaseClassType, ConcreteClassType >& 
+CTFactory< BaseClassType, ConcreteClassType >&
 CTFactory< BaseClassType, ConcreteClassType >::operator=( const CTFactory< BaseClassType, ConcreteClassType >& src )
 {GUCEF_TRACE;
 
@@ -138,7 +143,7 @@ CTFactory< BaseClassType, ConcreteClassType >::operator=( const CTFactory< BaseC
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType >
-BaseClassType* 
+BaseClassType*
 CTFactory< BaseClassType, ConcreteClassType >::Create( void )
 {GUCEF_TRACE;
 
@@ -146,14 +151,14 @@ CTFactory< BaseClassType, ConcreteClassType >::Create( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class BaseClassType, class ConcreteClassType >
-void 
+void
 CTFactory< BaseClassType, ConcreteClassType >::Destroy( BaseClassType* factoryProduct )
 {GUCEF_TRACE;
 
     /*
-     *  We cast to the decendant class or concrete factory product if you will, 
+     *  We cast to the decendant class or concrete factory product if you will,
      *  to ensure it's destructor is called even if the base class does not have a
      *  virtual destructor
      */
@@ -161,9 +166,9 @@ CTFactory< BaseClassType, ConcreteClassType >::Destroy( BaseClassType* factoryPr
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class BaseClassType, class ConcreteClassType >
-CICloneable* 
+CICloneable*
 CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
 {GUCEF_TRACE;
 
@@ -180,7 +185,7 @@ CTFactory< BaseClassType, ConcreteClassType >::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType >
-CString 
+CString
 CTFactory< BaseClassType, ConcreteClassType >::GetConcreteClassTypeName( void ) const
 {GUCEF_TRACE;
 

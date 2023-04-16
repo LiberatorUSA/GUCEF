@@ -178,9 +178,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     bool HasValue( void ) const;
 
     int GetValueType( void ) const;
-    
+
     void SetNodeType( Int32 nodeType );
-    
+
     Int32 GetNodeType( void ) const;
 
     bool IsAttribute( const CString& name ) const;
@@ -202,7 +202,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     TKeyValuePair* GetAttribute( const CString& name );
 
     const CVariant& GetAttributeValue( const CString& name ) const;
-    
+
     const CVariant& GetAttributeValue( const CString& name, const CVariant& defaultValue ) const;
 
     bool SetAttribute( const CString& name                     ,
@@ -232,10 +232,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     /**
      *  Attempts to locate a named value which can come from either a attribute on the current node
-     *  or from a value field of a child node with the given name and return its value. 
+     *  or from a value field of a child node with the given name and return its value.
      *  If value can be found using either method then an empty string is returned.
      *
-     *  Note that attributes have priority over child value fields. 
+     *  Note that attributes have priority over child value fields.
      *  Also note that if multiple children exist with the given name the first located one's value will be used.
      *  Only use this function if you expect the key/value combo to have a uniqueness constraint.
      *
@@ -277,11 +277,11 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      */
     TVariantVector GetChildrenValues( void ) const;
 
-    bool GetValuesOfChildByName( const CString& name                  , 
+    bool GetValuesOfChildByName( const CString& name                  ,
                                  CDataNode::TVariantVector& outValues ,
                                  bool linkIfPossible = false          ) const;
 
-    bool GetValuesOfChildByName( const CString& name           , 
+    bool GetValuesOfChildByName( const CString& name           ,
                                  CString::StringSet& outValues ) const;
 
     CDataNode* FindRoot( void ) const;
@@ -452,13 +452,13 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      *  @param nodeName name of the new child node
      *  @return pointer to the new child.
      */
-    CDataNode* AddChild( const CString& nodeName              , 
+    CDataNode* AddChild( const CString& nodeName              ,
                          int nodeType = GUCEF_DATATYPE_OBJECT );
 
-    CDataNode* AddChildWithValue( const CString& nodeName              , 
+    CDataNode* AddChildWithValue( const CString& nodeName              ,
                                   const CVariant& nodeValue            ,
                                   int nodeType = GUCEF_DATATYPE_OBJECT );
-    
+
     CDataNode* AddValueAsChild( const CVariant& nodeValue );
     CDataNode* AddValueAsChild( const CString& nodeValue );
 
@@ -467,7 +467,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     template < class ChildValueTypeCollection >
     bool AddAllValuesAsChildrenOfChild( const CString& nodeName, const ChildValueTypeCollection& collection, int nodeType = GUCEF_DATATYPE_ARRAY );
-    
+
     bool DelChild( const CString& name );
 
     void Copy( const CDataNode& root );
@@ -488,7 +488,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     void DelSubTree( const CString& path, char seperator );
 
     /**
-     *  Counts all the child nodes for the node the 
+     *  Counts all the child nodes for the node the
      *  request is made on. This includes children of children
      */
     UInt32 GetNrOfChildNodes( void ) const;
@@ -497,14 +497,14 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      *  Counts all the directly child nodes, no recursion
      */
     UInt32 GetNrOfDirectChildNodes( void ) const;
-    
+
     /**
      *  Counts all the nodes in the data tree
      *  This includes nodes above and below the node the
      *  request is made on.
      */
     UInt32 GetNrOfTreeNodes( void ) const;
-    
+
     /**
      *  Creates a string representation of the 'path' to the root node
      *  consisting of all the node names encountered up to the root node
@@ -520,13 +520,13 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     /**
      *  Provides access to the associated data if any
-     *  Note that the associated is owned as a clone by the data node 
+     *  Note that the associated is owned as a clone by the data node
      */
     CICloneable* GetAssociatedData( void ) const;
 
     /**
      *  Sets the associated data if any
-     *  Note that the associated given is cloned and the clone is subsequently owned by the data node 
+     *  Note that the associated given is cloned and the clone is subsequently owned by the data node
      */
     void SetAssociatedData( CICloneable* associatedData );
 
@@ -619,29 +619,29 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     const_iterator ConstBegin( void ) const;
 
     const_iterator ConstEnd( void ) const;
-    
+
     TAttributeMap::const_iterator AttributeBegin( void ) const;
-    
+
     TAttributeMap::const_iterator AttributeEnd( void ) const;
 
     protected:
     friend class CConstEnumerator;
 
     virtual UInt8 GetTypeOfCurrent( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual bool GetCurrent( CVariant& enumeratorData   , 
-                             CVariant& value            , 
+
+    virtual bool GetCurrent( CVariant& enumeratorData   ,
+                             CVariant& value            ,
                              bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetCurrent( CVariant& enumeratorData        ,
                              const CIEnumerable** enumerable ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetIdOfCurrent( CVariant& enumeratorData   , 
-                                 CVariant& value            , 
+    virtual bool GetIdOfCurrent( CVariant& enumeratorData   ,
+                                 CVariant& value            ,
                                  bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetNameOfCurrent( CVariant& enumeratorData ,
-                                   CVariant& value          , 
+                                   CVariant& value          ,
                                    bool linkIfPossible = true ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool CanEnumerateForward( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -649,7 +649,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     virtual bool CanEnumerateBackward( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool MoveNext( CVariant& enumeratorData ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual bool MovePrev( CVariant& enumeratorData ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsAtEnd( CVariant& enumeratorData ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -681,7 +681,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     void Detach( void );      /**< detaches the node from the tree */
     void DetachChild( CDataNode* child ); /**< detaches the given child node */
 
-    
+
     Int32 m_nodeType;     /**< metadata encoding the type of the node */
     CString _name;        /**< name of the node */
     CVariant m_value;     /**< simplistic value field of the node */
@@ -696,17 +696,17 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 /*-------------------------------------------------------------------------*/
 
 template < class ChildValueTypeCollection >
-bool 
+bool
 CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection )
 {GUCEF_TRACE;
-    
+
     bool totalSuccess = true;
-    ChildValueTypeCollection::const_iterator i = collection.begin();
+    typename ChildValueTypeCollection::const_iterator i = collection.begin();
     while ( i != collection.end() )
     {
         CDataNode* newValueChild = AddValueAsChild( (*i) );
         if ( GUCEF_NULL == newValueChild )
-            totalSuccess = false;    
+            totalSuccess = false;
         ++i;
     }
     return totalSuccess;
@@ -715,12 +715,12 @@ CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection )
 /*-------------------------------------------------------------------------*/
 
 template < class ChildValueTypeCollection >
-bool 
-CDataNode::AddAllValuesAsChildrenOfChild( const CString& nodeName                    , 
-                                          const ChildValueTypeCollection& collection , 
+bool
+CDataNode::AddAllValuesAsChildrenOfChild( const CString& nodeName                    ,
+                                          const ChildValueTypeCollection& collection ,
                                           int nodeType                               )
 {GUCEF_TRACE;
-    
+
     CDataNode* collectionNode = AddChild( nodeName, nodeType );
     if ( GUCEF_NULL != collectionNode )
     {

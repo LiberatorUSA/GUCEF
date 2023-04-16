@@ -38,6 +38,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -182,10 +187,10 @@ CTReadableMapIndexHttpServerResource< CollectionKeyType, SomeValueClass >::Seria
 {GUCEF_TRACE;
 
     output = CORE::CDataNode( m_collectionName, GUCEF_DATATYPE_ARRAY );
-    
+
     MT::CObjectScopeReadOnlyLock lock( m_collectionLock );
 
-    bool totalSuccess = true;    
+    bool totalSuccess = true;
     typename TCollectionMap::iterator i = m_collection->begin();
     while ( i != m_collection->end() )
     {
