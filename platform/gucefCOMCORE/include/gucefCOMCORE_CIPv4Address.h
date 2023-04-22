@@ -58,7 +58,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv4Address
 {
     public:
 
-    typedef std::vector< CIPv4Address, basic_allocator< CIPv4Address > > TIPv4AddressVector;
+    typedef std::vector< CIPv4Address, basic_allocator< CIPv4Address > >                            TIPv4AddressVector;
+    typedef std::set< CIPv4Address, std::less< CIPv4Address >, basic_allocator< CIPv4Address > >    TIPv4AddressSet;
     
     static const CIPv4Address Any;
     static const CIPv4Address None;
@@ -160,6 +161,12 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv4Address
     UInt16 m_port;
     UInt32 m_address;
 };
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_COMCORE_EXPORT_CPP void
+IPv4AddressSetToIPv4AddressVector( const CIPv4Address::TIPv4AddressSet& sortedSet , 
+                                   CIPv4Address::TIPv4AddressVector& vec          );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

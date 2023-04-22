@@ -404,6 +404,22 @@ CIPv4Address::operator<( const CIPv4Address& other ) const
     return memcmp( buff, otherBuff, 6 ) < 0;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+IPv4AddressSetToIPv4AddressVector( const CIPv4Address::TIPv4AddressSet& sortedSet , 
+                                   CIPv4Address::TIPv4AddressVector& vec          )
+{GUCEF_TRACE;
+
+    vec.reserve( sortedSet.size() );
+    CIPv4Address::TIPv4AddressSet::const_iterator i = sortedSet.begin();
+    while ( i != sortedSet.end() )
+    {
+        vec.push_back( (*i) );
+        ++i;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

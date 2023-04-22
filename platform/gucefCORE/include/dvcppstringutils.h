@@ -263,6 +263,12 @@ StringSetToString( const CString::StringSet& strSet                ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP void
+StringSetToStringVector( const CString::StringSet& strSet ,
+                         CString::StringVector& strVector );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP CString
 PointerToString( const void* value );
 
