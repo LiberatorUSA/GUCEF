@@ -477,6 +477,24 @@ CHostAddress::GetIPv4Addresses( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CString 
+CHostAddress::GetIPv4AddressesAsString( char delimiter ) const
+{GUCEF_TRACE;
+
+    CString result;
+    CIPv4Address::TIPv4AddressVector::const_iterator i = m_ipv4.begin();
+    while ( i != m_ipv4.end() )
+    {
+        if ( !result.IsNULLOrEmpty() )
+            result += delimiter; 
+        result += (*i).AddressAndPortAsString();
+        ++i;
+    }
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CIPv4Address&
 CHostAddress::GetRandomIPv4Address( void ) const
 {GUCEF_TRACE;

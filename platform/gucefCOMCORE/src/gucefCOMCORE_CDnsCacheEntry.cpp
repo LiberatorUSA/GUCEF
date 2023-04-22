@@ -231,6 +231,10 @@ CDnsCacheEntry::Refresh( void )
     {
         if ( !m_data.Equals( preRefreshData, true ) )
         {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "DnsCacheEntry:Refresh: Detected a change for DNS target " + preRefreshData.GetHostname() +
+                                                         " from IPv4 \"" + m_data.GetIPv4AddressesAsString() + 
+                                                         "\" to IPv4 \"" + preRefreshData.GetIPv4AddressesAsString() + "\"" );            
+            
             NotifyObserversFromThread( DnsInfoChangedEvent );
         }
         return true;
