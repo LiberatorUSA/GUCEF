@@ -101,6 +101,23 @@ class CRedisClusterKeyCache : public CORE::CObservingNotifier
 
     UInt32 GetRedisScanInterationCountSize( void ) const;
 
+    void SetIndexingIntervalInMs( UInt32 interval );
+
+    UInt32 GetIndexingIntervalInMs( void ) const;
+
+    void SetPersistKeyCacheSnapshot( bool persistSnapshot );
+
+    void SetPersistKeyCacheSnapshotPath( const CORE::CString& snapshotPath );
+
+    void SetPersistKeyCacheSnapshotCodec( const CORE::CString& snapshotCodec );
+
+    bool GetRedisKeys( RedisClusterPtr redisCluster                                                        ,
+                       CORE::CDataNode& keys                                                               ,
+                       const CORE::CString& keyType                                                        ,
+                       const CORE::CString::StringSet& globPatternsToMatch = CORE::CString::EmptyStringSet ,
+                       CORE::UInt32 maxResults = GUCEF_UINT32MAX                                           ,
+                       CORE::UInt32 page = 0                                                               );
+
     bool GetRedisKeys( RedisClusterPtr redisCluster                                                        ,
                        CORE::CString::StringSet& keys                                                      ,
                        const CORE::CString& keyType                                                        ,
@@ -128,6 +145,13 @@ class CRedisClusterKeyCache : public CORE::CObservingNotifier
                            CORE::CString::StringSet** keys  );
 
     bool ApplyKeyDelta( CacheUpdateInfo& updateInfo );
+
+    bool SaveDocTo( const CORE::CDataNode& doc     , 
+                    const CORE::CString& codecName , 
+                    const CORE::CString& vfsPath   ) const;
+    
+    void OnKeyRefreshCycleCompleted( RedisClusterPtr& redisCluster ,
+                                     const CORE::CString& keyType  );
     
     private:
 
@@ -145,6 +169,10 @@ class CRedisClusterKeyCache : public CORE::CObservingNotifier
     CORE::CTaskConsumerPtr m_cacheUpdateTask;
     TRedisClusterPtrToTypeKeysMap m_cache;
     CORE::UInt32 m_scanCountSize;
+    bool m_persistKeySnapshot;
+    CORE::CString m_snapshotPath;
+    CORE::CString m_snapshotCodec;
+    CORE::UInt32 m_indexingIntervalInMs;
 
     static MT::CReadWriteLock g_dataLock;
     static CRedisClusterKeyCache* g_instance;

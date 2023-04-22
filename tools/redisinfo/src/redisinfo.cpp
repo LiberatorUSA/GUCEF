@@ -113,6 +113,9 @@ Settings::Settings( void )
     , streamsToGatherInfoFrom()
     , streamIndexingInterval( GUCEF_DEFAULT_REDIS_STREAM_INDEXING_INTERVAL )
     , redisScanCountSize( 5000 )
+    , persistRedisKeyCacheSnapshot( false )
+    , redisKeyCacheSnapshotPath( "InstallPath/redis/clusters/{clusterName}/RedisKeyCacheSnapshot.v1.json" )
+    , redisKeyCacheSnapshotCodec( "json" )
     , gatherInfoClients( true )
     , gatherInfoCpu( true )
     , gatherInfoKeyspace( true )
@@ -142,6 +145,9 @@ Settings::Settings( const Settings& src )
     , streamsToGatherInfoFrom( src.streamsToGatherInfoFrom )
     , streamIndexingInterval( src.streamIndexingInterval )
     , redisScanCountSize( src.redisScanCountSize )
+    , persistRedisKeyCacheSnapshot( src.persistRedisKeyCacheSnapshot )
+    , redisKeyCacheSnapshotPath( src.redisKeyCacheSnapshotPath )
+    , redisKeyCacheSnapshotCodec( src.redisKeyCacheSnapshotCodec )
     , gatherInfoClients( src.gatherInfoClients )
     , gatherInfoCpu( src.gatherInfoCpu )
     , gatherInfoKeyspace( src.gatherInfoKeyspace )
@@ -176,6 +182,9 @@ Settings::operator=( const Settings& src )
         streamsToGatherInfoFrom = src.streamsToGatherInfoFrom;
         streamIndexingInterval = src.streamIndexingInterval;
         redisScanCountSize = src.redisScanCountSize;
+        persistRedisKeyCacheSnapshot = src.persistRedisKeyCacheSnapshot;
+        redisKeyCacheSnapshotPath = src.redisKeyCacheSnapshotPath;
+        redisKeyCacheSnapshotCodec = src.redisKeyCacheSnapshotCodec;
         gatherInfoClients = src.gatherInfoClients;
         gatherInfoCpu = src.gatherInfoCpu;
         gatherInfoKeyspace = src.gatherInfoKeyspace;
@@ -207,7 +216,10 @@ Settings::SaveConfig( CORE::CDataNode& cfg ) const
     cfg.SetAttribute( "gatherStreamInfo", gatherStreamInfo );
     cfg.SetAttribute( "streamsToGatherInfoFrom", CORE::ToString( streamsToGatherInfoFrom ) ); 
     cfg.SetAttribute( "streamIndexingInterval", streamIndexingInterval );
-    cfg.SetAttribute( "redisScanCountSize", redisScanCountSize );    
+    cfg.SetAttribute( "redisScanCountSize", redisScanCountSize );
+    cfg.SetAttribute( "persistRedisKeyCacheSnapshot", persistRedisKeyCacheSnapshot );
+    cfg.SetAttribute( "redisKeyCacheSnapshotPath", redisKeyCacheSnapshotPath );
+    cfg.SetAttribute( "redisKeyCacheSnapshotCodec", redisKeyCacheSnapshotCodec );    
     cfg.SetAttribute( "gatherInfoClients", gatherInfoClients );
     cfg.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
     cfg.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
@@ -239,6 +251,9 @@ Settings::LoadConfig( const CORE::CDataNode& cfg )
     streamsToGatherInfoFrom = CORE::StringToStringSet( cfg.GetAttributeValueOrChildValueByName( "streamsToGatherInfoFrom" ).AsString( CORE::StringSetToString( streamsToGatherInfoFrom ), true ) );
     streamIndexingInterval = cfg.GetAttributeValueOrChildValueByName( "streamIndexingInterval" ).AsInt32( streamIndexingInterval, true );
     redisScanCountSize = cfg.GetAttributeValueOrChildValueByName( "redisScanCountSize" ).AsUInt32( redisScanCountSize, true );
+    persistRedisKeyCacheSnapshot = cfg.GetAttributeValueOrChildValueByName( "persistRedisKeyCacheSnapshot" ).AsBool( persistRedisKeyCacheSnapshot, true );
+    redisKeyCacheSnapshotPath = cfg.GetAttributeValueOrChildValueByName( "redisKeyCacheSnapshotPath" ).AsString( redisKeyCacheSnapshotPath, true );
+    redisKeyCacheSnapshotCodec = cfg.GetAttributeValueOrChildValueByName( "redisKeyCacheSnapshotCodec" ).AsString( redisKeyCacheSnapshotCodec, true );
     gatherInfoClients = cfg.GetAttributeValueOrChildValueByName( "gatherInfoClients" ).AsBool( gatherInfoClients, true );
     gatherInfoCpu = cfg.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ).AsBool( gatherInfoCpu, true );
     gatherInfoKeyspace = cfg.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ).AsBool( gatherInfoKeyspace, true );
@@ -269,7 +284,6 @@ RedisInfoService::RedisInfoService()
     , m_redisPacketArgs()
     , m_metricsTimer( GUCEF_NULL )
     , m_redisReconnectTimer( GUCEF_NULL )
-    , m_streamIndexingTimer( GUCEF_NULL )
     , m_filteredStreamNames()
     , m_redisNodesMap()
     , m_hashSlotOriginStrMap()
@@ -309,9 +323,6 @@ RedisInfoService::~RedisInfoService()
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
-    delete m_streamIndexingTimer;
-    m_streamIndexingTimer = GUCEF_NULL;
-
     SignalUpcomingDestruction();
 }
 
@@ -330,11 +341,6 @@ RedisInfoService::RegisterEventHandlers( void )
     SubscribeTo( m_redisReconnectTimer          ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback2                      );
-
-    TEventCallback callback3( this, &RedisInfoService::OnStreamIndexingTimerCycle );
-    SubscribeTo( m_streamIndexingTimer          ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback3                      );
 
     TEventCallback callback4( this, &RedisInfoService::OnVfsInitCompleted );
     SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
@@ -837,14 +843,6 @@ bool
 RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    delete m_streamIndexingTimer;
-    m_streamIndexingTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
-
-    if ( m_settings.streamIndexingInterval > 0 && IsStreamIndexingNeeded() )
-    {
-        m_streamIndexingTimer->SetInterval( (CORE::UInt32) m_settings.streamIndexingInterval );
-    }
-
     delete m_redisReconnectTimer;
     m_redisReconnectTimer = new CORE::CTimer( GetPulseGenerator(), 100 );
     
@@ -852,7 +850,18 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer = new CORE::CTimer( GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_settings.collectMetrics );
 
-    CRedisClusterKeyCache::Instance()->SetRedisScanInterationCountSize( m_settings.redisScanCountSize );
+    if ( IsStreamIndexingNeeded() )
+    {
+        CRedisClusterKeyCache* cache = CRedisClusterKeyCache::Instance();
+        
+        if ( m_settings.streamIndexingInterval > 0 )
+            cache->SetIndexingIntervalInMs( (CORE::UInt32) m_settings.streamIndexingInterval );
+        cache->SetRedisScanInterationCountSize( m_settings.redisScanCountSize );
+        cache->SetPersistKeyCacheSnapshot( m_settings.persistRedisKeyCacheSnapshot );
+        cache->SetPersistKeyCacheSnapshotPath( m_settings.redisKeyCacheSnapshotPath );
+        cache->SetPersistKeyCacheSnapshotCodec( m_settings.redisKeyCacheSnapshotCodec );
+
+    }
     
     RegisterEventHandlers();
 
@@ -2483,9 +2492,6 @@ RedisInfoService::RedisConnect( bool reset )
             {
                 // kick off the key scans and delta updates
                 CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, m_filteredStreamNames, "stream", m_settings.streamsToGatherInfoFrom );
-                
-                m_streamIndexingTimer->TriggerNow();
-                m_streamIndexingTimer->SetEnabled( true );
             }
             else
             {
@@ -2627,56 +2633,6 @@ RedisInfoService::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
             }
         }
     }    
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
-                                              const CORE::CEvent& eventId  ,
-                                              CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    if ( m_settings.streamIndexingInterval <= 0 ||  m_redisContext.IsNULL() )
-        return;
-    //
-    //GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Attempting to scan all keys in the target node for matches to the configured streams names with wildcards" );
-    //
-    //m_streamIndexingTimer->SetEnabled( false );
-
-    //bool totalSuccess = true;
-
-    //// First we will need to fetch all stream names in the cluster
-    //// Redis does not support a wildcard filter for this so we have to fetch everything
-    //CORE::CString::StringSet allStreamNames;
-    //if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, allStreamNames, "stream", m_settings.streamsToGatherInfoFrom ) )
-    //{
-    //    CORE::CString::StringVector filteredStreamNames;
-    //    CORE::CString::StringVector::iterator i = m_settings.streamsToGatherInfoFrom.begin();
-    //    while ( i != m_settings.streamsToGatherInfoFrom.end() )
-    //    {
-    //        if ( (*i).HasChar( '*' ) > -1 )
-    //        {
-    //            CORE::CString::StringVector::iterator n = allStreamNames.begin();
-    //            while ( n != allStreamNames.end() )
-    //            {
-    //                if ( (*n).WildcardEquals( (*i), '*', true ) )
-    //                {
-    //                    filteredStreamNames.push_back( (*n) );
-    //                }
-    //                ++n;
-    //            }
-    //        }
-    //        ++i;
-    //    }
-    //    m_filteredStreamNames = filteredStreamNames;
-
-    //    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
-    //        CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
-    //        " streams which we will collect metrics for"  );
-    //}
-
-    //m_streamIndexingTimer->SetEnabled( IsStreamIndexingNeeded() );
 }
 
 /*-------------------------------------------------------------------------*/
