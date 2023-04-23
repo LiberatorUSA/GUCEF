@@ -69,9 +69,9 @@
         <ITEM NAME="../gucefCORE/src/dvmd5utils.c" TYPE="FILE" />
     </INCLUDES>
 	<INCLUDES PLATFORM="MSWIN">
-        <ITEM NAME="../gucefMT/src/gucefMT_mswinutils.cpp" TYPE="FILE" />
-        <ITEM NAME="../gucefMT/include/gucefMT_mswinutils.h" TYPE="FILE" />
-        <ITEM NAME="../gucefCORE/src/gucefCORE_mswinutils.cpp" TYPE="FILE" />
-        <ITEM NAME="../gucefCORE/include/gucefCORE_mswinutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/mswin/gucefMT_mswinutils.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/mswin/gucefMT_mswinutils.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/mswin/gucefCORE_mswinutils.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/mswin/gucefCORE_mswinutils.h" TYPE="FILE" />
 	</INCLUDES>
 </PROJECTGENERATOR>

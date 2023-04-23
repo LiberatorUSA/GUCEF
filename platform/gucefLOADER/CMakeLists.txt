@@ -1159,16 +1159,16 @@ elseif (WIN32)
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
     ../gucefCORE/include/gucefCORE_VariantData.h
-    ../gucefCORE/include/gucefCORE_mswinutils.h
     ../gucefCORE/include/md5.h
+    ../gucefCORE/include/mswin/gucefCORE_mswinutils.h
     ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
-    ../gucefMT/include/gucefMT_mswinutils.h
     ../gucefMT/include/gucefMT_mutex.h
+    ../gucefMT/include/mswin/gucefMT_mswinutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -1200,16 +1200,16 @@ elseif (WIN32)
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
     ../gucefCORE/src/gucefCORE_VariantData.c
-    ../gucefCORE/src/gucefCORE_mswinutils.cpp
     ../gucefCORE/src/md5.c
+    ../gucefCORE/src/mswin/gucefCORE_mswinutils.cpp
     ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mswinutils.cpp
     ../gucefMT/src/gucefMT_mutex.c
+    ../gucefMT/src/mswin/gucefMT_mswinutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -1243,16 +1243,16 @@ elseif (WIN64)
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
     ../gucefCORE/include/gucefCORE_VariantData.h
-    ../gucefCORE/include/gucefCORE_mswinutils.h
     ../gucefCORE/include/md5.h
+    ../gucefCORE/include/mswin/gucefCORE_mswinutils.h
     ../gucefMT/include/gucefMT_CICloneable.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_ThreadStatus.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
-    ../gucefMT/include/gucefMT_mswinutils.h
     ../gucefMT/include/gucefMT_mutex.h
+    ../gucefMT/include/mswin/gucefMT_mswinutils.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -1284,16 +1284,16 @@ elseif (WIN64)
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
     ../gucefCORE/src/gucefCORE_VariantData.c
-    ../gucefCORE/src/gucefCORE_mswinutils.cpp
     ../gucefCORE/src/md5.c
+    ../gucefCORE/src/mswin/gucefCORE_mswinutils.cpp
     ../gucefMT/src/gucefMT_CICloneable.cpp
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mswinutils.cpp
     ../gucefMT/src/gucefMT_mutex.c
+    ../gucefMT/src/mswin/gucefMT_mswinutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -1384,11 +1384,11 @@ if ( UNIX )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefCORE/include/mswin/ ../gucefMT/include/ ../gucefMT/include/mswin/ )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefMT/include/ )
+  include_directories( ../gucefCORE/include/mswin ../gucefMT/include/mswin ../gucefCORE/include/ ../gucefCORE/include/mswin/ ../gucefMT/include/ ../gucefMT/include/mswin/ )
 endif( WIN64 )
 
 

@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="yaml" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="YAML_DECLARE_STATIC" />
+			<Define String="HAVE_CONFIG_H" />
+        </Preprocessor>
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>
