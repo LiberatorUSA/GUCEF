@@ -150,6 +150,9 @@ class Settings : public CORE::CIConfigurable
     CORE::CString::StringSet streamsToGatherInfoFrom;
     CORE::Int32 streamIndexingInterval;
     CORE::UInt32 redisScanCountSize;
+    bool persistRedisKeyCacheSnapshot;
+    CORE::CString redisKeyCacheSnapshotPath;
+    CORE::CString redisKeyCacheSnapshotCodec;
     bool gatherInfoClients;
     bool gatherInfoCpu;
     bool gatherInfoKeyspace;
@@ -401,11 +404,6 @@ class RedisInfoService : public CORE::CTaskConsumer
                                 CORE::CICloneable* eventData );
 
     void
-    OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
-
-    void
     OnVfsInitCompleted( CORE::CNotifier* notifier    ,
                         const CORE::CEvent& eventId  ,
                         CORE::CICloneable* eventData );
@@ -432,7 +430,6 @@ class RedisInfoService : public CORE::CTaskConsumer
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
     CORE::CTimer* m_redisReconnectTimer;
-    CORE::CTimer* m_streamIndexingTimer;
     CORE::CString::StringSet m_filteredStreamNames;
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;

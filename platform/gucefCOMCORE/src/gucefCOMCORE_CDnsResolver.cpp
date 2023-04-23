@@ -102,15 +102,20 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
 
         if ( GUCEF_NULL != retval->h_aliases )
         {
+            CORE::CString::StringSet sortedAliases;
             for ( char** alias = retval->h_aliases; *alias != 0; alias++ ) 
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDnsResolver: DNS resolution: Alternate name: " + CORE::CString( *alias ) );
-                aliases.push_back( *alias );
+                sortedAliases.insert( *alias );
             }
+            
+            // We sort them because the results may be presented in random order
+            CORE::StringSetToStringVector( sortedAliases, aliases );
         }
 
         if ( GUCEF_NULL != retval->h_addr_list )
         {
+            CIPv4Address::TIPv4AddressSet sortedIpv4;
             UInt32 i=0;
             while ( retval->h_addr_list[ i ] != 0 ) 
             {
@@ -118,9 +123,12 @@ CDnsResolver::Resolve( const CORE::CString& dns               ,
                 CIPv4Address ipv4Addr( ipv4AddressInNetworkByteOrder, CIPv4Address::HostByteOrderToNetworkByteOrder( portInHostByteOrder ) );
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDnsResolver: DNS resolution: IPv4: " + ipv4Addr.AddressAndPortAsString() );
-                ipv4.push_back( ipv4Addr );
+                sortedIpv4.insert( ipv4Addr );
                 ++i;
             }
+
+            // We sort them because the results may be presented in random order
+            COMCORE::IPv4AddressSetToIPv4AddressVector( sortedIpv4, ipv4 );
 
             return true;
         }

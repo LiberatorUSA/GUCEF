@@ -1143,6 +1143,22 @@ StringSetToString( const CString::StringSet& strSet ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+StringSetToStringVector( const CString::StringSet& strSet ,
+                         CString::StringVector& strVector )
+{GUCEF_TRACE;
+
+    strVector.reserve( strSet.size() );
+    CString::StringSet::const_iterator i = strSet.begin();
+    while ( i != strSet.end() )
+    {
+        strVector.push_back( (*i) );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 LastSubDir( const CString& path )
 {GUCEF_TRACE;

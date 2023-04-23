@@ -37,6 +37,21 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #ifndef REDISINFO_CREDISCLUSTERKEYCACHEUPDATETASK_H
 #include "redisinfo_CRedisClusterKeyCacheUpdateTask.h"
 #define REDISINFO_CREDISCLUSTERKEYCACHEUPDATETASK_H
@@ -61,6 +76,7 @@ namespace REDISINFO {
 
 const CORE::CEvent CRedisClusterKeyCache::CacheUpdateEvent =    "GUCEF::PUBSUBPLUGIN::REDISCLUSTER::CRedisClusterKeyCache::CacheUpdateEvent";
 #define GUCEF_DEFAULT_SCAN_COUNT_SIZE                           5000     
+#define GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL               ( 5 * 60 * 1000 ) // 5mins
 
 MT::CReadWriteLock CRedisClusterKeyCache::g_dataLock( true );
 CRedisClusterKeyCache* CRedisClusterKeyCache::g_instance = GUCEF_NULL;
@@ -121,6 +137,10 @@ CRedisClusterKeyCache::CRedisClusterKeyCache( void )
     , m_cacheUpdateTask()
     , m_cache()
     , m_scanCountSize( GUCEF_DEFAULT_SCAN_COUNT_SIZE )
+    , m_persistKeySnapshot( false )
+    , m_snapshotPath()
+    , m_snapshotCodec( "json" )
+    , m_indexingIntervalInMs( GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL )
 {GUCEF_TRACE;
 
     m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "PUBSUBPLUGIN::REDISCLUSTER::RedisClusterKeyCache", true );
@@ -179,6 +199,16 @@ CRedisClusterKeyCache::RegisterEvents( void )
 {GUCEF_TRACE;
 
     CacheUpdateEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterKeyCache::SetPersistKeyCacheSnapshot( bool persistSnapshot )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock lock( g_dataLock );
+    m_persistKeySnapshot = persistSnapshot;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -326,6 +356,35 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster            ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster                        ,
+                                     CORE::CDataNode& keys                               ,
+                                     const CORE::CString& keyType                        ,
+                                     const CORE::CString::StringSet& globPatternsToMatch ,
+                                     CORE::UInt32 maxResults                             ,
+                                     CORE::UInt32 page                                   )
+{GUCEF_TRACE;
+
+    keys.Clear();
+    keys.SetName( keyType );
+    keys.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    
+    CORE::CString::StringSet flatIndexOfKeys;
+    if ( GetRedisKeys( redisCluster, flatIndexOfKeys, keyType, globPatternsToMatch ) )
+    {
+        CORE::CString::StringSet::const_iterator i = flatIndexOfKeys.begin();
+        while ( i != flatIndexOfKeys.end() )
+        {
+            keys.AddValueAsChild( (*i) );
+            ++i;
+        }        
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CRedisClusterKeyCache::StopUpdatesForCluster( RedisClusterPtr redisCluster )
 {GUCEF_TRACE;
@@ -426,6 +485,94 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
     return true;    
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterKeyCache::SetIndexingIntervalInMs( UInt32 interval )
+{GUCEF_TRACE;
+
+    m_indexingIntervalInMs = interval;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CRedisClusterKeyCache::GetIndexingIntervalInMs( void ) const
+{GUCEF_TRACE;
+
+    return m_indexingIntervalInMs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterKeyCache::SetPersistKeyCacheSnapshotPath( const CORE::CString& snapshotPath )
+{GUCEF_TRACE;
+
+    m_snapshotPath = snapshotPath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterKeyCache::SetPersistKeyCacheSnapshotCodec( const CORE::CString& snapshotCodec )
+{GUCEF_TRACE;
+
+    m_snapshotCodec = snapshotCodec;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     , 
+                                  const CORE::CString& codecName , 
+                                  const CORE::CString& vfsPath   ) const
+{GUCEF_TRACE;
+    
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    if ( !vfs.IsInitialized() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: Deferring until the VFS is initialized" );
+        return false;
+    }
+
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
+    CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecName, codec, false );
+    if ( !codec )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: Could not obtain codec for codecName : " + codecName );
+        return false;    
+    }
+
+    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "wb", true );
+    if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: VFS could not provide access to file at path: " + vfsPath );
+        return false;
+    }
+
+    return codec->StoreDataTree( &doc, file->GetAccess() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterKeyCache::OnKeyRefreshCycleCompleted( RedisClusterPtr& redisCluster ,
+                                                   const CORE::CString& keyType  )
+{GUCEF_TRACE;
+
+    if ( m_persistKeySnapshot )
+    {
+        CORE::CDataNode keyIndexDocument( keyType, GUCEF_DATATYPE_ARRAY );
+        if ( GetRedisKeys( redisCluster     ,
+                           keyIndexDocument ,
+                           keyType          ) )
+        {
+            SaveDocTo( keyIndexDocument, m_snapshotCodec, m_snapshotPath );
+        }
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -435,4 +582,4 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
 }; /* namespace REDISINFO */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

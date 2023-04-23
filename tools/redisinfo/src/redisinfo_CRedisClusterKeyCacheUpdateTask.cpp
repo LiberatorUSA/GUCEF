@@ -54,7 +54,6 @@ namespace REDISINFO {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL       ( 5 * 60 * 1000 ) // 5mins
 #define GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE             256
 #define GUCEF_DEFAULT_SCAN_COUNT_SIZE                   1000     
 
@@ -103,7 +102,7 @@ CRedisClusterKeyCacheUpdateTask::OnTaskStart( CORE::CICloneable* taskData )
     if ( pulseGenerator.IsNULL() )
         return false;
 
-    m_indexingTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL );
+    m_indexingTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, CRedisClusterKeyCache::Instance()->GetIndexingIntervalInMs() );
 
     RegisterEventHandlers();
 
@@ -120,6 +119,7 @@ CRedisClusterKeyCacheUpdateTask::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     m_scanCountSize = CRedisClusterKeyCache::Instance()->GetRedisScanInterationCountSize();
+    m_indexingTimer->SetInterval( CRedisClusterKeyCache::Instance()->GetIndexingIntervalInMs() );
 
     // We are never done.
     // Perpetual task running on a timer    
@@ -180,7 +180,8 @@ CRedisClusterKeyCacheUpdateTask::OnIndexingTimerCycle( CORE::CNotifier* notifier
                             updateInfo.deletedKeys.erase( dk );
                             ++totalDeltaBatchChangeSize;
 
-                            if ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE )
+                            if ( ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE ) || 
+                                 ( updateInfo.newKeys.empty() && totalDeltaBatchChangeSize > 0 )       )
                             {
                                 // Now we perform the cache write action of applying the delta batch
                                 if ( CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfoBatch ) )
@@ -198,7 +199,8 @@ CRedisClusterKeyCacheUpdateTask::OnIndexingTimerCycle( CORE::CNotifier* notifier
                             updateInfo.newKeys.erase( nk );
                             ++totalDeltaBatchChangeSize;
 
-                            if ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE )
+                            if ( ( totalDeltaBatchChangeSize >= GUCEF_DEFAULT_MAX_UPDATE_DELTA_SIZE ) || 
+                                 ( updateInfo.newKeys.empty() && totalDeltaBatchChangeSize > 0 )       )
                             {
                                 // Now we perform the cache write action of applying the delta batch
                                 if ( CRedisClusterKeyCache::Instance()->ApplyKeyDelta( updateInfoBatch ) )
@@ -212,6 +214,9 @@ CRedisClusterKeyCacheUpdateTask::OnIndexingTimerCycle( CORE::CNotifier* notifier
                     }
                 }
             }
+
+            CRedisClusterKeyCache::Instance()->OnKeyRefreshCycleCompleted( updateInfo.redisCluster, updateInfo.keyType );
+
             ++i;
         }
     }

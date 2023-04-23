@@ -117,6 +117,8 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 
     const CIPv4Address::TIPv4AddressVector& GetIPv4Addresses( void ) const;
 
+    CString GetIPv4AddressesAsString( char delimiter = ',' ) const;
+
     const CIPv4Address& GetRandomIPv4Address( void ) const;
 
     const CIPv4Address& GetFirstIPv4Address( void ) const;

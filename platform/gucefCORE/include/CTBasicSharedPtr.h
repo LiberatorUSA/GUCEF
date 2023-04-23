@@ -1019,8 +1019,11 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
             // All we ever had was a lock
             TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
             m_shared = GUCEF_NULL;
-            localSharedRef->m_lock.Unlock();
-            GUCEF_DELETE localSharedRef;
+            if ( GUCEF_NULL != localSharedRef )
+            {
+                localSharedRef->m_lock.Unlock();
+                GUCEF_DELETE localSharedRef;
+            }
         }
     }
 }

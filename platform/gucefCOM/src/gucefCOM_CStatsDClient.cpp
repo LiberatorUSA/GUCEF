@@ -471,14 +471,19 @@ CStatsDClient::OnStatsDTargetDnsChange( CORE::CNotifier* notifier    ,
                                         CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    COMCORE::CHostAddress oldStatsDestination( m_statsDestination );
     COMCORE::CDnsCacheEntry* dnsCacheEntry = static_cast< COMCORE::CDnsCacheEntry* >( notifier );
     if ( dnsCacheEntry->GetPrivateCopy( m_statsDestination, false ) )
     {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Updated underlying for DNS target " + m_statsDestination.GetHostname() );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Updated underlying for DNS target " + m_statsDestination.GetHostname() +
+                                                     " from IPv4 \"" + oldStatsDestination.GetIPv4AddressesAsString() + 
+                                                     "\" to IPv4 \"" + m_statsDestination.GetIPv4AddressesAsString() + "\"" );
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Failed to update DNS target for " + m_statsDestination.GetHostname() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:OnStatsDTargetDnsChange: Failed to update DNS target for " + m_statsDestination.GetHostname() +
+                                                     " from IPv4 \"" + oldStatsDestination.GetIPv4AddressesAsString() + 
+                                                     "\" to IPv4 \"" + m_statsDestination.GetIPv4AddressesAsString() + "\"" );
     }
 }
 
