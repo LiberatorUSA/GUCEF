@@ -75,11 +75,26 @@ CSingleTaskDelegator::OnThreadCycle( void* taskdata )
     
     if ( !taskConsumer.IsNULL() )
     {
-        bool result = CTaskDelegator::ProcessTask( taskConsumer, m_taskData );
+        bool taskResult = false;
+        bool attemptTimedOut = false;
+        do
+        {
+            attemptTimedOut = false;
+            try
+            {
+                taskResult = CTaskDelegator::ProcessTask( taskConsumer, m_taskData );
+            }
+            catch ( const timeout_exception& )
+            {
+                attemptTimedOut = true;
+            }
+        }
+        while ( attemptTimedOut );
+        
         TaskCleanup( taskConsumer, m_taskData );
         taskConsumer.Unlink();
         m_taskData = GUCEF_NULL;
-        return result;
+        return taskResult;
     }
     return true;
 }
