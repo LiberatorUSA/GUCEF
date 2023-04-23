@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -56,10 +56,35 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWEBGLOBAL_H
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
+
 #ifndef GUCEF_WEB_CHTTPCLIENT_H
 #include "gucefWEB_CHTTPClient.h"
 #define GUCEF_WEB_CHTTPCLIENT_H
 #endif /* GUCEF_WEB_CHTTPCLIENT_H ? */
+
+#ifndef GUCEF_WEB_CHTTPURLHANDLER_H
+#include "gucefWEB_CHTTPURLHandler.h"
+#define GUCEF_WEB_CHTTPURLHANDLER_H
+#endif /* GUCEF_WEB_CHTTPURLHANDLER_H ? */
+
+#ifndef GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H
+#include "gucefWEB_CAsyncHttpServerRequestHandler.h"
+#define GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
+
+#ifndef GUCEF_WEB_CASYNCHTTPSERVERRESPONSEHANDLER_H
+#include "gucefWEB_CAsyncHttpServerResponseHandler.h"
+#define GUCEF_WEB_CASYNCHTTPSERVERRESPONSEHANDLER_H
+#endif /* GUCEF_WEB_CASYNCHTTPSERVERRESPONSEHANDLER_H ? */
+
+#ifndef GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#include "gucefWEB_CGlobalHttpCodecLinks.h"
+#define GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#endif /* GUCEF_WEB_CGLOBALHTTPCODECLINKS_H ? */
 
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
@@ -94,28 +119,5 @@ GUCEF_WEB_PUBLIC_C const char* GUCEF_WEB_ModuleCompileTimeStamp( void );
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_WEB_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 04-09-2005 :
-       - Added CBPTCPServerSocket
-       - Added CBPTCPClientSocket
-- 18-08-2005 :
-       - Removed CHTTPDownload
-       - Added CHTTPClient
-- 24-07-2005 :
-       - Added CDRNClient
-       - Added CDRNClientInterface
-       - Added CDRNController
-       - Added CDRNControllerInterface
-- 31-05-2005 :
-       - Initial version
-
------------------------------------------------------------------------------*/
-
 
  

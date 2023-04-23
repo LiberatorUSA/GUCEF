@@ -12,6 +12,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/hiredis $
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-builder ${CMAKE_BINARY_DIR}/jsonbuilder )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-parser ${CMAKE_BINARY_DIR}/jsonparser )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsifal ${CMAKE_BINARY_DIR}/libparsifal )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libyaml ${CMAKE_BINARY_DIR}/yaml )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/redis-plus-plus/src/sw/redis++ ${CMAKE_BINARY_DIR}/redis-plus-plus )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/stbrumme-hash-library ${CMAKE_BINARY_DIR}/stbrumme-hash )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
@@ -25,4 +26,5 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/codecsplu
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/codecspluginZLIB ${CMAKE_BINARY_DIR}/codecspluginZLIB )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginJSONPARSER ${CMAKE_BINARY_DIR}/dstorepluginJSONPARSER )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginPARSIFALXML ${CMAKE_BINARY_DIR}/dstorepluginPARSIFALXML )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginYAML ${CMAKE_BINARY_DIR}/dstorepluginYAML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/redisinfo ${CMAKE_BINARY_DIR}/redisinfo )

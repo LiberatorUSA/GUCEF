@@ -11,6 +11,14 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefVFS" />
         </Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginYAML" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
+		</RuntimeDependencies>		
         <Preprocessor>
             <Define String="GUCEF_ARCHIVER_BUILD_MODULE" />
         </Preprocessor>

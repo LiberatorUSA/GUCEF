@@ -1,7 +1,7 @@
 <ModuleInfoEntry>
-    <Module Name="yaml" Type="StaticLibrary" Platform="All">
+    <Module Name="yaml" Type="SharedLibrary" Platform="All">
         <Preprocessor>
-            <Define String="YAML_DECLARE_STATIC" />
+            <Define String="YAML_DECLARE_EXPORT" />
 			<Define String="HAVE_CONFIG_H" />
         </Preprocessor>
         <Dependencies>

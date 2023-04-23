@@ -39,6 +39,11 @@
 #define GUCEF_COM_H
 #endif /* GUCEF_COM_H ? */
 
+#ifndef GUCEF_WEB_H
+#include "gucefWEB.h"
+#define GUCEF_WEB_H
+#endif /* GUCEF_WEB_H ? */
+
 #ifndef TESTCODE_CHTTPCLIENT_H
 #include "TestCode_CHTTPClient.h"
 #define TESTCODE_CHTTPCLIENT_H
@@ -62,6 +67,8 @@ GUCEF_OSMAIN_BEGIN
             
     try 
     {                               
+        WEB::CGlobalHttpCodecLinks& codecLinks = WEB::CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
+
         SetupHTTPClientTest();
         RunHTTPServerTest( argc, argv );
         
