@@ -1114,30 +1114,19 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
     {
         const CDataNode* groupNode = (*i);
 
-        bool loadPlugins = false;
-        CString loadImBoolStr = groupNode->GetChildValueByName( "LoadImmediately" );
-        if ( !loadImBoolStr.IsNULLOrEmpty() )
-        {
-             loadPlugins = StringToBool( loadImBoolStr );
-        }
-        CString groupName = groupNode->GetChildValueByName( "GroupName" );
+        bool loadPlugins = groupNode->GetAttributeValueOrChildValueByName( "LoadImmediately" ).AsBool( false, true );
+        CString groupName = groupNode->GetAttributeValueOrChildValueByName( "GroupName" ).AsString( CString::Empty, true );
 
         CDataNode::TConstDataNodeSet pluginMetaDataNodes( groupNode->FindChildrenOfType( "PluginMetaData", true ) );
         CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
         while ( n != pluginMetaDataNodes.end() )
         {
             // Check for per-plugin override of load settings, overriding group default
-            bool loadImmediately = loadPlugins;
-            loadImBoolStr = (*n )->GetAttributeValueOrChildValueByName( "LoadImmediately" );
-            if ( !loadImBoolStr.IsNULLOrEmpty() )
-                loadImmediately = StringToBool( loadImBoolStr );
+            bool loadImmediately = (*n )->GetAttributeValueOrChildValueByName( "LoadImmediately" ).AsBool( loadPlugins, true );
 
             // Since we have to report whether loading the config settings went ok
             // Check to see if allow the loading of this plugin to fail and still report success
-            bool loadFailAllowed = false;
-            CString loadFailAllowedSetting = (*n )->GetAttributeValueOrChildValueByName( "LoadFailAllowed" );
-            if ( !loadFailAllowedSetting.IsNULLOrEmpty() )
-                loadFailAllowed = StringToBool( loadFailAllowedSetting );
+            bool loadFailAllowed = (*n )->GetAttributeValueOrChildValueByName( "LoadFailAllowed" ).AsBool( false, true );
 
             CPluginMetaData metaData;
             if ( metaData.LoadConfig( *(*n ) ) )

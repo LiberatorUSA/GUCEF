@@ -232,6 +232,15 @@ CDataNode::SetValue( const CVariant& value )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CDataNode::SetValue( const TVariantData& value )
+{GUCEF_TRACE;
+
+    m_value = value;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CVariant& 
 CDataNode::GetValue( void ) const
 {
@@ -546,6 +555,21 @@ bool
 CDataNode::SetAttribute( const CString& name    ,
                          const CVariant& value  ,
                          bool linkWherePossible )
+{GUCEF_TRACE;
+
+    if ( linkWherePossible )
+        _atts[ name ].LinkTo( value );
+    else
+        _atts[ name ] = value;
+    return true;                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataNode::SetAttribute( const CString& name       , 
+                         const TVariantData& value , 
+                         bool linkWherePossible    )
 {GUCEF_TRACE;
 
     if ( linkWherePossible )
@@ -1564,6 +1588,19 @@ CDataNode*
 CDataNode::AddChildWithValue( const CString& nodeName   , 
                               const CVariant& nodeValue ,
                               int nodeType              )
+{GUCEF_TRACE;
+
+    CDataNode newNode( nodeName, nodeType );
+    newNode.SetValue( nodeValue );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddChildWithValue( const CString& nodeName       , 
+                              const TVariantData& nodeValue ,
+                              int nodeType                  )
 {GUCEF_TRACE;
 
     CDataNode newNode( nodeName, nodeType );

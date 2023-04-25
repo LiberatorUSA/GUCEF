@@ -591,11 +591,14 @@ DSTOREPLUG_Src_File_Open( void** plugdata      ,
     *plugdata = GUCEF_NULL;
 
     sd = (TSrcFileData*) malloc( sizeof(TSrcFileData) );
-    memset( sd, 0, sizeof( TSrcFileData ) );
-    sd->access = file;
-
-    *filedata = sd;
-    return 1;
+    if ( GUCEF_NULL != sd )
+    {
+        memset( sd, 0, sizeof( TSrcFileData ) );
+        sd->access = file;
+        *filedata = sd;
+        return 1;
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -732,7 +735,10 @@ process_value( TSrcFileData* sd    ,
         }
         case json_null:
         {
-            sd->handlers.OnNodeAtt( sd->privdata, objName, name, NULL, GUCEF_DATATYPE_NIL );
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_NIL;
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, &var );
             break;
         }
         case json_object:
@@ -747,32 +753,44 @@ process_value( TSrcFileData* sd    ,
         }
         case json_integer:
         {
-            char valueBuffer[64];
-            sprintf( valueBuffer, "%lli", value->u.integer );
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_INT64; 
+            var.union_data.int64_data = value->u.integer;
 
-            sd->handlers.OnNodeAtt( sd->privdata, objName, name, valueBuffer, GUCEF_DATATYPE_INT64 );
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, &var );
             break;
         }
         case json_double:
         {
-            char valueBuffer[64];
-            sprintf( valueBuffer, "%f", value->u.dbl );
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_FLOAT64; 
+            var.union_data.float64_data = value->u.dbl;
 
-            sd->handlers.OnNodeAtt( sd->privdata, objName, name, valueBuffer, GUCEF_DATATYPE_FLOAT64 );
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, &var );
             break;
         }
         case json_string:
         {
-            sd->handlers.OnNodeAtt( sd->privdata, objName, name, value->u.string.ptr, GUCEF_DATATYPE_STRING );
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_UTF8_STRING; 
+            var.union_data.heap_data.heap_data_is_linked = 1;
+            var.union_data.heap_data.heap_data_size = value->u.string.length;
+            var.union_data.heap_data.union_data.char_heap_data = value->u.string.ptr;
+
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, &var );
             break;
         }
         case json_boolean:
         {
-            char* boolValue = "true";
-            if ( 0 == value->u.boolean )
-                boolValue = "false";
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_BOOLEAN_INT32; 
+            var.union_data.int32_data = value->u.boolean;
 
-            sd->handlers.OnNodeAtt( sd->privdata, objName, name, boolValue, GUCEF_DATATYPE_BOOLEAN_STRING );
+            sd->handlers.OnNodeAtt( sd->privdata, objName, name, &var );
             break;
         }
     }
@@ -798,24 +816,27 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
             sd->access->seek( sd->access, 0, SEEK_SET );
 
             fileBuffer = (json_char*) malloc( fileSize );
-            bytesRead = sd->access->read( sd->access, fileBuffer, 1, fileSize );
-            if ( bytesRead != fileSize )
+            if ( GUCEF_NULL != fileBuffer )
             {
+                bytesRead = sd->access->read( sd->access, fileBuffer, 1, fileSize );
+                if ( bytesRead != fileSize )
+                {
+                    free( fileBuffer );
+                    return 1;
+                }
+
+                jsonDoc = json_parse( fileBuffer, bytesRead );
                 free( fileBuffer );
-                return 1;
+
+                json_builder_free( sd->jsonDoc );
+                sd->jsonDoc = jsonDoc;
+
+                /* Now we actually commence the reading itself
+                   We treat the DOM tree in a SAX manner essentially */
+                (*sd->handlers.OnTreeBegin)( sd->privdata );
+                process_value( sd, "", "", jsonDoc );
+                (*sd->handlers.OnTreeEnd)( sd->privdata );
             }
-
-            jsonDoc = json_parse( fileBuffer, bytesRead );
-            free( fileBuffer );
-
-            json_builder_free( sd->jsonDoc );
-            sd->jsonDoc = jsonDoc;
-
-            /* Now we actually commence the reading itself
-               We treat the DOM tree in a SAX manner essentially */
-            (*sd->handlers.OnTreeBegin)( sd->privdata );
-            process_value( sd, "", "", jsonDoc );
-            (*sd->handlers.OnTreeEnd)( sd->privdata );
         }
     }
     return 0;

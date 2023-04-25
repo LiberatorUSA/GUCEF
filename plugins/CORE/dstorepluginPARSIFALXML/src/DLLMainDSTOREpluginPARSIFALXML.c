@@ -175,6 +175,7 @@ ParsifalElementStart( void* userdata         ,
 {
     Int32 i;
     LPXMLRUNTIMEATT att;
+    TVariantData var;
 
     TSrcFileData* sd = (TSrcFileData*) userdata;
 
@@ -182,13 +183,19 @@ ParsifalElementStart( void* userdata         ,
     if ( atts->length )
     {
         for ( i=0; i<atts->length; ++i )
-        {
+        {            
             att = (LPXMLRUNTIMEATT) XMLVector_Get( atts, i );
-            (*sd->handlers.OnNodeAtt)( sd->privdata           ,
-                                        qname                 ,
-                                        att->qname            ,
-                                        att->value            ,
-                                        GUCEF_DATATYPE_STRING );
+            
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_UTF8_STRING; 
+            var.union_data.heap_data.heap_data_is_linked = 1;
+            var.union_data.heap_data.heap_data_size = (UInt32) strlen( att->value );
+            var.union_data.heap_data.union_data.char_heap_data = att->value;
+            
+            (*sd->handlers.OnNodeAtt)( sd->privdata ,
+                                        qname       ,
+                                        att->qname  ,
+                                        &var        );
         }
     }
     return XML_OK;
@@ -420,15 +427,21 @@ ParsifalElementEnd( void* userdata         ,
     {
         /* normalize buffer, note that XMLNormalizeBuf doesn't nul terminate the buffer: */
 		int len = XMLNormalizeBuf( text, sd->textBuffer.len );
-		if ( len < sd->textBuffer.len ) text[ len ] = '\0';
+		if ( len < sd->textBuffer.len ) 
+            text[ len ] = '\0';
 
         if ( len > 0 )
         {
-            (*sd->handlers.OnNodeAtt)( sd->privdata          ,
-                                       qname                 ,
-                                       0                     ,
-                                       text                  ,
-                                       GUCEF_DATATYPE_STRING );
+            TVariantData var;
+            memset( &var, 0, sizeof( var ) );
+            var.containedType = GUCEF_DATATYPE_UTF8_STRING; 
+            var.union_data.heap_data.heap_data_is_linked = 1;
+            var.union_data.heap_data.heap_data_size = len;
+            var.union_data.heap_data.union_data.char_heap_data = text;
+
+            (*sd->handlers.OnNodeValue)( sd->privdata ,
+                                         qname        ,
+                                         &var         );
         }
 
         /* we'll reuse Stringbuf just setting its length to 0: */

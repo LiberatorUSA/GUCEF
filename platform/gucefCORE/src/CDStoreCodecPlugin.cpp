@@ -148,8 +148,8 @@ OnTreeBeginHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
     TParserData* pd = static_cast<TParserData*>(privdata);
     pd->errorcode = 0;
-    pd->error = NULL;
-    pd->curnode = NULL;
+    pd->error = GUCEF_NULL;
+    pd->curnode = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,22 +167,22 @@ OnNodeBeginHandler( void* privdata       ,
                     const char* nodename ,
                     int nodeType         ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-        TParserData* pd = static_cast<TParserData*>(privdata);
-        if ( pd )
+    TParserData* pd = static_cast<TParserData*>(privdata);
+    if ( GUCEF_NULL != pd )
+    {
+        if ( GUCEF_NULL != pd->curnode )
         {
-                if ( pd->curnode )
-                {
-                        pd->curnode = pd->curnode->AddChild( nodename, nodeType );
-                        return;
-                }
-
-                /*
-                *      First node
-                */
-                pd->curnode = pd->root;
-                pd->curnode->SetName( nodename );
-                pd->curnode->SetNodeType( nodeType );
+            pd->curnode = pd->curnode->AddChild( nodename, nodeType );
+            return;
         }
+
+        /*
+        *      First node
+        */
+        pd->curnode = pd->root;
+        pd->curnode->SetName( nodename );
+        pd->curnode->SetNodeType( nodeType );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -191,40 +191,63 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnNodeEndHandler( void* privdata       ,
                   const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-        TParserData* pd = static_cast<TParserData*>(privdata);
-        if ( pd )
+
+    TParserData* pd = static_cast<TParserData*>(privdata);
+    if ( GUCEF_NULL != pd )
+    {
+        if ( GUCEF_NULL != pd->curnode )
         {
-                if ( pd->curnode )
-                {
-                        pd->curnode = pd->curnode->GetParent();
-                }
+            pd->curnode = pd->curnode->GetParent();
         }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-OnNodeAttHandler( void* privdata       ,
-                  const char* nodename ,
-                  const char* attname  ,
-                  const char* attvalue ,
-                  int atttype          ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+OnNodeAttHandler( void* privdata               ,
+                  const char* nodename         ,
+                  const char* attname          ,
+                  const TVariantData* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     TParserData* pd = static_cast<TParserData*>(privdata);
-    if ( 0 != pd && 0 != pd->curnode )
+    if ( GUCEF_NULL != pd && GUCEF_NULL != pd->curnode )
     {
-        if ( 0 != attname )
+        if ( GUCEF_NULL != attvalue )
         {
-            pd->curnode->SetAttribute( attname, attvalue, atttype );
+            if ( GUCEF_NULL != attname )
+            {
+                pd->curnode->SetAttribute( attname, *attvalue );
+            }
+            else        
+            {
+                if ( GUCEF_DATATYPE_ARRAY == pd->curnode->GetNodeType() )
+                    pd->curnode->AddChildWithValue( CString::Empty, *attvalue );
+                else
+                    pd->curnode->SetValue( *attvalue );
+            }
         }
-        else
-        if ( 0 != attvalue )
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
+OnNodeValueHandler( void* privdata               ,
+                    const char* nodename         ,
+                    const TVariantData* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    TParserData* pd = static_cast<TParserData*>(privdata);
+    if ( GUCEF_NULL != pd && GUCEF_NULL != pd->curnode )
+    {
+        if ( GUCEF_NULL != attvalue )
         {
             if ( GUCEF_DATATYPE_ARRAY == pd->curnode->GetNodeType() )
-                pd->curnode->AddChildWithValue( CString::Empty, attvalue, atttype );
+                pd->curnode->AddChildWithValue( CString::Empty, *attvalue );
             else
-                pd->curnode->SetValue( attvalue );
+                pd->curnode->SetValue( *attvalue );
         }
     }
 }
@@ -289,7 +312,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
     if ( IsLoaded() ) return false;
 
     _sohandle = modulePtr;
-    if ( NULL != _sohandle )
+    if ( GUCEF_NULL != _sohandle )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "DStoreCodecPlugin: Linking API using module pointer: " + PointerToString( modulePtr ) );
 
@@ -652,6 +675,7 @@ CDStoreCodecPlugin::BuildDataTree( CDataNode* treeroot ,
         rhandlers.OnNodeBegin = OnNodeBeginHandler;
         rhandlers.OnNodeEnd = OnNodeEndHandler;
         rhandlers.OnNodeAtt = OnNodeAttHandler;
+        rhandlers.OnNodeValue = OnNodeValueHandler;
         rhandlers.OnNodeChildrenBegin = OnNodeChildrenBeginHandler;
         rhandlers.OnNodeChildrenEnd = OnNodeChildrenEndHandler;
         rhandlers.OnError = OnParserErrorHandler;

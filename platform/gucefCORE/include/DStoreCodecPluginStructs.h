@@ -35,6 +35,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_VARIANTDATA_H
+#include "gucefCORE_VariantData.h"
+#define GUCEF_CORE_VARIANTDATA_H
+#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -56,7 +61,8 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeBegin ) ( voi
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnTreeEnd ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeBegin ) ( void* privdata, const char* nodename, int nodeType ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeEnd ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeAtt ) ( void* privdata, const char* nodename, const char* attname, const char* attvalue, int atttype ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeAtt ) ( void* privdata, const char* nodename, const char* attname, const TVariantData* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeValue ) ( void* privdata, const char* nodename, const TVariantData* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenBegin ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnNodeChildrenEnd ) ( void* privdata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnError ) ( void* privdata, Int32 errorcode, const char* description ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -73,14 +79,15 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_OnError ) ( void* p
  */
 struct SReadHandlers
 {
-        TDSTOREPLUGFPTR_OnTreeBegin         OnTreeBegin;
-        TDSTOREPLUGFPTR_OnTreeEnd           OnTreeEnd;
-        TDSTOREPLUGFPTR_OnNodeBegin         OnNodeBegin;
-        TDSTOREPLUGFPTR_OnNodeEnd           OnNodeEnd;
-        TDSTOREPLUGFPTR_OnNodeAtt           OnNodeAtt;
-        TDSTOREPLUGFPTR_OnNodeChildrenBegin OnNodeChildrenBegin;
-        TDSTOREPLUGFPTR_OnNodeChildrenEnd   OnNodeChildrenEnd;
-        TDSTOREPLUGFPTR_OnError             OnError;                             
+    TDSTOREPLUGFPTR_OnTreeBegin         OnTreeBegin;
+    TDSTOREPLUGFPTR_OnTreeEnd           OnTreeEnd;
+    TDSTOREPLUGFPTR_OnNodeBegin         OnNodeBegin;
+    TDSTOREPLUGFPTR_OnNodeEnd           OnNodeEnd;
+    TDSTOREPLUGFPTR_OnNodeAtt           OnNodeAtt;
+    TDSTOREPLUGFPTR_OnNodeValue         OnNodeValue;
+    TDSTOREPLUGFPTR_OnNodeChildrenBegin OnNodeChildrenBegin;
+    TDSTOREPLUGFPTR_OnNodeChildrenEnd   OnNodeChildrenEnd;
+    TDSTOREPLUGFPTR_OnError             OnError;                             
 };
 typedef struct SReadHandlers TReadHandlers;
 
@@ -98,14 +105,3 @@ typedef struct SReadHandlers TReadHandlers;
 /*--------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_DSTORECODECPLUGINSTRUCTS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 04-04-2005 :
-        - Initial version.
-
------------------------------------------------------------------------------*/

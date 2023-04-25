@@ -25,7 +25,7 @@ Due to growing open-source community popularity GitHub won the day as the new ho
 
 ## About the author
 Aside from the dependencies almost all code in this repository was written by Dinand Vanvelzen. 
-Dinand started programming as child during the 1980s, writing assembly code for the MSX which was a Philips designed take on a PC concept.
+Dinand started programming as a child during the 1980s, writing assembly code for the MSX which was a Philips designed take on a PC concept.
 Later on during the 1990s RAD programming principles became the new love afair via Borland Delphi followed by Borland C++ Builder.
 At this juncture the author had embarked upon professsional education in the dark arts of software engineering. 
 A dual strategy was persued between application programming and back-end/lower-level programming which were distinct degrees at the time.
@@ -88,6 +88,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 ## Contained Platform Plugins
 - dstorepluginPARSIFALXML: gucefCORE plugin: Adds DStore (DataNode) codec support for XML. Writing via GUCEF code and reading via the ParsifalXML dependency library
 - dstorepluginJSONPARSER: gucefCORE plugin: Adds DStore (DataNode) codec support for JSON. Uses the json-parser and json-builder dependency libraries
+- dstorepluginYAML: gucefCORE plugin: Adds DStore (DataNode) codec support for YAML. Uses the libyaml dependency library
 - codecspluginZLIB: gucefCORE plugin: Adds codec support for zlib/gzip/deflate/crc32/adler32
 - codecspluginSTBRUMMEHASH: gucefCORE plugin: Adds codec support for CRC32/MD5/SHA1/SHA3/SHA256/Keccak
 - imgpluginDEVIL: gucefIMAGE plugin: Adds digital image management functionality sourced from the DEVIL image dependency library. Supports various image codecs.
@@ -104,14 +105,14 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - inputdriverNANDROID: gucefINPUT plugin: Adds an input driver for input device interaction via native Android APIs
 - inputdriverOIS: gucefINPUT plugin: Adds an input driver for input device interaction via the OIS dependency library
 - inputdriverXWINMSG: gucefINPUT plugin: Adds an input driver for input device interaction via the X-Windowing messaging system for Linux
-- pubsubpluginAWSSNS: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for AWS's SNS service. Uses the AWS C++ SDK.
-- pubsubpluginAWSSQS: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for AWS's SQS service. Uses the AWS C++ SDK.
-- pubsubpluginKAFKA: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for Kafka streams. Uses the RdKafka dependency library.
-- pubsubpluginMSMQ: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for MSMQ. Uses the Windows Operating system MSMQ subsystem which needs to be installed.
-- pubsubpluginREDISCLUSTER: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for Redis streams. Uses redis++ and hiredis dependencies.
-- pubsubpluginSTORAGE: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend that allows easy interaction with the VFS and its capabilities
-- pubsubpluginUDP: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for basic UDP
-- pubsubpluginWEB: gucefCOMCORE plugin: Adds a pub-sub concept compatible backend for Web concepts like HTTP/REST/WebSockets
+- pubsubpluginAWSSNS: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for AWS's SNS service. Uses the AWS C++ SDK.
+- pubsubpluginAWSSQS: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for AWS's SQS service. Uses the AWS C++ SDK.
+- pubsubpluginKAFKA: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for Kafka streams. Uses the RdKafka dependency library.
+- pubsubpluginMSMQ: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for MSMQ. Uses the Windows Operating system MSMQ subsystem which needs to be installed.
+- pubsubpluginREDISCLUSTER: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for Redis streams. Uses redis++ and hiredis dependencies.
+- pubsubpluginSTORAGE: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend that allows easy interaction with the VFS and its capabilities
+- pubsubpluginUDP: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for basic UDP
+- pubsubpluginWEB: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for Web concepts like HTTP/REST/WebSockets
 - ProjectGenDependsFilter: ProjectGen plugin: Allows filtering of libraries in a repo based on a depends.exe tool output report
 - ProjectGenVSImporter: ProjectGen plugin: Imports Visual Studio project files to generate a ModuleInfo.xml starting point for a new repo
 
@@ -154,7 +155,6 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - Short term: Add config driven CodecChain class
 - Mid term: Fix the GitHub CI integration. The auto build trigger link is broken.
 - Mid term: Add DataNode schema system
-- Mid term: Add DStore (DataNode) codec for YML format
 - Mid term: Add config driven message transform engine
 - Mid term: Add AWS Lambda support
 - Mid term: Add Utf16 and Utf32 support

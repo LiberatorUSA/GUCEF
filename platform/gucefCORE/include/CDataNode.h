@@ -156,11 +156,18 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     const CString& GetName( void ) const;
 
     /**
-     *      Sets the new node simplistic value
+     *  Sets the new node simplistic value
      *
-     *      @param name the new node name
+     *  @param value the new node value
      */
     void SetValue( const CVariant& value );
+
+    /**
+     *  Sets the new node simplistic value
+     *
+     *  @param value the new node value
+     */
+    void SetValue( const TVariantData& value );
 
     /**
      *      Gets the current node value
@@ -219,6 +226,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     bool SetAttribute( const CString& name, Int64 value );
     bool SetAttribute( const CString& name, UInt64 value );
     bool SetAttribute( const CString& name, const CVariant& value, bool linkWherePossible = false );
+    bool SetAttribute( const CString& name, const TVariantData& value, bool linkWherePossible = false );
     bool SetAttribute( const CString& name, Float32 value );
     //bool SetAttribute( const CVariant& name, const CVariant& value, bool linkWherePossible = false );
 
@@ -457,6 +465,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     CDataNode* AddChildWithValue( const CString& nodeName              ,
                                   const CVariant& nodeValue            ,
+                                  int nodeType = GUCEF_DATATYPE_OBJECT );
+
+    CDataNode* AddChildWithValue( const CString& nodeName              ,
+                                  const TVariantData& nodeValue        ,
                                   int nodeType = GUCEF_DATATYPE_OBJECT );
 
     CDataNode* AddValueAsChild( const CVariant& nodeValue );

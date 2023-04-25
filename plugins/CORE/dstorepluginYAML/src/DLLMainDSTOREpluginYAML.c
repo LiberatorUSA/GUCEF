@@ -776,17 +776,35 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                         sd->handlers.OnNodeEnd( sd->privdata, name );
                         break;
                     }
-                    case YAML_MAPPING_START_EVENT:   break;
-                    case YAML_MAPPING_END_EVENT:     break;
+                    case YAML_MAPPING_START_EVENT:   
+                    {
+                        const char* name = yamlEvent.data.mapping_start.tag;
+                        sd->handlers.OnNodeBegin( sd->privdata, name, GUCEF_DATATYPE_OBJECT );
+                        sd->handlers.OnNodeChildrenBegin( sd->privdata, name );
+                        break;
+                    }
+                    case YAML_MAPPING_END_EVENT:   
+                    {
+                        const char* name = yamlEvent.data.mapping_start.tag;
+                        sd->handlers.OnNodeChildrenEnd( sd->privdata, name );
+                        sd->handlers.OnNodeEnd( sd->privdata, name );
+                        break;
+                    }
 
                     /* Data */
                     case YAML_ALIAS_EVENT:   break;     // printf("Got alias (anchor %s)\n", yamlEvent.data.alias.anchor);
                     case YAML_SCALAR_EVENT:  
                     {
+                        TVariantData var;
                         const char* name = yamlEvent.data.scalar.tag;
-                        const char* value = yamlEvent.data.scalar.value;
 
-                        sd->handlers.OnNodeAtt( sd->privdata, "", name, value, GUCEF_DATATYPE_INT64 );                        
+                        memset( &var, 0, sizeof( var ) );
+                        var.containedType = GUCEF_DATATYPE_UTF8_STRING; 
+                        var.union_data.heap_data.heap_data_is_linked = 1;
+                        var.union_data.heap_data.heap_data_size = (UInt32) yamlEvent.data.scalar.length;
+                        var.union_data.heap_data.union_data.char_heap_data = yamlEvent.data.scalar.value;
+
+                        sd->handlers.OnNodeAtt( sd->privdata, "", name, &var );                        
                         break;
                     }
                 }

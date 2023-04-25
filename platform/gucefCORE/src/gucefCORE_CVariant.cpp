@@ -76,6 +76,27 @@ CVariant::CVariant( void )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( const TVariantData* variantData, bool linkIfPossible )
+    : m_variantData()
+{GUCEF_TRACE;
+    
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( variantData, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const TVariantData& variantData, bool linkIfPossible )
+    : m_variantData()
+{GUCEF_TRACE;
+    
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    assert( GUCEF_NULL != &variantData );
+    Set( &variantData, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant::CVariant( bool data )
     : m_variantData()
 {GUCEF_TRACE;
@@ -268,58 +289,70 @@ CVariant::CVariant( const CDynamicBuffer& data, UInt8 varType )
 /*-------------------------------------------------------------------------*/
 
 CVariant::CVariant( const CVariant& data )
-    : m_variantData( data.m_variantData )
+    : m_variantData()
 {GUCEF_TRACE;
 
-    // If dynamic memory is used we need to actually copy said memory
-    // into a private copy
-    if ( data.UsesDynamicMemory() )
-    {
-        if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
-        {
-            m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-            assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
-            memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-        }
-        else
-        {
-            m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
-            m_variantData.union_data.heap_data.heap_data_size = 0;
-        }
-        m_variantData.union_data.heap_data.heap_data_is_linked = 0;
-    }
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( &data.m_variantData, false );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CVariant::CVariant( const CVariant& data , 
                     bool linkIfPossible  )
-    : m_variantData( data.m_variantData )
+    : m_variantData()
 {GUCEF_TRACE;
 
-    // If dynamic memory is used we need to actually copy said memory
-    // into a private copy
-    if ( data.UsesDynamicMemory() )
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( &data.m_variantData, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::Set( const TVariantData* src, bool linkOnlyForDynMem )
+{GUCEF_TRACE;
+
+    Clear();
+    
+    if ( GUCEF_NULL != src )
     {
-        if ( !linkIfPossible )
+        if ( linkOnlyForDynMem )
         {
-            if ( 0 < data.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != data.m_variantData.union_data.heap_data.union_data.void_heap_data )
-            {
-                m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-                assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
-                memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, data.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) data.m_variantData.union_data.heap_data.heap_data_size );
-            }
-            else
-            {
-                m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
-                m_variantData.union_data.heap_data.heap_data_size = 0;
-            }
-            m_variantData.union_data.heap_data.heap_data_is_linked = 0;
+            memcpy( &m_variantData, src, sizeof( m_variantData ) );
         }
         else
         {
-            m_variantData.union_data.heap_data.heap_data_is_linked = 1;
+            // If dynamic memory is used we need to actually copy said memory
+            // into a private copy        
+            if ( UsesDynamicMemory( src->containedType ) )
+            {
+                if ( 0 < src->union_data.heap_data.heap_data_size && GUCEF_NULL != src->union_data.heap_data.union_data.void_heap_data )
+                {
+                    m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) src->union_data.heap_data.heap_data_size );
+                    assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
+                    memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, src->union_data.heap_data.union_data.void_heap_data, (size_t) src->union_data.heap_data.heap_data_size );
+                    m_variantData.union_data.heap_data.heap_data_size = src->union_data.heap_data.heap_data_size;
+                }
+                else
+                {
+                    m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
+                    m_variantData.union_data.heap_data.heap_data_size = 0;
+                }
+                m_variantData.union_data.heap_data.heap_data_is_linked = 0;
+                m_variantData.containedType = src->containedType;
+            }
+            else
+            {
+                memcpy( &m_variantData, src, sizeof( m_variantData ) );
+            }
         }
+        return true;
+    }
+    else
+    {
+        memset( &m_variantData, 0, sizeof( m_variantData ) );
+        return true;
     }
 }
 
@@ -1316,29 +1349,20 @@ CVariant::operator=( const CVariant& src )
 
     if ( this != &src )
     {
-        // If dynamic memory is used we need to actually copy said memory
-        // into a private copy
-        if ( src.UsesDynamicMemory() )
-        {
-            if ( 0 < src.m_variantData.union_data.heap_data.heap_data_size && GUCEF_NULL != src.m_variantData.union_data.heap_data.union_data.void_heap_data )
-            {
-                m_variantData.union_data.heap_data.union_data.void_heap_data = malloc( (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
-                assert( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data );
-                memcpy( m_variantData.union_data.heap_data.union_data.void_heap_data, src.m_variantData.union_data.heap_data.union_data.void_heap_data, (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
-                m_variantData.union_data.heap_data.heap_data_size = src.m_variantData.union_data.heap_data.heap_data_size;
-            }
-            else
-            {
-                m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
-                m_variantData.union_data.heap_data.heap_data_size = 0;
-            }
-            m_variantData.containedType = src.m_variantData.containedType;
-            m_variantData.union_data.heap_data.heap_data_is_linked = 0;
-        }
-        else
-        {
-            memcpy( &m_variantData, &src.m_variantData, sizeof m_variantData );
-        }
+        Set( &src.m_variantData, false );
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( const TVariantData& src )
+{GUCEF_TRACE;
+
+    if ( &m_variantData != &src )
+    {
+        Set( &src, false );
     }
     return *this;
 }
@@ -1598,6 +1622,16 @@ CVariant::LinkTo( const char* externalBuffer, UInt8 varType )
             return *this;
         }
     }  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant&
+CVariant::LinkTo( const TVariantData& src )
+{GUCEF_TRACE;
+
+    Set( &src, true );
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/

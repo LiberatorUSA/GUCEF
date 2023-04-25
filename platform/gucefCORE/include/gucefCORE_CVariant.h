@@ -92,6 +92,10 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     static const VariantVector      EmptyVector;
     
     CVariant( void );
+
+    CVariant( const TVariantData* variantData, bool linkIfPossible );
+
+    CVariant( const TVariantData& variantData, bool linkIfPossible );
     
     /**
      *  Note that if the variant uses linked heap data said heap data will be copied
@@ -244,6 +248,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( const std::string& data );
     CVariant& operator=( const std::wstring& data );
     CVariant& operator=( const CVariant& src );
+    CVariant& operator=( const TVariantData& src );
 
     operator CAsciiString() const;
     operator CUtf8String() const;
@@ -256,6 +261,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  has enough bytes to hold the varType indicated or the operation will fail.
      */
     bool Set( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB, bool linkOnlyForDynMem = false );
+
+    bool Set( const TVariantData* src, bool linkOnlyForDynMem = false );
 
     bool SetString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
@@ -271,6 +278,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& LinkTo( const char* externalBuffer, UInt32 bufferSize, UInt8 varType = GUCEF_DATATYPE_ASCII_STRING );
     CVariant& LinkTo( const char* externalBuffer, UInt8 varType = GUCEF_DATATYPE_ASCII_STRING );
     CVariant& LinkTo( const CVariant& src );
+    CVariant& LinkTo( const TVariantData& src );
     CVariant& LinkTo( const CAsciiString& src );
     CVariant& LinkTo( const CUtf8String& src );
     CVariant& LinkTo( const std::string& src );
