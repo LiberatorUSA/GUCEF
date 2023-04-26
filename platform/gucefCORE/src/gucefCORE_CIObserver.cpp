@@ -25,6 +25,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
 #include "gucefCORE_CIObserver.h"
 
 /*-------------------------------------------------------------------------//
@@ -83,7 +88,10 @@ CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver, UInt
         MT::TLockStatus lockStatus = m_lockableObserver->NotificationLock( lockWaitTimeoutInMs );
         m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
         if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-             throw timeout_exception();  
+        {
+            GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "ObserverScopeLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+            throw timeout_exception();  
+        }
     }
 }
 
@@ -98,7 +106,10 @@ CObserverScopeLock::CObserverScopeLock( const CIObserver& lockableObserver, UInt
     MT::TLockStatus lockStatus = m_lockableObserver->NotificationLock( lockWaitTimeoutInMs );
     m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
     if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "ObserverScopeLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
         throw timeout_exception(); 
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -147,7 +158,10 @@ CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver* lockab
         MT::TLockStatus lockStatus = m_lockableObserver->NotificationReadOnlyLock( lockWaitTimeoutInMs );
         m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
         if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-             throw timeout_exception();  
+        {
+           GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "ObserverScopeReadOnlyLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+           throw timeout_exception();  
+        }
     }
 }
 
@@ -162,7 +176,10 @@ CObserverScopeReadOnlyLock::CObserverScopeReadOnlyLock( const CIObserver& lockab
     MT::TLockStatus lockStatus = m_lockableObserver->NotificationReadOnlyLock( lockWaitTimeoutInMs );
     m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
     if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-            throw timeout_exception();  
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "ObserverScopeReadOnlyLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+        throw timeout_exception();  
+    }
 }
 
 /*--------------------------------------------------------------------------*/

@@ -472,6 +472,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
                                   int nodeType = GUCEF_DATATYPE_OBJECT );
 
     CDataNode* AddValueAsChild( const CVariant& nodeValue );
+    CDataNode* AddValueAsChild( const TVariantData& nodeValue );
     CDataNode* AddValueAsChild( const CString& nodeValue );
 
     template < class ChildValueTypeCollection >

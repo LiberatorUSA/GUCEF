@@ -1619,6 +1619,17 @@ CDataNode::AddValueAsChild( const CVariant& nodeValue )
     return AddChild( newNode );
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddValueAsChild( const TVariantData& nodeValue )
+{GUCEF_TRACE;
+
+    CDataNode newNode( CString::Empty, nodeValue.containedType );
+    newNode.SetValue( nodeValue );
+    return AddChild( newNode );
+}
 /*-------------------------------------------------------------------------*/
 
 CDataNode*

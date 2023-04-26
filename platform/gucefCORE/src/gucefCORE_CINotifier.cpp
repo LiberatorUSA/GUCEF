@@ -121,7 +121,10 @@ CNotifierScopeLock::CNotifierScopeLock( const CINotifier* lockableNotifier, UInt
         MT::TLockStatus lockStatus = m_lockableNotifier->NotificationLock( lockWaitTimeoutInMs );
         m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
         if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-             throw timeout_exception();  
+        {
+            GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "NotifierScopeLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+            throw timeout_exception();  
+        }
     }
 }
 
@@ -136,7 +139,10 @@ CNotifierScopeLock::CNotifierScopeLock( const CINotifier& lockableNotifier, UInt
     MT::TLockStatus lockStatus = m_lockableNotifier->NotificationLock( lockWaitTimeoutInMs );
     m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
     if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-            throw timeout_exception();  
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "NotifierScopeLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+        throw timeout_exception();  
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -185,7 +191,10 @@ CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier* lockab
         MT::TLockStatus lockStatus = m_lockableNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
         m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
         if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-             throw timeout_exception();  
+        {
+            GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "NotifierScopeReadOnlyLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+            throw timeout_exception();  
+        }
     }
 }
 
@@ -200,7 +209,10 @@ CNotifierScopeReadOnlyLock::CNotifierScopeReadOnlyLock( const CINotifier& lockab
     MT::TLockStatus lockStatus = m_lockableNotifier->NotificationReadOnlyLock( lockWaitTimeoutInMs );
     m_isLocked = MT::LockStatusToLockSuccessStatusBool( lockStatus );
     if ( MT::LOCKSTATUS_WAIT_TIMEOUT == lockStatus )
-            throw timeout_exception(); 
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_IMPORTANT, "NotifierScopeReadOnlyLock: Unable to attain lock within " + ToString( lockWaitTimeoutInMs ) + "ms" );
+        throw timeout_exception(); 
+    }
 }
 
 /*--------------------------------------------------------------------------*/
