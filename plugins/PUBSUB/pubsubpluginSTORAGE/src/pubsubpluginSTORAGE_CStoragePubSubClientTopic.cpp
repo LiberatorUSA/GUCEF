@@ -850,7 +850,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                     ticks = CORE::GUCEFGetTickCount() - ticks;
                     bufferOffset += msgBytesWritten;
 
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+                    GUCEF_DEBUG_LOG_EVERYTHING( "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
                         "):PublishViaMsgPtrs: Serialized a message with serialized size " + CORE::ToString( msgBytesWritten ) +
                         ". This took " + CORE::ToString( ticks ) + "ms. publishActionId=" + CORE::ToString( publishActionId ) );
 

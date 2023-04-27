@@ -967,7 +967,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
             if ( m_sideSettings.needToTrackInFlightPublishedMsgsForAck )
                 topicLink.AddInFlightMsgs( topicLink.currentPublishActionIds, msgs, true );
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                 "):PublishMsgsSync: Successfully published " + CORE::ToString( msgs.size() ) + " messages to " + specificTargetTopic->GetTopicName() );
 
             UpdateTopicMetrics( topicLink );

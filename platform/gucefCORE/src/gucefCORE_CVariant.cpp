@@ -317,15 +317,11 @@ CVariant::Set( const TVariantData* src, bool linkOnlyForDynMem )
     
     if ( GUCEF_NULL != src )
     {
-        if ( linkOnlyForDynMem )
+        // If dynamic memory is used we need to actually copy said memory
+        // into a private copy        
+        if ( UsesDynamicMemory( src->containedType ) )
         {
-            memcpy( &m_variantData, src, sizeof( m_variantData ) );
-        }
-        else
-        {
-            // If dynamic memory is used we need to actually copy said memory
-            // into a private copy        
-            if ( UsesDynamicMemory( src->containedType ) )
+            if ( !linkOnlyForDynMem )
             {
                 if ( 0 < src->union_data.heap_data.heap_data_size && GUCEF_NULL != src->union_data.heap_data.union_data.void_heap_data )
                 {
@@ -345,7 +341,12 @@ CVariant::Set( const TVariantData* src, bool linkOnlyForDynMem )
             else
             {
                 memcpy( &m_variantData, src, sizeof( m_variantData ) );
+                m_variantData.union_data.heap_data.heap_data_is_linked = 1;
             }
+        }
+        else
+        {
+            memcpy( &m_variantData, src, sizeof( m_variantData ) );
         }
         return true;
     }
