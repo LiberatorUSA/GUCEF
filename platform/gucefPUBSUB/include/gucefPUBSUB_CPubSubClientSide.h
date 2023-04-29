@@ -210,6 +210,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    protected:
+
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
@@ -264,26 +274,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
 
-    void
-    OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
-                               const CORE::CEvent& eventId  ,
-                               CORE::CICloneable* eventData );
-
-    void
-    OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
-
-    void
-    OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventId  ,
-                                     CORE::CICloneable* eventData );
-
-    void
-    OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier    ,
-                                        const CORE::CEvent& eventId  ,
-                                        CORE::CICloneable* eventData );
-
     bool ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
                              CPubSubClientTopicBasicPtr topic                     ,
                              bool reset                                           );
@@ -293,11 +283,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                    const CPubSubSideChannelSettings& pubSubSideSettings ,
                                    bool reset                                           );
 
-    protected:
-
-    bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
-                           CPubSubClientTopic* specificTargetTopic              );
-
     template < typename TMsgCollection >
     bool BroadcastPublishMsgsSync( const TMsgCollection& msgs );
 
@@ -305,11 +290,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool PublishMsgsSync( const TMsgCollection& msgs              ,
                           CPubSubClientTopic* specificTargetTopic );
 
-    bool PublishMailboxMsgs( void );
-
-    bool RetryPublishFailedMsgs( void );
-
-    void ProcessAcknowledgeReceiptsMailbox( void );
+    bool RetryPublishFailedMsgsAndProcessMailbox( void );
 
     static CORE::CString GetMsgAttributesForLog( const CIPubSubMsg& msg );
 
@@ -320,7 +301,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
-    class TopicLink
+    class TopicLink : public CORE::CObservingNotifier ,
+                      public CORE::CTSharedObjCreator< TopicLink, MT::CMutex > 
     {
         public:
 
@@ -346,6 +328,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
         typedef std::map< CORE::UInt64, CPubSubBookmark >                           TUInt64ToBookmarkMap;
         typedef std::set< CORE::UInt64 >                                            TUInt64Set;
+        typedef CORE::CTEventHandlerFunctor< TopicLink >                            TEventCallback;
 
         CPubSubClientTopicBasicPtr topic;                                       /**< the actual backend topic access object */
         CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */
@@ -358,9 +341,19 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CORE::Int32 msgsSinceLastBookmarkPersist;
         TUInt64ToBookmarkMap bookmarksOnMsgReceived;
         TPubSubMsgMailbox msgMailbox;
+        CPubSubFlowRouter* flowRouter;
+        CPubSubClientSide* side;
+        CPubSubClientFeatures clientFeatures;
+        TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence;
+        bool awaitingFailureReport;
+        CORE::UInt64 totalMsgsInFlight;
+        CORE::CString bookmarkNamespace;
+        CORE::UInt32 threadIdOfSide;
+        MT::CMutex dataLock;
 
         TopicLink( void );
         TopicLink( CPubSubClientTopicBasicPtr t );
+        virtual ~TopicLink();
 
         void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
                               const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
@@ -372,39 +365,87 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
         void AddInFlightMsg( CORE::UInt64 publishActionId       ,
                              CIPubSubMsg::TNoLockSharedPtr& msg );
+
+        void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic );
+
+        void UpdateTopicMetrics( void );
+
+        void Clear( void );
+
+        /**
+         *  Attempts to update the bookmark persistance with the given bookmark
+         *  Note that if bookmarking is not supported then this is treated as a fyi no-op
+         */
+        bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg                  ,
+                                                     const CPubSubBookmark& msgBatchBookmark );
+
+        /**
+         *  Same functionality as the 'UpdateReceivedMessagesBookmarkAsNeeded' variant that accepts a bookmark except it
+         *  has the additional overhead of obtaining the bookmark itself through whatever means are supported.
+         *  If you already have the relevant bookmark you should use the other variant instead
+         */
+        bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg );
+
+        bool FindClosestMsgBatchBookmarkToMsg( const CIPubSubMsg& msg            ,
+                                               UInt64& msgBatchBookmarkReceiveId ,
+                                               CPubSubBookmark& msgBatchBookmark );
+
+        void CleanupMsgBatchBookmarksUpTo( UInt64 msgBatchBookmarkReceiveId );
+
+        bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+        bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+
+        bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
+
+        template < typename TMsgCollection >
+        bool PublishMsgsSync( const TMsgCollection& msgs );
+
+        bool PublishMailboxMsgs( void );
+
+        void ProcessAcknowledgeReceiptsMailbox( void );
+
+        bool RetryPublishFailedMsgs( void );
+
+        void
+        OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData );
+        
+        void
+        OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData );
+
+        void
+        OnPubSubTopicMsgsPublished( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
+
+        void
+        OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData );
+
+        void
+        OnPubSubTopicLocalPublishQueueFull( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData );
+
+        virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;    
+
+        virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     };
+    typedef TopicLink::TSharedPtrType  TopicLinkPtr;
 
-    void UpdateTopicMetrics( TopicLink& topicLink );
-
-    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg, TopicLink& topicLink );
-
-    /**
-     *  Attempts to update the bookmark persistance with the given bookmark
-     *  Note that if bookmarking is not supported then this is treated as a fyi no-op
-     */
-    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg                  ,
-                                                 const CPubSubBookmark& msgBatchBookmark ,
-                                                 TopicLink& topicLink                    );
-
-    /**
-     *  Same functionality as the 'UpdateReceivedMessagesBookmarkAsNeeded' variant that accepts a bookmark except it
-     *  has the additional overhead of obtaining the bookmark itself through whatever means are supported.
-     *  If you already have the relevant bookmark you should use the other variant instead
-     */
-    bool UpdateReceivedMessagesBookmarkAsNeeded( const CIPubSubMsg& msg ,
-                                                 TopicLink& topicLink   );
-
-    bool FindClosestMsgBatchBookmarkToMsg( const CIPubSubMsg& msg            ,
-                                           const TopicLink& topicLink        ,
-                                           UInt64& msgBatchBookmarkReceiveId ,
-                                           CPubSubBookmark& msgBatchBookmark );
-
-    void CleanupMsgBatchBookmarksUpTo( TopicLink& topicLink             ,
-                                       UInt64 msgBatchBookmarkReceiveId );
-
-    typedef std::pair< const CPubSubClientTopic*, TopicLink >   TPubSubClientTopicRawPtrAndTopicLinkPair;
-    typedef std::map< CPubSubClientTopic*, TopicLink, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicMap;
-    typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, basic_allocator< CPubSubClientTopicBasicPtr > >            TopicSet;
+    typedef std::pair< const CPubSubClientTopic*, TopicLinkPtr >   TPubSubClientTopicRawPtrAndTopicLinkPair;
+    typedef std::map< CPubSubClientTopic*, TopicLinkPtr, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicMap;
+    typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, basic_allocator< CPubSubClientTopicBasicPtr > >               TopicSet;
 
     CPubSubClientPtr m_pubsubClient;
     CPubSubClientFeatures m_clientFeatures;
@@ -419,18 +460,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CTimer m_timedOutInFlightMessagesCheckTimer;
     CORE::CString m_sideId;
     CORE::UInt32 m_threadIdOfSide;
-    bool m_awaitingFailureReport;
-    CORE::UInt64 m_totalMsgsInFlight;
     CPubSubFlowRouter* m_flowRouter;
     mutable bool m_isHealthy;
     bool m_connectOnTaskStart;
+    MT::CReadWriteLock m_rwdataLock;
 
     private:
-
-    template < typename TMsgCollection >
-    bool PublishMsgsSync( const TMsgCollection& msgs              ,
-                          CPubSubClientTopic* specificTargetTopic ,
-                          TopicLink& topicLink                    );
 
     CPubSubClientSide( const CPubSubClientSide& src ); // not implemented
 };

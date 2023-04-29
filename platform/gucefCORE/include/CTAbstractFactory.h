@@ -391,6 +391,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterC
         if ( m_assumeFactoryOwnership )
         {
             GUCEF_DELETE (*i).second;
+            (*i).second = GUCEF_NULL;
         }
         m_concreteFactoryList.erase( i );
         m_concreteFactoryTypeMap.erase( concreteClassTypeName );
@@ -422,6 +423,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterA
         if ( m_assumeFactoryOwnership )
         {
             GUCEF_DELETE (*i).second;
+            (*i).second = GUCEF_NULL;
         }
 
         SelectionCriteriaType selectedType = (*i).first;
