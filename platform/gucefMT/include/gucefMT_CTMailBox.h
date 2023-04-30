@@ -300,11 +300,13 @@ CTMailBox< T >::PeekMail( T& eventid         ,
     {
         TMailElement& entry = m_mailQueue.front();
         eventid = entry.eventid;
-        *data = entry.data;
+        if ( GUCEF_NULL != data )
+            *data = entry.data;
 
         return true;
     }
-    *data = GUCEF_NULL;
+    if ( GUCEF_NULL != data )
+        *data = GUCEF_NULL;
     return false;
 }
 

@@ -364,6 +364,7 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
         catch ( const timeout_exception& )
         {
             // no luck, perhaps better luck next pulse
+            GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "PumpedObserver: caught timeout_exception while attempting to notify regarding event " + eventid.GetName() );
             return;
         }
 

@@ -367,7 +367,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     void OnUnableToFullFillStorageToPubSubRequest( const StorageToPubSubRequest& failedRequest );
 
-    bool StoreNextReceivedPubSubBuffer( void );
+    bool StoreNextReceivedPubSubBuffer( bool onlyStoreIfBufferHasContent );
 
     bool ProcessNextPubSubRequestRelatedFile( void );
 
@@ -426,8 +426,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool BeginVfsOps( void );
     bool StopVfsOps( void );
 
-    void FinalizeWriteBuffer( StorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset );
-    void FinalizeWriteBuffer( void );
+    bool FinalizeWriteBuffer( StorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset, bool onlyIfBufferHasContent );
+    bool FinalizeWriteBuffer( bool onlyIfBufferHasContent );
 
     void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
 

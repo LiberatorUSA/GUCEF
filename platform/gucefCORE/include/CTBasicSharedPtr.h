@@ -234,6 +234,12 @@ class CTBasicSharedPtr : public MT::CILockable ,
         return false;
     }
 
+    /**
+     *  If the given shared pointer is the last remaining reference to the underlying raw pointer
+     *  you can use this member function to relinquish ownership. This allows you to revert back to a raw pointer
+     */
+    bool RelinquishOwnership( T*& rawPtr );
+
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived, LockType >& src )
@@ -516,6 +522,41 @@ CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
         m_shared->m_refCounter = 1UL;
         m_objectDestructor = objectDestructor;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+bool
+CTBasicSharedPtr< T, LockType >::RelinquishOwnership( T*& rawPtr )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    if ( GUCEF_NULL == m_shared || m_ptr == GUCEF_NULL )
+    {
+        // we are releasing ownership of a NULL pointer
+        rawPtr = GUCEF_NULL;
+        return true;
+    }
+
+    if ( 1 == m_shared->m_refCounter )
+    {
+        --(m_shared->m_refCounter);
+        rawPtr = m_ptr;
+        m_ptr = GUCEF_NULL;
+        Unlink();
+        return true;
+    }
+    else
+    {
+        /*
+         *  If you get here you should check your code flow
+         *  If you want to use this member function you should ensure that the local scope has the last remaining reference
+         */
+        rawPtr = GUCEF_NULL;
+        return false;
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1016,6 +1057,15 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
         }
         else
         {
+            // We should check if the destructor pointer is not-NULL
+            // Under most conditions there would be no object destructor if there is no objected pointed to
+
+            if ( GUCEF_NULL != m_objectDestructor )
+            {
+                m_objectDestructor->DestroyObject( GUCEF_NULL );
+                m_objectDestructor = GUCEF_NULL;
+            }
+
             // All we ever had was a lock
             TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
             m_shared = GUCEF_NULL;

@@ -1605,7 +1605,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
             }
             if ( discardedMsgs > 0 )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::PointerToString( this ) +
                     "):RetryPublishFailedMsgs: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( discardedMsgs ) +
                     " messages due to exceeding the max retry attempts and/or sanity checks" );
             }
@@ -1639,9 +1639,65 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
         }
 
         CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
-        if ( msgMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+        try
         {
-            totalSuccess = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+            if ( msgMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+            {
+                bool publishSuccess = false;
+                bool timeoutOccured = false;
+                try
+                {
+                    publishSuccess = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
+                    totalSuccess = publishSuccess && totalSuccess;
+                }
+                catch ( const timeout_exception& )
+                {
+                    GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) + " caught timeout_exception while attempting to PublishMsgsSync" );
+
+                    publishSuccess = false;
+                    timeoutOccured = true;
+                    totalSuccess = false;
+                }
+                if ( !publishSuccess )
+                {
+                    if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+                    {
+                        if ( timeoutOccured )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
+                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                                " messages into the mailbox after a timeout exception occured" );
+                        }
+                        else
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
+                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                                " messages into the mailbox after a failure to publish occured" );
+                        }
+                    }
+                }
+            }
+        }
+        catch ( const timeout_exception& )
+        {            
+            totalSuccess = false;
+            if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
+                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    " messages into the mailbox after a timeout exception occured" );
+            }            
+        }
+        catch ( const std::exception& e )
+        {            
+            totalSuccess = false;
+            if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
+                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    " messages into the mailbox after an exception occured" );
+            }
+            throw e;
         }
     }
 
@@ -2011,12 +2067,26 @@ CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
 {GUCEF_TRACE;
 
     CIPubSubMsg::TNoLockSharedPtr msg;
-    while ( publishAckdMsgsMailbox.GetMail( msg ) )
+    while ( publishAckdMsgsMailbox.PeekMail( msg, GUCEF_NULL ) )
     {
-        if ( !AcknowledgeReceiptSync( msg ) )
+        try
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
-                "):ProcessAcknowledgeReceiptsMailbox: Failed to sync ack receipt of message. " + CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
+            if ( AcknowledgeReceiptSync( msg ) )
+            {
+                publishAckdMsgsMailbox.PopMail();
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
+                    "):ProcessAcknowledgeReceiptsMailbox: Failed to sync ack receipt of message. " + CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
+            }
+        }
+        catch ( const timeout_exception& )        
+        {
+            GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+                        "):ProcessAcknowledgeReceiptsMailbox: caught timeout_exception while attempting to ack msg receipt. " + 
+                        CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
+            break;
         }
     }
 
@@ -2379,13 +2449,23 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
             }
         }
 
+        // Create and configure the pub-sub bookmark persistence
+        // we create a private copy per topic link to minimize potential contention across threads
+        CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
+        topicLink->pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
+        if ( topicLink->pubsubBookmarkPersistence.IsNULL() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):ConfigureTopicLink: Failed to create bookmark persistance access of type \"" + pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
+            return false;
+        }
+
         topicLink->side = this;
         topicLink->threadIdOfSide = m_threadIdOfSide;
         topicLink->clientFeatures = m_clientFeatures;
         topicLink->flowRouter = m_flowRouter;
         topicLink->topic = topic;
         topicLink->bookmarkNamespace = m_bookmarkNamespace;
-        topicLink->pubsubBookmarkPersistence = m_pubsubBookmarkPersistence;
         topicLink->metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
         topicLink->metrics = &m_metricsMap[ topicLink->metricFriendlyTopicName ];
         topicLink->metrics->hasSupportForPublishing = topic->IsPublishingSupported();

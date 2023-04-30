@@ -764,7 +764,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                     else
                     {
                         // Try to persist next ready to read buffer as part of the call chain, consequence of not doing async
-                        if ( StoreNextReceivedPubSubBuffer() )
+                        if ( StoreNextReceivedPubSubBuffer( true ) )
                         {
                             // Try again to get a write buffer, this should typically work based on the prior operation
                             m_currentWriteBuffer = m_buffers.GetNextWriterBuffer( CORE::CDateTime::NowUTCDateTime(), m_config.performVfsOpsASync, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
@@ -861,7 +861,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                     {
                         // The current container is now considered to have enough content.
                         // Let's wrap things up...
-                        FinalizeWriteBuffer( bufferMetaData, bufferOffset );
+                        FinalizeWriteBuffer( bufferMetaData, bufferOffset, false );
                         ++i; break;
                     }
                 }
@@ -891,10 +891,17 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
 
 /*-------------------------------------------------------------------------*/
 
-void
-CStoragePubSubClientTopic::FinalizeWriteBuffer( StorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset )
+bool
+CStoragePubSubClientTopic::FinalizeWriteBuffer( StorageBufferMetaData* bufferMetaData, CORE::UInt32 bufferOffset, bool onlyIfBufferHasContent )
 {GUCEF_TRACE;
 
+    if ( onlyIfBufferHasContent && bufferMetaData->msgOffsetIndex.empty() )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
+            "):FinalizeWriteBuffer: Current buffer does not yet have any content, skipping finalization" );
+        return false;
+    }
+    
     CORE::UInt32 newBytesWritten = 0;
     if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( bufferMetaData->msgOffsetIndex, bufferOffset, *m_currentWriteBuffer, newBytesWritten ) )
     {
@@ -920,19 +927,21 @@ CStoragePubSubClientTopic::FinalizeWriteBuffer( StorageBufferMetaData* bufferMet
     if ( !m_config.performVfsOpsASync )
     {
         // Try to persist next ready to read buffer as part of the call chain, consequence of not doing async
-        StoreNextReceivedPubSubBuffer();
+        StoreNextReceivedPubSubBuffer( true );
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CStoragePubSubClientTopic::FinalizeWriteBuffer( void )
+bool
+CStoragePubSubClientTopic::FinalizeWriteBuffer( bool onlyIfBufferHasContent )
 {GUCEF_TRACE;
 
     CORE::UInt32 bufferOffset = m_currentWriteBuffer->GetDataSize();
     StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentWriteBuffer ] );
-    FinalizeWriteBuffer( bufferMetaData, bufferOffset );
+    return FinalizeWriteBuffer( bufferMetaData, bufferOffset, onlyIfBufferHasContent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2250,10 +2259,10 @@ CStoragePubSubClientTopic::OnEndOfASyncVfsWork( void )
     if ( m_config.needPublishSupport )
     {
         // Finalize the write buffer content, there wont be any additional content at this time
-        FinalizeWriteBuffer();
+        FinalizeWriteBuffer( false );
 
         // Persist next ready to read buffer
-        StoreNextReceivedPubSubBuffer();
+        StoreNextReceivedPubSubBuffer( true );
     }
 }
 
@@ -2265,7 +2274,7 @@ CStoragePubSubClientTopic::PerformASyncVfsWork( void )
 
     if ( m_config.needPublishSupport )
     {
-        StoreNextReceivedPubSubBuffer();
+        StoreNextReceivedPubSubBuffer( true );
     }
     else
     {
@@ -2287,7 +2296,7 @@ CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    
     {
         if ( m_config.needPublishSupport )
         {
-            StoreNextReceivedPubSubBuffer();
+            StoreNextReceivedPubSubBuffer( true );
         }
         else
         {
@@ -2367,8 +2376,8 @@ CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle( CORE::CNotifier*
     {
         if ( m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnBufferContentTimeWindowCheckCycle: Finalizing write buffer due to waiting for data longer then " + CORE::ToString( m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) );
-            FinalizeWriteBuffer();
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnBufferContentTimeWindowCheckCycle: Finalizing write buffer if it has data due to waiting for data longer then " + CORE::ToString( m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) );
+            FinalizeWriteBuffer( true );
         }
     }
 }
@@ -2609,7 +2618,7 @@ CStoragePubSubClientTopic::AddPublishActionIdsToNotify( const TPublishActionIdVe
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
+CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( bool onlyStoreIfBufferHasContent )
 {GUCEF_TRACE;
 
     if ( !m_vfsInitIsComplete )
@@ -2628,6 +2637,19 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
 
     if ( GUCEF_NULL != m_currentReadBuffer )
     {
+        StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
+
+        // Check to see if we even want to store this buffer
+        // headers notwithstanding, it may not make sense to store this buffer if the container file has no content
+        if ( onlyStoreIfBufferHasContent && bufferMetaData->msgOffsetIndex.empty() )
+        {
+            buffers.SignalEndOfReading();
+            m_currentReadBuffer = GUCEF_NULL;
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:StoreNextReceivedPubSubBuffer: Skipping storing buffer without meaningful content" );
+            return true;
+        }
+        
         if ( msgBatchDt == CORE::CDateTime::Empty )
             msgBatchDt = CORE::CDateTime::NowUTCDateTime();
 
@@ -2644,9 +2666,6 @@ CStoragePubSubClientTopic::StoreNextReceivedPubSubBuffer( void )
                 lastMsgDt = CORE::CDateTime::NowUTCDateTime();
             }
         }
-
-
-        StorageBufferMetaData* bufferMetaData = &( m_storageBufferMetaData[ m_currentReadBuffer ] );
 
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 

@@ -302,6 +302,14 @@ CTaskDelegator::OnThreadCycle( void* taskdata )
             }
             catch ( const timeout_exception& )
             {
+                if ( !taskConsumer.IsNULL() )
+                {
+                    GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "SingleTaskDelegator: caught timeout_exception while attempting to process task of type " + taskConsumer->GetType() + " with id " + taskConsumer->GetTaskId() );
+                }
+                else
+                {
+                    GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "SingleTaskDelegator: caught timeout_exception while attempting to process task. TaskConsumer is now null" );
+                }
                 attemptTimedOut = true;
             }
         }
@@ -331,7 +339,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
     // Create local refs for the invocation duration to avoid external interference
     PulseGeneratorPtr pulseGenerator = m_pulseGenerator;
     TBasicThreadPoolPtr threadPool = m_threadPool;
-    if ( pulseGenerator.IsNULL() || threadPool.IsNULL() )
+    if ( pulseGenerator.IsNULL() || threadPool.IsNULL() || taskConsumer.IsNULL()  )
         return false;
     
     // first establish the bi-directional link
@@ -421,6 +429,8 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 }
                 catch ( const timeout_exception& )
                 {                
+                    GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "TaskDelegator: caught timeout_exception while attempting to carry out a cycle for task of type " + taskConsumer->GetType() + " with id " + ToString( taskConsumer->GetTaskId() ) );
+
                     // if we timed out whatever async thing we were trying to do, 
                     // just try again next round
                 }

@@ -98,6 +98,13 @@ class CTMailboxForSharedCloneables : public MT::CMailboxForCloneables
     bool GetSPtrBulkMail( TMailSPtrList& mailList ,
                           Int32 maxMailItems = -1 );
 
+    /**
+     *  Attempts to pop back the items removed from the mailbox due to a GetSPtrBulkMail() call
+     *  Note that this requires the items to now have any other outstanding references via their shared pointers
+     */
+    bool PopSPtrBulkMail( TMailSPtrList& mailList            ,
+                          bool bestEffortSkipIfNeeded = true );
+    
     private:
 
     CTMailboxForSharedCloneables( const CTMailboxForSharedCloneables& src );             /**< not implemented */
@@ -154,6 +161,17 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
 
     MT::CObjectScopeLock lock( this );
 
+    // We know how many mail items we will read so lets not perform unnessesary reallocs of the vector's underlying memory
+    if ( maxMailItems > 0 )    
+    {
+        size_t itemsToRead = SMALLEST( m_mailQueue.size(), (size_t) maxMailItems );
+        mailList.reserve( itemsToRead );
+    }
+    else
+    {
+        mailList.reserve( m_mailQueue.size() );
+    }
+    
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
@@ -182,6 +200,42 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
     }
 
     return mailItemsRead > 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename CloneableType, class PtrLockType >
+bool
+CTMailboxForSharedCloneables< CloneableType, PtrLockType >::PopSPtrBulkMail( TMailSPtrList& mailList     ,
+                                                                             bool bestEffortSkipIfNeeded )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    bool errorOccured = false;
+    TMailSPtrList::iterator i = mailList.begin();
+    while ( i != mailList.end() )
+    {
+        // Note that this only works if the shared pointer holds the last remaining reference
+        // otherwise relinquishing ownership will be refused
+        CloneableType* rawPtr = GUCEF_NULL;
+        if ( (*i).RelinquishOwnership( rawPtr ) )
+        {
+            m_mailQueue.push_front( rawPtr );
+        }
+        else
+        {
+            errorOccured = true;
+            if ( !bestEffortSkipIfNeeded )
+            {
+                // we are not allowed to skip any items for the pop back
+                // this may be because ordering garantuee is more important for the given use-case
+                return false;
+            }
+        }
+        ++i;
+    }
+    return !errorOccured;
 }
 
 /*-------------------------------------------------------------------------//

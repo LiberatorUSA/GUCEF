@@ -86,6 +86,15 @@ CSingleTaskDelegator::OnThreadCycle( void* taskdata )
             }
             catch ( const timeout_exception& )
             {
+                if ( !taskConsumer.IsNULL() )
+                {
+                    GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "SingleTaskDelegator: caught timeout_exception while attempting to process task of type " + taskConsumer->GetType() + " with id " + ToString( taskConsumer->GetTaskId() ) );
+                }
+                else
+                {
+                    GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "SingleTaskDelegator: caught timeout_exception while attempting to process task. TaskConsumer is now null" );
+                }
+
                 attemptTimedOut = true;
             }
         }
