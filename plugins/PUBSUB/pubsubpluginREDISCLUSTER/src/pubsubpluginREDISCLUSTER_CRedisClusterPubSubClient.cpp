@@ -591,10 +591,11 @@ CRedisClusterPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicNam
         if ( newTopicConfig->LoadConfig( *m_config.defaultTopicConfig ) )
         {
             newTopicConfig->topicName = topicName;
+            m_config.topics.push_back( newTopicConfig );
             return newTopicConfig;
         }
     }
-    return m_config.defaultTopicConfig;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/

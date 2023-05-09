@@ -238,8 +238,12 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
             CORE::CDataNode::TConstDataNodeSet::iterator i = psClientTopicConfigs.begin();
             while ( i != psClientTopicConfigs.end() )
             {
-                CPubSubClientTopicConfigPtr topicConfig = topics[ n ];
-                if ( !topicConfig->LoadConfig( *(*i) ) )
+                CPubSubClientTopicConfigPtr& topicConfig = topics[ n ];
+                if ( topicConfig.IsNULL() )
+                {
+                    topicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
+                }
+                if ( topicConfig.IsNULL() || !topicConfig->LoadConfig( *(*i) ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load PubSubClientTopicConfig section" );
                     return false;
@@ -252,6 +256,10 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
     const CORE::CDataNode* defaultTopicConfigNode = cfg.FindChild( "defaultTopicConfig" );
     if ( GUCEF_NULL != defaultTopicConfigNode )
     {
+        if ( defaultTopicConfig.IsNULL() )
+        {
+            defaultTopicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
+        }
         if ( !defaultTopicConfig->LoadConfig( *defaultTopicConfigNode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load defaultTopicConfig section" );
