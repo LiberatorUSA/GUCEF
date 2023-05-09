@@ -285,6 +285,8 @@ PUBSUB::CPubSubClientTopicConfigPtr
 CKafkaPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
     if ( !preExistingConfig.IsNULL() )
         return preExistingConfig;
@@ -296,8 +298,9 @@ CKafkaPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
     {
         newTopicConfig->topicName = topicName;
         m_config.topics.push_back( newTopicConfig );
+        return newTopicConfig;
     }
-    return newTopicConfig;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/

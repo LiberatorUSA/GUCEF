@@ -317,6 +317,8 @@ PUBSUB::CPubSubClientTopicConfigPtr
 CMsmqPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
     PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != preExistingConfig )
         return preExistingConfig;
@@ -325,9 +327,10 @@ CMsmqPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
     {
         PUBSUB::CPubSubClientTopicConfigPtr newTopicConfig( GUCEF_NEW PUBSUB::CPubSubClientTopicConfig( *m_config.defaultTopicConfig ) );
         newTopicConfig->topicName = topicName;
+        m_config.topics.push_back( newTopicConfig );
         return newTopicConfig;
     }
-    return m_config.defaultTopicConfig;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/

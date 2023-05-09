@@ -301,8 +301,9 @@ CWebPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
     {
         newTopicConfig->topicName = topicName;
         m_config.topics.push_back( newTopicConfig );
+        return newTopicConfig;
     }
-    return newTopicConfig;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
