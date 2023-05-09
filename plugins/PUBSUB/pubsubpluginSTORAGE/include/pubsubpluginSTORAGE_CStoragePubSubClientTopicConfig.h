@@ -75,7 +75,8 @@ class CStoragePubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                                public CORE::CTSharedObjCreator< CStoragePubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -127,10 +128,16 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
 
     CStoragePubSubClientTopicConfig& operator=( const CStoragePubSubClientTopicConfig& src );
 
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
     virtual bool LoadCustomConfig( const CORE::CDataNode& config );
 
     virtual bool SaveCustomConfig( CORE::CDataNode& config ) const;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CStoragePubSubClientTopicConfig::TSharedPtrType     CStoragePubSubClientTopicConfigPtr;     
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -142,6 +149,6 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_STORAGE_CSTORAGEPUBSUBCLIENTTOPICCONFIG_H ? */

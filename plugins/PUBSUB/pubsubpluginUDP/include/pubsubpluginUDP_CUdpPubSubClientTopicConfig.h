@@ -64,7 +64,8 @@ class CUdpPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                        public CORE::CTSharedObjCreator< CUdpPubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -82,6 +83,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
     COMCORE::CHostAddress udpInterface;
     HostAddressVector udpMulticastToJoin;
     bool wantsTestPackage;
@@ -95,6 +98,10 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
     CORE::UInt16 maxUdpPacketPayloadSizeInBytes;
     bool addTimestampToReceivedPackages;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CUdpPubSubClientTopicConfig::TSharedPtrType     CUdpPubSubClientTopicConfigPtr;  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

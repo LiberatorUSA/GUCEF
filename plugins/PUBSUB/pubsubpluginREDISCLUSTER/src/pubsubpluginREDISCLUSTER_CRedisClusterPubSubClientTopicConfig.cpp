@@ -47,6 +47,7 @@ namespace REDISCLUSTER {
 
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
+    , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
@@ -63,6 +64,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
 
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
+    , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
@@ -97,6 +99,20 @@ CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& c
     redisXReadBlockTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisXReadBlockTimeoutInMs" ).AsUInt32( redisXReadBlockTimeoutInMs );
     treatXReadBlockTimeoutAsEndOfDataEvent = config.GetAttributeValueOrChildValueByName( "treatXReadBlockTimeoutAsEndOfDataEvent" ).AsBool( treatXReadBlockTimeoutAsEndOfDataEvent, true ); 
     minAvailableInFlightSlotsBeforeRead = config.GetAttributeValueOrChildValueByName( "minAvailableInFlightSlotsBeforeRead" ).AsInt32( minAvailableInFlightSlotsBeforeRead );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopicConfig::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );    
+    }
     return true;
 }
 

@@ -183,10 +183,10 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
 
     MT::CObjectScopeLock lock( this );
 
-    const CPubSubClientTopicConfig* topicConfig = GetOrCreateTopicConfig( topicName );
-    if ( GUCEF_NULL != topicConfig )
+    CPubSubClientTopicConfigPtr topicConfig = GetOrCreateTopicConfig( topicName );
+    if ( !topicConfig.IsNULL() )
     {
-        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( *topicConfig );
+        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( topicConfig );
         return topicAccess;
     }
     return CPubSubClientTopicPtr();
@@ -195,15 +195,18 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                    PubSubClientTopicSet& topicAccess           )
+CPubSubClient::GetMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                    PubSubClientTopicSet& topicAccess       )
 {GUCEF_TRACE;
 
+    if ( topicConfig.IsNULL() )
+        return false;
+    
     // The default implementation here assumes no 1:N pattern matching access is supported
     // As such it redirects to the basic GetTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicConfig.topicName );
+    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicConfig->topicName );
     if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
@@ -252,8 +255,8 @@ CPubSubClient::GetMultiTopicAccess( const CString::StringSet& topicNames ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::GetOrCreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                            PubSubClientTopicSet& topicAccess           )
+CPubSubClient::GetOrCreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                            PubSubClientTopicSet& topicAccess       )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -290,8 +293,8 @@ CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName          ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                       PubSubClientTopicSet& topicAccess           )
+CPubSubClient::CreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                       PubSubClientTopicSet& topicAccess       )
 {GUCEF_TRACE;
 
     // The default implementation here assumes no 1:N pattern matching access is supported
@@ -318,10 +321,10 @@ CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
 
     // In the multi-topic scenario we'd expect the topic name to be a pattern to match
     // As such the config applies to everything matching the pattern
-    const CPubSubClientTopicConfig* topicConfig = GetTopicConfig( topicName );
-    if ( GUCEF_NULL != topicConfig )
+    CPubSubClientTopicConfigPtr topicConfig = GetTopicConfig( topicName );
+    if ( !topicConfig.IsNULL() )
     {
-        return CreateMultiTopicAccess( *topicConfig, topicAccess );
+        return CreateMultiTopicAccess( topicConfig, topicAccess );
     }
     return false;
 }

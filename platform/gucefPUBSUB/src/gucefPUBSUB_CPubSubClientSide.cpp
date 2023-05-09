@@ -2503,10 +2503,10 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
 
     if ( topic.InitializeConnectivity( reset ) )
     {
-        const CPubSubClientTopicConfig* topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
-        if ( GUCEF_NULL == topicConfig )
+        CPubSubClientTopicConfigPtr topicConfig = m_pubsubClient->GetTopicConfig( topic.GetTopicName() );
+        if ( topicConfig.IsNULL() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConnectPubSubClientTopic: config for topic is not available" );
             return false;
         }
@@ -2527,7 +2527,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
             }
         }
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):ConnectPubSubClientTopic: Successfully requested connectivity initialization for topic \"" + topic.GetTopicName() + "\". Proceeding" );
 
         // We use the 'desired' feature to also drive whether we actually subscribe at this point
@@ -2735,7 +2735,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
 
     // Create and configure the pub-sub client's topics
     m_topics.clear();
-    CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubSubConfig.topics.begin();
+    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = pubSubConfig.topics.begin();
     while ( i != pubSubConfig.topics.end() )
     {
         CPubSubClient::PubSubClientTopicSet topicAccess;
@@ -2747,17 +2747,17 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
                 CPubSubClientTopicBasicPtr topic = (*a);
                 if ( topic.IsNULL() )
                 {
-                    if ( !(*i).isOptional )
+                    if ( !(*i)->isOptional )
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                            "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i)->topicName + "\". Cannot proceed" );
                         DisconnectPubSubClient( true );
                         return false;
                     }
                     else
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                            "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                            "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
                     }
                 }
                 else
@@ -2769,17 +2769,17 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
         }
         else
         {
-            if ( !(*i).isOptional )
+            if ( !(*i)->isOptional )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i)->topicName + "\". Cannot proceed" );
                 DisconnectPubSubClient( true );
                 return false;
             }
             else
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
             }
         }
 
@@ -3066,11 +3066,11 @@ CPubSubClientSide::GetCurrentTopicNames( CORE::CString::StringSet& topicNames ) 
 
     MT::CScopeReaderLock lock( m_rwdataLock );
 
-    CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator t = m_sideSettings.pubsubClientConfig.topics.begin();
+    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::const_iterator t = m_sideSettings.pubsubClientConfig.topics.begin();
     while ( t != m_sideSettings.pubsubClientConfig.topics.end() )
     {
-        const CPubSubClientTopicConfig& topicConfig = (*t);
-        topicNames.insert( topicConfig.topicName );
+        CPubSubClientTopicConfigPtr topicConfig( (*t) );
+        topicNames.insert( topicConfig->topicName );
         ++t;
     }
 

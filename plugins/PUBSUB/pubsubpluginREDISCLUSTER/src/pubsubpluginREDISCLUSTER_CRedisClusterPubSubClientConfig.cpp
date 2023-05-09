@@ -97,6 +97,20 @@ CRedisClusterPubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClientConfig::LoadConfig( const PUBSUB::CPubSubClientConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );    
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientConfig& 
 CRedisClusterPubSubClientConfig::operator=( const PUBSUB::CPubSubClientConfig& src )
 {GUCEF_TRACE;

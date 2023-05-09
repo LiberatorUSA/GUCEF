@@ -57,7 +57,8 @@ class CKafkaPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                            public CORE::CTSharedObjCreator< CKafkaPubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -87,7 +88,13 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
     CKafkaPubSubClientTopicConfig& operator=( const CKafkaPubSubClientTopicConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CKafkaPubSubClientTopicConfig::TSharedPtrType     CKafkaPubSubClientTopicConfigPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

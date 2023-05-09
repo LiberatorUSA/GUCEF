@@ -57,7 +57,8 @@ class CAwsSqsPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                              public CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -74,9 +75,15 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
     bool topicNameIsQueueName;
     bool tryToUseSendMessageBatch;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CAwsSqsPubSubClientTopicConfig::TSharedPtrType     CAwsSqsPubSubClientTopicConfigPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

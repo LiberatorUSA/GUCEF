@@ -103,7 +103,7 @@ CTestPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CTestPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 
     CTestPubSubClientTopicPtr topicAccess;
@@ -111,9 +111,9 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         MT::CScopeMutex lock( m_lock );
 
         topicAccess = static_cast< CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >* >( GUCEF_NEW CTestPubSubClientTopic( this ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( topicConfig ) )
+        if ( topicAccess->LoadConfig( *topicConfig ) )
         {
-            m_topicMap[ topicConfig.topicName ] = topicAccess;
+            m_topicMap[ topicConfig->topicName ] = topicAccess;
             STORAGE::CStoragePubSubClientTopicPtr storageTopicAccess = topicAccess.StaticCast< STORAGE::CStoragePubSubClientTopic >();
             RegisterTopicEventHandlers( storageTopicAccess );
         }
@@ -126,7 +126,7 @@ CTestPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
 
     if ( !topicAccess.IsNULL() )
     {
-        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        TopicAccessCreatedEventData eData( topicConfig->topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
     }
 

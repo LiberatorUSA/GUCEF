@@ -252,7 +252,7 @@ CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 
     CStoragePubSubClientTopicPtr topicAccess;
@@ -260,9 +260,9 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
         MT::CScopeMutex lock( m_lock );
 
         topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( topicConfig ) )
+        if ( topicAccess->LoadConfig( *topicConfig ) )
         {
-            m_topicMap[ topicConfig.topicName ] = topicAccess;
+            m_topicMap[ topicConfig->topicName ] = topicAccess;
             RegisterTopicEventHandlers( topicAccess );
         }
         else
@@ -274,7 +274,7 @@ CStoragePubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig&
 
     if ( !topicAccess.IsNULL() )
     {
-        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        TopicAccessCreatedEventData eData( topicConfig->topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
     }
 
@@ -338,37 +338,42 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig*
+PUBSUB::CPubSubClientTopicConfigPtr
 CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( topicName == (*i).topicName )
+        if ( topicName == (*i)->topicName )
         {
-            return &(*i);
+            return (*i);
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig*
+PUBSUB::CPubSubClientTopicConfigPtr
 CStoragePubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
-    if ( GUCEF_NULL != preExistingConfig )
+    PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
+    if ( !preExistingConfig.IsNULL() )
         return preExistingConfig;
 
-    m_config.topics.push_back( m_config.defaultTopicConfig );
-    PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
-    newTopicConfig->topicName = topicName;
+    CStoragePubSubClientTopicConfigPtr newTopicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
+    if ( !newTopicConfig.IsNULL() && 
+         !m_config.defaultTopicConfig.IsNULL() && 
+         newTopicConfig->LoadConfig( *m_config.defaultTopicConfig ) )
+    {
+        newTopicConfig->topicName = topicName;
+        m_config.topics.push_back( newTopicConfig );
+    }
     return newTopicConfig;
 }
 
@@ -389,10 +394,10 @@ CStoragePubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topi
 
     MT::CScopeMutex lock( m_lock );
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        topicNameList.insert( (*i).topicName );
+        topicNameList.insert( (*i)->topicName );
         ++i;
     }
 }

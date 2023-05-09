@@ -134,7 +134,33 @@
 								"oldestStoragePubSubMsgFileToLoad": "",
 								"defaultCodecDecodeGrowthRatioExpectation": 6.0,
 								"maxStorageCorruptionDetectionsToBeHealthy": 0,
-								"maxStorageDeserializationFailuresToBeHealthy": 0
+								"maxStorageDeserializationFailuresToBeHealthy": 0,
+								"maxCompletedContainerRefsToRetain": 50,
+								"binarySerializerOptions": {
+									"msgDateTimeIncluded": true,
+									"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+									"msgIdIncluded": true,
+									"msgIndexIncluded": true,
+									"msgPrimaryPayloadIncluded": true,
+									"msgKeyValuePairsIncluded": true,
+									"msgMetaDataKeyValuePairsIncluded": true
+								},
+								"serializerOptions": {
+									"msgDateTimeIncluded": true,
+									"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+									"msgIdIncluded": true,
+									"msgIndexIncluded": true,
+									"msgPrimaryPayloadIncluded": true,
+									"msgPrimaryPayloadTypeIncluded": true,
+									"msgKeyValuePairsIncluded": true,
+									"msgMetaDataKeyValuePairsIncluded": true,
+									"includeUndefinedValues": false,
+									"receiveActionIdIncluded": true,
+									"originTopicObjPointerIncluded": false,
+									"originTopicNameIncluded": false,
+									"originClientTypeNameIncluded": false,
+									"originClientObjPointerIncluded": false
+								}
 							}
 						}
 					}

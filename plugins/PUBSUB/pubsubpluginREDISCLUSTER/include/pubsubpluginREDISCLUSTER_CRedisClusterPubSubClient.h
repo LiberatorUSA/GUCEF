@@ -86,7 +86,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     static const CORE::CString TypeName;
     
-    typedef std::map< const PUBSUB::CPubSubClientTopicConfig* , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
+    typedef std::map< CRedisClusterPubSubClientTopicConfigPtr , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
 
     CRedisClusterPubSubClient( const PUBSUB::CPubSubClientConfig& config );
 
@@ -94,11 +94,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual bool GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicConfigPtr GetTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const PUBSUB::CPubSubClientTopicConfig* GetOrCreateTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicConfigPtr GetOrCreateTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -108,12 +108,12 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
                                       PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool CreateMultiTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ,
-                                         PubSubClientTopicSet& topicAccess                    ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                         PubSubClientTopicSet& topicAccess               ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool AutoCreateMultiTopicAccess( const PUBSUB::CPubSubClientTopicConfig& templateTopicConfig ,
-                                     const CORE::CString::StringSet& topicNameList                ,
-                                     PubSubClientTopicSet& topicAccess                            );
+    bool AutoCreateMultiTopicAccess( CRedisClusterPubSubClientTopicConfigPtr templateTopicConfig ,
+                                     const CORE::CString::StringSet& topicNameList               ,
+                                     PubSubClientTopicSet& topicAccess                           );
 
     bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
                                      PubSubClientTopicSet& topicAccess                   );
@@ -194,7 +194,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
 
-    const PUBSUB::CPubSubClientTopicConfig* FindTemplateConfigForTopicName( const CORE::CString& topicName ) const;
+    CRedisClusterPubSubClientTopicConfigPtr FindTemplateConfigForTopicName( const CORE::CString& topicName ) const;
 
     bool DetermineIfTrackingAcksIsNeeded( void ) const;
 

@@ -115,7 +115,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual bool GetSupportedFeatures( CPubSubClientFeatures& features ) const = 0;
 
-    virtual CPubSubClientTopicPtr CreateTopicAccess( const CPubSubClientTopicConfig& topicConfig ) = 0;
+    virtual CPubSubClientTopicPtr CreateTopicAccess( CPubSubClientTopicConfigPtr topicConfig ) = 0;
 
     /**
      *  Same as the version that takes an entire config except the expectation here is that the topic      
@@ -128,8 +128,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual CPubSubClientTopicPtr GetOrCreateTopicAccess( const CString& topicName );
 
-    virtual bool GetMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                      PubSubClientTopicSet& topicAccess           );
+    virtual bool GetMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                      PubSubClientTopicSet& topicAccess       );
 
     virtual bool GetMultiTopicAccess( const CString& topicName          ,
                                       PubSubClientTopicSet& topicAccess );
@@ -137,14 +137,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     virtual bool GetMultiTopicAccess( const CString::StringSet& topicNames ,
                                       PubSubClientTopicSet& topicAccess    );
     
-    virtual bool GetOrCreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                              PubSubClientTopicSet& topicAccess           );
+    virtual bool GetOrCreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                              PubSubClientTopicSet& topicAccess       );
 
     virtual bool GetOrCreateMultiTopicAccess( const CString& topicName          ,
                                               PubSubClientTopicSet& topicAccess );
 
-    virtual bool CreateMultiTopicAccess( const CPubSubClientTopicConfig& topicConfig ,
-                                         PubSubClientTopicSet& topicAccess           );
+    virtual bool CreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
+                                         PubSubClientTopicSet& topicAccess       );
 
     /**
      *  Same as the version that takes an entire config except the expectation here is that the topic      
@@ -157,13 +157,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     /**
      *  Attempts to obtain from the backend the config associated with a given topic, if any
      */
-    virtual const CPubSubClientTopicConfig* GetTopicConfig( const CString& topicName ) = 0;
+    virtual CPubSubClientTopicConfigPtr GetTopicConfig( const CString& topicName ) = 0;
 
     /**
      *  Attempts to obtain from the backend the config associated with a given topic
      *  If no specific config exists for the given topic a new one will be created using the default topic config as the template
      */
-    virtual const CPubSubClientTopicConfig* GetOrCreateTopicConfig( const CString& topicName ) = 0;
+    virtual CPubSubClientTopicConfigPtr GetOrCreateTopicConfig( const CString& topicName ) = 0;
 
     /**
      *      @param cfg the data node structure where you'd like to serialize the config to

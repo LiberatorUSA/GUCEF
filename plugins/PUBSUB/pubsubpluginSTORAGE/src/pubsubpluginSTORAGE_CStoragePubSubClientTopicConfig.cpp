@@ -64,6 +64,7 @@ namespace STORAGE {
 
 CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
+    , CORE::CTSharedObjCreator< CStoragePubSubClientTopicConfig, MT::CMutex >( this )
     , pubsubBinarySerializerOptions()
     , pubsubSerializerOptions()
     , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
@@ -105,6 +106,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
 
 CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStoragePubSubClientTopicConfig& src )
     : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CStoragePubSubClientTopicConfig, MT::CMutex >( this )
     , pubsubBinarySerializerOptions( src.pubsubBinarySerializerOptions )
     , pubsubSerializerOptions( src.pubsubSerializerOptions )
     , desiredNrOfBuffers( src.desiredNrOfBuffers )
@@ -147,6 +149,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
 
 CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
+    , CORE::CTSharedObjCreator< CStoragePubSubClientTopicConfig, MT::CMutex >( this )
     , pubsubBinarySerializerOptions()
     , pubsubSerializerOptions()
     , desiredNrOfBuffers( GUCEF_DEFAULT_DEFAULT_NR_OF_SWAP_BUFFERS )
@@ -231,11 +234,11 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     nonAckdMsgCheckIntervalInMs = config.GetAttributeValueOrChildValueByName( "nonAckdMsgCheckIntervalInMs" ).AsUInt32( nonAckdMsgCheckIntervalInMs, true );
     maxTimeToWaitForAllMsgBatchAcksInMs = config.GetAttributeValueOrChildValueByName( "maxTimeToWaitForAllMsgBatchAcksInMs" ).AsUInt32( maxTimeToWaitForAllMsgBatchAcksInMs, true );
 
-    CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "PubSubMsgBinarySerializerOptions" );
+    CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "binarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
         success = pubsubBinarySerializerOptions.LoadConfig( *binarySerializerOptionsCfg ) && success;
 
-    CORE::CDataNode* serializerOptionsCfg = config.FindChild( "PubSubMsgSerializerOptions" );
+    CORE::CDataNode* serializerOptionsCfg = config.FindChild( "serializerOptions" );
     if ( GUCEF_NULL != serializerOptionsCfg )
         success = pubsubSerializerOptions.LoadConfig( *serializerOptionsCfg ) && success;
 
@@ -291,6 +294,20 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
         success = pubsubSerializerOptions.SaveConfig( *serializerOptionsCfg ) && success;
 
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CStoragePubSubClientTopicConfig::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

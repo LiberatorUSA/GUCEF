@@ -31,6 +31,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_MT_CREADWRITELOCK_H
+#include "gucefMT_CReadWriteLock.h"
+#define GUCEF_MT_CREADWRITELOCK_H
+#endif /* GUCEF_MT_CREADWRITELOCK_H ? */
+
 #ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
 #include "gucefCORE_CGloballyConfigurable.h"
 #define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
@@ -570,6 +575,14 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     
     protected:
 
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus ReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual MT::TLockStatus ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual void OnPumpedNotify( CORE::CNotifier* notifier                 ,
                                  const CORE::CEvent& eventid               ,
                                  CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
@@ -640,6 +653,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     TArchiveSettingsVector m_delayMountedArchiveSettings;
     TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
     bool m_delayedArchiveMountingIsComplete;
+    MT::CReadWriteLock m_rwdataLock;
 };
 
 /*-------------------------------------------------------------------------//

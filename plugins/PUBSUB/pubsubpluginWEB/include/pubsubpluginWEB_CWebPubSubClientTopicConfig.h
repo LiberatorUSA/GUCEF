@@ -59,7 +59,8 @@ class CWebPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                        public CORE::CTSharedObjCreator< CWebPubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -75,12 +76,18 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public P
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
     CORE::UInt16 httpServerPort;
     bool exposeBasicHealthEndpoint;
     CORE::CString basicHealthEndpointPath;
     bool supportHttpServerBasedRestEndpoints;
     CORE::Int32 maxPublishedMsgCountToRetainForRest;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CWebPubSubClientTopicConfig::TSharedPtrType     CWebPubSubClientTopicConfigPtr;  
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,6 +99,6 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public P
 }; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* PUBSUBPLUGIN_WEB_CWEBPUBSUBCLIENTTOPICCONFIG_H ? */

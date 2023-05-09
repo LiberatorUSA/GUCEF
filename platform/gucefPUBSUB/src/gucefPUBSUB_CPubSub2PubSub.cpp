@@ -1056,13 +1056,15 @@ PubSub2PubSubConfig::NormalizeConfig( void )
                     while ( t != sideOverlayConfig.topics.end() )
                     {
                         ExplicitChannelSideTopicOverlayConfig& topicOverlayConfig = (*t);
-                        CPubSubClientTopicConfig topicConfig( sideConfig->pubsubClientConfig.defaultTopicConfig );
+                        if ( !sideConfig->pubsubClientConfig.defaultTopicConfig.IsNULL() )
+                        {
+                            CPubSubClientTopicConfigPtr topicConfig( GUCEF_NEW CPubSubClientTopicConfig( *sideConfig->pubsubClientConfig.defaultTopicConfig.GetPointerAlways() ) );
                             
-                        // apply the overlay values
-                        topicConfig.topicName = topicOverlayConfig.topicName;
+                            // apply the overlay values
+                            topicConfig->topicName = topicOverlayConfig.topicName;
 
-                        sideConfig->pubsubClientConfig.topics.push_back( topicConfig );
-
+                            sideConfig->pubsubClientConfig.topics.push_back( topicConfig );
+                        }
                         ++t;
                     }                    
                 }

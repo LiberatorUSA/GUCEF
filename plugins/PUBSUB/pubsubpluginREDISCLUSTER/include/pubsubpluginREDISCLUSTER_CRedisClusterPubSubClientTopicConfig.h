@@ -57,7 +57,8 @@ class CRedisClusterPubSubClient;
  *  Standard pub-sub client config with some custom specifcs added for this
  *  specific pub-sub backend
  */
-class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig
+class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopicConfig : public PUBSUB::CPubSubClientTopicConfig ,
+                                                                                          public CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >
 {
     public:
 
@@ -81,7 +82,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CRedisClusterPubSubClientTopicConfig& operator=( const CRedisClusterPubSubClientTopicConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
 };
+
+/*--------------------------------------------------------------------------*/
+
+typedef CRedisClusterPubSubClientTopicConfig::TSharedPtrType    CRedisClusterPubSubClientTopicConfigPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

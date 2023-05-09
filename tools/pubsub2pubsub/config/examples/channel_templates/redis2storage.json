@@ -151,7 +151,32 @@
 						"deleteContainersWithFullyAckdContent": false,
 						"moveContainersWithFullyAckdContent": true,
 						"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
-						"maxCompletedContainerRefsToRetain": 50
+						"maxCompletedContainerRefsToRetain": 50,
+						"binarySerializerOptions": {
+							"msgDateTimeIncluded": true,
+							"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+							"msgIdIncluded": true,
+							"msgIndexIncluded": false,
+							"msgPrimaryPayloadIncluded": false,
+							"msgKeyValuePairsIncluded": true,
+							"msgMetaDataKeyValuePairsIncluded": false
+						},
+						"serializerOptions": {
+							"msgDateTimeIncluded": true,
+							"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+							"msgIdIncluded": true,
+							"msgIndexIncluded": false,
+							"msgPrimaryPayloadIncluded": false,
+							"msgPrimaryPayloadTypeIncluded": false,
+							"msgKeyValuePairsIncluded": true,
+							"msgMetaDataKeyValuePairsIncluded": false,
+							"includeUndefinedValues": false,
+							"receiveActionIdIncluded": true,
+							"originTopicObjPointerIncluded": false,
+							"originTopicNameIncluded": false,
+							"originClientTypeNameIncluded": false,
+							"originClientObjPointerIncluded": false
+						}
 					}
 				},
 				"DesiredFeatures": {

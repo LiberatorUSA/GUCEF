@@ -25,6 +25,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"    
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -107,6 +117,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigur
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPubSubClientTopicConfig, MT::CMutex > CPubSubClientTopicConfigPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

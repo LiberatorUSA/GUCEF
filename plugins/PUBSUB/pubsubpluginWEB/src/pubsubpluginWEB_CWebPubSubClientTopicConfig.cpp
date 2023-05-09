@@ -55,6 +55,7 @@ namespace WEB {
 
 CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
+    , CORE::CTSharedObjCreator< CWebPubSubClientTopicConfig, MT::CMutex >( this )
     , httpServerPort( REST_API_DEFAULT_SERVER_PORT )
     , exposeBasicHealthEndpoint( true )
     , basicHealthEndpointPath( "/health/basic" )
@@ -68,6 +69,7 @@ CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( void )
 
 CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
+    , CORE::CTSharedObjCreator< CWebPubSubClientTopicConfig, MT::CMutex >( this )
     , httpServerPort( REST_API_DEFAULT_SERVER_PORT )
     , exposeBasicHealthEndpoint( true )
     , basicHealthEndpointPath( "/health/basic" )
@@ -97,6 +99,20 @@ CWebPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     supportHttpServerBasedRestEndpoints = config.GetAttributeValueOrChildValueByName( "supportHttpServerBasedRestEndpoints" ).AsBool( supportHttpServerBasedRestEndpoints, true );
     maxPublishedMsgCountToRetainForRest = config.GetAttributeValueOrChildValueByName( "maxPublishedMsgCountToRetainForRest" ).AsInt32( maxPublishedMsgCountToRetainForRest, true );
 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CWebPubSubClientTopicConfig::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );
+    }
     return true;
 }
 

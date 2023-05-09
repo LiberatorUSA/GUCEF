@@ -855,10 +855,20 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                         ". This took " + CORE::ToString( ticks ) + "ms. publishActionId=" + CORE::ToString( publishActionId ) );
 
                     // Check to see if we have gathered enough data or enough time has passed to consider the current container complete
-                    if ( m_currentWriteBuffer->GetDataSize() >= m_config.desiredMinimalSerializedBlockSize ||                                                                  // <- container byte size limit criterea
-                        ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) ||  // <- container max timespan limit criterea
-                        ( m_maxTotalMsgsInFlight > 0 && bufferMetaData->actionIds.size() >= (size_t) m_maxTotalMsgsInFlight ) )                                                // <- respect max in-flight limit and dont block
+                    bool maxContainerSizeReached = m_currentWriteBuffer->GetDataSize() >= m_config.desiredMinimalSerializedBlockSize;
+                    bool timeLimitReached        = ( !firstBlock && m_lastWriteBlockCompletion.GetTimeDifferenceInMillisecondsToNow() >= m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
+                    bool maxInFlightReached      = ( m_maxTotalMsgsInFlight > 0 && bufferMetaData->actionIds.size() >= (size_t) m_maxTotalMsgsInFlight );
+
+                    if ( maxContainerSizeReached ||  // <- container byte size limit criterea
+                         timeLimitReached        ||  // <- container max timespan limit criterea
+                         maxInFlightReached       )  // <- respect max in-flight limit and dont block
                     {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL,  "StoragePubSubClientTopic(" + CORE::ToString( this ) +
+                            "):PublishViaMsgPtrs: Finalizing write buffer. maxContainerSizeReached=" +
+                            CORE::ToString( maxContainerSizeReached ) + ", timeLimitReached=" + 
+                            CORE::ToString( timeLimitReached ) + ", maxInFlightReached=" + CORE::ToString( maxInFlightReached ) + 
+                            ", action IDs in block = " + CORE::ToString( bufferMetaData->actionIds.size() ) );
+
                         // The current container is now considered to have enough content.
                         // Let's wrap things up...
                         FinalizeWriteBuffer( bufferMetaData, bufferOffset, false );

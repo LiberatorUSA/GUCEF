@@ -76,6 +76,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientConf
     CRedisClusterPubSubClientConfig& operator=( const CRedisClusterPubSubClientConfig& src );
 
     bool LoadCustomConfig( const CORE::CDataNode& config );
+
+    bool LoadConfig( const PUBSUB::CPubSubClientConfig& src );
 };
 
 /*-------------------------------------------------------------------------//

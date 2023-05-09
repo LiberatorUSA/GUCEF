@@ -309,17 +309,17 @@ CPubSubSideChannelConfig::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicConfig*
+CPubSubClientTopicConfigPtr
 CPubSubSideChannelConfig::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
+    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = pubsubClientConfig.topics.begin();
     while ( i != pubsubClientConfig.topics.end() )
     {
-        if ( topicName == (*i).topicName )
-            return &(*i);
+        if ( topicName == (*i)->topicName )
+            return (*i);
     }
-    return GUCEF_NULL;
+    return CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/

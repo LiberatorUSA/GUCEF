@@ -1571,14 +1571,14 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
         sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = true;
         sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = false;
         
-        CPubSubClientConfig::TPubSubClientTopicConfigVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
-        CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator t = topicConfigs.begin();
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator t = topicConfigs.begin();
         while ( t != topicConfigs.end() )
         {
-            CPubSubClientTopicConfig& topicConfig = (*t);
+            CPubSubClientTopicConfigPtr topicConfig = (*t);
 
-            topicConfig.needPublishSupport = true;
-            topicConfig.needSubscribeSupport = false;
+            topicConfig->needPublishSupport = true;
+            topicConfig->needSubscribeSupport = false;
 
             ++t;
         }
@@ -1589,14 +1589,14 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
         sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = false;
         sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = true;
 
-        CPubSubClientConfig::TPubSubClientTopicConfigVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
-        CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator t = topicConfigs.begin();
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator t = topicConfigs.begin();
         while ( t != topicConfigs.end() )
         {
-            CPubSubClientTopicConfig& topicConfig = (*t);
+            CPubSubClientTopicConfigPtr topicConfig = (*t);
 
-            topicConfig.needPublishSupport = false;
-            topicConfig.needSubscribeSupport = true;
+            topicConfig->needPublishSupport = false;
+            topicConfig->needSubscribeSupport = true;
 
             ++t;
         }

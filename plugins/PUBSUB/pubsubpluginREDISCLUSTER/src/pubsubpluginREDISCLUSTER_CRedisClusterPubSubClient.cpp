@@ -224,12 +224,12 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 
     // Check to see if this logical/conceptual 'topic' represents multiple pattern matched Redis Streams
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
-         topicConfig.topicName.HasChar( '*' ) > -1               )
+         topicConfig->topicName.HasChar( '*' ) > -1               )
     {
         PubSubClientTopicSet allTopicAccess;
         if ( CreateMultiTopicAccess( topicConfig, allTopicAccess ) && !allTopicAccess.empty() )
@@ -247,13 +247,13 @@ CRedisClusterPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicCo
             MT::CObjectScopeLock lock( this );
 
             topicAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
-            if ( topicAccess->LoadConfig( topicConfig ) )
+            if ( topicAccess->LoadConfig( *topicConfig ) )
             {
-                m_topicMap[ topicConfig.topicName ] = topicAccess;
+                m_topicMap[ topicConfig->topicName ] = topicAccess;
 
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig.topicName + "\"" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig->topicName + "\"" );
 
-                TopicAccessCreatedEventData eData( topicConfig.topicName );
+                TopicAccessCreatedEventData eData( topicConfig->topicName );
                 NotifyObservers( TopicAccessCreatedEvent, &eData );
             }
             else
@@ -367,39 +367,44 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
         TTopicConfigPtrToStringSetMap::const_iterator m = topicsToCreate.begin();
         while ( m != topicsToCreate.end() )
         {
-            const PUBSUB::CPubSubClientTopicConfig& templateTopicConfig = *((*m).first);
-            const CORE::CString::StringSet& topicNameList = (*m).second;
-
-            CORE::CString::StringSet::const_iterator i = topicNameList.begin();
-            while ( i != topicNameList.end() )
+            PUBSUB::CPubSubClientTopicConfigPtr templateTopicConfig( ((*m).first) );
+            if ( !templateTopicConfig.IsNULL() ) 
             {
-                PUBSUB::CPubSubClientTopicConfig topicConfig( templateTopicConfig );
-                topicConfig.topicName = (*i);
+                const CORE::CString::StringSet& topicNameList = (*m).second;
 
-                CRedisClusterPubSubClientTopicPtr tAccess;
+                CORE::CString::StringSet::const_iterator i = topicNameList.begin();
+                while ( i != topicNameList.end() )
                 {
-                    MT::CObjectScopeLock lock( this );
+                    CRedisClusterPubSubClientTopicConfigPtr topicConfig = CRedisClusterPubSubClientTopicConfig::CreateSharedObj();
+                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
+                    topicConfig->topicName = (*i);
 
-                    tAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
-                    if ( tAccess->LoadConfig( topicConfig ) )
+                    CRedisClusterPubSubClientTopicPtr tAccess;
                     {
-                        m_topicMap[ topicConfig.topicName ] = tAccess;
-                        topicAccess.insert( tAccess );
-                        ++newTopicAccessCount;
+                        MT::CObjectScopeLock lock( this );
 
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
-                                topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
-                    }
-                    else
-                    {
-                        tAccess.Unlink();
-                        totalSuccess = false;
+                        tAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
+                        if ( tAccess->LoadConfig( *topicConfig ) )
+                        {
+                            m_topicMap[ topicConfig->topicName ] = tAccess;
+                            topicAccess.insert( tAccess );
+                            m_config.topics.push_back( topicConfig );
+                            ++newTopicAccessCount;
 
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
-                                topicConfig.topicName + "\" based on template config \"" + templateTopicConfig.topicName + "\"" );
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
+                        else
+                        {
+                            tAccess.Unlink();
+                            totalSuccess = false;
+
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
                     }
+                    ++i;
                 }
-                ++i;
             }
             ++m;
         }
@@ -420,28 +425,28 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const PUBSUB::CPubSubClientTopicConfig& templateTopicConfig ,
-                                                       const CORE::CString::StringSet& topicNameList                ,
-                                                       PubSubClientTopicSet& topicAccess                            )
+CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( CRedisClusterPubSubClientTopicConfigPtr templateTopicConfig ,
+                                                       const CORE::CString::StringSet& topicNameList               ,
+                                                       PubSubClientTopicSet& topicAccess                           )
 {GUCEF_TRACE;
 
     TTopicConfigPtrToStringSetMap topicToCreate;
-    topicToCreate[ &templateTopicConfig ] = topicNameList;
+    topicToCreate[ templateTopicConfig ] = topicNameList;
     return AutoCreateMultiTopicAccess( topicToCreate, topicAccess );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::CreateMultiTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ,
-                                                   PubSubClientTopicSet& topicAccess                    )
+CRedisClusterPubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                                   PubSubClientTopicSet& topicAccess               )
 {GUCEF_TRACE;
 
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
-         topicConfig.topicName.HasChar( '*' ) > -1               )
+         topicConfig->topicName.HasChar( '*' ) > -1               )
     {
         CORE::CString::StringSet topicNameList;
-        if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNameList, "streams", topicConfig.topicName ) )
+        if ( CRedisClusterKeyCache::Instance()->GetRedisKeys( m_redisContext, topicNameList, "streams", topicConfig->topicName ) )
         {
             m_streamIndexingTimer->SetEnabled( true );
 
@@ -551,37 +556,45 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig*
+PUBSUB::CPubSubClientTopicConfigPtr
 CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( topicName == (*i).topicName )
+        if ( topicName == (*i)->topicName )
         {
-            return &(*i);
+            return (*i);
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr 
 CRedisClusterPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
-    if ( GUCEF_NULL != preExistingConfig )
+    MT::CScopeMutex lock( m_lock );
+    
+    PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
+    if ( !preExistingConfig.IsNULL() )
         return preExistingConfig;
     
-    m_config.topics.push_back( m_config.defaultTopicConfig );
-    PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
-    newTopicConfig->topicName = topicName;
-    return newTopicConfig;
+    if ( !m_config.defaultTopicConfig.IsNULL() )
+    {
+        CRedisClusterPubSubClientTopicConfigPtr newTopicConfig = CRedisClusterPubSubClientTopicConfig::CreateSharedObj();
+        if ( newTopicConfig->LoadConfig( *m_config.defaultTopicConfig ) )
+        {
+            newTopicConfig->topicName = topicName;
+            return newTopicConfig;
+        }
+    }
+    return m_config.defaultTopicConfig;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -608,10 +621,10 @@ CRedisClusterPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet&
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        topicNameList.insert( (*i).topicName );
+        topicNameList.insert( (*i)->topicName );
         ++i;
     }
 }
@@ -1183,12 +1196,12 @@ CRedisClusterPubSubClient::GetAllGlobPatternTopicNames( CORE::CString::StringSet
 {GUCEF_TRACE;
 
     // Check config'd topic
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( (*i).topicName.HasChar( '*' ) > -1 )
+        if ( (*i)->topicName.HasChar( '*' ) > -1 )
         {
-            allGlobPatternTopicNames.insert( (*i).topicName );
+            allGlobPatternTopicNames.insert( (*i)->topicName );
         }
         ++i;
     }
@@ -1205,10 +1218,10 @@ CRedisClusterPubSubClient::IsStreamIndexingNeeded( void )
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
     {
         // Check config'd topic
-        PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+        PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
         while ( i != m_config.topics.end() )
         {
-            if ( (*i).topicName.HasChar( '*' ) > -1 )
+            if ( (*i)->topicName.HasChar( '*' ) > -1 )
             {
                 return true;
             }
@@ -1220,25 +1233,25 @@ CRedisClusterPubSubClient::IsStreamIndexingNeeded( void )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig*
+CRedisClusterPubSubClientTopicConfigPtr
 CRedisClusterPubSubClient::FindTemplateConfigForTopicName( const CORE::CString& topicName ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::const_iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::const_iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( (*i).topicName.HasChar( '*' ) > -1 )
+        if ( (*i)->topicName.HasChar( '*' ) > -1 )
         {
-            if ( topicName.WildcardEquals( (*i).topicName, '*', true ) )
+            if ( topicName.WildcardEquals( (*i)->topicName, '*', true ) )
             {
-                return &(*i);
+                return (*i);
             }
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return CRedisClusterPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1283,15 +1296,15 @@ CRedisClusterPubSubClient::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier
         CORE::CString::StringSet::iterator n = allMatchingStreamNames.begin();
         while ( n != allMatchingStreamNames.end() )
         {
-            const PUBSUB::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
-            if ( GUCEF_NULL != templateConfig )
+            CRedisClusterPubSubClientTopicConfigPtr templateConfig = FindTemplateConfigForTopicName( (*n) );
+            if ( !templateConfig.IsNULL() )
             {
                 CORE::CString::StringSet topicNameList;
                 topicNameList.insert( (*n) );
 
                 PubSubClientTopicSet topicAccess;
 
-                AutoCreateMultiTopicAccess( *templateConfig, topicNameList, topicAccess );
+                AutoCreateMultiTopicAccess( templateConfig, topicNameList, topicAccess );
             }
             ++n;
         }
@@ -1332,7 +1345,7 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     CORE::CString::StringSet::iterator n = updateInfo->newKeys.begin();
     while ( n != updateInfo->newKeys.end() )
     {
-        const PUBSUB::CPubSubClientTopicConfig* templateConfig = FindTemplateConfigForTopicName( (*n) );
+        const PUBSUB::CPubSubClientTopicConfigPtr templateConfig = FindTemplateConfigForTopicName( (*n) );
         if ( GUCEF_NULL != templateConfig )
         {
             bulkCreationMap[ templateConfig ].insert( (*n) );

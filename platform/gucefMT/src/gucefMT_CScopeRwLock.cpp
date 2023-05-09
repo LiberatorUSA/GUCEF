@@ -159,6 +159,7 @@ CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 loc
 CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock, UInt32 lockWaitTimeoutInMs )
     : m_rwLock( &rwLock )
     , m_lockState( TRWLockStates::RWLOCK_OPERATION_FAILED )
+    , m_isWriteLocked( false )
 {GUCEF_TRACE;
 
     assert( m_rwLock );
@@ -242,7 +243,7 @@ CScopeWriterLock::EarlyUnlock( void )
     if ( m_isWriteLocked )
     {        
         m_lockState = m_rwLock->WriterStop();
-        m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
+        m_isWriteLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
         return m_lockState;
     }
     return TRWLockStates::RWLOCK_OPERATION_SUCCESS;

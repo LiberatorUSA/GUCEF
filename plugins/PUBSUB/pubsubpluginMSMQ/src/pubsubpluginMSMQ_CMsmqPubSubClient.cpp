@@ -208,7 +208,7 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CMsmqPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 
     CMsmqPubSubClientTopicPtr topicAccess;
@@ -216,9 +216,9 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
         MT::CScopeMutex lock( m_lock );
 
         topicAccess = ( GUCEF_NEW CMsmqPubSubClientTopic( this ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( topicConfig ) )
+        if ( topicAccess->LoadConfig( *topicConfig ) )
         {
-            m_topicMap[ topicConfig.topicName ] = topicAccess;            
+            m_topicMap[ topicConfig->topicName ] = topicAccess;            
             RegisterTopicEventHandlers( topicAccess );
         }
         else
@@ -230,7 +230,7 @@ CMsmqPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& to
 
     if ( !topicAccess.IsNULL() )
     {
-        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        TopicAccessCreatedEventData eData( topicConfig->topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
     }
 
@@ -293,38 +293,41 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr 
 CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( topicName == (*i).topicName )
+        if ( topicName == (*i)->topicName )
         {
-            return &(*i);
+            return (*i);
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr 
 CMsmqPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
+    PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
     if ( GUCEF_NULL != preExistingConfig )
         return preExistingConfig;
     
-    m_config.topics.push_back( m_config.defaultTopicConfig );
-    PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
-    newTopicConfig->topicName = topicName;
-    return newTopicConfig;
+    if ( !m_config.defaultTopicConfig.IsNULL() )
+    {
+        PUBSUB::CPubSubClientTopicConfigPtr newTopicConfig( GUCEF_NEW PUBSUB::CPubSubClientTopicConfig( *m_config.defaultTopicConfig ) );
+        newTopicConfig->topicName = topicName;
+        return newTopicConfig;
+    }
+    return m_config.defaultTopicConfig;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -610,10 +613,10 @@ CMsmqPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNa
 
     MT::CScopeMutex lock( m_lock );
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        topicNameList.insert( (*i).topicName );
+        topicNameList.insert( (*i)->topicName );
         ++i;
     }
 }

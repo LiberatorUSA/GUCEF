@@ -47,6 +47,7 @@ namespace KAFKA {
 
 CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
+    , CORE::CTSharedObjCreator< CKafkaPubSubClientTopicConfig, MT::CMutex >( this )
     , kafkaProducerTopicConfigSettings()
     , kafkaConsumerTopicConfigSettings()
     , consumerModeStartOffset( "stored" )
@@ -68,6 +69,7 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
 
 CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
+    , CORE::CTSharedObjCreator< CKafkaPubSubClientTopicConfig, MT::CMutex >( this )
     , kafkaProducerTopicConfigSettings()
     , kafkaConsumerTopicConfigSettings()
     , consumerModeStartOffset( "stored" )
@@ -174,6 +176,20 @@ CKafkaPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     stripPrefixForKvPairs = config.GetAttributeValueOrChildValueByName( "stripPrefixForKvPairs" ).AsBool( stripPrefixForKvPairs, true ); 
     maxKafkaErrorsToBeHealthy = config.GetAttributeValueOrChildValueByName( "maxKafkaErrorsToBeHealthy" ).AsInt32( maxKafkaErrorsToBeHealthy, true ); 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopicConfig::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );    
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

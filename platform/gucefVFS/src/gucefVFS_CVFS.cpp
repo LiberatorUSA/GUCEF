@@ -33,6 +33,11 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_MT_CSCOPERWLOCK_H
+#include "gucefMT_CScopeRwLock.h"
+#define GUCEF_MT_CSCOPERWLOCK_H
+#endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
+
 #ifndef DVFILEUTILS_H
 #include "dvfileutils.h"                /* Needed for dir itteration */
 #define DVFILEUTILS_H
@@ -169,6 +174,7 @@ CVFS::CVFS( void )
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
     , m_delayedArchiveMountingIsComplete( false )
+    , m_rwdataLock( true )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -181,7 +187,8 @@ CVFS::CVFS( void )
 CVFS::~CVFS()
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );    
+    MT::CScopeWriterLock lock( m_rwdataLock );
+    
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
     SignalUpcomingDestruction();
@@ -210,7 +217,7 @@ void
 CVFS::UnmountAllArchives( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
 
     while ( !m_mountList.empty() )
     {
@@ -231,7 +238,7 @@ void
 CVFS::UnregisterAllArchiveFactories( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
     m_abstractArchiveFactory.UnregisterAllConcreteFactories();
 }
 
@@ -287,6 +294,8 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
         
     if ( IsDirectoryWatcherDirEvent( eventid ) )
     {
+        MT::CScopeReaderLock lock( m_rwdataLock );
+
         TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
         if ( i != m_archivePtrToMountEntryLookup.end() )
         {
@@ -320,6 +329,8 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
     else
     if ( IsDirectoryWatcherFileEvent( eventid ) )
     {
+        MT::CScopeReaderLock lock( m_rwdataLock );
+        
         TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
         if ( i != m_archivePtrToMountEntryLookup.end() )
         {            
@@ -394,7 +405,7 @@ bool
 CVFS::IsConnected( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
     
     bool isConnectedOverall = true;
     TMountVector::const_iterator i = m_mountList.begin();
@@ -451,7 +462,8 @@ void
 CVFS::MountAllDelayMountedArchives( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
+
     while ( !m_delayMountedArchiveSettings.empty() )
     {
         TArchiveSettingsVector::iterator i = m_delayMountedArchiveSettings.begin();
@@ -467,6 +479,7 @@ CVFS::MountAllDelayMountedArchives( void )
         m_delayMountedArchiveSettings.erase( i );
     }
     m_delayedArchiveMountingIsComplete = true;
+    
     lock.EarlyUnlock();
 
     NotifyObservers( DelayedArchiveMountingCompletedEvent );
@@ -496,7 +509,7 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
 
     CString path = ConformVfsFilePath( filePath );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -536,7 +549,7 @@ CVFS::MoveFile( const CString& oldFilePath ,
         return true;
     }    
     
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get lists of all eligable mounts
     TConstMountLinkVector oldPathMountLinks;
@@ -670,7 +683,7 @@ CVFS::EncodeFile( const CORE::CString& originalFilepath ,
 
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
-    if ( !codec )
+    if ( codec.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot encode file due to inability to obtain codec " +
             encodeCodec + " for codec family " + codecFamily );
@@ -738,7 +751,7 @@ CVFS::DecodeAsFile( CORE::CDynamicBuffer& decodedOutput  ,
 
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, decodeCodec );
-    if ( !codec )
+    if ( codec.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Cannot decode file due to inability to obtain codec " +
             decodeCodec + " for codec family " + codecFamily );
@@ -786,7 +799,7 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
 
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
-    if ( !codec )
+    if ( codec.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot encode file due to inability to obtain codec " +
             encodeCodec + " for codec family " + codecFamily );
@@ -900,7 +913,7 @@ CVFS::DecodeFile( const CORE::CString& originalFilepath ,
 
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, decodeCodec );
-    if ( !codec )
+    if ( codec.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot encode file due to inability to obtain codec " +
             decodeCodec + " for codec family " + codecFamily );
@@ -967,7 +980,7 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
 
     CString filepath = ConformVfsFilePath( file );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1017,7 +1030,7 @@ CVFS::GetFile( const CORE::CString& file          ,
     CString filepath = ConformVfsFilePath( file );
     bool fileMustExist = *mode == 'r';
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1254,7 +1267,7 @@ bool
 CVFS::MountArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
 
     // Either determine the actual non-vfs path based on previously loaded/mounted archives or use the given explicit path if any
     CString actualArchivePath = CORE::ResolveVars( settings.GetActualArchivePath() );
@@ -1327,7 +1340,7 @@ CVFS::MountArchive( const CString& archiveName    ,
     if ( archiveResource.IsNULL() )
         return false;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
 
     // create an archive for the type
     TArchivePtr archive = m_abstractArchiveFactory.Create( archiveType );
@@ -1374,7 +1387,7 @@ CVFS::IsMountedArchive( const CString& location ) const
     // Keep in mind that mounted archives count as directories
     CString testLocation( ConformVfsDirPath( location ) );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -1399,7 +1412,7 @@ CVFS::GetMountedArchiveList( const CString& location ,
                              TStringSet& outputList  ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -1469,7 +1482,7 @@ CVFS::GetActualFilePath( const CString& file ,
                          CString& path       ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1502,7 +1515,7 @@ CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
     // Make sure there are no more variables in the given absolute path
     CString realAbsPath = CORE::RelativePath( absolutePath );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Try to match a mount entry
     TMountVector::const_iterator i = m_mountList.begin();
@@ -1540,7 +1553,7 @@ CVFS::DirExists( const CString& dirPath ) const
 
     CString path = ConformVfsDirPath( dirPath );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1569,7 +1582,7 @@ CVFS::FileExists( const CString& file ) const
 
     CString path = ConformVfsFilePath( file );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1608,7 +1621,7 @@ bool
 CVFS::UnmountArchiveByName( const CString& archiveName )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
 
     TMountVector::iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -1623,6 +1636,7 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
                 m_mountList.erase( i );
 
                 lock.EarlyUnlock();
+
                 NotifyObservers( ArchiveUnmountedEvent, &eData );              
                 return true;
             }
@@ -1662,7 +1676,7 @@ void
 CVFS::GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
     m_abstractArchiveFactory.ObtainKeySet( outList );
 }
 
@@ -1672,7 +1686,7 @@ void
 CVFS::SetMemloadSize( UInt32 bytesize )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock lock( m_rwdataLock );
 
     _maxmemloadsize = bytesize;
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
@@ -1693,7 +1707,7 @@ bool
 CVFS::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
@@ -1726,12 +1740,14 @@ bool
 CVFS::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
+    MT::CScopeWriterLock lock( m_rwdataLock );
+    
     bool globalConfigLoadInProgress = IsGlobalConfigLoadInProgress();
     const CORE::CDataNode* n = tree.Search( "GUCEF%VFS%CVFS" ,
                                             '%'              ,
                                             false            );
 
-    if ( n )
+    if ( GUCEF_NULL != n )
     {
         CORE::CVariant value = n->GetAttributeValueOrChildValueByName( "maxmemload" );
         if ( value.IsInitialized() )
@@ -1890,7 +1906,7 @@ CVFS::GetFileList( TStringVector& outputList      ,
     bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
     
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1928,7 +1944,7 @@ CVFS::GetDirList( TStringVector& outputList  ,
     bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2014,7 +2030,7 @@ CVFS::GetFileMetaData( const CString& filename           ,
 
     CString path = ConformVfsFilePath( filename );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2044,7 +2060,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
 
     CString path = ConformVfsFilePath( filename );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2074,7 +2090,7 @@ CVFS::GetFileHash( const CORE::CString& file ) const
 
     CString path = ConformVfsFilePath( file );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2105,7 +2121,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
 
     CString path = ConformVfsFilePath( file );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2137,7 +2153,7 @@ CVFS::AddDirToWatch( const CString& dirToWatch       ,
 
     CString path = ConformVfsFilePath( dirToWatch );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2167,7 +2183,7 @@ CVFS::RemoveDirToWatch( const CString& dirToWatch )
 
     CString path = ConformVfsFilePath( dirToWatch );
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -2195,7 +2211,7 @@ bool
 CVFS::RemoveAllWatches( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    MT::CScopeReaderLock lock( m_rwdataLock );
     
     bool totalSuccess = true;
     TMountVector::iterator i = m_mountList.begin();
@@ -2217,8 +2233,6 @@ CVFS::RegisterArchiveFactory( const CString& archiveType      ,
                               TArchiveFactory& archiveFactory )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
     m_abstractArchiveFactory.RegisterConcreteFactory( archiveType     ,
                                                       &archiveFactory );
 
@@ -2231,11 +2245,45 @@ void
 CVFS::UnregisterArchiveFactory( const CString& archiveType )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus
+CVFS::Lock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwdataLock.WriterStart( lockWaitTimeoutInMs ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus
+CVFS::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwdataLock.WriterStop() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus
+CVFS::ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwdataLock.ReaderStart( lockWaitTimeoutInMs ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus
+CVFS::ReadOnlyUnlock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwdataLock.ReaderStop() );
 }
 
 /*-------------------------------------------------------------------------//

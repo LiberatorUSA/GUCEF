@@ -97,7 +97,7 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClient : public STORAGE::C
      */
     virtual bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
 
     CTestPubSubClientConfig& GetConfig( void );
 

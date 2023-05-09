@@ -60,6 +60,7 @@ namespace UDP {
 
 CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
+    , CORE::CTSharedObjCreator< CUdpPubSubClientTopicConfig, MT::CMutex >( this )
     , udpInterface()
     , udpMulticastToJoin()
     , wantsTestPackage( false )
@@ -80,6 +81,7 @@ CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( void )
 
 CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
+    , CORE::CTSharedObjCreator< CUdpPubSubClientTopicConfig, MT::CMutex >( this )
     , udpInterface()
     , udpMulticastToJoin()
     , wantsTestPackage( false )
@@ -142,6 +144,20 @@ CUdpPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
     addTimestampToReceivedPackages = config.GetAttributeValueOrChildValueByName( "addTimestampToReceivedPackages" ).AsBool( addTimestampToReceivedPackages, true );
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUdpPubSubClientTopicConfig::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        return LoadCustomConfig( src.customConfig );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

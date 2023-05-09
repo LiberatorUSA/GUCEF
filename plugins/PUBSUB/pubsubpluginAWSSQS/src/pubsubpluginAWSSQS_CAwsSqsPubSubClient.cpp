@@ -179,7 +179,7 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& topicConfig )
+CAwsSqsPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 
     CAwsSqsPubSubClientTopicPtr topicAccess;
@@ -187,9 +187,9 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
         MT::CObjectScopeLock lock( this );
 
         topicAccess = ( GUCEF_NEW CAwsSqsPubSubClientTopic( this ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( topicConfig ) )
+        if ( topicAccess->LoadConfig( *topicConfig ) )
         {
-            m_topicMap[ topicConfig.topicName ] = topicAccess;
+            m_topicMap[ topicConfig->topicName ] = topicAccess;
             RegisterTopicEventHandlers( topicAccess );
         }
         else
@@ -201,7 +201,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( const PUBSUB::CPubSubClientTopicConfig& 
 
     if ( !topicAccess.IsNULL() )
     {
-        TopicAccessCreatedEventData eData( topicConfig.topicName );
+        TopicAccessCreatedEventData eData( topicConfig->topicName );
         NotifyObservers( TopicAccessCreatedEvent, &eData );
     }
 
@@ -264,35 +264,40 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr
 CAwsSqsPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        if ( topicName == (*i).topicName )
+        if ( topicName == (*i)->topicName )
         {
-            return &(*i);
+            return (*i);
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr 
 CAwsSqsPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
-    const PUBSUB::CPubSubClientTopicConfig* preExistingConfig = GetTopicConfig( topicName );
-    if ( GUCEF_NULL != preExistingConfig )
+    PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
+    if ( !preExistingConfig.IsNULL() )
         return preExistingConfig;
-    
-    m_config.topics.push_back( m_config.defaultTopicConfig );
-    PUBSUB::CPubSubClientTopicConfig* newTopicConfig = &m_config.topics.back();
-    newTopicConfig->topicName = topicName;
+
+    CAwsSqsPubSubClientTopicConfigPtr newTopicConfig = CAwsSqsPubSubClientTopicConfig::CreateSharedObj();
+    if ( !newTopicConfig.IsNULL() && 
+         !m_config.defaultTopicConfig.IsNULL() && 
+         newTopicConfig->LoadConfig( *m_config.defaultTopicConfig ) )
+    {
+        newTopicConfig->topicName = topicName;
+        m_config.topics.push_back( newTopicConfig );
+    }
     return newTopicConfig;
 }
 
@@ -311,10 +316,10 @@ void
 CAwsSqsPubSubClient::GetConfiguredTopicNameList( CORE::CString::StringSet& topicNameList )
 {GUCEF_TRACE;
 
-    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigVector::iterator i = m_config.topics.begin();
+    PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = m_config.topics.begin();
     while ( i != m_config.topics.end() )
     {
-        topicNameList.insert( (*i).topicName );
+        topicNameList.insert( (*i)->topicName );
         ++i;
     }
 }
