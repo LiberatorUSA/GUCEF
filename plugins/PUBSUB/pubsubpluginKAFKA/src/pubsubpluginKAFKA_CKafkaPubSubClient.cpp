@@ -476,14 +476,18 @@ CKafkaPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClient::Connect( void )
+CKafkaPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
 
-    Disconnect();
+    if ( !reset && IsConnected() )
+        return true;
+
+    if ( !Disconnect() )
+        return false;
     
     MT::CScopeMutex lock( m_lock );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic connect" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Beginning topic connect" );
         
     bool totalSuccess = true;
     TTopicMap::iterator i = m_topicMap.begin();
@@ -499,7 +503,7 @@ CKafkaPubSubClient::Connect( void )
         ++i;
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic connect" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Finished topic connect" );
 
     return totalSuccess;
 }

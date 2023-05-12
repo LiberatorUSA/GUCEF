@@ -2321,7 +2321,11 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
             while ( i != routes.end() )
             {
                 CRouteInfo& routeInfo = (*i);
-                if ( !routeInfo.MatchTopicRouteConfig( *topicRouteConfig ) )
+                if ( routeInfo.MatchTopicRouteConfig( *topicRouteConfig ) )
+                {
+                    DetermineActiveRoute( routeInfo );
+                }
+                else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
                         "):CreateNewFromTopicAssociationAsNeeded: Failed to match topic route config to runtime topics for new topic " + fromTopicName );

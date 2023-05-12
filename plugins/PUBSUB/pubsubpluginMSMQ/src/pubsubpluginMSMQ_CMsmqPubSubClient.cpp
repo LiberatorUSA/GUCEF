@@ -726,8 +726,11 @@ CMsmqPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClient::Connect( void )
+CMsmqPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
+
+    if ( !reset && IsConnected() )
+        return true;
 
     MT::CScopeMutex lock( m_lock );
 

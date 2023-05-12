@@ -419,11 +419,17 @@ CAwsSqsPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClient::Connect( void )
+CAwsSqsPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
 
-    Disconnect();
+    if ( !reset && IsConnected() )
+        return true;
 
+    if ( !Disconnect() )
+        return false;
+
+    
+    // @TODO
     return false;
 }
 

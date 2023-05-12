@@ -418,8 +418,11 @@ CUdpPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClient::Connect( void )
+CUdpPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
+
+    if ( !reset && IsConnected() )
+        return true;
 
     if ( !m_topicMap.empty() )
     {

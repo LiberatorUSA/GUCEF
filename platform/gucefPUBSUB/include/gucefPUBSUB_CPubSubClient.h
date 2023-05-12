@@ -205,7 +205,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 
-    virtual bool Connect( void ) = 0;
+    virtual bool Connect( bool reset ) = 0;
 
     virtual bool Disconnect( void ) = 0;
 

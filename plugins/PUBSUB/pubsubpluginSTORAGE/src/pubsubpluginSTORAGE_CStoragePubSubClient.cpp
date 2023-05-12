@@ -538,8 +538,11 @@ CStoragePubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClient::Connect( void )
+CStoragePubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
+    
+    if ( !reset && IsConnected() )
+        return true;
 
     MT::CScopeMutex lock( m_lock );
 

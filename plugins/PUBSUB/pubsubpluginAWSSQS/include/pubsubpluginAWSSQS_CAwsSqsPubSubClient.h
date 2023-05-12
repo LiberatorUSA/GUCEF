@@ -99,7 +99,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     virtual void GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Connect( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Connect( bool reset ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
 

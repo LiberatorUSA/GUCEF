@@ -423,8 +423,11 @@ CWebPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClient::Connect( void )
+CWebPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
+
+    if ( !reset && IsConnected() )
+        return true;
 
     if ( !m_topicMap.empty() )
     {

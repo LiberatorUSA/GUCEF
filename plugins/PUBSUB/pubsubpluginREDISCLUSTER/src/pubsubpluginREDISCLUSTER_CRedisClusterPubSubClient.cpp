@@ -929,10 +929,14 @@ CRedisClusterPubSubClient::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::Connect( void )
+CRedisClusterPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
 
-    Disconnect();
+    if ( !reset && IsConnected() )
+        return true;
+    
+    if ( !Disconnect() )
+        return false;
 
     try
     {
@@ -1184,7 +1188,7 @@ CRedisClusterPubSubClient::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier
                                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( Connect() )
+    if ( Connect( true ) )
     {
         m_redisReconnectTimer->SetEnabled( false );
     }

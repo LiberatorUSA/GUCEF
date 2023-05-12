@@ -2685,6 +2685,9 @@ bool
 CPubSubClientSide::ConnectPubSubClient( bool reset )
 {GUCEF_TRACE;
 
+    if ( !reset && IsConnected() )
+        return true;
+    
     MT::CObjectScopeLock lock( this );
 
     // Make sure setup was completed before connecting
@@ -2726,7 +2729,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
         }
     }
 
-    if ( !m_pubsubClient->Connect() )
+    if ( !m_pubsubClient->Connect( reset ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClient: Failed to connect the pub-sub client" );
