@@ -520,6 +520,16 @@ CDynamicBuffer::WriteContentToFile( const CORE::CString& filepath ,
         fseek( fptr, (long) offset, SEEK_SET );
         bool success = 1 == fwrite( _buffer, m_dataSize, 1, fptr );
         fclose( fptr );
+        if ( !success )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "DynamicBuffer::WriteContentToFile: Failed to write " + ToString( m_dataSize )  +
+                    " bytes as file content at offset " + ToString( offset ) + " to file at " + filepath );
+            if ( overwrite )
+            {
+                // Dont leave behind 0 length files as a result of a failed write
+                DeleteFile( filepath );
+            }
+        }
         return success;
     }
     return false;

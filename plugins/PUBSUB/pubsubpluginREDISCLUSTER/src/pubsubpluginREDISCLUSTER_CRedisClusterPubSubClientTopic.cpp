@@ -560,6 +560,8 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                 }
             }    
         }
+        if ( m_redisMaxXreadCount > 0 )
+            maxMsgsToRead = SMALLEST( m_redisMaxXreadCount, maxMsgsToRead );
 
         sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
