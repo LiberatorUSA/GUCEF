@@ -140,6 +140,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         
         CPubSubClientTopic* fromTopic;
         CPubSubClientTopic* activeTopic;
+        RouteType activeTopicType;
 
         CPubSubClientTopic* toTopic;
         CPubSubClientTopic* failoverTopic;
@@ -159,6 +160,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         public:
         CPubSubClientSide* fromSide;
         CPubSubClientSide* activeSide;
+        RouteType activeSideType;
         
         CPubSubClientSide* toSide;
         bool toSideIsHealthy;

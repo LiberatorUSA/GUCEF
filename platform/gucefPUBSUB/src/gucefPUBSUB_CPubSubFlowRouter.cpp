@@ -80,6 +80,7 @@ CPubSubFlowRouter::~CPubSubFlowRouter()
 CPubSubFlowRouter::CRouteTopicLinks::CRouteTopicLinks( void )
     : fromTopic( GUCEF_NULL )
     , activeTopic( GUCEF_NULL )
+    , activeTopicType( RouteType::Disabled )
     , toTopic( GUCEF_NULL )
     , failoverTopic( GUCEF_NULL )
     , spilloverTopic( GUCEF_NULL )
@@ -93,6 +94,7 @@ CPubSubFlowRouter::CRouteTopicLinks::CRouteTopicLinks( void )
 CPubSubFlowRouter::CRouteTopicLinks::CRouteTopicLinks( const CRouteTopicLinks& src )
     : fromTopic( src.fromTopic )
     , activeTopic( src.activeTopic )
+    , activeTopicType( src.activeTopicType )
     , toTopic( src.toTopic )
     , failoverTopic( src.failoverTopic )
     , spilloverTopic( src.spilloverTopic )
@@ -106,6 +108,7 @@ CPubSubFlowRouter::CRouteTopicLinks::CRouteTopicLinks( const CRouteTopicLinks& s
 CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     : fromSide( GUCEF_NULL )
     , activeSide( GUCEF_NULL )
+    , activeSideType( RouteType::Disabled )
     , toSide( GUCEF_NULL )
     , toSideIsHealthy( true )
     , toSideLastHealthStatusChange( CORE::CDateTime::PastMax )
@@ -131,6 +134,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
 CPubSubFlowRouter::CRouteInfo::CRouteInfo( const CRouteInfo& src )
     : fromSide( src.fromSide )
     , activeSide( src.activeSide )
+    , activeSideType( src.activeSideType )
     , toSide( src.toSide )
     , toSideIsHealthy( src.toSideIsHealthy )
     , toSideLastHealthStatusChange( src.toSideLastHealthStatusChange )
@@ -232,6 +236,7 @@ CPubSubFlowRouter::CRouteInfo::SwitchAllTopicLinksActiveTopic( RouteType activeS
             case RouteType::Active: { break; }
         }
 
+        topicLinks.activeTopicType = activeSide;
         ++i;
     }  
 }
@@ -1828,6 +1833,7 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
                             "\" for route with regular 'from' side \"" + routeInfo.fromSide->GetSideId() + "\"" );   
 
                     routeInfo.activeSide = routeInfo.spilloverBufferSide;
+                    routeInfo.activeSideType = RouteType::SpilloverBuffer;
                 }
             }
         }
@@ -1903,8 +1909,9 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                     "\" -> \"" + routeInfo.toSide->GetSideId() + "\"" );
 
                 routeInfo.activeSide = routeInfo.toSide;
+                routeInfo.activeSideType = RouteType::Primary;
                 routeInfo.routeSwitchingTimer.SetEnabled( false );
-                routeInfo.SwitchAllTopicLinksActiveTopic( RouteType::Primary );
+                routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
             }
             else
             {                
@@ -1924,6 +1931,10 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                     routeInfo.routeSwitchingTimer.SetEnabled( true );
                 }
             }
+        }
+        else
+        {
+            routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
         }
     }   
     else
@@ -1952,8 +1963,9 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                             "):DetermineActiveRoute: Switching active route to the Failover side" );
         
                         routeInfo.activeSide = routeInfo.failoverSide;
+                        routeInfo.activeSideType = RouteType::Failover;
                         routeInfo.routeSwitchingTimer.SetEnabled( false );
-                        routeInfo.SwitchAllTopicLinksActiveTopic( RouteType::Failover );
+                        routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
                     }
                     else
                     {                
@@ -1973,6 +1985,10 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                             routeInfo.routeSwitchingTimer.SetEnabled( true );
                         }
                     }
+                }
+                else
+                {
+                    routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
                 }
             }
             else
@@ -2001,8 +2017,9 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                                 "):DetermineActiveRoute: Switching active route to the Spillover buffer side" );
         
                             routeInfo.activeSide = routeInfo.spilloverBufferSide;
+                            routeInfo.activeSideType = RouteType::SpilloverBuffer;
                             routeInfo.routeSwitchingTimer.SetEnabled( false );
-                            routeInfo.SwitchAllTopicLinksActiveTopic( RouteType::SpilloverBuffer );
+                            routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
 
                             // If the spillover is configured for egress instead of ingress we need to either wait of egress to finish 
                             // or if its finished we need to reconfigure for ingress
@@ -2026,11 +2043,16 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                                     {
                                         // Something went wrong, abort and try again next cycle
                                         routeInfo.activeSide = GUCEF_NULL;
-                                        routeInfo.SwitchAllTopicLinksActiveTopic( RouteType::Disabled );
+                                        routeInfo.activeSideType = RouteType::Disabled;
+                                        routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
                                         routeInfo.routeSwitchingTimer.SetEnabled( true );
                                     }
                                 }
                             }
+                        }
+                        else
+                        {
+                            routeInfo.SwitchAllTopicLinksActiveTopic( routeInfo.activeSideType );
                         }
                     }
                 }
