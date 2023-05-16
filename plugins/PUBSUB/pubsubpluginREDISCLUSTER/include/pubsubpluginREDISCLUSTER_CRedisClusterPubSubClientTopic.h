@@ -136,9 +136,9 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual bool RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDelayInMs ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
+    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
+    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) GUCEF_VIRTUAL_OVERRIDE;
 
     const CRedisClusterPubSubClientTopicConfig& GetTopicConfig( void ) const;
 

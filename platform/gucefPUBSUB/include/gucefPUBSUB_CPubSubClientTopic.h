@@ -81,6 +81,7 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 class CPubSubClient;
+class CPubSubClientTopicConfig;
 
 /**
  *  Class providing the abstract client-side representation of a 'topic' within the publish-subscribe system
@@ -293,6 +294,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
      *  In such a case you should be using the GetCurrentBookmark() mechanic instead if bookmarking as a whole is supported
      */
     virtual bool DeriveBookmarkFromMsg( const CIPubSubMsg& msg, CPubSubBookmark& bookmark ) const;
+
+    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const = 0;
+
+    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) = 0;
 };
 
 /*-------------------------------------------------------------------------*/

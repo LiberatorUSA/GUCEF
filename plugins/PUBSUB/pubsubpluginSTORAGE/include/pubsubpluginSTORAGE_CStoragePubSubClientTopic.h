@@ -209,9 +209,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, PUBSUB::CPubSubBookmark& bookmark ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
+    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
+    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void Shutdown( void );
 

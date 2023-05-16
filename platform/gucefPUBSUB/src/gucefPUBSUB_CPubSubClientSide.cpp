@@ -1710,6 +1710,9 @@ void
 CPubSubClientSide::TopicLink::RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+        "):RegisterTopicEventHandlers: Registering event handlers for topic with name: " + topic->GetTopicName() );
+
     TEventCallback callback( this, &CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived );
     SubscribeTo( topic.GetPointerAlways()              ,
                  CPubSubClientTopic::MsgsRecievedEvent ,
@@ -2425,9 +2428,33 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
 
     if ( topic.IsNULL() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-            "):ConfigureTopicLink: Failed to create topic link for topic with name " + topic->GetTopicName() );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+            "):ConfigureTopicLink: NULL topic passed" );
         return false;
+    }
+
+    const CORE::CString& topicName = topic->GetTopicName();
+    
+    CPubSubClientTopicConfigPtr topicConfig = m_sideSettings.GetTopicConfig( topicName );
+    if ( topicConfig.IsNULL() )
+    {
+        // Considering the backend was able to make a topic but we don't have a config for it
+        // it seems this topic was auto created by the backend. As such we will make a copy of the cofig for our own record keeping
+        // this is relevant in case we need to perform a reset which would wipe out the topic access and would want to
+        // recreate it based on config
+        topicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
+        if ( topic->SaveConfig( *topicConfig ) )
+        {
+            m_sideSettings.pubsubClientConfig.topics.push_back( topicConfig );
+
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                "):ConfigureTopicLink: Obtained a copy of the topic config from the topic itself for topic which has no predefined config. topicName=" + topicName );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                "):ConfigureTopicLink: Unable to get a copy of the topic config from the topic itself for topic which has no predefined config. Knowledge about the Topic will be lost across resets. topicName=" + topicName );
+        }
     }
 
     TopicMap::iterator i = m_topics.find( topic.GetPointerAlways() );
@@ -2443,8 +2470,8 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):ConfigureTopicLink: Failed to create topic link for topic with name " + topic->GetTopicName() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):ConfigureTopicLink: Failed to create topic link for topic with name " + topicName );
                 return false;
             }
         }
@@ -2455,7 +2482,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         topicLink->pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
         if ( topicLink->pubsubBookmarkPersistence.IsNULL() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConfigureTopicLink: Failed to create bookmark persistance access of type \"" + pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
             return false;
         }
@@ -2466,7 +2493,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         topicLink->flowRouter = m_flowRouter;
         topicLink->topic = topic;
         topicLink->bookmarkNamespace = m_bookmarkNamespace;
-        topicLink->metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topic->GetTopicName() ) + ".";
+        topicLink->metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topicName ) + ".";
         topicLink->metrics = &m_metricsMap[ topicLink->metricFriendlyTopicName ];
         topicLink->metrics->hasSupportForPublishing = topic->IsPublishingSupported();
         topicLink->metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
@@ -2736,8 +2763,11 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
         return false;
     }
 
-    // Create and configure the pub-sub client's topics
-    m_topics.clear();
+    // Now create and configure the pub-sub client's topics
+
+    if ( reset )
+        m_topics.clear();
+
     CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = pubSubConfig.topics.begin();
     while ( i != pubSubConfig.topics.end() )
     {

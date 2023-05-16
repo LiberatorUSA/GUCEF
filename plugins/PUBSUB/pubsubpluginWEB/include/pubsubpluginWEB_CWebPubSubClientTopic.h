@@ -185,9 +185,9 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopic : public PUBSUB:
     virtual bool AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
     bool AcknowledgeReceiptImpl( const PUBSUB::CPubSubBookmark& bookmark, CORE::UInt64 receiveActionId );
 
-    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const;
+    virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config );
+    virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual void Shutdown( void );
     
