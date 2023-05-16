@@ -1156,6 +1156,12 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
         Reconnect();
         return false;
     }
+    catch ( const GUCEF::timeout_exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: timeout exception" );
+        Reconnect();
+        return false;
+    }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: exception: " + e.what() );

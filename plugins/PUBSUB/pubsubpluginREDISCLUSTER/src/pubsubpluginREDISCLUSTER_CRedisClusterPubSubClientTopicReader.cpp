@@ -85,8 +85,17 @@ bool
 CRedisClusterPubSubClientTopicReader::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_ownerTopic )
-        m_ownerTopic->RedisRead();
+    try
+    {
+        if ( GUCEF_NULL != m_ownerTopic )
+            m_ownerTopic->RedisRead();
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CRedisClusterPubSubClientTopicReader: caught timeout_exception while attempting to a read cycle, will try again" );
+    }
+    
+    // we never self-determine to be 'done'
     return false;
 }
 

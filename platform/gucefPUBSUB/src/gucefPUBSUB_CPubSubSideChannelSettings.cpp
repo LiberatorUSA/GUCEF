@@ -318,6 +318,7 @@ CPubSubSideChannelConfig::GetTopicConfig( const CORE::CString& topicName )
     {
         if ( topicName == (*i)->topicName )
             return (*i);
+        ++i;
     }
     return CPubSubClientTopicConfigPtr();
 }
