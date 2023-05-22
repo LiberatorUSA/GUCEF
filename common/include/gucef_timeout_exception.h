@@ -67,11 +67,14 @@ class timeout_exception : public std::runtime_error
 {
     public:
 
-    explicit timeout_exception( void ) : std::runtime_error( "timeout_exception" ) {GUCEF_TRACE; }
+    explicit timeout_exception( void ) : std::runtime_error( "timeout_exception" ) 
+        {GUCEF_TRACE; }
 
-    explicit timeout_exception( const std::string& message ) : std::runtime_error( message.c_str() ) {GUCEF_TRACE; }
+    explicit timeout_exception( const std::string& message ) : std::runtime_error( message.c_str() ) 
+        {GUCEF_TRACE; }
 
-    explicit timeout_exception( const char* message ) : std::runtime_error( message ) {GUCEF_TRACE; }
+    explicit timeout_exception( const char* message ) : std::runtime_error( message ) 
+        {GUCEF_TRACE; }
 };
 
 /*-------------------------------------------------------------------------//

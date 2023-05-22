@@ -154,6 +154,8 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
             UInt32 callerThreadId = (UInt32) GetCurrentThreadId();
             if ( callerThreadId == mutex->lockedByThread )             
                 ++mutex->reentrancyCount;
+            else
+                mutex->lockedByThread = callerThreadId;
 
             GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( mutex->id );
             GUCEF_END;

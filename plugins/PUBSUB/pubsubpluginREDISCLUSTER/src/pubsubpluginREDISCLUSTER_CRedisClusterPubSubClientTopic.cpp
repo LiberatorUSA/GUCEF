@@ -690,8 +690,8 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                         }
                                     }
 
-                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisRead: read " + 
-                                        CORE::ToString( msgCount ) + " messages" );
+                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::ToString( this ) + "):RedisRead: read " + 
+                                        CORE::ToString( msgCount ) + " messages from topic " + m_config.topicName );
         
                                     // Communicate all the messages received via an event notification
                                     if ( NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) 

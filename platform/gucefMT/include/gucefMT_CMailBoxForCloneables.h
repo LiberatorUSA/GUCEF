@@ -153,7 +153,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
      *  @return whether mail was successfully added to the mailbox.
      */
     template< typename TContainer >
-    bool AddPtrBulkMail( const TContainer& mailList );
+    bool AddPtrBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle = 1000 );
 
     /**
      *  Attempts to add mail to the mailbox in bulk
@@ -307,20 +307,24 @@ CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
 
 template< typename TContainer >
 bool
-CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList )
+CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle )
 {GUCEF_TRACE;
-
-    CObjectScopeLock lock( this );
 
     typename TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
-        const CICloneable* origMail = static_cast< const CICloneable* >( (*i) );
-        if ( GUCEF_NULL != origMail )
+        CObjectScopeLock lock( this );
+
+        UInt32 n=0;
+        while ( i != mailList.end() && n < itemsPerLockCycle )
         {
-            m_mailQueue.push_back( origMail->Clone() );
+            const CICloneable* origMail = static_cast< const CICloneable* >( (*i) );
+            if ( GUCEF_NULL != origMail )
+            {
+                m_mailQueue.push_back( origMail->Clone() );
+            }
+            ++i; ++n;
         }
-        ++i;
     }
     return true;
 }
