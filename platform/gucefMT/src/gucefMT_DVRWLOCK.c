@@ -372,8 +372,8 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                              *	that may be queued. After that we increase the reader
                              *	counter.
                              */
-                            UInt64 elapsedTimeInMs = 0;
-                            UInt64 timerResolution = PrecisionTimerResolution();
+                            Float64 elapsedTimeInMs = 0;
+                            Float64 timerResolution = PrecisionTimerResolution() / 1000.0;
                             UInt64 startTicks = PrecisionTickCount();
                             while ( ( rwlock->activeWriterCount > 0 || rwlock->queuedWriterCount > 0 || 0 != rwlock->writeLockAquisitionInProgress ) && 
                                     ( 0 == rwlock->delflag )                                                                                         &&
@@ -383,7 +383,33 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                 elapsedTimeInMs = ( PrecisionTickCount() - startTicks ) / timerResolution;
                                 if ( elapsedTimeInMs > lockWaitTimeoutInMs )
                                 {
-                                    
+                                    /*
+                                     *	We exceeded the max time we can wait for the writers to finish their work
+                                     *  Unroll the administrative changes and return a timeout
+                                     */  
+                                    lockResult = MutexLock( rwlock->datalock, GUCEF_MT_SUPER_LONG_LOCK_TIMEOUT ); 
+                                    switch ( lockResult )
+                                    {
+	                                    case GUCEF_MUTEX_OPERATION_SUCCESS :
+                                        case GUCEF_MUTEX_ABANDONED :
+                                        {
+                                            rwlock->queuedReaderCount--;
+                                            MutexUnlock( rwlock->datalock );
+                                            return GUCEF_RWLOCK_WAIT_TIMEOUT;
+                                        }
+                                        default:
+                                        case GUCEF_MUTEX_WAIT_TIMEOUT:
+                                        case GUCEF_MUTEX_OPERATION_FAILED:
+                                        {
+                                            /*
+                                             *	This should not happen
+                                             *  Roll the dice on updating without a lock
+                                             */
+                                            GUCEF_ASSERT_ALWAYS;
+                                            rwlock->queuedReaderCount--;
+                                            return GUCEF_RWLOCK_WAIT_TIMEOUT;
+                                        }
+                                    }
                                 }
                             }
 

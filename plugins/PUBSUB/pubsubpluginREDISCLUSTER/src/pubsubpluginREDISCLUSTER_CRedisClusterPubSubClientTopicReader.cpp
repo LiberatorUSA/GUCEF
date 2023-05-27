@@ -68,6 +68,7 @@ CRedisClusterPubSubClientTopicReader::CRedisClusterPubSubClientTopicReader( CRed
 CRedisClusterPubSubClientTopicReader::~CRedisClusterPubSubClientTopicReader()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

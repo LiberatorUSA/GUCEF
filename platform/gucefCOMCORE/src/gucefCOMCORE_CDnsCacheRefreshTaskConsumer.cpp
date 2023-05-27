@@ -64,6 +64,7 @@ CDnsCacheRefreshTaskConsumer::CDnsCacheRefreshTaskConsumer( void )
 CDnsCacheRefreshTaskConsumer::~CDnsCacheRefreshTaskConsumer()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
 }
     
 /*-------------------------------------------------------------------------*/

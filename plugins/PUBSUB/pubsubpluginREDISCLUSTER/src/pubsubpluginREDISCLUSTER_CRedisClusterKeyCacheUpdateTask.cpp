@@ -67,6 +67,7 @@ CRedisClusterKeyCacheUpdateTask::CRedisClusterKeyCacheUpdateTask( void )
 CRedisClusterKeyCacheUpdateTask::~CRedisClusterKeyCacheUpdateTask()
 {GUCEF_TRACE;
 
+    SignalUpcomingDestruction();
 }
 
 /*-------------------------------------------------------------------------*/

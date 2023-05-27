@@ -103,8 +103,20 @@ CTaskConsumer::CTaskConsumer( void )
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
-    SignalUpcomingDestruction();    
-    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );    
+    try
+    {
+        SignalUpcomingDestruction();    
+        CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );    
+    }
+    // we should not get exceptions here, the below is mainly for defensive coding as a lesser evil
+    catch ( const timeout_exception& )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "TaskConsumer:Destructor: encountered timeout exception" );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "TaskConsumer:Destructor: encountered std exception " + CString( e.what() ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

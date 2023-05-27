@@ -518,7 +518,7 @@ CThreadPool::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                     {
                         // Ask thread to deactivate
                         TTaskDelegatorBasicPtr delegator = (*i);
-                        delegator->Deactivate( gracefullEnforcement, false );
+                        delegator->Deactivate( !gracefullEnforcement, false );
                         --leftToBeDeactivated;
                     }
                 }

@@ -237,6 +237,23 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
     typedef std::vector< TBufferPair > TBufferVector;
 
+    class RedisTopicVarsForReading
+    {
+        public:
+
+        TRedisMsgByStream m_redisReadMsgs;
+        TPubSubMsgsVector m_pubsubMsgs;
+        TMsgsRecievedEventData m_pubsubMsgsRefs;
+        TBufferVector m_pubsubMsgAttribs;
+        std::string m_readOffset;
+        CORE::UInt64 m_currentReceiveActionId;
+
+        MT::CMutex m_lock;
+
+        RedisTopicVarsForReading( void );
+    };
+
+    RedisTopicVarsForReading m_readVars;
     CRedisClusterPubSubClient* m_client;
     sw::redis::Pipeline* m_redisPipeline;
     RedisClusterPtr m_redisContext;
@@ -250,16 +267,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CORE::UInt32 m_redisHashSlot;
     CORE::Int32 m_redisMaxXreadCount;
     CORE::UInt32 m_redisXreadBlockTimeoutInMs;
-    TRedisMsgByStream m_redisReadMsgs;
-    TPubSubMsgsVector m_pubsubMsgs;
-    TMsgsRecievedEventData m_pubsubMsgsRefs;
-    TBufferVector m_pubsubMsgAttribs;
+    
     TRedisArgs m_redisMsgArgs;
     COMCORE::CHostAddress m_redisShardHost;
     CORE::CString m_redisShardNodeId;
     CORE::CTimer* m_redisReconnectTimer;
     CRedisClusterPubSubClientTopicConfig m_config;
-    std::string m_readOffset;    
+        
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
     bool m_needToTrackAcks;
     bool m_subscriptionIsAtEndOfData;
@@ -267,7 +281,6 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CORE::Int32 m_maxTotalMsgsInFlight;
     CORE::Int64 m_msgsInFlight;
     CORE::UInt64 m_currentPublishActionId;
-    CORE::UInt64 m_currentReceiveActionId;
     TPublishActionIdVector m_publishSuccessActionIds;
     TMsgsPublishedEventData m_publishSuccessActionEventData;
     TPublishActionIdVector m_publishFailureActionIds;
