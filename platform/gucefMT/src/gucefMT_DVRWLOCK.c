@@ -50,7 +50,9 @@ struct SRWLock
 {
     UInt8  delflag;
     Int32 activeReaderCount;
+    UInt32 lastActiveReaderThreadId;
     Int32 queuedReaderCount;
+    UInt32 lastQueuedReaderThreadId;
     Int32 activeWriterCount;
     Int32 activeWriterReentrancyCount;
     Int32 queuedWriterCount;
@@ -82,7 +84,9 @@ rwl_create( UInt32 writer_overrules )
     {
         rwlock->delflag = 0;
         rwlock->activeReaderCount = 0;
+        rwlock->lastActiveReaderThreadId = 0;
         rwlock->queuedReaderCount = 0;
+        rwlock->lastQueuedReaderThreadId = 0;
         rwlock->activeWriterCount = 0;
         rwlock->activeWriterReentrancyCount = 0;
         rwlock->queuedWriterCount = 0;
@@ -319,7 +323,8 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                         /*
                          *  There are no active writers so regardless who takes priority we can proceed
                          */
-                        rwlock->activeReaderCount++;        
+                        rwlock->activeReaderCount++;  
+                        rwlock->lastActiveReaderThreadId = GetCurrentTaskID();
                         MutexUnlock( rwlock->datalock );
                         return GUCEF_RWLOCK_OPERATION_SUCCESS;                    
                     }
@@ -329,7 +334,8 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                         /*
                          *  There are no active writers and readers are taking priority so any queued writers will have to wait
                          */
-                        rwlock->activeReaderCount++;        
+                        rwlock->activeReaderCount++;
+                        rwlock->lastActiveReaderThreadId = GetCurrentTaskID();
                         MutexUnlock( rwlock->datalock );
                         return GUCEF_RWLOCK_OPERATION_SUCCESS; 
                     }
@@ -361,6 +367,7 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                     if ( rwlock->wpriority > 0 )
                     {
                         rwlock->queuedReaderCount++;
+                        rwlock->lastQueuedReaderThreadId = GetCurrentTaskID();
                         MutexUnlock( rwlock->datalock );
 
                         done = 0;
@@ -430,6 +437,7 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                          */
                                         rwlock->activeReaderCount++;        
                                         rwlock->queuedReaderCount--;
+                                        rwlock->lastActiveReaderThreadId = GetCurrentTaskID();
                                         MutexUnlock( rwlock->datalock );
                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
                                     }
@@ -484,6 +492,7 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                     else
                     {
                         rwlock->queuedReaderCount++;
+                        rwlock->lastQueuedReaderThreadId = GetCurrentTaskID();
                         MutexUnlock( rwlock->datalock );
 
                         do
@@ -514,6 +523,7 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                          */
                                         rwlock->activeReaderCount++;        
                                         rwlock->queuedReaderCount--;
+                                        rwlock->lastActiveReaderThreadId = GetCurrentTaskID();
                                         MutexUnlock( rwlock->datalock );
                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
                                     }

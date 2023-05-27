@@ -13,7 +13,7 @@
 			"maxMsgPublishRetryAttempts": 20,
 			"maxMsgPublishRetryTotalTimeInMs": 60000,
 			"maxPublishedMsgInFlightTimeInMs": 240000,
-			"performPubSubInDedicatedThread": true,
+			"performPubSubInDedicatedThread": false,
 			"retryFailedPublishAttempts": true,
 			"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 			"PubSubClientConfig": {
