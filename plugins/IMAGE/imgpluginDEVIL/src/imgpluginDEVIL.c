@@ -59,6 +59,7 @@
 static TIOAccess* currentResource = NULL;
 static UInt32 codecCount = 0;
 static char** supportedTypes = NULL;
+static const char* codecFamily = "ImageCodec";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -681,7 +682,7 @@ CODECPLUGIN_GetCodecLink( void* plugdata               ,
     {
         *codecLink = (TCodecPluginLink*) malloc( sizeof( TCodecPluginLink ) );
         (*codecLink)->codecData = NULL;
-        (*codecLink)->codecFamily = "ImageCodec";
+        (*codecLink)->codecFamily = codecFamily;
         (*codecLink)->codecType = supportedTypes[ codecIndex ];
         (*codecLink)->encode = CODECPLUGIN_Encode;
         (*codecLink)->decode = CODECPLUGIN_Decode;

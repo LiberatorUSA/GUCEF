@@ -379,11 +379,13 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData       ,
     {
         // Read the actual frame from the resource
         flic::Frame flicFrame;
-        flicFrame.pixels = NULL;
+        flicFrame.pixels = GUCEF_NULL;
         flicFrame.rowstride = 0;
         if ( !flicDecoder.readFrame( flicFrame ) )
             return 0;
-
+        if ( GUCEF_NULL == flicFrame.pixels )
+            continue;
+        
         // Set basic frame info
         TImageFrame& frame = image->frames[ i ];
         frame.version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
@@ -405,6 +407,9 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData       ,
         mipmapLevel.mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
         mipmapLevel.mipLevelInfo.pixelStorageFormat = PSF_RGB;
         mipmapLevel.pixelData = malloc( pixelCount * 3 );
+        if ( GUCEF_NULL == mipmapLevel.pixelData )
+            return 0;
+        memset( mipmapLevel.pixelData, 0, pixelCount * 3 );
         int m=0;
         UInt8* pixelData = (UInt8*) mipmapLevel.pixelData;
         for ( int n=0; n<pixelCount; ++n )

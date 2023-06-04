@@ -16,5 +16,17 @@
         <Preprocessor>
             <Define String="ITVEXPORTER_BUILD_MODULE" />
         </Preprocessor>
+	<RuntimeDependencies>
+            <RuntimeDependency Name="vfspluginITV" />
+	    <RuntimeDependency Name="dstorepluginPARSIFALXML" />
+	    <RuntimeDependency Name="dstorepluginJSONPARSER" />
+	    <RuntimeDependency Name="dstorepluginYAML" />
+	    <RuntimeDependency Name="codecspluginZLIB" />
+	    <RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+	    <RuntimeDependency Name="imgpluginITV" />
+	    <RuntimeDependency Name="imgpluginFreeImage" />
+	    <RuntimeDependency Name="imgpluginFLIC" />
+	    <RuntimeDependency Name="imgpluginDEVIL" />
+	</RuntimeDependencies>		
     </Module>
 </ModuleInfoEntry>

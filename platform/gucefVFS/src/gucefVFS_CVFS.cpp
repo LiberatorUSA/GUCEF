@@ -1482,11 +1482,13 @@ CVFS::GetActualFilePath( const CString& file ,
                          CString& path       ) const
 {GUCEF_TRACE;
 
+    CString filePath = ConformVfsFilePath( file );
+    
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( file, false, mountLinks );
+    GetEligableMounts( filePath, false, mountLinks );
 
     // Find the file in the available archives
     TConstMountLinkVector::iterator i = mountLinks.begin();

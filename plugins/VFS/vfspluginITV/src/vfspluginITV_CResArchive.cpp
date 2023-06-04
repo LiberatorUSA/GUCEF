@@ -180,7 +180,7 @@ CResArchive::GetFileList( TStringVector& outputList           ,
         CORE::CString resourceId = CORE::Int32ToString( (*i).resourceNr ) + ".itv" + resourceType;
         if ( includePathInFilename )
         {
-            resourceId = CORE::CombinePath( m_resPath, resourceId );
+            resourceId = CORE::CombinePath( mountLocation, resourceId );
         }
         outputList.push_back( resourceId );
         ++i;

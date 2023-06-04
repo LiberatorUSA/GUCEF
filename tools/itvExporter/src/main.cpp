@@ -40,6 +40,11 @@
 #define GUCEF_CORE_CGLOBALCONFIGVALUELIST_H
 #endif /* GUCEF_CORE_CGLOBALCONFIGVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -347,8 +352,8 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
-    if ( argc > 0 )
-    {
+    //if ( argc > 0 )
+    //{
         CORE::CString archivePath = keyValueList.GetValueAlways( "archive" );
         archivePath = archivePath.Trim( true ).Trim( false );
         if ( !archivePath.IsNULLOrEmpty() )
@@ -385,7 +390,7 @@ GUCEF_OSMAIN_BEGIN
             if ( -1 < archiveFilename.HasChar( '*' ) )
             {
                 // Use the filename as a filter
-                vfs.GetFileList( archiveFileNames, CORE::CString::Empty, false, false, archiveFilename );
+                vfs.GetFileList( archiveFileNames, CORE::CString::Empty, false, true, archiveFilename );
             }
             else
             {
@@ -657,11 +662,12 @@ GUCEF_OSMAIN_BEGIN
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Missing minimal param \"archive\" thus no idea which archive to use" );
         }
-    }
+    //}
 
 	GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
-    CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+    CORE::CCoreGlobal::Instance()->GetPluginControl().UnloadAll();
+    CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();    
 
     return 0;
 }
