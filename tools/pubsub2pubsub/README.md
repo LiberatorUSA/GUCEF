@@ -57,3 +57,7 @@ The binary format uses the Galaxy Unlimited Platform provided binary serializati
 Note that on a per topic basis the backend only supports mutually exclusive ingress or egress, not both at the same time.
 For performance reasons dynamic memory management is kept to an absolute minimum and for this reason buffers are continually reused for serialization of the blocks of messages.
 In order to get the best performance it is key to choose the backend settings such to avoid alterations to the in-memory storage. This is easier on egress (writing out blocks) then it is on ingress (reading blocks into memory) especially when compression is used.
+The storage backend, when configured as a sink (publish), will produce time series capture files using a hardcoded scheme where each recording time segment produces a file with the following scheme:
+<containerCaptureStartTimestamp>_<firstMessageInContainerTimestamp>_<lastMessageInContainerTimestamp>.<configuredExtensionName> 
+These timestamps follow the ISO 8601 standard: https://en.wikipedia.org/wiki/ISO_8601
+Note that Kaitai (https://kaitai.io/) specs are also available for the storage backend generated capture files within this repo, should you wish to use independent parsing code.
