@@ -128,7 +128,6 @@ CPubSubClientSide::CPubSubClientSide( const CORE::CString& sideId   ,
     , m_broadcastMailbox()
     , m_metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
     , m_pubsubClientReconnectTimer( CORE::PulseGeneratorPtr(), 1000 )
-    , m_timedOutInFlightMessagesCheckTimer( CORE::PulseGeneratorPtr(), 5000 )
     , m_sideId( sideId )
     , m_threadIdOfSide( 0 )
     , m_flowRouter( flowRouter )
@@ -196,6 +195,8 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , totalMsgsInFlight( 0 )
     , bookmarkNamespace()
     , threadIdOfSide( 0 )
+    , timedOutInFlightMessagesCheckTimer( CORE::PulseGeneratorPtr(), 5000 )
+    , metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
     , dataLock()
 {GUCEF_TRACE;
 
@@ -449,11 +450,6 @@ CPubSubClientSide::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
 
-    TEventCallback callback2( this, &CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle );
-    SubscribeTo( &m_timedOutInFlightMessagesCheckTimer ,
-                 CORE::CTimer::TimerUpdateEvent        ,
-                 callback2                             );
-
     TEventCallback callback3( this, &CPubSubClientSide::OnPubSubClientReconnectTimerCycle );
     SubscribeTo( &m_pubsubClientReconnectTimer  ,
                  CORE::CTimer::TimerUpdateEvent ,
@@ -650,11 +646,25 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         // in the processing pipeline. The reasoning is that processing under certain load profiles
         // can cause the totality of thread cycle operations to exceed the timer cycle time
         // this would unintentionally reduce the number of metric updates obtained
-        TopicLinkPtr topicLink = (*i).second;
-        topicLink->UpdateTopicMetrics();
+        
+        
+        // @TODO: Aggregate from topics locking only the metrics object
+        //TopicLinkPtr topicLink = (*i).second;
+        //topicLink->UpdateTopicMetrics();
 
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::TopicLink::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    UpdateTopicMetrics();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1175,28 +1185,6 @@ CPubSubClientSide::GetMsgAttributesForLog( const CIPubSubMsg& msg )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
-                                                                 const CORE::CEvent& eventId  ,
-                                                                 CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    MT::CScopeReaderLock readerLock( m_rwdataLock );
-    
-    TopicMap::iterator i = m_topics.begin();
-    while ( i != m_topics.end() )
-    {
-        TopicLinkPtr topicLink = (*i).second;
-        if ( !topicLink.IsNULL() )
-        {
-            topicLink->OnCheckForTimedOutInFlightMessagesTimerCycle( notifier, eventId, eventData );
-        }
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
                                                                             const CORE::CEvent& eventId  ,
                                                                             CORE::CICloneable* eventData )
@@ -1372,9 +1360,21 @@ CPubSubClientSide::RetryPublishFailedMsgsAndProcessMailbox( void )
         }
 
         CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
-        if ( m_broadcastMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+        try
         {
-            totalSuccess = BroadcastPublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+            if ( m_broadcastMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+            {
+                totalSuccess = BroadcastPublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+            }
+        }
+        catch ( const timeout_exception& )
+        {
+            if ( !m_broadcastMailbox.ReInsertSPtrBulkMail( msgs ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):RetryPublishFailedMsgsAndProcessMailbox: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    " messages into the mailbox after an exception occured" );
+            }
         }
     }    
     
@@ -1660,7 +1660,7 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
                 }
                 if ( !publishSuccess )
                 {
-                    if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+                    if ( !msgMailbox.ReInsertSPtrBulkMail( msgs ) )
                     {
                         if ( timeoutOccured )
                         {
@@ -1681,7 +1681,7 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
         catch ( const timeout_exception& )
         {            
             totalSuccess = false;
-            if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+            if ( !msgMailbox.ReInsertSPtrBulkMail( msgs ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
                     "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
@@ -1691,7 +1691,7 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
         catch ( const std::exception& e )
         {            
             totalSuccess = false;
-            if ( !msgMailbox.PopSPtrBulkMail( msgs ) )
+            if ( !msgMailbox.ReInsertSPtrBulkMail( msgs ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
                     "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
@@ -1732,6 +1732,16 @@ CPubSubClientSide::TopicLink::RegisterTopicEventHandlers( CPubSubClientTopicBasi
     SubscribeTo( topic.GetPointerAlways()                       ,
                  CPubSubClientTopic::LocalPublishQueueFullEvent ,
                  callback4                                      );
+
+    TEventCallback callback5( this, &CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle );
+    SubscribeTo( &timedOutInFlightMessagesCheckTimer ,
+                 CORE::CTimer::TimerUpdateEvent        ,
+                 callback5                             );
+
+    TEventCallback callback6( this, &CPubSubClientSide::TopicLink::OnMetricsTimerCycle );
+    SubscribeTo( &metricsTimer                  ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback6                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2457,6 +2467,12 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         }
     }
 
+    CORE::PulseGeneratorPtr pulseGenerator;
+    if ( m_sideSettings.useBackendTopicThreadForTopicIfAvailable )
+        pulseGenerator = topic->GetPulseGenerator();
+    if ( pulseGenerator.IsNULL() )
+        pulseGenerator = GetPulseGenerator();
+
     TopicMap::iterator i = m_topics.find( topic.GetPointerAlways() );
     if ( reset || i == m_topics.end() )
     {
@@ -2485,6 +2501,20 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConfigureTopicLink: Failed to create bookmark persistance access of type \"" + pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
             return false;
+        }
+
+        topicLink->timedOutInFlightMessagesCheckTimer.SetPulseGenerator( pulseGenerator );
+        if ( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 )
+        {
+            topicLink->timedOutInFlightMessagesCheckTimer.SetInterval( (CORE::UInt32) m_sideSettings.maxPublishedMsgInFlightTimeInMs );
+            topicLink->timedOutInFlightMessagesCheckTimer.SetEnabled( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 );
+        }
+
+        topicLink->metricsTimer.SetPulseGenerator( pulseGenerator );
+        if ( m_sideSettings.collectMetrics )
+        {
+            topicLink->metricsTimer.SetInterval( m_sideSettings.metricsIntervalInMs );
+            topicLink->metricsTimer.SetEnabled( m_sideSettings.collectMetrics );
         }
 
         topicLink->side = this;
@@ -2910,13 +2940,6 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer.SetInterval( m_sideSettings.metricsIntervalInMs );
     m_metricsTimer.SetPulseGenerator( pulseGenerator );
     m_metricsTimer.SetEnabled( m_sideSettings.collectMetrics );
-
-    m_timedOutInFlightMessagesCheckTimer.SetPulseGenerator( pulseGenerator );
-    if ( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 )
-    {
-        m_timedOutInFlightMessagesCheckTimer.SetInterval( (CORE::UInt32) m_sideSettings.maxPublishedMsgInFlightTimeInMs );
-        m_timedOutInFlightMessagesCheckTimer.SetEnabled( m_sideSettings.maxPublishedMsgInFlightTimeInMs > 0 );
-    }
 
     if ( m_sideSettings.performPubSubInDedicatedThread )
     {

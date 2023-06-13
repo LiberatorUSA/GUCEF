@@ -306,7 +306,7 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
         {
             // sanity check the read timeout
             // note that a connection timeout of 0 means infinite for redis++
-            if ( m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs > 0 && m_config.redisXReadBlockTimeoutInMs >= m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs )
+            if ( m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs > 0 && m_config.redisXReadBlockTimeoutInMs > m_client->GetConfig().redisConnectionOptionSocketTimeoutInMs )
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: redisXReadBlockTimeoutInMs (" + CORE::ToString( m_config.redisXReadBlockTimeoutInMs ) + 
                         ") at the topic level should be configured to a lower value than the client's overall socket timeout (" +
@@ -341,6 +341,30 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
             m_redisMaxXreadCount = m_maxTotalMsgsInFlight;    
         else
             m_redisMaxXreadCount = m_config.redisXReadCount;
+
+        // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
+        // Redis does not support pushing of data directly
+        
+        if ( m_config.needSubscribeSupport && m_readerThread.IsNULL() )
+        {
+            m_readerThread = ( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) )->CreateSharedPtr();
+        }
+
+        if ( !m_readerThread.IsNULL() )
+        {
+            if ( !m_readerThread->IsActive() )
+            {
+                if ( !m_client->GetThreadPool()->SetupTask( m_readerThread ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: Failed to start blocking reader thread for async subscription" );
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: blocking reader thread for async subscription was already active, no need to activate" );
+            }
+        }
         
         return true;
     }
@@ -1127,23 +1151,12 @@ CRedisClusterPubSubClientTopic::SubscribeImpl( const std::string& readOffset )
         // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
         // Redis does not support pushing of data directly
 
-        if ( m_readerThread.IsNULL() )
-        {
-            m_readerThread = ( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) )->CreateSharedPtr();
-        }
         if ( !m_readerThread.IsNULL() )
         {
-            if ( !m_readerThread->IsActive() )
+            if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
             {
-                if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Failed to start blocking reader thread for async subscription" );
-                    return false;
-                }
-            }
-            else
-            {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: blocking reader thread for async subscription was already active, no need to activate" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):SubscribeImpl: Failed to start blocking reader thread for async subscription" );
+                return false;
             }
         }
         
@@ -1799,6 +1812,30 @@ CRedisClusterPubSubClientTopic::GetClassTypeName( void ) const
 
     static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::REDISCLUSTER::CRedisClusterPubSubClientTopic";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::PulseGeneratorPtr 
+CRedisClusterPubSubClientTopic::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( ( m_config.needSubscribeSupport && !m_config.needPublishSupport ) &&
+         !m_readerThread.IsNULL()                                           )
+    {
+        // If we are only reading from Redis and not publishing anything we can confidently state
+        // that the reader thread is where all the action will be. As such to reduce thread contention
+        // for the given topic we'd want to use that thread's pulse generator in other topic related management
+        // outside the backend as well if possible
+        return m_readerThread->GetPulseGenerator();
+    }
+
+    if ( GUCEF_NULL != m_client )
+        return m_client->GetPulseGenerator();
+
+    return CORE::PulseGeneratorPtr();
 }
 
 /*-------------------------------------------------------------------------//

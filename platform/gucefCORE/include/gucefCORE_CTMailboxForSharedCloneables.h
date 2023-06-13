@@ -100,10 +100,10 @@ class CTMailboxForSharedCloneables : public MT::CMailboxForCloneables
 
     /**
      *  Attempts to pop back the items removed from the mailbox due to a GetSPtrBulkMail() call
-     *  Note that this requires the items to now have any other outstanding references via their shared pointers
+     *  Note that this requires the items to not have any other outstanding references via their shared pointers
      */
-    bool PopSPtrBulkMail( TMailSPtrList& mailList            ,
-                          bool bestEffortSkipIfNeeded = true );
+    bool ReInsertSPtrBulkMail( TMailSPtrList& mailList            ,
+                               bool bestEffortSkipIfNeeded = true );
     
     private:
 
@@ -206,8 +206,8 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
 
 template< typename CloneableType, class PtrLockType >
 bool
-CTMailboxForSharedCloneables< CloneableType, PtrLockType >::PopSPtrBulkMail( TMailSPtrList& mailList     ,
-                                                                             bool bestEffortSkipIfNeeded )
+CTMailboxForSharedCloneables< CloneableType, PtrLockType >::ReInsertSPtrBulkMail( TMailSPtrList& mailList     ,
+                                                                                  bool bestEffortSkipIfNeeded )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );

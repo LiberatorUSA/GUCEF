@@ -105,7 +105,8 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( void )
     : CORE::CIConfigurable()
     , pubsubClientConfig()
     , pubsubBookmarkPersistenceConfig()
-    , performPubSubInDedicatedThread( true )                                                            // typically the most performant overall
+    , performPubSubInDedicatedThread( true )                                                            // potentially more performant overall, depends on various factors including threads used in the backend
+    , useBackendTopicThreadForTopicIfAvailable( true )                                                  // some backends may have their own per-topic thread, if this is 'true' we will try to hook up to that thread for logic that needs to execute for said specific topic
     , applyThreadCpuAffinity( false )                                                                   // if we don't have a dedicated host this may cause bigger problems so safer to go with false
     , cpuAffinityForPubSubThread( 0 )
     , subscribeWithoutBookmarkIfNoneIsPersisted( true )                                                 // best effort
@@ -133,6 +134,7 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( const CPubSubSideChannelConf
     , pubsubClientConfig( src.pubsubClientConfig )
     , pubsubBookmarkPersistenceConfig( src.pubsubBookmarkPersistenceConfig )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
+    , useBackendTopicThreadForTopicIfAvailable( src.useBackendTopicThreadForTopicIfAvailable )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForPubSubThread( src.cpuAffinityForPubSubThread )
     , subscribeWithoutBookmarkIfNoneIsPersisted( src.subscribeWithoutBookmarkIfNoneIsPersisted )
@@ -173,6 +175,7 @@ CPubSubSideChannelConfig::operator=( const CPubSubSideChannelConfig& src )
         pubsubClientConfig = src.pubsubClientConfig;
         pubsubBookmarkPersistenceConfig = src.pubsubBookmarkPersistenceConfig;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
+        useBackendTopicThreadForTopicIfAvailable = src.useBackendTopicThreadForTopicIfAvailable;
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForPubSubThread = src.cpuAffinityForPubSubThread;
         subscribeWithoutBookmarkIfNoneIsPersisted = src.subscribeWithoutBookmarkIfNoneIsPersisted;
@@ -215,6 +218,7 @@ CPubSubSideChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
     }    
 
     totalSuccess = cfg.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "useBackendTopicThreadForTopicIfAvailable", useBackendTopicThreadForTopicIfAvailable ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "cpuAffinityForPubSubThread", cpuAffinityForPubSubThread ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "subscribeWithoutBookmarkIfNoneIsPersisted", subscribeWithoutBookmarkIfNoneIsPersisted ) && totalSuccess;
@@ -279,6 +283,7 @@ CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
     }
 
     performPubSubInDedicatedThread = cfg.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ).AsBool( performPubSubInDedicatedThread, true );
+    useBackendTopicThreadForTopicIfAvailable = cfg.GetAttributeValueOrChildValueByName( "useBackendTopicThreadForTopicIfAvailable" ).AsBool( useBackendTopicThreadForTopicIfAvailable, true ); 
     applyThreadCpuAffinity = cfg.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ).AsBool( applyThreadCpuAffinity, true );
     cpuAffinityForPubSubThread = cfg.GetAttributeValueOrChildValueByName( "cpuAffinityForPubSubThread" ).AsUInt32( cpuAffinityForPubSubThread, true );
     subscribeWithoutBookmarkIfNoneIsPersisted = cfg.GetAttributeValueOrChildValueByName( "subscribeWithoutBookmarkIfNoneIsPersisted" ).AsBool( subscribeWithoutBookmarkIfNoneIsPersisted, true );

@@ -265,11 +265,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                  CORE::CICloneable* eventData );
 
     void
-    OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
-                                                  const CORE::CEvent& eventId  ,
-                                                  CORE::CICloneable* eventData );
-
-    void
     OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
@@ -349,6 +344,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CORE::UInt64 totalMsgsInFlight;
         CORE::CString bookmarkNamespace;
         CORE::UInt32 threadIdOfSide;
+        CORE::CTimer timedOutInFlightMessagesCheckTimer;
+        CORE::CTimer metricsTimer;
         MT::CMutex dataLock;
 
         TopicLink( void );
@@ -408,6 +405,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         bool RetryPublishFailedMsgs( void );
 
         void
+        OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+
+        void
         OnCheckForTimedOutInFlightMessagesTimerCycle( CORE::CNotifier* notifier    ,
                                                       const CORE::CEvent& eventId  ,
                                                       CORE::CICloneable* eventData );
@@ -457,7 +459,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     TPubSubMsgMailbox m_broadcastMailbox;
     CORE::CTimer m_metricsTimer;
     CORE::CTimer m_pubsubClientReconnectTimer;
-    CORE::CTimer m_timedOutInFlightMessagesCheckTimer;
     CORE::CString m_sideId;
     CORE::UInt32 m_threadIdOfSide;
     CPubSubFlowRouter* m_flowRouter;

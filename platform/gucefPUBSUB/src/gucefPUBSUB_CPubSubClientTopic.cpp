@@ -436,6 +436,15 @@ CPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::PulseGeneratorPtr 
+CPubSubClientTopic::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return CORE::PulseGeneratorPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -90,6 +90,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
     CPubSubClientConfig pubsubClientConfig;
     CPubSubBookmarkPersistenceConfig pubsubBookmarkPersistenceConfig;
     bool performPubSubInDedicatedThread;
+    bool useBackendTopicThreadForTopicIfAvailable;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForPubSubThread;
     bool subscribeWithoutBookmarkIfNoneIsPersisted;

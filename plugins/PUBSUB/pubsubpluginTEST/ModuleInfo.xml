@@ -20,6 +20,7 @@
 		</Linker>
         <Preprocessor>
             <Define String="PUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL" />
+			<Define String="PUBSUBPLUGIN_STORAGE_EMBED_CODE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
