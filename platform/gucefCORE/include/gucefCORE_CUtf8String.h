@@ -26,6 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <wchar.h>
 #include <vector>
 #include <set>
 #include <string>
@@ -112,6 +113,11 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                  UInt32 byteSize           ,
                  UInt32 lengthInCodePoints );
 
+    CUtf8String( const wchar_t* src );
+
+    CUtf8String( const wchar_t* src         ,
+                 UInt32 lengthInWCodePoints );
+
     explicit CUtf8String( const char src );
 
     explicit CUtf8String( const Int32 NULLvalueOrUtf32 );
@@ -197,6 +203,18 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     /**
      *  UTF8 class specific:
+     *  Scans the UTF8 variable length string to the memory offset of the desired codepoint index
+     *  Uses the concept of code point indeces to index into the string
+     *  Note that this operation requires seeking and is expensive
+     */ 
+    static const char* CodepointPtrAtIndex( const char* str        ,
+                                            const UInt32 byteSize  ,
+                                            const UInt32 length    ,
+                                            const UInt32 index     , 
+                                            UInt32& bytesFromStart );
+
+    /**
+     *  UTF8 class specific:
      *  Advances the pointer given to the next code point position while also performing range checking
      *  for this string.
      *  @return pointer to the next utf8 code point, if none exists or in case of error GUCEF_NULL is returned
@@ -274,6 +292,22 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     void Set( const char* new_str );
 
     /**
+     *  This member functions allows you to set the string using a potentially
+     *  non-null-terminated char array as the source. The source will
+     *  be copied and a null terminator will be added if needed
+     *  The wchar_t encoding will be converted to UTF8
+     */
+    void Set( const wchar_t* new_str     ,
+              UInt32 lengthInWCodePoints );
+
+    /**
+     *  This member functions allows you to set the string using a 
+     *  null-terminated wchar_t compliant source.
+     *  The wchar_t encoding will be converted to UTF8
+     */
+    void Set( const wchar_t* new_str );
+
+    /**
      *  This member functions allows you to set the string using a
      *  null-terminated char array as the source while specifying a
      *  maximum buffer scan length. If no null-terminator is found
@@ -284,12 +318,13 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                const UInt32 maxLength );
 
     /**
-     *      This member functions allows you to add to the string using a
-     *      non-null-terminated char array as the source. The source will
-     *      be copyed and a null terminator will be added.
+     *  This member functions allows you to add to the string using a
+     *  potentially non-null-terminated char array as the source. The source will
+     *  be copyed and a null terminator will be added.
      */
-    void Append( const char *appendstr ,
-                 UInt32 len            );
+    void Append( const char* appendstr         ,
+                 UInt32 byteSize               ,
+                 Int32 lengthInCodePoints = -1 );
 
     void Append( const char *appendstr );
 

@@ -59,7 +59,7 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Basicly a tread-safe stack for passing data event data between
+ *  Basicly a tread-safe queue for passing data event data between
  *  multiple threads
  */
 class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable

@@ -122,6 +122,11 @@ utf8_weak void *utf8dup(const void *src);
 // excluding the null terminating byte.
 utf8_nonnull utf8_pure utf8_weak size_t utf8len(const void *str);
 
+// Number of utf8 codepoints in the utf8 string str,
+// excluding the null terminating byte.
+utf8_nonnull utf8_pure utf8_weak size_t utf8len_s(const void *str, size_t bufferSize );
+utf8_nonnull utf8_pure utf8_weak size_t utf8len_s_withaddr(const void *str, size_t bufferSize, const char** nullTermAddress );
+
 // Return less than 0, 0, greater than 0 if src1 < src2, src1 == src2, src1 >
 // src2 respectively, case insensitive. Checking at most n bytes of each utf8
 // string.
@@ -490,6 +495,55 @@ size_t utf8len(const void *str) {
   }
 
   return length;
+}
+
+// DV edit: alternate version that takes a max buffer size into account
+size_t utf8len_s_withaddr(const void *str, size_t bufferSize, const char** nullTermAddress ) 
+{
+  const unsigned char *s = (const unsigned char *)str;
+  size_t length = 0;
+  size_t bytes = 0;
+
+  while ( bytes < bufferSize && '\0' != *s ) 
+  {
+    if (0xf0 == (0xf8 & *s)) 
+    {
+      // 4-byte utf8 code point (began with 0b11110xxx)
+      s += 4; bytes += 4;
+    } 
+    else 
+    if (0xe0 == (0xf0 & *s)) 
+    {
+      // 3-byte utf8 code point (began with 0b1110xxxx)
+      s += 3; bytes += 3;
+    } 
+    else 
+    if (0xc0 == (0xe0 & *s)) 
+    {
+      // 2-byte utf8 code point (began with 0b110xxxxx)
+      s += 2; bytes += 2;
+    } 
+    else 
+    { // if (0x00 == (0x80 & *s)) {
+      // 1-byte ascii (began with 0b0xxxxxxx)
+      s += 1; bytes += 1;
+    }
+
+    if ( bytes < bufferSize && '\0' == *s && NULL != nullTermAddress )
+        *nullTermAddress = (const char*) s;    
+
+    // no matter the bytes we marched s forward by, it was
+    // only 1 utf8 codepoint
+    length++;
+  }
+
+  return length;
+}
+
+size_t utf8len_s(const void *str, size_t bufferSize ) 
+{
+    const char* outAddress = NULL;
+    return utf8len_s_withaddr( str, bufferSize, &outAddress );
 }
 
 int utf8ncasecmp(const void *src1, const void *src2, size_t n) {

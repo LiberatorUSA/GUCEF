@@ -228,16 +228,17 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     
     // Types to read from redis-plus-plus
     typedef std::pair< std::string, std::string > TRedisMsgAttribute;
-    typedef std::vector< TRedisMsgAttribute > TRedisMsgAttributes;
+    typedef std::vector< TRedisMsgAttribute, basic_allocator< TRedisMsgAttribute > > TRedisMsgAttributes;
     typedef std::pair< std::string, TRedisMsgAttributes > TRedisMsg;
-    typedef std::vector< TRedisMsg > TRedisMsgVector;
-    typedef std::unordered_map< std::string, TRedisMsgVector > TRedisMsgByStream;
+    typedef std::vector< TRedisMsg, basic_allocator< TRedisMsg > > TRedisMsgVector;
+    typedef std::pair< std::string, TRedisMsgAttributes > TStringRedisMsgVectorPair;
+    typedef std::unordered_map< std::string, TRedisMsgVector, std::hash< std::string >, std::equal_to< std::string >, basic_allocator< TStringRedisMsgVectorPair > > TRedisMsgByStream;
     typedef std::insert_iterator< TRedisMsgByStream > TRedisMsgByStreamInserter;
 
     // Types to implement/hook-up topic interface
-    typedef std::vector< PUBSUB::CBasicPubSubMsg > TPubSubMsgsVector;
+    typedef std::vector< PUBSUB::CBasicPubSubMsg, basic_allocator< PUBSUB::CBasicPubSubMsg > > TPubSubMsgsVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
-    typedef std::vector< TBufferPair > TBufferVector;
+    typedef std::vector< TBufferPair, basic_allocator< TBufferPair > > TBufferVector;
 
     class RedisTopicVarsForReading
     {

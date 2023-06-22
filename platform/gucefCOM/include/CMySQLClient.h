@@ -101,11 +101,11 @@ class GUCEF_COM_PUBLIC_CPP CMySQLClient : public CORE::CObservingNotifier
          *      and port using the username and password provided to connected to the
          *      given database on the given TCP client_socket.
          */
-        bool ConnectTo( const GUCEF::CORE::CString& address                    ,
-                        UInt16 port = 3306                                     ,
-                        const GUCEF::CORE::CString& username = "Administrator" ,
-                        const GUCEF::CORE::CString& password = ""              ,
-                        const GUCEF::CORE::CString& database = NULL            );
+        bool ConnectTo( const CORE::CString& address                         ,
+                        UInt16 port = 3306                                   ,
+                        const CORE::CString& username = "Administrator"      ,
+                        const CORE::CString& password = CORE::CString::Empty ,
+                        const CORE::CString& database = CORE::CString::Empty );
 
         /**
          *      Disconnect from server.

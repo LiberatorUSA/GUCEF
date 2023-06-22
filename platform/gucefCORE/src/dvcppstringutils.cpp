@@ -100,9 +100,15 @@ TempDir( void )
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    char buffer[ MAX_PATH+1 ];
-    if ( 0 != ::GetTempPathA( MAX_PATH+1, buffer ) )
+    #if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
+    char buffer[ MAX_DIR_LENGTH+1 ];
+    if ( 0 != ::GetTempPathA( MAX_DIR_LENGTH+1, buffer ) )
         return buffer;
+    #else
+    wchar_t buffer[ MAX_DIR_LENGTH+1 ];
+    if ( 0 != ::GetTempPathW( MAX_DIR_LENGTH+1, buffer ) )
+        return buffer;
+    #endif
     #endif
     return CString::Empty;
 }
@@ -116,7 +122,7 @@ ModuleDir( void )
     char buffer[ MAX_DIR_LENGTH ];
     Module_Path( buffer, MAX_DIR_LENGTH );
     Strip_Filename( buffer );
-    return buffer;
+    return CString( buffer, MAX_DIR_LENGTH );
 }
 
 /*-------------------------------------------------------------------------*/
