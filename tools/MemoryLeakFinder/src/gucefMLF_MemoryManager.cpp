@@ -488,7 +488,7 @@ MEMMAN_AllocateMemory( const char *file, int line, size_t size, ALLOC_TYPE type,
         originalReportedSize = memory->reportedSize;
         size_t desiredNewSize = size + g_manager.m_paddingSize * sizeof(long)*2;
 
-        void* newAddress = realloc( memory->actualAddress, memory->actualSize );
+        void* newAddress = realloc( memory->actualAddress, desiredNewSize );
         if ( GUCEF_NULL != newAddress )
         {
             memory->actualSize    = desiredNewSize;

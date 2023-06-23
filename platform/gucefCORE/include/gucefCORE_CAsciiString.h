@@ -82,8 +82,13 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     CAsciiString( const char *src ) GUCEF_NOEXCEPT;
 
-    CAsciiString( const char *src ,
-                  UInt32 length   ) GUCEF_NOEXCEPT;
+    /**
+     *
+     *  @param reexamineLength if true the length passed will be treated as a maxima up to which a new length is to be determined
+     */
+    CAsciiString( const char* src              ,
+                  UInt32 length                ,
+                  bool reexamineLength = false ) GUCEF_NOEXCEPT;
 
     explicit CAsciiString( const char src );
 

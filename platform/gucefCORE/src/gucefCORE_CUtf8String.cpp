@@ -142,27 +142,29 @@ CUtf8String::CUtf8String( const char* src )
 
 /*-------------------------------------------------------------------------*/
 
-CUtf8String::CUtf8String( const char *src ,
-                          UInt32 byteSize )
+CUtf8String::CUtf8String( const char *src        ,
+                          UInt32 byteSize        ,
+                          bool reexamineByteSize )
     : m_string( GUCEF_NULL )
     , m_length( 0 )
     , m_byteSize( 0 )
 {GUCEF_TRACE;
 
-    Set( src, byteSize );
+    Set( src, byteSize, reexamineByteSize );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CUtf8String::CUtf8String( const char *src ,
-                          UInt32 byteSize ,
-                          UInt32 length   )
+CUtf8String::CUtf8String( const char* src        ,
+                          UInt32 byteSize        ,
+                          UInt32 length          ,
+                          bool reexamineByteSize )
     : m_string( GUCEF_NULL )
     , m_length( 0 )
     , m_byteSize( 0 )
 {GUCEF_TRACE;
 
-    Set( src, byteSize, length );
+    Set( src, byteSize, length, reexamineByteSize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -558,7 +560,8 @@ CUtf8String::operator std::string() const
 void
 CUtf8String::Set( const char* str           ,
                   UInt32 byteSize           ,
-                  UInt32 lengthInCodePoints )
+                  UInt32 lengthInCodePoints ,
+                  bool reexamineByteSize    )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == str || 0 == byteSize || 0 == lengthInCodePoints )
@@ -567,6 +570,17 @@ CUtf8String::Set( const char* str           ,
     }
     else
     {
+        if ( reexamineByteSize )
+        {
+            // Check if we are given a larger buffer out of which a subset is used for actual content
+            UInt32 newByteSize = (UInt32) utf8size_s( str, byteSize );
+            if ( newByteSize != byteSize )
+            {
+                // re-evaluate length regardless of what we were given since we cannot allow length to exceed the byte size
+                lengthInCodePoints = (UInt32) utf8len_s( str, newByteSize );
+            }
+        }
+
         assert( byteSize >= lengthInCodePoints );
 
         // Protect against self-assignment
@@ -614,13 +628,17 @@ CUtf8String::Set( const char* str           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CUtf8String::Set( const char* str ,
-                  UInt32 byteSize )
+CUtf8String::Set( const char* str        ,
+                  UInt32 byteSize        ,
+                  bool reexamineByteSize )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != str )
     {
-        Set( str, byteSize, (UInt32) utf8len_s( str, byteSize ) );
+        if ( !reexamineByteSize )
+            Set( str, byteSize, (UInt32) utf8len_s( str, byteSize ), false );
+        else
+            Set( str, (UInt32) utf8size_s( str, byteSize ), (UInt32) utf8len_s( str, byteSize ), false );
     }
     else
     {

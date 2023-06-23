@@ -132,8 +132,8 @@ CAsciiString::CAsciiString( CAsciiString&& src ) GUCEF_NOEXCEPT
 #endif
 /*-------------------------------------------------------------------------*/
 
-CAsciiString::CAsciiString( const char *src ) GUCEF_NOEXCEPT
-        : m_string( NULL ) ,
+CAsciiString::CAsciiString( const char* src ) GUCEF_NOEXCEPT
+        : m_string( GUCEF_NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
 
@@ -148,14 +148,20 @@ CAsciiString::CAsciiString( const char *src ) GUCEF_NOEXCEPT
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString::CAsciiString( const char *src ,
-                            UInt32 length   )  GUCEF_NOEXCEPT
+CAsciiString::CAsciiString( const char* src      ,
+                            UInt32 length        ,
+                            bool reexamineLength )  GUCEF_NOEXCEPT
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != src && 0 < length )
     {
+        if ( reexamineLength )
+        {
+            length = (UInt32) strnlen( src, length );    
+        }
+        
         // dont add null term twice
         if ( '\0' == src[ length-1 ] )
         {

@@ -106,12 +106,14 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     CUtf8String( const char *src );
 
-    CUtf8String( const char *src ,
-                 UInt32 byteSize );
+    CUtf8String( const char* src                ,
+                 UInt32 byteSize                ,
+                 bool reexamineByteSize = false );
 
-    CUtf8String( const char *src           ,
-                 UInt32 byteSize           ,
-                 UInt32 lengthInCodePoints );
+    CUtf8String( const char* src                ,
+                 UInt32 byteSize                ,
+                 UInt32 lengthInCodePoints      ,
+                 bool reexamineByteSize = false );
 
     CUtf8String( const wchar_t* src );
 
@@ -272,18 +274,24 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  non-null-terminated char array as the source. The source will
      *  be copied and a null terminator will be added if needed
      *  It also allows specifying the UTF8 code point length
+     *
+     *  @param reexamineByteSize if true the byteSize passed will be treated as a maxima up to which a new bytesize is to be determined 
      */
-    void Set( const char* new_str       ,
-              UInt32 byteSize           ,
-              UInt32 lengthInCodePoints );
+    void Set( const char* new_str            ,
+              UInt32 byteSize                ,
+              UInt32 lengthInCodePoints      ,
+              bool reexamineByteSize = false );
 
     /**
      *  This member functions allows you to set the string using a potentially
      *  non-null-terminated char array as the source. The source will
      *  be copied and a null terminator will be added if needed
+     *
+     *  @param reexamineByteSize if true the byteSize passed will be treated as a maxima up to which a new bytesize is to be determined 
      */
-    void Set( const char* new_str ,
-              UInt32 byteSize     );
+    void Set( const char* new_str            ,
+              UInt32 byteSize                ,
+              bool reexamineByteSize = false );
 
     /**
      *  This member functions allows you to set the string using a 

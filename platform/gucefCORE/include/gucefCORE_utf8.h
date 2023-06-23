@@ -122,6 +122,7 @@ utf8_weak void *utf8dup(const void *src);
 // excluding the null terminating byte.
 utf8_nonnull utf8_pure utf8_weak size_t utf8len(const void *str);
 
+// DV Edit: added these variant for extra range checking safety
 // Number of utf8 codepoints in the utf8 string str,
 // excluding the null terminating byte.
 utf8_nonnull utf8_pure utf8_weak size_t utf8len_s(const void *str, size_t bufferSize );
@@ -171,6 +172,9 @@ utf8_nonnull utf8_pure utf8_weak void *utf8rchr(const void *src, int chr);
 // Number of bytes in the utf8 string str,
 // including the null terminating byte.
 utf8_nonnull utf8_pure utf8_weak size_t utf8size(const void *str);
+
+// DV edit: added this variant for buffer length safety check
+utf8_nonnull utf8_pure utf8_weak size_t utf8size_s(const void *str, size_t bufferSize ); 
 
 // Number of utf8 codepoints in the utf8 string src that consists entirely
 // of utf8 codepoints from the utf8 string accept.
@@ -859,6 +863,23 @@ size_t utf8size(const void *str) {
 
   // we are including the null terminating byte in the size calculation
   size++;
+  return size;
+}
+
+// DV edit: added this variant for buffer length safety check
+size_t utf8size_s(const void *str, size_t bufferSize ) 
+{
+  const char *s = (const char *)str;
+  size_t size = 0;
+  while ( size < bufferSize && '\0' != s[size] ) {
+    size++;
+  }
+
+  if ( bufferSize > 0 )
+  {
+      // we are including the null terminating byte in the size calculation
+      size++;
+  }
   return size;
 }
 
