@@ -122,7 +122,7 @@ ModuleDir( void )
     char buffer[ MAX_DIR_LENGTH ];
     Module_Path( buffer, MAX_DIR_LENGTH );
     Strip_Filename( buffer );
-    return CString( buffer, MAX_DIR_LENGTH );
+    return CString( buffer, MAX_DIR_LENGTH, true );
 }
 
 /*-------------------------------------------------------------------------*/

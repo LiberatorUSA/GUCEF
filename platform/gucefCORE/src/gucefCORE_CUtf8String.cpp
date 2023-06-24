@@ -925,6 +925,9 @@ char*
 CUtf8String::Reserve( const UInt32 byteSize, Int32 newLength )
 {GUCEF_TRACE;
 
+    if ( m_byteSize == byteSize )
+        return m_string; 
+    
     char* newBuffer = (char*) realloc( m_string, byteSize );
 
     assert( GUCEF_NULL != newBuffer );
@@ -943,6 +946,8 @@ CUtf8String::Reserve( const UInt32 byteSize, Int32 newLength )
     }
     else
     {
+        if ( GUCEF_NULL != m_string )
+            free( m_string );
         m_byteSize = 0;
         m_length = 0;
         m_string = GUCEF_NULL;
