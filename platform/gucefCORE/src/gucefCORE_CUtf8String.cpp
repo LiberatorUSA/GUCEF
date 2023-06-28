@@ -192,13 +192,14 @@ CUtf8String::CUtf8String( const wchar_t* src )
 /*-------------------------------------------------------------------------*/
 
 CUtf8String::CUtf8String( const wchar_t* src         ,
-                          UInt32 lengthInWCodePoints )
+                          UInt32 lengthInWCodePoints ,
+                          bool reexamineByteSize     )
     : m_string( GUCEF_NULL )
     , m_length( 0 )
     , m_byteSize( 0 )
 {GUCEF_TRACE;
 
-    Set( src, lengthInWCodePoints );
+    Set( src, lengthInWCodePoints, reexamineByteSize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -263,9 +264,21 @@ CUtf8String::operator=( const CUtf8String &src )
 
     if ( &src != this )
     {
-        Set( src.m_string, src.m_byteSize );
+        Set( src.m_string, src.m_byteSize, src.m_length, false );
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CUtf8String::Set( const CUtf8String& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        Set( src.m_string, src.m_byteSize, src.m_length, false );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -381,9 +394,19 @@ CUtf8String::operator==( const CUtf8String &other ) const
     {
         return true;
     }
-    if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
+    if ( GUCEF_NULL == m_string )
     {
-        return false;
+        // special case handling for comparison to "" or String::Empty
+        if ( 0 != other.m_length )
+            return false;
+        return true;
+    }
+    if ( GUCEF_NULL == other.m_string )
+    {
+        // special case handling for comparison to "" or String::Empty
+        if ( 0 != m_length )
+            return false;
+        return true;
     }
     return 0 == utf8cmp( m_string, other.m_string );
 }
@@ -398,9 +421,19 @@ CUtf8String::operator!=( const CUtf8String &other ) const
     {
         return false;
     }
-    if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
+    if ( GUCEF_NULL == m_string )
     {
-        return true;
+        // special case handling for comparison to "" or String::Empty
+        if ( 0 != other.m_length )
+            return true;
+        return false;
+    }
+    if ( GUCEF_NULL == other.m_string )
+    {
+        // special case handling for comparison to "" or String::Empty
+        if ( 0 != m_length )
+            return true;
+        return false;
     }
     return 0 != utf8cmp( m_string, other.m_string );
 }
@@ -473,12 +506,24 @@ CUtf8String::CodepointPtrAtIndex( const char* str        ,
         return GUCEF_NULL;
 
     const char* cpPos = str;
-    Int32 cp = 0;
-    for ( UInt32 i=0; i<index; ++i )
+    Int32 cp = 0; UInt32 i=0;
+    while ( i<index && bytesFromStart < byteSize )
     {
         const char* newCpPos = (const char*) utf8codepoint( cpPos, &cp );
+        if ( 0 == cp && i < index )
+        {
+            // there is a disconnect between the given bytesize & length vs where we found a null terminator
+            // we would not have found one in the given range during typical operations
+            return GUCEF_NULL;
+        }
         bytesFromStart += (UInt32) ( newCpPos - cpPos );
         cpPos = newCpPos;
+        ++i;
+    }
+    if ( cpPos >= str+byteSize )
+    {
+        // We protect against generating offsets beyond the available buffer
+        return GUCEF_NULL;
     }
     return cpPos;
 }
@@ -591,15 +636,9 @@ CUtf8String::Set( const char* str           ,
 
             UInt32 indexBytesFromStart = 0;
             const char* ptrAtCodePointIndex = CodepointPtrAtIndex( str, byteSize, lengthInCodePoints, lengthInCodePoints, indexBytesFromStart ); 
-            if ( GUCEF_NULL == ptrAtCodePointIndex )
-            {
-                GUCEF_ASSERT_ALWAYS;
-                Clear();
-                return;
-            }
 
             // Check for a null terminator
-            if ( *ptrAtCodePointIndex == '\0' )
+            if ( GUCEF_NULL != ptrAtCodePointIndex && *ptrAtCodePointIndex == '\0' )
             {
                 // a null-terminator is already present at the request index (length)
                 if ( GUCEF_NULL != Reserve( byteSize ) )
@@ -614,11 +653,22 @@ CUtf8String::Set( const char* str           ,
                 const char* originalStrAddress = m_string;
                 if ( GUCEF_NULL != Reserve( byteSize+1 ) )
                 {
-                    if ( originalStrAddress != m_string )
-                        ptrAtCodePointIndex = CodepointPtrAtIndex( m_string, byteSize, lengthInCodePoints, lengthInCodePoints, indexBytesFromStart );
                     memcpy( m_string, str, byteSize );
-                    *( (char*) ptrAtCodePointIndex ) = '\0';
                     m_length = lengthInCodePoints;
+
+                    // do we need to bother seeking again? Depends if we have a (still) usable pointer 
+                    if ( GUCEF_NULL == ptrAtCodePointIndex || originalStrAddress != m_string ) 
+                        ptrAtCodePointIndex = CodepointPtrAtIndex( m_string, m_byteSize, lengthInCodePoints, lengthInCodePoints, indexBytesFromStart );
+                    if ( GUCEF_NULL != ptrAtCodePointIndex )
+                    {
+                        *( (char*) ptrAtCodePointIndex ) = '\0';
+                    }
+                    else
+                    {
+                        GUCEF_ASSERT_ALWAYS;
+                        Clear();
+                        return;
+                    }
                 }
             }
         }
@@ -666,7 +716,8 @@ CUtf8String::Set( const char* str )
 
 void
 CUtf8String::Set( const wchar_t* str         ,
-                  UInt32 lengthInWCodePoints )
+                  UInt32 lengthInWCodePoints ,
+                  bool reexamineByteSize     )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == str || 0 == lengthInWCodePoints )
@@ -679,7 +730,7 @@ CUtf8String::Set( const wchar_t* str         ,
         std::string str;
         if ( Utf16toUtf8( wtmp, str ) )
         {
-            Set( str.c_str(), (UInt32) str.size() );        
+            Set( str.c_str(), (UInt32) str.size(), reexamineByteSize );        
         }
         else
         {
@@ -831,7 +882,9 @@ CUtf8String::Append( const char* appendstr    ,
         UInt32 neededBytes = ( m_byteSize - unusedBytes ) + byteSize - 1;
         if ( GUCEF_NULL != Reserve( neededBytes ) )
         {
-            if ( m_string != originalAddress ) // did realloc move the memory or enlarge from current address?
+            // did realloc move the memory or enlarge from current address?
+            // don't seek if we dont have to
+            if ( GUCEF_NULL == addNullAddress || m_string != originalAddress ) 
                 m_length = (UInt32) utf8len_s_withaddr( m_string, m_byteSize, (const char**) &addNullAddress ); // redetermine address of \0   
             memcpy( (char*)addNullAddress, appendstr, byteSize );
             m_length += lengthInCodePoints;
@@ -844,7 +897,9 @@ CUtf8String::Append( const char* appendstr    ,
         UInt32 neededBytes = ( m_byteSize - unusedBytes ) + byteSize;      
         if ( GUCEF_NULL != Reserve( neededBytes ) )
         {
-            if ( m_string != originalAddress ) // did realloc move the memory or enlarge from current address?
+            // did realloc move the memory or enlarge from current address?
+            // don't seek if we dont have to
+            if ( GUCEF_NULL == addNullAddress || m_string != originalAddress ) 
                 m_length = (UInt32) utf8len_s_withaddr( m_string, m_byteSize, (const char**) &addNullAddress ); // redetermine address of \0
             memcpy( addNullAddress, appendstr, byteSize );
             m_string[ m_byteSize-1 ] = '\0';
@@ -870,11 +925,20 @@ CUtf8String::Append( const char* appendstr )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CUtf8String::Append( const CUtf8String& appendstr )
+{GUCEF_TRACE;
+
+    Append( appendstr.m_string, appendstr.m_byteSize, (Int32) appendstr.m_length );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CUtf8String&
 CUtf8String::operator+=( const CUtf8String& other )
 {GUCEF_TRACE;
 
-    Append( other.m_string, other.m_byteSize, other.m_length );
+    Append( other.m_string, other.m_byteSize, (Int32) other.m_length );
     return *this;
 }
 
@@ -927,6 +991,14 @@ CUtf8String::Reserve( const UInt32 byteSize, Int32 newLength )
 
     if ( m_byteSize == byteSize )
         return m_string; 
+    
+    if ( GUCEF_NULL == m_string )
+    {
+        m_string = (char*) calloc( byteSize, 1 );
+        m_byteSize = byteSize;
+        m_length = 0;
+        return m_string;
+    }
     
     char* newBuffer = (char*) realloc( m_string, byteSize );
 
@@ -2471,8 +2543,20 @@ CUtf8String
 CUtf8String::operator+( const CUtf8String& addition ) const
 {GUCEF_TRACE;
 
-    CUtf8String tmp( *this );
-    tmp += addition;
+    UInt32 neededBytes = ByteSize() + addition.ByteSize();
+
+    // since we are using 2 string objects we know we have 2 null terminators potentially
+    if ( Length() > 0 && addition.Length() > 0 && neededBytes > 0 )
+        --neededBytes;
+
+    // reserve enough memory in 1 step since allocation is the most costly step here
+    CUtf8String tmp;
+    tmp.Reserve( neededBytes );
+
+    // combine the strings into the reserved memory
+    tmp.Set( *this );
+    tmp.Append( addition );
+
     return tmp;
 }
 
@@ -2493,8 +2577,16 @@ CUtf8String
 CUtf8String::operator+( const char addition ) const
 {GUCEF_TRACE;
 
-    CUtf8String tmp( *this );
-    tmp += addition;
+    UInt32 neededBytes = ByteSize() + 1;
+
+    // reserve enough memory in 1 step since allocation is the most costly step here
+    CUtf8String tmp;
+    tmp.Reserve( neededBytes );
+
+    // combine the strings into the reserved memory
+    tmp.Set( *this );
+    tmp.Append( &addition, 1, 1 );
+
     return tmp;
 }
 

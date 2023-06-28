@@ -103,11 +103,11 @@ TempDir( void )
     #if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
     char buffer[ MAX_DIR_LENGTH+1 ];
     if ( 0 != ::GetTempPathA( MAX_DIR_LENGTH+1, buffer ) )
-        return buffer;
+        return CString( buffer, MAX_DIR_LENGTH, true );
     #else
     wchar_t buffer[ MAX_DIR_LENGTH+1 ];
     if ( 0 != ::GetTempPathW( MAX_DIR_LENGTH+1, buffer ) )
-        return buffer;
+        return CString( buffer, MAX_DIR_LENGTH, true );
     #endif
     #endif
     return CString::Empty;
@@ -133,7 +133,7 @@ CurrentWorkingDir( void )
 
     char buffer[ MAX_DIR_LENGTH ];
     Get_Current_Dir( buffer, MAX_DIR_LENGTH );
-    return buffer;
+    return CString( buffer, MAX_DIR_LENGTH, true );
 }
 
 /*-------------------------------------------------------------------------*/

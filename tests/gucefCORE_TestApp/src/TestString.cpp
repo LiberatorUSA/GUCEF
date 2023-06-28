@@ -225,10 +225,44 @@ PerformTypedStringTests( void )
 /*-------------------------------------------------------------------------*/
 
 void
+PerformUtf8SpecificStringTests( void )
+{
+    std::cout << "\n\n**** COMMENCING CUtf8String TESTS ****\n";
+    
+    try
+    {
+
+        const char* testStrContent1 = "0123456789";
+
+        // test Reserve() functionality
+        CORE::CUtf8String testStr;
+        char* emptyBuffer = testStr.Reserve( 11 );
+        ASSERT_TRUE( 11 == testStr.ByteSize() );
+        ASSERT_TRUE( 0 == testStr.Length() );
+        ASSERT_TRUE( "" == testStr );
+        ASSERT_TRUE( CORE::CUtf8String::Empty == testStr );
+        testStr.Set( testStrContent1, 10, false );
+        ASSERT_TRUE( 11 == testStr.ByteSize() );
+        ASSERT_TRUE( 10 == testStr.Length() );
+        ASSERT_TRUE( testStr == testStrContent1 );
+        ASSERT_TRUE( emptyBuffer == testStr.C_String() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+
+    std::cout << "\n\n**** FINISHED CUtf8String TESTS ****\n";
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 PerformStringTests( void )
 {
     PerformTypedStringTests< CORE::CAsciiString >();
     PerformTypedStringTests< CORE::CUtf8String >();
+    PerformUtf8SpecificStringTests();
 }
 
 /*-------------------------------------------------------------------------*/

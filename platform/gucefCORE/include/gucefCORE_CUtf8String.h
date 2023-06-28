@@ -117,8 +117,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     CUtf8String( const wchar_t* src );
 
-    CUtf8String( const wchar_t* src         ,
-                 UInt32 lengthInWCodePoints );
+    CUtf8String( const wchar_t* src             ,
+                 UInt32 lengthInWCodePoints     ,
+                 bool reexamineByteSize = false );
 
     explicit CUtf8String( const char src );
 
@@ -305,8 +306,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  be copied and a null terminator will be added if needed
      *  The wchar_t encoding will be converted to UTF8
      */
-    void Set( const wchar_t* new_str     ,
-              UInt32 lengthInWCodePoints );
+    void Set( const wchar_t* new_str         ,
+              UInt32 lengthInWCodePoints     ,
+              bool reexamineByteSize = false );
 
     /**
      *  This member functions allows you to set the string using a 
@@ -314,6 +316,11 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  The wchar_t encoding will be converted to UTF8
      */
     void Set( const wchar_t* new_str );
+
+    /**
+     *  This member functions allows you to set the string using another UTF8 string object 
+     */
+    void Set( const CUtf8String& new_str );
 
     /**
      *  This member functions allows you to set the string using a
@@ -334,7 +341,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                  UInt32 byteSize               ,
                  Int32 lengthInCodePoints = -1 );
 
-    void Append( const char *appendstr );
+    void Append( const char* appendstr );
+
+    void Append( const CUtf8String& appendstr );
 
     CUtf8String Lowercase( void ) const;
 
