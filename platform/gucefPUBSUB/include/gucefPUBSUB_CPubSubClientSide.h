@@ -346,6 +346,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CORE::UInt32 threadIdOfSide;
         CORE::CTimer timedOutInFlightMessagesCheckTimer;
         CORE::CTimer metricsTimer;
+        CORE::PulseGeneratorPtr pulseGenerator;
         MT::CMutex dataLock;
 
         TopicLink( void );
@@ -363,7 +364,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         void AddInFlightMsg( CORE::UInt64 publishActionId       ,
                              CIPubSubMsg::TNoLockSharedPtr& msg );
 
-        void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic );
+        void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic       ,
+                                         CORE::PulseGeneratorPtr pulseGenerator );
 
         void UpdateTopicMetrics( void );
 
@@ -403,6 +405,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         void ProcessAcknowledgeReceiptsMailbox( void );
 
         bool RetryPublishFailedMsgs( void );
+
+        void
+        OnPulseCycle( CORE::CNotifier* notifier    ,
+                      const CORE::CEvent& eventId  ,
+                      CORE::CICloneable* eventData );
 
         void
         OnMetricsTimerCycle( CORE::CNotifier* notifier    ,

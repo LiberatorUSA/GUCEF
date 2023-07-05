@@ -18,6 +18,7 @@
 			"channelSetting.0.WantsTestPackage": true,
 			"globalStandbyEnabled": true,
 			"maxUdpSocketUpdateCyclesPerPulse": 25,
+      			"maxSizeOfDedicatedRedisWriterBulkMailRead": 100,
 			"nrOfUdpReceiveBuffersPerSocket": 100,
 			"performRedisWritesInDedicatedThread": true,
 			"redisHost": "127.0.0.1",

@@ -226,6 +226,7 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     , totalMsgsInFlight( 0 )
     , bookmarkNamespace()
     , threadIdOfSide( 0 )
+    , pulseGenerator()
     , dataLock()
 {GUCEF_TRACE;
 
@@ -237,6 +238,7 @@ CPubSubClientSide::TopicLink::~TopicLink()
 {GUCEF_TRACE;
 
     Clear();
+    SignalUpcomingObserverDestruction();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -487,7 +489,7 @@ CPubSubClientSide::RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic 
     if ( i != m_topics.end() )
     {
         TopicLinkPtr topicLink = (*i).second;
-        topicLink->RegisterTopicEventHandlers( topic );
+        topicLink->RegisterTopicEventHandlers( topic, topicLink->pulseGenerator );
     }
 }
 
@@ -665,6 +667,23 @@ CPubSubClientSide::TopicLink::OnMetricsTimerCycle( CORE::CNotifier* notifier    
 {GUCEF_TRACE;
 
     UpdateTopicMetrics();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::TopicLink::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    ProcessAcknowledgeReceiptsMailbox();
+
+    bool retrySuccess = RetryPublishFailedMsgs();
+    if ( retrySuccess || side->GetSideSettings().allowOutOfOrderPublishRetry )
+    {
+        PublishMailboxMsgs();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1325,32 +1344,24 @@ CPubSubClientSide::RetryPublishFailedMsgsAndProcessMailbox( void )
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock readerLock( m_rwdataLock );
-    
-    UInt64 approxTotalMsgsInFlight = 0;
-    bool totalSuccess = true;    
-    TopicMap::iterator i = m_topics.begin();
-    while ( i != m_topics.end() )
-    {
-        TopicLinkPtr topicLink = (*i).second;
-        if ( !topicLink.IsNULL() )
-        {
-            topicLink->ProcessAcknowledgeReceiptsMailbox();
+    bool totalSuccess = true; 
 
-            bool retrySuccess = topicLink->RetryPublishFailedMsgs();
-            totalSuccess = retrySuccess && totalSuccess;
-            if ( retrySuccess || m_sideSettings.allowOutOfOrderPublishRetry )
-            {
-                totalSuccess = topicLink->PublishMailboxMsgs() && totalSuccess;
-            }
-
-            approxTotalMsgsInFlight += topicLink->totalMsgsInFlight;
-        }
-        ++i;
-    }
-    
     // Are we supporting blanket cross-topic broadcasts?
     if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
     {
+        UInt64 approxTotalMsgsInFlight = 0;
+           
+        TopicMap::iterator i = m_topics.begin();
+        while ( i != m_topics.end() )
+        {
+            TopicLinkPtr topicLink = (*i).second;
+            if ( !topicLink.IsNULL() )
+            {
+                approxTotalMsgsInFlight += topicLink->totalMsgsInFlight;
+            }
+            ++i;
+        }
+
         CORE::Int32 maxMailItemsToGrab = -1;
         if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
         {
@@ -1372,7 +1383,7 @@ CPubSubClientSide::RetryPublishFailedMsgsAndProcessMailbox( void )
             if ( !m_broadcastMailbox.ReInsertSPtrBulkMail( msgs ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):RetryPublishFailedMsgsAndProcessMailbox: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    "):RetryPublishFailedMsgsAndProcessMailbox: Failed to reinsert " + CORE::ToString( msgs.size() ) + 
                     " messages into the mailbox after an exception occured" );
             }
         }
@@ -1707,7 +1718,8 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubClientSide::TopicLink::RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic )
+CPubSubClientSide::TopicLink::RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic       ,
+                                                          CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "TopicLink(" + CORE::ToString( this ) +
@@ -1742,6 +1754,11 @@ CPubSubClientSide::TopicLink::RegisterTopicEventHandlers( CPubSubClientTopicBasi
     SubscribeTo( &metricsTimer                  ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback6                      );
+
+    TEventCallback callback7( this, &CPubSubClientSide::TopicLink::OnPulseCycle );
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback7                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2143,6 +2160,12 @@ CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
             return topicLink->AcknowledgeReceiptSync( msg );
         }
     }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):AcknowledgeReceiptSync: Message origin topic is not familiar when trying to ack msg receipt. " + 
+                    CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
+    }
     return false;
 }
 
@@ -2184,6 +2207,12 @@ CPubSubClientSide::AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg )
         {
             return topicLink->publishAckdMsgsMailbox.AddMail( msg );
         }        
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):AcknowledgeReceiptASync: Message origin topic is not familiar when trying to ack msg receipt. " + 
+                    CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
     }
 
     return false;
@@ -2362,6 +2391,7 @@ CPubSubClientSide::TopicLink::Clear( void )
     msgMailbox.Clear();
     publishAckdMsgsMailbox.Clear();
 
+    pulseGenerator.Unlink();
     pubsubBookmarkPersistence.Unlink();
     topic.Unlink();
 
@@ -2449,7 +2479,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
     if ( topicConfig.IsNULL() )
     {
         // Considering the backend was able to make a topic but we don't have a config for it
-        // it seems this topic was auto created by the backend. As such we will make a copy of the cofig for our own record keeping
+        // it seems this topic was auto created by the backend. As such we will make a copy of the config for our own record keeping
         // this is relevant in case we need to perform a reset which would wipe out the topic access and would want to
         // recreate it based on config
         topicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
@@ -2521,13 +2551,14 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         topicLink->threadIdOfSide = m_threadIdOfSide;
         topicLink->clientFeatures = m_clientFeatures;
         topicLink->flowRouter = m_flowRouter;
+        topicLink->pulseGenerator = pulseGenerator;
         topicLink->topic = topic;
         topicLink->bookmarkNamespace = m_bookmarkNamespace;
         topicLink->metricFriendlyTopicName = pubSubSideSettings.metricsPrefix + "topic." + GenerateMetricsFriendlyTopicName( topicName ) + ".";
         topicLink->metrics = &m_metricsMap[ topicLink->metricFriendlyTopicName ];
         topicLink->metrics->hasSupportForPublishing = topic->IsPublishingSupported();
         topicLink->metrics->hasSupportForSubscribing = topic->IsSubscribingSupported();
-        topicLink->RegisterTopicEventHandlers( topic );
+        topicLink->RegisterTopicEventHandlers( topic, pulseGenerator );
         topicLink->UpdateTopicMetrics();
     }
 
