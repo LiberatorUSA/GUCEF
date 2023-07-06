@@ -17,10 +17,23 @@
 #ifndef SEWENEW_REDISPLUSPLUS_CO_REDIS_CLUSTER_H
 #define SEWENEW_REDISPLUSPLUS_CO_REDIS_CLUSTER_H
 
-#include <coroutine>
-#include "async_redis_cluster.h"
-#include "cxx_utils.h"
-#include "cmd_formatter.h"
+#if __has_include(<coroutine>)
+# include <coroutine>
+#elif __has_include(<experimental/coroutine>)
+# include <experimental/coroutine>
+# ifndef coroutine_handle
+#  define coroutine_handle experimental::coroutine_handle
+# endif
+# ifndef suspend_never
+#  define suspend_never experimental::suspend_never
+# endif
+#else
+# error "<coroutine> not found."
+#endif
+#include "sw/redis++/async_redis_cluster.h"
+#include "sw/redis++/cxx_utils.h"
+#include "sw/redis++/cmd_formatter.h"
+#include "sw/redis++/redis_uri.h"
 
 namespace sw {
 
@@ -28,8 +41,10 @@ namespace redis {
 
 class CoRedisCluster {
 public:
-    CoRedisCluster(const ConnectionOptions &opts,
+    explicit CoRedisCluster(const ConnectionOptions &opts,
             const ConnectionPoolOptions &pool_opts = {}) : _async_redis(opts, pool_opts) {}
+
+    explicit CoRedisCluster(const std::string &uri) : CoRedisCluster(Uri(uri)) {}
 
     CoRedisCluster(const CoRedisCluster &) = delete;
     CoRedisCluster& operator=(const CoRedisCluster &) = delete;
@@ -271,6 +286,9 @@ public:
     }
 
 private:
+    explicit CoRedisCluster(const Uri &uri) :
+        CoRedisCluster(uri.connection_options(), uri.connection_pool_options()) {}
+
     template <typename Result, typename Formatter, typename Key, typename ...Args>
     Awaiter<Result> _command(Formatter &&formatter, Key &&key, Args &&...args) {
         return _generic_command<Result>(std::forward<Formatter>(formatter),

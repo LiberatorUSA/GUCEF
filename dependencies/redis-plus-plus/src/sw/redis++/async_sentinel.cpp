@@ -14,10 +14,10 @@
    limitations under the License.
  *************************************************************************/
 
-#include "async_sentinel.h"
+#include "sw/redis++/async_sentinel.h"
 #include <cassert>
-#include "errors.h"
-#include "async_connection_pool.h"
+#include "sw/redis++/errors.h"
+#include "sw/redis++/async_connection_pool.h"
 
 namespace sw {
 
@@ -84,10 +84,7 @@ void AsyncSentinel::_run_task(AsyncSentinelTask &task) {
 
         const auto &opts = sync_connection.options();
         pool->update_node_info(opts.host, opts.port, connection);
-    } catch (const StopIterError &e) {
-        pool->update_node_info(connection,
-                std::make_exception_ptr(Error("Failed to create connection with sentinel")));
-    } catch (const Error &e) {
+    } catch (const Error &) {
         pool->update_node_info(connection, std::current_exception());
     }
 }

@@ -21,10 +21,10 @@
 #include <ctime>
 #include <string>
 #include <chrono>
-#include "connection.h"
-#include "command_options.h"
-#include "command_args.h"
-#include "utils.h"
+#include "sw/redis++/connection.h"
+#include "sw/redis++/command_options.h"
+#include "sw/redis++/command_args.h"
+#include "sw/redis++/utils.h"
 
 namespace sw {
 
@@ -41,6 +41,10 @@ inline void auth(Connection &connection, const StringView &user, const StringVie
     connection.send("AUTH %b %b",
                     user.data(), user.size(),
                     password.data(), password.size());
+}
+
+inline void hello(Connection &connection, long long version) {
+    connection.send("HELLO %lld", version);
 }
 
 inline void echo(Connection &connection, const StringView &msg) {
@@ -1035,8 +1039,8 @@ inline void zcount(Connection &connection,
                     const Interval &interval) {
     connection.send("ZCOUNT %b %s %s",
                     key.data(), key.size(),
-                    interval.min().c_str(),
-                    interval.max().c_str());
+                    interval.lower().c_str(),
+                    interval.upper().c_str());
 }
 
 inline void zincrby(Connection &connection,
@@ -1070,8 +1074,8 @@ template <typename Interval>
 inline void zlexcount(Connection &connection,
                         const StringView &key,
                         const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     connection.send("ZLEXCOUNT %b %b %b",
                     key.data(), key.size(),
@@ -1114,8 +1118,8 @@ inline void zrangebylex(Connection &connection,
                         const StringView &key,
                         const Interval &interval,
                         const LimitOptions &opts) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     connection.send("ZRANGEBYLEX %b %b %b LIMIT %lld %lld",
                     key.data(), key.size(),
@@ -1131,8 +1135,8 @@ void zrangebyscore(Connection &connection,
                     const Interval &interval,
                     const LimitOptions &opts,
                     bool with_scores) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     if (with_scores) {
         connection.send("ZRANGEBYSCORE %b %b %b WITHSCORES LIMIT %lld %lld",
@@ -1184,8 +1188,8 @@ template <typename Interval>
 inline void zremrangebylex(Connection &connection,
                             const StringView &key,
                             const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     connection.send("ZREMRANGEBYLEX %b %b %b",
                     key.data(), key.size(),
@@ -1207,8 +1211,8 @@ template <typename Interval>
 inline void zremrangebyscore(Connection &connection,
                                 const StringView &key,
                                 const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     connection.send("ZREMRANGEBYSCORE %b %b %b",
                     key.data(), key.size(),
@@ -1239,8 +1243,8 @@ inline void zrevrangebylex(Connection &connection,
                             const StringView &key,
                             const Interval &interval,
                             const LimitOptions &opts) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     connection.send("ZREVRANGEBYLEX %b %b %b LIMIT %lld %lld",
                     key.data(), key.size(),
@@ -1256,8 +1260,8 @@ void zrevrangebyscore(Connection &connection,
                         const Interval &interval,
                         const LimitOptions &opts,
                         bool with_scores) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     if (with_scores) {
         connection.send("ZREVRANGEBYSCORE %b %b %b WITHSCORES LIMIT %lld %lld",
@@ -2067,7 +2071,17 @@ inline void xrevrange_count(Connection &connection,
                     count);
 }
 
-void xtrim(Connection &connection, const StringView &key, long long count, bool approx);
+void xtrim(Connection &connection, const StringView &key, long long threshold,
+        bool approx, XtrimStrategy strategy);
+
+void xtrim_limit(Connection &connection, const StringView &key, long long threshold,
+        XtrimStrategy strategy, long long limit);
+
+void xtrim_string_threshold(Connection &connection, const StringView &key,
+        const StringView &threshold, bool approx, XtrimStrategy strategy);
+
+void xtrim_string_threshold_limit(Connection &connection, const StringView &key,
+        const StringView &threshold, XtrimStrategy strategy, long long limit);
 
 namespace detail {
 
@@ -2176,6 +2190,17 @@ void set_georadius_parameters(CmdArgs &args,
                                 bool with_coord,
                                 bool with_dist,
                                 bool with_hash);
+
+void set_xtrim_parameters(CmdArgs &args,
+        XtrimStrategy strategy,
+        bool approx,
+        const StringView &threshold);
+
+void set_xtrim_parameters(CmdArgs &args,
+        XtrimStrategy strategy,
+        bool approx,
+        const StringView &threshold,
+        long long limit);
 
 }
 

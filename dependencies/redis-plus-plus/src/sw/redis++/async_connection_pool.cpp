@@ -14,10 +14,10 @@
    limitations under the License.
  *************************************************************************/
 
-#include "async_connection_pool.h"
+#include "sw/redis++/async_connection_pool.h"
 #include <cassert>
 #include <utility>
-#include "errors.h"
+#include "sw/redis++/errors.h"
 
 namespace sw {
 
@@ -110,7 +110,10 @@ AsyncConnectionPool& AsyncConnectionPool::operator=(AsyncConnectionPool &&that) 
 }
 
 AsyncConnectionPool::~AsyncConnectionPool() {
-    assert(_loop);
+    if (!_loop) {
+        // This pool has been moved.
+        return;
+    }
 
     // TODO: what if the connection has been borrowed but not returned?
     // Or we dont' need to worry about that, since it's destructing and
@@ -159,7 +162,7 @@ AsyncConnectionSPtr AsyncConnectionPool::fetch() {
                 // Release expired connection.
                 // TODO: If `unwatch` throw, we will leak the connection.
                 _loop->unwatch(std::move(tmp_connection));
-            } catch (const Error &e) {
+            } catch (const Error &) {
                 // Failed to reconnect, return it to the pool, and retry latter.
                 release(std::move(connection));
                 throw;
@@ -182,7 +185,7 @@ AsyncConnectionSPtr AsyncConnectionPool::fetch() {
             // Release expired connection.
             // TODO: If `unwatch` throw, we will leak the connection.
             _loop->unwatch(std::move(tmp_connection));
-        } catch (const Error &e) {
+        } catch (const Error &) {
             // Failed, return it to the pool, and retry latter.
             release(std::move(connection));
             throw;

@@ -22,14 +22,15 @@
 #include <memory>
 #include <initializer_list>
 #include <tuple>
-#include "connection_pool.h"
-#include "reply.h"
-#include "command_options.h"
-#include "utils.h"
-#include "subscriber.h"
-#include "pipeline.h"
-#include "transaction.h"
-#include "sentinel.h"
+#include "sw/redis++/connection_pool.h"
+#include "sw/redis++/reply.h"
+#include "sw/redis++/command_options.h"
+#include "sw/redis++/utils.h"
+#include "sw/redis++/subscriber.h"
+#include "sw/redis++/pipeline.h"
+#include "sw/redis++/transaction.h"
+#include "sw/redis++/sentinel.h"
+#include "sw/redis++/redis_uri.h"
 
 namespace sw {
 
@@ -60,7 +61,7 @@ public:
     ///            unix://[[username:]password@]path-to-unix-domain-socket[/db]
     /// @see https://github.com/sewenew/redis-plus-plus/issues/37
     /// @see https://github.com/sewenew/redis-plus-plus#connection
-    explicit Redis(const std::string &uri);
+    explicit Redis(const std::string &uri) : Redis(Uri(uri)) {}
 
     /// @brief Construct `Redis` instance with Redis sentinel, i.e. get node info from sentinel.
     /// @param sentinel `Sentinel` instance.
@@ -221,8 +222,9 @@ public:
     void bgrewriteaof();
 
     /// @brief Save database in the background.
+    /// @return *Background saving started* if BGSAVE started correctly.
     /// @see https://redis.io/commands/bgsave
-    void bgsave();
+    std::string bgsave();
 
     /// @brief Get the size of the currently selected database.
     /// @return Number of keys in currently selected database.
@@ -453,7 +455,7 @@ public:
     /// @param val Value obtained by `Redis::dump`.
     /// @param ttl Timeout of the created key in milliseconds. If `ttl` is 0, set no timeout.
     /// @param replace Whether to overwrite an existing key.
-    ///                If `replace` is `true` and key already exists, throw an exception.
+    ///                If `replace` is `false` and key already exists, throw an exception.
     /// @see https://redis.io/commands/restore
     void restore(const StringView &key,
                     const StringView &val,
@@ -465,7 +467,7 @@ public:
     /// @param val Value obtained by `Redis::dump`.
     /// @param ttl Timeout of the created key in milliseconds. If `ttl` is 0, set no timeout.
     /// @param replace Whether to overwrite an existing key.
-    ///                If `replace` is `true` and key already exists, throw an exception.
+    ///                If `replace` is `false` and key already exists, throw an exception.
     /// @see https://redis.io/commands/restore
     void restore(const StringView &key,
                     const StringView &val,
@@ -1553,27 +1555,19 @@ public:
     /// @param field Field.
     /// @param val Value.
     /// @return Whether the given field is a new field.
-    /// @retval true If the given field didn't exist, and a new field has been added.
-    /// @retval false If the given field already exists, and its value has been overwritten.
-    /// @note When `hset` returns false, it does not mean that the method failed to set the field.
-    ///       Instead, it means that the field already exists, and we've overwritten its value.
-    ///       If `hset` fails, it will throw an exception of `Exception` type.
-    /// @see https://github.com/sewenew/redis-plus-plus/issues/9
+    /// @retval 1 If the given field didn't exist, and a new field has been added.
+    /// @retval 0 If the given field already exists, and its value has been overwritten.
     /// @see https://redis.io/commands/hset
-    bool hset(const StringView &key, const StringView &field, const StringView &val);
+    long long hset(const StringView &key, const StringView &field, const StringView &val);
 
     /// @brief Set hash field to value.
     /// @param key Key where the hash is stored.
     /// @param item The field-value pair to be set.
     /// @return Whether the given field is a new field.
-    /// @retval true If the given field didn't exist, and a new field has been added.
-    /// @retval false If the given field already exists, and its value has been overwritten.
-    /// @note When `hset` returns false, it does not mean that the method failed to set the field.
-    ///       Instead, it means that the field already exists, and we've overwritten its value.
-    ///       If `hset` fails, it will throw an exception of `Exception` type.
-    /// @see https://github.com/sewenew/redis-plus-plus/issues/9
+    /// @retval 1 If the given field didn't exist, and a new field has been added.
+    /// @retval 0 If the given field already exists, and its value has been overwritten.
     /// @see https://redis.io/commands/hset
-    bool hset(const StringView &key, const std::pair<StringView, StringView> &item);
+    long long hset(const StringView &key, const std::pair<StringView, StringView> &item);
 
     /// @brief Set multiple fields of the given hash.
     ///
@@ -3586,7 +3580,17 @@ public:
                     long long count,
                     Output output);
 
-    long long xtrim(const StringView &key, long long count, bool approx = true);
+    long long xtrim(const StringView &key, long long threshold, bool approx = true,
+            XtrimStrategy strategy = XtrimStrategy::MAXLEN);
+
+    long long xtrim(const StringView &key, long long threshold,
+            XtrimStrategy strategy, long long limit);
+
+    long long xtrim(const StringView &key, const StringView &threshold, bool approx = true,
+            XtrimStrategy strategy = XtrimStrategy::MAXLEN);
+
+    long long xtrim(const StringView &key, const StringView &threshold,
+            XtrimStrategy strategy, long long limit);
 
 private:
     template <typename Impl>
@@ -3596,6 +3600,8 @@ private:
 
     // For internal use.
     explicit Redis(const GuardedConnectionSPtr &connection);
+
+    explicit Redis(const Uri &uri);
 
     template <std::size_t ...Is, typename ...Args>
     ReplyUPtr _command(const StringView &cmd_name, const IndexSequence<Is...> &, Args &&...args) {
@@ -3630,6 +3636,6 @@ private:
 
 }
 
-#include "redis.hpp"
+#include "sw/redis++/redis.hpp"
 
 #endif // end SEWENEW_REDISPLUSPLUS_REDIS_H

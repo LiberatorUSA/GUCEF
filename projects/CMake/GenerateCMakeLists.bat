@@ -28,6 +28,28 @@ GOTO RUN_PROJECTGENERATOR
 
 REM -----------------------------------------------------
 
+:FIND_GUCEF_CMAKE_SLN_DEBUG_VS2019_X64_PROJECTGENERATOR
+
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\VS2019_x64_ProjectGenerator\bin\Debug
+SET GENERATOREXE=ProjectGenerator.exe
+SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
+
+ECHO Test path = "%EXETEST%"
+IF EXIST "%EXETEST%" (
+  ECHO Warning: Using x64 VS2019 debug development version of the ProjectGenerator
+  GOTO RUN_PROJECTGENERATOR
+)
+
+IF NOT EXIST "%EXETEST%" (
+  ECHO Cannot locate x64 VS2019 debug development version of the ProjectGenerator
+  GOTO FIND_GUCEF_RELEASE_PROJECTGENERATOR
+)
+
+cd "%GUCEF_THEBATCHDIR%"
+GOTO RUN_PROJECTGENERATOR
+
+REM -----------------------------------------------------
+
 :FIND_GUCEF_CMAKE_SLN_DEBUG_VS2019_PROJECTGENERATOR
 
 SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\VS2019_ProjectGenerator\bin\Debug
@@ -42,7 +64,7 @@ IF EXIST "%EXETEST%" (
 
 IF NOT EXIST "%EXETEST%" (
   ECHO Cannot locate VS2019 debug development version of the ProjectGenerator
-  GOTO FIND_GUCEF_RELEASE_PROJECTGENERATOR
+  GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_VS2019_X64_PROJECTGENERATOR
 )
 
 cd "%GUCEF_THEBATCHDIR%"

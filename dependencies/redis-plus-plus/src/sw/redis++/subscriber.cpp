@@ -14,14 +14,20 @@
    limitations under the License.
  *************************************************************************/
 
-#include "subscriber.h"
+#include "sw/redis++/subscriber.h"
 #include <cassert>
 
 namespace sw {
 
 namespace redis {
 
-Subscriber::Subscriber(Connection connection) : _connection(std::move(connection)) {}
+Subscriber::Subscriber(Connection connection) : _connection(std::move(connection)) {
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+    if (_connection.options().resp > 2) {
+        _connection.set_push_callback(nullptr);
+    }
+#endif
+}
 
 void Subscriber::subscribe(const StringView &channel) {
     _check_connection();
@@ -77,7 +83,11 @@ void Subscriber::consume() {
 
     assert(reply);
 
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+    if (!(reply::is_push(*reply) || reply::is_array(*reply)) || reply->elements < 1 || reply->element == nullptr) {
+#else
     if (!reply::is_array(*reply) || reply->elements < 1 || reply->element == nullptr) {
+#endif
         throw ProtoError("Invalid subscribe message");
     }
 
@@ -99,7 +109,9 @@ void Subscriber::consume() {
         break;
 
     default:
-        assert(false);
+        assert(type == MsgType::UNKNOWN);
+
+        throw ProtoError("unknown message type.");
     }
 }
 
@@ -125,10 +137,9 @@ Subscriber::MsgType Subscriber::_msg_type(std::string const& type) const
         return MsgType::PSUBSCRIBE;
     } else if ("punsubscribe" == type) {
         return MsgType::PUNSUBSCRIBE;
+    } else {
+        return MsgType::UNKNOWN;
     }
-
-    throw ProtoError("Invalid message type.");
-    return MsgType::MESSAGE; // Silence "no return" warnings.
 }
 
 void Subscriber::_check_connection() {

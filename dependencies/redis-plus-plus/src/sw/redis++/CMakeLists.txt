@@ -19,6 +19,7 @@ set( HEADER_FILES
   connection.h
   connection_pool.h
   errors.h
+  hiredis_features.h
   pipeline.h
   queued_redis.h
   queued_redis.hpp
@@ -27,6 +28,7 @@ set( HEADER_FILES
   redis.hpp
   redis_cluster.h
   redis_cluster.hpp
+  redis_uri.h
   reply.h
   sentinel.h
   shards.h
@@ -34,8 +36,9 @@ set( HEADER_FILES
   subscriber.h
   transaction.h
   utils.h
-  cxx11/cxx_utils.h
-  no_tls/tls.h
+  cxx11/sw/redis++/cxx_utils.h
+  no_tls/sw/redis++/tls.h
+  patterns/redlock.h
 )
 
 set( SOURCE_FILES 
@@ -48,12 +51,14 @@ set( SOURCE_FILES
   pipeline.cpp
   redis.cpp
   redis_cluster.cpp
+  redis_uri.cpp
   reply.cpp
   sentinel.cpp
   shards.cpp
   shards_pool.cpp
   subscriber.cpp
   transaction.cpp
+  patterns/redlock.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -71,7 +76,7 @@ add_dependencies( ${MODULE_NAME} hiredis )
 target_link_libraries( ${MODULE_NAME} hiredis )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "REDIS_PLUS_PLUS_BUILD_TEST=OFF;REDIS_PLUS_PLUS_CXX_STANDARD=11" )
 
-include_directories( ../../../../ ../../../../hiredis ../redis++ cxx11 no_tls )
+include_directories( ../../ ../../../../ ../../../../hiredis cxx11 cxx11/sw no_tls no_tls/sw ../redis++ cxx11/sw/redis++ no_tls/sw/redis++ patterns )
 
 if ( ANDROID )
   include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Android ../../../../hiredis )

@@ -18,10 +18,10 @@
 #define SEWENEW_REDISPLUSPLUS_CMD_FORMATTER_H
 
 #include <hiredis/hiredis.h>
-#include "command_options.h"
-#include "command_args.h"
-#include "command.h"
-#include "errors.h"
+#include "sw/redis++/command_options.h"
+#include "sw/redis++/command_args.h"
+#include "sw/redis++/command.h"
+#include "sw/redis++/errors.h"
 
 namespace sw {
 
@@ -611,8 +611,8 @@ template <typename Interval>
 FormattedCommand zcount(const StringView &key, const Interval &interval) {
     return format_cmd("ZCOUNT %b %s %s",
             key.data(), key.size(),
-            interval.min().c_str(),
-            interval.max().c_str());
+            interval.lower().c_str(),
+            interval.upper().c_str());
 }
 
 inline FormattedCommand zincrby(const StringView &key,
@@ -627,8 +627,8 @@ inline FormattedCommand zincrby(const StringView &key,
 template <typename Interval>
 FormattedCommand zlexcount(const StringView &key,
         const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZLEXCOUNT %b %b %b",
                     key.data(), key.size(),
@@ -652,16 +652,20 @@ inline FormattedCommand zpopmin_count(const StringView &key, long long count) {
     return format_cmd("ZPOPMIN %b %lld", key.data(), key.size(), count);
 }
 
-inline FormattedCommand zrange(const StringView &key, long long start, long long stop) {
-    return format_cmd("ZRANGE %b %lld %lld", key.data(), key.size(), start, stop);
+inline FormattedCommand zrange(const StringView &key, long long start, long long stop, bool with_scores) {
+    if (with_scores) {
+        return format_cmd("ZRANGE %b %lld %lld WITHSCORES", key.data(), key.size(), start, stop);
+    } else {
+        return format_cmd("ZRANGE %b %lld %lld", key.data(), key.size(), start, stop);
+    }
 }
 
 template <typename Interval>
 FormattedCommand zrangebylex(const StringView &key,
         const Interval &interval,
         const LimitOptions &opts) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZRANGEBYLEX %b %b %b LIMIT %lld %lld",
                     key.data(), key.size(),
@@ -675,8 +679,8 @@ template <typename Interval>
 FormattedCommand zrangebyscore(const StringView &key,
         const Interval &interval,
         const LimitOptions &opts) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZRANGEBYSCORE %b %b %b LIMIT %lld %lld",
                     key.data(), key.size(),
@@ -706,8 +710,8 @@ FormattedCommand zrem_range(const StringView &key, Input first, Input last) {
 
 template <typename Interval>
 FormattedCommand zremrangebylex(const StringView &key, const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZREMRANGEBYLEX %b %b %b",
                     key.data(), key.size(),
@@ -722,8 +726,8 @@ inline FormattedCommand zremrangebyrank(const StringView &key, long long start, 
 template <typename Interval>
 FormattedCommand zremrangebyscore(const StringView &key,
         const Interval &interval) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZREMRANGEBYSCORE %b %b %b",
                     key.data(), key.size(),
@@ -735,8 +739,8 @@ template <typename Interval>
 FormattedCommand zrevrangebylex(const StringView &key,
         const Interval &interval,
         const LimitOptions &opts) {
-    const auto &min = interval.min();
-    const auto &max = interval.max();
+    const auto &min = interval.lower();
+    const auto &max = interval.upper();
 
     return format_cmd("ZREVRANGEBYLEX %b %b %b LIMIT %lld %lld",
                     key.data(), key.size(),

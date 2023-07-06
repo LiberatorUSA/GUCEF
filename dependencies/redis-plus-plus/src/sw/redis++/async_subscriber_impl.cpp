@@ -14,7 +14,7 @@
    limitations under the License.
  *************************************************************************/
 
-#include "async_subscriber_impl.h"
+#include "sw/redis++/async_subscriber_impl.h"
 
 namespace sw {
 
@@ -48,7 +48,11 @@ void AsyncSubscriberImpl::_run_err_callback(std::exception_ptr err) {
 }
 
 void AsyncSubscriberImpl::_run_callback(redisReply &reply) {
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+    if (!(reply::is_array(reply) || reply::is_push(reply)) || reply.elements < 1 || reply.element == nullptr) {
+#else
     if (!reply::is_array(reply) || reply.elements < 1 || reply.element == nullptr) {
+#endif
         throw ProtoError("Invalid subscribe message");
     }
 
@@ -70,7 +74,9 @@ void AsyncSubscriberImpl::_run_callback(redisReply &reply) {
         break;
 
     default:
-        assert(false);
+        assert(type == Subscriber::MsgType::UNKNOWN);
+
+        throw ProtoError("unknown message type.");
     }
 }
 
@@ -95,10 +101,9 @@ Subscriber::MsgType AsyncSubscriberImpl::_msg_type(const std::string &type) cons
         return Subscriber::MsgType::PSUBSCRIBE;
     } else if ("punsubscribe" == type) {
         return Subscriber::MsgType::PUNSUBSCRIBE;
+    } else {
+        return Subscriber::MsgType::UNKNOWN;
     }
-
-    throw ProtoError("Invalid message type.");
-    return Subscriber::MsgType::MESSAGE; // Silence "no return" warnings.
 }
 
 void AsyncSubscriberImpl::_handle_message(redisReply &reply) {

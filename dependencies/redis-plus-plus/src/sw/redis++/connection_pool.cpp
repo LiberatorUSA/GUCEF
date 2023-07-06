@@ -14,9 +14,9 @@
    limitations under the License.
  *************************************************************************/
 
-#include "connection_pool.h"
+#include "sw/redis++/connection_pool.h"
 #include <cassert>
-#include "errors.h"
+#include "sw/redis++/errors.h"
 
 namespace sw {
 
@@ -76,21 +76,7 @@ ConnectionPool& ConnectionPool::operator=(ConnectionPool &&that) {
 Connection ConnectionPool::fetch() {
     std::unique_lock<std::mutex> lock(_mutex);
 
-    if (_pool.empty()) {
-        if (_used_connections == _pool_opts.size) {
-            _wait_for_connection(lock);
-        } else {
-            // Lazily create a new connection.
-            auto connection = _create();
-
-            ++_used_connections;
-
-            return connection;
-        }
-    }
-
-    // _pool is NOT empty.
-    auto connection = _fetch();
+    auto connection = _fetch(lock);
 
     auto connection_lifetime = _pool_opts.connection_lifetime;
     auto connection_idle_time = _pool_opts.connection_idle_time;
@@ -104,8 +90,8 @@ Connection ConnectionPool::fetch() {
 
         if (role_changed || _need_reconnect(connection, connection_lifetime, connection_idle_time)) {
             try {
-                connection = _create(sentinel, opts, false);
-            } catch (const Error &e) {
+                connection = _create(sentinel, opts);
+            } catch (const Error &) {
                 // Failed to reconnect, return it to the pool, and retry latter.
                 release(std::move(connection));
                 throw;
@@ -120,7 +106,7 @@ Connection ConnectionPool::fetch() {
     if (_need_reconnect(connection, connection_lifetime, connection_idle_time)) {
         try {
             connection.reconnect();
-        } catch (const Error &e) {
+        } catch (const Error &) {
             // Failed to reconnect, return it to the pool, and retry latter.
             release(std::move(connection));
             throw;
@@ -156,7 +142,7 @@ Connection ConnectionPool::create() {
 
         lock.unlock();
 
-        return _create(sentinel, opts, false);
+        return _create(sentinel, opts);
     } else {
         lock.unlock();
 
@@ -191,36 +177,35 @@ void ConnectionPool::_move(ConnectionPool &&that) {
     _sentinel = std::move(that._sentinel);
 }
 
-Connection ConnectionPool::_create() {
-    if (_sentinel) {
-        // Get Redis host and port info from sentinel.
-        return _create(_sentinel, _opts, true);
+Connection ConnectionPool::_create(SimpleSentinel &sentinel,
+                                    const ConnectionOptions &opts) {
+    auto connection = sentinel.create(opts);
+
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    const auto &connection_opts = connection.options();
+    if (_role_changed(connection_opts)) {
+        // Master/Slave has been changed, reconnect all connections.
+        _update_connection_opts(connection_opts.host, connection_opts.port);
     }
 
-    return Connection(_opts);
+    return connection;
 }
 
-Connection ConnectionPool::_create(SimpleSentinel &sentinel,
-                                    const ConnectionOptions &opts,
-                                    bool locked) {
-    try {
-        auto connection = sentinel.create(opts);
+Connection ConnectionPool::_fetch(std::unique_lock<std::mutex> &lock) {
+    if (_pool.empty()) {
+        if (_used_connections == _pool_opts.size) {
+            _wait_for_connection(lock);
+        } else {
+            ++_used_connections;
 
-        std::unique_lock<std::mutex> lock(_mutex, std::defer_lock);
-        if (!locked) {
-            lock.lock();
+            // Lazily create a new (broken) connection to avoid connecting with lock.
+            return Connection(_opts, Connection::Dummy{});
         }
-
-        const auto &connection_opts = connection.options();
-        if (_role_changed(connection_opts)) {
-            // Master/Slave has been changed, reconnect all connections.
-            _update_connection_opts(connection_opts.host, connection_opts.port);
-        }
-
-        return connection;
-    } catch (const StopIterError &e) {
-        throw Error("Failed to create connection with sentinel");
     }
+
+    // _pool is NOT empty.
+    return _fetch();
 }
 
 Connection ConnectionPool::_fetch() {

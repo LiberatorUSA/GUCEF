@@ -17,6 +17,7 @@
 #ifndef SEWENEW_REDISPLUSPLUS_CONNECTION_H
 #define SEWENEW_REDISPLUSPLUS_CONNECTION_H
 
+#include <cassert>
 #include <cerrno>
 #include <cstring>
 #include <memory>
@@ -25,10 +26,11 @@
 #include <sstream>
 #include <chrono>
 #include <hiredis/hiredis.h>
-#include "errors.h"
-#include "reply.h"
-#include "utils.h"
-#include "tls.h"
+#include "sw/redis++/errors.h"
+#include "sw/redis++/reply.h"
+#include "sw/redis++/utils.h"
+#include "sw/redis++/tls.h"
+#include "sw/redis++/hiredis_features.h"
 
 namespace sw {
 
@@ -40,10 +42,7 @@ enum class ConnectionType {
 };
 
 struct ConnectionOptions {
-public:
     ConnectionOptions() = default;
-
-    explicit ConnectionOptions(const std::string &uri);
 
     ConnectionOptions(const ConnectionOptions &) = default;
     ConnectionOptions& operator=(const ConnectionOptions &) = default;
@@ -69,6 +68,12 @@ public:
 
     bool keep_alive = false;
 
+#ifdef REDIS_PLUS_PLUS_HAS_redisEnableKeepAliveWithInterval
+
+    std::chrono::seconds keep_alive_s = std::chrono::seconds{0};
+
+#endif // end REDIS_PLUS_PLUS_HAS_redisEnableKeepAliveWithInterval
+
     std::chrono::milliseconds connect_timeout{0};
 
     std::chrono::milliseconds socket_timeout{0};
@@ -79,31 +84,11 @@ public:
     // Client code should never manually set/get it. This member might be removed in the future.
     bool readonly = false;
 
-private:
-    ConnectionOptions _parse_uri(const std::string &uri) const;
+    // RESP version.
+    int resp = 2;
 
-    auto _split_uri(const std::string &uri) const
-        -> std::tuple<std::string, std::string, std::string>;
-
-    auto _split_path(const std::string &path) const
-        -> std::tuple<std::string, int, std::string>;
-
-    void _parse_parameters(const std::string &parameter_string,
-                            ConnectionOptions &opts) const;
-
-    void _set_option(const std::string &key, const std::string &val, ConnectionOptions &opts) const;
-
-    bool _parse_bool_option(const std::string &str) const;
-
-    std::chrono::milliseconds _parse_timeout_option(const std::string &str) const;
-
-    std::vector<std::string> _split(const std::string &str, const std::string &delimiter) const;
-
-    void _set_auth_opts(const std::string &auth, ConnectionOptions &opts) const;
-
-    void _set_tcp_opts(const std::string &path, ConnectionOptions &opts) const;
-
-    void _set_unix_opts(const std::string &path, ConnectionOptions &opts) const;
+    // For internal use, and might be removed in the future. DO NOT use it in client code.
+    std::string _server_info() const;
 };
 
 class CmdArgs;
@@ -124,14 +109,16 @@ public:
     // before sending some command to the connection. If it's broken,
     // client needs to reconnect it.
     bool broken() const noexcept {
-        return _ctx->err != REDIS_OK;
+        return !_ctx || _ctx->err != REDIS_OK;
     }
 
     void reset() noexcept {
+        assert(_ctx);
         _ctx->err = 0;
     }
 
     void invalidate() noexcept {
+        assert(_ctx);
         _ctx->err = REDIS_ERR;
     }
 
@@ -162,7 +149,17 @@ public:
 
     friend void swap(Connection &lhs, Connection &rhs) noexcept;
 
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+    void set_push_callback(redisPushFn *push_func);
+#endif
+
 private:
+    struct Dummy {};
+
+    Connection(const ConnectionOptions &opts, Dummy) : _opts(opts) {}
+
+    friend class ConnectionPool;
+
     class Connector;
 
     struct ContextDeleter {
@@ -182,6 +179,8 @@ private:
     void _select_db();
 
     void _enable_readonly();
+
+    void _set_resp_version();
 
     redisContext* _context();
 

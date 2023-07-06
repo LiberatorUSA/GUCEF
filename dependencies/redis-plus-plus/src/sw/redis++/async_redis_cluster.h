@@ -18,13 +18,15 @@
 #define SEWENEW_REDISPLUSPLUS_ASYNC_REDIS_CLUSTER_H
 
 #include <cassert>
-#include "utils.h"
-#include "async_connection.h"
-#include "async_connection_pool.h"
-#include "async_shards_pool.h"
-#include "async_subscriber.h"
-#include "event_loop.h"
-#include "cmd_formatter.h"
+#include "sw/redis++/utils.h"
+#include "sw/redis++/async_connection.h"
+#include "sw/redis++/async_connection_pool.h"
+#include "sw/redis++/async_redis.h"
+#include "sw/redis++/async_shards_pool.h"
+#include "sw/redis++/async_subscriber.h"
+#include "sw/redis++/event_loop.h"
+#include "sw/redis++/cmd_formatter.h"
+#include "sw/redis++/redis_uri.h"
 
 namespace sw {
 
@@ -32,10 +34,12 @@ namespace redis {
 
 class AsyncRedisCluster {
 public:
-    AsyncRedisCluster(const ConnectionOptions &opts,
+    explicit AsyncRedisCluster(const ConnectionOptions &opts,
             const ConnectionPoolOptions &pool_opts = {},
             Role role = Role::MASTER,
             const EventLoopSPtr &loop = nullptr);
+
+    explicit AsyncRedisCluster(const std::string &uri) : AsyncRedisCluster(Uri(uri)) {}
 
     AsyncRedisCluster(const AsyncRedisCluster &) = delete;
     AsyncRedisCluster& operator=(const AsyncRedisCluster &) = delete;
@@ -43,7 +47,9 @@ public:
     AsyncRedisCluster(AsyncRedisCluster &&) = default;
     AsyncRedisCluster& operator=(AsyncRedisCluster &&) = default;
 
-    ~AsyncRedisCluster();
+    ~AsyncRedisCluster() = default;
+
+    AsyncRedis redis(const StringView &hash_tag, bool new_connection = true);
 
     AsyncSubscriber subscriber();
 
@@ -573,8 +579,8 @@ public:
         return hmset(key, il.begin(), il.end());
     }
 
-    Future<bool> hset(const StringView &key, const StringView &field, const StringView &val) {
-        return _command<bool>(fmt::hset, key, field, val);
+    Future<long long> hset(const StringView &key, const StringView &field, const StringView &val) {
+        return _command<long long>(fmt::hset, key, field, val);
     }
 
     template <typename Callback>
@@ -583,7 +589,7 @@ public:
         _callback_fmt_command<long long>(std::forward<Callback>(cb), fmt::hset, key, field, val);
     }
 
-    Future<bool> hset(const StringView &key, const std::pair<StringView, StringView> &item) {
+    Future<long long> hset(const StringView &key, const std::pair<StringView, StringView> &item) {
         return hset(key, item.first, item.second);
     }
 
@@ -793,6 +799,27 @@ public:
         return _command<long long>(fmt::zadd, key, member, score, type, changed);
     }
 
+    template <typename Callback>
+    auto zadd(const StringView &key,
+                    const StringView &member,
+                    double score,
+                    UpdateType type,
+                    bool changed,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        _callback_fmt_command<long long>(std::forward<Callback>(cb),
+                fmt::zadd, key, member, score, type, changed);
+    }
+
+    template <typename Callback>
+    auto zadd(const StringView &key,
+                    const StringView &member,
+                    double score,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        zadd(key, member, score, UpdateType::ALWAYS, false, std::forward<Callback>(cb));
+    }
+
     template <typename Input>
     Future<long long> zadd(const StringView &key,
                     Input first,
@@ -804,12 +831,53 @@ public:
         return _command<long long>(fmt::zadd_range<Input>, key, first, last, type, changed);
     }
 
+    template <typename Input, typename Callback>
+    auto zadd(const StringView &key,
+                    Input first,
+                    Input last,
+                    UpdateType type,
+                    bool changed,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        range_check("ZADD", first, last);
+
+        _callback_fmt_command<long long>(std::forward<Callback>(cb),
+                fmt::zadd_range<Input>, key, first, last, type, changed);
+    }
+
+    template <typename Input, typename Callback>
+    auto zadd(const StringView &key,
+                    Input first,
+                    Input last,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        zadd(key, first, last, UpdateType::ALWAYS, false, std::forward<Callback>(cb));
+    }
+
     template <typename T>
     Future<long long> zadd(const StringView &key,
                     std::initializer_list<T> il,
                     UpdateType type = UpdateType::ALWAYS,
                     bool changed = false) {
         return zadd(key, il.begin(), il.end(), type, changed);
+    }
+
+    template <typename T, typename Callback>
+    auto zadd(const StringView &key,
+                    std::initializer_list<T> il,
+                    UpdateType type,
+                    bool changed,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        zadd(key, il.begin(), il.end(), type, changed, std::forward<Callback>(cb));
+    }
+
+    template <typename T, typename Callback>
+    auto zadd(const StringView &key,
+                    std::initializer_list<T> il,
+                    Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<long long> &&>::value, void>::type {
+        zadd(key, il.begin(), il.end(), UpdateType::ALWAYS, false, std::forward<Callback>(cb));
     }
 
     Future<long long> zcard(const StringView &key) {
@@ -854,7 +922,13 @@ public:
 
     template <typename Output>
     Future<Output> zrange(const StringView &key, long long start, long long stop) {
-        return _command<Output>(fmt::zrange, key, start, stop);
+        return _score_command<Output>(fmt::zrange, key, start, stop);
+    }
+
+    template <typename Output, typename Callback>
+    auto zrange(const StringView &key, long long start, long long stop, Callback &&cb)
+        -> typename std::enable_if<IsInvocable<typename std::decay<Callback>::type, Future<Output> &&>::value, void>::type {
+        _callback_score_command<Output>(std::forward<Callback>(cb), fmt::zrange, key, start, stop);
     }
 
     template <typename Output, typename Interval>
@@ -1018,6 +1092,8 @@ public:
     }
 
 private:
+    explicit AsyncRedisCluster(const Uri &uri);
+
     template <typename Result, typename ResultParser,
              typename Formatter, typename ...Args>
     Future<Result> _command_with_parser(Formatter formatter,
@@ -1160,9 +1236,39 @@ private:
                 std::forward<Input>(input), std::forward<Args>(args)...);
     }
 
-    EventLoopSPtr _loop;
+    template <typename Result, typename Formatter, typename Key, typename ...Args>
+    Future<Result> _score_command(std::true_type, Formatter formatter, Key &&key, Args &&...args) {
+        return _command<Result>(formatter, std::forward<Key>(key), std::forward<Args>(args)..., true);
+    }
 
-    bool _own_loop{false};
+    template <typename Result, typename Formatter, typename Key, typename ...Args>
+    Future<Result> _score_command(std::false_type, Formatter formatter, Key &&key, Args &&...args) {
+        return _command<Result>(formatter, std::forward<Key>(key), std::forward<Args>(args)..., false);
+    }
+
+    template <typename Result, typename Formatter, typename Key, typename ...Args>
+    Future<Result> _score_command(Formatter formatter, Key &&key, Args &&...args) {
+        return _score_command<Result>(typename IsKvPair<typename Result::value_type>::type(),
+                formatter, std::forward<Key>(key), std::forward<Args>(args)...);
+    }
+
+    template <typename Result, typename Callback, typename Formatter, typename Key, typename ...Args>
+    void _callback_score_command(std::true_type, Callback &&cb, Formatter formatter, Key &&key, Args &&...args) {
+        _callback_fmt_command<Result>(std::forward<Callback>(cb), formatter, std::forward<Key>(key), std::forward<Args>(args)..., true);
+    }
+
+    template <typename Result, typename Callback, typename Formatter, typename Key, typename ...Args>
+    void _callback_score_command(std::false_type, Callback &&cb, Formatter formatter, Key &&key, Args &&...args) {
+        _callback_fmt_command<Result>(std::forward<Callback>(cb), formatter, std::forward<Key>(key), std::forward<Args>(args)..., false);
+    }
+
+    template <typename Result, typename Callback, typename Formatter, typename Key, typename ...Args>
+    void _callback_score_command(Callback &&cb, Formatter formatter, Key &&key, Args &&...args) {
+        _callback_score_command<Result>(typename IsKvPair<typename Result::value_type>::type(),
+                std::forward<Callback>(cb), formatter, std::forward<Key>(key), std::forward<Args>(args)...);
+    }
+
+    EventLoopSPtr _loop;
 
     AsyncShardsPoolSPtr _pool;
 };

@@ -14,17 +14,19 @@
    limitations under the License.
  *************************************************************************/
 
-#include "redis_cluster.h"
+#include "sw/redis++/redis_cluster.h"
 #include <hiredis/hiredis.h>
-#include "command.h"
-#include "errors.h"
-#include "queued_redis.h"
+#include "sw/redis++/command.h"
+#include "sw/redis++/errors.h"
+#include "sw/redis++/queued_redis.h"
+#include "sw/redis++/redis_uri.h"
 
 namespace sw {
 
 namespace redis {
 
-RedisCluster::RedisCluster(const std::string &uri) : RedisCluster(ConnectionOptions(uri)) {}
+RedisCluster::RedisCluster(const Uri &uri) :
+    RedisCluster(uri.connection_options(), uri.connection_pool_options()) {}
 
 Redis RedisCluster::redis(const StringView &hash_tag, bool new_connection) {
     auto pool = _pool.fetch(hash_tag);
@@ -444,13 +446,13 @@ long long RedisCluster::hlen(const StringView &key) {
     return reply::parse<long long>(*reply);
 }
 
-bool RedisCluster::hset(const StringView &key, const StringView &field, const StringView &val) {
+long long RedisCluster::hset(const StringView &key, const StringView &field, const StringView &val) {
     auto reply = command(cmd::hset, key, field, val);
 
-    return reply::parse<bool>(*reply);
+    return reply::parse<long long>(*reply);
 }
 
-bool RedisCluster::hset(const StringView &key, const std::pair<StringView, StringView> &item) {
+long long RedisCluster::hset(const StringView &key, const std::pair<StringView, StringView> &item) {
     return hset(key, item.first, item.second);
 }
 
@@ -787,8 +789,30 @@ long long RedisCluster::xlen(const StringView &key) {
     return reply::parse<long long>(*reply);
 }
 
-long long RedisCluster::xtrim(const StringView &key, long long count, bool approx) {
-    auto reply = command(cmd::xtrim, key, count, approx);
+long long RedisCluster::xtrim(const StringView &key, long long threshold, bool approx,
+        XtrimStrategy strategy) {
+    auto reply = command(cmd::xtrim, key, threshold, approx, strategy);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long RedisCluster::xtrim(const StringView &key, long long threshold,
+        XtrimStrategy strategy, long long limit) {
+    auto reply = command(cmd::xtrim_limit, key, threshold, strategy, limit);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long RedisCluster::xtrim(const StringView &key, const StringView &threshold, bool approx,
+        XtrimStrategy strategy) {
+    auto reply = command(cmd::xtrim_string_threshold, key, threshold, approx, strategy);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long RedisCluster::xtrim(const StringView &key, const StringView &threshold,
+        XtrimStrategy strategy, long long limit) {
+    auto reply = command(cmd::xtrim_string_threshold_limit, key, threshold, strategy, limit);
 
     return reply::parse<long long>(*reply);
 }

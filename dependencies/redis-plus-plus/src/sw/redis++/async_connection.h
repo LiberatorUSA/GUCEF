@@ -24,15 +24,15 @@
 #include <exception>
 #include <vector>
 #include <hiredis/async.h>
-#include "connection.h"
-#include "command_args.h"
-#include "event_loop.h"
-#include "async_utils.h"
-#include "tls.h"
-#include "shards.h"
-#include "cmd_formatter.h"
-#include "async_subscriber_impl.h"
-#include "async_connection.h"
+#include "sw/redis++/connection.h"
+#include "sw/redis++/command_args.h"
+#include "sw/redis++/event_loop.h"
+#include "sw/redis++/async_utils.h"
+#include "sw/redis++/tls.h"
+#include "sw/redis++/shards.h"
+#include "sw/redis++/cmd_formatter.h"
+#include "sw/redis++/async_subscriber_impl.h"
+#include "sw/redis++/async_connection.h"
 
 namespace sw {
 
@@ -59,6 +59,25 @@ public:
     virtual void set_exception(std::exception_ptr err) = 0;
 
     virtual void set_value(redisReply & /*reply*/) {}
+};
+
+// This event is used for updating node-slot mapping.
+// Since it does not send any data, `handle` returns false,
+// and `set_value` should never be called.
+class UpdateShardsEvent : public AsyncEvent {
+public:
+    virtual bool handle(redisAsyncContext &) override {
+        return false;
+    }
+
+    virtual void set_exception(std::exception_ptr) override {
+        // Do nothing.
+    }
+
+    virtual void set_value(redisReply &) override {
+        // Should never reach here.
+        assert(false);
+    }
 };
 
 using AsyncEventUPtr = std::unique_ptr<AsyncEvent>;
@@ -140,6 +159,10 @@ public:
         return *_subscriber_impl;
     }
 
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+    void set_push_callback(redisAsyncPushFn *push_func);
+#endif
+
 private:
     enum class State {
         BROKEN = 0,
@@ -149,7 +172,8 @@ private:
         SELECTING_DB,
         READY,
         WAIT_SENTINEL,
-        ENABLE_READONLY
+        ENABLE_READONLY,
+        SET_RESP
     };
 
     redisAsyncContext& _context() {
@@ -162,9 +186,15 @@ private:
 
     void _connecting_callback();
 
+    void _set_resp_callback();
+
     void _authing_callback();
 
     void _select_db_callback();
+
+    bool _need_set_resp() const;
+
+    void _set_resp();
 
     bool _need_auth() const;
 
@@ -272,9 +302,9 @@ public:
     }
 
 protected:
-    using Callback = void (*)(redisAsyncContext *, void *, void *);
+    using HiredisAsyncCallback = void (*)(redisAsyncContext *, void *, void *);
 
-    void _handle(redisAsyncContext &ctx, Callback callback) {
+    void _handle(redisAsyncContext &ctx, HiredisAsyncCallback callback) {
         if (redisAsyncFormattedCommand(&ctx,
                     callback, this, _cmd.data(), _cmd.size()) != REDIS_OK) {
             throw_error(ctx.c, "failed to send command");
@@ -293,7 +323,7 @@ protected:
             } else if (reply::is_error(*reply)) {
                 try {
                     throw_error(*reply);
-                } catch (const Error &e) {
+                } catch (const Error &) {
                     event->set_exception(std::current_exception());
                 }
             } else {
@@ -345,8 +375,6 @@ public:
 
 private:
     void _run_callback() {
-        assert(_cb);
-
         try {
             _cb(CommandEvent<Result, ResultParser>::get_future());
         } catch (...) {
@@ -354,7 +382,7 @@ private:
         }
     }
 
-    std::function<void (Future<Result> &&)> _cb;
+    Callback _cb;
 };
 
 template <typename Result, typename ResultParser, typename Callback>
@@ -405,7 +433,7 @@ private:
             } else if (reply::is_error(*reply)) {
                 try {
                     throw_error(*reply);
-                } catch (const Error &e) {
+                } catch (const Error &) {
                     event->set_exception(std::current_exception());
                 }
             } else {
@@ -442,6 +470,18 @@ private:
     std::shared_ptr<AsyncConnection> _connection;
 };
 
+using GuardedAsyncConnectionSPtr = std::shared_ptr<GuardedAsyncConnection>;
+
+namespace detail {
+
+// We seperate this function from ClusterEvent to avoid
+// incomplete type problem.
+void update_shards(const std::string &key,
+        std::shared_ptr<AsyncShardsPool> &pool,
+        AsyncEventUPtr event);
+
+}
+
 template <typename Result, typename ResultParser>
 class ClusterEvent : public CommandEvent<Result, ResultParser> {
 public:
@@ -456,6 +496,22 @@ public:
         CommandEvent<Result, ResultParser>::_handle(ctx, _cluster_reply_callback);
 
         return true;
+    }
+
+    virtual void set_exception(std::exception_ptr err) override {
+        // If connection is closed, or we fail to connect to Redis Cluster,
+        // i.e. ClosedError or IoError, we need to update node-slot mapping.
+        try {
+            std::rethrow_exception(err);
+        } catch (const IoError &) {
+            detail::update_shards(_key, _pool, AsyncEventUPtr(new UpdateShardsEvent));
+        } catch (const ClosedError &) {
+            detail::update_shards(_key, _pool, AsyncEventUPtr(new UpdateShardsEvent));
+        } catch (...) {
+            // Ignore other exceptions.
+        }
+
+        CommandEvent<Result, ResultParser>::set_exception(err);
     }
 
 private:
@@ -477,28 +533,27 @@ private:
             } else if (reply::is_error(*reply)) {
                 try {
                     throw_error(*reply);
-                } catch (const IoError &err) {
-                    event->_pool->update(event->_key, AsyncEventUPtr(event));
+                    // TODO: we might not need to catch IoError and ClosedError here.
+                } catch (const IoError &) {
+                    detail::update_shards(event->_key, event->_pool, AsyncEventUPtr(event));
                     return;
-                } catch (const ClosedError &err) {
-                    event->_pool->update(event->_key, AsyncEventUPtr(event));
+                } catch (const ClosedError &) {
+                    detail::update_shards(event->_key, event->_pool, AsyncEventUPtr(event));
                     return;
-                } catch (const MovedError &err) {
+                } catch (const MovedError &) {
                     switch (event->_state) {
                     case State::MOVED:
                         throw Error("too many moved error");
-                        break;
 
                     case State::ASKING:
                         throw Error("Slot migrating...");
-                        break;
 
                     default:
                         break;
                     }
 
                     event->_state = State::MOVED;
-                    event->_pool->update(event->_key, AsyncEventUPtr(event));
+                    detail::update_shards(event->_key, event->_pool, AsyncEventUPtr(event));
                     return;
                 } catch (const AskError &err) {
                     event->_state = State::ASKING;
@@ -507,7 +562,7 @@ private:
                     GuardedAsyncConnection connection(pool);
                     connection.connection().send(AsyncEventUPtr(new AskingEvent(event)));
                     return;
-                } catch (const Error &e) {
+                } catch (const Error &) {
                     event->set_exception(std::current_exception());
                 }
             } else {
@@ -552,8 +607,6 @@ public:
 
 private:
     void _run_callback() {
-        assert(_cb);
-
         try {
             _cb(CommandEvent<Result, ResultParser>::get_future());
         } catch (...) {
@@ -561,7 +614,7 @@ private:
         }
     }
 
-    std::function<void (Future<Result> &&)> _cb;
+    Callback _cb;
 };
 
 template <typename Result, typename ResultParser, typename Callback>

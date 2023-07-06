@@ -18,11 +18,11 @@
 #define SEWENEW_REDISPLUSPLUS_REDIS_CLUSTER_HPP
 
 #include <utility>
-#include "command.h"
-#include "reply.h"
-#include "utils.h"
-#include "errors.h"
-#include "shards_pool.h"
+#include "sw/redis++/command.h"
+#include "sw/redis++/reply.h"
+#include "sw/redis++/utils.h"
+#include "sw/redis++/errors.h"
+#include "sw/redis++/shards_pool.h"
 
 namespace sw {
 
@@ -1375,7 +1375,8 @@ ReplyUPtr RedisCluster::_command(Cmd cmd, const StringView &key, Args &&...args)
     // 1. Source node has already run 'CLUSTER SETSLOT xxx NODE xxx',
     //    while the destination node has NOT run it.
     //    In this case, client will be redirected by both nodes with MovedError.
-    // 2. Other failures...
+    // 2. Node is down, e.g. master is down, and new master has not been elected yet.
+    // 3. Other failures...
     throw Error("Failed to send command with key: " + std::string(key.data(), key.size()));
 }
 

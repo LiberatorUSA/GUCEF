@@ -14,17 +14,18 @@
    limitations under the License.
  *************************************************************************/
 
-#include "redis.h"
+#include "sw/redis++/redis.h"
 #include <hiredis/hiredis.h>
-#include "command.h"
-#include "errors.h"
-#include "queued_redis.h"
+#include "sw/redis++/command.h"
+#include "sw/redis++/errors.h"
+#include "sw/redis++/queued_redis.h"
 
 namespace sw {
 
 namespace redis {
 
-Redis::Redis(const std::string &uri) : Redis(ConnectionOptions(uri)) {}
+Redis::Redis(const Uri &uri) :
+    Redis(uri.connection_options(), uri.connection_pool_options()) {}
 
 Redis::Redis(const GuardedConnectionSPtr &connection) : _connection(connection) {
     assert(_connection);
@@ -101,10 +102,10 @@ void Redis::bgrewriteaof() {
     reply::parse<void>(*reply);
 }
 
-void Redis::bgsave() {
-    auto reply = command(cmd::bgsave);
+std::string Redis::bgsave() {
+    auto reply = command<void (*)(Connection &)>(cmd::bgsave);
 
-    reply::parse<void>(*reply);
+    return reply::to_status(*reply);
 }
 
 long long Redis::dbsize() {
@@ -550,13 +551,13 @@ long long Redis::hlen(const StringView &key) {
     return reply::parse<long long>(*reply);
 }
 
-bool Redis::hset(const StringView &key, const StringView &field, const StringView &val) {
+long long Redis::hset(const StringView &key, const StringView &field, const StringView &val) {
     auto reply = command(cmd::hset, key, field, val);
 
-    return reply::parse<bool>(*reply);
+    return reply::parse<long long>(*reply);
 }
 
-bool Redis::hset(const StringView &key, const std::pair<StringView, StringView> &item) {
+long long Redis::hset(const StringView &key, const std::pair<StringView, StringView> &item) {
     return hset(key, item.first, item.second);
 }
 
@@ -925,8 +926,30 @@ long long Redis::xlen(const StringView &key) {
     return reply::parse<long long>(*reply);
 }
 
-long long Redis::xtrim(const StringView &key, long long count, bool approx) {
-    auto reply = command(cmd::xtrim, key, count, approx);
+long long Redis::xtrim(const StringView &key, long long threshold, bool approx,
+        XtrimStrategy strategy) {
+    auto reply = command(cmd::xtrim, key, threshold, approx, strategy);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long Redis::xtrim(const StringView &key, long long threshold,
+        XtrimStrategy strategy, long long limit) {
+    auto reply = command(cmd::xtrim_limit, key, threshold, strategy, limit);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long Redis::xtrim(const StringView &key, const StringView &threshold, bool approx,
+        XtrimStrategy strategy) {
+    auto reply = command(cmd::xtrim_string_threshold, key, threshold, approx, strategy);
+
+    return reply::parse<long long>(*reply);
+}
+
+long long Redis::xtrim(const StringView &key, const StringView &threshold,
+        XtrimStrategy strategy, long long limit) {
+    auto reply = command(cmd::xtrim_string_threshold_limit, key, threshold, strategy, limit);
 
     return reply::parse<long long>(*reply);
 }

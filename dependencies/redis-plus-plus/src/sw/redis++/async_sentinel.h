@@ -21,8 +21,8 @@
 #include <memory>
 #include <queue>
 #include <condition_variable>
-#include "sentinel.h"
-#include "async_connection.h"
+#include "sw/redis++/sentinel.h"
+#include "sw/redis++/async_connection.h"
 
 namespace sw {
 
@@ -73,11 +73,11 @@ private:
 
     std::shared_ptr<Sentinel> _sentinel;
 
-    std::thread _worker;
-
     std::mutex _mutex;
 
     std::condition_variable _cv;
+
+    std::thread _worker;
 };
 
 using AsyncSentinelSPtr = std::shared_ptr<AsyncSentinel>;

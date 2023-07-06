@@ -27,8 +27,9 @@
     - [Redis Modules](#redis-modules)
     - [Async Interface](#async-interface)
     - [Coroutine Interface](#coroutine-interface)
-- [Redis Recipes](#redis-recipes)
+- [Redis Patterns](#redis-patterns)
     - [Redlock](#redlock)
+- [Breaking Changes](#breaking-changes)
 - [Author](#author)
 
 ## Overview
@@ -700,15 +701,26 @@ The *scheme* and *host* parts are required, and others are optional. If you're c
 
 **NOTE**: [Redis 6.0 supports ACL](https://redis.io/topics/acl), and you can specify a username for the connection. However, before Redis 6.0, you cannot do that.
 
-Also, the following connection options can be specified with the query string of URI, e.g. *tcp://127.0.0.1?keep_alive=true&socket_timeout=100ms&connect_timeout=100ms*:
+Also, the following connection options and connection pool options can be specified with the query string of URI, e.g. *tcp://127.0.0.1?keep_alive=true&socket_timeout=100ms&connect_timeout=100ms*:
 
-- `ConnectionOptions::keep_alive`: *false* by default.
-- `ConnectionOptions::socket_timeout`: *0ms* by default.
-- `ConnectionOptions::connect_timeout`: *0ms* by default.
+| Option | Parameter | Default |
+| :---------: | :---------: | :---------: |
+| `ConnectionOptions::user` | *user* | *default* |
+| `ConnectionOptions::password` | *password* | empty string, i.e. no password |
+| `ConnectionOptions::db` | *db* | 0 |
+| `ConnectionOptions::keep_alive` | *keep_alive* | false |
+| `ConnectionOptions::connect_timeout` | *connect_timeout* | 0ms |
+| `ConnectionOptions::socket_timeout` | *socket_timeout* | 0ms |
+| `ConnectionOptions::resp` | *resp* | 2 |
+| `ConnectionPoolOptions::size` | *pool_size* | 1 |
+| `ConnectionPoolOptions::wait_timeout` | *pool_wait_timeout* | 0ms |
+| `ConnectionPoolOptions::connection_lifetime` | *pool_connection_lifetime* | 0ms |
+| `ConnectionPoolOptions::connection_idle_time` | *pool_connection_idle_time* | 0ms |
 
-**NOTE**: Options specified in query string are case-sensitive, i.e. all key-value pairs must be in lowercase.
+**NOTE**:
 
-So far, you cannot specify connection pool options with URI, e.g. `ConnectionPoolOptions::size`.
+- Options specified in query string are case-sensitive, i.e. all key-value pairs must be in lowercase.
+- Options specified in query string, e.g. *user*, *password*, *db*, overwrites the one specified in URI. For example, *redis://127.0.0.1/1?db=3* means that all reads/writes run on the 3rd database, instead of the 1st one.
 
 ```C++
 // Single connection to the given host and port.
@@ -732,6 +744,20 @@ Redis redis6("tcp://127.0.0.1?socket_timeout=50ms&connect_timeout=1s");
 // Connect to Unix Domain Socket.
 Redis redis7("unix://path/to/socket");
 ```
+
+#### RESP3
+
+Since Redis 6.0, it supports a new version of Redis protocol, i.e. RESP3. In order to use this new protocol, you need to set `ConnectionOptions::resp` to be 3.
+
+```
+ConnectionOptions opts;
+opts.resp = 3;
+// Set other options...
+```
+
+By default, `ConnectionOptions::resp` is 2, i.e. use RESP version 2. So far, only version 2 and 3 are supported, and the behavior is undefined, if you set `ConnectionOptions::resp` to other numbers.
+
+**NOTE**: In order to use this new protocol, you need to install the latest hiredis (even hiredis-v1.0.2 has bugs on RESP3 support).
 
 #### Lazily Create Connection
 
@@ -813,6 +839,10 @@ Then you can use this `ConnectionOptions` to create a `Redis` object to connect 
 ##### Automatically Initialize OpenSSL Library
 
 By default, *redis-plus-plus* automatically initializes OpenSSL library, i.e. calls `SSL_library_init` and initializes locks if needed. However, your application code might already initialize OpenSSL library. In this case, you can call `tls::disable_auto_init()` to disable the initialization. You should call this function only once and call it before any other *redis-plus-plus* operation. Otherwise, the behavior is undefined.
+
+##### Skip Certificate Verification
+
+Since hiredis v1.1.0, it supports [skipping certificate verification](https://github.com/redis/hiredis/pull/1085). If you want to use this feature with *redis-plus-plus*, you can check [this issue](https://github.com/sewenew/redis-plus-plus/issues/183) for an example.
 
 ### Send Command to Redis Server
 
@@ -1658,7 +1688,7 @@ pipe.set("key", "val").incr("num");
 auto replies = pipe.exec();
 
 // The same as:
-replies = pipe.set("key", "val").incr("num).exec();
+replies = pipe.set("key", "val").incr("num").exec();
 ```
 
 In fact, these commands won't be sent to Redis, until you call `Pipeline::exec`. So `Pipeline::exec` does 2 work in order: send all piped commands, then get all replies from Redis.
@@ -2568,7 +2598,14 @@ auto mget_res = async_cluster.mget<std::vector<OptionalString>>({"{hashtag}key1"
 
 unordered_map<string, string> m = {{"a", "b"}, {"c", "d"}};
 Future<void> hmset_res = async_redis.hmset("hash", m.begin(), m.end());
+
+// Create an AsyncRedis object with hash-tag, so that we can send commands that has no key.
+// It connects to Redis instance that holds the given key, i.e. hash-tag.
+auto r = async_cluster.redis("hash-tag");
+Future<string> ping_res = r.command<string>("ping");
 ```
+
+**NOTE**: By default, when you use `AsyncRedisCluster::redis(const StringView &hash_tag, bool new_connection = true)` to create an `AsyncRedis` object, instead of picking a connection from the underlying connection pool, it creates a new connection to the corresponding Redis server. So this is NOT a cheap operation, and you should try to reuse this newly created `AsyncRedis` object as much as possible. If you pass `false` as the second parameter, you can create a `AsyncRedis` object without creating a new connection. However, in this case, you should be very careful, otherwise, you might get bad performance or even dead lock. Please carefully check the related [pipeline section](#very-important-notes) before using this feature. Also the returned `AsyncRedis` object is NOT thread-safe, and if it throws exception, you need to destroy it, and create a new one with the `AsyncRedisCluster::redis` method.
 
 #### Async Subscriber
 
@@ -2700,6 +2737,8 @@ fut.get();
 
 *redis-plus-plus* also supports coroutine interface, however, coroutine support for Subscriber and Transaction is still on the way.
 
+**NOTE**: Coroutine support is still experimental, and the interface might be changed in the future.
+
 #### Installation
 
 The coroutine interface depends on async interface, which depends on third-party event library. So you need to install *libuv* first, and *hiredis* v1.0.0 or later. Check [async interface](#async-interface) for detail.
@@ -2801,23 +2840,146 @@ cppcoro::sync_wait([&co_redis]() -> cppcoro::task<> {
 
 The coroutine support for sentinel is similar with the sync one, except that you need to create an `CoSentinel` object instead of a `Sentinel` object. Check [Redis Sentinel](#redis-sentinel) for more details on `SentinelOptions`, `ConnectionOptions` and `Role`.
 
-## Redis Recipes
+## Redis Patterns
 
-We can create many interesting data structures and algorithms based on Redis, such as [Redlock](https://redis.io/topics/distlock). We call these data structures and algorithms as **Redis Recipes**. *redis-plus-plus* will support some of these recipes.
+We can create many interesting data structures and algorithms based on Redis, such as [Redlock](https://redis.io/topics/distlock). We call these data structures and algorithms as **Redis Patterns**. *redis-plus-plus* will support some of these patterns.
 
-**NOTE**: These recipes will be first implemented on the [recipes branch](https://github.com/sewenew/redis-plus-plus/tree/recipes). I'd like to hear your feedback on the API of these recipes, and when these APIs become stable, I'll merge the code into the master branch. So APIs on the *recipes* branch are NOT stable, and might be changed in the future.
+**NOTE**: These patterns will be first implemented on the [patterns branch](https://github.com/sewenew/redis-plus-plus/tree/patterns). I'd like to hear your feedback on the API of these patterns, and when these APIs become stable, I'll merge the code into the master branch. So APIs on the *patterns* branch are NOT stable, and might be changed in the future.
 
 ### Redlock
 
 [Redlock](https://redis.io/topics/distlock) is a distributed lock based on Redis. Thanks to @wingunder's [suggestion](https://github.com/sewenew/redis-plus-plus/issues/24), *redis-plus-plus* supports Redlock now. @wingunder and I made two different implementation of Redlock: one based on Lua script, and the other based on transaction. The Lua script version should be faster, and also it has many other parameters to control the behavior. However, if you are not allowed to, or don't want to run Lua scripts inside Redis, you could try using the transaction version.
 
-#### Examples
+Also there's a high level API, which works like `std::mutex`. With this high level API, you don't need to manually extend the lock, instead, the lock will be automatically extened by redis-plus-plus.
+
+#### Redlock 101
+
+The basic idea of acquiring a Redlock is setting a key in Redis if the key does not exist. Since Redis operation is atomic, when mutiple clients acquire the same lock, i.e. setting the same key if it does not exist, only one client wins, and others will find the key has already been set. So only one client can acquire the lock, and others have to wait and try again.
+
+When setting the key, we also need to set a TTL/expireation for the key. Otherwise, if the winning client crashes, the lock cannot be acquired by others forever. However, it also brings a new problem. Since the key has a TTL, once you acquire the lock, you must ensure all code in critical section must be finished before the key expires. Otherwise, other clients might acquire the lock successfully when you are still running critical section code (i.e. more than one clients acquire the lock successfully). So when you run critical section code, you have to check if the key is going to be expired and extend the lock (i.e. extending the TTL) before key expires, from time to time.
+
+Also, in order to make the algorithm more robust, normally we need to set key on multiple independent stand-alone Redis (not Redis Cluster).
+
+There're still more details on the mechanism of Redlock. Please read [Redlock's doc](https://redis.io/topics/distlock) for more info, before using it.
+
+#### High Level API
+
+The high level API is quite simple. It works like a `std::mutex`, and can be used with `std::lock_guard` and `std::unique_lock`. Also it can automatically extend the lock before the key expires. So that user code doesn't need to extend the lock manually. In order to use Redlock, you can create a `RedMutex` object with the following parameters:
+
+- One or more `Redis` instances: There're two versions of Redlock, i.e. single instance version and multiple instances version. The multiple instances version is more robust.
+- Resource id: Redlock key in Redis. In order to make it work, two or more `RedMutex` should be created with the same resource id.
+- Auto extention error callback (optional): If failing to automatically extend the lock, this error callback will be called. Check below for more detail.
+- `RedMutexOptions` (optional): Some options to control the behavior of `RedMutex`. If not specified, default options will be used. Check below for more detail.
+- `LockWatcher` (optional): A watcher which will automatically extend the lock before it expires. So that you don't need to manually check if the lock has been expired. If no watcher is specified (the default behavior), *redis-plus-plus* will create a one for this Redlock. Check below for more detail.
+
+```
+class RedMutex {
+public:
+    RedMutex(std::initializer_list<std::shared_ptr<Redis>> masters,
+            const std::string &resource,
+            std::function<void (std::exception_ptr)> auto_extend_err_callback = nullptr,
+            const RedMutexOptions &opts = {},
+            const std::shared_ptr<LockWatcher> &watcher = nullptr);
+
+    void lock();
+
+    bool try_lock();
+
+    void unlock();
+};
+```
+
+##### Atuo Extention Error Callback
+
+As we mentioned the high level API can automatically extend the lock. However, we might fail to extend the lock, e.g. connection to Redis is broken. In that case, the `auto_extend_err_callback` will be called, so that the application can be notified that the lock might no longer be locked, and stop running code in critical section.
+
+The following is the prototype of error callback.
+
+```
+void (std::exception_ptr err);
+```
+
+If error callback is not set (the default behavior), the error will be ignored. And you're on risk of running critical section code with multiple clients.
+
+##### RedMutexOptions
+
+```
+struct RedMutexOptions {
+    std::chrono::milliseconds ttl;
+    std::chrono::milliseconds retry_delay;
+    bool scripting = true;
+};
+```
+
+- *ttl*: Expiration of the key. 3 seconds by default. If you set this value too large, and the client crashes, other clients need to wait a long time before they can acquire the lock. However, if your network performance is poor, you need a larger `ttl`, otherwise, you might fail to lock or fail to extend the lock., otherwise, you might fail to lock or fail to extend the lock., otherwise, you might fail to lock or fail to extend the lock., otherwise, you might fail to lock or fail to extend the lock.
+- *retry_delay*: `RedMutex::lock` repeat trying to lock until it acquires the lock. If it fails, it wait `retry_delay` before the next retrying. 100 milliseconds by default.
+- *scripting*: True (default behavior), if using Lua scripting to implement Redlock algorithm. otherwise, use Redis transaction to implement it. It's recommended to use Lua scripting version, which should be much faster than transaction version.
+
+##### LockWatcher
+
+`LockWatcher` *watches* `RedMutex`, and try to extend the lock from time to time. You can construct `RedMutex` with a `std::shared_ptr<LockWatcher>`, so that it will watch the corresponding Redlock. `LockWatcher` does the work in a background thread. So creating a `LockWatcher` object also creates a `std::thread`. If you want to avoid creating multiple threads, you can construct multiple `RedMutex` with the same `std::shared_ptr<LockWatcher>`.
+
+If you don't specify `LockWatcher`, `RedMutex` will create one (the default behavior), and start a thread. Although it's expensive to create thread, it's still quite cheap compared to acquiring a distributed lock.
+
+##### Examples
 
 ```c++
-auto redis1 = Redis("tcp://127.0.0.1:7000");
-auto redis2 = Redis("tcp://127.0.0.1:7001");
-auto redis3 = Redis("tcp://127.0.0.1:7002");
+#include <memory>
+#include <sw/redis++/redis++.h>
+#include <sw/redis++/patterns/redlock.h>
 
+auto redis = std::make_shared<Redis>("tcp://127.0.0.1");
+
+auto redis1 = std::make_shared<Redis>("tcp://127.0.0.1:7000");
+auto redis2 = std::make_shared<Redis>("tcp://127.0.0.1:7001");
+auto redis3 = std::make_shared<Redis>("tcp://127.0.0.1:7002");
+
+try {
+    {
+        // Create a `RedMutex` with a single stand-alone Redis and default settings.
+        RedMutex mtx(redis, "resource");
+        std::lock_guard<RedMutex> lock(mtx);
+    }
+
+    {
+        // Create a `RedMutex` with multiple stand-alone Redis and default settings.
+        RedMutex mtx({redis1, redis2, redis3}, "resource");
+        std::lock_guard<RedMutex> lock(mtx);
+    }
+
+    {
+        RedMutexOptions opts;
+        opts.ttl = std::chrono::seconds(5);
+
+        auto watcher = std::make_shared<LockWatcher>();
+
+        // Create a `RedMutex` with auto_extend_err_callback and other options.
+        RedMutex mtx({redis1, redis2, redis3}, "resource",
+                [](std::exception_ptr err) {
+                    try {
+                        std::rethrow_exception(err);
+                    } catch (const Error &e) {
+                        // Notify application code that the lock might no longer be locked.
+                    }
+                },
+                opts, watcher);
+
+        std::unique_lock<RedMutex> lock(mtx, std::defer_lock);
+
+        lock.lock();
+
+        lock.unlock();
+
+        lock.try_lock();
+    }
+} catch (const Error &err) {
+    // handle error.
+}
+```
+
+#### Low Level API
+
+```
 // Lua script version:
 {
     RedLockMutex mtx({redis1, redis2, redis3}, "resource");
@@ -2851,8 +3013,12 @@ auto redis3 = Redis("tcp://127.0.0.1:7002");
 }
 ```
 
-Please refer to the [code](https://github.com/sewenew/redis-plus-plus/blob/recipes/src/sw/redis%2B%2B/recipes/redlock.h) for detail. I'll enhance the doc in the future.
+## Breaking Changes
+
+- Since redis-plus-plus 1.3.9, all `hset` related methods return `long long` instead of `bool`.
 
 ## Author
 
 *redis-plus-plus* is written by sewenew, who is also active on [StackOverflow](https://stackoverflow.com/users/5384363/for-stack).
+
+Many thanks to all contributors of *redis-plus-plus*, especially @wingunder.

@@ -31,6 +31,7 @@
 #include <iostream>
 #include <sw/redis++/redis++.h>
 #include "sanity_test.h"
+#include "redlock_test.h"
 #include "connection_cmds_test.h"
 #include "keys_cmds_test.h"
 #include "string_cmds_test.h"
@@ -254,11 +255,12 @@ auto parse_options(int argc, char **argv)
     std::string cluster_node;
     int cluster_port = 0;
     bool benchmark = false;
+    int resp = 2;
     sw::redis::test::BenchmarkOptions tmp_benchmark_opts;
     TestOptions test_options;
 
     int opt = 0;
-    while ((opt = getopt(argc, argv, "h:p:a:n:c:e:k:v:r:t:bs:m")) != -1) {
+    while ((opt = getopt(argc, argv, "h:p:a:n:c:e:k:v:r:t:bs:m3")) != -1) {
         try {
             switch (opt) {
             case 'h':
@@ -313,9 +315,12 @@ auto parse_options(int argc, char **argv)
                 sw::redis::test::key_prefix(optarg);
                 break;
 
+            case '3':
+                resp = 3;
+                break;
+
             default:
                 throw sw::redis::Error("Unknown command line option");
-                break;
             }
         } catch (const sw::redis::Error &e) {
             print_help();
@@ -332,6 +337,7 @@ auto parse_options(int argc, char **argv)
         tmp.host = host;
         tmp.port = port;
         tmp.password = auth;
+        tmp.resp = resp;
 
         opts = sw::redis::Optional<sw::redis::ConnectionOptions>(tmp);
     }
@@ -342,6 +348,7 @@ auto parse_options(int argc, char **argv)
         tmp.host = cluster_node;
         tmp.port = cluster_port;
         tmp.password = auth;
+        tmp.resp = resp;
 
         cluster_opts = sw::redis::Optional<sw::redis::ConnectionOptions>(tmp);
     }
@@ -372,6 +379,11 @@ void run_test(const sw::redis::ConnectionOptions &opts, const TestOptions &test_
     connection_test.run();
 
     std::cout << "Pass connection commands tests" << std::endl;
+
+    sw::redis::test::RedLockTest<RedisInstance> redlock_test(std::make_shared<RedisInstance>(opts));
+    redlock_test.run();
+
+    std::cout << "Pass redlock tests" << std::endl;
 
     sw::redis::test::KeysCmdTest<RedisInstance> keys_test(instance);
     keys_test.run();

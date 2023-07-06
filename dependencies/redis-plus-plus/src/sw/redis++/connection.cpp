@@ -14,13 +14,13 @@
    limitations under the License.
  *************************************************************************/
 
-#include "connection.h"
+#include "sw/redis++/connection.h"
 #include <cassert>
 #include <tuple>
 #include <algorithm>
-#include "reply.h"
-#include "command.h"
-#include "command_args.h"
+#include "sw/redis++/reply.h"
+#include "sw/redis++/command.h"
+#include "sw/redis++/command_args.h"
 
 #ifdef _MSC_VER
 
@@ -31,216 +31,6 @@
 namespace sw {
 
 namespace redis {
-
-ConnectionOptions::ConnectionOptions(const std::string &uri) :
-                                        ConnectionOptions(_parse_uri(uri)) {}
-
-ConnectionOptions ConnectionOptions::_parse_uri(const std::string &uri) const {
-    std::string scheme;
-    std::string auth;
-    std::string spath;
-    std::tie(scheme, auth, spath) = _split_uri(uri);
-
-    ConnectionOptions opts;
-
-    _set_auth_opts(auth, opts);
-
-    auto db_num = 0;
-    std::string parameter_string;
-    std::tie(spath, db_num, parameter_string) = _split_path(spath);
-
-    _parse_parameters(parameter_string, opts);
-
-    opts.db = db_num;
-
-    if (scheme == "tcp" || scheme == "redis") {
-        _set_tcp_opts(spath, opts);
-    } else if (scheme == "unix") {
-        _set_unix_opts(spath, opts);
-    } else {
-        throw Error("invalid URI: invalid scheme");
-    }
-
-    return opts;
-}
-
-void ConnectionOptions::_parse_parameters(const std::string &parameter_string,
-                                            ConnectionOptions &opts) const {
-    auto parameters = _split(parameter_string, "&");
-    if (parameters.empty()) {
-        // No parameters
-        return;
-    }
-
-    for (const auto &parameter : parameters) {
-        auto kv_pair = _split(parameter, "=");
-        if (kv_pair.size() != 2) {
-            throw Error("invalid option: not a key-value pair: " + parameter);
-        }
-
-        const auto &key = kv_pair[0];
-        const auto &val = kv_pair[1];
-        _set_option(key, val, opts);
-    }
-}
-
-void ConnectionOptions::_set_option(const std::string &key,
-                                    const std::string &val,
-                                    ConnectionOptions &opts) const {
-    if (key == "keep_alive") {
-        opts.keep_alive = _parse_bool_option(val);
-    } else if (key == "connect_timeout") {
-        opts.connect_timeout = _parse_timeout_option(val);
-    } else if (key == "socket_timeout") {
-        opts.socket_timeout = _parse_timeout_option(val);
-    } else {
-        throw Error("unknown uri parameter");
-    }
-}
-
-bool ConnectionOptions::_parse_bool_option(const std::string &str) const {
-    if (str == "true") {
-        return true;
-    } else if (str == "false") {
-        return false;
-    } else {
-        throw Error("invalid uri parameter of bool type: " + str);
-    }
-}
-
-std::chrono::milliseconds ConnectionOptions::_parse_timeout_option(const std::string &str) const {
-    std::size_t timeout = 0;
-    std::string unit;
-    try {
-        std::size_t pos = 0;
-        timeout = std::stoul(str, &pos);
-        unit = str.substr(pos);
-    } catch (const std::exception &e) {
-        throw Error("invalid uri parameter of timeout type: " + str);
-    }
-
-    if (unit == "ms") {
-        return std::chrono::milliseconds(timeout);
-    } else if (unit == "s") {
-        return std::chrono::seconds(timeout);
-    } else if (unit == "m") {
-        return std::chrono::minutes(timeout);
-    } else {
-        throw Error("unknown timeout unit: " + unit);
-    }
-}
-
-std::vector<std::string> ConnectionOptions::_split(const std::string &str,
-                                                    const std::string &delimiter) const {
-    if (str.empty()) {
-        return {};
-    }
-
-    std::vector<std::string> fields;
-
-    if (delimiter.empty()) {
-        std::transform(str.begin(), str.end(), std::back_inserter(fields),
-                [](char c) { return std::string(1, c); });
-        return fields;
-    }
-
-    std::string::size_type pos = 0;
-    std::string::size_type idx = 0;
-    while (true) {
-        pos = str.find(delimiter, idx);
-        if (pos == std::string::npos) {
-            fields.push_back(str.substr(idx));
-            break;
-        }
-
-        fields.push_back(str.substr(idx, pos - idx));
-        idx = pos + delimiter.size();
-    }
-
-    return fields;
-}
-
-auto ConnectionOptions::_split_uri(const std::string &uri) const
-    -> std::tuple<std::string, std::string, std::string> {
-    auto pos = uri.find("://");
-    if (pos == std::string::npos) {
-        throw Error("invalid URI: no scheme");
-    }
-
-    auto scheme = uri.substr(0, pos);
-
-    auto start = pos + 3;
-    pos = uri.find("@", start);
-    if (pos == std::string::npos) {
-        // No auth info.
-        return std::make_tuple(scheme, std::string{}, uri.substr(start));
-    }
-
-    auto auth = uri.substr(start, pos - start);
-
-    return std::make_tuple(scheme, auth, uri.substr(pos + 1));
-}
-
-auto ConnectionOptions::_split_path(const std::string &spath) const
-    -> std::tuple<std::string, int, std::string> {
-    auto parameter_pos = spath.rfind("?");
-    std::string parameter_string;
-    if (parameter_pos != std::string::npos) {
-        parameter_string = spath.substr(parameter_pos + 1);
-    }
-
-    auto pos = spath.rfind("/");
-    if (pos != std::string::npos) {
-        // Might specified a db number.
-        try {
-            auto db_num = std::stoi(spath.substr(pos + 1));
-
-            return std::make_tuple(spath.substr(0, pos), db_num, parameter_string);
-        } catch (const std::exception &) {
-            // Not a db number, and it might be a path to unix domain socket.
-        }
-    }
-
-    // No db number specified, and use default one, i.e. 0.
-    return std::make_tuple(spath.substr(0, parameter_pos), 0, parameter_string);
-}
-
-void ConnectionOptions::_set_auth_opts(const std::string &auth, ConnectionOptions &opts) const {
-    if (auth.empty()) {
-        // No auth info.
-        return;
-    }
-
-    auto pos = auth.find(":");
-    if (pos == std::string::npos) {
-        // No user name.
-        opts.password = auth;
-    } else {
-        opts.user = auth.substr(0, pos);
-        opts.password = auth.substr(pos + 1);
-    }
-}
-
-void ConnectionOptions::_set_tcp_opts(const std::string &spath, ConnectionOptions &opts) const {
-    opts.type = ConnectionType::TCP;
-
-    auto pos = spath.find(":");
-    if (pos != std::string::npos) {
-        // Port number specified.
-        try {
-            opts.port = std::stoi(spath.substr(pos + 1));
-        } catch (const std::exception &) {
-            throw Error("invalid URI: invalid port");
-        }
-    } // else use default port, i.e. 6379.
-
-    opts.host = spath.substr(0, pos);
-}
-
-void ConnectionOptions::_set_unix_opts(const std::string &spath, ConnectionOptions &opts) const {
-    opts.type = ConnectionType::UNIX;
-    opts.path = spath;
-}
 
 class Connection::Connector {
 public:
@@ -272,7 +62,7 @@ Connection::ContextUPtr Connection::Connector::connect() const {
     assert(ctx);
 
     if (ctx->err != REDIS_OK) {
-        throw_error(*ctx, "Failed to connect to Redis");
+        throw_error(*ctx, "failed to connect to Redis (" + _opts._server_info() + ")");
     }
 
     _set_socket_timeout(*ctx);
@@ -336,6 +126,16 @@ void Connection::Connector::_set_socket_timeout(redisContext &ctx) const {
 }
 
 void Connection::Connector::_enable_keep_alive(redisContext &ctx) const {
+#ifdef REDIS_PLUS_PLUS_HAS_redisEnableKeepAliveWithInterval
+    if (_opts.keep_alive_s > std::chrono::seconds{0}) {
+        if (redisEnableKeepAliveWithInterval(&ctx, _opts.keep_alive_s.count()) != REDIS_OK) {
+            throw_error(ctx, "Failed to enable keep alive option");
+        }
+
+        return;
+    }
+#endif // end REDIS_PLUS_PLUS_HAS_redisEnableKeepAliveWithInterval
+
     if (!_opts.keep_alive) {
         return;
     }
@@ -353,6 +153,25 @@ timeval Connection::Connector::_to_timeval(const std::chrono::milliseconds &dur)
     t.tv_sec = sec.count();
     t.tv_usec = msec.count();
     return t;
+}
+
+std::string ConnectionOptions::_server_info() const {
+    std::string info;
+    switch (type) {
+    case ConnectionType::TCP:
+        info = host + ":" + std::to_string(port);
+        break;
+
+    case ConnectionType::UNIX:
+        info = path;
+        break;
+
+    default:
+        // Never goes here.
+        throw Error("unknown connection type");
+    }
+
+    return info;
 }
 
 void swap(Connection &lhs, Connection &rhs) noexcept {
@@ -434,8 +253,22 @@ ReplyUPtr Connection::recv(bool handle_error_reply) {
     return reply;
 }
 
+#ifdef REDIS_PLUS_PLUS_RESP_VERSION_3
+
+void Connection::set_push_callback(redisPushFn *push_func) {
+    assert(!broken());
+
+    redisSetPushCallback(_context(), push_func);
+}
+
+#endif
+
 void Connection::_set_options() {
     _auth();
+
+    if (_opts.resp > 2) {
+        _set_resp_version();
+    }
 
     _select_db();
 
@@ -452,6 +285,16 @@ void Connection::_enable_readonly() {
     assert(reply);
 
     reply::parse<void>(*reply);
+}
+
+void Connection::_set_resp_version() {
+    cmd::hello(*this, _opts.resp);
+
+    auto reply = recv();
+
+    assert(reply);
+
+    // TODO: parse hello reply.
 }
 
 void Connection::_auth() {

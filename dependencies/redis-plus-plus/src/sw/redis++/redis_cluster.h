@@ -21,15 +21,16 @@
 #include <chrono>
 #include <initializer_list>
 #include <tuple>
-#include "shards_pool.h"
-#include "reply.h"
-#include "command_options.h"
-#include "utils.h"
-#include "subscriber.h"
-#include "pipeline.h"
-#include "transaction.h"
-#include "redis.h"
-#include "connection.h"
+#include "sw/redis++/shards_pool.h"
+#include "sw/redis++/reply.h"
+#include "sw/redis++/command_options.h"
+#include "sw/redis++/utils.h"
+#include "sw/redis++/subscriber.h"
+#include "sw/redis++/pipeline.h"
+#include "sw/redis++/transaction.h"
+#include "sw/redis++/redis.h"
+#include "sw/redis++/redis_uri.h"
+#include "sw/redis++/connection.h"
 
 namespace sw {
 
@@ -44,14 +45,14 @@ using Pipeline = QueuedRedis<PipelineImpl>;
 
 class RedisCluster {
 public:
-    RedisCluster(const ConnectionOptions &connection_opts,
+    explicit RedisCluster(const ConnectionOptions &connection_opts,
                     const ConnectionPoolOptions &pool_opts = {},
                     Role role = Role::MASTER) : _pool(pool_opts, connection_opts, role) {}
 
     // Construct RedisCluster with URI:
     // "tcp://127.0.0.1" or "tcp://127.0.0.1:6379"
     // Only need to specify one URI.
-    explicit RedisCluster(const std::string &uri);
+    explicit RedisCluster(const std::string &uri) : RedisCluster(Uri(uri)) {}
 
     RedisCluster(const RedisCluster &) = delete;
     RedisCluster& operator=(const RedisCluster &) = delete;
@@ -457,9 +458,9 @@ public:
                     long long cursor,
                     Output output);
 
-    bool hset(const StringView &key, const StringView &field, const StringView &val);
+    long long hset(const StringView &key, const StringView &field, const StringView &val);
 
-    bool hset(const StringView &key, const std::pair<StringView, StringView> &item);
+    long long hset(const StringView &key, const std::pair<StringView, StringView> &item);
 
     template <typename Input>
     auto hset(const StringView &key, Input first, Input last)
@@ -1370,9 +1371,21 @@ public:
                     long long count,
                     Output output);
 
-    long long xtrim(const StringView &key, long long count, bool approx = true);
+    long long xtrim(const StringView &key, long long threshold, bool approx = true,
+            XtrimStrategy strategy = XtrimStrategy::MAXLEN);
+
+    long long xtrim(const StringView &key, long long threshold,
+            XtrimStrategy strategy, long long limit);
+
+    long long xtrim(const StringView &key, const StringView &threshold, bool approx = true,
+            XtrimStrategy strategy = XtrimStrategy::MAXLEN);
+
+    long long xtrim(const StringView &key, const StringView &threshold,
+            XtrimStrategy strategy, long long limit);
 
 private:
+    explicit RedisCluster(const Uri &uri);
+
     class Command {
     public:
         explicit Command(const StringView &cmd_name) : _cmd_name(cmd_name) {}
@@ -1445,6 +1458,6 @@ private:
 
 }
 
-#include "redis_cluster.hpp"
+#include "sw/redis++/redis_cluster.hpp"
 
 #endif // end SEWENEW_REDISPLUSPLUS_REDIS_CLUSTER_H

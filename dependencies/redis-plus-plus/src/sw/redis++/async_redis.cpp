@@ -14,19 +14,21 @@
    limitations under the License.
  *************************************************************************/
 
-#include "async_redis.h"
-#include "reply.h"
+#include "sw/redis++/async_redis.h"
+#include "sw/redis++/reply.h"
 
 namespace sw {
 
 namespace redis {
+
+AsyncRedis::AsyncRedis(const Uri &uri) :
+    AsyncRedis(uri.connection_options(), uri.connection_pool_options()) {}
 
 AsyncRedis::AsyncRedis(const ConnectionOptions &opts,
         const ConnectionPoolOptions &pool_opts,
         const EventLoopSPtr &loop) : _loop(loop) {
     if (!_loop) {
         _loop = std::make_shared<EventLoop>();
-        _own_loop = true;
     }
 
     _pool = std::make_shared<AsyncConnectionPool>(_loop, pool_opts, opts);
@@ -40,7 +42,6 @@ AsyncRedis::AsyncRedis(const std::shared_ptr<AsyncSentinel> &sentinel,
         const EventLoopSPtr &loop) : _loop(loop) {
     if (!_loop) {
         _loop = std::make_shared<EventLoop>();
-        _own_loop = true;
     }
 
     _pool = std::make_shared<AsyncConnectionPool>(SimpleAsyncSentinel(sentinel, master_name, role),
@@ -49,10 +50,8 @@ AsyncRedis::AsyncRedis(const std::shared_ptr<AsyncSentinel> &sentinel,
                                                     opts);
 }
 
-AsyncRedis::~AsyncRedis() {
-    if (_own_loop && _loop) {
-        _loop->stop();
-    }
+AsyncRedis::AsyncRedis(const GuardedAsyncConnectionSPtr &connection) : _connection(connection) {
+    assert(_connection);
 }
 
 AsyncSubscriber AsyncRedis::subscriber() {

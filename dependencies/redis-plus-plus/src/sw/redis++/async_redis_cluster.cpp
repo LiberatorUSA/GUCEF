@@ -14,12 +14,15 @@
    limitations under the License.
  *************************************************************************/
 
-#include "async_redis_cluster.h"
+#include "sw/redis++/async_redis_cluster.h"
 #include <cassert>
 
 namespace sw {
 
 namespace redis {
+
+AsyncRedisCluster::AsyncRedisCluster(const Uri &uri) :
+    AsyncRedisCluster(uri.connection_options(), uri.connection_pool_options()) {}
 
 AsyncRedisCluster::AsyncRedisCluster(const ConnectionOptions &opts,
         const ConnectionPoolOptions &pool_opts,
@@ -27,16 +30,21 @@ AsyncRedisCluster::AsyncRedisCluster(const ConnectionOptions &opts,
         const EventLoopSPtr &loop) : _loop(loop) {
     if (!_loop) {
         _loop = std::make_shared<EventLoop>();
-        _own_loop = true;
     }
 
     _pool = std::make_shared<AsyncShardsPool>(_loop, pool_opts, opts, role);
 }
 
-AsyncRedisCluster::~AsyncRedisCluster() {
-    if (_own_loop && _loop) {
-        _loop->stop();
+AsyncRedis AsyncRedisCluster::redis(const StringView &hash_tag, bool new_connection) {
+    assert(_pool);
+
+    auto pool = _pool->fetch(hash_tag);
+    if (new_connection) {
+        // Create a new pool.
+        pool = std::make_shared<AsyncConnectionPool>(pool->clone());
     }
+
+    return AsyncRedis(std::make_shared<GuardedAsyncConnection>(pool));
 }
 
 AsyncSubscriber AsyncRedisCluster::subscriber() {

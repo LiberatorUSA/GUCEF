@@ -17,10 +17,11 @@
 #ifndef SEWENEW_REDISPLUSPLUS_UTILS_H
 #define SEWENEW_REDISPLUSPLUS_UTILS_H
 
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <type_traits>
-#include "cxx_utils.h"
+#include "sw/redis++/cxx_utils.h"
 
 namespace sw {
 

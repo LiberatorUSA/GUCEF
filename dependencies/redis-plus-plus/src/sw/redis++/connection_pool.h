@@ -23,8 +23,8 @@
 #include <memory>
 #include <condition_variable>
 #include <deque>
-#include "connection.h"
-#include "sentinel.h"
+#include "sw/redis++/connection.h"
+#include "sw/redis++/sentinel.h"
 
 namespace sw {
 
@@ -78,10 +78,9 @@ public:
 private:
     void _move(ConnectionPool &&that);
 
-    // NOT thread-safe
-    Connection _create();
+    Connection _create(SimpleSentinel &sentinel, const ConnectionOptions &opts);
 
-    Connection _create(SimpleSentinel &sentinel, const ConnectionOptions &opts, bool locked);
+    Connection _fetch(std::unique_lock<std::mutex> &lock);
 
     Connection _fetch();
 

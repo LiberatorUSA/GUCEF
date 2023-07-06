@@ -14,10 +14,10 @@
    limitations under the License.
  *************************************************************************/
 
-#include "event_loop.h"
+#include "sw/redis++/event_loop.h"
 #include <cassert>
 #include <hiredis/adapters/libuv.h>
-#include "async_connection.h"
+#include "sw/redis++/async_connection.h"
 
 namespace sw {
 
@@ -97,8 +97,8 @@ void EventLoop::_connect_callback(const redisAsyncContext *ctx, int status) {
     std::exception_ptr err;
     if (status != REDIS_OK) {
         try {
-            throw_error(ctx->c, "failed to connect to server");
-        } catch (const Error &e) {
+            throw_error(ctx->c, "failed to connect to Redis (" + connection->options()._server_info() + ")");
+        } catch (const Error &) {
             err = std::current_exception();
         }
     }
@@ -121,7 +121,7 @@ void EventLoop::_disconnect_callback(const redisAsyncContext *ctx, int status) {
     if (status != REDIS_OK) {
         try {
             throw_error(ctx->c, "failed to disconnect from server");
-        } catch (const Error &e) {
+        } catch (const Error &) {
             err = std::current_exception();
         }
     }
