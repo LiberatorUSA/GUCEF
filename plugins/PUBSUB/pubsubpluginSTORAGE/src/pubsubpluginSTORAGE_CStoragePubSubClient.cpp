@@ -252,14 +252,20 @@ CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                         CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CStoragePubSubClientTopicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this ) )->CreateSharedPtr();
+        if ( pulseGenerator.IsNULL() )
+            pulseGenerator = m_config.topicPulseGenerator; // none given, use default for topics
+        if ( pulseGenerator.IsNULL() )
+            pulseGenerator = GetPulseGenerator();          // none present, use client level pulse generator
+
+        topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( *topicConfig ) )
         {
             m_topicMap[ topicConfig->topicName ] = topicAccess;

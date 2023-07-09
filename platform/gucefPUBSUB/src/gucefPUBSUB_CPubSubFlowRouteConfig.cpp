@@ -151,6 +151,7 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
     , failoverSideTopicsAutoMatchFromSide( false )
     , spilloverSideTopicsAutoMatchFromSide( false )
     , deadLetterSideTopicsAutoMatchFromSide( false )
+    , preferFromTopicThreadForDestination( false )
 {GUCEF_TRACE;
 
 }
@@ -169,6 +170,7 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& sr
     , failoverSideTopicsAutoMatchFromSide( src.failoverSideTopicsAutoMatchFromSide )
     , spilloverSideTopicsAutoMatchFromSide( src.spilloverSideTopicsAutoMatchFromSide )
     , deadLetterSideTopicsAutoMatchFromSide( src.deadLetterSideTopicsAutoMatchFromSide )
+    , preferFromTopicThreadForDestination( src.preferFromTopicThreadForDestination )
 {GUCEF_TRACE;
 
 }
@@ -199,6 +201,7 @@ CPubSubFlowRouteConfig::operator=( const CPubSubFlowRouteConfig& src )
         failoverSideTopicsAutoMatchFromSide = src.failoverSideTopicsAutoMatchFromSide;
         spilloverSideTopicsAutoMatchFromSide = src.spilloverSideTopicsAutoMatchFromSide;
         deadLetterSideTopicsAutoMatchFromSide = src.deadLetterSideTopicsAutoMatchFromSide;
+        preferFromTopicThreadForDestination = src.preferFromTopicThreadForDestination;
     }
     return *this;
 }
@@ -219,6 +222,7 @@ CPubSubFlowRouteConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "failoverSideTopicsAutoMatchFromSide", failoverSideTopicsAutoMatchFromSide ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "spilloverSideTopicsAutoMatchFromSide", spilloverSideTopicsAutoMatchFromSide ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "deadLetterSideTopicsAutoMatchFromSide", deadLetterSideTopicsAutoMatchFromSide ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "preferFromTopicThreadForDestination", preferFromTopicThreadForDestination ) && totalSuccess; 
 
     CORE::CDataNode* topicAssociationsNode = cfg.FindOrAddChild( "topicAssociations" );
     if ( GUCEF_NULL != topicAssociationsNode )
@@ -254,7 +258,8 @@ CPubSubFlowRouteConfig::LoadConfig( const CORE::CDataNode& cfg )
     toSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "toSideTopicsAutoMatchFromSide" ).AsBool( toSideTopicsAutoMatchFromSide, true ); 
     failoverSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "failoverSideTopicsAutoMatchFromSide" ).AsBool( failoverSideTopicsAutoMatchFromSide, true ); 
     spilloverSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "spilloverSideTopicsAutoMatchFromSide" ).AsBool( spilloverSideTopicsAutoMatchFromSide, true ); 
-    deadLetterSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideTopicsAutoMatchFromSide" ).AsBool( deadLetterSideTopicsAutoMatchFromSide, true ); 
+    deadLetterSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideTopicsAutoMatchFromSide" ).AsBool( deadLetterSideTopicsAutoMatchFromSide, true );
+    preferFromTopicThreadForDestination = cfg.GetAttributeValueOrChildValueByName( "preferFromTopicThreadForDestination" ).AsBool( preferFromTopicThreadForDestination, true );
 
     const CORE::CDataNode* topicAssociationsNode = cfg.FindChild( "topicAssociations" );
     if ( GUCEF_NULL != topicAssociationsNode )

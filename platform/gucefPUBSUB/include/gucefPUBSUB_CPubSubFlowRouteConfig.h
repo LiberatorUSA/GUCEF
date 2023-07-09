@@ -114,6 +114,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
     bool failoverSideTopicsAutoMatchFromSide;              /**< Whether 'failover' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
     bool spilloverSideTopicsAutoMatchFromSide;             /**< Whether 'spillover' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
     bool deadLetterSideTopicsAutoMatchFromSide;            /**< Whether 'deadletter' side topics should be auto matched naming wise 1:1 with the 'from' side automatically, barring an explicity association override */
+    bool preferFromTopicThreadForDestination;              /**< if available the 'from' topic pulseGenerator will also be used for any created destination topics */
 
     CPubSubFlowRouteConfig( void );
 

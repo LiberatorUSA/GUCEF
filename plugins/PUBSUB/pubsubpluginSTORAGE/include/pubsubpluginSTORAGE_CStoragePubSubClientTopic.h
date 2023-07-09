@@ -159,7 +159,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     typedef CORE::CTBasicSharedPtrObjOperators< CContainerRangeInfo, MT::CNoLock >  TCContainerRangeInfoReference;
     typedef std::set< TCContainerRangeInfoReference >                               TCContainerRangeInfoReferenceSet;
 
-    CStoragePubSubClientTopic( CStoragePubSubClient* client );
+    CStoragePubSubClientTopic( CStoragePubSubClient* client           ,
+                               CORE::PulseGeneratorPtr pulseGenerator );
 
     virtual ~CStoragePubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 

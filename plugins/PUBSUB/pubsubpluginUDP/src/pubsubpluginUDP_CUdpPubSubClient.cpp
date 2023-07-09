@@ -189,7 +189,8 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CUdpPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CUdpPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                     CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CUdpPubSubClientTopicPtr topicAccess;

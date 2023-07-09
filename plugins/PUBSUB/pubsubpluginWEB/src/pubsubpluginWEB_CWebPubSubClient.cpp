@@ -184,7 +184,8 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CWebPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CWebPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                     CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CWebPubSubClientTopicPtr topicAccess;

@@ -63,7 +63,8 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopic : public STORA
 {
     public:
 
-    CTestPubSubClientTopic( CTestPubSubClient* client );
+    CTestPubSubClientTopic( CTestPubSubClient* client              ,
+                            CORE::PulseGeneratorPtr pulseGenerator );
 
     virtual ~CTestPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 

@@ -98,7 +98,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual PUBSUB::CPubSubClientTopicConfigPtr GetOrCreateTopicConfig( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                                             CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -108,15 +109,18 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
                                       PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
-                                         PubSubClientTopicSet& topicAccess               ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                         PubSubClientTopicSet& topicAccess                                  ,
+                                         CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
 
     bool AutoCreateMultiTopicAccess( CRedisClusterPubSubClientTopicConfigPtr templateTopicConfig ,
                                      const CORE::CString::StringSet& topicNameList               ,
-                                     PubSubClientTopicSet& topicAccess                           );
+                                     PubSubClientTopicSet& topicAccess                           ,
+                                     CORE::PulseGeneratorPtr pulseGenerator                      );
 
     bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
-                                     PubSubClientTopicSet& topicAccess                   );
+                                     PubSubClientTopicSet& topicAccess                   ,
+                                     CORE::PulseGeneratorPtr pulseGenerator              );
 
     void AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames );
     

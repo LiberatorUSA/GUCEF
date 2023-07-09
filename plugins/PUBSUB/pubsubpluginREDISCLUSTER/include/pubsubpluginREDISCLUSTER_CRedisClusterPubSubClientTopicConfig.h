@@ -70,7 +70,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CORE::UInt32 redisXReadBlockTimeoutInMs;
     bool treatXReadBlockTimeoutAsEndOfDataEvent;
     CORE::Int32 minAvailableInFlightSlotsBeforeRead;  /**< if a max nr of msgs in flight is being enforced then this controls the min free slots there have to be before the overhead of another read attemps */
-    
+    bool useDedicatedReadThread;                      /**< whether to use a dedicated thread to perform reads from Redis. Can be used in combo with the blocking settings for long poll */
+
     CRedisClusterPubSubClientTopicConfig( void );
     
     CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );

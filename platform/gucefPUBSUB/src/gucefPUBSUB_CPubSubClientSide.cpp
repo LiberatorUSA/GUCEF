@@ -355,9 +355,9 @@ CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( CORE::UInt64 publishActionID      ,
-                                                                 CIPubSubMsg::TNoLockSharedPtr& msg ,
-                                                                 bool isInFlightState               )
+CPubSubClientSide::TopicLink::MsgTrackingEntry::MsgTrackingEntry( CORE::UInt64 publishActionID       ,
+                                                                  CIPubSubMsg::TNoLockSharedPtr& msg ,
+                                                                  bool isInFlightState               )
     : retryCount( 0 )
     , firstPublishAttempt( CORE::CDateTime::NowUTCDateTime() )
     , lastPublishAttempt( CORE::CDateTime::Empty )
@@ -2850,7 +2850,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
                     }
                     else
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                             "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
                     }
                 }
@@ -2872,7 +2872,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
             }
             else
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
             }
         }
@@ -2986,7 +2986,7 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
         {
             if ( SetCpuAffinityByCpuId( m_sideSettings.cpuAffinityForPubSubThread ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) );
             }
             else

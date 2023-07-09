@@ -342,30 +342,36 @@ CRedisClusterPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConf
         else
             m_redisMaxXreadCount = m_config.redisXReadCount;
 
-        // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
-        // Redis does not support pushing of data directly
-        
-        if ( m_config.needSubscribeSupport && m_readerThread.IsNULL() )
+        if ( m_config.useDedicatedReadThread )
         {
-            m_readerThread = ( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) )->CreateSharedPtr();
-        }
-
-        if ( !m_readerThread.IsNULL() )
-        {
-            if ( !m_readerThread->IsActive() )
+            // We use blocking "long polling" reads which means we will need a dedicated thread to block until there is data
+            // Redis does not support pushing of data directly
+            if ( m_config.needSubscribeSupport && m_readerThread.IsNULL() )
             {
-                if ( !m_client->GetThreadPool()->SetupTask( m_readerThread ) )
+                m_readerThread = ( GUCEF_NEW CRedisClusterPubSubClientTopicReader( this ) )->CreateSharedPtr();
+            }
+
+            if ( !m_readerThread.IsNULL() )
+            {
+                if ( !m_readerThread->IsActive() )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: Failed to start blocking reader thread for async subscription" );
-                    return false;
+                    if ( !m_client->GetThreadPool()->SetupTask( m_readerThread ) )
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: Failed to start blocking reader thread for async subscription" );
+                        return false;
+                    }
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: blocking reader thread for async subscription was already active, no need to activate" );
                 }
             }
-            else
-            {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: blocking reader thread for async subscription was already active, no need to activate" );
-            }
+        } 
+        else
+        {
+            // @TODO: Drive based on a timer or similar instead
+            return false; // not yet implemented
         }
-        
         return true;
     }
     return false;

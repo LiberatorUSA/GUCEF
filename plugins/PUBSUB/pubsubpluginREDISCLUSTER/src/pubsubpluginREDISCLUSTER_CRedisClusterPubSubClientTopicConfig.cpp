@@ -56,6 +56,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
     , redisXReadBlockTimeoutInMs( 1000 )
     , treatXReadBlockTimeoutAsEndOfDataEvent( true )
     , minAvailableInFlightSlotsBeforeRead( 100 )
+    , useDedicatedReadThread( true )
 {GUCEF_TRACE;
 
 }
@@ -73,6 +74,7 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( cons
     , redisXReadBlockTimeoutInMs( 1000 )
     , treatXReadBlockTimeoutAsEndOfDataEvent( true )
     , minAvailableInFlightSlotsBeforeRead( 100 )
+    , useDedicatedReadThread( true )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -99,6 +101,7 @@ CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& c
     redisXReadBlockTimeoutInMs = config.GetAttributeValueOrChildValueByName( "redisXReadBlockTimeoutInMs" ).AsUInt32( redisXReadBlockTimeoutInMs );
     treatXReadBlockTimeoutAsEndOfDataEvent = config.GetAttributeValueOrChildValueByName( "treatXReadBlockTimeoutAsEndOfDataEvent" ).AsBool( treatXReadBlockTimeoutAsEndOfDataEvent, true ); 
     minAvailableInFlightSlotsBeforeRead = config.GetAttributeValueOrChildValueByName( "minAvailableInFlightSlotsBeforeRead" ).AsInt32( minAvailableInFlightSlotsBeforeRead );
+    useDedicatedReadThread = config.GetAttributeValueOrChildValueByName( "useDedicatedReadThread" ).AsBool( useDedicatedReadThread, true );
     return true;
 }
 
@@ -147,6 +150,7 @@ CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClient
         redisXReadBlockTimeoutInMs = src.redisXReadBlockTimeoutInMs;
         treatXReadBlockTimeoutAsEndOfDataEvent = src.treatXReadBlockTimeoutAsEndOfDataEvent;
         minAvailableInFlightSlotsBeforeRead = src.minAvailableInFlightSlotsBeforeRead;
+        useDedicatedReadThread = src.useDedicatedReadThread;
     }
     return *this;
 }

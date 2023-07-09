@@ -208,7 +208,8 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CMsmqPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CMsmqPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                      CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CMsmqPubSubClientTopicPtr topicAccess;

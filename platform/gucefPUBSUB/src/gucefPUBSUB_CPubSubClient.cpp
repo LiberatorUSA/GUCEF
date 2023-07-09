@@ -140,12 +140,32 @@ CPubSubClient::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+bool
+CPubSubClient::SetDefaultTopicPulseGenerator( CORE::PulseGeneratorPtr defaultPulseGenerator )
 {GUCEF_TRACE;
 
-    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    // default implementation is a no-op
+    // The backend can implement this if relevant
+    return false;
+}
 
+/*-------------------------------------------------------------------------*/
+
+CORE::PulseGeneratorPtr
+CPubSubClient::GetDefaultTopicPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return CORE::PulseGeneratorPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClient::SetTopicPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    SetDefaultTopicPulseGenerator( newPulseGenerator );
+    
     PubSubClientTopicSet allTopicAccess;
     GetAllCreatedTopicAccess( allTopicAccess );
 
@@ -161,8 +181,34 @@ CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                  bool includeTopics                        )
+{GUCEF_TRACE;
+
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+
+    if ( includeTopics )
+    {
+        SetTopicPulseGenerator( newPulseGenerator );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    // note that this is overloading the version from a base class
+    SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CPubSubClientTopicPtr
-CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
+CPubSubClient::GetOrCreateTopicAccess( const CString& topicName               ,
+                                       CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -170,7 +216,7 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
     CPubSubClientTopicPtr topicAccess = GetTopicAccess( topicName );
     if ( topicAccess.IsNULL() )
     {
-        topicAccess = CreateTopicAccess( topicName );
+        topicAccess = CreateTopicAccess( topicName, pulseGenerator );
     }
     return topicAccess;
 }
@@ -178,7 +224,8 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 CPubSubClientTopicPtr
-CPubSubClient::CreateTopicAccess( const CString& topicName )
+CPubSubClient::CreateTopicAccess( const CString& topicName               ,
+                                  CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -186,7 +233,7 @@ CPubSubClient::CreateTopicAccess( const CString& topicName )
     CPubSubClientTopicConfigPtr topicConfig = GetOrCreateTopicConfig( topicName );
     if ( !topicConfig.IsNULL() )
     {
-        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( topicConfig );
+        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( topicConfig, pulseGenerator );
         return topicAccess;
     }
     return CPubSubClientTopicPtr();
@@ -256,7 +303,8 @@ CPubSubClient::GetMultiTopicAccess( const CString::StringSet& topicNames ,
 
 bool
 CPubSubClient::GetOrCreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
-                                            PubSubClientTopicSet& topicAccess       )
+                                            PubSubClientTopicSet& topicAccess       ,
+                                            CORE::PulseGeneratorPtr pulseGenerator  )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -266,7 +314,7 @@ CPubSubClient::GetOrCreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicCon
     // This also means there is no way of knowing if we obtained the 'correct' nr of topics here, just something vs nothing.
     if ( !GetMultiTopicAccess( topicConfig, topicAccess ) || topicAccess.empty()  )
     {
-        return CreateMultiTopicAccess( topicConfig, topicAccess );
+        return CreateMultiTopicAccess( topicConfig, topicAccess, pulseGenerator );
     }
     return true;
 }
@@ -274,8 +322,9 @@ CPubSubClient::GetOrCreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicCon
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName          ,
-                                            PubSubClientTopicSet& topicAccess )
+CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName               ,
+                                            PubSubClientTopicSet& topicAccess      ,
+                                            CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -294,14 +343,15 @@ CPubSubClient::GetOrCreateMultiTopicAccess( const CString& topicName          ,
 
 bool
 CPubSubClient::CreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
-                                       PubSubClientTopicSet& topicAccess       )
+                                       PubSubClientTopicSet& topicAccess       ,
+                                       CORE::PulseGeneratorPtr pulseGenerator  )
 {GUCEF_TRACE;
 
     // The default implementation here assumes no 1:N pattern matching access is supported
     // As such it redirects to the basic CreateTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig );
+    CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
     if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
@@ -313,8 +363,9 @@ CPubSubClient::CreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
-                                       PubSubClientTopicSet& topicAccess )
+CPubSubClient::CreateMultiTopicAccess( const CString& topicName               ,
+                                       PubSubClientTopicSet& topicAccess      ,
+                                       CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -324,7 +375,7 @@ CPubSubClient::CreateMultiTopicAccess( const CString& topicName          ,
     CPubSubClientTopicConfigPtr topicConfig = GetTopicConfig( topicName );
     if ( !topicConfig.IsNULL() )
     {
-        return CreateMultiTopicAccess( topicConfig, topicAccess );
+        return CreateMultiTopicAccess( topicConfig, topicAccess, pulseGenerator );
     }
     return false;
 }

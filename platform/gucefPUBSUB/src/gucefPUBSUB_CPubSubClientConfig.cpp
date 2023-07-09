@@ -65,6 +65,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , metricsPrefix()
     , pubsubIdPrefix()
     , pulseGenerator()
+    , topicPulseGenerator()
 {GUCEF_TRACE;
 
 }
@@ -84,6 +85,7 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , metricsPrefix( src.metricsPrefix )
     , pubsubIdPrefix( src.pubsubIdPrefix )
     , pulseGenerator( src.pulseGenerator )
+    , topicPulseGenerator( src.topicPulseGenerator )
 {GUCEF_TRACE;
 
 }
@@ -117,6 +119,7 @@ CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
 
         // copy the runtime aspects
         pulseGenerator = src.pulseGenerator;
+        topicPulseGenerator = src.topicPulseGenerator;
         bookmarkPersistence = src.bookmarkPersistence;
     }
     return *this;

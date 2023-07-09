@@ -97,6 +97,9 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     if ( m_config.pulseGenerator.IsNULL() )
         m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
 
+    if ( m_config.topicPulseGenerator.IsNULL() )
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
     if ( m_config.desiredFeatures.supportsMetrics )
     {
         m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
@@ -118,7 +121,7 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
                 "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", 
                 m_config.pulseGenerator, 
                 true );
-
+    
     RegisterEventHandlers();
 }
 
@@ -224,7 +227,8 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                              CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     // Check to see if this logical/conceptual 'topic' represents multiple pattern matched Redis Streams
@@ -232,7 +236,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
          topicConfig->topicName.HasChar( '*' ) > -1               )
     {
         PubSubClientTopicSet allTopicAccess;
-        if ( CreateMultiTopicAccess( topicConfig, allTopicAccess ) && !allTopicAccess.empty() )
+        if ( CreateMultiTopicAccess( topicConfig, allTopicAccess, pulseGenerator ) && !allTopicAccess.empty() )
         {
             // Caller should really use the CreateMultiTopicAccess() variant
             PUBSUB::CPubSubClientTopicPtr tAccess( *(allTopicAccess.begin()) );
@@ -356,7 +360,8 @@ CRedisClusterPubSubClient::GetMultiTopicAccess( const CORE::CString::StringSet& 
 
 bool
 CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
-                                                       PubSubClientTopicSet& topicAccess                   )
+                                                       PubSubClientTopicSet& topicAccess                   ,
+                                                       CORE::PulseGeneratorPtr pulseGenerator              )
 {GUCEF_TRACE;
 
     CORE::UInt32 newTopicAccessCount = 0;
@@ -427,19 +432,21 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
 bool
 CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( CRedisClusterPubSubClientTopicConfigPtr templateTopicConfig ,
                                                        const CORE::CString::StringSet& topicNameList               ,
-                                                       PubSubClientTopicSet& topicAccess                           )
+                                                       PubSubClientTopicSet& topicAccess                           ,
+                                                       CORE::PulseGeneratorPtr pulseGenerator                      )
 {GUCEF_TRACE;
 
     TTopicConfigPtrToStringSetMap topicToCreate;
     topicToCreate[ templateTopicConfig ] = topicNameList;
-    return AutoCreateMultiTopicAccess( topicToCreate, topicAccess );
+    return AutoCreateMultiTopicAccess( topicToCreate, topicAccess, pulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CRedisClusterPubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
-                                                   PubSubClientTopicSet& topicAccess               )
+                                                   PubSubClientTopicSet& topicAccess               ,
+                                                   CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
@@ -451,14 +458,14 @@ CRedisClusterPubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicCon
             m_streamIndexingTimer->SetEnabled( true );
 
             if ( !topicNameList.empty() )
-                return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess );
+                return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess, pulseGenerator );
             return true; // Since its pattern based potential creation at a later time also counts as success
         }
         return false;
     }
     else
     {
-        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig );
+        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
         if ( !tAccess.IsNULL() )
         {
             topicAccess.insert( tAccess );
@@ -1309,7 +1316,7 @@ CRedisClusterPubSubClient::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier
 
                 PubSubClientTopicSet topicAccess;
 
-                AutoCreateMultiTopicAccess( templateConfig, topicNameList, topicAccess );
+                AutoCreateMultiTopicAccess( templateConfig, topicNameList, topicAccess, m_config.topicPulseGenerator );
             }
             ++n;
         }
@@ -1362,7 +1369,7 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     {
         // Bulk Auto generate topics for the new Redis keys
         PubSubClientTopicSet topicAccess;
-        AutoCreateMultiTopicAccess( bulkCreationMap, topicAccess );
+        AutoCreateMultiTopicAccess( bulkCreationMap, topicAccess, m_config.topicPulseGenerator );
     }
     if ( !updateInfo->deletedKeys.empty() )
     {

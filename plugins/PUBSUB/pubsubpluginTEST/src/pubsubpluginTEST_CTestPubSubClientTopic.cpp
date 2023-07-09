@@ -97,11 +97,12 @@ namespace TEST {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client )
-    : STORAGE::CStoragePubSubClientTopic( client )
+CTestPubSubClientTopic::CTestPubSubClientTopic( CTestPubSubClient* client              ,
+                                                CORE::PulseGeneratorPtr pulseGenerator )
+    : STORAGE::CStoragePubSubClientTopic( client, pulseGenerator )
     , CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >( this )
     , m_hasFakeHealthIssue( false )
-    , m_healthyStatusToggleTimer( m_client->GetConfig().pulseGenerator )
+    , m_healthyStatusToggleTimer( pulseGenerator )
 {GUCEF_TRACE;                     
 
     RegisterEventHandlers();

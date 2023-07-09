@@ -20,7 +20,7 @@
 				"pubsubClientType": "ClusteredRedis",
 				"reconnectDelayInMs": 1000,
 				"pubsubIdPrefix": "{auto}",
-				"maxTotalMsgsInFlight": 20000,
+				"maxTotalMsgsInFlight": 200000,
 				"RemoteAddresses": ["127.0.0.1:6379"],
 				"CustomConfig": {},
 				"Topics": [],
@@ -39,10 +39,11 @@
 						"redisXAddMaxLenIsApproximate": true,
 						"redisXAddIgnoreMsgId": true,
 						"redisXReadDefaultOffset": "0",
-						"redisXReadCount": -1,
-						"redisXReadBlockTimeoutInMs": 1000,
+						"redisXReadCount": 10000,
+						"redisXReadBlockTimeoutInMs": 500,
 						"treatXReadBlockTimeoutAsEndOfDataEvent": true,
-						"minAvailableInFlightSlotsBeforeRead": 900
+						"minAvailableInFlightSlotsBeforeRead": 100,
+						"useDedicatedReadThread": true
 					}
 				},
 				"DesiredFeatures": {
@@ -102,14 +103,14 @@
 			"maxMsgPublishRetryAttempts": 20,
 			"maxMsgPublishRetryTotalTimeInMs": 60000,
 			"maxPublishedMsgInFlightTimeInMs": 240000,
-			"performPubSubInDedicatedThread": true,
+			"performPubSubInDedicatedThread": false,
 			"retryFailedPublishAttempts": true,
 			"subscribeWithoutBookmarkIfNoneIsPersisted": true,
 			"PubSubClientConfig": {
 				"pubsubClientType": "STORAGE",
 				"reconnectDelayInMs": 0,
 				"pubsubIdPrefix": "{auto}",
-				"maxTotalMsgsInFlight": 20000,
+				"maxTotalMsgsInFlight": 200000,
 				"CustomConfig": {},
 				"Topics": [],
 				"defaultTopicConfig": {
@@ -125,8 +126,8 @@
 					"CustomConfig": {
 						"desiredNrOfBuffers": 3,
 						"desiredMinimalSerializedBlockSize": 52428800,
-						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 10000,
-						"vfsStorageRootPath": "InstallPath/pubsub/storage/{pubsubIdPrefix}/{metricsFriendlyTopicName}",
+						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 120000,
+						"vfsStorageRootPath": "InstallPath/pubsub/storage/{metricsFriendlyTopicName}",
 						"vfsFileExtention": "pubsubcapture",
 						"encodeCodecFamily": "",
 						"encodeCodecName": "",
@@ -247,6 +248,7 @@
 			"failoverSideTopicsAutoMatchFromSide": true,
 			"spilloverSideTopicsAutoMatchFromSide": true,
 			"deadLetterSideTopicsAutoMatchFromSide": true,
+			"preferFromTopicThreadForDestination": true,
 			"topicAssociations": []
 		}]
 	}

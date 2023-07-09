@@ -103,14 +103,20 @@ CTestPubSubClient::GetConfig( void )
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CTestPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CTestPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                      CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CTestPubSubClientTopicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = static_cast< CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >* >( GUCEF_NEW CTestPubSubClientTopic( this ) )->CreateSharedPtr();
+        if ( pulseGenerator.IsNULL() )
+            pulseGenerator = m_config.topicPulseGenerator; // none given, use default for topics
+        if ( pulseGenerator.IsNULL() )
+            pulseGenerator = GetPulseGenerator();          // none present, use client level pulse generator
+
+        topicAccess = static_cast< CORE::CTSharedObjCreator< CTestPubSubClientTopic, MT::CMutex >* >( GUCEF_NEW CTestPubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
         if ( topicAccess->LoadConfig( *topicConfig ) )
         {
             m_topicMap[ topicConfig->topicName ] = topicAccess;

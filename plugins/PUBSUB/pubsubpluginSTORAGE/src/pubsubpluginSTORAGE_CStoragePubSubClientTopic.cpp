@@ -425,8 +425,9 @@ CStoragePubSubClientTopic::StorageBufferMetaData::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
-CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* client )
-    : PUBSUB::CPubSubClientTopic( client->GetPulseGenerator() )
+CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* client           ,
+                                                      CORE::PulseGeneratorPtr pulseGenerator )
+    : PUBSUB::CPubSubClientTopic( pulseGenerator )
     , CORE::CTSharedObjCreator< CStoragePubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_pubsubMsgs()
@@ -477,16 +478,16 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
-    m_syncVfsOpsTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, 25 );
+    m_syncVfsOpsTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, 25 );
 
     if ( m_client->GetConfig().desiredFeatures.supportsAutoReconnect )
     {
-        m_reconnectTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
+        m_reconnectTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, m_client->GetConfig().reconnectDelayInMs );
     }
 
     if ( m_client->GetConfig().desiredFeatures.supportsPublishing )
     {
-        m_bufferContentTimeWindowCheckTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, 1000 );
+        m_bufferContentTimeWindowCheckTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, 1000 );
     }
 
     m_pubsubBookmarkPersistence = m_client->GetBookmarkPersistence();
@@ -494,7 +495,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
 
     if ( m_needToTrackAcks )
     {
-        m_noAckRetransmitTimer = GUCEF_NEW CORE::CTimer( m_client->GetConfig().pulseGenerator, GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS );
+        m_noAckRetransmitTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS );
     }
 
     RegisterEventHandlers();
@@ -655,9 +656,9 @@ CStoragePubSubClientTopic::Publish( CORE::UInt64& publishActionId    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                    ,
+CStoragePubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                   ,
                                     const PUBSUB::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs ,
-                                    bool notify                                                 )
+                                    bool notify                                                )
 {GUCEF_TRACE;
 
     CORE::UInt64 msgCount = msgs.size();
@@ -759,7 +760,8 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                         // We should not get here with both the blocking & long timeout
                         // the async buffer reads should be allowing us to proceed in a reasonable timeframe
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                            "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer" );
+                            "):PublishViaMsgPtrs: Failed to obtain new message serialization buffer. There are " + CORE::ToString( m_buffers.GetNrOfBuffers() ) +
+                            " buffers with " + CORE::ToString( m_buffers.GetBuffersQueuedToRead() ) + " waiting to write to storage" );
                     }
                     else
                     {
@@ -784,7 +786,8 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                 {
                     // We carry on best effort but this is really bad
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
-                        "):PublishViaMsgPtrs: Failed to write container header at start of new pub-sub msg container" );
+                        "):PublishViaMsgPtrs: Failed to write container header at start of new pub-sub msg container with associated start datetime of " + 
+                        m_buffers.GetCurrenWriterBufferAssociatedDt().ToIso8601DateTimeString( true, true ) );
                 }
 
                 // We are (re)using a new buffer, as such make sure we reset the meta-data that may be pre-existing

@@ -176,7 +176,8 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicPtr
-CKafkaPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig )
+CKafkaPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                       CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
     CKafkaPubSubClientTopicPtr topicAccess;

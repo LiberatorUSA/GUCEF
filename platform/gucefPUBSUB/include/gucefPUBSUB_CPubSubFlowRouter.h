@@ -192,6 +192,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         bool DidMsgsFlowIntoSpillover( void ) const;
         bool IsSpilloverInActiveUse( void ) const;
         void SwitchAllTopicLinksActiveTopic( RouteType activeSide );
+        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig, CORE::PulseGeneratorPtr pulseGenerator );
         bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig );
         bool MatchAllTopicRouteConfigs( void );
 
