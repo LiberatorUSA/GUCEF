@@ -343,7 +343,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         bool awaitingFailureReport;
         CORE::UInt64 totalMsgsInFlight;
         CORE::CString bookmarkNamespace;
-        CORE::UInt32 threadIdOfSide;
+        CORE::UInt32 threadIdOfTopicLink;
         CORE::CTimer timedOutInFlightMessagesCheckTimer;
         CORE::CTimer metricsTimer;
         CORE::PulseGeneratorPtr pulseGenerator;

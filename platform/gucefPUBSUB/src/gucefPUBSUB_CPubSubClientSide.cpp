@@ -194,7 +194,7 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , awaitingFailureReport( false )
     , totalMsgsInFlight( 0 )
     , bookmarkNamespace()
-    , threadIdOfSide( 0 )
+    , threadIdOfTopicLink( 0 )
     , timedOutInFlightMessagesCheckTimer( CORE::PulseGeneratorPtr(), 5000 )
     , metricsTimer( CORE::PulseGeneratorPtr(), 1000 )
     , dataLock()
@@ -225,7 +225,7 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     , awaitingFailureReport( false )
     , totalMsgsInFlight( 0 )
     , bookmarkNamespace()
-    , threadIdOfSide( 0 )
+    , threadIdOfTopicLink( 0 )
     , pulseGenerator()
     , dataLock()
 {GUCEF_TRACE;
@@ -1166,7 +1166,7 @@ CPubSubClientSide::TopicLink::PublishMsgs( const CPubSubClientTopic::TPubSubMsgs
 
     // We need to determine if the caller is running in the same thread
     // We only want to take the hit of using the mailbox (requires dynamic mem usage) if we are multi-threaded as its a performance trade-off
-    if ( threadIdOfSide == MT::GetCurrentTaskID() )
+    if ( threadIdOfTopicLink == MT::GetCurrentTaskID() )
     {
         if ( !awaitingFailureReport )
         {
@@ -2396,10 +2396,9 @@ CPubSubClientSide::TopicLink::Clear( void )
     topic.Unlink();
 
     awaitingFailureReport = false;
-    threadIdOfSide = 0;
+    threadIdOfTopicLink = 0;
     msgsSinceLastBookmarkPersist = 0;
     totalMsgsInFlight = 0;
-    threadIdOfSide = 0;
 
     currentPublishActionIds.clear();
     inFlightMsgs.clear();
@@ -2548,7 +2547,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         }
 
         topicLink->side = this;
-        topicLink->threadIdOfSide = m_threadIdOfSide;
+        topicLink->threadIdOfTopicLink = pulseGenerator->GetPulseDriverThreadId();
         topicLink->clientFeatures = m_clientFeatures;
         topicLink->flowRouter = m_flowRouter;
         topicLink->pulseGenerator = pulseGenerator;
