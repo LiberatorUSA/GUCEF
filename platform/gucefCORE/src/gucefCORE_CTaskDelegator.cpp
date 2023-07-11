@@ -247,6 +247,7 @@ bool
 CTaskDelegator::OnThreadStart( void* taskdata )
 {GUCEF_TRACE;
 
+    m_pulseGenerator->SetPulseDriverThreadId( GetThreadID() );
     ThreadStartedEventData id( GetThreadID() );
     NotifyObservers( ThreadStartedEvent, &id );
     return true;

@@ -820,7 +820,8 @@ CThreadPool::StartTask( CTaskConsumerPtr taskConsumer  ,
     // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
     taskConsumer->SetIsInPhasedSetup( false );
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Task of task type \"" + taskConsumer->GetType() +
-            "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + " instructed to commence work" );
+            "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + 
+            ", linked to thread " + ToString( taskConsumer->GetDelegatorThreadId() ) + ", is instructed to commence work" );
     return taskConsumer->GetTaskStatus();
 }
 
@@ -854,7 +855,8 @@ CThreadPool::StartTask( const CString& taskType            ,
             // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
             taskConsumer->SetIsInPhasedSetup( false );            
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool: Task of task type \"" + taskType +
-                    "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + " instructed to commence work" );
+                    "\" with task ID " + ToString( taskConsumer->GetTaskId() ) + 
+                    ", linked to thread " + ToString( taskConsumer->GetDelegatorThreadId() ) + ", is instructed to commence work" );
 
             if ( GUCEF_NULL != outTaskConsumer )
             {

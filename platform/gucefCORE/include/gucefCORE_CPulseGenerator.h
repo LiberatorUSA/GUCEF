@@ -115,6 +115,8 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier ,
 
     CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;
 
+    void SetPulseDriverThreadId( UInt32 driverThreadId );
+    
     UInt32 GetPulseDriverThreadId( void ) const;
 
     bool IsForcedStopOfPeriodicPulsesRequested( void ) const;

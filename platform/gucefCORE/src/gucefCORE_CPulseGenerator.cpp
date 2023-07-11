@@ -558,6 +558,16 @@ CPulseGenerator::GetTimeSinceTickCountInMilliSecs( UInt64 sinceTickCount ) const
 /*--------------------------------------------------------------------------*/
 
 void
+CPulseGenerator::SetPulseDriverThreadId( UInt32 driverThreadId )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex dataLock( m_dataLock );
+    m_driverThreadId = driverThreadId;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
 CPulseGenerator::OnDriverPulse( void )
 {GUCEF_TRACE;
 
