@@ -298,13 +298,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const = 0;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) = 0;
-
-    /**
-     *  Optionally a topic's backend implementation can provide access to the pulse generator it is using.
-     *  Doing so may allow for more efficient processing due to more 'same thread' allignment across work
-     *  thus potentially reducing thread contention.
-     */
-    virtual CORE::PulseGeneratorPtr GetPulseGenerator( void ) const;
 };
 
 /*-------------------------------------------------------------------------*/

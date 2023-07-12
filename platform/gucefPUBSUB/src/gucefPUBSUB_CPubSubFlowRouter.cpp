@@ -244,7 +244,9 @@ CPubSubFlowRouter::CRouteInfo::SwitchAllTopicLinksActiveTopic( RouteType activeS
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig, CORE::PulseGeneratorPtr pulseGenerator )
+CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig , 
+                                                      CORE::PulseGeneratorPtr fromPulseGenerator          ,
+                                                      CORE::PulseGeneratorPtr destPulseGenerator          )
 {GUCEF_TRACE;
 
     if ( topicRouteConfig.fromSideTopicName.IsNULLOrEmpty() )
@@ -274,9 +276,14 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                 // As such we need to map N:N not 1:1 for each association
 
                 CPubSubClient::PubSubClientTopicSet topicAccessSet;
-                if ( fromSideClient->GetMultiTopicAccess( topicRouteConfig.fromSideTopicName ,
-                                                          topicAccessSet                     ) )
+                if ( fromSideClient->GetOrCreateMultiTopicAccess( topicRouteConfig.fromSideTopicName ,
+                                                                  topicAccessSet                     ,
+                                                                  fromPulseGenerator                 ) )
                 {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Obtained access to " + CORE::ToString( topicAccessSet.size() ) + 
+                        " topics association for pattern matched 'from' topic " + topicRouteConfig.fromSideTopicName +
+                        ( fromPulseGenerator.IsNULL() ?  "" : ". Requested using pulse generator for thread " + CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) ) );
+
                     CPubSubClient::PubSubClientTopicSet::iterator i = topicAccessSet.begin();
                     while ( i != topicAccessSet.end() )
                     {
@@ -284,12 +291,21 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                         if ( !topicAccess.IsNULL() )
                         {
                             const CORE::CString& topicName = topicAccess->GetTopicName();
-                            CORE::PulseGeneratorPtr fromPulseGenerator;
-                            if ( routeConfig->preferFromTopicThreadForDestination )
+                            if ( routeConfig->preferFromTopicThreadForDestination && fromPulseGenerator.IsNULL()  )
                             {
                                 fromPulseGenerator = topicAccess->GetPulseGenerator();
                                 if ( fromPulseGenerator.IsNULL() )
                                     fromPulseGenerator = fromSideClient->GetDefaultTopicPulseGenerator();
+
+                                if ( !fromPulseGenerator.IsNULL() )
+                                {
+                                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Preference given to use 'from' thread for driving destinations as well, will be using pulse generator for thread " + 
+                                        CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) );
+                                }
+                                else
+                                {
+                                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Preference given to use 'from' thread for driving destinations as well, however no suitable pulse generator is available" );
+                                }
                             }
                             
                             CPubSubFlowRouteTopicConfig autoTopicRouteConfig;
@@ -315,7 +331,9 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                             else
                                 autoTopicRouteConfig.deadLetterSideTopicName = topicRouteConfig.deadLetterSideTopicName;
                         
-                            totalSuccess = MatchTopicRouteConfig( autoTopicRouteConfig, fromPulseGenerator ) && totalSuccess;
+                            totalSuccess = MatchTopicRouteConfig( autoTopicRouteConfig , 
+                                                                  fromPulseGenerator   , 
+                                                                  destPulseGenerator   ) && totalSuccess;
                         }
                         ++i;
                     }
@@ -333,12 +351,38 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
 
                 CRouteTopicLinks& topicLinks = fromSideTopicNameLinks[ topicRouteConfig.fromSideTopicName ];
                 CPubSubClientTopic* oldFromTopic = topicLinks.fromTopic;
-                topicLinks.fromTopic = fromSideClient->GetOrCreateTopicAccess( topicRouteConfig.fromSideTopicName, pulseGenerator ).GetPointerAlways();
-                if ( GUCEF_NULL == topicLinks.fromTopic )
+                topicLinks.fromTopic = fromSideClient->GetOrCreateTopicAccess( topicRouteConfig.fromSideTopicName, fromPulseGenerator ).GetPointerAlways();
+                if ( GUCEF_NULL != topicLinks.fromTopic )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Obtained access to topic for 'from' topic " + topicRouteConfig.fromSideTopicName +
+                            ( fromPulseGenerator.IsNULL() ?  "" : ". Requested using pulse generator for thread " + CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) ) );
+                }
+                else
                 {
                     totalSuccess = false;
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
                             topicRouteConfig.fromSideTopicName + "\" for 'from' side \"" + fromSide->GetSideId() + "\"" );
+                }
+
+                if ( fromPulseGenerator.IsNULL() && routeConfig->preferFromTopicThreadForDestination )
+                {
+                    fromPulseGenerator = topicLinks.fromTopic->GetPulseGenerator();
+                    if ( fromPulseGenerator.IsNULL() )
+                        fromPulseGenerator = fromSideClient->GetDefaultTopicPulseGenerator();
+
+                    if ( !fromPulseGenerator.IsNULL() )
+                    {
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Preference given to use 'from' thread for driving destinations as well, will be using pulse generator for thread " + 
+                            CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) );
+                    }
+                    else
+                    {
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Preference given to use 'from' thread for driving destinations as well, however no suitable pulse generator is available" );
+                    }
+                }
+                if ( destPulseGenerator.IsNULL() && routeConfig->preferFromTopicThreadForDestination )
+                {
+                    destPulseGenerator = fromPulseGenerator;    
                 }
 
                 if ( topicLinks.fromTopic != oldFromTopic )
@@ -352,7 +396,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                     CPubSubClientPtr toSideClient = toSide->GetCurrentUnderlyingPubSubClient();
                     if ( !toSideClient.IsNULL() )
                     {
-                        topicLinks.toTopic = toSideClient->GetOrCreateTopicAccess( topicRouteConfig.toSideTopicName, pulseGenerator ).GetPointerAlways();
+                        topicLinks.toTopic = toSideClient->GetOrCreateTopicAccess( topicRouteConfig.toSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.toTopic )
                         {
                             totalSuccess = false;
@@ -366,7 +410,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                     CPubSubClientPtr failoverSideClient = failoverSide->GetCurrentUnderlyingPubSubClient();
                     if ( !failoverSideClient.IsNULL() )
                     {
-                        topicLinks.failoverTopic = failoverSideClient->GetOrCreateTopicAccess( topicRouteConfig.failoverSideTopicName, pulseGenerator ).GetPointerAlways();
+                        topicLinks.failoverTopic = failoverSideClient->GetOrCreateTopicAccess( topicRouteConfig.failoverSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.failoverTopic )
                         {
                             totalSuccess = false;
@@ -380,7 +424,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                     CPubSubClientPtr spilloverSideClient = spilloverBufferSide->GetCurrentUnderlyingPubSubClient();
                     if ( !spilloverSideClient.IsNULL() )
                     {
-                        topicLinks.spilloverTopic = spilloverSideClient->GetOrCreateTopicAccess( topicRouteConfig.spilloverSideTopicName, pulseGenerator ).GetPointerAlways();
+                        topicLinks.spilloverTopic = spilloverSideClient->GetOrCreateTopicAccess( topicRouteConfig.spilloverSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.spilloverTopic )
                         {
                             totalSuccess = false;
@@ -394,7 +438,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                     CPubSubClientPtr deadLetterSideClient = deadLetterSide->GetCurrentUnderlyingPubSubClient();
                     if ( !deadLetterSideClient.IsNULL() )
                     {
-                        topicLinks.deadletterTopic = deadLetterSideClient->GetOrCreateTopicAccess( topicRouteConfig.deadLetterSideTopicName, pulseGenerator ).GetPointerAlways();
+                        topicLinks.deadletterTopic = deadLetterSideClient->GetOrCreateTopicAccess( topicRouteConfig.deadLetterSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.deadletterTopic )
                         {
                             totalSuccess = false;
@@ -417,7 +461,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
 {GUCEF_TRACE;
 
     CORE::PulseGeneratorPtr nullPulseGenerator;
-    return MatchTopicRouteConfig( topicRouteConfig, nullPulseGenerator );
+    return MatchTopicRouteConfig( topicRouteConfig, nullPulseGenerator, nullPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2355,12 +2399,17 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
             // We either had an explicit topic mapping or we are auto-matching
             // either way make sure our raw pointers are up to date
 
-            CORE::PulseGeneratorPtr pulseGenerator;
+            CORE::PulseGeneratorPtr fromPulseGenerator;
             if ( routeConfig.preferFromTopicThreadForDestination )
             {
-                pulseGenerator = fromTopicPtr->GetPulseGenerator();
-                if ( pulseGenerator.IsNULL() )
-                    pulseGenerator = fromClient->GetDefaultTopicPulseGenerator();
+                fromPulseGenerator = fromTopicPtr->GetPulseGenerator();
+                if ( fromPulseGenerator.IsNULL() )
+                    fromPulseGenerator = fromClient->GetDefaultTopicPulseGenerator();
+            }
+            CORE::PulseGeneratorPtr destPulseGenerator;
+            if ( !fromPulseGenerator.IsNULL() && routeConfig.preferFromTopicThreadForDestination )
+            {
+                destPulseGenerator = fromPulseGenerator;
             }
 
             TRouteInfoVector& routes = (*r).second;
@@ -2368,7 +2417,7 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
             while ( i != routes.end() )
             {
                 CRouteInfo& routeInfo = (*i);
-                if ( routeInfo.MatchTopicRouteConfig( *topicRouteConfig, pulseGenerator ) )
+                if ( routeInfo.MatchTopicRouteConfig( *topicRouteConfig, fromPulseGenerator, destPulseGenerator ) )
                 {
                     DetermineActiveRoute( routeInfo );
                 }

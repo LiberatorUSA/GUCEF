@@ -622,7 +622,7 @@ CTBasicSharedPtr< T, LockType >&
 CTBasicSharedPtr< T, LockType >::operator=( const CTBasicSharedPtr< T, LockType >& src )
 {GUCEF_TRACE;
 
-    if ( this != &src )
+    if ( this != &src && m_shared != src.m_shared )
     {
         Unlink();
 

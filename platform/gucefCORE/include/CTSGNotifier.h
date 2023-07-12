@@ -141,7 +141,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
 
     virtual void SetPulseGenerator( PulseGeneratorPtr newPulseGenerator );
     
-    PulseGeneratorPtr GetPulseGenerator( void ) const;
+    virtual PulseGeneratorPtr GetPulseGenerator( void ) const;
 
     /**
      *  A pumped observer uses pulse generator events to allow for async 
