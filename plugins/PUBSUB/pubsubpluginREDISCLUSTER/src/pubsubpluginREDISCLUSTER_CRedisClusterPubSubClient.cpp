@@ -969,16 +969,43 @@ CRedisClusterPubSubClient::Connect( bool reset )
 
         rppConnectionOptions.keep_alive = m_config.redisConnectionOptionKeepAlive;
 
+        sw::redis::Role clientRole = sw::redis::Role::MASTER; // by default clients only interact with the primary nodes
+        if ( !m_config.desiredFeatures.supportsPublishing )
+        {
+            clientRole = sw::redis::Role::SLAVE;
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) + 
+                "):Connect: Since there is no desire to publish data we will signal a willingness to use read-only replica nodes" );
+        }
+
         // Connect to the Redis cluster
         m_redisContext.Unlink();
-        m_redisContext = RedisClusterPtr( GUCEF_NEW sw::redis::RedisCluster( rppConnectionOptions ) );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
+        try
+        {
+            m_redisContext = RedisClusterPtr( GUCEF_NEW sw::redis::RedisCluster( rppConnectionOptions, {}, clientRole ) );
+        }
+        catch ( const sw::redis::Error& e )
+        {
+            if ( 0 == strcmp( e.what(), "no slave node available" ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) + 
+                    "):Connect: Since there are no slave nodes available we will adapt to connect to primary nodes only" );
+
+                clientRole = sw::redis::Role::MASTER;
+                m_redisContext = RedisClusterPtr( GUCEF_NEW sw::redis::RedisCluster( rppConnectionOptions, {}, clientRole ) );
+            }
+            else
+            {
+                throw e; // just rethrow and let the regular exception handling code below handle it as to not duplicate logic
+            }
+        }
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis context" );
 
         // The following is not a must-have for connectivity, its for diagnostic logging
         if ( GetRedisClusterNodeMap( m_nodeMap ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully obtained Redis cluster nodes" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Successfully obtained Redis cluster nodes" );
         }
 
         // Init connectivity for all topics we already know about
