@@ -222,10 +222,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     private:
 
-    bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
-
-    bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
-
     void RegisterEventHandlers( void );
 
     void RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubClient );
@@ -391,8 +387,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
         void CleanupMsgBatchBookmarksUpTo( UInt64 msgBatchBookmarkReceiveId );
 
-        bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
-
         bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
 
         bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
@@ -401,6 +395,12 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         bool PublishMsgsSync( const TMsgCollection& msgs );
 
         bool PublishMailboxMsgs( void );
+
+        bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+        bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
+        
+        bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
         void ProcessAcknowledgeReceiptsMailbox( void );
 

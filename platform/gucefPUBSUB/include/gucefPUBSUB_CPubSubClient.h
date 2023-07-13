@@ -240,7 +240,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     virtual bool AreAllSubscriptionsAtEndOfData( void ) const;
 
     /**
-     *  Provide ability to get the textual name of the formatter
+     *  Provide ability to get the textual name of the client type, typically the name under which its registered
      */
     virtual const CString& GetType( void ) const = 0;
 

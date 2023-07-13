@@ -2129,23 +2129,6 @@ bool
 CPubSubClientSide::AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    CORE::UInt32 callerThreadId = MT::GetCurrentTaskID();
-    if ( m_threadIdOfSide == callerThreadId )
-    {
-        return AcknowledgeReceiptSync( msg );
-    }
-    else
-    {
-        return AcknowledgeReceiptASync( msg );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
-{GUCEF_TRACE;
-
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic().GetPointerAlways() );
@@ -2157,7 +2140,7 @@ CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
 
         if ( !topicLink.IsNULL() )
         {
-            return topicLink->AcknowledgeReceiptSync( msg );
+            return topicLink->AcknowledgeReceipt( msg );
         }
     }
     else
@@ -2167,6 +2150,18 @@ CPubSubClientSide::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg )
                     CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientSide::TopicLink::AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg )
+{GUCEF_TRACE;
+
+    if ( threadIdOfTopicLink == MT::GetCurrentTaskID() )
+        return AcknowledgeReceiptSync( msg );
+    else
+        return AcknowledgeReceiptASync( msg );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2191,31 +2186,10 @@ CPubSubClientSide::TopicLink::AcknowledgeReceiptSync( CIPubSubMsg::TNoLockShared
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg )
+CPubSubClientSide::TopicLink::AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg )
 {GUCEF_TRACE;
 
-    MT::CScopeReaderLock lock( m_rwdataLock );
-
-    TopicMap::iterator i = m_topics.find( msg->GetOriginClientTopic().GetPointerAlways() );
-    if ( i != m_topics.end() )
-    {
-        TopicLinkPtr topicLink = (*i).second;
-
-        lock.EarlyUnlock();
-
-        if ( !topicLink.IsNULL() )
-        {
-            return topicLink->publishAckdMsgsMailbox.AddMail( msg );
-        }        
-    }
-    else
-    {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):AcknowledgeReceiptASync: Message origin topic is not familiar when trying to ack msg receipt. " + 
-                    CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
-    }
-
-    return false;
+    return publishAckdMsgsMailbox.AddMail( msg );
 }
 
 /*-------------------------------------------------------------------------*/
