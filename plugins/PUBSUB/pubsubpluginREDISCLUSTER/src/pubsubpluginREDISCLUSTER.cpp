@@ -37,10 +37,10 @@
 #define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
 #endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H ? */
 
-#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
-#include "pubsubpluginREDISCLUSTER_CRedisClusterKeyCache.h"
-#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H
-#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERKEYCACHE_H ? */
+#ifndef REDISINFO_CREDISCLUSTERKEYCACHE_H
+#include "redisinfo_CRedisClusterKeyCache.h"
+#define REDISINFO_CREDISCLUSTERKEYCACHE_H
+#endif /* REDISINFO_CREDISCLUSTERKEYCACHE_H ? */
 
 #include "pubsubpluginREDISCLUSTER.h"
 
@@ -49,6 +49,8 @@
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+using namespace GUCEF::REDISINFO; 
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {

@@ -1,0 +1,10 @@
+<PROJECTGENERATOR>
+  <INCLUDES PLATFORM="ALL">
+    <ITEM NAME="../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h" TYPE="FILE" />
+    <ITEM NAME="../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp" TYPE="FILE" />
+    <ITEM NAME="../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h" TYPE="FILE" />
+    <ITEM NAME="../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp" TYPE="FILE" />
+    <ITEM NAME="../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h" TYPE="FILE" />
+    <ITEM NAME="../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp" TYPE="FILE" />
+  </INCLUDES>
+</PROJECTGENERATOR>

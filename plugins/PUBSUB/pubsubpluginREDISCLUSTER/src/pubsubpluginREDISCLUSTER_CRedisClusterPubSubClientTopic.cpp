@@ -60,6 +60,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+using namespace GUCEF::REDISINFO; 
+
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
 namespace REDISCLUSTER {
