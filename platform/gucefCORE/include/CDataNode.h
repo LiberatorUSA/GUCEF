@@ -210,7 +210,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     const CVariant& GetAttributeValue( const CString& name ) const;
 
-    const CVariant& GetAttributeValue( const CString& name, const CVariant& defaultValue ) const;
+    const CVariant& GetAttributeValue( const CString& name             , 
+                                       const CVariant& defaultValue    ,
+                                       const bool caseSensitive = true ) const;
 
     bool SetAttribute( const CString& name                     ,
                        const CString& value                    ,
@@ -250,7 +252,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      *  @param name the name of the attribute or child node
      *  @return the value located using the given name
      */
-    const CVariant& GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue = CVariant::Empty ) const;
+    const CVariant& GetAttributeValueOrChildValueByName( const CString& name                            , 
+                                                         const CVariant& defaultValue = CVariant::Empty ,
+                                                         const bool caseSensitive = true                ) const;
 
     TVariantVector GetAttributeValueOrChildValuesByName( const CString& name ) const;
 
@@ -264,7 +268,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      *  @param name the name of the child node
      *  @return the value of the first child located with the given name
      */
-    const CVariant& GetChildValueByName( const CString& name ) const;
+    const CVariant& GetChildValueByName( const CString& name                            ,
+                                         const CVariant& defaultValue = CVariant::Empty ,
+                                         const bool caseSensitive = true                ) const;
 
     /**
      *  Attempts to locate a child node with the given name
@@ -294,15 +300,18 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
     CDataNode* FindRoot( void ) const;
 
-    CDataNode* FindChild( const CString& name ) const;
+    CDataNode* FindChild( const CString& name       , 
+                          bool caseSensitive = true ) const;
 
     CDataNode* FindOrAddChild( const CString& name, int typeOfNode = GUCEF_DATATYPE_OBJECT );
 
-    TConstDataNodeSet FindChildrenOfType( const CString& name          ,
-                                          const bool recursive = false ) const;
+    TConstDataNodeSet FindChildrenOfType( const CString& name             ,
+                                          const bool recursive = false    ,
+                                          const bool caseSensitive = true ) const;
 
-    TDataNodeSet FindChildrenOfType( const CString& name          ,
-                                     const bool recursive = false );
+    TDataNodeSet FindChildrenOfType( const CString& name             ,
+                                     const bool recursive = false    ,
+                                     const bool caseSensitive = true );
 
     TDataNodeSet FindNodesOfType( const CString& name  ,
                                   const bool recursive );

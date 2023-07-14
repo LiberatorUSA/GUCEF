@@ -19,16 +19,27 @@
 		"logStats": false
 	},
 	"VFS": {
-		"ArchiveSettings": {
-			"ActualArchivePath": "$MODULEDIR$",
-			"MountPath": "InstallPath",
-			"ArchiveName": "InstallPath",
-			"ArchiveType": "FileSystem",
-			"MountArchives": false,
-			"MountArchivesIsRecursive": false,
-			"Writeable": true,
-			"Readable": true
-		}
+		"archives": [{
+				"actualArchivePath": "$MODULEDIR$",
+				"mountPath": "InstallPath",
+				"archiveName": "InstallPath",
+				"archiveType": "FileSystem",
+				"mountArchives": false,
+				"mountArchivesIsRecursive": false,
+				"writeable": true,
+				"readable": true
+			},
+			{
+				"actualArchivePath": "$MODULEDIR$",
+				"mountPath": "DataPath",
+				"archiveName": "DataPath",
+				"archiveType": "FileSystem",
+				"mountArchives": false,
+				"mountArchivesIsRecursive": false,
+				"writeable": true,
+				"readable": true
+			}
+		]
 	},
 	"PubSub2PubSubConfig": {
 		"channelConfigTemplateRefs": ["vfs://InstallPath/channel_templates/msmq2kafka.json",

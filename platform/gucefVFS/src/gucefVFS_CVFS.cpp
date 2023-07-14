@@ -1771,27 +1771,55 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             ++i;
         }
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS legacy configuration loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS legacy configuration load sequence completed" );
     }
 
     n = tree.Find( "VFS" );
     if ( n )
     {
-        CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings" );
+        CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings", false, false );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )
         {
             const CORE::CDataNode* settingsNode = (*i);
             CArchiveSettings settings;
-            settings.LoadConfig( *settingsNode );
-            if ( !globalConfigLoadInProgress )
-                MountArchive( settings );
+            if ( settings.LoadConfig( *settingsNode ) )
+            {
+                if ( !globalConfigLoadInProgress )
+                    MountArchive( settings );
+                else
+                    DelayMountArchive( settings );
+            }
             else
-                DelayMountArchive( settings );
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive settings entry failed to load" );
+            }
             ++i;
         }
+        const CORE::CDataNode* listRoot = n->FindChild( "archives", false );
+        if ( listRoot != GUCEF_NULL )
+        {
+            CORE::CDataNode::const_iterator node = listRoot->ConstBegin();
+            while( node != n->ConstEnd() )
+            {
+                const CORE::CDataNode* settingsNode = (*node);
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive configuration loaded" );
+                CArchiveSettings settings;
+                if ( settings.LoadConfig( *settingsNode ) )
+                {
+                    if ( !globalConfigLoadInProgress )
+                        MountArchive( settings );
+                    else
+                        DelayMountArchive( settings );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive settings entry failed to load" );
+                }
+                ++node;
+            }
+        }
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive configuration load sequence completed" );
     }
     return true;
 }

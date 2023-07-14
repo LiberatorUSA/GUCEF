@@ -90,7 +90,7 @@
 				"autoPersistMsgInterval": 1000,
 				"maxNrOfBookmarksToKeep": 10,
 				"CustomConfig": {
-					"vfsRootPath": "InstallPath/pubsub/bookmarks",
+					"vfsRootPath": "DataPath/bookmarks",
 					"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 				}
 			}
@@ -126,8 +126,8 @@
 					"CustomConfig": {
 						"desiredNrOfBuffers": 3,
 						"desiredMinimalSerializedBlockSize": 52428800,
-						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 120000,
-						"vfsStorageRootPath": "InstallPath/pubsub/storage/{metricsFriendlyTopicName}",
+						"desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 30000,
+						"vfsStorageRootPath": "DataPath/storage/{topicName}",
 						"vfsFileExtention": "pubsubcapture",
 						"encodeCodecFamily": "",
 						"encodeCodecName": "",
@@ -151,7 +151,7 @@
 						"treatEveryFullfilledRequestAsEODEvent": false,
 						"deleteContainersWithFullyAckdContent": false,
 						"moveContainersWithFullyAckdContent": true,
-						"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
+						"vfsStorageRootPathForFullyAckdContainers": "DataPath/storage-sink/ackd",
 						"maxCompletedContainerRefsToRetain": 50,
 						"binarySerializerOptions": {
 							"msgDateTimeIncluded": true,
@@ -224,7 +224,7 @@
 				"autoPersistMsgInterval": 1000,
 				"maxNrOfBookmarksToKeep": 10,
 				"CustomConfig": {
-					"vfsRootPath": "InstallPath/pubsub/bookmarks",
+					"vfsRootPath": "DataPath/bookmarks",
 					"persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
 				}
 			}

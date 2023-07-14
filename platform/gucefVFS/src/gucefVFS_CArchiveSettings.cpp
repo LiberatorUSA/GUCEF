@@ -138,65 +138,53 @@ CArchiveSettings::operator=( const CArchiveSettings& src )
 /*-------------------------------------------------------------------------*/
  
 bool 
-CArchiveSettings::SaveConfig( CORE::CDataNode& tree ) const
+CArchiveSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    CORE::CDataNode settingsNode( "ArchiveSettings" );
-    settingsNode.SetAttribute( "Path", m_archivePath );
-    settingsNode.SetAttribute( "ActualArchivePath", m_actualArchivePath );
-    settingsNode.SetAttribute( "ArchiveName", m_archiveName );
-    settingsNode.SetAttribute( "ArchiveType", m_archiveType );
-    settingsNode.SetAttribute( "MountPath", m_mountPath );
-    settingsNode.SetAttribute( "MountArchives", m_autoMountSubArchives );
-    settingsNode.SetAttribute( "MountArchivesIsRecursive", m_autoMountSubArchivesIsRecursive );
-    settingsNode.SetAttribute( "Writeable", m_writeableRequested );
-    settingsNode.SetAttribute( "Readable", m_readableRequested );
-    settingsNode.SetAttribute( "DirectoryWatchingAbility", m_directoryWatchingAbilityRequested );    
-    m_archiveSpecificSettings.SaveConfig( settingsNode );
-    tree.AddChild( settingsNode );
-    return true;
+    bool totalSuccess = true;
+    totalSuccess = cfg.SetAttribute( "path", m_archivePath ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "actualArchivePath", m_actualArchivePath ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "archiveName", m_archiveName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "archiveType", m_archiveType ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "mountPath", m_mountPath ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "mountArchives", m_autoMountSubArchives ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "mountArchivesIsRecursive", m_autoMountSubArchivesIsRecursive ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "writeable", m_writeableRequested ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "readable", m_readableRequested ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "directoryWatchingAbility", m_directoryWatchingAbilityRequested ) && totalSuccess;    
+    totalSuccess = m_archiveSpecificSettings.SaveConfig( cfg ) && totalSuccess;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
                                                                   
 bool 
-CArchiveSettings::LoadConfig( const CORE::CDataNode& treeroot )
+CArchiveSettings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    const CORE::CDataNode* settingsNode = treeroot.Find( "ArchiveSettings" );
-    
-    // Check for the legacy naming
-    if ( GUCEF_NULL == settingsNode )
-        settingsNode = treeroot.Find( "VfsRoot" );
-    
-    if ( GUCEF_NULL != settingsNode )
-    {
-        m_actualArchivePath = CORE::RelativePath( settingsNode->GetAttributeValueOrChildValueByName( "ActualArchivePath" ).AsString( m_actualArchivePath, true ) );
-        m_archivePath = settingsNode->GetAttributeValueOrChildValueByName( "Path" ).AsString( m_archivePath, true );
-        if ( m_archivePath.IsNULLOrEmpty() )
-            m_archivePath = m_actualArchivePath;
-        if ( m_actualArchivePath.IsNULLOrEmpty() )
-            m_actualArchivePath = m_archivePath;
+    m_actualArchivePath = CORE::RelativePath( cfg.GetAttributeValueOrChildValueByName( "actualArchivePath", CORE::CVariant::Empty, false ).AsString( m_actualArchivePath, true ) );
+    m_archivePath = cfg.GetAttributeValueOrChildValueByName( "path", CORE::CVariant::Empty, false ).AsString( m_archivePath, true );
+    if ( m_archivePath.IsNULLOrEmpty() )
+        m_archivePath = m_actualArchivePath;
+    if ( m_actualArchivePath.IsNULLOrEmpty() )
+        m_actualArchivePath = m_archivePath;
         
-        m_archiveName = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveName" ).AsString( m_archiveName, true );
-        if ( m_archiveName.IsNULLOrEmpty() )
-            m_archiveName = m_archivePath;
+    m_archiveName = cfg.GetAttributeValueOrChildValueByName( "archiveName", CORE::CVariant::Empty, false ).AsString( m_archiveName, true );
+    if ( m_archiveName.IsNULLOrEmpty() )
+        m_archiveName = m_archivePath;
         
-        m_archiveType = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveType" ).AsString( m_archiveType, true );
-        m_mountPath = settingsNode->GetAttributeValueOrChildValueByName( "MountPath" ).AsString( m_mountPath, true );
-        m_autoMountSubArchives = settingsNode->GetAttributeValueOrChildValueByName( "MountArchives" ).AsBool( m_autoMountSubArchives, true );
-        m_autoMountSubArchivesIsRecursive = settingsNode->GetAttributeValueOrChildValueByName( "MountArchivesIsRecursive" ).AsBool( m_autoMountSubArchivesIsRecursive, true );
-        m_writeableRequested = settingsNode->GetAttributeValueOrChildValueByName( "Writeable" ).AsBool( m_writeableRequested, true );
-        m_readableRequested = settingsNode->GetAttributeValueOrChildValueByName( "Readable" ).AsBool( m_readableRequested, true );
-        m_directoryWatchingAbilityRequested = settingsNode->GetAttributeValueOrChildValueByName( "DirectoryWatchingAbility" ).AsBool( m_directoryWatchingAbilityRequested, true );
+    m_archiveType = cfg.GetAttributeValueOrChildValueByName( "archiveType", CORE::CVariant::Empty, false ).AsString( m_archiveType, true );
+    m_mountPath = cfg.GetAttributeValueOrChildValueByName( "mountPath", CORE::CVariant::Empty, false ).AsString( m_mountPath, true );
+    m_autoMountSubArchives = cfg.GetAttributeValueOrChildValueByName( "mountArchives", CORE::CVariant::Empty, false ).AsBool( m_autoMountSubArchives, true );
+    m_autoMountSubArchivesIsRecursive = cfg.GetAttributeValueOrChildValueByName( "mountArchivesIsRecursive", CORE::CVariant::Empty, false ).AsBool( m_autoMountSubArchivesIsRecursive, true );
+    m_writeableRequested = cfg.GetAttributeValueOrChildValueByName( "writeable", CORE::CVariant::Empty, false ).AsBool( m_writeableRequested, true );
+    m_readableRequested = cfg.GetAttributeValueOrChildValueByName( "readable", CORE::CVariant::Empty, false ).AsBool( m_readableRequested, true );
+    m_directoryWatchingAbilityRequested = cfg.GetAttributeValueOrChildValueByName( "directoryWatchingAbility", CORE::CVariant::Empty, false ).AsBool( m_directoryWatchingAbilityRequested, true );
 
-        m_archiveSpecificSettings.LoadConfig( *settingsNode );
+    m_archiveSpecificSettings.LoadConfig( cfg );
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ArchiveSettings: Configuration successfully loaded for archive \"" + m_archiveName + "\"" );
-        return true;
-    }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ArchiveSettings: Unable to load configuration for archive" );
-    return false;
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ArchiveSettings: Configuration successfully loaded for archive \"" + m_archiveName + "\"" );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

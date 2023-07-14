@@ -409,22 +409,39 @@ const CVariant &
 CDataNode::GetAttributeValue( const CString& name ) const
 {GUCEF_TRACE;
 
-    return GetAttributeValue( name, CVariant::Empty );
+    return GetAttributeValue( name, CVariant::Empty, true );
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CVariant&
 CDataNode::GetAttributeValue( const CString& name          , 
-                              const CVariant& defaultValue ) const
+                              const CVariant& defaultValue ,
+                              const bool caseSensitive     ) const
 {GUCEF_TRACE;
 
-    TAttributeMap::const_iterator i = _atts.find( name );
-    if ( i != _atts.end() )
+    if ( caseSensitive )
     {
-        return (*i).second;
+        TAttributeMap::const_iterator i = _atts.find( name );
+        if ( i != _atts.end() )
+        {
+            return (*i).second;
+        }
+        return defaultValue;
     }
-    return defaultValue;
+    else
+    {
+        TAttributeMap::const_iterator i = _atts.begin();
+        while ( i != _atts.end() )
+        {
+            if ( (*i).first.Equals( name, caseSensitive ) )
+            {
+                return (*i).second;
+            }
+            ++i;
+        }
+        return defaultValue;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -635,7 +652,8 @@ CDataNode::CopySubTree( const CDataNode& root )
 
 void 
 CDataNode::DelAttribute( const CString& name )
-{
+{GUCEF_TRACE;
+
     _atts.erase( name );      
 }
 
@@ -643,26 +661,25 @@ CDataNode::DelAttribute( const CString& name )
 
 CDataNode* 
 CDataNode::FindRoot( void ) const
-{
-        GUCEF_BEGIN;
-        if ( !_pparent )
-        {
-                GUCEF_END;
-                return (CDataNode*)this;
-        }        
-        GUCEF_END_RET( _pparent->FindRoot() );
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == _pparent )
+    {
+        return (CDataNode*) this;
+    }        
+    return _pparent->FindRoot();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode* 
-CDataNode::FindChild( const CString& name ) const
+CDataNode::FindChild( const CString& name, bool caseSensitive ) const
 {GUCEF_TRACE;
         
     TDataNodeList::const_iterator i = m_children.cbegin();
     while ( i != m_children.end() )
     {
-        if ( (*i)->_name == name )
+        if ( (*i)->_name.Equals( name, caseSensitive ) )
             return (*i);
         ++i;
     }
@@ -672,8 +689,9 @@ CDataNode::FindChild( const CString& name ) const
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TConstDataNodeSet
-CDataNode::FindChildrenOfType( const CString& name  ,
-                               const bool recursive ) const
+CDataNode::FindChildrenOfType( const CString& name      ,
+                               const bool recursive     ,
+                               const bool caseSensitive ) const
 {GUCEF_TRACE;
 
     TConstDataNodeSet children;
@@ -681,14 +699,14 @@ CDataNode::FindChildrenOfType( const CString& name  ,
     while ( m != m_children.cend() )
     {
         const CDataNode* child = (*m);
-        if ( child->_name == name )
+        if ( child->_name.Equals( name, caseSensitive ) )
         {
             children.insert( child );            
         }
         if ( recursive )
         {
             
-            TConstDataNodeSet subSet( child->FindChildrenOfType( name, recursive ) );
+            TConstDataNodeSet subSet( child->FindChildrenOfType( name, recursive, caseSensitive ) );
             TConstDataNodeSet::const_iterator i = subSet.begin();
             while ( i != subSet.end() )
             {
@@ -719,21 +737,22 @@ CDataNode::FindNodesOfType( const CString& name  ,
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TDataNodeSet
-CDataNode::FindChildrenOfType( const CString& name  ,
-                               const bool recursive )
+CDataNode::FindChildrenOfType( const CString& name      ,
+                               const bool recursive     ,
+                               const bool caseSensitive )
 {GUCEF_TRACE;
 
     TDataNodeSet children;
     TDataNodeList::iterator m = m_children.begin();
     while ( m != m_children.end() )
     {
-        if ( (*m)->_name == name )
+        if ( (*m)->_name.Equals( name, caseSensitive ) )
         {
             children.insert( (*m) );            
         }
         if ( recursive )
         {
-            TDataNodeSet subSet( (*m)->FindChildrenOfType( name, recursive ) );
+            TDataNodeSet subSet( (*m)->FindChildrenOfType( name, recursive, caseSensitive ) );
             TDataNodeSet::const_iterator i = subSet.begin();
             while ( i != subSet.end() )
             {
@@ -1644,27 +1663,31 @@ CDataNode::AddValueAsChild( const CString& nodeValue )
 /*-------------------------------------------------------------------------*/
 
 const CVariant&
-CDataNode::GetChildValueByName( const CString& name ) const
+CDataNode::GetChildValueByName( const CString& name          ,
+                                const CVariant& defaultValue ,
+                                const bool caseSensitive     ) const
 {GUCEF_TRACE;
 
-    CDataNode* childNode = FindChild( name );
+    CDataNode* childNode = FindChild( name, caseSensitive );
     if ( GUCEF_NULL != childNode )
     {
         return childNode->GetValue();
     }
-    return CVariant::Empty;
+    return defaultValue;
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CVariant&
-CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue ) const
+CDataNode::GetAttributeValueOrChildValueByName( const CString& name          , 
+                                                const CVariant& defaultValue ,
+                                                const bool caseSensitive     ) const
 {GUCEF_TRACE;
 
-    const CVariant& attValue = GetAttributeValue( name );
+    const CVariant& attValue = GetAttributeValue( name, CVariant::Empty, caseSensitive );
     if ( attValue.IsNULLOrEmpty() )
     {
-        const CVariant& childValue = GetChildValueByName( name );
+        const CVariant& childValue = GetChildValueByName( name, CVariant::Empty, caseSensitive );
         if ( childValue.IsNULLOrEmpty() )
         {
             return defaultValue;

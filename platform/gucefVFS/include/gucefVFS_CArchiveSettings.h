@@ -79,23 +79,20 @@ class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
     CArchiveSettings& operator=( const CArchiveSettings& src );
     
     /**
-     *      Attempts to store the given tree in the file
-     *      given according to the method of the codec metadata
+     *  Attempts to save data to the given node
      *
-     *      @param tree the data tree you wish to store
-     *      @return wheter storing the tree was successfull
-     */
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+     *  @param cfg relevant data node in the tree
+     *  @return whether storing the data was successfull.
+     */ 
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const;
                                 
     /**
-     *      Attempts to load data from the given file to the 
-     *      root node given. The root data will be replaced 
-     *      and any children the node may already have will be deleted.
+     *  Attempts to load data from the given node
      *
-     *      @param treeroot pointer to the node that is to act as root of the data tree
-     *      @return whether building the tree from the given file was successfull.
+     *  @param cfg relevant data node in the tree
+     *  @return whether locating relevant information was successfull.
      */                                    
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+    virtual bool LoadConfig( const CORE::CDataNode& cfg );
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
