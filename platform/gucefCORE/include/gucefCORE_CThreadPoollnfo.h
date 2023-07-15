@@ -91,13 +91,21 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPoolInfo : public CIDataNodeSerializable
     
     const CString& GetThreadPoolName( void ) const;
     
-    void SetActiveNrOfThreads( UInt32 nrOfThreads );
+    void SetActiveNrOfDedicatedThreads( UInt32 nrOfThreads );
     
-    UInt32 GetActiveNrOfThreads( void ) const;
+    UInt32 GetActiveNrOfDedicatedThreads( void ) const;
 
-    void SetDesiredNrOfThreads( UInt32 nrOfThreads );
+    void SetActiveNrOfWorkerThreads( UInt32 nrOfThreads );
     
-    UInt32 GetDesiredNrOfThreads( void ) const;
+    UInt32 GetActiveNrOfWorkerThreads( void ) const;
+
+    void SetDesiredMaxNrOfThreads( Int32 nrOfThreads );
+    
+    Int32 GetDesiredMaxNrOfThreads( void ) const;
+
+    void SetDesiredMinNrOfWorkerThreads( UInt32 nrOfThreads );
+    
+    UInt32 GetDesiredMinNrOfWorkerThreads( void ) const;
 
     void SetTaskConsumerFactoryTypes( const CString::StringSet& factoryTypes );
     
@@ -130,8 +138,10 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPoolInfo : public CIDataNodeSerializable
     typedef std::map< CString, CString::StringSet > StringToStringSetMap;
 
     CString m_threadPoolName;
-    UInt32 m_desiredNrOfThreads;
-    Int32 m_activeNrOfThreads;
+    Int32 m_desiredMaxNrOfThreads;
+    UInt32 m_desiredMinNrOfWorkerThreads;
+    UInt32 m_activeNrOfDedicatedThreads;
+    UInt32 m_activeNrOfWorkerThreads;
     CString::StringSet m_taskConsumerFactoryTypes;
     CString::StringSet m_taskDataFactoryTypes;
     bool m_allowAppThreadToWork;

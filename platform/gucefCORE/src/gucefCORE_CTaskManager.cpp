@@ -438,7 +438,7 @@ CTaskManager::GetGlobalNrOfActiveThreads( void ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CTaskManager::GetGlobalNrOfDesiredThreads( void ) const
+CTaskManager::GetGlobalMinNrOfDesiredWorkerThreads( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
@@ -447,7 +447,7 @@ CTaskManager::GetGlobalNrOfDesiredThreads( void ) const
     ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
-        threadCount += (*i).second->GetDesiredNrOfThreads();
+        threadCount += (*i).second->GetDesiredMinNrOfWorkerThreads();
         ++i;
     }
     return threadCount;

@@ -976,9 +976,10 @@ CFileSystemDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
 
     if ( GUCEF_NULL != m_osSpecificImpl )
     {
-        if ( m_osSpecificImpl->AddDirToWatch( dirToWatch, options ) )
+        CString fullDirToWatch = RelativePath( dirToWatch );
+        if ( m_osSpecificImpl->AddDirToWatch( fullDirToWatch, options ) )
         {
-            TStartedWatchingDirectoryEventData eData( dirToWatch );
+            TStartedWatchingDirectoryEventData eData( fullDirToWatch );
             NotifyObservers( StartedWatchingDirectoryEvent, &eData );
             return true;
         }

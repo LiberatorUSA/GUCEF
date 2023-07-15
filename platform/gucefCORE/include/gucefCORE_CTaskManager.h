@@ -202,7 +202,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     
     UInt32 GetGlobalNrOfActiveThreads( void ) const;
 
-    UInt32 GetGlobalNrOfDesiredThreads( void ) const;
+    UInt32 GetGlobalMinNrOfDesiredWorkerThreads( void ) const;
 
     UInt32 GetGlobalNrOfQueuedTasks( void ) const;
 

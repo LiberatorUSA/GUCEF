@@ -251,13 +251,21 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     bool KillTask( const UInt32 taskID );
 
-    void SetNrOfThreadsToLogicalCPUs( const UInt32 coreFactor );
+    void SetNrOfWorkerThreadsToLogicalCPUs( const UInt32 coreFactor );
 
-    void SetDesiredNrOfThreads( const UInt32 nrOfThreads );
+    void SetDesiredMaxTotalNrOfThreads( const Int32 nrOfThreads );
 
-    UInt32 GetDesiredNrOfThreads( void ) const;
+    Int32 GetDesiredMaxTotalNrOfThreads( void ) const;
+
+    void SetDesiredMinNrOfWorkerThreads( const UInt32 nrOfThreads );
+
+    UInt32 GetDesiredMinNrOfWorkerThreads( void ) const;
 
     UInt32 GetActiveNrOfThreads( void ) const;
+
+    UInt32 GetActiveNrOfDedicatedThreads( void ) const;
+
+    UInt32 GetActiveNrOfWorkerThreads( void ) const;
 
     UInt32 GetNrOfQueuedTasks( void ) const;
 
@@ -424,8 +432,9 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     private:
 
-    void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
-                                    bool gracefullEnforcement );
+    void EnforceDesiredNrOfThreads( Int32 desiredMaxTotalNrOfThreads   ,
+                                    UInt32 desiredMinNrOfWorkerThreads ,
+                                    bool gracefullEnforcement          );
 
     void RemoveConsumer( const UInt32 taskID );
 
@@ -448,10 +457,12 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     CString m_poolName;
     TAbstractTaskConsumerFactory m_consumerFactory;
     TAbstractTaskDataFactory m_taskDataFactory;
-    UInt32 m_desiredNrOfThreads;
+    Int32 m_desiredMaxTotalNrOfThreads;
+    UInt32 m_desiredMinNrOfWorkerThreads;
     TTaskMailbox m_taskQueue;
     TTaskConsumerMap m_taskConsumerMap;
-    TTaskDelegatorSet m_taskDelegators;
+    TTaskDelegatorSet m_taskDedicatedDelegators;
+    TTaskDelegatorSet m_taskGenericDelegators;
     bool m_acceptNewWork;
     bool m_allowAppThreadToWork;
 };

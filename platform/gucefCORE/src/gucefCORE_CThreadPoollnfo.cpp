@@ -56,8 +56,10 @@ const CString CThreadPoolInfo::ClassTypeName = "GUCEF::CORE::CThreadPoolInfo";
 CThreadPoolInfo::CThreadPoolInfo( void )
     : CIDataNodeSerializable()
     , m_threadPoolName()
-    , m_desiredNrOfThreads( 0 )
-    , m_activeNrOfThreads( 0 )
+    , m_desiredMaxNrOfThreads( -1 )
+    , m_desiredMinNrOfWorkerThreads( 0 )
+    , m_activeNrOfDedicatedThreads( 0 )
+    , m_activeNrOfWorkerThreads( 0 )
     , m_taskConsumerFactoryTypes()
     , m_taskDataFactoryTypes()
     , m_allowAppThreadToWork( false )
@@ -72,8 +74,10 @@ CThreadPoolInfo::CThreadPoolInfo( void )
 CThreadPoolInfo::CThreadPoolInfo( const CThreadPoolInfo& src )
     : CIDataNodeSerializable( src )
     , m_threadPoolName( src.m_threadPoolName )
-    , m_desiredNrOfThreads( src.m_desiredNrOfThreads )
-    , m_activeNrOfThreads( src.m_activeNrOfThreads )
+    , m_desiredMaxNrOfThreads( src.m_desiredMaxNrOfThreads )
+    , m_desiredMinNrOfWorkerThreads( src.m_desiredMinNrOfWorkerThreads )
+    , m_activeNrOfDedicatedThreads( src.m_activeNrOfDedicatedThreads )
+    , m_activeNrOfWorkerThreads( src.m_activeNrOfWorkerThreads )
     , m_taskConsumerFactoryTypes( src.m_taskConsumerFactoryTypes )
     , m_taskDataFactoryTypes( src.m_taskDataFactoryTypes )
     , m_allowAppThreadToWork( src.m_allowAppThreadToWork )
@@ -98,8 +102,10 @@ CThreadPoolInfo::Clear( void )
 {GUCEF_TRACE;
 
     m_threadPoolName.Clear();
-    m_desiredNrOfThreads = 0;
-    m_activeNrOfThreads = 0;
+    m_desiredMaxNrOfThreads = -1;
+    m_desiredMinNrOfWorkerThreads = 0;
+    m_activeNrOfDedicatedThreads = 0;
+    m_activeNrOfWorkerThreads = 0;
     m_taskConsumerFactoryTypes.clear();
     m_taskDataFactoryTypes.clear();
     m_allowAppThreadToWork = false;
@@ -123,8 +129,10 @@ CThreadPoolInfo::Serialize( CDataNode& domRootNode                        ,
     }
     
     totalSuccess = domRootNode.SetAttribute( "threadPoolName", m_threadPoolName ) && totalSuccess;
-    totalSuccess = domRootNode.SetAttribute( "desiredNrOfThreads", m_desiredNrOfThreads ) && totalSuccess;
-    totalSuccess = domRootNode.SetAttribute( "activeNrOfThreads", m_activeNrOfThreads ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "desiredMinNrOfWorkerThreads", m_desiredMinNrOfWorkerThreads ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "desiredMaxNrOfThreads", m_desiredMaxNrOfThreads ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "activeNrOfDedicatedThreads", m_activeNrOfDedicatedThreads ) && totalSuccess;
+    totalSuccess = domRootNode.SetAttribute( "activeNrOfWorkerThreads", m_activeNrOfWorkerThreads ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "allowAppThreadToWork", m_allowAppThreadToWork ) && totalSuccess;
     totalSuccess = domRootNode.SetAttribute( "queuedTaskCount", m_queuedTaskCount ) && totalSuccess;
     
@@ -154,8 +162,10 @@ CThreadPoolInfo::Deserialize( const CDataNode& domRootNode                  ,
     }
 
     m_threadPoolName = domRootNode.GetAttributeValueOrChildValueByName( "threadPoolName" ).AsString( m_threadPoolName, true );
-    m_desiredNrOfThreads = domRootNode.GetAttributeValueOrChildValueByName( "desiredNrOfThreads" ).AsUInt32( m_desiredNrOfThreads, true );
-    m_activeNrOfThreads = domRootNode.GetAttributeValueOrChildValueByName( "activeNrOfThreads" ).AsInt32( m_activeNrOfThreads, true );
+    m_desiredMaxNrOfThreads = domRootNode.GetAttributeValueOrChildValueByName( "desiredMaxNrOfThreads" ).AsInt32( m_desiredMaxNrOfThreads, true );
+    m_desiredMinNrOfWorkerThreads = domRootNode.GetAttributeValueOrChildValueByName( "desiredMinNrOfWorkerThreads" ).AsUInt32( m_desiredMinNrOfWorkerThreads, true );
+    m_activeNrOfDedicatedThreads = domRootNode.GetAttributeValueOrChildValueByName( "activeNrOfDedicatedThreads" ).AsUInt32( m_activeNrOfDedicatedThreads, true );
+    m_activeNrOfWorkerThreads = domRootNode.GetAttributeValueOrChildValueByName( "activeNrOfWorkerThreads" ).AsUInt32( m_activeNrOfWorkerThreads, true );
     m_allowAppThreadToWork = domRootNode.GetAttributeValueOrChildValueByName( "allowAppThreadToWork" ).AsBool( m_allowAppThreadToWork, true );
     m_queuedTaskCount = domRootNode.GetAttributeValueOrChildValueByName( "globalNrOfQueuedTasks" ).AsUInt32( m_queuedTaskCount, true );
 
@@ -187,37 +197,73 @@ CThreadPoolInfo::GetThreadPoolName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CThreadPoolInfo::SetActiveNrOfThreads( UInt32 nrOfThreads )
+CThreadPoolInfo::SetActiveNrOfDedicatedThreads( UInt32 nrOfThreads )
 {GUCEF_TRACE;
 
-    m_activeNrOfThreads = nrOfThreads;
+    m_activeNrOfDedicatedThreads = nrOfThreads;
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CThreadPoolInfo::GetActiveNrOfThreads( void ) const
+CThreadPoolInfo::GetActiveNrOfDedicatedThreads( void ) const
 {GUCEF_TRACE;
 
-    return m_activeNrOfThreads;
+    return m_activeNrOfDedicatedThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CThreadPoolInfo::SetActiveNrOfWorkerThreads( UInt32 nrOfThreads )
+{GUCEF_TRACE;
+
+    m_activeNrOfWorkerThreads = nrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CThreadPoolInfo::GetActiveNrOfWorkerThreads( void ) const
+{GUCEF_TRACE;
+
+    return m_activeNrOfWorkerThreads;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CThreadPoolInfo::SetDesiredNrOfThreads( UInt32 nrOfThreads )
+CThreadPoolInfo::SetDesiredMaxNrOfThreads( Int32 nrOfThreads )
 {GUCEF_TRACE;
 
-    m_desiredNrOfThreads = nrOfThreads;
+    m_desiredMaxNrOfThreads = nrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CThreadPoolInfo::GetDesiredMaxNrOfThreads( void ) const
+{GUCEF_TRACE;
+
+    return m_desiredMaxNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPoolInfo::SetDesiredMinNrOfWorkerThreads( UInt32 nrOfThreads )
+{GUCEF_TRACE;
+
+    m_desiredMinNrOfWorkerThreads = nrOfThreads;
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CThreadPoolInfo::GetDesiredNrOfThreads( void ) const
+CThreadPoolInfo::GetDesiredMinNrOfWorkerThreads( void ) const
 {GUCEF_TRACE;
 
-    return m_desiredNrOfThreads;
+    return m_desiredMinNrOfWorkerThreads;
 }
 
 /*-------------------------------------------------------------------------*/
