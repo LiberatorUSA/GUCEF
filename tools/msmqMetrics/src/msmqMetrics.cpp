@@ -2050,7 +2050,7 @@ MsmqMetrics::CovertPSIDToString( ::PSID psid )
     LPWSTR sidStr = NULL;
     if ( ::ConvertSidToStringSidW( psid, &sidStr ) == TRUE )
     {
-        CORE::CString result = CORE::ToString( CORE::ToUtf8String( sidStr ) );      
+        CORE::CString result = CORE::ToString( CORE::CUtf8String( sidStr ) );      
         ::LocalFree( sidStr );
         return result;
     }
