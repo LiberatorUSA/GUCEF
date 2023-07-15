@@ -725,6 +725,8 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                                               bool notify                                        )
 {GUCEF_TRACE;
 
+    NotifyPublishResults();
+    
     if ( !m_config.needPublishSupport )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) +
@@ -2323,23 +2325,32 @@ CStoragePubSubClientTopic::OnSyncVfsOpsTimerCycle( CORE::CNotifier* notifier    
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
-                                         const CORE::CEvent& eventId  ,
-                                         CORE::CICloneable* eventData )
+CStoragePubSubClientTopic::NotifyPublishResults( void )
 {GUCEF_TRACE;
 
     if ( !m_publishSuccessActionIds.empty() )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnPulseCycle: Notifying MsgsPublishedEvent for " + CORE::ToString( m_publishSuccessActionIds.size() ) + " messages" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishedEvent for " + CORE::ToString( m_publishSuccessActionIds.size() ) + " messages" );
         if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
         m_publishSuccessActionIds.clear();
     }
     if ( !m_publishFailureActionIds.empty() )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnPulseCycle: Notifying MsgsPublishFailureEvent for " + CORE::ToString( m_publishFailureActionIds.size() ) + " messages" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishFailureEvent for " + CORE::ToString( m_publishFailureActionIds.size() ) + " messages" );
         if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
         m_publishFailureActionIds.clear();
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    NotifyPublishResults();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2391,6 +2402,7 @@ CStoragePubSubClientTopic::OnBufferContentTimeWindowCheckCycle( CORE::CNotifier*
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnBufferContentTimeWindowCheckCycle: Finalizing write buffer if it has data due to waiting for data longer then " + CORE::ToString( m_config.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs ) );
             FinalizeWriteBuffer( true );
+            NotifyPublishResults();
         }
     }
 }

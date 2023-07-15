@@ -340,6 +340,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                             const std::vector< T, basic_allocator< T > >& msgs , 
                             bool notify                                        );
 
+    void NotifyPublishResults( void );
+    
     bool AcknowledgeReceiptImpl( const CStorageBookmarkInfo& bookmark ,
                                  StorageBufferMetaData* metaData      );
 
