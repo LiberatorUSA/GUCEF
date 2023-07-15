@@ -84,6 +84,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObserving
     public:
 
     typedef std::shared_ptr< CCredentialsProviderAdapter > CredentialsProviderPtr;
+    typedef std::shared_ptr< CClientConfiguration > CClientConfigurationPtr;
 
     static const CORE::CEvent AwsSdkInitializedEvent;
 
@@ -123,7 +124,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObserving
 
     Aws::SDKOptions m_awsSdkOptions;
     CredentialsProviderPtr m_credsProvider;
-    CClientConfiguration m_defaultClientConfig;
+    CClientConfigurationPtr m_defaultClientConfig;
     
     static MT::CMutex g_dataLock;
     static CAwsSdkGlobal* g_instance;

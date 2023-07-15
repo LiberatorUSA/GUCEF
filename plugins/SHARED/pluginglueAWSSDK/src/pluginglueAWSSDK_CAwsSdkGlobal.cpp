@@ -121,6 +121,7 @@ CAwsSdkGlobal::InitializeBeforeConfig( void )
 
         Aws::InitAPI( m_awsSdkOptions );
 
+        m_defaultClientConfig = CClientConfigurationPtr( GUCEF_NEW CClientConfiguration( "DefaultClientConfig." ) );
         m_credsProvider = std::make_shared< CCredentialsProviderAdapter >();
         
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSdkGlobal:InitializeBeforeConfig: successfully completed" );
@@ -165,7 +166,7 @@ CAwsSdkGlobal::LoadConfig( const CORE::CDataNode& treeroot )
     const CORE::CDataNode* settingsNode = treeroot.Find( "AWSSDK" );
     if ( GUCEF_NULL != settingsNode )
     {
-        m_defaultClientConfig.LoadConfig( *settingsNode );
+        m_defaultClientConfig->LoadConfig( *settingsNode );
         m_awsSdkOptions.loggingOptions.logLevel = (Aws::Utils::Logging::LogLevel) CORE::StringToInt32( settingsNode->GetAttributeValueOrChildValueByName( "LogLevel", "0" ) );
 
         if ( m_credsProvider )
@@ -206,7 +207,7 @@ CAwsSdkGlobal::CAwsSdkGlobal( void )
     , CORE::CGloballyConfigurable( false )
     , m_awsSdkOptions()
     , m_credsProvider()
-    , m_defaultClientConfig( "DefaultClientConfig." )
+    , m_defaultClientConfig()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -279,7 +280,7 @@ const Aws::Client::ClientConfiguration&
 CAwsSdkGlobal::GetDefaultAwsClientConfig( void )
 {GUCEF_TRACE;
  
-    return m_defaultClientConfig;
+    return *m_defaultClientConfig;
 }
 
 /*-------------------------------------------------------------------------//

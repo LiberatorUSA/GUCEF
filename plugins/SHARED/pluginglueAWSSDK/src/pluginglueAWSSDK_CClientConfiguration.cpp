@@ -148,7 +148,7 @@ CClientConfiguration::LoadConfig( const CORE::CDataNode& treeroot )
     disableExpectHeader = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "disableExpectHeader", CORE::BoolToString( disableExpectHeader ) ) );
     enableClockSkewAdjustment = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableClockSkewAdjustment", CORE::BoolToString( enableClockSkewAdjustment ) ) );
     enableHostPrefixInjection = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableHostPrefixInjection", CORE::BoolToString( enableHostPrefixInjection ) ) );
-    enableEndpointDiscovery = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableEndpointDiscovery", CORE::BoolToString( enableEndpointDiscovery.value() ) ) );
+    enableEndpointDiscovery = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableEndpointDiscovery", CORE::BoolToString( enableEndpointDiscovery.has_value() ? enableEndpointDiscovery.value() : false ) ) ); // Per AWS: "By default, endpoint discovery is off."
     profileName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "profileName", profileName ).AsUtf8String();
     return true;
 }
