@@ -1078,11 +1078,14 @@ Copy_File( const char *dst, const char *src )
 UInt32
 Move_File( const char *dst, const char *src )
 {
-    if ( 0 == Create_Path_Directories( dst ) ) return 0;
+    UInt32 result = Create_Path_Directories( dst );
+    if ( 0 == result ) 
+        return result;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return MoveFile( src, dst );
+    result = MoveFile( src, dst );
+    return result;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

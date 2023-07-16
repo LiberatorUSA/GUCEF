@@ -167,6 +167,9 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     , watchSubDirsOfDirsToWatch( true )
     , restingTimeForNewFilesInSecs( DefaultNewFileRestPeriodInSecs )
     , deleteFilesAfterSuccessfullPush( false )
+    , moveFilesAfterSuccessfullPush( true )
+    , fileMoveDestination()
+    , overwriteFilesInFileMoveDestination( true )
     , transmitMetrics( false )
     , compressFilesBeforePush( false )
     , fileCompressionCodecToUse( "gzip" )
@@ -186,6 +189,9 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     , watchSubDirsOfDirsToWatch( src.watchSubDirsOfDirsToWatch )
     , restingTimeForNewFilesInSecs( src.restingTimeForNewFilesInSecs )
     , deleteFilesAfterSuccessfullPush( src.deleteFilesAfterSuccessfullPush )
+    , moveFilesAfterSuccessfullPush( src.moveFilesAfterSuccessfullPush )
+    , fileMoveDestination( src.fileMoveDestination )
+    , overwriteFilesInFileMoveDestination( src.overwriteFilesInFileMoveDestination )
     , transmitMetrics( src.transmitMetrics )
     , compressFilesBeforePush( src.compressFilesBeforePush )
     , fileCompressionCodecToUse( src.fileCompressionCodecToUse )
@@ -217,6 +223,9 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         watchSubDirsOfDirsToWatch = src.watchSubDirsOfDirsToWatch;
         restingTimeForNewFilesInSecs = src.restingTimeForNewFilesInSecs;
         deleteFilesAfterSuccessfullPush = src.deleteFilesAfterSuccessfullPush;
+        moveFilesAfterSuccessfullPush = src.moveFilesAfterSuccessfullPush;
+        fileMoveDestination = src.fileMoveDestination;
+        overwriteFilesInFileMoveDestination = src.overwriteFilesInFileMoveDestination;
         transmitMetrics = src.transmitMetrics;
         compressFilesBeforePush = src.compressFilesBeforePush;
         fileCompressionCodecToUse = src.fileCompressionCodecToUse;
@@ -236,7 +245,10 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool
     transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), transmitMetrics );
 
     restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RestingTimeForNewFilesInSecs" ) ), restingTimeForNewFilesInSecs );
-    deleteFilesAfterSuccessfullPush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "DeleteFilesAfterSuccessfullPush" ) ), deleteFilesAfterSuccessfullPush );
+    deleteFilesAfterSuccessfullPush = appConfig.GetValueAlways( "DeleteFilesAfterSuccessfullPush" ).AsBool( deleteFilesAfterSuccessfullPush, true );
+    moveFilesAfterSuccessfullPush = appConfig.GetValueAlways( "MoveFilesAfterSuccessfullPush" ).AsBool( moveFilesAfterSuccessfullPush, true );
+    fileMoveDestination = appConfig.GetValueAlways( "FileMoveDestination" ).AsString( fileMoveDestination, true );
+    overwriteFilesInFileMoveDestination = appConfig.GetValueAlways( "OverwriteFilesInFileMoveDestination" ).AsBool( overwriteFilesInFileMoveDestination, true );
     compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
     fileCompressionCodecToUse = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
     fileCompressionCodecFileExt = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
@@ -317,7 +329,10 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
     transmitMetrics = CORE::StringToBool( rootNode.GetAttributeValueOrChildValueByName( "TransmitMetrics" ), transmitMetrics );
 
     restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "RestingTimeForNewFilesInSecs" ) ), restingTimeForNewFilesInSecs );
-    deleteFilesAfterSuccessfullPush = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "DeleteFilesAfterSuccessfullPush" ) ), deleteFilesAfterSuccessfullPush );
+    deleteFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "DeleteFilesAfterSuccessfullPush" ).AsBool( deleteFilesAfterSuccessfullPush, true );
+    moveFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "MoveFilesAfterSuccessfullPush" ).AsBool( moveFilesAfterSuccessfullPush, true );
+    fileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "FileMoveDestination" ).AsString( fileMoveDestination, true );
+    overwriteFilesInFileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "OverwriteFilesInFileMoveDestination" ).AsBool( overwriteFilesInFileMoveDestination, true );
     compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
     fileCompressionCodecToUse = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
     fileCompressionCodecFileExt = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
@@ -912,20 +927,51 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
 
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully pushed file \"" + originalFilePath + "\" to VFS path \"" + taskData->filepath + "\"" );
 
+                        // get rid of our temp helper file regardless
+                        if ( !entry.encodedFilepath.IsNULLOrEmpty() )
+                        {
+                            if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( entry.encodedFilepath, true ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted temp encoding file \"" + entry.encodedFilepath + "\"" );
+                            }
+                            else
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to deleted temp encoding file \"" + entry.encodedFilepath + "\"" );
+                            }
+                        }
+
+                        // Move overrules Delete for safety reasons in case of a conflicting config
+                        if ( m_settings.moveFilesAfterSuccessfullPush )
+                        {
+                            CORE::CString moveDestinationPath = m_settings.fileMoveDestination;
+
+                            CORE::CString currentFileDir = CORE::StripFilename( entry.filePath );
+                            moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePath}", currentFileDir );
+                            
+                            CORE::CString currentFileDirLastSubDir = CORE::LastSubDir( currentFileDir );
+                            moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePathLastSubDir}", currentFileDirLastSubDir );
+
+                            CORE::CString filename = CORE::ExtractFilename( entry.filePath );
+                            moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{filename}", filename );
+
+                            moveDestinationPath = CORE::RelativePath( moveDestinationPath );
+
+                            if ( CORE::MoveFile( entry.filePath, moveDestinationPath, m_settings.overwriteFilesInFileMoveDestination ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully moved pushed file \"" + 
+                                    entry.filePath + "\" to \"" + moveDestinationPath + "\"" );
+
+                                entry.filePath = moveDestinationPath;
+                            }
+                            else
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to move pushed file \"" + 
+                                    entry.filePath + "\" to \"" + moveDestinationPath + "\"");
+                            }
+                        }
+                        else
                         if ( m_settings.deleteFilesAfterSuccessfullPush )
                         {
-                            if ( !entry.encodedFilepath.IsNULLOrEmpty() )
-                            {
-                                if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( entry.encodedFilepath, true ) )
-                                {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted temp encoding file \"" + entry.encodedFilepath + "\"" );
-                                }
-                                else
-                                {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to deleted temp encoding file \"" + entry.encodedFilepath + "\"" );
-                                }
-                            }
-
                             if ( CORE::DeleteFile( entry.filePath ) )
                             {
                                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted pushed file \"" + entry.filePath + "\"" );

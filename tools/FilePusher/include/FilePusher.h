@@ -170,6 +170,9 @@ class FilePushDestinationSettings
     bool watchSubDirsOfDirsToWatch;
     CORE::UInt32 restingTimeForNewFilesInSecs;
     bool deleteFilesAfterSuccessfullPush;
+    bool moveFilesAfterSuccessfullPush;
+    CORE::CString fileMoveDestination;
+    bool overwriteFilesInFileMoveDestination;
     bool transmitMetrics;
     bool compressFilesBeforePush;
     CORE::CString fileCompressionCodecToUse;

@@ -2200,9 +2200,14 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
                                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side || !side->GetSideSettings().needToTrackInFlightPublishedMsgsForAck )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side )
         return;
 
+    if ( !side->GetSideSettings().needToTrackInFlightPublishedMsgsForAck )
+    {
+        return;
+    }
+    
     const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
     const CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
     CPubSubClientTopic* topicNotifier = static_cast< CPubSubClientTopic* >( notifier );
