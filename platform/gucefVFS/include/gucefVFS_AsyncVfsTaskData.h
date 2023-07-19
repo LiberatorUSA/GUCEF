@@ -115,7 +115,7 @@ class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskResultData : public CAsyncVfsTaskData
     public:
 
     bool successState;
-    UInt32 durationInSecs;
+    UInt32 durationInMilliSecs;
 
     virtual void SetTaskData( CAsyncVfsTaskData* data );
 

@@ -134,6 +134,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     typedef CArchive::TStringSet                                        TStringSet;
     
     static const CORE::CString FileSystemArchiveTypeName;
+    static const CORE::CString DefaultASyncOpsThreadPoolName;
 
     static const CORE::CEvent AsyncVfsOperationCompletedEvent;
     static const CORE::CEvent ArchiveMountedEvent;
@@ -644,10 +645,14 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                                          const CORE::CEvent& eventid  ,
                                          CORE::CICloneable* eventdata );
     
+    bool LoadVfsSystemConfig( const CORE::CDataNode& cfg );
+    
     private:    
     
     TMountVector m_mountList;
-    UInt32 _maxmemloadsize;
+    UInt32 m_maxmemloadsize;
+    CString m_asyncOpsThreadpool;
+    UInt32 m_asyncOpsMinWorkerThreads;
     TAbstractArchiveFactory m_abstractArchiveFactory;
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
     TArchiveSettingsVector m_delayMountedArchiveSettings;

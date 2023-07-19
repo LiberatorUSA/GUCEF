@@ -133,7 +133,7 @@ CAsyncVfsTaskData::Clone( void ) const
 CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( void )
     : CAsyncVfsTaskData()
     , successState( false )
-    , durationInSecs( 0 )
+    , durationInMilliSecs( 0 )
     , m_taskData( GUCEF_NULL )
 {GUCEF_TRACE;
 
@@ -144,7 +144,7 @@ CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( void )
 CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( const CAsyncVfsTaskResultData& src )
     : CAsyncVfsTaskData( src )
     , successState( src.successState )
-    , durationInSecs( src.durationInSecs )
+    , durationInMilliSecs( src.durationInMilliSecs )
     , m_taskData( GUCEF_NULL )
 {GUCEF_TRACE;
 

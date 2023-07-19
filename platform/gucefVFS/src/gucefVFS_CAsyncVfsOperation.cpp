@@ -119,8 +119,8 @@ bool
 CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    time_t startTime = time( NULL );
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle" );
+    CORE::CDateTime startTime = CORE::CDateTime::NowUTCDateTime();
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::ToString( this ) + "):OnTaskCycle" );
 
     CAsyncVfsTaskData* syncCallData = static_cast< CAsyncVfsTaskData* >( taskData );
     if ( GUCEF_NULL == syncCallData )
@@ -143,7 +143,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
             bool success = CVfsGlobal::Instance()->GetVfs().MountArchive( specificSyncCallData->settings );
 
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of MountArchive" );
 
@@ -161,7 +161,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
                                                                          specificSyncCallData->overwrite      );
         
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of StoreAsFile" );
             
@@ -178,7 +178,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
                                                                       specificSyncCallData->overwrite        );
         
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of CopyFile" );
             
@@ -197,7 +197,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
                                                                         specificSyncCallData->encodeCodec      );
         
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of EncodeFile" );
             
@@ -216,7 +216,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
                                                                         specificSyncCallData->decodeCodec      );
         
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of DecodeFile" );
             
@@ -236,7 +236,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
                                                                           specificSyncCallData->encodeCodec     );
         
             syncCallResult.successState = success;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of EncodeAsFileAsync" );
             
@@ -247,7 +247,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
         default:
         {
             syncCallResult.successState = false;
-            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
             
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation:OnTaskCycle: Invalid or Unsupported operation type specified:" + 
                     CORE::Int32ToString( (Int32) syncCallData->operationType ) );

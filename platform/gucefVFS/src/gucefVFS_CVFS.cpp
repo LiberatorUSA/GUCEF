@@ -144,6 +144,7 @@ const CORE::CEvent CVFS::DelayedArchiveMountingCompletedEvent = "GUCEF::VFS::CVF
 const CORE::CEvent CVFS::VfsInitializationCompletedEvent = "GUCEF::VFS::CVFS::VfsInitializationCompletedEvent";
 
 const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
+const CORE::CString CVFS::DefaultASyncOpsThreadPoolName = "VFS";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -169,7 +170,9 @@ CVFS::CVFS( void )
     , CORE::CGloballyConfigurable( false )
     , CORE::CIDirectoryWatcher()
     , m_mountList()
-    , _maxmemloadsize( 1024 )
+    , m_maxmemloadsize( 1024 )
+    , m_asyncOpsThreadpool( DefaultASyncOpsThreadPoolName )
+    , m_asyncOpsMinWorkerThreads( 0 )
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
@@ -262,7 +265,7 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath       ,
     operationData.overwrite = overwrite;
     operationData.SetRequestorData( requestorData );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -280,7 +283,7 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings    ,
     operationData.settings = settings;
     operationData.SetRequestorData( requestorData );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -610,7 +613,7 @@ CVFS::MoveFileAsync( const CORE::CString& oldFilePath    ,
     operationData.newFilepath = newFilePath;
     operationData.overwrite = overwrite;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -665,7 +668,7 @@ CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
     operationData.copyFilepath = copyFilepath;
     operationData.overwrite = overwrite;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -740,7 +743,7 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
     operationData.codecFamily = codecFamily;
     operationData.encodeCodec = encodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -858,7 +861,7 @@ CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
     operationData.codecFamily = codecFamily;
     operationData.encodeCodec = encodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -972,7 +975,7 @@ CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
     operationData.codecFamily = codecFamily;
     operationData.decodeCodec = decodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
 }
 
@@ -1064,7 +1067,7 @@ CVFS::GetFile( const CORE::CString& file          ,
             TArchivePtr archive = mountLink.mountEntry->archive;
             CVFSHandlePtr filePtr = archive->GetFile( mountLink.remainder ,
                                                       mode                ,
-                                                      _maxmemloadsize     ,
+                                                      m_maxmemloadsize     ,
                                                       overwrite           );
 
             if ( !filePtr )
@@ -1697,7 +1700,7 @@ CVFS::SetMemloadSize( UInt32 bytesize )
 
     MT::CScopeWriterLock lock( m_rwdataLock );
 
-    _maxmemloadsize = bytesize;
+    m_maxmemloadsize = bytesize;
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
 }
 
@@ -1707,7 +1710,7 @@ UInt32
 CVFS::GetMemloadSize( void ) const
 {GUCEF_TRACE;
 
-    return _maxmemloadsize;
+    return m_maxmemloadsize;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1720,26 +1723,47 @@ CVFS::SaveConfig( CORE::CDataNode& tree ) const
 
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
-    n->SetAttribute( "maxmemload", _maxmemloadsize );
 
-    n->DelSubTree();
-    UInt32 count = (UInt32) m_mountList.size();
-    CORE::CDataNode pathnode( "vfsroot" );
-    for ( UInt32 i=0; i<count; ++i )
+    if ( GUCEF_NULL != n )
     {
-        pathnode.SetAttribute( "path", m_mountList[ i ].path );
-        if ( m_mountList[ i ].archive->IsWriteable() )
-        {
-            pathnode.SetAttribute( "writeable", "true" );
-        }
-        else
-        {
-            pathnode.SetAttribute( "writeable", "false" );
-        }
-        n->AddChild( pathnode );
-    }
+        n->SetAttribute( "maxmemload", m_maxmemloadsize );
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS configuration successfully saved" );
+        n->DelSubTree();
+        UInt32 count = (UInt32) m_mountList.size();
+        CORE::CDataNode pathnode( "vfsroot" );
+        for ( UInt32 i=0; i<count; ++i )
+        {
+            pathnode.SetAttribute( "path", m_mountList[ i ].path );
+            if ( m_mountList[ i ].archive->IsWriteable() )
+            {
+                pathnode.SetAttribute( "writeable", "true" );
+            }
+            else
+            {
+                pathnode.SetAttribute( "writeable", "false" );
+            }
+            n->AddChild( pathnode );
+        }
+
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS configuration successfully saved" );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::LoadVfsSystemConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    m_maxmemloadsize = cfg.GetAttributeValueOrChildValueByName( "maxmemload" ).AsUInt32( m_maxmemloadsize, true );
+    m_asyncOpsThreadpool = cfg.GetAttributeValueOrChildValueByName( "asyncOpsThreadpool" ).AsString( m_asyncOpsThreadpool, true );
+    m_asyncOpsMinWorkerThreads = cfg.GetAttributeValueOrChildValueByName( "asyncOpsMinWorkerThreads" ).AsUInt32( m_asyncOpsMinWorkerThreads, true ); 
+
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+    threadPool->SetDesiredMinNrOfWorkerThreads( m_asyncOpsMinWorkerThreads ); 
+
     return true;
 }
 
@@ -1758,12 +1782,8 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
     if ( GUCEF_NULL != n )
     {
-        CORE::CVariant value = n->GetAttributeValueOrChildValueByName( "maxmemload" );
-        if ( value.IsInitialized() )
-        {
-            SetMemloadSize( value.AsUInt32() );
-        }
-
+        LoadVfsSystemConfig( *n );
+        
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "VfsRoot" );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )
@@ -1782,8 +1802,10 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
     }
 
     n = tree.Find( "VFS" );
-    if ( n )
+    if ( GUCEF_NULL != n )
     {
+        LoadVfsSystemConfig( *n );
+        
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings", false, false );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )

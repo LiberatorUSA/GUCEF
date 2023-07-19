@@ -1762,12 +1762,23 @@ CreateCpuDataPoint( void )
 
     UInt32 cpuStatsDataSize = sizeof( TLogicalCpuStats ) * dataPoint->cpuStats.logicalCpuCount;
     dataPoint->cpuStats.logicalCpuStats = (TLogicalCpuStats*) malloc( cpuStatsDataSize );
+    if ( GUCEF_NULL == dataPoint->cpuStats.logicalCpuStats )
+    {
+        free( dataPoint );
+        return GUCEF_NULL;
+    }
     memset( dataPoint->cpuStats.logicalCpuStats, 0, cpuStatsDataSize );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     UInt32 cpuPowerInfoDataSize = sizeof( PROCESSOR_POWER_INFORMATION ) * dataPoint->cpuStats.logicalCpuCount;
     dataPoint->cpuPowerInfo = (PPROCESSOR_POWER_INFORMATION) malloc( cpuPowerInfoDataSize );
+    if ( GUCEF_NULL == dataPoint->cpuPowerInfo )
+    {
+        free( dataPoint->cpuStats.logicalCpuStats );
+        free( dataPoint );
+        return GUCEF_NULL;
+    }
     memset( dataPoint->cpuPowerInfo, 0, cpuPowerInfoDataSize );
 
     #endif

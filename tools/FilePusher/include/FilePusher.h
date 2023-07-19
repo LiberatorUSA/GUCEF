@@ -179,6 +179,9 @@ class FilePushDestinationSettings
     CORE::CString fileCompressionCodecFileExt;
     CORE::CString fileCompressionTempDir;
     TStringSet fileTypesToCompress;
+    UInt32 maxNrOfFilesToPushInParallel;
+    CORE::CString name;
+    CORE::CString metricsPrefix;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -208,7 +211,23 @@ class FilePushDestination : public CORE::CObservingNotifier
         CORE::UInt64 currentOffsetInFile;
         CORE::CString encodedFilepath;
         CORE::CString filePath;
+
+        PushEntry( void );
     };
+    typedef CORE::CTSharedPtr< PushEntry, MT::CMutex > PushEntryPtr;
+
+    class InFlightEntry
+    {
+        public:
+
+        CORE::CDynamicBuffer buffer;
+        PushEntryPtr entryInfo;
+        CORE::UInt32 pushDurationInMilliSecs;
+        CORE::UInt32 encodeDurationInMilliSecs;
+
+        InFlightEntry( void );
+    };
+    typedef CORE::CTSharedPtr< InFlightEntry, MT::CMutex > InFlightEntryPtr;
 
     typedef CORE::CTEventHandlerFunctor< FilePushDestination > TEventCallback;
     typedef enum FilePushDestinationSettings::EPushStyle TPushStyle;
@@ -322,16 +341,16 @@ class FilePushDestination : public CORE::CObservingNotifier
                                 const CORE::CString::StringVector& patternsToMatch );
     
     void
-    QueueFileForPushing( const PushEntry& entry );
+    QueueFileForPushing( PushEntryPtr entry );
 
     void
     QueueFileForPushOrEncode( const CORE::CString& filePath );
 
     bool 
-    PushFileUsingHttp( const PushEntry& entry );
+    PushFileUsingHttp( PushEntryPtr entry );
 
     bool
-    PushFileUsingVfs( const PushEntry& entry );
+    PushFileUsingVfs( PushEntryPtr entry );
 
     void
     OnFilePushFinished( CORE::CNotifier* notifier    ,
@@ -348,11 +367,17 @@ class FilePushDestination : public CORE::CObservingNotifier
 
     bool 
     IsFileATempEncodingFile( const CORE::CString& filePath ) const;
+
+    bool YieldInFlightSlot( InFlightEntryPtr slot );
+
+    InFlightEntryPtr GetFreeInFlightSlot( const CORE::CString& id );
     
     private:
 
     typedef std::map< CORE::CString, CORE::CDateTime > TStringTimeMap;
-    typedef std::map< CORE::CString, PushEntry > TStringPushEntryMap;
+    typedef std::map< CORE::CString, PushEntryPtr > TStringPushEntryPtrMap;
+    typedef std::vector< InFlightEntryPtr > TInFlightEntryPtrVector;
+    typedef std::map< CORE::CString, InFlightEntryPtr > TStringInFlightEntryPtrMap;
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
     WEB::CHTTPClient m_httpClient;
@@ -360,14 +385,16 @@ class FilePushDestination : public CORE::CObservingNotifier
     CORE::CTimer m_allFilesDirScanTimer;        
     CORE::CTimer m_newFileRestPeriodTimer;
     TStringTimeMap m_newFileRestQueue;
-    TStringPushEntryMap m_encodeQueue;
-    TStringPushEntryMap m_pushQueue;
+    TStringPushEntryPtrMap m_encodeQueue;
+    TStringPushEntryPtrMap m_pushQueue;
+    TStringInFlightEntryPtrMap m_inflight;
+    TInFlightEntryPtrVector m_inflightFreeSlots;
     CORE::CTimer m_pushTimer;
     CORE::CTimer m_encodeTimer;
-    CORE::CDynamicBuffer m_currentFilePushBuffer;
-    const PushEntry* m_currentFileBeingPushed;
-    CORE::UInt32 m_lastPushDurationInSecs;
-    CORE::UInt32 m_lastEncodeDurationInSecs;
+    CORE::UInt32 m_lastPushDurationInMilliSecs;
+    CORE::UInt32 m_lastEncodeDurationInMilliSecs;
+    CORE::UInt64 m_totalBytesEncoded;
+    CORE::UInt64 m_totalBytesPushed;
     CORE::CTimer m_metricsTimer;
     FilePushDestinationSettings m_settings;
 };
