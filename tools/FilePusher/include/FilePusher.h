@@ -220,6 +220,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     {
         public:
 
+        CORE::UInt32 id;
         CORE::CDynamicBuffer buffer;
         PushEntryPtr entryInfo;
         CORE::UInt32 pushDurationInMilliSecs;
@@ -341,10 +342,12 @@ class FilePushDestination : public CORE::CObservingNotifier
                                 const CORE::CString::StringVector& patternsToMatch );
     
     void
-    QueueFileForPushing( PushEntryPtr entry );
+    QueueFileForPushing( PushEntryPtr entry               ,
+                         bool ignoreExistingEntry = false );
 
     void
-    QueueFileForPushOrEncode( const CORE::CString& filePath );
+    QueueFileForPushOrEncode( const CORE::CString& filePath    ,
+                              bool ignoreExistingEntry = false );
 
     bool 
     PushFileUsingHttp( PushEntryPtr entry );

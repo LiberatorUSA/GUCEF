@@ -442,7 +442,8 @@ FilePushDestination::PushEntry::PushEntry( void )
 /*-------------------------------------------------------------------------*/
 
 FilePushDestination::InFlightEntry::InFlightEntry( void )
-    : buffer()
+    : id( 0 )
+    , buffer()
     , entryInfo()
     , pushDurationInMilliSecs( 0 )
     , encodeDurationInMilliSecs( 0 )
@@ -634,13 +635,15 @@ FilePushDestination::YieldInFlightSlot( InFlightEntryPtr slot )
     {
         if ( !slot->entryInfo.IsNULL() )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot for: " + slot->entryInfo->filePath );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot " + 
+                CORE::ToString( slot->id ) + " for: " + slot->entryInfo->filePath );
             m_inflight.erase( slot->entryInfo->filePath );
             slot->entryInfo.Unlink();
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot for null entry" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot " +
+                CORE::ToString( slot->id ) + " for null entry" );
         }
         slot->buffer.Clear( true );
         m_inflightFreeSlots.push_back( slot );
@@ -660,7 +663,8 @@ FilePushDestination::GetFreeInFlightSlot( const CORE::CString& id )
         InFlightEntryPtr freeSlot = m_inflightFreeSlots.back();
         m_inflightFreeSlots.pop_back();
         m_inflight[ id ] = freeSlot;
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:GetFreeInFlightSlot: obtained slot for: " + id );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:GetFreeInFlightSlot: obtained slot " +
+            CORE::ToString( freeSlot->id ) + " for: " + id );
         return freeSlot;
     }
 
@@ -678,13 +682,17 @@ FilePushDestination::LoadConfig( const FilePushDestinationSettings& settings )
     m_inflightFreeSlots.clear();
     m_inflightFreeSlots.resize( m_settings.maxNrOfFilesToPushInParallel );
 
+    CORE::UInt32 n=1;
     TInFlightEntryPtrVector::iterator i = m_inflightFreeSlots.begin();
     while ( i != m_inflightFreeSlots.end() )
     {
         InFlightEntryPtr& slot = (*i);
         slot = InFlightEntryPtr( GUCEF_NEW InFlightEntry() );
-        ++i;
+        slot->id = n;
+        ++i; ++n;
     }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:LoadConfig: prepared " +
+        CORE::ToString( m_settings.maxNrOfFilesToPushInParallel ) + " paralell push slots" );
     
     return true;
 }
@@ -1359,7 +1367,6 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Failed to request async push of content from file \"" + 
             filename + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
         m_pushQueue[ entry->filePath ] = entry;
-        m_inflight.erase( entry->filePath );
         YieldInFlightSlot( slot );
         return false;
     }
@@ -1473,12 +1480,18 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "http://", true ) )
             {
                 if ( PushFileUsingHttp( entry ) )
+                {
+                    m_pushTimer.RequestImmediateTrigger();
                     return;
+                }
             }
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
             {
                 if ( PushFileUsingVfs( entry ) )
+                {
+                    m_pushTimer.RequestImmediateTrigger();
                     return;
+                }
             }
         }
         else
@@ -1510,15 +1523,22 @@ FilePushDestination::IsFileATempEncodingFile( const CORE::CString& filePath ) co
 /*-------------------------------------------------------------------------*/
 
 void
-FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath )
+FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath ,
+                                               bool ignoreExistingEntry      )
 {GUCEF_TRACE;
 
     // We might get triggered multiple times for the same file.
-    // Ignore redundant queueing requests
-    if ( m_pushQueue.find( filePath ) != m_pushQueue.end() )
-        return;
-    if ( m_encodeQueue.find( filePath ) != m_encodeQueue.end() )
-        return;
+    if ( !ignoreExistingEntry )
+    {
+        // Ignore redundant queueing requests
+        if ( m_inflight.find( filePath ) != m_inflight.end() )
+            return;
+        if ( m_pushQueue.find( filePath ) != m_pushQueue.end() )
+            return;
+        if ( m_encodeQueue.find( filePath ) != m_encodeQueue.end() )
+            return;
+    }
+
     if ( IsFileATempEncodingFile( filePath ) )
         return;
 
@@ -1557,12 +1577,23 @@ FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath )
 /*-------------------------------------------------------------------------*/
 
 void
-FilePushDestination::QueueFileForPushing( PushEntryPtr entry )
+FilePushDestination::QueueFileForPushing( PushEntryPtr entry       ,
+                                          bool ignoreExistingEntry )
 {GUCEF_TRACE;
 
     // We might get triggered multiple times for the same file.
-    // Ignore redundant queueing requests
-    if ( m_pushQueue.find( entry->filePath ) != m_pushQueue.end() )
+    if ( !ignoreExistingEntry )
+    {
+        // Ignore redundant queueing requests
+        if ( m_inflight.find( entry->filePath ) != m_inflight.end() )
+            return;
+        if ( m_pushQueue.find( entry->filePath ) != m_pushQueue.end() )
+            return;
+        if ( m_encodeQueue.find( entry->filePath ) != m_encodeQueue.end() )
+            return;
+    }
+
+    if ( IsFileATempEncodingFile( entry->filePath ) )
         return;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Queueing file \"" + entry->filePath + "\" for pushing" );

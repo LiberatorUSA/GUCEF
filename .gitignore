@@ -21,3 +21,4 @@ projects/k3s/github/vanvelzen-github-runner-base-latest.tar
 
 tools/Kaitai/kaitai-struct-compiler_0.10_all.deb
 .vs/
+patch.diff
