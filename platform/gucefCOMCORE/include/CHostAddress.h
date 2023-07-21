@@ -69,6 +69,8 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress
 {
     public:
 
+    typedef std::vector< CHostAddress, basic_allocator< CHostAddress > >    THostAddressVector;
+
     CHostAddress( void );
 
     CHostAddress( const CHostAddress& src );

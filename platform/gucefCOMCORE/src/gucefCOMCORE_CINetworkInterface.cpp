@@ -40,9 +40,54 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CNetworkInterfaceMetrics::CNetworkInterfaceMetrics( void )
+    : transmitLinkSpeedBitsPerSec( 0 )
+    , hasTransmitLinkSpeedBitsPerSec( false )
+    , receiveLinkSpeedBitsPerSec( 0 )
+    , hasReceiveLinkSpeedBitsPerSec( false )
+    , inboundOctets( 0 )
+    , hasInboundOctets( false )
+    , inboundUnicastPackets( 0 )
+    , hasInboundUnicastPackets( false )
+    , inboundNonUnicastPackets( 0 )
+    , hasInboundNonUnicastPackets( false )
+    , inboundDiscardedPackets( 0 )
+    , hasInboundDiscardedPackets( false )
+    , inboundErroredPackets( 0 )
+    , hasInboundErroredPackets( false )
+    , inboundUnknownProtocolPackets( 0 )
+    , hasInboundUnknownProtocolPackets( false )
+    , inboundUnicastOctets( 0 )
+    , hasInboundUnicastOctets( false )
+    , inboundMulticastOctets( 0 )
+    , hasInboundMulticastOctets( false )
+    , inboundBroadcastOctets( 0 )
+    , hasInboundBroadcastOctets( false )
+    , outboundOctets( 0 )
+    , hasOutboundOctets( false )
+    , outboundUnicastPackets( 0 )
+    , hasOutboundUnicastPackets( false )
+    , outboundNonUnicastPackets( 0 )
+    , hasOutboundNonUnicastPackets( false )
+    , outboundDiscardedPackets( 0 )
+    , hasOutboundDiscardedPackets( false )
+    , outboundErroredPackets( 0 )
+    , hasOutboundErroredPackets( false )
+    , outboundUnicastOctets( 0 )
+    , hasOutboundUnicastOctets( false )
+    , outboundMulticastOctets( 0 )
+    , hasOutboundMulticastOctets( false )
+    , outboundBroadcastOctets( 0 )
+    , hasOutboundBroadcastOctets( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
 
 CINetworkInterface::CINetworkInterface( void )
     : CICommunicationInterface()

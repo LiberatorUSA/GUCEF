@@ -127,7 +127,7 @@ class ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< PUBSUB::CPubSubClientTopicConfig > TTopicConfigVector;
+    typedef PUBSUB::CPubSubClientConfig::TPubSubClientTopicConfigPtrVector TTopicConfigVector;
     enum EChannelMode : CORE::Int32
     {
         CHANNELMODE_UNKNOWN = 0 ,
@@ -165,7 +165,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::CDateTime oldestStoragePubSubMsgFileToLoad;
 
 
-    PUBSUB::CPubSubClientTopicConfig* GetTopicConfig( const CORE::CString& topicName );
+    PUBSUB::CPubSubClientTopicConfigPtr GetTopicConfig( const CORE::CString& topicName );
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 

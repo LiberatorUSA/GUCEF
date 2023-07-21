@@ -153,11 +153,11 @@ CWin32SerialPort::~CWin32SerialPort()
 
 /*-------------------------------------------------------------------------*/
 
-CWin32SerialPort*
+CWin32SerialPortPtr
 CWin32SerialPort::Create( const CORE::CString& portName )
 {GUCEF_TRACE;
 
-    return 0;
+    return CWin32SerialPortPtr();
 }
 
 /*-------------------------------------------------------------------------*/

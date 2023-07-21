@@ -86,14 +86,15 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 {
     public:
 
-    typedef std::vector< CORE::CString > TStringList;
+    typedef CORE::CString::StringVector                     TStringList;
+    typedef CINetworkInterface::TINetworkInterfacePtrVector TINetworkInterfacePtrVector;
     
     struct SSocketStats
     {
-            UInt32 bytes_sent;       /** the total number of bytes sent by all sockets */
-            UInt32 bytes_recieved;   /** the total number of bytes received by all sockets */
-            UInt32 bps_sent;         /** current sent bytes per second ratio of this update cycle */
-            UInt32 bps_recieved;     /** current received bytes per second ratio of this update cycle */
+        UInt32 bytes_sent;       /** the total number of bytes sent by all sockets */
+        UInt32 bytes_recieved;   /** the total number of bytes received by all sockets */
+        UInt32 bps_sent;         /** current sent bytes per second ratio of this update cycle */
+        UInt32 bps_recieved;     /** current received bytes per second ratio of this update cycle */
     };
     typedef struct SSocketStats TSocketStats;
 
@@ -175,8 +176,8 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      *  Attempts to provide access to a communication port of the given type and the given id
      *  If the cannot be accessed NULL will be returned.
      */
-    CICommunicationInterface* GetCommunicationPort( const CORE::CString& portType ,
-                                                    const CORE::CString& portId   );
+    CICommunicationInterfacePtr GetCommunicationPort( const CORE::CString& portType ,
+                                                      const CORE::CString& portId   );
 
     /**
      *  Attempts to retrieve a list of network interfaces on the system
@@ -185,9 +186,14 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 
     /**
      *  Attempts to provide access to a network interface with the given id
-     *  If the cannot be accessed NULL will be returned.
+     *  If the cannot be accessed an empty shared ptr will be returned.
      */
-    CINetworkInterface* GetNetworkInterface( const CORE::CString& interfaceID );
+    CINetworkInterfacePtr GetNetworkInterface( const CORE::CString& interfaceID );
+
+    /**
+     *  Attempts to provide access to all network interfaces
+     */
+    bool GetAllNetworkInterfaces( CINetworkInterface::TINetworkInterfacePtrVector& interfaces ) const;
 
     /**
      *  Attempts to obtain all network IP info from all network interfaces in aggregate
@@ -237,11 +243,10 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     };
     typedef struct SProxyServer TProxyServer;
     typedef std::map< CORE::CString, TProxyServer > TProxyList;
-    typedef std::vector< CINetworkInterface* > TNetworkInterfaceVector;
 
     typedef std::set< CSocket* > TSocketSet;
 
-    typedef std::map< CORE::CString, CICommunicationInterface* > TPortMap;
+    typedef std::map< CORE::CString, CICommunicationInterfacePtr > TPortMap;
     typedef std::map< CORE::CString, TPortMap > TPortIndex;
     
     TSocketSet m_sockets;    /** our socket object heap */
@@ -251,7 +256,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     UInt32 _scount;          /** current number of registered sockets */
     TProxyList m_proxyList;
     TPortIndex m_portObjs;   /** index of all currently created port objects */
-    mutable TNetworkInterfaceVector m_nics;
+    mutable TINetworkInterfacePtrVector m_nics;
 };
 
 /*-------------------------------------------------------------------------//
@@ -266,99 +271,3 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_COMCORE_CCOM_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added a timer to allow socket updates if an application driver
-          is used. not the most efficient solution but it will do for now.
-        - Dinand: Added system wide proxy settings, com systems can retrieve
-          settings here if so desired. The mswin O/S proxy read is implemented
-          for HTTP using the registry.
-- 30-12-2004 :
-        - Dinand: Rewrote this class to use my own event system and back-end
-          networking code. As such this class no longer depends on SDL_net
-          or NET2.
-- 12-06-2004 :
-        - Dinand: Fixed a bug in the socket unregister code.
-        - Dinand: Implemented the NET2_Delay() member function.
-- 11-01-2004 :
-        - Dinand: Fixed a bug in maintaining an accurate active socket count.
-- 03-11-2003 :
-        - Dinand: Added Unlink_Sockets() so that sockets that are destroyed after the
-          manager is destroyed don't cause any problems.
-- 30-10-2003 :
-        - Dinand: Added Register_Socket_Object() and Unregister_Socket_Object().
-          This allows sockets to be created by the user instead of by this com
-          manager.
-        - Dinand: Fixed 2 bugs in Close_And_Wait() which could potentially cause an
-          access violation.
-        - Dinand: Removed all public member functions that allowed the user to change
-          socket heap sizes and access sockets though the manager, this way
-          access rights to sockets can be determined by the user.
-- 01-09-2003 :
-        - Dinand: Added USE_NETWORK_COM switch to remove all networking code.
-- 05-08-2003 :
-        - Dinand: Added const keyword here and there.
-        - Dinand: Added a new Wait_Untill_All_Done()
-- 04-08-2003 :
-        - Dinand: Moved thread management from this class to the CSocket class.
-          this allowed me to set the threading method used per socket instead of
-          globally.
-- 01-07-2003 :
-        - Dinand: Removed Get_ and Set_ prefixes from member function identifiers.
-- 09-05-2003 :
-        - Dinand: Added Threading_Method() which allows a user to specify the threading
-          method used. I did this because which method is best depends on what
-          you are using the CCom class for. You can set this for TCP and UDP
-          seperat. if you have a high rate of separate transmissions that do
-          not require a lot of processing you might be better of with a consumer
-          thread which is default for UDP. If the number of transmissions is not
-          very frequent and/or requires a lot of processing then you might be
-          better of with a separate thread for each event which is default for
-          TCP.
-- 02-05-2003 :
-        - Dinand: Modified thread handling, now uses the CThreadManager class instead
-          of a CCom internal thread spawner. this makes threading more uniform.
-          Another advantage is that i can now make certain attributes private
-          that where public before because they had to be accessible from a C
-          function.
-        - Dinand: The addition of the tread manager means you MUST set Max_Tasks() before
-          using the com manager.
-- 22-04-2003 :
-        - Dinand: Made this com manager thread safe, maybe someone has the bright idea
-          of calling any of the heap resize events from another thread in which
-          case an access violation may occur. This won't happen now because the
-          normal caller (the application task) also passes trough mutexes now.
-- 21-04-2003 :
-        - Dinand: Because i made the socket classes a bit more independent of this
-          manager CCom now depends on an index value that's set for the server
-          or client sockets, this is public. if it is changed ccom cant do it's
-          job properly.
-- 18-04-2003 :
-        - Dinand: Added build defines to remove either TCP or UDP if desired, this is
-          done to reduce code bloat.
-- 05-04-2003 :
-        - Dinand: No longer a descendant of CNode
-- 21-02-2003 :
-        - Dinand: Modified NET2 further to give me the ability to get rid of delay
-          caused by linking the NET2 socket to my socket handling class.
-          This is done with NET2_SetIndex() and NET2_GetIndex()
-- 14-02-2003 :
-        - Dinand: Socket event handlers now get called from a separate task. This means
-          that the program execution continues while the task's socket event
-          handler does it's thing. tasks are implemented as SDL_thread's
-- 11-02-2003 :
-        - Dinand: Added this info section.
-        - Dinand: Designed and implemented this class.
-        - Dinand: malloc and realloc and free are used for array memory management because
-          we want to enlarge mem blocks sometimes without having to copy every
-          entry manually. The socket objects themselves are allocated with new
-          and delete.
-
-
------------------------------------------------------------------------------*/

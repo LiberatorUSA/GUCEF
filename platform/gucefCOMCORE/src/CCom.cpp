@@ -24,6 +24,11 @@
 
 #include <string.h>             /* needed for memset() */
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -187,10 +192,9 @@ void
 CCom::RegisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
-    _mutex.Lock();
+    MT::CScopeMutex lock( _mutex );
     m_sockets.insert( socket );
     ++_scount;
-    _mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -199,10 +203,9 @@ void
 CCom::UnregisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
-    _mutex.Lock();
+    MT::CScopeMutex lock( _mutex );
     m_sockets.erase( socket );
     --_scount;
-    _mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +261,8 @@ CCom::GetGlobalStats( void ) const
 bool
 CCom::GetCommunicationPortList( const CORE::CString& portType ,
                                 TStringList& portList         ) const
-{
+{GUCEF_TRACE;
+
     CORE::CString typeOfPort = portType.Lowercase();
     if ( "serial" == typeOfPort ||
          "com" == typeOfPort     )
@@ -273,13 +277,14 @@ CCom::GetCommunicationPortList( const CORE::CString& portType ,
 
 /*-------------------------------------------------------------------------*/
     
-CICommunicationInterface*
+CICommunicationInterfacePtr
 CCom::GetCommunicationPort( const CORE::CString& portType ,
                             const CORE::CString& portId   )
-{
+{GUCEF_TRACE;
+
     CORE::CString typeOfPort = portType.Lowercase();
 
-    _mutex.Lock();
+    MT::CScopeMutex lock( _mutex );
 
     // Check to see if we already have an entry for the given port
     TPortIndex::iterator i = m_portObjs.find( typeOfPort );
@@ -289,8 +294,7 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
         TPortMap::iterator n = portMap.find( portId );
         if ( n != portMap.end() )
         {
-            CICommunicationInterface* port = (*n).second;
-            _mutex.Unlock();
+            CICommunicationInterfacePtr port = (*n).second;
             return port;
         }
     }
@@ -301,27 +305,27 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
     {
         #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
 
-        CICommunicationInterface* port = CWin32SerialPort::Create( portId );
-        if ( NULL != port )
+        CICommunicationInterfacePtr port = CWin32SerialPort::Create( portId ).StaticCast< CICommunicationInterface >();
+        if ( !port.IsNULL() )
         {
             TPortMap& portMap = m_portObjs[ portType ];
             portMap[ portId ] = port;
-            _mutex.Unlock();
             return port;
         }
 
         #endif
     }
-    
-    _mutex.Unlock();    
-    return NULL;
+     
+    return CICommunicationInterfacePtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CCom::LazyInitNetworkInterfaces( void ) const
-{
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( _mutex );
     if ( m_nics.empty() )
     {
         #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
@@ -338,7 +342,8 @@ CCom::GetNetworkInterfaceList( TStringList& interfaceIDs ) const
 
     LazyInitNetworkInterfaces();
     
-    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    MT::CScopeMutex lock( _mutex );
+    TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )
     {
         interfaceIDs.push_back( (*i)->GetAdapterName() );
@@ -349,13 +354,14 @@ CCom::GetNetworkInterfaceList( TStringList& interfaceIDs ) const
 
 /*-------------------------------------------------------------------------*/
 
-CINetworkInterface* 
+CINetworkInterfacePtr 
 CCom::GetNetworkInterface( const CORE::CString& interfaceID )
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();
     
-    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    MT::CScopeMutex lock( _mutex );
+    TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )
     {
         if ( interfaceID == (*i)->GetAdapterName() )
@@ -364,7 +370,20 @@ CCom::GetNetworkInterface( const CORE::CString& interfaceID )
         }
         ++i;
     }
-    return GUCEF_NULL;
+    return CINetworkInterfacePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCom::GetAllNetworkInterfaces( CINetworkInterface::TINetworkInterfacePtrVector& interfaces ) const
+{GUCEF_TRACE;
+
+    LazyInitNetworkInterfaces();
+    
+    MT::CScopeMutex lock( _mutex );
+    interfaces = m_nics; 
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -375,11 +394,12 @@ CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo )
 
     LazyInitNetworkInterfaces();
     
+    MT::CScopeMutex lock( _mutex );   
     bool totalSuccess = true;
-    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )
     {
-        totalSuccess = totalSuccess && (*i)->GetIPInfo( ipInfo, false );
+        totalSuccess = (*i)->GetIPInfo( ipInfo, false ) && totalSuccess;
         ++i;
     }
     return totalSuccess;
@@ -392,6 +412,7 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
                                 const bool active             )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( _mutex );
     TProxyList::iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
     {
@@ -413,6 +434,7 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Setting system wide proxy server for protocol " + protocol +
                           " to " + remoteHost + ":" + CORE::UInt16ToString( remotePort ) + " and active state " + CORE::BoolToString( active ) );
 
+    MT::CScopeMutex lock( _mutex );
     TProxyServer& proxyServer = m_proxyList[ protocol ];
     proxyServer.host = remoteHost;
     proxyServer.port = remotePort;
@@ -429,6 +451,7 @@ CCom::GetSystemWideProxyServer( const CORE::CString& protocol ,
                                 bool& active                  ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( _mutex );
     TProxyList::const_iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
     {
@@ -447,6 +470,7 @@ bool
 CCom::IsSystemWideProxyServerActive( const CORE::CString& protocol ) const
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( _mutex );
     TProxyList::const_iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
     {

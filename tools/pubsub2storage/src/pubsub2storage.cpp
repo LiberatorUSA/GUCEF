@@ -293,17 +293,17 @@ ChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicConfig* 
+PUBSUB::CPubSubClientTopicConfigPtr 
 ChannelSettings::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     TTopicConfigVector::iterator i = pubsubClientConfig.topics.begin();
     while ( i != pubsubClientConfig.topics.end() )
     {
-        if ( topicName == (*i).topicName )
-            return &(*i);
+        if ( topicName == (*i)->topicName )
+            return (*i);
     }    
-    return GUCEF_NULL;
+    return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -619,7 +619,7 @@ CPubSubClientChannel::ConnectPubSubClient( bool reset )
     }
 
     SubscribeTo( m_pubsubClient.GetPointerAlways() );
-    if ( !m_pubsubClient->Connect() )
+    if ( !m_pubsubClient->Connect( true ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClient: Failed to connect the pub-sub client" );
@@ -635,16 +635,16 @@ CPubSubClientChannel::ConnectPubSubClient( bool reset )
         PUBSUB::CPubSubClientTopicPtr topic = m_pubsubClient->CreateTopicAccess( (*i) );
         if ( topic.IsNULL() )
         {
-            if ( !(*i).isOptional )
+            if ( !(*i)->isOptional )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i).topicName + "\". Cannot proceed" );
+                    "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i)->topicName + "\". Cannot proceed" );
                 return false;            
             }
             else
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i).topicName + "\". Proceeding" );
+                    "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
             }
         }
 
@@ -666,8 +666,8 @@ CPubSubClientChannel::ConnectPubSubClient( bool reset )
 
             // We use the 'desired' feature to also drive whether we actually subscribe at this point
             // saves us an extra setting
-            PUBSUB::CPubSubClientTopicConfig* topicConfig = m_channelSettings.GetTopicConfig( topic->GetTopicName() );
-            if ( GUCEF_NULL != topicConfig && topicConfig->needSubscribeSupport )
+            PUBSUB::CPubSubClientTopicConfigPtr topicConfig = m_channelSettings.GetTopicConfig( topic->GetTopicName() );
+            if ( !topicConfig.IsNULL() && topicConfig->needSubscribeSupport )
             {            
                 // The method of subscription depends on the supported feature set
                 bool subscribeSuccess = false;

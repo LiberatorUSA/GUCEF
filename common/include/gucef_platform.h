@@ -136,11 +136,11 @@
 #if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         #ifdef _WIN64
-            #define GUCEF_64BIT 1
+            #define GUCEF_64BIT 2
         #endif
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
         #ifdef __LP64__
-            #define GUCEF_64BIT 1
+            #define GUCEF_64BIT 2
         #endif
     #endif
 #endif
@@ -150,6 +150,21 @@
  */
 #if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
     #define GUCEF_32BIT 1
+#endif
+
+/*
+ *  Define bitness value for comparison style macro
+ */
+#define GUCEF_BITNESS_UNKNOWN 0
+#define GUCEF_BITNESS_32      1
+#define GUCEF_BITNESS_64      2
+
+#ifdef GUCEF_32BIT
+    #define GUCEF_BITNESS GUCEF_BITNESS_32
+#elif GUCEF_64BIT 
+    #define GUCEF_BITNESS GUCEF_BITNESS_64
+#else
+    #define GUCEF_BITNESS GUCEF_BITNESS_UNKNOWN
 #endif
 
 /*-------------------------------------------------------------------------*/

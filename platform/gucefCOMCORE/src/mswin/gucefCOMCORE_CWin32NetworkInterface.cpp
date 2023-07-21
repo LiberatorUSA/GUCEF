@@ -23,8 +23,17 @@
 //-------------------------------------------------------------------------*/
 
 #include "gucefCOMCORE_CWin32NetworkInterface.h"
-
+ 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+
+/*
+ *	Per https://learn.microsoft.com/en-us/windows/win32/api/iptypes/ns-iptypes-ip_adapter_info
+ * "To properly use the IP_ADAPTER_INFO structure on a 32-bit platform, define _USE_32BIT_TIME_T 
+ *  when compiling the application to force the time_t datatype to a 4-byte datatype."
+ */
+#ifdef GUCEF_32BIT
+	#define _USE_32BIT_TIME_T
+#endif
 
 #ifndef GUCEF_MT_COBJECTSCOPELOCK_H
 #include "gucefMT_CObjectScopeLock.h"
@@ -152,7 +161,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	if ( obtainedtPerAdapterInfo )
 	{
 		pNext = &( pPerAdapt->DnsServerList );
-		while( pNext ) 
+		while( pNext != NULL ) 
 		{
 			CHostAddress address( pNext->IpAddress.String );
 			m_dnsAddresses.push_back( address );
@@ -166,7 +175,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CWin32NetworkInterface::EnumNetworkAdapters( TNetworkInterfaceVector& interfaces ) 
+CWin32NetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interfaces ) 
 {	
 	IP_ADAPTER_INFO* pAdptInfo	= NULL;
 	IP_ADAPTER_INFO* pNextAd	= NULL;	
@@ -206,16 +215,12 @@ CWin32NetworkInterface::EnumNetworkAdapters( TNetworkInterfaceVector& interfaces
 	// loop through for all available interfaces and setup an associated
 	// CNetworkAdapter class.
 	pNextAd = pAdptInfo;
-	while( pNextAd ) 
+	while( pNextAd != NULL ) 
 	{
-		CWin32NetworkInterface* nic = GUCEF_NEW CWin32NetworkInterface();
+		CWin32NetworkInterfacePtr nic = CWin32NetworkInterfacePtr( GUCEF_NEW CWin32NetworkInterface() );
 		if ( nic->SetupAdapterInfo( pNextAd ) )
 		{
-			interfaces.push_back( nic );
-		}
-		else
-		{
-			delete nic;
+			interfaces.push_back( nic.StaticCast< CINetworkInterface >() );
 		}
 		pNextAd = pNextAd->Next;
 	}
@@ -333,7 +338,7 @@ CWin32NetworkInterface::GetNrOfIPAddresses( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CWin32NetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized )
+CWin32NetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
@@ -359,22 +364,26 @@ CWin32NetworkInterface::IsDhcpUsed( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t 
+CORE::CDateTime 
 CWin32NetworkInterface::GetDhcpLeaseObtainedTime( void ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	return m_leaseObtained;
+	CORE::CDateTime result;
+	result.FromUnixEpochBasedTicksInMillisecs( m_leaseObtained * 1000 );
+	return result;
 }
 
 /*-------------------------------------------------------------------------*/
 
-time_t 
+CORE::CDateTime 
 CWin32NetworkInterface::GetDhcpLeaseExpirationTime( void ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	return m_leaseExpires;
+	CORE::CDateTime result;
+	result.FromUnixEpochBasedTicksInMillisecs( m_leaseExpires * 1000 );
+	return result;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -435,6 +444,53 @@ CWin32NetworkInterface::GetOsAdapterIndex( void ) const
 
 	MT::CObjectScopeLock lock( this );
 	return m_nicIndex;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CWin32NetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
+{GUCEF_TRACE;
+
+	MT::CObjectScopeLock lock( this );
+
+    // Make sure the struct is zeroed out
+	::MIB_IFROW interfaceInfo;
+    SecureZeroMemory((PVOID) &interfaceInfo, sizeof(::MIB_IFROW) );
+
+	interfaceInfo.dwIndex = m_nicIndex;
+
+	lock.EarlyUnlock();
+
+	DWORD queryResult = ::GetIfEntry( &interfaceInfo );
+	if ( queryResult == NO_ERROR )
+	{
+		metrics.inboundOctets = interfaceInfo.dwInOctets;
+		metrics.hasInboundOctets = true;
+		metrics.inboundErroredPackets = interfaceInfo.dwInErrors;
+		metrics.hasInboundErroredPackets = true;
+		metrics.inboundDiscardedPackets = interfaceInfo.dwInDiscards;
+		metrics.hasInboundDiscardedPackets = true;
+		metrics.inboundUnknownProtocolPackets = interfaceInfo.dwInUnknownProtos;
+		metrics.hasInboundUnknownProtocolPackets = true;
+		metrics.inboundUnicastPackets = interfaceInfo.dwInUcastPkts;
+		metrics.hasInboundUnicastPackets = true;
+		metrics.outboundErroredPackets = interfaceInfo.dwOutErrors;
+		metrics.hasOutboundErroredPackets = true;
+		metrics.outboundDiscardedPackets = interfaceInfo.dwOutDiscards;
+		metrics.hasOutboundDiscardedPackets = true;
+		metrics.outboundOctets = interfaceInfo.dwOutOctets;
+		metrics.hasOutboundOctets = true;
+		metrics.outboundUnicastPackets = interfaceInfo.dwOutUcastPkts;
+		metrics.hasOutboundUnicastPackets = true;
+
+		return true;
+	}
+	else
+	{
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CWin32NetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry()" );
+	}
+	return false;
 }
 
 /*-------------------------------------------------------------------------*/

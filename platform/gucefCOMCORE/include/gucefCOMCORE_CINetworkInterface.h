@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
 #include "gucefCOMCORE_CICommunicationInterface.h"
 #define GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
@@ -65,15 +70,64 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class GUCEF_COMCORE_EXPORT_CPP CNetworkInterfaceMetrics
+{
+    public:
+    
+    UInt64 transmitLinkSpeedBitsPerSec;
+    bool hasTransmitLinkSpeedBitsPerSec;
+    UInt64 receiveLinkSpeedBitsPerSec;
+    bool hasReceiveLinkSpeedBitsPerSec;
+    UInt64 inboundOctets;
+    bool hasInboundOctets;
+    UInt64 inboundUnicastPackets;
+    bool hasInboundUnicastPackets;
+    UInt64 inboundNonUnicastPackets;
+    bool hasInboundNonUnicastPackets;
+    UInt64 inboundDiscardedPackets;
+    bool hasInboundDiscardedPackets;
+    UInt64 inboundErroredPackets;
+    bool hasInboundErroredPackets;
+    UInt64 inboundUnknownProtocolPackets;
+    bool hasInboundUnknownProtocolPackets;
+    UInt64 inboundUnicastOctets;
+    bool hasInboundUnicastOctets;
+    UInt64 inboundMulticastOctets;
+    bool hasInboundMulticastOctets;
+    UInt64 inboundBroadcastOctets;
+    bool hasInboundBroadcastOctets;
+    UInt64 outboundOctets;
+    bool hasOutboundOctets;
+    UInt64 outboundUnicastPackets;
+    bool hasOutboundUnicastPackets;
+    UInt64 outboundNonUnicastPackets;
+    bool hasOutboundNonUnicastPackets;
+    UInt64 outboundDiscardedPackets;
+    bool hasOutboundDiscardedPackets;
+    UInt64 outboundErroredPackets;
+    bool hasOutboundErroredPackets;
+    UInt64 outboundUnicastOctets;
+    bool hasOutboundUnicastOctets;
+    UInt64 outboundMulticastOctets;
+    bool hasOutboundMulticastOctets;
+    UInt64 outboundBroadcastOctets;
+    bool hasOutboundBroadcastOctets;
+
+    CNetworkInterfaceMetrics( void );
+};
+
+/*-------------------------------------------------------------------------*/
 
 class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicationInterface ,
                                                     public virtual MT::CILockable
 {
     public:
 
-    typedef std::vector< CHostAddress > THostAddressVector;
-    typedef std::vector< CIPv4Address > TIPAddressVector;
-    typedef std::vector< CIPInfo > TIPInfoVector;
+    typedef CHostAddress::THostAddressVector    THostAddressVector;
+    typedef CIPv4Address::TIPv4AddressVector    TIPv4AddressVector;
+    typedef CIPInfo::TIPInfoVector              TIPInfoVector;
+    typedef CORE::CTSharedPtr< CINetworkInterface, MT::CMutex >                            CINetworkInterfacePtr;
+    typedef std::vector< CINetworkInterfacePtr, basic_allocator< CINetworkInterface > >    TINetworkInterfacePtrVector;
     
     virtual ~CINetworkInterface();
 
@@ -87,13 +141,13 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     virtual UInt32 GetNrOfIPAddresses( void ) const = 0;
 
-    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) = 0;
+    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const = 0;
 		
     virtual bool IsDhcpUsed( void ) const = 0;		
 
-    virtual time_t GetDhcpLeaseObtainedTime( void ) const = 0;
+    virtual CORE::CDateTime GetDhcpLeaseObtainedTime( void ) const = 0;
 
-    virtual time_t GetDhcpLeaseExpirationTime( void ) const = 0;
+    virtual CORE::CDateTime GetDhcpLeaseExpirationTime( void ) const = 0;
     
     virtual bool ReleaseAddress( void ) = 0;
 
@@ -107,12 +161,18 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     virtual UInt32 GetOsAdapterIndex( void ) const = 0;
 
+    virtual bool GetMetrics( CNetworkInterfaceMetrics& metrics ) const = 0;
+
     protected:
 
     CINetworkInterface( void );
     CINetworkInterface( const CINetworkInterface& src );
     CINetworkInterface& operator=( const CINetworkInterface& src );
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CINetworkInterface::CINetworkInterfacePtr     CINetworkInterfacePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

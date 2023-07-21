@@ -59,6 +59,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPInfo
 {
     public:
 
+    typedef std::vector< CIPInfo, basic_allocator< CIPInfo > >    TIPInfoVector;
+
     CIPv4Address ip;
     CIPv4Address subnet;
 

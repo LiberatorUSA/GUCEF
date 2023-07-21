@@ -182,10 +182,27 @@ CGenericPlugin::Link( void* modulePtr                   ,
                     memcpy( (void*)argv[ i ], keyValuePair.C_String(), keyValuePair.Length()+1 );
                 } 
             }
-                
-            // Call the module's Load()
-            Int32 loadStatus = reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )( argc, argv );
-                
+            
+            bool loadInvokeSucces = true;
+            Int32 loadStatus = 0;
+            try
+            {
+                // Call the module's Load()
+                loadStatus = reinterpret_cast< TGUCEFGENERICPLUGFPTR_Load >( m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )( argc, argv );
+            }
+            catch ( const timeout_exception& )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "GenericPlugin:Link: Timeout Exception while invoking Load on plugin " + 
+                    m_metaData->GetModuleFilename() + " with module address " + PointerToString( m_moduleHandle ) );
+                loadInvokeSucces = false;
+            }
+            catch ( const std::exception& e )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "GenericPlugin:Link: Std Exception while invoking Load on plugin " + 
+                    m_metaData->GetModuleFilename() + " with module address " + PointerToString( m_moduleHandle ) + ". what: " + CString( e.what() ) );
+                loadInvokeSucces = false;
+            }                                                                           
+            
             // Cleanup the module parameter list
             if ( argc > 0 )
             {
@@ -198,7 +215,7 @@ CGenericPlugin::Link( void* modulePtr                   ,
             }
                 
             // Check whether the load was successfull
-            if ( loadStatus > 0 )
+            if ( loadInvokeSucces && loadStatus > 0 )
             {
                 // We have loaded & linked our plugin module
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GenericPlugin: Successfully loaded module and invoked Load() which returned status " + 
@@ -213,6 +230,7 @@ CGenericPlugin::Link( void* modulePtr                   ,
                 return true;
             }
             else
+            if ( loadInvokeSucces )
             {
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "GenericPlugin: Failed load module because Load returned an error state (" + 
                                                         Int32ToString( loadStatus ) + ") with module: " + PointerToString( modulePtr ) );
@@ -245,8 +263,23 @@ CGenericPlugin::Unlink( void )
 
     if ( IsLoaded() )
     {
-        // Call the module's Unload()
-        reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
+        try
+        {
+            // Call the module's Unload()
+            reinterpret_cast< TGUCEFGENERICPLUGFPTR_Unload >( m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )();
+        }
+        catch ( const timeout_exception& )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin:Unlink: Timeout Exception while invoking Unload on plugin " + 
+                m_metaData->GetModuleFilename() + " with module address " + PointerToString( m_moduleHandle ) );
+            return false;
+        }
+        catch ( const std::exception& e )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CGenericPlugin:Unlink: Std Exception while invoking Unload on plugin " + 
+                m_metaData->GetModuleFilename() + " with module address " + PointerToString( m_moduleHandle ) + ". what: " + CString( e.what() ) );
+            return false;
+        }
 
         // Cleanup recources
         memset( m_funcPointers, 0, GPLUGINFUNCPTR_COUNT );

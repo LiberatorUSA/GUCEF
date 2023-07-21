@@ -794,7 +794,7 @@ Remove_Directory( const char *dir  ,
                 size_t dirLength = strlen( dir );
                 size_t subDirBufferLength = dirLength + nameLength + 1;
 
-                char* subdir = calloc( subDirBufferLength, 1 );
+                char* subdir = (char*) calloc( subDirBufferLength, 1 );
                 if ( GUCEF_NULL != subdir )
                 {
                     #if defined( __STDC_LIB_EXT1__ ) || defined( __STDC_WANT_SECURE_LIB__ )
@@ -936,7 +936,7 @@ Delete_File( const char *filename )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return DeleteFile( filename );
+    return DeleteFileA( filename );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1141,7 +1141,7 @@ ExecuteProgramEx( const char *filename,
          *      argv[ 0 ] by passing them seperatly. This can have verry
          *      unexpected results.
          */
-        tmp_lstr = calloc( strlen( filename )+strlen( cmdline )+2, 1 );
+        tmp_lstr = (char*) calloc( strlen( filename )+strlen( cmdline )+2, 1 );
         sprintf( tmp_lstr, "%s %s", filename, cmdline );
         bres = CreateProcess( NULL, tmp_lstr, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
         free( tmp_lstr );

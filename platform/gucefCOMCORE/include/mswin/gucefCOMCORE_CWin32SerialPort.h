@@ -32,6 +32,8 @@
 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
+#undef Create
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,9 +54,10 @@ class CWin32SerialPort : public virtual CSerialPort
 {
     public:
 
-    typedef std::vector< CORE::CString > TStringList;
+    typedef CORE::CString::StringVector TStringList;
+    typedef CORE::CTSharedPtr< CWin32SerialPort, MT::CMutex >     CWin32SerialPortPtr;
     
-    static CWin32SerialPort* Create( const CORE::CString& portName );
+    static CWin32SerialPortPtr Create( const CORE::CString& portName );
         
     virtual ~CWin32SerialPort();
     
@@ -107,6 +110,10 @@ class CWin32SerialPort : public virtual CSerialPort
     void* m_portHandle;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CWin32SerialPort::CWin32SerialPortPtr   CWin32SerialPortPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -123,14 +130,3 @@ class CWin32SerialPort : public virtual CSerialPort
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_COMCORE_CWIN32SERIALPORT_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/

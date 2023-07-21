@@ -58,6 +58,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_COMCORE_CCOM_H
+#include "CCom.h"
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
+
 #ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
 #include "gucefPUBSUB_CPubSubGlobal.h"
 #define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
@@ -278,6 +283,17 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalCpuCurrentFrequencyInMhz( true )
     , m_gatherGlobalCpuSpecMaxFrequencyInMhz( false )
     , m_gatherGlobalCpuMaxFrequencyInMhz( false )
+    , m_gatherGlobalNetworkStats( true )
+    , m_gatherGlobalNetworkStatInboundOctets( true )
+    , m_gatherGlobalNetworkStatInboundUnicastOctets( true )
+    , m_gatherGlobalNetworkStatInboundUnicastPackets( true )
+    , m_gatherGlobalNetworkStatInboundErroredPackets( true )
+    , m_gatherGlobalNetworkStatInboundDiscardedPackets( true )
+    , m_gatherGlobalNetworkStatOutboundOctets( true )
+    , m_gatherGlobalNetworkStatOutboundUnicastOctets( true )
+    , m_gatherGlobalNetworkStatOutboundUnicastPackets( true )
+    , m_gatherGlobalNetworkStatOutboundErroredPackets( true )
+    , m_gatherGlobalNetworkStatOutboundDiscardedPackets( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -606,7 +622,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CORE::FreeProcessId( (*m).second.pid );
             m_exeProcIdMap.erase( m );
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased problematic PID for \"" + (*i) + "\"" );
             ++i;
         }
     }
@@ -711,7 +727,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CORE::FreeProcessId( (*m).second.pid );
             m_exeProcIdMap.erase( m );
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased problematic PID for \"" + (*i) + "\"" );
             ++i;
         }
     }
@@ -773,6 +789,87 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain global memory stats" );
+        }
+    }
+
+    if ( m_gatherGlobalNetworkStats )
+    {
+        COMCORE::CCom& comms = COMCORE::CComCoreGlobal::Instance()->GetCom();
+        
+        COMCORE::CCom::TINetworkInterfacePtrVector nics;
+        if ( comms.GetAllNetworkInterfaces( nics ) )
+        {
+            static const CORE::CString nicMetricNamePrefix = "ProcessMetrics.Network.";
+            COMCORE::CCom::TINetworkInterfacePtrVector::iterator i = nics.begin();
+            while ( i != nics.end() )
+            {
+                COMCORE::CINetworkInterfacePtr& nic = (*i);
+                COMCORE::CNetworkInterfaceMetrics nicMetrics;
+                if ( !nic.IsNULL() && nic->GetMetrics( nicMetrics ) )
+                {
+                    if ( m_gatherGlobalNetworkStatInboundOctets && nicMetrics.hasInboundOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatInboundUnicastOctets && nicMetrics.hasInboundUnicastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundUnicastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundUnicastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundUnicastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatInboundUnicastPackets && nicMetrics.hasInboundUnicastPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundUnicastPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundUnicastPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundUnicastPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatInboundErroredPackets && nicMetrics.hasInboundErroredPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundErroredPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundErroredPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundErroredPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatInboundDiscardedPackets && nicMetrics.hasInboundDiscardedPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundDiscardedPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundDiscardedPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundDiscardedPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundOctets && nicMetrics.hasOutboundOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundUnicastOctets && nicMetrics.hasOutboundUnicastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundUnicastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundUnicastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundUnicastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundUnicastPackets && nicMetrics.hasOutboundUnicastPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundUnicastPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundUnicastPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundUnicastPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundErroredPackets && nicMetrics.hasOutboundErroredPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundErroredPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundErroredPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundErroredPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundDiscardedPackets && nicMetrics.hasOutboundDiscardedPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundDiscardedPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundDiscardedPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundDiscardedPackets ), nicMetricName, CORE::CString::Empty );
+                    }
+                }
+                ++i;
+            }
         }
     }
 }

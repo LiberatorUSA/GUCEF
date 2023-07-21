@@ -57,9 +57,7 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
 {
     public:
 
-    typedef std::vector< CINetworkInterface* > TNetworkInterfaceVector;
-
-    static bool EnumNetworkAdapters( TNetworkInterfaceVector& interfaces );
+    static bool EnumNetworkAdapters( TINetworkInterfacePtrVector& interfaces );
 
     virtual ~CWin32NetworkInterface();
     
@@ -79,13 +77,13 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
 
     virtual UInt32 GetNrOfIPAddresses( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const GUCEF_VIRTUAL_OVERRIDE;
 		
     virtual bool IsDhcpUsed( void ) const GUCEF_VIRTUAL_OVERRIDE;		
 
-    virtual time_t GetDhcpLeaseObtainedTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::CDateTime GetDhcpLeaseObtainedTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual time_t GetDhcpLeaseExpirationTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::CDateTime GetDhcpLeaseExpirationTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool ReleaseAddress( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -98,6 +96,8 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
     virtual CIPv4Address GetSecondaryWinsServer( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual UInt32 GetOsAdapterIndex( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMetrics( CNetworkInterfaceMetrics& metrics ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
@@ -129,11 +129,15 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
     bool m_winsUsed;		
     THostAddressVector m_dnsAddresses;
     TIPInfoVector m_ipAddresses;
-    TIPAddressVector m_gatewayList;
+    TIPv4AddressVector m_gatewayList;
     time_t m_leaseObtained;
     time_t m_leaseExpires;
     MT::CMutex m_dataLock;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CWin32NetworkInterface, MT::CMutex >  CWin32NetworkInterfacePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

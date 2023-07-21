@@ -25,10 +25,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CITYPENAMED_H
 #include "CITypeNamed.h"
 #define GUCEF_CORE_CITYPENAMED_H
 #endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
@@ -68,6 +78,10 @@ class GUCEF_COMCORE_EXPORT_CPP CICommunicationInterface : public virtual CORE::C
     virtual CORE::CString GetCommunicationInterfaceType( void ) const = 0;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CICommunicationInterface, MT::CMutex >     CICommunicationInterfacePtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -81,13 +95,3 @@ class GUCEF_COMCORE_EXPORT_CPP CICommunicationInterface : public virtual CORE::C
 
 #endif /* GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/
