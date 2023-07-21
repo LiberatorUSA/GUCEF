@@ -57,7 +57,7 @@
         <ITEM NAME="../gucefCORE/include/gucefCORE_VariantData.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CVariant.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/gucefCORE_CVariant.h" TYPE="FILE" />
-        <ITEM NAME="../gucefCORE/src/dvfileutils.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvfileutils.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvfileutils.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/dvcppfileutils.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvcppfileutils.h" TYPE="FILE" />

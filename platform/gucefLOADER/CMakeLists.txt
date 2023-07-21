@@ -65,7 +65,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/PAFILE.c
   ../gucefCORE/src/dvcppfileutils.cpp
   ../gucefCORE/src/dvcppstringutils.cpp
-  ../gucefCORE/src/dvfileutils.c
+  ../gucefCORE/src/dvfileutils.cpp
   ../gucefCORE/src/dvmd5utils.c
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -145,7 +145,7 @@ if (ANDROID)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -225,7 +225,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -305,7 +305,7 @@ elseif (GLX)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -385,7 +385,7 @@ elseif (GTK)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -465,7 +465,7 @@ elseif (IOS)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -545,7 +545,7 @@ elseif (LINUX32)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -625,7 +625,7 @@ elseif (LINUX64)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -705,7 +705,7 @@ elseif (NACL)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -785,7 +785,7 @@ elseif (OSX)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -865,7 +865,7 @@ elseif (POSIX)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -945,7 +945,7 @@ elseif (SDL)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -1025,7 +1025,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -1105,7 +1105,7 @@ elseif (UNIX)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -1187,7 +1187,7 @@ elseif (WIN32)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
@@ -1271,7 +1271,7 @@ elseif (WIN64)
     ../gucefCORE/src/PAFILE.c
     ../gucefCORE/src/dvcppfileutils.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp

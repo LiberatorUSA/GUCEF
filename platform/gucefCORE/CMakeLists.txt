@@ -371,9 +371,9 @@ set( SOURCE_FILES
   src/cloneables.cpp
   src/dvcppfileutils.cpp
   src/dvcppstringutils.cpp
-  src/dvfileutils.c
+  src/dvfileutils.cpp
   src/dvmd5utils.c
-  src/dvstrutils.c
+  src/dvstrutils.cpp
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CAsciiString.cpp
